@@ -1,2 +1,6 @@
 # AdvantEDGE Documents
-This folder contains Advantedge Documents
+
+Document | Description
+---------|------------
+[setup.md](setup.md)   | Environment Setup
+[deploy.md](deploy,md) | Deploy AdvantEDGE on Kubernetes
