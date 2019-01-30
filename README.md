@@ -4,9 +4,9 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 > MEEP provides an environment to experiment with Mobile Edge Computing (MEC) technologies and edge / fog deployment models in short and agile iterations.
 
 ## Motivations
-[x]**Accelerate Mobile Edge Computing adoption**
-[x]**Discover new edge application use cases**
-[x]**Answer these questions:**
+- [x] **Accelerate Mobile Edge Computing adoption**
+- [x] **Discover new edge application use cases**
+- [x] **Answer these questions:**
   * Where should my application components be located in the network?
   * What are network characteristics limitations of my application?
   * How will my application behave when the user moves around the network?
