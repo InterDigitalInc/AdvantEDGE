@@ -14,7 +14,7 @@ AdvantEDGE requires the following pre-requisites
 ## Ubuntu
 There are many installation guides out there; we use [this one](https://tutorials.ubuntu.com/tutorial/tutorial-install-ubuntu-desktop#0)
 
-Tested versions
+Versions we use:
 - 16.04 LTS and 18.04 LTS
 - Kernel: 4.4, 4.15 and 4.18
 
@@ -91,7 +91,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 kubeadm init
 ```
 ###### STEP 5 - Install the network add-on [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network)
-We use [WeaveNet]((https://www.weave.works/docs/net/latest/kubernetes/kube-addon/)
+We use [WeaveNet](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/)
 ```
 sysctl net.bridge.bridge-nf-call-iptables=1
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
@@ -108,7 +108,7 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 ## Helm
 We use [this](https://docs.helm.sh/using_helm/#installing-helm) procedure
 
-Versions we use
+Versions we use:
 - 2.8.2, 2.12.3
 
 How we do it:
