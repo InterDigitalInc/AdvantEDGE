@@ -1,4 +1,4 @@
-# AdvantEDGE Environment Setup
+# Environment Setup
 ## Goals
 - Guidance on pre-requisite installation
 - List of versions known to work

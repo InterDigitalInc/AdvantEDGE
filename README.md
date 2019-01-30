@@ -12,13 +12,21 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
   * How will my application behave when the user moves around the network?
 
 ## Getting started
-* [Pre-requisites](docs/setup.md)
+* [Pre-requisites (Ubuntu+Dockers+Kubernetes+Helm)](docs/setup.md)
+
 * [Deploy AdvantEDGE](docs/deploy.md)
-* [How to use](docs/use.md)
+  ```
+  ./deploy.sh -i
+  ```
+* [Use](docs/use.md)
+  * Use the demo scenario (or create your own)
+  * Deploy the scenario
+  * Experiment!
+
 _Binary Distribution (UseWorkflow, Setup, Deploy, Usage)_
 
 ## Developing
-_Code Distribution (DevWorkflow, APIs, Build, Test, Coding standard)_
+_Code Distribution (DevWorkflow, APIs, Build, Test, Coding standard, files)_
 ## Features
 Checklist
 _Model, Context View, SW Architecture View_

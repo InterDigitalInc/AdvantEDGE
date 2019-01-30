@@ -1,4 +1,4 @@
-# AdvantEDGE Deployment Procedure
+# Deployment Procedure
 ## Goals
 - Guidance on deploying AdvantEDGE
 
