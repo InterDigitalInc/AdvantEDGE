@@ -7,7 +7,7 @@ meepctl - CLI application to control the AdvantEDGE platform
 
 meepctl - CLI application to control the AdvantEDGE platform
 
-  Find more information in https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl.md
+  Find more information in https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md
 
 
 ### Options

@@ -17,9 +17,9 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 * [Deploy AdvantEDGE](docs/deploy.md)
 <br/>in a nutshell:
   `
-  ./deploy.sh -i
+  meepctl deploy all
   `
-* [Use AdvantEDGE](docs/use.md)
+* [Use AdvantEDGE](docs/use.md) (**_Work In Progress_**)
   * Quickstart with the Demo scenario
   * Deploy a scenario
   * Create your own scenario
@@ -27,10 +27,10 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
   * Observe metrics
   * Advanced use cases
 
+**_Work In Progress_**
 _Binary Distribution (UseWorkflow, Setup, Deploy, Usage)_
 
-## Developing
-**_Work In Progress_**
+## Developing (**_Work In Progress_**)
 * [Setup build environment (go/dep/...)](docs/setup_build.md)
 
 * [Build AdvantEDGE](docs/build.md)
@@ -39,14 +39,13 @@ _Binary Distribution (UseWorkflow, Setup, Deploy, Usage)_
 
 _Code Distribution (DevWorkflow, APIs, Build, Test, Coding standard, files)_
 
-## Features
-**_Work In Progress_**
+## Features (**_Work In Progress_**)
 - [x] Feature1
 - [x] Feature2
 - [x] Feature3
 
 _Model, Context View, SW Architecture View_
-## Contributing
-**_Work In Progress_**
-## Licensing
-**_Work In Progress_**
+## Contributing (**_Work In Progress_**)
+_How to contribute_
+## Licensing (**_Work In Progress_**)
+_Licensing information_

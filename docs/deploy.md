@@ -3,18 +3,18 @@
 - Guidance on deploying AdvantEDGE
 
 ## Overview
-- setup [AdventEDGE Runtime Environment](setup.md)
+- setup [AdventEDGE Runtime Environment](setup_runtime.md)
 - install and configure [meepctl CLI tool](meepctl/meepctl.md)
-- ensure AdvantEDGE Docker images are available in a Docker Registry (see note)
+- ensure AdvantEDGE Docker images are available in a Docker Registry (see note below)
 - `meepctl deploy all`
 
 ###### Note
 > As per the Docker/Kubernetes workflow, Docker images must be stored in a Docker registry prior to being deployed. Released versions of AdvantEDGE micro-services are available on [DockerHub](missing link).
 
 ## AdvantEDGE deployment:
-AdvantEDGE deployment is achieved through the _[meepctl](meepctl/meepctl.md)_ CLI tool
+AdvantEDGE deployment is achieved through the [_meepctl CLI tool_](meepctl/meepctl.md)
 
-AdvantEDGE is composed a collection of micro-services that are classified in two groups: _core_ & _dependencies_. [_meepctl_](meepctl/meepctl.md) tool is used to create & destroy these micro-services on the K8s cluster; this is achieved through the [_deploy_]((meepctl/meepctl_deploy.md)) & [_delete_](meepctl/meepctl_delete.md) commands.
+AdvantEDGE is composed a collection of micro-services that are classified in two groups: _core_ & _dependencies_. [_meepctl_](meepctl/meepctl.md) tool is used to create & destroy these micro-services on the K8s cluster; this is achieved through the [_deploy_](meepctl/meepctl_deploy.md)) & [_delete_](meepctl/meepctl_delete.md) commands.
 
 Let's see how it's done with the following examples.
 
