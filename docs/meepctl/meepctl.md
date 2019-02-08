@@ -7,7 +7,7 @@ meepctl - CLI application to control the AdvantEDGE platform
 
 meepctl - CLI application to control the AdvantEDGE platform
 
-  Find more information in https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md
+  Find more information [here](https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md)
 
 
 ### Options
@@ -20,7 +20,7 @@ meepctl - CLI application to control the AdvantEDGE platform
 
 ### SEE ALSO
 
-* [meepctl config](meepctl_config.md)	 - A brief description of your command
+* [meepctl config](meepctl_config.md)	 - Config allows to manage meepctl configuration
 * [meepctl delete](meepctl_delete.md)	 - Delete components on the K8s cluster
 * [meepctl deploy](meepctl_deploy.md)	 - Deploy components on the K8s cluster
 * [meepctl genmd](meepctl_genmd.md)	 - Generate markdown files for meepctl

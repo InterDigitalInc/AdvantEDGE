@@ -1,18 +1,31 @@
 ## meepctl config
 
-A brief description of your command
+Config allows to manage meepctl configuration
 
 ### Synopsis
 
-A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+Config allows to manage meepctl configuration
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.
+meepctl relies on a configuration file that lives here $(HOME)/.meepctl.yaml
+
+On first meepctl execution, it will be automatically created with default values
+It then needs to be initialized by running the command shown in the example.
+
+- IP is the IPV4 address of the local node where AdvantEDGE and meepctl are used
+- gitdir is the path to the GIT directory of AdvantEDGE
+
 
 ```
 meepctl config [flags]
+```
+
+### Examples
+
+```
+  # Initial configuration
+ meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>
+ # Help on set command
+ meepctl config set --help
 ```
 
 ### Options
