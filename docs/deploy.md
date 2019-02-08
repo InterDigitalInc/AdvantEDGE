@@ -1,19 +1,39 @@
 # Deployment Procedure
-## Goals
+## Goal
 - Guidance on deploying AdvantEDGE
 
 ## Overview
-AdvantEDGE deployment has been automated with [this](../deploy.sh) script.
+- setup [AdventEDGE Runtime Environment](setup.md)
+- install and configure [meepctl CLI tool](meepctl/meepctl.md)
+- ensure AdvantEDGE Docker images are available in a Docker Registry (see note)
+- `meepctl deploy all`
 
-The script uses [Helm](https://helm.sh/) to deploy AdvantEDGE micro-services using [these charts](../charts).
+###### Note
+> As per the Docker/Kubernetes workflow, Docker images must be stored in a Docker registry prior to being deployed. Released versions of AdvantEDGE micro-services are available on [DockerHub](missing link).
 
-Before proceeding, make sure AdventEDGE environment has been [setup](setup.md)
+## AdvantEDGE deployment:
+AdvantEDGE deployment is achieved through the _[meepctl](meepctl/meepctl.md)_ CLI tool
 
+AdvantEDGE is composed a collection of micro-services that are classified in two groups: _core_ & _dependencies_. [_meepctl_](meepctl/meepctl.md) tool is used to create & destroy these micro-services on the K8s cluster; this is achieved through the [_deploy_]((meepctl/meepctl_deploy.md)) & [_delete_](meepctl/meepctl_delete.md) commands.
 
-Script usage:
+Let's see how it's done with the following examples.
+
+Initially, deploy both groups using:
 ```
-deploy.sh
+meepctl deploy all
 ```
+When new AdvantEDGE version becomes available, only _core_ components need to be updated.
+This is achieved by deleting and deploying the core group:
+```
+meepctl delete core
+meepctl deploy core
+```
+alternatively
+`meepctl deploy core --force` would achieve the same result
 
-### Note
-> As per the Docker/Kubernetes workflow, Docker images must be stored in a Docker registry prior to being deployed.<br/> Released versions of AdvantEDGE micro-services are available on [DockerHub](missing link).
+When finished using AdvantEDGE:
+```
+meepctrl delete all
+```
+###### Note
+> AdvantEDGE dependencies are a pre-requisite needed by the core group. Therefore behavior is undefined if the dependency group is absent/deleted when core containers are deployed

@@ -1,7 +1,6 @@
-# Environment Setup
-## Goals
-- Guidance on pre-requisite installation
-- List of versions known to work
+# Runtime Environment Setup
+- Guidance on runtime pre-requisites installation
+- List versions known to work
 
 ## Overview
 AdvantEDGE requires the following pre-requisites
