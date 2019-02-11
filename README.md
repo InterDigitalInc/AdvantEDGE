@@ -28,7 +28,7 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
   * Advanced use cases
 
 **_Work In Progress_**
-_Binary Distribution (UseWorkflow, Setup, Deploy, Usage)_
+_Binary Distribution (UseWorkflow, Usage)_
 
 ## Developing (**_Work In Progress_**)
 * [Setup build environment (go/dep/...)](docs/setup_build.md)
