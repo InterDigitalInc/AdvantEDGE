@@ -14,7 +14,7 @@
 ## AdvantEDGE deployment:
 AdvantEDGE deployment is achieved through the [_meepctl CLI tool_](meepctl/meepctl.md)
 
-AdvantEDGE is composed a collection of micro-services that are classified in two groups: _core_ & _dependencies_. [_meepctl_](meepctl/meepctl.md) tool is used to create & destroy these micro-services on the K8s cluster; this is achieved through the [_deploy_](meepctl/meepctl_deploy.md) & [_delete_](meepctl/meepctl_delete.md) commands.
+AdvantEDGE is composed of a collection of micro-services that are classified in two groups: _core_ & _dependencies_. [_meepctl_](meepctl/meepctl.md) tool is used to create & destroy these micro-services on the K8s cluster; this is achieved through the [_deploy_](meepctl/meepctl_deploy.md) & [_delete_](meepctl/meepctl_delete.md) commands.
 
 Let's see how it's done with the following examples.
 
