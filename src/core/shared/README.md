@@ -1,2 +1,2 @@
 # AdvantEDGE Shared Libraries
-This folder contains Advantedge shared libraries source code
+This folder contains AdvantEDGE shared libraries source code

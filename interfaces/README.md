@@ -1,2 +1,2 @@
 # AdvantEDGE Interfaces
-This folder contains Advantedge Interfaces
+This folder contains AdvantEDGE Interfaces

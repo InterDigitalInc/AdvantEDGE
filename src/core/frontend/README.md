@@ -1,2 +1,2 @@
 # AdvantEDGE Frontend
-This folder contains Advantedge frontend source code
+This folder contains AdvantEDGE frontend source code

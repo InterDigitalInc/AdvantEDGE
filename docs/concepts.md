@@ -15,9 +15,9 @@ AdvantEDGE micro-services are packaged in Docker containers which are designed t
 
 > _AdvantEDGE currently only supports single node K8s host deployment_
 
-Containers belong to one of 3 types
+Containers belong to one of 3 groups
 
-Type | Description
+Groups | Description
 ---------|------------
 _Core_   | micro-services implementing the AdvantEDGE controller functionality
 _Dependency_ | 3rd party micro-services upon which the Core micro-services depends
@@ -50,7 +50,7 @@ AdvantEDGE uses the following model to define a scenario.
 Layer | Description
 ---------|------------
 _Scenario_ | Scenario is the top level component of the Macro-network model<br><br> <li>AdvantEDGE users creates scenarios <li>AdvantEDGE can store multiple scenarios <li>Each scenario is uniquely named <li> One scenario is deployed at a time (e.g. the "active" scenario)
-_Logical Domain_ | Defines the number and types of domains within a scenario<br><br> <li>Internet/Distant cloud is the default domain <li> Each MNO represents a domain <li>Scenario layer defines Inter-Domain network characteristics for traffic crossing between domains
+_Logical Domain_ | Defines the number and types of domainsof within a scenario<br><br> <li>Internet/Distant cloud is the default domain <li> Each MNO represents a domain <li>Scenario layer defines Inter-Domain network characteristics for traffic crossing between domains
 _Logical Zone_ | A domain can be decomposed in different zones<br><br> <li>Zones allow to group multiple Network locations together <li>Logical Domain layer defines Inter-Zone network characteristics for traffic crossing between zones
 _Network Location_ | Defines locations within a zone where nodes attach to the network<br><br> <li>Also referred to as a Point of Attachment (PoA) <li>PoA may connect Fixed or Mobile terminals (e.g. edge/fog/cloud nodes, int./ext. UEs) <li>Logical Zone layer defines Inter-Fog, Inter-Edge & Edge-Fog network characteristics for traffic crossing between these network locations
 _Physical Location_ | Defines the physical location of a device; each device in a system occupies its own unique physical location<br><br> <li>Defines the node type that occupies the physical location <li>Example of node types are edge,fog,cloud,internal UE, external UE <li>Mobile terminals may dynamically be changed of PoA at scenario runtime by sending a Mobility Event <li>Network Location layer defines the terminal link network characteristics

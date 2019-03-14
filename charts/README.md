@@ -1,2 +1,2 @@
 # AdvantEDGE Charts
-This folder contains Advantedge Helm Charts
+This folder contains AdvantEDGE Helm Charts

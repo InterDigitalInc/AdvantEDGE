@@ -1,2 +1,2 @@
 # AdvantEDGE Virtualizer Micro-Service
-This folder contains Advantedge virtualizer engine source code
+This folder contains AdvantEDGE virtualizer engine source code

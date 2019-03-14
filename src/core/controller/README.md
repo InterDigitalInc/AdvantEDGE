@@ -1,2 +1,2 @@
 # AdvantEDGE Controller Micro-Service
-This folder contains Advantedge controller engine source code
+This folder contains AdvantEDGE controller engine source code

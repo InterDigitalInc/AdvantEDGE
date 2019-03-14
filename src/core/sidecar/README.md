@@ -1,2 +1,2 @@
 # AdvantEDGE Sidecar
-This folder contains Advantedge sidecar source code
+This folder contains AdvantEDGE sidecar source code

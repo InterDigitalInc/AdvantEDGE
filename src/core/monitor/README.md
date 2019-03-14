@@ -1,2 +1,2 @@
 # AdvantEDGE Monitoring Micro-Service
-This folder contains Advantedge monitoring engine source code
+This folder contains AdvantEDGE monitoring engine source code

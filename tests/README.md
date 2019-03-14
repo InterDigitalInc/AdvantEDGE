@@ -1,2 +1,2 @@
 # AdvantEDGE Tests
-This folder contains Advantedge tests
+This folder contains AdvantEDGE tests
