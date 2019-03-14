@@ -37,9 +37,10 @@ _Scenario Initializer_ |core| Dynamically modify scenario containers at deployme
 _Monitoring Engine_ |core| Monitor the state of core and scenario containers
 _Traffic Controller Engine_ |core| Orchestrate application of network characteristics to the scenario containers
 _Traffic Controller Sidecar_ |core| Apply location specific network characteristics to a scenario container. Sidecar is dynamically injected into scenario pods at deployment time
-_Couchdb_ |dep.| Store scenarios
+_Mobility Group Manager_ |core| Orchestrate edge application state relocation
+_Couchdb_ |dep.| Store user scenarios
 _Helm CLI + Tiller_ | dep.| Deploy K8s containers
-_Redis_ | dep. | Store internal data
+_Redis_ | dep. | Store internal runtime data
 _Elastic Stack_ | dep. | Monitoring pipeline
 
 ## Macro-network model
