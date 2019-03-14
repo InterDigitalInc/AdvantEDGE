@@ -1,7 +1,7 @@
 # AdvantEDGE General Usage Guidance
 ## Goal
 - [Introduction to AdvantEDGE GUI](#gui-overview)
-- [Basic AdvantEDGE operations](#basic-operations)
+- [Basic AdvantEDGE operations](#basic-operation)
 - [Create a first user scenario](#first-user-scenario)
 
 ## Pre-requisites
@@ -16,13 +16,13 @@ Either `<your-node-ipaddress>:30000` or `<your-node-URL>:30000` should do the tr
 
 The GUI is sub-divided in 3 main areas:
 - Top Bar
-- The Drawer (to the left)
-- The Main Area
+- Drawer (to the left)
+- Main Area
 
 The Top Bar is a fixed element that is always visible. It identifies the AdvantEDGE Contoller application and contains a health indicator of the platform
 > Health indicator verifies that the AdvantEDGE Core components are present and running
 
-The Drawer allows to select what is visible in the main area. It can be hidden by clicking on the InterDigital bullet in the top bar.
+The Drawer allows to select what is visible in the Main Area. It can be hidden by clicking on the InterDigital bullet in the top bar.
 
 Drawer Item | Description
 ------ | --------
@@ -47,26 +47,26 @@ In a command line shell
 
 ### Import Demo Scenario in AdvantEDGE
 From AdvantEDGE GUI
-- Select _Configure_ from the Drawer
+- Select _Configure_ from Drawer
 - Click on _Import_
 - Browse to `AdvantEDGE/examples/demo/` and select `demo-scenario.yaml`
 - Once the scenario topology appears, click on _Save_
 
-> You successfully imported the scenario in AdvantEDGE internal storage; next time you need to use it, simply click on _Open_ and select it from the drop-down menu
+> You successfully imported the scenario in AdvantEDGE internal storage <br>Next time you need to use it, simply click on _Open_ and select it from the drop-down menu
 
 ### Explore the Demo Scenario
 The demo scenario is composed of the following components:
 - 2 distant cloud application: _iperf_ server and _demo_ server
 - 1 MNO that has 2 Zones
-  - Zone1 has 2 PoAs & 1 Edge nodes
+  - Zone1 has 2 PoAs & 1 Edge node
   - Zone2 has 1 PoA & 1 Edge node
   - PoA1 in Zone1 is equipped with a Fog node
   - Each Fog/Edge node runs 2 Edge servers (_iperf_ and _demo_)
 - 2 UEs
   - 1 internal UE that runs an iperf client
-  - 1 external UE that runs a demo client
+  - 1 external UE that runs a Demo client
 
-By clicking on components of the topology graph, you can explore the configuration of these elements. Let's explain how some of these components are configured.
+By clicking on components of the topology graph, you can explore the configuration of these elements.
 
 ### Deploy Demo Scenario
 From AdvantEDGE GUI
@@ -74,7 +74,7 @@ From AdvantEDGE GUI
 - Click on _Deploy_
 - Select `demo-scenario` from the drop-down menu
 
-To confirm that demo pods are running you can also `kubectl get pods | grep meep-demo`
+To confirm that demo pods are running from the shell: `kubectl get pods | grep meep-demo`
 
 > After the scenario is deployed, a table appears below the topology graph and indicates status information about the scenarion deployment
 
@@ -88,7 +88,7 @@ For an external Demo UE, we will use a browser (can be on a different computer)
   - The _demo_ edge service instance closest to the PoA of the serves the Demo GUI with localized edge data
 
   > Verify that
-  - Node Instance Name (Demo GUI) matches demo edge service name closest to the PoA of _ue2-ext_ (AdvantEDGE GUI)
+  > - Node Instance Name (Demo GUI) matches demo edge service name closest to the PoA of _ue2-ext_ (AdvantEDGE GUI)
 
 - Send a mobility event to _ue2-ext_
   - In _Execute_ window, click on _Create Event_
