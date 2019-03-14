@@ -6,7 +6,7 @@
 - [Define network mobility](#network-mobility)
 - [Define external UE support](#external-ue-support)
 
-## Micro-Service architecture
+## Micro-service architecture
 AdvantEDGE is a controller software that facillitates deployment of edge applications in a simulated network environment.
 
 It is composed of a collection of micro-services that interact together to allow deployment and testing of edge scenarios.
