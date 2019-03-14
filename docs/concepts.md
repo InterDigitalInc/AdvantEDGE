@@ -1,6 +1,6 @@
 # AdvantEDGE Concepts
 ## Goal
-- [Define micro-service architecture](#micro-service architecture)
+- [Define micro-service architecture](#micro-service-architecture)
 - [Define macro-network model](#macro-network-model)
 - [Define network characteristics](#network-characteristics)
 - [Define network mobility](#network-mobility)
