@@ -98,9 +98,8 @@ For an external Demo UE, we will use a browser (can be on a different computer)
   - Click on _Submit_
 
   > Verify that
-  - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
-  - Node Instance Name and Image changed (Demo GUI)
-  <br>_Information now originates from edge node closest to the new poa_
+  > - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
+  > - Node Instance Name and Image changed (Demo GUI) <br>_Information now originates from edge node closest to the new poa_
 
 - Trigger an application state transfer
   - In Demo GUI, click on _Restart Counter_
@@ -110,9 +109,9 @@ For an external Demo UE, we will use a browser (can be on a different computer)
   - Send a mobility event to move _ue2-ext_ to _zone1-poa2_
 
   > Verify that
-  - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
-  - Node Instance Name and Image changed (Demo GUI)
-  - The counter did not reset to 0 (Demo GUI)
+  > - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
+  > - Node Instance Name and Image changed (Demo GUI)
+  > - The counter did not reset to 0 (Demo GUI)
   <br>The UE state (counter) was transferred to the newest edge insance
 
 
