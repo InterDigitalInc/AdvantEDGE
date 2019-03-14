@@ -30,7 +30,7 @@ High-level overview of AdvantEDGE micro-service architecture
 AdvantEDGE components have the following roles:
 
 Component |Type| Role
----------|------------
+---------|------------|------------
 _Controller Engine_ |core| Orchestrate interactions between the user (GUI) and other micro-services
 _Virtualization Engine_ |core| Deploy/Delete scenario containers
 _Scenario Initializer_ |core| Dynamically modify scenario containers at deployment time
