@@ -1,4 +1,4 @@
-# AdvantEDGE Scenario Creation
+# First Scenario Creation
 AdvantEDGE scenario is a yaml file that describes copmonents of a macro-network with edge components.
 
 The scenario [model](../concepts/md#macro-network-model) follows a tree-like shape that starts with the scenario as the root element and extends all the way to the processes as the leaf elements.
@@ -8,8 +8,8 @@ AdvantEDGE provides an internal document database that can contain several scena
 In this tutorial, we will see how to create a new scenario.
 
 ## Pre-requisites
-- Familiarize with [AdvantEDGE Concepts](./concepts.md)
-- [Deploy AdvantEDGE](docs/deploy.md)
+- Familiarize with [AdvantEDGE Concepts](../concepts.md)
+- [Deploy AdvantEDGE](../deploy.md)
 
 ## Create New Scenario
 From AdvantEDGE GUI
@@ -109,3 +109,5 @@ From AdvantEDGE GUI
 
 
 **Congratulations! you have created & deployed your first scenario using AdvantEDGE**
+
+## [Back to usage top level](../use.md)

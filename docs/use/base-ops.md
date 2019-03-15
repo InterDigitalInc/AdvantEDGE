@@ -1,4 +1,4 @@
-# AdvantEDGE Basic Operations
+# Basic Operations
 AdvantEDGE comes pre-bundled with a demo scenario that allows for rapid experimentation.
 
 Going through the deployment/termination steps of that scenario is a good introduction to basic AdvantEDGE operations.
@@ -6,8 +6,8 @@ Going through the deployment/termination steps of that scenario is a good introd
 Prior to using the demo scenario for the first time, we need to containerize the scenario applications and import the scenario in AdvantEDGE
 
 ## Pre-requisites
-- Familiarize with [AdvantEDGE Concepts](./concepts.md)
-- [Deploy AdvantEDGE](docs/deploy.md)
+- Familiarize with [AdvantEDGE Concepts](../concepts.md)
+- [Deploy AdvantEDGE](../deploy.md)
 
 ## Containerize Demo Applications
 In a command line shell
@@ -89,4 +89,4 @@ From AdvantEDGE GUI
   - Click on _Terminate_ <br>_After the scenario is terminated, the status table shows the termination status; a new scenario can be deployed only when all pods have been terminated_
 
 
-## [Back to usage top level](./use.md)
+## [Back to usage top level](../use.md)
