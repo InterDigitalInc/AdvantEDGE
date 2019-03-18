@@ -19,16 +19,15 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
   `
   meepctl deploy all
   `
-* [Use AdvantEDGE](docs/use.md) (**_Work In Progress_**)
-  * Quickstart with the Demo scenario
-  * Deploy a scenario
-  * Create your own scenario
-  * Generate dynamic network events
-  * Observe metrics
-  * Advanced use cases
+* [Use AdvantEDGE](docs/use.md)
 
-**_Work In Progress_**
-_Binary Distribution (UseWorkflow, Usage)_
+## Concepts
+The following AdvantEDGE concepts are described [here](docs/concepts.md)
+- [x] Micro-service Architecture
+- [x] Macro-network Model
+- [x] Network characteristics
+- [x] Network mobility
+- [x] External UE support
 
 ## Developing (**_Work In Progress_**)
 * [Setup build environment (go/dep/...)](docs/setup_build.md)
@@ -38,13 +37,6 @@ _Binary Distribution (UseWorkflow, Usage)_
 * [Test AdvantEDGE](docs/test.md)
 
 _Code Distribution (DevWorkflow, APIs, Build, Test, Coding standard, files)_
-
-## Features (**_Work In Progress_**)
-- [x] Feature1
-- [x] Feature2
-- [x] Feature3
-
-_Model, Context View, SW Architecture View_
 ## Contributing (**_Work In Progress_**)
 _How to contribute_
 ## Licensing (**_Work In Progress_**)
