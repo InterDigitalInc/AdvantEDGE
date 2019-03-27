@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-initializer.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "meep-initializer.name" . }}
+    chart: {{ template "meep-initializer.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-initializer.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ template "meep-initializer.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+          - "-initializer-name=sidecar.initializer.kubernetes.io"
+          - "-configmap=meep-initializer"
+          - "-annotation=simon-initializer"
+          - "-namespace=default"
+          - "-require-annotation=true"
+      initContainers:
+        - name: init-{{ .Values.deployment.dependency }}
+          image: busybox
+          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }} ; do echo wiating for {{ .Values.deployment.dependency }}; sleep2; done;']

@@ -1,0 +1,125 @@
+# Default values for generic values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+deployment:
+  enabled: {{.Deployment.Enabled}}
+  replicaCount: {{.Deployment.ReplicaCount}}
+  name: {{.Deployment.Name}}
+  apiVersion: {{.Deployment.ApiVersion}}
+  matchLabels: 
+  {{- range .Deployment.MatchLabels}}
+    {{.}}
+  {{- end}}
+
+  image:
+    name: {{.Deployment.ContainerName}}
+    repository: {{.Deployment.ContainerImageRepository}}
+    pullPolicy: {{.Deployment.ContainerImagePullPolicy}}
+    envvar:
+      enabled: {{.Deployment.ContainerEnvEnabled}}
+      env:
+      {{- range .Deployment.ContainerEnv}}
+        {{.}}
+      {{- end}}
+    command:
+      enabled: {{.Deployment.ContainerCommandEnabled}}
+      command:
+      {{- range .Deployment.ContainerCommand}}
+        - {{.}}
+      {{- end}}
+      args:
+      {{- range .Deployment.ContainerCommandArg}}
+        - {{.}}
+      {{- end}}
+
+  template:
+  #  namespace: {{.Deployment.TemplateNamespace}}
+    namespace: default
+    labels:
+    {{- range .Deployment.TemplateLabels}}
+      {{.}}
+    {{- end}}
+
+  meepOrigin: scenario
+
+  sidecar:
+    enabled: {{.Deployment.SidecarEnabled}}
+    name: {{.Deployment.SidecarName}}
+    image:
+      repository: {{.Deployment.SidecarImageRepository}}
+      tag: {{.Deployment.SidecarImageRepositoryTag}}
+      pullPolicy: {{.Deployment.SidecarImagePullPolicy}}
+
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+service:
+  enabled: {{.Service.Enabled}}
+  name: {{.Service.Name}}
+  namespace: default
+  labels:
+  {{- range .Service.Labels}}
+    {{.}}
+  {{- end}}
+  selector:
+  {{- range .Service.Selector}}
+    {{.}}
+  {{- end}}
+  type: {{.Service.Type}}
+  ports:
+    {{- range .Service.Ports}}
+    - name: port-{{.Port}}
+      port: {{.Port}}
+      targetPort: {{.TargetPort}}
+      protocol: {{.Protocol}}
+      nodePort: {{.NodePort}}
+    {{- end}}
+  
+  meservice:
+    enabled: {{.Service.MeServiceEnabled}}
+    name: {{.Service.MeServiceName}}
+    namespace: default
+    selector:
+    {{- range .Service.MeServiceSelector}}
+      {{.}}
+    {{- end}}
+    type: ClusterIP
+
+external:
+  enabled: {{.External.Enabled}}
+  selector:
+  {{- range .External.Selector}}
+    {{.}}
+  {{- end}}
+  ingressservicemap:
+    {{- range .External.IngressServiceMap}}
+    - nodePort: {{.NodePort}}
+      name: {{.Name}}
+      port: {{.NodePort}}
+      targetPort: {{.NodePort}}
+      protocol: {{.Protocol}}
+    {{- end}}
+  egressservicemap:
+    {{- range .External.EgressServiceMap}}
+    - ip: {{.IP}}
+      name: {{.Name}}
+      port: {{.Port}}
+      targetPort: {{.Port}}
+      protocol: {{.Protocol}}
+    {{- end}}
+
+serviceaccount:
+  create: {{.ServiceaccountCreate}}
+  user: admin-user
+
+rbac:
+  create: {{.RbacCreate}}
+
+namespace:
+#  create: {{.NamespaceCreate}}
+#  name: {{.NamespaceName}}
+  create: false
+  name: default

@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>MEEP Controller</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+<link href="bundle.css" rel="stylesheet"></head>
+
+<body class="mdc-typography ui-body">
+
+    <!-- MAIN DRAWER -->
+    <div id="main-drawer"></div>
+    
+    <!-- NEW SCENARIO DIALOG -->
+    <aside id="new-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="new-scenario-dialog-label" aria-describedby="new-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="new-scenario-dialog-label" class="mdc-dialog__header__title">Create New Scenario</h2>
+            </header>
+            <section id="new-scenario-dialog-description" class="mdc-dialog__body">
+                <div class="mdc-layout-grid">
+                    <div class="mdc-layout-grid__inner">
+
+                        <div id="new-scenario-dialog-form-div" class="mdc-layout-grid__cell--span-6">
+                            <div id="new-scenario-name-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
+                                <input type="text" id="new-scenario-name-tf" class="mdc-text-field__input" aria-controls="new-scenario-name-validation-message">
+                                <label for="new-scenario-name-tf" class="mdc-floating-label">Scenario Name</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- INVALID SCENARIO NAME DIALOG -->
+    <aside id="invalid-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="invalid-scenario-dialog-label" aria-describedby="invalid-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="invalid-scenario-dialog-label" class="mdc-dialog__header__title">Invalid Scenario Name</h2>
+            </header>
+            <section id="invalid-scenario-dialog-description" class="mdc-dialog__body">
+                Action cancelled due to invalid scenario name
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">OK</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- SAVE SCENARIO DIALOG -->
+    <aside id="save-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="save-scenario-dialog-label" aria-describedby="save-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="save-scenario-dialog-label" class="mdc-dialog__header__title">Save Scenario</h2>
+            </header>
+            <section id="load-scenario-dialog-description" class="mdc-dialog__body">
+                Store the scenario in the MEEP Controller (overwrites any existing scenario with the same name)
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- LOAD SCENARIO DIALOG -->
+    <aside id="load-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="load-scenario-dialog-label" aria-describedby="load-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="load-scenario-dialog-label" class="mdc-dialog__header__title">Open Scenario</h2>
+            </header>
+            <section id="load-scenario-dialog-description" class="mdc-dialog__body">
+                <div id="load-scenario-dialog-select-div" class="mdc-select mdc-select--outlined">
+                    <select id="load-scenario-dialog-select" class="mdc-select__native-control">
+                        <option value="" disabled selected></option>
+                    </select>
+                    <label class="mdc-floating-label">Scenario</label>
+                    <div class="mdc-notched-outline">
+                        <svg>
+                            <path class="mdc-notched-outline__path"></path>
+                        </svg>
+                    </div>
+                    <div class="mdc-notched-outline__idle"></div>
+                    <!-- <div class="mdc-line-ripple"></div> -->
+                </div>
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- EXPORT DIALOG -->
+    <aside id="export-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="export-dialog-label" aria-describedby="export-dialog-description" hidden>
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="export-dialog-label" class="mdc-dialog__header__title">
+                    Export current configuration
+                </h2>
+            </header>
+            <section id="export-dialog-description" class="mdc-dialog__body">
+                <div class="mdc-layout-grid">
+                    <div class="mdc-layout-grid__inner">
+
+                        <div id="export-dialog-form-div" class="mdc-layout-grid__cell--span-6">
+                            <div id="export-dialog-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined" data-demo-no-auto-js>
+                                <input type="text" id="export-dialog-tf" class="mdc-text-field__input" aria-controls="name-validation-message">
+                                <label for="export-dialog-tf" class="mdc-floating-label">Export file name</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                                <!-- <div class="mdc-line-ripple"></div> -->
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">CANCEL</button>
+                <button id="export-dialog-download-button" type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">DOWNLOAD</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- DELETE SCENARIO DIALOG -->
+    <aside id="delete-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="delete-scenario-dialog-label" aria-describedby="delete-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="delete-scenario-dialog-label" class="mdc-dialog__header__title">Delete Scenario</h2>
+            </header>
+            <section id="delete-scenario-dialog-description" class="mdc-dialog__body">
+                Are you sure you want to delete the current scenario from the MEEP Controller?
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- DEPLOY SCENARIO DIALOG -->
+    <aside id="deploy-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="deploy-scenario-dialog-label" aria-describedby="deploy-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="deploy-scenario-dialog-label" class="mdc-dialog__header__title">Deploy Scenario</h2>
+            </header>
+            <section id="deploy-scenario-dialog-description" class="mdc-dialog__body">
+                <div id="deploy-scenario-dialog-select-div" class="mdc-select mdc-select--outlined">
+                    <select id="deploy-scenario-dialog-select" class="mdc-select__native-control">
+                        <option value="" disabled selected></option>
+                    </select>
+                    <label class="mdc-floating-label">Scenario</label>
+                    <div class="mdc-notched-outline">
+                        <svg>
+                            <path class="mdc-notched-outline__path"></path>
+                        </svg>
+                    </div>
+                    <div class="mdc-notched-outline__idle"></div>
+                    <!-- <div class="mdc-line-ripple"></div> -->
+                </div>
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- TERMINATE SCENARIO DIALOG -->
+    <aside id="terminate-scenario-dialog" class="mdc-dialog" role="alertdialog" aria-labelledby="terminate-scenario-dialog-label" aria-describedby="terminate-scenario-dialog-description">
+        <div class="mdc-dialog__surface">
+            <header class="mdc-dialog__header">
+                <h2 id="terminate-scenario-dialog-label" class="mdc-dialog__header__title">Terminate Scenario</h2>
+            </header>
+            <section id="terminate-scenario-dialog-description" class="mdc-dialog__body">
+                Are you sure you want to terminate the deployed scenario?
+            </section>
+            <footer class="mdc-dialog__footer">
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">Cancel</button>
+                <button type="button" class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--accept">Continue</button>
+            </footer>
+        </div>
+        <div class="mdc-dialog__backdrop"></div>
+    </aside>
+
+    <!-- TOOLBAR -->
+    <header id="idcc-toolbar" class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4"></header>
+    <!-- <header id="idcc-toolbar" class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4">
+        <div class="mdc-top-app-bar__row">
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <img id="idcc-logo" class="idcc-toolbar-menu mdc-top-app-bar__navigation-icon" src="img/ID-Icon-01-idcc.svg" alt="">
+                <span id="idcc-title" class="mdc-top-app-bar__title catalog-title">Multi-Access Edge Emulation Platform Controller</span>
+            </section>
+        </div>
+    </header> -->
+
+    <!-- MAIN CONTENT -->
+    <div class="ui-content mdc-top-app-bar--fixed-adjust">
+        <main class="ui-main">
+
+            <!-- CONFIGURATION PAGE -->
+            <div id="page-configure" class="idcc-page">
+
+                <!-- Scenario Name -->
+                <div id="cfg-scenario-name-headline" class=" idcc-elevated-area mdc-elevation--z2">
+                    <!-- Headline component will be rendered here -->
+                </div>
+
+                <!-- Visualization & Network element configuration side by side -->
+                <div class="mdc-layout-grid">
+                    <div class="mdc-layout-grid__inner">
+
+                        <!-- Visualization area -->
+                        <div id="cfg-vis-network-container" class="mdc-layout-grid__cell--span-12">
+                            
+                        </div>
+
+                        <!-- New Network Element Configuration -->
+                        <div id="cfg-vis-and-element-config-div" class="idcc-elevated-area mdc-elevation--z2" hidden>
+                            
+                            <!-- Element configuration -->
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Network Element Table -->
+                <div id="cfg-network-element-div" class="idcc-elevated-area mdc-elevation--z2" hidden>
+                    <div class="mdc-typography--headline6">Network Elements</div>
+
+                    <!-- <div id="element-configuration-buttons-container" class="idcc-margin-top">
+                        <button id="new-element-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">NEW</button>
+                        <button id="edit-element-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense" disabled>EDIT</button>
+                        <button id="delete-element-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense" disabled>DELETE</button>
+                    </div> -->
+
+                    <div id="cfg-network-element-table-app" class="idcc-margin-top"></div>
+
+                </div>
+            </div>
+
+            <!-- EXECUTION PAGE -->
+            <div id="page-execute" class="idcc-page" hidden>
+                
+                <!-- Scenario Name -->
+                <div  id="exec-scenario-name-headline" class="idcc-elevated-area mdc-elevation--z2">
+                    <!-- Headline component will be rendered here -->
+                </div>
+
+                    <div class="mdc-layout-grid">
+                            <div class="mdc-layout-grid__inner">
+                        <!-- Visualization area -->
+                        <div id="exec-visualisation-area" class="idcc-elevated-area mdc-elevation--z2 mdc-layout-grid__cell--span-8">
+                            <div id="exec-page-scenario-buttons"></div>
+                            <div id="exec-vis-network-container">Network Graph will be shown here</div>
+                        </div>
+
+                        <div id="event-creation-pane" class="idcc-elevated-area mdc-elevation--z2 mdc-layout-grid__cell--span-4">
+                            Event creation pane
+                        </div>
+                        </div>
+
+                     </div>
+
+                <!-- Network Element Table -->
+                <div id="exec-network-element-div">                    
+                    <div id="exec-network-element-table-app" class="idcc-margin-top"></div>
+                </div>
+
+            </div>
+
+            <!-- MONITORING PAGE -->
+            <div id="page-monitor" class="idcc-page" hidden>
+                
+                <!-- Kibana Dashboard -->
+                <div class="idcc-elevated-area mdc-elevation--z2">
+
+                    <div class="mdc-layout-grid">
+                        <div class="mdc-layout-grid__inner">
+    
+                            <!-- Dashboard selector -->
+                            <div id="monitor-dashboard-select-div" class="mdc-layout-grid__cell--span-3 mdc-select mdc-select--outlined">
+                                <select id="monitor-dashboard-select" class="mdc-select__native-control">
+                                    <option value="" disabled selected></option>
+                                </select>
+                                <label class="mdc-floating-label">Dashboard</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"></path>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                                <!-- <div class="mdc-line-ripple"></div> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <iframe id="idcc-monitoring-iframe" class="idcc-margin-top"></iframe>
+                </div>
+
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="page-settings" class="idcc-page" hidden>
+
+                <div class="idcc-elevated-area mdc-elevation--z2">
+                    <div class="mdc-typography--headline6">Execution:</div>
+
+                    <div class="mdc-form-field">
+                        <div id="refresh-interval-checkbox-div" class="mdc-checkbox">
+                            <input type="checkbox" id="refresh-interval-checkbox" class="mdc-checkbox__native-control"/>
+                            <div class="mdc-checkbox__background">
+                                <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                                    <path class="mdc-checkbox__checkmark-path" fill="none" stroke="white" d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                                </svg>
+                                <div class="mdc-checkbox__mixedmark"></div>
+                            </div>
+                        </div>
+                        <label for="refresh-interval-checkbox">Automatic refresh:</label>
+                    </div>
+
+                    <div id="refresh-interval-form-div">
+                        <div id="refresh-interval-tf-div" class="mdc-text-field mdc-text-field--outlined mdc-text-field--dense" data-demo-no-auto-js>
+                            <input type="number" id="refresh-interval-tf" class="mdc-text-field__input" aria-controls="name-validation-message">
+                            <label for="refresh-interval-tf" class="mdc-floating-label">Interval (ms)</label>
+                            <div class="mdc-notched-outline">
+                                <svg>
+                                    <path class="mdc-notched-outline__path"/>
+                                </svg>
+                            </div>
+                            <div class="mdc-notched-outline__idle"></div>
+                        </div>
+                        <p id="refresh-interval-validation-message" class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">
+                            500 < value < 60000
+                        </p>
+                    </div>
+                </div>
+
+                <div class="idcc-elevated-area mdc-elevation--z2">
+                    <div class="mdc-typography--headline6">Development:</div>
+
+                    <div class="mdc-form-field">
+                        <div id="dev-mode-checkbox-div" class="mdc-checkbox">
+                            <input type="checkbox" id="dev-mode-checkbox" class="mdc-checkbox__native-control"/>
+                            <div class="mdc-checkbox__background">
+                                <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+                                    <path class="mdc-checkbox__checkmark-path" fill="none" stroke="white" d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                                </svg>
+                                <div class="mdc-checkbox__mixedmark"></div>
+                            </div>
+                        </div>
+                        <label for="dev-mode-checkbox">Development mode</label>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script type="text/javascript" src="bundle.js"></script></body>
+</html>
