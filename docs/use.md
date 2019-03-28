@@ -3,9 +3,9 @@
 - [Introduction to AdvantEDGE GUI](#gui-overview)
 - [Basic operations (link)](./use/base-ops.md)
 - [Create a first user scenario (link)](./use/create-scenario.md)
+- [External UEs (link](./use/ext-ue.md)
 - [Multi-edge services (link)](./use/me-services.md)
 - [Application State Transfer (link)](./use/app-state-transfer.md)
-- [External UEs (link](./use/ext-ue.md)
 
 ## Pre-requisites
 - Familiarize with [AdvantEDGE Concepts](./concepts.md)
