@@ -14,7 +14,7 @@ Since AdvantEDGE components are co-located on a single physical platform, servic
 
 As shown on the following figure, this requires to expose a port for every service that an external UE will access. These ports are statically configured by the scenario designer at scenario creation time.
 
-![micro-service arch.](./images/ext-ue-ports.png)
+![micro-service arch.](../images/ext-ue-ports.png)
 
 To help the user with port mapping management, AdvantEDGE provides two features to users:
   1. Dynamic port map in the frontend<br>
