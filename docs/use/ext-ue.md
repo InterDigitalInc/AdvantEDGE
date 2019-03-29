@@ -16,9 +16,9 @@ As shown on the following figure, this requires to expose a port for every servi
 
 ![micro-service arch.](../images/ext-ue-ports.png)
 
-To help the user with port mapping management, AdvantEDGE provides two features to users:
+To help the user with port mapping management, AdvantEDGE provides two features:
   1. Dynamic port map in the frontend<br>
-  In the execute tab, when a scenario is deployed, the port map of every external UE is shown. This is useful for use cases when external UEs need to be configured manually by a user.<br>
+  In the execute tab, when a scenario is deployed, the port map of every external UE is shown. This is useful formanually configuring external UEs<br>
 
   1. Port Map Registry<br>
-  For use cases where external UE can be configured programatically, AdvantEDGE platform provides a REST API that allows to query the port number that an external UE should be using to access a specific service. What we typically do is simply make a REST GET call to the registry from the UE software prior to connecting to the service; this method makes port management seamless even when port values are changed in the scenario.
+  For use cases where external UE can be configured programatically, AdvantEDGE platform provides a REST API that allows to query the port map. External UE can then provide their name and the service name to get back the port number to use. What we typically do is simply make a REST GET call to the registry from the UE software prior to connecting the socket; this method makes port management seamless even when port values are changed in the scenario.

@@ -1,9 +1,9 @@
 # AdvantEDGE Usage Tutorials
 ## Goal
 - [Introduction to AdvantEDGE GUI](#gui-overview)
-- [Basic operations (link)](./use/base-ops.md)
-- [Create a first user scenario (link)](./use/create-scenario.md)
-- [External UEs (link](./use/ext-ue.md)
+- [Basic operations](./use/base-ops.md)
+- [Create a first user scenario](./use/create-scenario.md)
+- [External UEs](./use/ext-ue.md)
 - [Edge application deployment & behavioral models](./use/deployment-behavioral-models.md)
 - [Edge application](./use/edge-applications.md)
 - [Edge application state transfer](./use/edge-app-state-transfer.md)
