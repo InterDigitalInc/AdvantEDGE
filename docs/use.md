@@ -4,8 +4,9 @@
 - [Basic operations (link)](./use/base-ops.md)
 - [Create a first user scenario (link)](./use/create-scenario.md)
 - [External UEs (link](./use/ext-ue.md)
-- [Multi-edge services (link)](./use/me-services.md)
-- [Application State Transfer (link)](./use/app-state-transfer.md)
+- [Edge application deployment & behavioral models](./use/deployment-behavioral-models.md)
+- [Edge application](./use/edge-applications.md)
+- [Edge application state transfer](./use/edge-app-state-transfer.md)
 
 ## Pre-requisites
 - Familiarize with [AdvantEDGE Concepts](./concepts.md)
