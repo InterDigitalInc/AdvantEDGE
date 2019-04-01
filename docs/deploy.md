@@ -7,20 +7,20 @@
 - install and configure [meepctl CLI tool](meepctl/meepctl.md)
 
 ## Summary
-- [`meepctl containerize`](#containerization)
+- [`meepctl dockerize`](#dockerization)
 - [`meepctl deploy all`](#deployment)
 
 ###### Note
 > As per the Docker/Kubernetes workflow, Docker images must be stored in a Docker registry prior to being deployed.
 
-## Containerization
+## Dockerization
 Prior to deploying AdvantEDGE, an intermediate step is needed.
-Container images need to be generated for AdvantEDGE micro-services and stored in the local Docker registry.
+Container images of AdvantEDGE micro-services need to be generated and stored in the local Docker registry.
 
-[_meepctl_](meepctl/meepctl.md) tool is used to containerize these micro-services and store them in the local docker registry; this is achieved through the [_containerize_](meepctl/meepctl_containerize.md) command.
+[_meepctl_](meepctl/meepctl.md) tool is used to dockerize these micro-services and store them in the local docker registry; this is achieved through the [_dockerize_](meepctl/meepctl_dockerize.md) command.
 
 ```
-meepctl containerize
+meepctl dockerize
 ```
 
 To verify that the operation was successful, you can list the local registry content and verify the creation time of the AdvantEDGE containers
@@ -39,7 +39,7 @@ Initially, deploy both groups using:
 ```
 meepctl deploy all
 ```
-When new AdvantEDGE version becomes available, only _core_ components need to be updated.
+Typically, when new AdvantEDGE version become available, only _core_ components need to be updated.
 This is achieved by deleting and deploying the core group:
 ```
 meepctl delete core
