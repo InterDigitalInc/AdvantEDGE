@@ -2,7 +2,7 @@
 
 Document | Description
 ---------|------------
-[setup.md](setup.md)   | Setup AdvantEDGE Runtime Environment
-[deploy.md](deploy,md) | Deploy AdvantEDGE
-[use.md](use,md)       | Use AdvantEDGE
-[concepts.md](use,md)  | Understand AdvantEDGE
+[setup_runtime.md](setup_runtime.md)   | Setup runtime environment
+[deploy.md](deploy,md) | Deploy the platform
+[use.md](use,md)       | Get started using it
+[concepts.md](use,md)  | Define concepts
