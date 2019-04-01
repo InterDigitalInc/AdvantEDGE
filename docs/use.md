@@ -1,12 +1,12 @@
 # AdvantEDGE Usage Tutorials
 ## Goal
-- [Introduction to AdvantEDGE GUI](#gui-overview)
+- [GUI Overview](#gui-overview)
 - [Basic operations](./use/base-ops.md)
 - [Create a first user scenario](./use/create-scenario.md)
 - [External UEs](./use/ext-ue.md)
-- [Edge application deployment & behavioral models](./use/deployment-behavioral-models.md)
-- [Edge application](./use/edge-applications.md)
-- [Edge application state transfer](./use/edge-app-state-transfer.md)
+- [Edge applications - deployment & behavioral models](./use/deployment-behavioral-models.md)
+- [Edge applications - types](./use/edge-applications.md)
+- [Edge applications - state transfer](./use/edge-app-state-transfer.md)
 
 ## Pre-requisites
 - Familiarize with [AdvantEDGE Concepts](./concepts.md)
