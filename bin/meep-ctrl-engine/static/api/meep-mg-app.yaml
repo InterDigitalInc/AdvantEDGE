@@ -1,0 +1,111 @@
+---
+swagger: "2.0"
+info:
+  description: "MEEP Mobility Group Application REST API"
+  version: "1.0.0"
+  title: "MEEP Mobility Group Application REST API"
+basePath: "/v1"
+tags:
+- name: "State Transfer"
+schemes:
+- "http"
+paths:
+  /mg/event:
+    post:
+      tags:
+      - "State Transfer"
+      summary: "Send event notification to registered Mobility Group Application"
+      description: ""
+      operationId: "handleEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "event"
+        description: "Mobility Group event notification"
+        required: true
+        schema:
+          $ref: "#/definitions/MobilityGroupEvent"
+        x-exportParamName: "Event"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+definitions:
+  MobilityGroupEvent:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Mobility Group event name"
+      type:
+        type: "string"
+        description: "Mobility Group event type"
+        enum:
+        - "STATE-UPDATE"
+        - "STATE-TRANSFER-START"
+        - "STATE-TRANSFER-COMPLETE"
+        - "STATE-TRANSFER-CANCEL"
+      ueId:
+        type: "string"
+        description: "Mobility Group UE identifier"
+      appState:
+        $ref: "#/definitions/MobilityGroupAppState"
+    description: "Event object"
+    example:
+      appState:
+        ueState: "ueState"
+        ueId: "ueId"
+      name: "name"
+      type: "STATE-UPDATE"
+      ueId: "ueId"
+  MobilityGroupAppState:
+    type: "object"
+    properties:
+      ueId:
+        type: "string"
+        description: "Mobility Group UE Identifier"
+      ueState:
+        type: "string"
+        description: "Mobility Group Application State for provided UE"
+    description: "Mobility Group Application State"
+    example:
+      ueState: "ueState"
+      ueId: "ueId"
+parameters:
+  event:
+    in: "body"
+    name: "event"
+    description: "Mobility Group event notification"
+    required: true
+    schema:
+      $ref: "#/definitions/MobilityGroupEvent"
+    x-exportParamName: "Event"
+responses:
+  Std200:
+    description: "OK"
+  Std201:
+    description: "Created"
+  Std202:
+    description: "Accepted"
+  Std204:
+    description: "No content"
+  Std304:
+    description: "Not modified"
+  Std400:
+    description: "Bad request"
+  Std401:
+    description: "Not authorized"
+  Std403:
+    description: "Forbidden"
+  Std404:
+    description: "Not found"
+  Std409:
+    description: "Conflict"
+  Std416:
+    description: "Requested range not satisfiable"
+  Std500:
+    description: "Internal server error"

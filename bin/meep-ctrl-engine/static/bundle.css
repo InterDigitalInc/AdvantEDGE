@@ -1127,9 +1127,9 @@
 
 .mdc-dialog__surface {
   box-shadow: 0px 11px 15px -7px rgba(0, 0, 0, 0.2), 0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
-  background-color: #fff;
+  background-color: #FFFFFF;
   /* @alternate */
-  background-color: var(--mdc-theme-background, #fff);
+  background-color: var(--mdc-theme-background, #FFFFFF);
   display: inline-flex;
   flex-direction: column;
   width: calc(100% - 30px);
@@ -1299,7 +1299,7 @@
     color: rgba(0, 0, 0, 0.54); }
   .mdc-drawer--persistent.mdc-drawer--permanent,
   .mdc-drawer--persistent .mdc-drawer__drawer {
-    background-color: #fff; }
+    background-color: #FFFFFF; }
   .mdc-drawer--persistent .mdc-drawer__drawer {
     /* @noflip */
     border-left: 0;
@@ -1407,7 +1407,7 @@
     color: rgba(0, 0, 0, 0.54); }
   .mdc-drawer--permanent.mdc-drawer--permanent,
   .mdc-drawer--permanent .mdc-drawer__drawer {
-    background-color: #fff; }
+    background-color: #FFFFFF; }
   [dir="rtl"] .mdc-drawer--permanent, .mdc-drawer--permanent[dir="rtl"] {
     /* @noflip */
     border-left: 1px solid #e4e4e4;
@@ -1489,7 +1489,7 @@
     color: rgba(0, 0, 0, 0.54); }
   .mdc-drawer--temporary.mdc-drawer--permanent,
   .mdc-drawer--temporary .mdc-drawer__drawer {
-    background-color: #fff; }
+    background-color: #FFFFFF; }
   .mdc-drawer--temporary::before {
     background-color: rgba(0, 0, 0, 0.6); }
   .mdc-drawer--temporary::before {
@@ -1949,9 +1949,9 @@
   width: var(--mdc-grid-list-tile-width, 200px); }
 
 .mdc-grid-tile__primary {
-  background-color: #fff;
+  background-color: #FFFFFF;
   /* @alternate */
-  background-color: var(--mdc-theme-background, #fff);
+  background-color: var(--mdc-theme-background, #FFFFFF);
   color: rgba(0, 0, 0, 0.87);
   /* @alternate */
   color: var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87));
@@ -3421,9 +3421,9 @@ a.mdc-list-item {
 
 .mdc-menu {
   box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-  background-color: #fff;
+  background-color: #FFFFFF;
   /* @alternate */
-  background-color: var(--mdc-theme-background, #fff);
+  background-color: var(--mdc-theme-background, #FFFFFF);
   display: none;
   position: absolute;
   box-sizing: border-box;
@@ -5749,7 +5749,7 @@ a.mdc-list-item {
 :root {
   --mdc-theme-primary: #379DD8;
   --mdc-theme-secondary: #FF9800;
-  --mdc-theme-background: #fff;
+  --mdc-theme-background: #FFFFFF;
   --mdc-theme-surface: #fff;
   --mdc-theme-on-primary: #000;
   --mdc-theme-on-secondary: #000;
@@ -5781,9 +5781,9 @@ a.mdc-list-item {
   color: var(--mdc-theme-secondary, #FF9800) !important; }
 
 .mdc-theme--background {
-  background-color: #fff;
+  background-color: #FFFFFF;
   /* @alternate */
-  background-color: var(--mdc-theme-background, #fff); }
+  background-color: var(--mdc-theme-background, #FFFFFF); }
 
 .mdc-theme--surface {
   background-color: #fff;
@@ -6646,6 +6646,12 @@ select {
   -moz-appearance: none;
   -ms-appearance: none; }
 
+#meep-container {
+  width: 100%; }
+
+#meep-container {
+  width: 100%; }
+
 .ui-body {
   display: flex;
   flex-direction: row;
@@ -6653,7 +6659,8 @@ select {
   margin: 0;
   box-sizing: border-box;
   height: 100%;
-  width: 100%; }
+  width: 100%;
+  background-color: #FCFCFC; }
 
 .ui-content {
   flex-direction: column;
@@ -6663,6 +6670,9 @@ select {
 
 .ui-main {
   padding: 16px; }
+
+.component-style {
+  background-color: #FFFFFF; }
 
 .vis-network-placeholder {
   text-align: center;
@@ -6674,15 +6684,15 @@ select {
   width: 100%;
   height: 60vh;
   margin-top: 10px;
-  border: solid;
-  border-width: 1px;
-  border-color: gray;
   background-color: #FFFFFF; }
 
 #vis-report {
   display: inline-block;
   width: 200px;
   vertical-align: top; }
+
+.cfg-network-element-div {
+  height: 60vh; }
 
 #idcc-toolbar {
   color: #fff; }
@@ -6691,19 +6701,10 @@ select {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   font-size: 22px; }
 
-#page-configure {
-  display: none; }
-
 #cfg-vis-network-container {
   padding: 10; }
 
 #page-operate {
-  display: none; }
-
-#page-monitor {
-  display: none; }
-
-#page-settings {
   display: none; }
 
 #refresh-interval-form-div {

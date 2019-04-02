@@ -1,0 +1,119 @@
+swagger: '2.0'
+info:
+  description: MEEP Mobility Group Manager Model
+  version: 1.0.0
+  title: EEP Mobility Group Manager Model
+definitions:
+  MobilityGroup:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Mobility Group name
+      stateTransferMode:
+        type: string
+        description: State Transfer mode
+        enum:
+          - STATE-DIRECT
+          - STATE-MANAGED
+          - INSTANCE-DIRECT
+          - INSTANCE-MANAGED
+          - NONE
+      stateTransferTrigger:
+        type: string
+        description: State Transfer trigger
+        enum:
+          - NET-LOC-IN-RANGE
+          - NET-LOC-CHANGE
+          - GPS-PROXIMITY
+          - NONE
+      sessionTransferMode:
+        type: string
+        description: Session Transfer mode
+        enum:
+          - GRACEFUL
+          - FORCED
+      loadBalancingAlgorithm:
+        type: string
+        description: Load Balancing Algorithm
+        enum:
+          - HOP-COUNT
+          - LATENCY
+          - DISTANCE
+    description: Mobility Group
+  MobilityGroupApp:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Mobility Group Application Identifier
+      url:
+        type: string
+        description: Event handler url
+    description: Mobility Group Application instance
+  MobilityGroupAppState:
+    type: object
+    properties:
+      ueId:
+        type: string
+        description: Mobility Group UE Identifier
+      ueState:
+        type: string
+        description: Mobility Group Application State for provided UE
+    description: Mobility Group Application State
+  MobilityGroupUE:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Mobility Group UE Identifier
+    description: Mobility Group UE instance
+  MobilityGroupEvent:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Mobility Group event name
+      type:
+        type: string
+        description: Mobility Group event type
+        enum:
+          - STATE-UPDATE
+          - STATE-TRANSFER-START
+          - STATE-TRANSFER-COMPLETE
+          - STATE-TRANSFER-CANCEL
+      ueId:
+        type: string
+        description: Mobility Group UE identifier
+      appState:
+        $ref: '#/definitions/MobilityGroupAppState'
+    description: Event object
+  MobilityGroupServiceMap:
+    type: object
+    properties:
+      mgSvcName:
+        type: string
+        description: Mobility group service name
+      lbSvcName:
+        type: string
+        description: Load balanced service instance name
+    description: Mobility group service mapping
+  NetworkElementList:
+    type: object
+    properties:
+      networkElements:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkElement'
+    description: List of network element
+  NetworkElement:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Network element name
+      serviceMaps:
+        type: array
+        items:
+          $ref: '#/definitions/MobilityGroupServiceMap'
+    description: Network element service mappings
