@@ -1,4 +1,4 @@
-![micro-service arch.](./docs/images/advantedge2.png)
+![micro-service arch.](./docs/images/advantedge.png)
 AdvantEDGE is a Multi-Access Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes
 
 > MEEP provides an environment to experiment with Mobile Edge Computing (MEC) technologies and edge / fog deployment models in short and agile iterations.
