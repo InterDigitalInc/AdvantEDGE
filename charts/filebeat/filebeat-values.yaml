@@ -73,7 +73,7 @@ config:
     - type: log
       enabled: true
       paths:
-        - /var/log/meep/virt-engine.log
+        - <WORKDIR>/log/virt-engine.log
       json.keys_under_root: true
       fields:
         meep.component: meep-virt-engine
