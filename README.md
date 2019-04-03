@@ -1,4 +1,4 @@
-![micro-service arch.](./docs/images/advantedge.png)
+![logo](./docs/images/advantedge.png)
 
 AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes
 
@@ -15,12 +15,14 @@ MEEP provides an environment to experiment with Mobile Edge Computing (MEC) tech
 ## Getting started
 * [Setup runtime environment (Ubuntu/Dockers/Kubernetes/Helm)](docs/setup_runtime.md)
 
+* `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>
+  (*assuming clone resides at* `~/AdvantEDGE`)
+
 * Setup [*meepctl*](docs/meepctl/meepctl.md) tool
   * Copy to an executable path<br>
     `sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/`
   * Configure<br>
   `meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>`
-
 
 * [Deploy AdvantEDGE](docs/deploy.md)
 

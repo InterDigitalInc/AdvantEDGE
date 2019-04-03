@@ -38,6 +38,15 @@ We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independe
 Versions we use:
 - 1.09, 1.10, 1.12, 1.13
 
+>**IMPORTANT NOTE #1**<br>
+K8s deployment has a dependency on the node's IP address.<br>
+From our experience, it is **strongly recommended** to ensure that your platfrom always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IPon your network.<br>
+Depending on your network setup, this can be achieved either by setting a static IP address on the host or configuring the DHCP server to always give the same IP address to your platform.<br>
+
+>**IMPORTANT NOTE #2**<br>
+Latest version of K8s (1.14) has some changes incompatible with AdvantEDGE.<br>
+We are currently working at resolving these.
+
 How we do it:
 ###### STEP 1 - Verify pre-requisites [(here)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#before-you-begin)
 
@@ -51,7 +60,7 @@ sudo sed -i '/ swap / s/^/#/' /etc/fstab
 ```
 # Docker was previously installed
 # Now, setup Docker daemon
-cat > /etc/docker/daemon.json <<EOF
+cat > ~/daemon.json <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
@@ -62,6 +71,10 @@ cat > /etc/docker/daemon.json <<EOF
 }
 EOF
 
+# 
+sudo mv ~/daemon.json /etc/docker
+
+#
 mkdir -p /etc/systemd/system/docker.service.d
 
 # Restart docker.
@@ -80,7 +93,7 @@ EOF'
 
 sudo apt-get update
 
-sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-get install -y kubelet=1.13.0-00 kubeadm=1.13.0-00 kubectl=1.13.0-00 kubernetes-cni=0.6.0-00
 
 # Lock current version
 sudo apt-mark hold kubelet kubeadm kubectl
@@ -88,11 +101,17 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ###### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 ```
 kubeadm init
+
+# Once completed, follow onscreen instructions
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
 ```
 ###### STEP 5 - Install the network add-on [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network)
 We use [WeaveNet](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/)
 ```
-sysctl net.bridge.bridge-nf-call-iptables=1
+sudo sysctl net.bridge.bridge-nf-call-iptables=1
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 ###### STEP 6 - Allow scheduling pods on master node [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#control-plane-node-isolation)
@@ -104,6 +123,18 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 ```
+###### STEP 8 - Enable initializers
+```
+# Edit kube-apiserver configuration
+sudo vi /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Add this flag to the kube-apiserver command
+--runtime-config=admissionregistration.k8s.io/v1alpha1
+
+# Reboot the platform
+sudo reboot
+```
+
 ## Helm
 We use [this](https://docs.helm.sh/using_helm/#installing-helm) procedure
 
