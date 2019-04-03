@@ -1,6 +1,7 @@
 # AdvantEDGE Usage Tutorials
 ## Goal
 - [GUI Overview](#gui-overview)
+- [Monitoring tool](./use/kibana.md)
 - [Basic operations](./use/base-ops.md)
 - [Create a first user scenario](./use/create-scenario.md)
 - [External UEs](./use/ext-ue.md)
