@@ -33,6 +33,11 @@ The Service Maps that appears in the status table indicates which port the exter
 
 For an external Demo UE, we will use a browser (can be on a different computer)
 
+- Start an iperf proxy
+
+  Traffic of 50 Mbps is generated for the internal UE (ue1) as per the scenario. There is no default for the external UE (ue2_ext) and it can be modified in the Demo GUI named below but prior to doing so, an iperf proxy must be started on the host itself
+  - Start the iperf proxy by executing the executable of the proxy on your host with _./AdvantEDGE/examples/demo1/bin/iperf-proxy/iperf-proxy_
+
 - Access the demo edge service from the external UE
   - Open address `<AdvantEDGE-node-ip-address>:31111` <br> _The demo edge service instance closest to the PoA of ue2-ext serves the Demo GUI which constantly refreshes with localized edge data_
 
