@@ -87,6 +87,6 @@ This demo scenario requires an iperf proxy running on the AdvantEDGE host.
 
 In a command line shell
 ```
-cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy/iperf-proxy
+cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy
 ./iperf-proxy
 ```
