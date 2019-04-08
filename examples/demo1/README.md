@@ -76,7 +76,7 @@ cd ~/AdvantEDGE/examples/demo1/
 #### Configure demo specific dashboards
 Only need to do it once, or when the demo dashboard changes
 
-Follow the procedure described in [Configuring Monitoring](./monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
+Follow the procedure described in [Configuring Monitoring](../../docs/use/monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
 > Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
 

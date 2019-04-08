@@ -17,13 +17,13 @@ MEEP provides an environment to experiment with Mobile Edge Computing (MEC) tech
 
 * Clone the AdvanteDGE repo<br>
   `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>
-  (*assuming local clone @* `~/AdvantEDGE`)
+  (*assuming local gitdir =* `~/AdvantEDGE`)
 
 * Setup [*meepctl*](docs/meepctl/meepctl.md) tool
   1. Copy to an executable path<br>
     `sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/`
   2. Configure<br>
-  `meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>`
+  `meepctl config set --ip <your-node-ip> --gitdir /home/<user>/AdvantEDGE`
 
 * [Deploy AdvantEDGE](docs/deploy.md)
 
@@ -43,4 +43,4 @@ We use GitHub issues.
 So just open an issue in the repo to provide user feedback, report software bugs or request enhancements.
 
 ## Licensing
-Currently licensed under the ** *AdvantEDGE Limited Evaluation and Use License Agreement* **
+Currently licensed under the *AdvantEDGE Limited Evaluation and Use License Agreement*
