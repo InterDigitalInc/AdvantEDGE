@@ -26,4 +26,3 @@ From AdvantEDGE GUI
 > You successfully imported the scenario in AdvantEDGE internal storage <br>Next time you need to use it, simply click on _Open_ and select it from the drop-down menu
 > Familiarize with [various demo scenarios](../../examples/README.md)
 
-## [Back to usage top level](../use.md)
