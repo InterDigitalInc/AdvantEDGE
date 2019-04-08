@@ -1,6 +1,23 @@
-# Demo1 
+# Demo1
+A simple scenario used to showcase platform capabilities.
 
-## Explore the Demo1 Scenario
+This has two applications _iperf server_ and _demo server_ deployed across multiple tiers of the network (fog/edge/cloud).
+
+It has two clients (internal & external) that communicate with the servers.
+Internal client traffic is iperf only and has no GUI.
+External client accesses both iperf and demo servers and has a GUI.
+
+The platform capabilities demonstrated with this scenario are:
+- Scenario deployment (dynamic charts)
+- Network tiering
+- Internal & external clients
+- Network characteristics
+- Edge-application deployment model: one-to many relationship
+- UE mobility
+- Applciation state transfer (_demo server_)
+- Monitoring (demo specific dashboards)
+
+## Scenario composition
 The scenario is composed of the following components:
 
 - 2 distant cloud application: _iperf_ server and _demo_ server
@@ -13,64 +30,63 @@ The scenario is composed of the following components:
   - 1 internal UE that runs an iperf client
   - 1 external UE that runs a Demo client
 
-By clicking on components of the topology graph, you can explore the configuration of these elements.
+##### Internal UE application
+Upon scenario startup, internal UE application (an iperf client) connects automatically to the closest iperf server and starts transferring traffic.
 
-## Download Visualizations/Dashboards
-Redo the procedure explained in [Monitoring tool](../../docs/use/kibana.md) but import the file located in `AdvantEDGE/examples/demo1/demo1-dashboards.json`
+As the UE moves around the network, edge node instance will change.
 
-## Deploy Demo1 Scenario
-From AdvantEDGE GUI
-- Select _execute_ from the Drawer
-- Click on _Deploy_
-- Select `demo1` from the drop-down menu
+##### External UE
+External UE application is a javascript application running in an external browser.
 
-To confirm that demo pods are running from the shell: `kubectl get pods | grep meep-demo`
+To start the aooplcation, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
 
-> After the scenario is deployed, a table appears below the topology graph and indicates status information about the scenarion deployment
+The application shows details about the connection, allows to start a state counter and iperf traffic and presents an image. See Iperf & Demo server sub-sections for more details.
 
-## Experiment with Demo1 Scenario
-The Service Maps that appears in the status table indicates which port the external UE should use to reach a given service.
+##### Iperf server
+This is a standard iperf server that will terminate iperf client connections.
 
-For an external Demo UE, we will use a browser (can be on a different computer)
+There is an iperf client running in the internal UE and another one in the external UE.
 
-- Start an iperf proxy
+External UE needs the iperf proxy running to be able to control the iperf client from the javascript GUI.
 
-  Traffic of 50 Mbps is generated for the internal UE (ue1) as per the scenario. There is no default for the external UE (ue2_ext) and it can be modified in the Demo GUI named below but prior to doing so, an iperf proxy must be started on the host itself
-  - Start the iperf proxy by executing the executable of the proxy on your host with _./AdvantEDGE/examples/demo1/bin/iperf-proxy/iperf-proxy_
+##### Demo server
+Demo server is a web server that maintains a UE state and also stores unique data.
+Only the external UE accesses the demo server.
 
-- Access the demo edge service from the external UE
-  - Open address `<AdvantEDGE-node-ip-address>:31111` <br> _The demo edge service instance closest to the PoA of ue2-ext serves the Demo GUI which constantly refreshes with localized edge data_
+Unique data is an image that is different for each location; therefore depending on the UE location in the network, the external UE GUI will show a different image. This image provides a visual indication that the UE is connected to a different network location.
 
-  > Verify that
-  > - Node Instance Name (Demo GUI) matches demo edge service name closest to the PoA of _ue2-ext_ (AdvantEDGE GUI)
+UE state is in the form of a counter incremented on the server every second. Counter lives on the server side and UE can only start/reset the counter and display its value.
+On the UE GUI, the counter is started by pressing the button.
 
-- Send a mobility event to _ue2-ext_
-  - In _Execute_ window, click on _Create Event_
-  - Select _UE-MOBILITY_ event type
-  - Select _ue2-_ext_
-  - Select _zone2-poa1_
-  - Click on _Submit_
+When the external UE moves in the network and transitions from one edge instance to another, the "UE state" (e.g. the counter value) is transferred using the application state transfer. On the UE GUI, the counter continue incrementing (e.g. not reset to zero) when the UE moves in the network.
 
-  > Verify that
-  > - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
-  > - Node Instance Name and Image changed (Demo GUI) <br>_Information now originates from edge node closest to the new poa_
+## Using the scenario
+The following steps need to be done prior to using this scenario
 
-- Trigger an application state transfer
-  - In Demo GUI, click on _Restart Counter_
-  - State counter starts to increment in the edge service <br>_This counter is a "UE state" that lives in the demo edge service, the GUI only displays the value from its localized edge_
-  - Send a mobility event to move _ue2-ext_ to _zone1-poa2_
+##### Dockerize demo applications
+Only need to do it once, or when the demo application changes
 
-  > Verify that
-  > - _ue-2-ext_ PoA changed on the topology graph (AdvantEDGE GUI)
-  > - Node Instance Name and Image changed (Demo GUI)
-  > - The counter did not reset to 0 (Demo GUI)
-  <br>The UE state (counter) was transferred to the newest edge insance
+In a command line shell
+```
+cd ~/AdvantEDGE/examples/demo1/
+./dockerize.sh
+```
+> Demo Application binaries are dockerized (containerized) and the container images are stored in the local Docker registry.<br> Next time you want to use the demo scenario; demo application containers will be available
 
+##### Configure demo specific dashboards
+Only need to do it once, or when the demo dashboard changes
 
-## Terminate Demo Scenario
-From AdvantEDGE GUI
-  - Select _Execute_ from Drawer
-  - Click on _Terminate_ <br>_After the scenario is terminated, the status table shows the termination status; a new scenario can be deployed only when all pods have been terminated_
+Follow the procedure described in [Configuring Monitoring](./monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
-## [Back to list of examples](../README.md)
-## [Back to usage top level](../../docs/use.md)
+> Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
+
+##### Start iperf proxy
+Do it everytime you start using the demo when the iperf-proxy is not running
+
+This demo scenario requires an iperf proxy running on the AdvantEDGE host.
+
+In a command line shell
+```
+cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy/iperf-proxy
+./iperf-proxy
+```

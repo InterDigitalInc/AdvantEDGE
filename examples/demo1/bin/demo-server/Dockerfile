@@ -13,6 +13,6 @@
 # limitations under the License.
 
 FROM debian
-COPY ./demo1-server /demo1-server
+COPY ./demo-server /demo-server
 COPY ./static /static
-ENTRYPOINT /demo1-server
+ENTRYPOINT /demo-server
