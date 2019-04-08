@@ -30,26 +30,26 @@ The scenario is composed of the following components:
   - 1 internal UE that runs an iperf client
   - 1 external UE that runs a Demo client
 
-##### Internal UE application
+#### Internal UE application
 Upon scenario startup, internal UE application (an iperf client) connects automatically to the closest iperf server and starts transferring traffic.
 
 As the UE moves around the network, edge node instance will change.
 
-##### External UE
+#### External UE
 External UE application is a javascript application running in an external browser.
 
 To start the aooplcation, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
 
 The application shows details about the connection, allows to start a state counter and iperf traffic and presents an image. See Iperf & Demo server sub-sections for more details.
 
-##### Iperf server
+#### Iperf server
 This is a standard iperf server that will terminate iperf client connections.
 
 There is an iperf client running in the internal UE and another one in the external UE.
 
 External UE needs the iperf proxy running to be able to control the iperf client from the javascript GUI.
 
-##### Demo server
+#### Demo server
 Demo server is a web server that maintains a UE state and also stores unique data.
 Only the external UE accesses the demo server.
 
@@ -63,7 +63,7 @@ When the external UE moves in the network and transitions from one edge instance
 ## Using the scenario
 The following steps need to be done prior to using this scenario
 
-##### Dockerize demo applications
+#### Dockerize demo applications
 Only need to do it once, or when the demo application changes
 
 In a command line shell
@@ -73,14 +73,14 @@ cd ~/AdvantEDGE/examples/demo1/
 ```
 > Demo Application binaries are dockerized (containerized) and the container images are stored in the local Docker registry.<br> Next time you want to use the demo scenario; demo application containers will be available
 
-##### Configure demo specific dashboards
+#### Configure demo specific dashboards
 Only need to do it once, or when the demo dashboard changes
 
 Follow the procedure described in [Configuring Monitoring](./monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
 > Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
 
-##### Start iperf proxy
+#### Start iperf proxy
 Do it everytime you start using the demo when the iperf-proxy is not running
 
 This demo scenario requires an iperf proxy running on the AdvantEDGE host.
