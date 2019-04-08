@@ -34,5 +34,3 @@ From Kibana GUI
 - Click on the button with a _STAR icon_ on the top right corner
 
 > You now selected a default index pattern that was imported from the step above. This index is used throughout all the visualizations/dashboards. The monitoring feature is now enabled.
-
-## [Back to usage top level](../use.md)
