@@ -1,7 +1,8 @@
-# AdvantEDGE
+![logo](./docs/images/advantedge.png)
+
 AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes
 
-> MEEP provides an environment to experiment with Mobile Edge Computing (MEC) technologies and edge / fog deployment models in short and agile iterations.
+MEEP provides an environment to experiment with Mobile Edge Computing (MEC) technologies and edge / fog deployment models in short and agile iterations.
 
 ## Motivations
 - [x] **Accelerate Mobile Edge Computing adoption**
@@ -14,12 +15,15 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 ## Getting started
 * [Setup runtime environment (Ubuntu/Dockers/Kubernetes/Helm)](docs/setup_runtime.md)
 
+* Clone the AdvanteDGE repo<br>
+  `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>
+  (*assuming local clone @* `~/AdvantEDGE`)
+
 * Setup [*meepctl*](docs/meepctl/meepctl.md) tool
-  * Copy to an executable path<br>
+  1. Copy to an executable path<br>
     `sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/`
-  * Configure<br>
+  2. Configure<br>
   `meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>`
-  
 
 * [Deploy AdvantEDGE](docs/deploy.md)
 
@@ -33,15 +37,10 @@ The following AdvantEDGE concepts are described [here](docs/concepts.md)
 - [x] Network mobility
 - [x] External UE support
 
-## Developing (**_Work In Progress_**)
-* [Setup build environment (go/dep/...)](docs/setup_build.md)
+## Upstream communication
+We use GitHub issues.
 
-* [Build AdvantEDGE](docs/build.md)
+So just open an issue in the repo to provide user feedback, report software bugs or request enhancements.
 
-* [Test AdvantEDGE](docs/test.md)
-
-_Code Distribution (DevWorkflow, APIs, Build, Test, Coding standard, files)_
-## Contributing (**_Work In Progress_**)
-_How to contribute_
-## Licensing (**_Work In Progress_**)
-_Licensing information_
+## Licensing
+Currently licensed under the ** *AdvantEDGE Limited Evaluation and Use License Agreement* **

@@ -20,7 +20,7 @@ Container images of AdvantEDGE micro-services need to be generated and stored in
 [_meepctl_](meepctl/meepctl.md) tool is used to dockerize these micro-services and store them in the local docker registry; this is achieved through the [_dockerize_](meepctl/meepctl_dockerize.md) command.
 
 ```
-meepctl dockerize
+meepctl dockerize all
 ```
 
 To verify that the operation was successful, you can list the local registry content and verify the creation time of the AdvantEDGE containers
@@ -47,6 +47,11 @@ meepctl deploy core
 ```
 alternatively
 `meepctl deploy core --force` would achieve the same result
+
+Our favorite command to verify if everything is running
+```
+kubectl get pods
+```
 
 When finished using AdvantEDGE:
 ```
