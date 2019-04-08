@@ -9,23 +9,10 @@ Going through the deployment/termination steps of that scenario is a good introd
 - [Configure Monitoring](./monitoring.md)
 
 ## Using demo scenario
-Prior to using the demo scenario, perform [these tasks](../../examples/demo1/README.md#using-the-scenario):
+Prior to using the demo scenario, perform [these three tasks](../../examples/demo1/README.md#using-the-scenario):
 - Dockerize demo applications
 - Configure demo specific dashboards
 - Start iperf proxy
-
-
-##### Containerize Demo Applications
-In a command line shell
-- Go to the `AdvantEDGE/examples/demo1/` directory
-- Execute `./dockerize.sh`
-
-> Demo Application binaries are dockerized (containerized) and the container images are stored in the local Docker registry.<br> Next time you want to use the demo scenario; demo application containers will be available
-
-##### Configure demo specific dashboards
-Follow the procedure described in [Configuring Monitoring](./monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
-
-> Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
 
 ## Import Demo1 Scenario in AdvantEDGE
 From AdvantEDGE GUI
