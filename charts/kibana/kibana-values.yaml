@@ -1,0 +1,14 @@
+files:
+  kibana.yml:
+    elasticsearch.url: http://elastic-elasticsearch-client:9200
+    elasticsearch.requestTimeout: 65000
+
+image:
+  repository: "docker.elastic.co/kibana/kibana-oss"
+  tag: "6.4.2"
+  pullPolicy: "IfNotPresent"
+
+service:
+  nodePort: 32003
+  type: NodePort
+

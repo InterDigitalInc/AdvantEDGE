@@ -1,0 +1,13 @@
+# Default values for meep-ctrl-engine.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+
+service:
+  ip: 10.3.16.136
+  port: 80
+  targetPort: 30219
+  protocol: TCP
+
+meepOrigin: core  

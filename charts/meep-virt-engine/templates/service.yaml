@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "meep-virt-engine.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "meep-virt-engine.name" . }}
+    chart: {{ template "meep-virt-engine.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: {{ .Values.service.protocol }}
+

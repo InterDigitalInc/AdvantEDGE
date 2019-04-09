@@ -1,0 +1,2551 @@
+---
+swagger: "2.0"
+info:
+  description: "MEEP Controller REST API"
+  version: "1.0.0"
+  title: "MEEP Controller REST API"
+basePath: "/v1"
+tags:
+- name: "Scenario Configuration"
+- name: "Scenario Execution"
+- name: "MEEP Settings"
+- name: "Pod States"
+schemes:
+- "http"
+paths:
+  /scenarios:
+    get:
+      tags:
+      - "Scenario Configuration"
+      summary: "Retrieve list of scenarios in MEEP store"
+      description: ""
+      operationId: "getScenarioList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ScenarioList"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Scenario Configuration"
+      summary: "Delete all scenarios in MEEP store"
+      description: ""
+      operationId: "deleteScenarioList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /scenarios/{name}:
+    get:
+      tags:
+      - "Scenario Configuration"
+      summary: "Retrieve scenario from MEEP store"
+      description: ""
+      operationId: "getScenario"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Scenario name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Scenario"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+    post:
+      tags:
+      - "Scenario Configuration"
+      summary: "Add new scenario to MEEP store"
+      description: ""
+      operationId: "createScenario"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Scenario name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      - in: "body"
+        name: "scenario"
+        description: "Scenario to add to MEEP store"
+        required: true
+        schema:
+          $ref: "#/definitions/Scenario"
+        x-exportParamName: "Scenario"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+    put:
+      tags:
+      - "Scenario Configuration"
+      summary: "Update scenario in MEEP store"
+      description: ""
+      operationId: "setScenario"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Scenario name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      - in: "body"
+        name: "scenario"
+        description: "Scenario to add to MEEP store"
+        required: true
+        schema:
+          $ref: "#/definitions/Scenario"
+        x-exportParamName: "Scenario"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Scenario Configuration"
+      summary: "Delete scenario from MEEP store"
+      description: ""
+      operationId: "deleteScenario"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Scenario name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+  /active:
+    get:
+      tags:
+      - "Scenario Execution"
+      summary: "Retrieve active (deployed) scenario"
+      description: ""
+      operationId: "getActiveScenario"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Scenario"
+    delete:
+      tags:
+      - "Scenario Execution"
+      summary: "Terminate active (deployed) scenario"
+      description: ""
+      operationId: "terminateScenario"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /active/{name}:
+    post:
+      tags:
+      - "Scenario Execution"
+      summary: "Activate (deploy) scenario"
+      description: ""
+      operationId: "activateScenario"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Scenario name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+  /active/serviceMaps:
+    get:
+      tags:
+      - "Scenario Execution"
+      summary: "Retrieve list of active external client service mappings"
+      description: ""
+      operationId: "getActiveClientServiceMaps"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "client"
+        in: "query"
+        description: "Unique client identifier"
+        required: false
+        type: "string"
+        x-exportParamName: "Client"
+      - name: "service"
+        in: "query"
+        description: "Exposed service name"
+        required: false
+        type: "string"
+        x-exportParamName: "Service"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ClientServiceMap"
+        404:
+          description: "Not found"
+  /events:
+    get:
+      tags:
+      - "Scenario Execution"
+      summary: "Retrieve list of supported event types for active (deployed) scenario"
+      description: ""
+      operationId: "getEventList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EventList"
+        404:
+          description: "Not found"
+  /events/{type}:
+    post:
+      tags:
+      - "Scenario Execution"
+      summary: "Send event to active (deployed) scenario"
+      description: ""
+      operationId: "sendEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        description: "Event type"
+        required: true
+        type: "string"
+        x-exportParamName: "Type_"
+      - in: "body"
+        name: "event"
+        description: "Event to send to active scenario"
+        required: true
+        schema:
+          $ref: "#/definitions/Event"
+        x-exportParamName: "Event"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+  /settings:
+    get:
+      tags:
+      - "MEEP Settings"
+      summary: "Retrieve MEEP Controller settings"
+      description: ""
+      operationId: "getMeepSettings"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Settings"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+    put:
+      tags:
+      - "MEEP Settings"
+      summary: "Set MEEP Controller settings"
+      description: ""
+      operationId: "setMeepSettings"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "settings"
+        description: "MEEP Settings"
+        required: true
+        schema:
+          $ref: "#/definitions/Settings"
+        x-exportParamName: "Settings"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+  /states:
+    get:
+      tags:
+      - "Pod States"
+      summary: "This operation returns status information for pods"
+      description: "Returns pod status info for a list of pods"
+      operationId: "getStates"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "long"
+        in: "query"
+        description: "Enables detailed stats if true"
+        required: false
+        type: "string"
+        x-exportParamName: "Long"
+      - name: "type"
+        in: "query"
+        description: "Pod type"
+        required: false
+        type: "string"
+        x-exportParamName: "Type_"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/PodsStatus"
+          examples:
+            application/json:
+              podsStatus:
+              - podName: "mypod"
+                namespace: "default"
+                meepApp: "pod1"
+                meepOrigin: "scenario"
+                meepScenario: "myScenario"
+                phase: "Running"
+                podInitialized: "True"
+                podReady: "False"
+                podScheduled: "True"
+                podUnschedulable: "False"
+                podConditionError: "containers with unready status: [myshel]"
+                containerStatusesMsg: null
+                nbOkContainers: "0"
+                nbTotalContainers: "1"
+                nbPodRestart: "15005"
+                logicalState: "Terminating"
+                startTime: "2018-09-10 14:24:00 +0000 UTC"
+definitions:
+  ScenarioList:
+    type: "object"
+    properties:
+      scenarios:
+        type: "array"
+        items:
+          $ref: "#/definitions/Scenario"
+    description: "Scenario list object"
+    example:
+      scenarios:
+      - name: "name"
+        config:
+          visualization: "visualization"
+          other: "other"
+        deployment:
+          domains:
+          - name: "name"
+            id: "id"
+            type: "OPERATOR"
+            zones:
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+          - name: "name"
+            id: "id"
+            type: "OPERATOR"
+            zones:
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+      - name: "name"
+        config:
+          visualization: "visualization"
+          other: "other"
+        deployment:
+          domains:
+          - name: "name"
+            id: "id"
+            type: "OPERATOR"
+            zones:
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+          - name: "name"
+            id: "id"
+            type: "OPERATOR"
+            zones:
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+            - name: "name"
+              id: "id"
+              type: "ZONE"
+              networkLocations:
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+              - physicalLocations:
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                - processes:
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  - isExternal: true
+                    name: "name"
+                    id: "id"
+                    type: "UE-APP"
+                    status: "status"
+                  isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE"
+                name: "name"
+                id: "id"
+                type: "POA"
+  Scenario:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Unique scenario name"
+      config:
+        $ref: "#/definitions/ScenarioConfig"
+      deployment:
+        $ref: "#/definitions/Deployment"
+    description: "Scenario object"
+    example:
+      name: "name"
+      config:
+        visualization: "visualization"
+        other: "other"
+      deployment:
+        domains:
+        - name: "name"
+          id: "id"
+          type: "OPERATOR"
+          zones:
+          - name: "name"
+            id: "id"
+            type: "ZONE"
+            networkLocations:
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+          - name: "name"
+            id: "id"
+            type: "ZONE"
+            networkLocations:
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+        - name: "name"
+          id: "id"
+          type: "OPERATOR"
+          zones:
+          - name: "name"
+            id: "id"
+            type: "ZONE"
+            networkLocations:
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+          - name: "name"
+            id: "id"
+            type: "ZONE"
+            networkLocations:
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+            - physicalLocations:
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              - processes:
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                - isExternal: true
+                  name: "name"
+                  id: "id"
+                  type: "UE-APP"
+                  status: "status"
+                isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE"
+              name: "name"
+              id: "id"
+              type: "POA"
+  ScenarioConfig:
+    type: "object"
+    properties:
+      visualization:
+        type: "string"
+        description: "Visualization configuration"
+      other:
+        type: "string"
+        description: "Other scenario configuration"
+    description: "Scenario configuration"
+    example:
+      visualization: "visualization"
+      other: "other"
+  Deployment:
+    type: "object"
+    properties:
+      interDomainLatency:
+        type: "integer"
+        description: "Latency in ms between domains"
+      interDomainLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between domains"
+      interDomainThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between domains"
+      interDomainPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between domains"
+      domains:
+        type: "array"
+        items:
+          $ref: "#/definitions/Domain"
+    description: "Network deployment object"
+    example:
+      domains:
+      - name: "name"
+        id: "id"
+        type: "OPERATOR"
+        zones:
+        - name: "name"
+          id: "id"
+          type: "ZONE"
+          networkLocations:
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+        - name: "name"
+          id: "id"
+          type: "ZONE"
+          networkLocations:
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+      - name: "name"
+        id: "id"
+        type: "OPERATOR"
+        zones:
+        - name: "name"
+          id: "id"
+          type: "ZONE"
+          networkLocations:
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+        - name: "name"
+          id: "id"
+          type: "ZONE"
+          networkLocations:
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+          - physicalLocations:
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            - processes:
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              - isExternal: true
+                name: "name"
+                id: "id"
+                type: "UE-APP"
+                status: "status"
+              isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE"
+            name: "name"
+            id: "id"
+            type: "POA"
+  Domain:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique domain ID"
+      name:
+        type: "string"
+        description: "Domain name"
+      type:
+        type: "string"
+        description: "Domain type"
+        enum:
+        - "OPERATOR"
+        - "PUBLIC"
+      interZoneLatency:
+        type: "integer"
+        description: "Latency in ms between zones within domain"
+      interZoneLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between zones within domain"
+      interZoneThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between zones within the\
+          \ domain"
+      interZonePacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between zones within the\
+          \ domain"
+      zones:
+        type: "array"
+        items:
+          $ref: "#/definitions/Zone"
+    description: "Operator domain object"
+    example:
+      name: "name"
+      id: "id"
+      type: "OPERATOR"
+      zones:
+      - name: "name"
+        id: "id"
+        type: "ZONE"
+        networkLocations:
+        - physicalLocations:
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          name: "name"
+          id: "id"
+          type: "POA"
+        - physicalLocations:
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          name: "name"
+          id: "id"
+          type: "POA"
+      - name: "name"
+        id: "id"
+        type: "ZONE"
+        networkLocations:
+        - physicalLocations:
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          name: "name"
+          id: "id"
+          type: "POA"
+        - physicalLocations:
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          - processes:
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            - isExternal: true
+              name: "name"
+              id: "id"
+              type: "UE-APP"
+              status: "status"
+            isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE"
+          name: "name"
+          id: "id"
+          type: "POA"
+  Zone:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique zone ID"
+      name:
+        type: "string"
+        description: "Zone name"
+      type:
+        type: "string"
+        description: "Zone type"
+        enum:
+        - "ZONE"
+        - "COMMON"
+      interFogLatency:
+        type: "integer"
+        description: "Latency in ms between fog nodes (or PoAs) within zone"
+      interFogLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between fog nodes (or PoAs) within zone"
+      interFogThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between fog nodes (or PoAs)\
+          \ within the zone"
+      interFogPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between fog nodes (or PoAs)\
+          \ within the zone"
+      interEdgeLatency:
+        type: "integer"
+        description: "Latency in ms between edge nodes within zone"
+      interEdgeLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between edge nodes within zone"
+      interEdgeThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between edge nodes within\
+          \ the zone"
+      interEdgePacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between edge nodes within\
+          \ the zone"
+      edgeFogLatency:
+        type: "integer"
+        description: "Latency in ms between fog nodes (or PoAs) and edge nodes within\
+          \ zone"
+      edgeFogLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between fog nodes (or PoAs) and edge\
+          \ nodes within zone"
+      edgeFogThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between fog nodes (or PoAs)\
+          \ and edge nodes within the zone"
+      edgeFogPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between fog nodes (or PoAs)\
+          \ and edge nodes within the zone"
+      networkLocations:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkLocation"
+    description: "Logical zone (MEC network) object"
+    example:
+      name: "name"
+      id: "id"
+      type: "ZONE"
+      networkLocations:
+      - physicalLocations:
+        - processes:
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE"
+        - processes:
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE"
+        name: "name"
+        id: "id"
+        type: "POA"
+      - physicalLocations:
+        - processes:
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE"
+        - processes:
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          - isExternal: true
+            name: "name"
+            id: "id"
+            type: "UE-APP"
+            status: "status"
+          isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE"
+        name: "name"
+        id: "id"
+        type: "POA"
+  NetworkLocation:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique network location ID"
+      name:
+        type: "string"
+        description: "Network location name"
+      type:
+        type: "string"
+        description: "Network location type"
+        enum:
+        - "POA"
+        - "DEFAULT"
+      terminalLinkLatency:
+        type: "integer"
+        description: "Latency in ms for all terminal links within network location"
+      terminalLinkLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms for all terminal links within network\
+          \ location"
+      terminalLinkThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported for all terminal links within\
+          \ the network location"
+      terminalLinkPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) for all terminal links\
+          \ within the network location"
+      physicalLocations:
+        type: "array"
+        items:
+          $ref: "#/definitions/PhysicalLocation"
+    description: "Logical network location object"
+    example:
+      physicalLocations:
+      - processes:
+        - isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE-APP"
+          status: "status"
+        - isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE-APP"
+          status: "status"
+        isExternal: true
+        name: "name"
+        id: "id"
+        type: "UE"
+      - processes:
+        - isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE-APP"
+          status: "status"
+        - isExternal: true
+          name: "name"
+          id: "id"
+          type: "UE-APP"
+          status: "status"
+        isExternal: true
+        name: "name"
+        id: "id"
+        type: "UE"
+      name: "name"
+      id: "id"
+      type: "POA"
+  PhysicalLocation:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique physical location ID"
+      name:
+        type: "string"
+        description: "Physical location name"
+      type:
+        type: "string"
+        description: "Physical location type"
+        enum:
+        - "UE"
+        - "FOG"
+        - "EDGE"
+        - "CN"
+        - "DC"
+      isExternal:
+        type: "boolean"
+        description: "true: Physical location is external to MEEP\nfalse: Physical\
+          \ location is internal to MEEP"
+      networkLocationsInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "Names of network locations within range of physical location"
+      processes:
+        type: "array"
+        items:
+          $ref: "#/definitions/Process"
+    description: "Physical location object"
+    example:
+      processes:
+      - isExternal: true
+        name: "name"
+        id: "id"
+        type: "UE-APP"
+        status: "status"
+      - isExternal: true
+        name: "name"
+        id: "id"
+        type: "UE-APP"
+        status: "status"
+      isExternal: true
+      name: "name"
+      id: "id"
+      type: "UE"
+  Process:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique process ID"
+      name:
+        type: "string"
+        description: "Process name"
+      type:
+        type: "string"
+        description: "Process type"
+        enum:
+        - "UE-APP"
+        - "EDGE-APP"
+        - "MEC-SVC"
+        - "CLOUD-APP"
+      isExternal:
+        type: "boolean"
+        description: "true: process is external to MEEP\nfalse: process is internal\
+          \ to MEEP"
+      image:
+        type: "string"
+        description: "Docker image to deploy inside MEEP"
+      environment:
+        type: "string"
+        description: "Environment variables using the format NAME=\"value\",NAME=\"\
+          value\",NAME=\"value\""
+      commandArguments:
+        type: "string"
+        description: "Arguments to command executable"
+      commandExe:
+        type: "string"
+        description: "Executable to invoke at container start up"
+      serviceConfig:
+        $ref: "#/definitions/ServiceConfig"
+      externalConfig:
+        $ref: "#/definitions/ExternalConfig"
+      status:
+        type: "string"
+        description: "Process status"
+      userChartLocation:
+        type: "string"
+        description: "Chart location for the deployment of the chart provided by the\
+          \ user"
+      userChartAlternateValues:
+        type: "string"
+        description: "Chart values.yaml file location for the deployment of the chart\
+          \ provided by the user"
+      userChartGroup:
+        type: "string"
+        description: "Chart supplemental information related to the group (service)"
+    description: "Application or service object"
+  ServiceConfig:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Unique service name"
+      meSvcName:
+        type: "string"
+        description: "Multi-Edge service name, if any"
+      ports:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServicePort"
+    description: "Service object"
+  ServicePort:
+    type: "object"
+    properties:
+      protocol:
+        type: "string"
+        description: "Protocol that the application is using (TCP or UDP)"
+      port:
+        type: "integer"
+        description: "Port number that the service is listening on"
+      externalPort:
+        type: "integer"
+        description: "External port number on which to expose the application (30000\
+          \ - 32767)  <li>Only one application allowed per external port <li>Scenario\
+          \ builder must configure to prevent conflicts\n"
+    description: "Service port object"
+  ExternalConfig:
+    type: "object"
+    properties:
+      ingressServiceMap:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServiceMap"
+      egressServiceMap:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServiceMap"
+    description: "External Process configuration.\nNOTE: Only valid if 'isExternal'\
+      \ is set."
+  ServiceMap:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Service name"
+      ip:
+        type: "string"
+        description: "Service IP address for external service only (egress)\n  <li>N/A\
+          \ for internal services\n"
+      port:
+        type: "integer"
+        description: "Service port number"
+      externalPort:
+        type: "integer"
+        description: "Port used to expose internal service only (ingress)\n  <li>Must\
+          \ be unique port in range (30000 - 32767)\n  <li>N/A for external services\n"
+      protocol:
+        type: "string"
+        description: "Protocol that the application is using (TCP or UDP)"
+    description: "Mapping of exposed ports to internal or external services"
+    example:
+      protocol: "protocol"
+      port: 0
+      ip: "ip"
+      name: "name"
+      externalPort: 6
+  ClientServiceMap:
+    type: "object"
+    properties:
+      client:
+        type: "string"
+        description: "Unique external client identifier"
+      serviceMap:
+        type: "array"
+        items:
+          $ref: "#/definitions/ServiceMap"
+    description: "Client-specific list of mappings of exposed port to internal service"
+    example:
+      serviceMap:
+      - protocol: "protocol"
+        port: 0
+        ip: "ip"
+        name: "name"
+        externalPort: 6
+      - protocol: "protocol"
+        port: 0
+        ip: "ip"
+        name: "name"
+        externalPort: 6
+      client: "client"
+  EventList:
+    type: "object"
+    properties:
+      events:
+        type: "array"
+        items:
+          $ref: "#/definitions/Event"
+    description: "Event list object"
+    example:
+      events:
+      - name: "name"
+        type: "NETWORK-CHARACTERISTICS-UPDATE"
+        eventNetworkCharacteristicsUpdate:
+          elementName: "poa1"
+          elementType: "poa"
+          terminalLinkLatency: 10
+          terminalLinkLatencyVariation: 1
+          terminalLinkThroughput: 2000
+          terminalLinkPacketLoss: 1
+      - name: "name"
+        type: "UE-MOBILITY"
+        eventUeMobility:
+          ue: "ue"
+          dest: "dest"
+      - name: "name"
+        type: "OTHER"
+        eventOther:
+          event: "event"
+  Event:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Event name"
+      type:
+        type: "string"
+        description: "Event type"
+        enum:
+        - "NETWORK-CHARACTERISTICS-UPDATE"
+        - "UE-MOBILITY"
+        - "POAS-IN-RANGE"
+        - "OTHER"
+      eventNetworkCharacteristicsUpdate:
+        $ref: "#/definitions/EventNetworkCharacteristicsUpdate"
+      eventUeMobility:
+        $ref: "#/definitions/EventUeMobility"
+      eventPoasInRange:
+        $ref: "#/definitions/EventPoasInRange"
+      eventOther:
+        $ref: "#/definitions/EventOther"
+    description: "Event object"
+    example:
+      name: "name"
+      type: "UE-MOBILITY"
+      eventUeMobility:
+        ue: "ue"
+        dest: "dest"
+  EventNetworkCharacteristicsUpdate:
+    type: "object"
+    properties:
+      elementName:
+        type: "string"
+        description: "Name of the network element to be updated"
+      elementType:
+        type: "string"
+        description: "Type of the network element to be updated"
+        enum:
+        - "OPERATOR"
+        - "POA"
+        - "SCENARIO"
+        - "ZONE-INTER-EDGE"
+        - "ZONE-INTER-FOG"
+        - "ZONE-EDGE-FOG"
+      latency:
+        type: "integer"
+        description: "Latency in ms"
+      latencyVariation:
+        type: "integer"
+        description: "Latency variation in ms"
+      throughput:
+        type: "integer"
+        description: "Throughput limit"
+      packetLoss:
+        type: "number"
+        format: "double"
+        description: "Packet loss percentage"
+    description: "Network Characteristics update Event object"
+  EventUeMobility:
+    type: "object"
+    properties:
+      ue:
+        type: "string"
+        description: "UE identifier"
+      dest:
+        type: "string"
+        description: "Destination identifier"
+    description: "UE Mobility Event object"
+    example:
+      ue: "ue"
+      dest: "dest"
+  EventPoasInRange:
+    type: "object"
+    properties:
+      ue:
+        type: "string"
+        description: "UE identifier"
+      poasInRange:
+        type: "array"
+        items:
+          type: "string"
+          description: "POAs visible to UE"
+    description: "POAs In Range Event object"
+    example:
+      ue: "ue"
+      poasInRange:
+      - "poa1"
+      - "poa2"
+  EventOther:
+    type: "object"
+    properties:
+      event:
+        type: "string"
+        description: "Other event string"
+    description: "Other Event object"
+    example:
+      event: "event"
+  Settings:
+    type: "string"
+    description: "MEEP settings"
+  PodsStatus:
+    type: "object"
+    properties:
+      podStatus:
+        type: "array"
+        items:
+          $ref: "#/definitions/PodStatus"
+    description: "List of all pods status"
+    example:
+      podStatus:
+      - podName: "mypod"
+        namespace: "default"
+        meepApp: "pod1"
+        meepOrigin: "scenario"
+        meepScenario: "myScenario"
+        phase: "Running"
+        podInitialized: "True"
+        podReady: "False"
+        podScheduled: "True"
+        podUnschedulable: "False"
+        podConditionError: "containers with unready status: [myshel]"
+        containerStatusesMsg: null
+        nbOkContainers: "0"
+        nbTotalContainers: "1"
+        nbPodRestart: "15005"
+        logicalState: "Terminating"
+        startTime: "2018-09-10 14:24:00 +0000 UTC"
+      - podName: "mypod2"
+        namespace: "default"
+        meepApp: "pod1"
+        meepOrigin: "scenario"
+        meepScenario: "myScenario"
+        phase: "Running"
+        podInitialized: "True"
+        podReady: "False"
+        podScheduled: "True"
+        podUnschedulable: "False"
+        podConditionError: "containers with unready status: [myshel]"
+        containerStatusesMsg: null
+        nbOkContainers: "0"
+        nbTotalContainers: "1"
+        nbPodRestart: "1"
+        logicalState: "Running"
+        startTime: "2018-09-10 14:25:00 +0000 UTC"
+  PodStatus:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Pod name"
+      namespace:
+        type: "string"
+        description: "Pod namespace"
+      meepApp:
+        type: "string"
+        description: "Pod process name"
+      meepOrigin:
+        type: "string"
+        description: "Pod origin(core, scenario)"
+      meepScenario:
+        type: "string"
+        description: "Pod scenario name"
+      phase:
+        type: "string"
+        description: "Pod phase"
+      podInitialized:
+        type: "string"
+        description: "Pod initialized (true/false)"
+      podReady:
+        type: "string"
+        description: "Pod ready (true/false)"
+      podScheduled:
+        type: "string"
+        description: "Pod scheduled (true/false)"
+      podUnschedulable:
+        type: "string"
+        description: "Pod unschedulable (true/false)"
+      podConditionError:
+        type: "string"
+        description: "Pod error message"
+      containerStatusesMsg:
+        type: "string"
+        description: "Failed container error message"
+      nbOkContainers:
+        type: "string"
+        description: "Number of containers that are up"
+      nbTotalContainers:
+        type: "string"
+        description: "Number of total containers in the pod"
+      nbPodRestart:
+        type: "string"
+        description: "Number of container failures leading to pod restarts"
+      logicalState:
+        type: "string"
+        description: "State that is mapping the kubernetes api state"
+      startTime:
+        type: "string"
+        description: "Pod creation time"
+    example:
+      podStatus:
+      - podName: "mypod"
+        namespace: "default"
+        meepApp: "pod1"
+        meepOrigin: "scenario"
+        meepScenario: "myScenario"
+        phase: "Running"
+        podInitialized: "True"
+        podReady: "False"
+        podScheduled: "True"
+        podUnschedulable: "False"
+        podConditionError: "containers with unready status: [myshel]"
+        containerStatusesMsg: null
+        nbOkContainers: "0"
+        nbTotalContainers: "1"
+        nbPodRestart: "15005"
+        startTime: "2018-09-10 14:24:00 +0000 UTC"
+parameters:
+  AppName:
+    in: "body"
+    name: "appName"
+    description: "App name string"
+    required: true
+    x-exportParamName: "AppName"
+  Name:
+    name: "name"
+    in: "path"
+    description: "Scenario name"
+    required: true
+    type: "string"
+    x-exportParamName: "Name"
+  Scenario:
+    in: "body"
+    name: "scenario"
+    description: "Scenario to add to MEEP store"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Scenario"
+    x-exportParamName: "Scenario"
+  EventType:
+    name: "type"
+    in: "path"
+    description: "Event type"
+    required: true
+    type: "string"
+    x-exportParamName: "Type_"
+  Event:
+    in: "body"
+    name: "event"
+    description: "Event to send to active scenario"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Event"
+    x-exportParamName: "Event"
+  PodName:
+    in: "body"
+    name: "podName"
+    description: "Pod name string"
+    required: true
+    x-exportParamName: "PodName"
+  PodType:
+    in: "body"
+    name: "podType"
+    description: "Pod type string"
+    required: true
+    x-exportParamName: "PodType"
+  Settings:
+    in: "body"
+    name: "settings"
+    description: "MEEP Settings"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Settings"
+    x-exportParamName: "Settings"
+  ScenarioName:
+    in: "body"
+    name: "scenarioName"
+    description: "Scenario name string"
+    required: true
+    x-exportParamName: "ScenarioName"
+responses:
+  Std200:
+    description: "OK"
+  Std201:
+    description: "Created"
+  Std202:
+    description: "Accepted"
+  Std204:
+    description: "No content"
+  Std304:
+    description: "Not modified"
+  Std400:
+    description: "Bad request"
+  Std401:
+    description: "Not authorized"
+  Std403:
+    description: "Forbidden"
+  Std404:
+    description: "Not found"
+  Std409:
+    description: "Conflict"
+  Std416:
+    description: "Requested range not satisfiable"
+  Std500:
+    description: "Internal server error"

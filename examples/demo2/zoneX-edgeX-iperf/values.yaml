@@ -1,0 +1,11 @@
+# Default values for generic values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+name: meep-demo-svc-zoneX-edgeX-iperf
+
+deployment:
+  name: zoneX-edgeX-iperf
+ 
+service:
+  name: zoneX-edgeX-iperf
