@@ -15,7 +15,7 @@ When multi-edge application instances are registered to the MG, the MG Manager i
 
 The Edge Application State Transfer & MEEP Controller REST API definitions can be found here:
 - [MEEP Mobility Group Manager REST API](../../interfaces/meep-mg-manager.yaml)
-- [MEEP Mobility Group Application REST API](../../interfaces/meep-mg-app.yaml)
+- [MEEP Mobility Group Application REST API](../../interfaces/meep-mg-app-api-client.yaml)
 - [MEEP Controller REST API](../../interfaces/meep-ctrl-engine.yaml)
 
 ## Mobility Group Creation
