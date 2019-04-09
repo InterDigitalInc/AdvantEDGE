@@ -66,6 +66,13 @@ For an external Demo UE, we will use a browser (can be on a different computer)
   > - The counter did not reset to 0 (Demo GUI)
   <br>The UE state (counter) was transferred to the newest edge insance
 
+- Observe traffic
+  - Select _monitor_ from the Drawer
+  - Select the ashboard of the UE you want to monitor rfom the dropdown
+  - Dashboard show latency experienced between the chosen UE and all the nodes of the scenario
+  - Dashboard show throughput between  between the chosen UE and all the nodes of the scenario
+  - Sending a Network Characteristic event from the _execute_ tab will change the graphs! 
+  
 ## Terminate Demo Scenario
 From AdvantEDGE GUI
   - Select _Execute_ from Drawer
