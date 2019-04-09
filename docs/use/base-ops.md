@@ -34,7 +34,7 @@ From AdvantEDGE GUI
 ## Experiment with Demo1 Scenario
 The Service Maps that appears in the status table indicates which port the external UE should use to reach a given service.
 
-> This demo scenario requires an iperf-proxy running locally on the AdvantEDGE node to enable external Demo UE iperf traffic. See [start the iperf-proxy](../../examples/demo1/README.md)
+> Make sure iperf-proxy was previously started. See [start the iperf-proxy](../../examples/demo1/README.md#start-iperf-proxy)
 
 For an external Demo UE, we will use a browser (can be on a different computer)
 
