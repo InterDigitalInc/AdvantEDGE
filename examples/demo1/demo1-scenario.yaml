@@ -1,0 +1,401 @@
+name: demo1
+deployment:
+    interDomainLatency: 50
+    interDomainLatencyVariation: 5
+    interDomainThroughput: 1000
+    domains:
+        -
+            id: PUBLIC
+            name: PUBLIC
+            type: PUBLIC
+            interZoneLatency: 6
+            interZoneLatencyVariation: 2
+            interZoneThroughput: 1000000
+            zones:
+                -
+                    id: PUBLIC-COMMON
+                    name: PUBLIC-COMMON
+                    type: COMMON
+                    interFogLatency: 2
+                    interFogLatencyVariation: 1
+                    interFogThroughput: 1000000
+                    interEdgeLatency: 3
+                    interEdgeLatencyVariation: 1
+                    interEdgeThroughput: 1000000
+                    edgeFogLatency: 5
+                    edgeFogLatencyVariation: 1
+                    edgeFogThroughput: 1000000
+                    networkLocations:
+                        -
+                            id: PUBLIC-COMMON-DEFAULT
+                            name: PUBLIC-COMMON-DEFAULT
+                            type: DEFAULT
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 50000
+                            terminalLinkPacketLoss: 1
+                            physicalLocations:
+                                -
+                                    id: cloud1
+                                    name: cloud1
+                                    type: DC
+                                    processes:
+                                        -
+                                            id: cloud1-iperf
+                                            name: cloud1-iperf
+                                            type: CLOUD-APP
+                                            image: gophernet/iperf-server
+                                            commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT'
+                                            commandExe: /bin/bash
+                                            serviceConfig:
+                                                name: cloud1-iperf
+                                                ports:
+                                                    -
+                                                        protocol: UDP
+                                                        port: 80
+                                                        externalPort: null
+                                                meSvcName: null
+                                            isExternal: null
+                                            environment: null
+                                            externalConfig: null
+                                            status: null
+                                        -
+                                            id: cloud1-svc
+                                            name: cloud1-svc
+                                            type: CLOUD-APP
+                                            image: demo-server
+                                            environment: 'MGM_GROUP_NAME=svc-cloud, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80, MEEP_POD_NAME=cloud1-svc'
+                                            serviceConfig:
+                                                name: cloud1-svc
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: null
+                                                meSvcName: null
+                                            isExternal: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            externalConfig: null
+                                            status: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                    interFogPacketLoss: null
+                    interEdgePacketLoss: null
+                    edgeFogPacketLoss: null
+            interZonePacketLoss: null
+        -
+            id: operator1
+            name: operator1
+            type: OPERATOR
+            interZoneLatency: 15
+            interZoneLatencyVariation: 3
+            interZoneThroughput: 1000
+            zones:
+                -
+                    id: operator1-COMMON
+                    name: operator1-COMMON
+                    type: COMMON
+                    interFogLatency: 2
+                    interFogLatencyVariation: 1
+                    interFogThroughput: 1000000
+                    interEdgeLatency: 3
+                    interEdgeLatencyVariation: 1
+                    interEdgeThroughput: 1000000
+                    edgeFogLatency: 5
+                    edgeFogLatencyVariation: 1
+                    edgeFogThroughput: 1000000
+                    networkLocations:
+                        -
+                            id: operator1-COMMON-DEFAULT
+                            name: operator1-COMMON-DEFAULT
+                            type: DEFAULT
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 50000
+                            terminalLinkPacketLoss: 1
+                            physicalLocations: null
+                    interFogPacketLoss: null
+                    interEdgePacketLoss: null
+                    edgeFogPacketLoss: null
+                -
+                    id: zone1
+                    name: zone1
+                    type: ZONE
+                    interFogLatency: 10
+                    interFogLatencyVariation: 2
+                    interFogThroughput: 1000
+                    interEdgeLatency: 12
+                    interEdgeLatencyVariation: 2
+                    interEdgeThroughput: 1000
+                    edgeFogLatency: 5
+                    edgeFogLatencyVariation: 1
+                    edgeFogThroughput: 1000
+                    networkLocations:
+                        -
+                            id: zone1-DEFAULT
+                            name: zone1-DEFAULT
+                            type: DEFAULT
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 50000
+                            terminalLinkPacketLoss: 1
+                            physicalLocations:
+                                -
+                                    id: zone1-edge1
+                                    name: zone1-edge1
+                                    type: EDGE
+                                    processes:
+                                        -
+                                            id: zone1-edge1-iperf
+                                            name: zone1-edge1-iperf
+                                            type: EDGE-APP
+                                            image: gophernet/iperf-server
+                                            commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT'
+                                            commandExe: /bin/bash
+                                            serviceConfig:
+                                                name: zone1-edge1-iperf
+                                                meSvcName: iperf
+                                                ports:
+                                                    -
+                                                        protocol: UDP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            environment: null
+                                            externalConfig: null
+                                            status: null
+                                        -
+                                            id: zone1-edge1-svc
+                                            name: zone1-edge1-svc
+                                            type: EDGE-APP
+                                            image: demo-server
+                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80, MEEP_POD_NAME=zone1-edge1-svcNOT'
+                                            serviceConfig:
+                                                name: zone1-edge1-svc
+                                                meSvcName: svc
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            externalConfig: null
+                                            status: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                        -
+                            id: zone1-poa1
+                            name: zone1-poa1
+                            type: POA
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 1000
+                            physicalLocations:
+                                -
+                                    id: zone1-fog1
+                                    name: zone1-fog1
+                                    type: FOG
+                                    processes:
+                                        -
+                                            id: zone1-fog1-iperf
+                                            name: zone1-fog1-iperf
+                                            type: EDGE-APP
+                                            image: gophernet/iperf-server
+                                            commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT;'
+                                            commandExe: /bin/bash
+                                            serviceConfig:
+                                                name: zone1-fog1-iperf
+                                                meSvcName: iperf
+                                                ports:
+                                                    -
+                                                        protocol: UDP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            environment: null
+                                            externalConfig: null
+                                            status: null
+                                        -
+                                            id: zone1-fog1-svc
+                                            name: zone1-fog1-svc
+                                            type: EDGE-APP
+                                            image: demo-server
+                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80'
+                                            serviceConfig:
+                                                name: zone1-fog1-svc
+                                                meSvcName: svc
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            externalConfig: null
+                                            status: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                -
+                                    id: ue1
+                                    name: ue1
+                                    type: UE
+                                    processes:
+                                        -
+                                            id: ue1-iperf
+                                            name: ue1-iperf
+                                            type: UE-APP
+                                            image: gophernet/iperf-client
+                                            commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
+                                            commandExe: /bin/bash
+                                            isExternal: null
+                                            environment: null
+                                            serviceConfig: null
+                                            externalConfig: null
+                                            status: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                -
+                                    id: ue2-ext
+                                    name: ue2-ext
+                                    type: UE
+                                    isExternal: true
+                                    processes:
+                                        -
+                                            id: ue2-svc
+                                            name: ue2-svc
+                                            type: UE-APP
+                                            isExternal: true
+                                            externalConfig:
+                                                ingressServiceMap:
+                                                    -
+                                                        name: svc
+                                                        port: 80
+                                                        externalPort: 31111
+                                                        protocol: TCP
+                                                        ip: null
+                                                    -
+                                                        name: iperf
+                                                        port: 80
+                                                        externalPort: 31222
+                                                        protocol: UDP
+                                                        ip: null
+                                                    -
+                                                        name: cloud1-svc
+                                                        port: 80
+                                                        externalPort: 31112
+                                                        protocol: TCP
+                                                        ip: null
+                                                    -
+                                                        name: cloud1-iperf
+                                                        port: 80
+                                                        externalPort: 31223
+                                                        protocol: UDP
+                                                        ip: null
+                                                egressServiceMap: null
+                                            image: null
+                                            environment: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            serviceConfig: null
+                                            status: null
+                                    networkLocationsInRange: null
+                            terminalLinkPacketLoss: null
+                        -
+                            id: zone1-poa2
+                            name: zone1-poa2
+                            type: POA
+                            terminalLinkLatency: 10
+                            terminalLinkLatencyVariation: 2
+                            terminalLinkThroughput: 50
+                            terminalLinkPacketLoss: null
+                            physicalLocations: null
+                    interFogPacketLoss: null
+                    interEdgePacketLoss: null
+                    edgeFogPacketLoss: null
+                -
+                    id: zone2
+                    name: zone2
+                    type: ZONE
+                    interFogLatency: 10
+                    interFogLatencyVariation: 2
+                    interFogThroughput: 1000
+                    interEdgeLatency: 12
+                    interEdgeLatencyVariation: 2
+                    interEdgeThroughput: 1000
+                    edgeFogLatency: 5
+                    edgeFogLatencyVariation: 1
+                    edgeFogThroughput: 1000
+                    networkLocations:
+                        -
+                            id: zone2-DEFAULT
+                            name: zone2-DEFAULT
+                            type: DEFAULT
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 50000
+                            terminalLinkPacketLoss: 1
+                            physicalLocations:
+                                -
+                                    id: zone2-edge1
+                                    name: zone2-edge1
+                                    type: EDGE
+                                    processes:
+                                        -
+                                            id: zone2-edge1-iperf
+                                            name: zone2-edge1-iperf
+                                            type: EDGE-APP
+                                            image: gophernet/iperf-server
+                                            commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT;'
+                                            commandExe: /bin/bash
+                                            serviceConfig:
+                                                name: zone2-edge1-iperf
+                                                meSvcName: iperf
+                                                ports:
+                                                    -
+                                                        protocol: UDP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            environment: null
+                                            externalConfig: null
+                                            status: null
+                                        -
+                                            id: zone2-edge1-svc
+                                            name: zone2-edge1-svc
+                                            type: EDGE-APP
+                                            image: demo-server
+                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80, MEEP_POD_NAME=zone2-edge1-svc'
+                                            serviceConfig:
+                                                name: zone2-edge1-svc
+                                                meSvcName: svc
+                                                ports:
+                                                    -
+                                                        protocol: TCP
+                                                        port: 80
+                                                        externalPort: null
+                                            isExternal: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            externalConfig: null
+                                            status: null
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                        -
+                            id: zone2-poa1
+                            name: zone2-poa1
+                            type: POA
+                            terminalLinkLatency: 1
+                            terminalLinkLatencyVariation: 1
+                            terminalLinkThroughput: 20
+                            terminalLinkPacketLoss: null
+                            physicalLocations: null
+                    interFogPacketLoss: null
+                    interEdgePacketLoss: null
+                    edgeFogPacketLoss: null
+            interZonePacketLoss: null
+    interDomainPacketLoss: null
+config: null

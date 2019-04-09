@@ -1,0 +1,81 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-pv-es-master
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-pv-es-master-0
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "<WORKDIR>/es-master-0"
+  storageClassName: meep-pv-es-master
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-pv-es-master-1
+spec:
+  capacity:
+    storage: 4Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "<WORKDIR>/es-master-1"
+  storageClassName: meep-pv-es-master
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-pv-es-data
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-pv-es-data
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: "<WORKDIR>/es-data"
+  storageClassName: meep-pv-es-data
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-pv-logstash
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-pv-logstash
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "<WORKDIR>/logstash"
+  storageClassName: meep-pv-logstash

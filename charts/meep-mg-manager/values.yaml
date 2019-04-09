@@ -1,0 +1,23 @@
+# Default values for meep-mg-manager.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+serviceAccount: meep-mg-manager
+
+deployment:
+  replicas: 1
+  port: 80
+  protocol: TCP
+
+image:
+  repository: meep-mg-manager
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  targetPort: 80
+  nodePort: 30005
+
+meepOrigin: core

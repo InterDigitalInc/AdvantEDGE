@@ -1,0 +1,16 @@
+apiVersion: admissionregistration.k8s.io/v1alpha1
+kind: InitializerConfiguration
+metadata:
+  name: {{ .Values.initializerConfig }}
+initializers:
+  - name: sidecar.initializer.kubernetes.io
+    rules:
+      - apiGroups:
+          - "*"
+        apiVersions:
+          - "*"
+        resources:
+          - deployments
+          - statefulsets
+          - services
+

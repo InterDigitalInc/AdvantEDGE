@@ -1,0 +1,95 @@
+{{- if .Values.deployment.enabled}}
+apiVersion: apps/{{.Values.deployment.apiVersion}}
+kind: Deployment
+metadata:
+  name: {{template "meep.fullname" .}}
+  namespace: {{.Values.namespace.name}}
+spec:
+  replicas: {{.Values.deployment.replicaCount}}
+  selector:
+    matchLabels:
+      {{- range $key, $value := .Values.deployment.matchLabels}}
+      {{$key}}: {{$value | quote}}
+      {{- end}}
+  template:
+    metadata:
+      namespace: {{.Values.deployment.template.namespace}}
+      labels:
+        {{- range $key, $value := .Values.deployment.template.labels}}
+        {{$key}}: {{$value | quote}}
+        {{- end}}
+        meepOrigin: {{.Values.deployment.meepOrigin}}
+
+    spec:
+      serviceAccountName: {{.Values.serviceaccount.user}}
+      containers:
+      {{- if not .Values.external.enabled}}
+      {{- with .Values.deployment}}
+        - name: {{.image.name}}
+        {{- if .image.tag}}
+          image: {{.image.repository}}:{{.image.tag}}
+        {{else}}
+          image: {{.image.repository}}
+        {{- end}}
+          imagePullPolicy: {{.image.pullPolicy}}
+        {{- if .image.containerPort}}
+          ports:
+            - containerPort: 80
+              protocol: TCP
+        {{- end}}
+        {{- if .image.command.enabled}}
+          command:
+          {{- range $cmd := .image.command.command}}
+            - {{$cmd}}
+          {{- end}}
+          args:
+          {{- range $arg := .image.command.args}}
+            - {{$arg}}
+          {{- end}}
+        {{- end}}
+          env:
+        {{- if .image.envvar.enabled}}
+          {{- range $key, $val := .image.envvar.env}}
+            - name: {{$key}}
+              value: {{$val | quote}}
+          {{- end}}
+        {{- end}}
+            - name: MEEP_POD_NAME
+              value: {{.image.name}}
+        {{- if .resources}}
+          resources:
+            {{toYaml .resources | indent 12}}
+        {{- end}}
+      {{- end}}
+      {{- end}}
+
+      {{- with .Values.deployment}}
+      {{- if .sidecar.enabled}}
+        - name: {{.sidecar.name}}
+          image: "{{.sidecar.image.repository}}:{{.sidecar.image.tag}}"
+          imagePullPolicy: {{.sidecar.image.pullPolicy}}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          securityContext:
+             capabilities:
+                add:
+                  - NET_ADMIN
+          env:
+            - name: MEEP_POD_NAME
+              value: {{.image.name}}
+      {{- end}}
+      {{- end}}
+
+      nodeSelector:
+        {{toYaml .Values.deployment.nodeSelector | indent 8}}
+
+      affinity:
+        {{toYaml .Values.deployment.affinity | indent 8}}
+
+      tolerations:
+        {{toYaml .Values.deployment.tolerations | indent 8}}
+{{- end}}
+
+
