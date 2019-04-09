@@ -1,7 +1,7 @@
 # AdvantEDGE Usage Tutorials
 ## Goal
 - [GUI Overview](#gui-overview)
-- [Configure monitoring](./use/monitoring.md)
+- [Scenario Monitoring](./use/monitoring.md)
 - [Basic operations](./use/base-ops.md)
 - [Create a first user scenario](./use/create-scenario.md)
 - [External UEs](./use/ext-ue.md)
