@@ -83,10 +83,17 @@ Follow the procedure described in [Configuring Monitoring](../../docs/use/monito
 #### Start iperf proxy
 Do it everytime you start using the demo when the iperf-proxy is not running
 
-This demo scenario requires an iperf proxy running on the AdvantEDGE host.
+This demo scenario requires iperf installed on the AdvantEDGE host and the iperf proxy running.
 
-In a command line shell
+If `which iperf` returns nothing, install iperf
 ```
-cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy/iperf-proxy
+sudo apt-get install iperf
+# the following should now return /usr/bin/iperf
+which iperf
+```
+
+Start iperf proxy, in a command line shell
+```
+cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy
 ./iperf-proxy
 ```

@@ -55,7 +55,7 @@ kubectl get pods
 
 When finished using AdvantEDGE:
 ```
-meepctrl delete all
+meepctl delete all
 ```
 ###### Note
 > AdvantEDGE dependencies are a pre-requisite needed by the core group. Therefore behavior is undefined if the dependency group is absent/deleted when core containers are deployed
