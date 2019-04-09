@@ -1,0 +1,94 @@
+image:
+  repository: docker.elastic.co/beats/filebeat
+
+config:
+  output.elasticsearch:
+    hosts: '[elastic-elasticsearch-client]'
+
+  # output.logstash:
+  #   hosts: ["logstash:5044"]
+
+  output.file:
+    enabled: false
+
+  filebeat.autodiscover:
+    providers:
+      - type: kubernetes
+        templates:
+
+          # MEEP Controller Engine
+          - condition:
+              equals:
+                kubernetes.labels.app: "meep-ctrl-engine"
+            config:
+              - type: docker
+                containers.ids:
+                  - "${data.kubernetes.container.id}"
+                json.keys_under_root: true
+                fields:
+                  meep.component: meep-ctrl-engine
+
+          # MEEP TC Controller
+          - condition:
+              equals:
+                kubernetes.labels.app: "meep-tc-engine"
+            config:
+              - type: docker
+                containers.ids:
+                  - "${data.kubernetes.container.id}"
+                json.keys_under_root: true
+                fields:
+                  meep.component: meep-tc-engine
+
+          # MEEP Sidecar
+          - condition:
+              equals:
+                kubernetes.container.name: "meep-tc-sidecar"
+            config:
+              - type: docker
+                containers.ids:
+                  - "${data.kubernetes.container.id}"
+                json.keys_under_root: true
+                fields:
+                  meep.component: meep-tc-sidecar
+
+          # MEEP Scenario
+          - condition:
+              and:
+                - has_fields: ['kubernetes.labels.processId']
+                - not:
+                    equals:
+                      kubernetes.container.name: "meep-tc-sidecar"
+            config:
+              - type: docker
+                containers.ids:
+                  - "${data.kubernetes.container.id}"
+                json.keys_under_root: true
+                fields:
+                  meep.component: meep-scenario
+
+  filebeat.prospectors:
+
+    # MEEP Virtualization Engine
+    - type: log
+      enabled: true
+      paths:
+        - <WORKDIR>/log/virt-engine.log
+      json.keys_under_root: true
+      fields:
+        meep.component: meep-virt-engine
+
+        # - /var/log/*.log
+        # - /var/log/messages
+        # - /var/log/syslog
+
+    # - type: docker
+    #   containers.ids:
+    #   - "86639ba50aa849ca1bd3fac3abd6a24abf5fc65e527416fbe8e0274a6b7c8427"
+    #   processors:
+    #     - add_kubernetes_metadata:
+    #         in_cluster: true
+    #     - drop_event:
+    #         when:
+    #           equals:
+    #             kubernetes.container.name: "filebeat"
