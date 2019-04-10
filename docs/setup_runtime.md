@@ -75,11 +75,11 @@ EOF
 sudo mv ~/daemon.json /etc/docker
 
 #
-mkdir -p /etc/systemd/system/docker.service.d
+sudo mkdir -p /etc/systemd/system/docker.service.d
 
 # Restart docker.
-systemctl daemon-reload
-systemctl restart docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 ```
 ###### STEP 3 - Install kubeadm, kubelet & kubectl [(details)](https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
 ```
