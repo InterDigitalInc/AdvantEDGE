@@ -113,7 +113,7 @@ external:
 
 serviceaccount:
   create: {{.ServiceaccountCreate}}
-  user: admin-user
+  user: meep-user
 
 rbac:
   create: {{.RbacCreate}}

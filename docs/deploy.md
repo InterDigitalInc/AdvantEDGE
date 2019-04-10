@@ -7,7 +7,7 @@
 - install and configure [meepctl CLI tool](meepctl/meepctl.md)
 
 ## Summary
-- [`meepctl dockerize`](#dockerization)
+- [`meepctl dockerize all`](#dockerization)
 - [`meepctl deploy all`](#deployment)
 
 ###### Note

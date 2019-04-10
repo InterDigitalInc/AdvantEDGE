@@ -7,7 +7,7 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: "<WORKDIR>/couchdb"
   storageClassName: meep-pv-couchdb
