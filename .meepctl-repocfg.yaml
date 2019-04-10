@@ -3,6 +3,9 @@ version: 1.0.0
 repo:
   name: AdvantEDGE
   core:
+    meep-user:
+      service-account: charts/meep-user/meep-user-serviceaccount.yaml
+      cluster-role-binding: charts/meep-user/meep-user-clusterrolebinding.yaml
     meep-ctrl-engine:
       src: src/meep-ctrl-engine
       bin: bin/meep-ctrl-engine
