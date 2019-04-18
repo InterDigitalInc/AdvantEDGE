@@ -1,1 +1,0 @@
-meep-mg-manager-model
