@@ -5,9 +5,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
+	"os"
 	"os/exec"
 	"time"
+
+	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
 
 	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
@@ -93,13 +95,49 @@ func dockerizeAll(cobraCmd *cobra.Command) {
 }
 
 func dockerize(targetName string, cobraCmd *cobra.Command) {
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+	gitDir := viper.GetString("meep.gitdir")
+	binDir := gitDir + "/" + target["bin"]
+
 	if len(target) == 0 {
 		fmt.Println("Invalid target:", targetName)
 		return
 	}
-	path := viper.GetString("meep.gitdir") + "/" + target["bin"]
+
+	//copy container data locally
+	data := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".docker-data")
+	if len(data) != 0 {
+		for k, v := range data {
+			dstDataDir := binDir + "/" + k
+			srcDataDir := gitDir + "/" + v
+			if _, err := os.Stat(srcDataDir); !os.IsNotExist(err) {
+				if verbose {
+					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
+				}
+				cmd := exec.Command("rm", "-r", dstDataDir)
+				utils.ExecuteCmd(cmd, cobraCmd)
+				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
+				utils.ExecuteCmd(cmd, cobraCmd)
+			} else {
+				fmt.Println("    Source data not found: " + srcDataDir + " --> " + dstDataDir)
+			}
+		}
+	}
+
+	// dockerize
+	path := gitDir + "/" + target["bin"]
 	fmt.Println("Dockerizing", targetName)
 	cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", targetName, path)
 	utils.ExecuteCmd(cmd, cobraCmd)
+
+	// cleanup data
+	if len(data) != 0 {
+		for k := range data {
+			dstDataDir := binDir + "/" + k
+			cmd := exec.Command("rm", "-r", dstDataDir)
+			utils.ExecuteCmd(cmd, cobraCmd)
+		}
+	}
+
 }

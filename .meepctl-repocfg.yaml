@@ -6,34 +6,54 @@ repo:
     meep-user:
       service-account: charts/meep-user/meep-user-serviceaccount.yaml
       cluster-role-binding: charts/meep-user/meep-user-clusterrolebinding.yaml
+      codecov: false
     meep-ctrl-engine:
-      src: src/meep-ctrl-engine
+      src: go-apps/meep-ctrl-engine
       bin: bin/meep-ctrl-engine
       chart: charts/meep-ctrl-engine
+      codecov: true
+      docker-data:
+        static: bin/meep-frontend
+    meep-frontend:
+      src: js-apps/meep-frontend
+      bin: bin/meep-frontend
+      codecov: false
+      local-deps:
+        meep-ctrl-engine-api: js-packages/meep-ctrl-engine-client
     meep-initializer:
-      src: src/meep-initializer
+      src: go-apps/meep-initializer
       bin: bin/meep-initializer
       chart: charts/meep-initializer
+      build-flags:
+        - -mod=vendor
+      codecov: false
     meep-mg-manager:
-      src: src/meep-mg-manager
+      src: go-apps/meep-mg-manager
       bin: bin/meep-mg-manager
       chart: charts/meep-mg-manager
+      codecov: true
     meep-mon-engine:
-      src: src/meep-mon-engine
+      src: go-apps/meep-mon-engine
       bin: bin/meep-mon-engine
       chart: charts/meep-mon-engine
+      build-flags:
+        - -mod=vendor
+      codecov: true
     meep-tc-engine:
-      src: src/meep-tc-engine
+      src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine
       chart: charts/meep-tc-engine
+      codecov: true
     meep-tc-sidecar:
-      src: src/meep-tc-sidecar
+      src: go-apps/meep-tc-sidecar
       bin: bin/meep-tc-sidecar
+      codecov: false
     meep-virt-engine:
-      src: src/meep-virt-engine
+      src: go-apps/meep-virt-engine
       bin: bin/meep-virt-engine
       chart: charts/meep-virt-engine
       template: charts/meep-virt-engine/virt-templates
+      codecov: true
   dep:
     elastic:
       es:

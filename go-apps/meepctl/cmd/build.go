@@ -159,7 +159,7 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 
 	//build
 	fmt.Println("   + building " + targetName)
-	cmd = exec.Command("npm", "run", "build")
+	cmd = exec.Command("npm", "run", "build", "--", "--output-path="+binDir)
 	cmd.Dir = srcDir
 	out, err = utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
@@ -186,16 +186,7 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 		fmt.Println(out)
 	}
 
-	locDeps := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".local-deps")
-	if len(locDeps) > 0 {
-		fmt.Println("   + checking local dependencies")
-		for dep, depDir := range locDeps {
-			fmt.Println("     * " + dep)
-			if targetName == "meep-ctrl-engine" {
-				checkMeepCtrlEngineFeDep(targetName, dep, depDir, cobraCmd)
-			}
-		}
-	}
+	// for go, local dependencies are handled via the Go toolchain so nothing to do
 
 	// Remove unnecessary deps
 	fixDeps(targetName, cobraCmd)
@@ -220,32 +211,6 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	if err != nil {
 		fmt.Println("Error:", err)
 		fmt.Println(out)
-	}
-}
-
-func checkMeepCtrlEngineFeDep(targetName string, dep string, depDir string, cobraCmd *cobra.Command) {
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	gitDir := viper.GetString("meep.gitdir")
-	srcDir := gitDir + "/" + depDir
-	dstDir := gitDir + "/" + target["bin"]
-
-	if dep == "meep-frontend" {
-		// Only copy FE if a newer FE exists
-		if _, err := os.Stat(srcDir); !os.IsNotExist(err) {
-			if verbose {
-				fmt.Println("    Using: " + srcDir)
-			}
-			cmd := exec.Command("rm", "-r", dstDir+"/static")
-			utils.ExecuteCmd(cmd, cobraCmd)
-			cmd = exec.Command("cp", "-r", srcDir, dstDir)
-			utils.ExecuteCmd(cmd, cobraCmd)
-			cmd = exec.Command("mv", "dist", "static")
-			cmd.Dir = dstDir
-			utils.ExecuteCmd(cmd, cobraCmd)
-		} else if verbose {
-			fmt.Println("    Using: " + dstDir + "/static")
-		}
 	}
 }
 

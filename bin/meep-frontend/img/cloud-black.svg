@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="24"
+   height="16"
+   viewBox="0 0 24 16"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="cloud-black.svg"
+   inkscape:version="0.92.3 (unknown)">
+  <metadata
+     id="metadata12">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview8"
+     showgrid="false"
+     inkscape:pagecheckerboard="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="9.8333333"
+     inkscape:cx="-0.20338983"
+     inkscape:cy="8"
+     inkscape:window-x="1920"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg6" />
+  <path
+     d="M 0,-4 H 24 V 20 H 0 Z"
+     id="path2"
+     inkscape:connector-curvature="0"
+     style="fill:none" />
+  <path
+     d="M 19.35,6.04 C 18.67,2.59 15.64,0 12,0 9.11,0 6.6,1.64 5.35,4.04 2.34,4.36 0,6.91 0,10 c 0,3.31 2.69,6 6,6 h 13 c 2.76,0 5,-2.24 5,-5 0,-2.64 -2.05,-4.78 -4.65,-4.96 z"
+     id="path4"
+     inkscape:connector-curvature="0"
+     style="image-rendering:auto" />
+</svg>
