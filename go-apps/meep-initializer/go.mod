@@ -38,4 +38,4 @@ require (
 
 )
 
-replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../../../ctrl-engine/model/go/src/meep-ctrl-engine-model
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model

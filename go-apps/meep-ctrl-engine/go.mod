@@ -41,6 +41,6 @@ require (
 )
 
 replace (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-tc-engine-client => ../../../../../tc-engine/client/go/src/meep-tc-engine-api-client
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client => ../../../../../virt-engine/client/go/src/meep-virt-engine-api-client
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-tc-engine-client => ../../go-packages/meep-tc-engine-client
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client => ../../go-packages/meep-virt-engine-client
 )

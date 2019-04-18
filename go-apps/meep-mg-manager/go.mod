@@ -21,7 +21,7 @@ require (
 )
 
 replace (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../../../../ctrl-engine/model/go/src/meep-ctrl-engine-model
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client => ../../../../../mg-manager/client/go/src/meep-mg-app-api-client
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model => ../../../../../mg-manager/model/go/src/meep-mg-manager-model
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client => ../../go-packages/meep-mg-app-client
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model => ../../go-packages/meep-mg-manager-model
 )
