@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/monengine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
 )
 
 // Build:
