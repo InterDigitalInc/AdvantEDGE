@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 export const firstLetterUpper = (str) => {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);

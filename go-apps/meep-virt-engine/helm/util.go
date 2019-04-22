@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package helm
 
 import (
@@ -8,18 +16,17 @@ import (
 )
 
 const (
-        ChartMeepType       = "MEEP-TYPE"
-        ChartUserChartType  = "USERCHART-TYPE"
+	ChartMeepType      = "MEEP-TYPE"
+	ChartUserChartType = "USERCHART-TYPE"
 )
 
 type Chart struct {
-	Type   string
-	ChartName   string
-	ReleaseName string
-	Location    string
-        AlternateValues  string
-        Parameters  string
-
+	Type            string
+	ChartName       string
+	ReleaseName     string
+	Location        string
+	AlternateValues string
+	Parameters      string
 }
 
 type Release struct {

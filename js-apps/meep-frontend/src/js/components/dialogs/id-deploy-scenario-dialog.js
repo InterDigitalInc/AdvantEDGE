@@ -1,4 +1,12 @@
-import React, { Component }  from 'react';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import React, { Component }  from 'react';
 
 import IDDialog from './id-dialog';
 import IDSelect from '../helper-components/id-select';
@@ -49,4 +57,4 @@ class IDDeployScenarioDialog extends Component {
 
 export default IDDeployScenarioDialog;
 
-// 
+//

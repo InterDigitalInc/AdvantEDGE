@@ -1,4 +1,12 @@
-import { updateObject } from '../../util/update';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { updateObject } from '../../util/update';
 import { createElem } from '../../util/elem-utils';
 
 const CFG_ELEM_NEW = 'CFG_ELEM_NEW';

@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import React, { Component }  from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
@@ -117,7 +125,7 @@ class NetworkCharacteristicsEventPane extends Component {
         return type.startsWith(elemType);
       })
       .value();
-        
+
     return elements.length ? elements[0] : null;
   }
 
@@ -194,7 +202,7 @@ class NetworkCharacteristicsEventPane extends Component {
     netChar.throughput = getElemFieldVal(element, throughputFieldName);
     netChar.packetLoss = getElemFieldVal(element, packetLossFieldName);
   }
-        
+
   fieldName(genericFieldName) {
     const prefix = this.currentPrefix();
     var name = (camelCasePrefix(prefix) + firstLetterUpper(genericFieldName)).replace(/\s/g,'');
@@ -233,7 +241,7 @@ class NetworkCharacteristicsEventPane extends Component {
         }
         return this.state.currentElementType.startsWith(elemType);
       })
-      .map((e) => { 
+      .map((e) => {
         return getElemFieldVal(e, FIELD_NAME);
       })
       .value();
@@ -273,7 +281,7 @@ class NetworkCharacteristicsEventPane extends Component {
             />
           </GridCell>
           <GridCell span="4">
-          </GridCell>   
+          </GridCell>
         </Grid>
 
         <NCGroup
@@ -293,7 +301,7 @@ class NetworkCharacteristicsEventPane extends Component {
       </div>
     );
   }
-}  
+}
 
 const styles = {
   block: {
@@ -308,5 +316,3 @@ const styles = {
 };
 
 export default NetworkCharacteristicsEventPane;
-
-

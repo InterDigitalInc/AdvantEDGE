@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -22,7 +30,7 @@ import {
   execChangeTable
 } from '../../state/exec';
 
-import { 
+import {
   getSorting,
   handleRequestSort,
   handleChangePage,
@@ -35,7 +43,7 @@ const ServiceMapsRow = (props) => {
     <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
       <GridCell span={12}>
         <span> {props.entry.name}: {props.entry.externalPort} </span>
-      </GridCell> 
+      </GridCell>
     </Grid>
   );
 };
@@ -89,7 +97,7 @@ class ExecTable extends Component {
     handleRequestSort(table, event, property);
     this.props.changeTable(table);
   }
-        
+
   onClick(/*event, name*/) {
     // var table = updateObject({}, this.props.table);
     // handleClick(table, event, name);
@@ -101,13 +109,13 @@ class ExecTable extends Component {
     handleChangePage(table, event, page);
     this.props.changeTable(table);
   }
-    
+
   onChangeRowsPerPage(event) {
     var table = updateObject({}, this.props.table);
     handleChangeRowsPerPage(table, event);
     this.props.changeTable(table);
   }
-      
+
   render() {
     const classes = this.classes;
     const table = this.props.table;
@@ -123,10 +131,10 @@ class ExecTable extends Component {
 
     return (
       <Grid>
-        <GridCell span={12}>    
+        <GridCell span={12}>
           <Elevation className="component-style"z={2}  style={styles.execTable}>
             <div>
-              <span className="mdc-typography--headline6">Network Elements </span>   
+              <span className="mdc-typography--headline6">Network Elements </span>
             </div>
             <Paper className={classes.root}>
               <div className={classes.tableWrapper}>

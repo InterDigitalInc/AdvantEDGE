@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component, createRef }  from 'react';
 import ReactDOM from 'react-dom';
@@ -8,7 +16,7 @@ import { updateObject } from '../util/update';
 import { execChangeTable, execChangeVis, execVisFilteredData } from '../state/exec';
 import { cfgChangeTable, cfgChangeVis, cfgElemEdit } from '../state/cfg';
 
-import { 
+import {
   TYPE_CFG,
   TYPE_EXEC
 } from '../meep-constants';
@@ -140,30 +148,30 @@ class IDCVis extends Component {
       },
       groups: {}
     };
-    
+
     var groups = vis.options.groups;
-    
+
     // Scenario
     createBoxGroup(groups, 'scenario', '#ffffff');
     groups.scenario.borderWidth = 4;
     groups.scenario.font.color = '#000000';
     groups.scenario.font.size = 24;
     createImageGroup(groups, 'scenarioImg');
-    
+
     // Domains
     createBoxGroup(groups, 'domain', '#ff3620');
     createImageGroup(groups, 'domainImg');
-    
+
     // Zones
     createBoxGroup(groups, 'zone', '#ffa032');
     createImageGroup(groups, 'zoneImg');
-    
+
     // Network locations
     createBoxGroup(groups, 'nLocPoa', '#7f7f7f');
     setFixedGroup(groups.nLocPoa);
     createImageGroup(groups, 'nLocPoaImg');
     setFixedGroup(groups.nLocPoaImg);
-    
+
     // Physical locations
     createBoxGroup(groups, 'pLocIntUE', '#1d8a5c');
     createImageGroup(groups, 'pLocIntUEImg');
@@ -172,7 +180,7 @@ class IDCVis extends Component {
     createBoxGroup(groups, 'pLocIntFog', '#3ebcfb');
     createImageGroup(groups, 'pLocIntFogImg');
     createBoxGroup(groups, 'pLocExtFog', '#006af8');
-    
+
     createBoxGroup(groups, 'pLocIntEdge', '#3ebcfb');
     createImageGroup(groups, 'pLocIntEdgeImg');
     createBoxGroup(groups, 'pLocExtEdge', '#006af8');
@@ -181,7 +189,7 @@ class IDCVis extends Component {
     createBoxGroup(groups, 'pLocIntDC', '#939393');
     createImageGroup(groups, 'pLocIntDCImg');
     createBoxGroup(groups, 'pLocExtDC', '#252525');
-    
+
     // Processes
     createBoxGroup(groups, 'procIntUEApp', '#d76a2f');
     createBoxGroup(groups, 'procExtUEApp', '#8e4721');
@@ -195,7 +203,7 @@ class IDCVis extends Component {
   }
 
   componentDidMount() {
-        
+
     const newVis = updateObject({}, this.getVis());
     if (newVis.data.nodes.length < 1) {
       newVis.data.nodes = [
@@ -211,7 +219,7 @@ class IDCVis extends Component {
     }
 
     this.initializeVisualizationOptions(newVis, this.configRef.current);
-       
+
     var domNode = ReactDOM.findDOMNode(this);
     newVis.network = new vis.Network(domNode, (this.props.type == TYPE_CFG) ? newVis.data : this.props.execVisData, newVis.options);
 
@@ -236,7 +244,7 @@ class IDCVis extends Component {
         }
 
         this.changeTable(table);
-                
+
         // Open first selected element in element configuration pane
         if (this.props.type === TYPE_CFG) {
           this.props.onEditElement((table.selected.length) ? this.getElementByName(table.entries, table.selected[0]) : null);
@@ -349,7 +357,7 @@ class IDCVis extends Component {
         </>
     );
   }
-} 
+}
 
 const buttonStyles = {
   color: 'white',
@@ -383,4 +391,3 @@ const ConnectedIDCVis = connect(
 )(IDCVis);
 
 export default ConnectedIDCVis;
-

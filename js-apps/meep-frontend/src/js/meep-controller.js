@@ -1,4 +1,12 @@
-﻿// Import CSS 
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+﻿// Import CSS
 import 'material-design-icons/iconfont/material-icons.css';
 import 'vis/dist/vis.min.css';
 import '../css/meep-controller.scss';
@@ -26,10 +34,10 @@ import {
   PAGE_CONFIGURE
 } from './state/ui';
 
-import { 
+import {
   TYPE_CFG,
-  TYPE_EXEC, 
-  CFG_STATE_IDLE, 
+  TYPE_EXEC,
+  CFG_STATE_IDLE,
   EXEC_STATE_IDLE,
   NO_SCENARIO_NAME,
 } from './meep-constants';
@@ -128,7 +136,7 @@ function createState(meepObject) {
     currentDialog: '',
     execShowApps: false
   };
-    
+
   return state;
 }
 
@@ -159,6 +167,3 @@ ReactDOM.render(
   </Provider>,
   meepContainerPlaceholder
 );
-
-
-

@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import React, { Component }  from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
@@ -61,7 +69,7 @@ class MobilityEventPane extends Component {
               onChange={(event)=>{this.values['eventTarget'] = event.target.value;}}
               data-cy={EXEC_EVT_MOB_TARGET}
             />
-          </GridCell> 
+          </GridCell>
           <GridCell span="4">
           </GridCell>
         </Grid>
@@ -77,7 +85,7 @@ class MobilityEventPane extends Component {
             />
           </GridCell>
           <GridCell span="4">
-          </GridCell>   
+          </GridCell>
         </Grid>
 
         <CancelApplyPair
@@ -89,7 +97,7 @@ class MobilityEventPane extends Component {
       </div>
     );
   }
-}  
+}
 
 const styles = {
   block: {
@@ -104,5 +112,3 @@ const styles = {
 };
 
 export default MobilityEventPane;
-
-

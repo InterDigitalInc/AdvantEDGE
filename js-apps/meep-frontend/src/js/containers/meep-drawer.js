@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { PAGE_CONFIGURE, PAGE_EXECUTE, PAGE_MONITOR, PAGE_SETTINGS } from '../state/ui';
 
@@ -67,7 +75,7 @@ class MeepDrawer extends Component {
       </div>
     );
   }
-}  
+}
 
 const containerStyle = {
   borderRight: '1px solid #e4e4e4',
@@ -103,4 +111,3 @@ const ConnectedMeepDrawer = connect(
 )(MeepDrawer);
 
 export default ConnectedMeepDrawer;
-

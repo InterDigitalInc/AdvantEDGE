@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Select  } from '@rmwc/select';
@@ -221,7 +229,7 @@ const validateChartGroupEntry = (entry) => {
 
 const validateIngressServiceMapping = (entries) => validateEntries(validateServiceMappingEntry)(entries);
 const validateEnvironMentVariables = (entries) => validateEntries(envVariableEntries)(entries);
- 
+
 const validateCommandArguments = val => null;
 
 // COMPONENTS
@@ -370,7 +378,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         prefixes= {[PREFIX_INT_EDGE, PREFIX_INT_FOG, PREFIX_EDGE_FOG]}
       />
     );
-  case ELEMENT_TYPE_POA: 
+  case ELEMENT_TYPE_POA:
     return (
       <NCGroups
         onUpdate={onUpdate}
@@ -438,7 +446,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                         />
                     </>
                 }
-                
+
             </>
     );
   case ELEMENT_TYPE_EXT_UE_APP:
@@ -516,7 +524,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                         />
                     </>
                 }
-                
+
             </>
           );
   case ELEMENT_TYPE_EDGE_APP:
@@ -592,7 +600,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                 }
             </>
         );
-        
+
   default:
     return null;
   }
@@ -616,7 +624,7 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_DC,
       ELEMENT_TYPE_POA,
-    ] 
+    ]
   },
   {
     label: 'Physical Location',
@@ -657,7 +665,7 @@ parentTypes[ELEMENT_TYPE_CLOUD_APP] = [ELEMENT_TYPE_DC];
 
 const getParentTypes = (type) => {
   return parentTypes[type];
-}; 
+};
 
 const buttonStyles = {
   marginRight: 5
@@ -683,7 +691,7 @@ const ElementCfgButtons = ({configuredElement, configMode, onNewElement, onDelet
             >
                 NEW
             </Button>
-            
+
             <Button outlined
               data-cy={CFG_BTN_DEL_ELEM}
               style={buttonStyles}
@@ -700,11 +708,11 @@ const HeaderGroup = ({element, onTypeChange, onUpdate, disabled}) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
-    
+
   return (
         <>
             <Grid style={{marginTop: 10}}>
-              <IDSelect 
+              <IDSelect
                 label="Element Type"
                 span={6}
                 options={elementTypes}
@@ -755,15 +763,15 @@ export class CfgNetworkElementContainer extends Component {
 
     this.props.cfgElemUpdate(updatedElem);
   }
-    
+
   // Retrieve names of elements with matching type
   elementsOfType(types) {
     return _.chain(this.props.tableData)
-      .filter((e) => { 
+      .filter((e) => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         return _.includes(types, elemType);
       })
-      .map((e) => { 
+      .map((e) => {
         return getElemFieldVal(e, FIELD_NAME);
       })
       .value();
@@ -781,7 +789,7 @@ export class CfgNetworkElementContainer extends Component {
 
     this.props.cfgElemUpdate(elem);
   }
-    
+
   render() {
     const element = this.props.configuredElement;
     return (
@@ -795,7 +803,7 @@ export class CfgNetworkElementContainer extends Component {
           <GridCell span={5}>
             <GridInner align={'right'}>
               <GridCell span={12}>
-                <ElementCfgButtons 
+                <ElementCfgButtons
                   configuredElement={element}
                   configMode={this.props.configMode}
                   onNewElement={this.props.onNewElement}
@@ -835,7 +843,7 @@ export class CfgNetworkElementContainer extends Component {
       </div>
     );
   }
-}  
+}
 
 const styles = {
   outer: {
@@ -877,4 +885,3 @@ const ConnectedCfgNetworkElementContainer = connect(
 )(CfgNetworkElementContainer);
 
 export default ConnectedCfgNetworkElementContainer;
-

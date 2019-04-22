@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
@@ -12,7 +20,7 @@ import {
   PAGE_SETTINGS
 } from '../../state/ui';
 
-import { 
+import {
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
   SET_DEV_MODE_CHECKBOX
@@ -62,7 +70,7 @@ class SettingsPageContainer extends Component {
   styles() {
     var styles = {
       interval: {
-                
+
       },
       errorText: {
         display: 'none'
@@ -94,19 +102,19 @@ class SettingsPageContainer extends Component {
         <Grid style={{width: '100%'}}>
           <GridInner>
             <GridCell span={12} style={styles.inner}>
-                        
+
               <Elevation className="component-style" z={2} style={{marginBottom: 10}}>
                 <Grid>
                   <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
                     <div>
-                      <span className="mdc-typography--headline6">Execution: </span>   
+                      <span className="mdc-typography--headline6">Execution: </span>
                     </div>
                   </GridCell>
                 </Grid>
                 <Grid span={12}>
                   <GridCell span={2}>
                     <div style={{marginTop: 20}}>
-                      <Checkbox 
+                      <Checkbox
                         checked={this.props.automaticRefresh}
                         onChange={e => {
                           this.props.setAutomaticRefresh(e.target.checked);}
@@ -146,7 +154,7 @@ class SettingsPageContainer extends Component {
                 <Grid>
                   <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10, marginBottom: -20}}>
                     <div>
-                      <span className="mdc-typography--headline6">Development: </span>   
+                      <span className="mdc-typography--headline6">Development: </span>
                     </div>
                   </GridCell>
                 </Grid>
@@ -161,16 +169,16 @@ class SettingsPageContainer extends Component {
                         Development mode
                       </Checkbox>
                     </div>
-                  </GridCell>     
+                  </GridCell>
                   <GridCell span={8}>
                   </GridCell>
                 </Grid>
               </Elevation>
 
-            </GridCell> 
-          </GridInner>  
+            </GridCell>
+          </GridInner>
         </Grid>
-      </div>     
+      </div>
     );
   }
 }
@@ -219,5 +227,3 @@ const ConnectedSettingsPageContainer = connect(
 )(SettingsPageContainer);
 
 export default ConnectedSettingsPageContainer;
-
-

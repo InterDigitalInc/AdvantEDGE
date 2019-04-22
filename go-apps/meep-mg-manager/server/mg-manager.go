@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package server
 
 import (
@@ -5,13 +13,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"strings"
+	"sync"
 
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/log"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/log"
 
 	"github.com/RyanCarrier/dijkstra"
 	"github.com/gorilla/mux"
@@ -106,6 +114,7 @@ var netLocList = []string{}
 // Scenario service mappings
 var svcInfoMap = map[string]*serviceInfo{}
 var mgSvcInfoMap = map[string]*mgServiceInfo{}
+
 // mapping from element name to svc name for usercharts
 var svcToElemMap = map[string]string{}
 var elemToSvcMap = map[string]string{}
@@ -293,47 +302,47 @@ func parseScenario(scenario ceModel.Scenario) {
 							// Add service instance to service info map
 							svcInfoMap[svcInfo.name] = svcInfo
 							svcToElemMap[svcInfo.name] = svcInfo.name
-                                                        elemToSvcMap[svcInfo.name] = svcInfo.name
+							elemToSvcMap[svcInfo.name] = svcInfo.name
 
 						}
 						if proc.UserChartLocation != "" {
-                                                	if proc.UserChartGroup != "" {
-                                                		//code is duplicated for the if above but using the userChartGroup textfielf from a userchart
-                                                        	userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
-	                                                        svcInfo := new(serviceInfo)
-	                                                        svcInfo.name = proc.ServiceConfig.Name
-	                                                        svcInfo.node = proc.Name
+							if proc.UserChartGroup != "" {
+								//code is duplicated for the if above but using the userChartGroup textfielf from a userchart
+								userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
+								svcInfo := new(serviceInfo)
+								svcInfo.name = proc.ServiceConfig.Name
+								svcInfo.node = proc.Name
 
-	                                                        //mgSvcName is the same name as above, only one name
-	                                                        mgSvcName := userChartGroupElement[1]
-	                                                        if mgSvcName != "" {
-	                                                                // Add MG service to MG service info map if it does not exist yet
-	                                                                mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-	                                                                if !found {
-	                                                                        mgSvcInfo = new(mgServiceInfo)
-	                                                                        mgSvcInfo.services = make(map[string]*serviceInfo)
-	                                                                        mgSvcInfo.name = mgSvcName
-	                                                                        mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-	                                                                }
+								//mgSvcName is the same name as above, only one name
+								mgSvcName := userChartGroupElement[1]
+								if mgSvcName != "" {
+									// Add MG service to MG service info map if it does not exist yet
+									mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
+									if !found {
+										mgSvcInfo = new(mgServiceInfo)
+										mgSvcInfo.services = make(map[string]*serviceInfo)
+										mgSvcInfo.name = mgSvcName
+										mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+									}
 
-	                                                                // Add service instance reference to MG service list
-	                                                                mgSvcInfo.services[svcInfo.name] = svcInfo
+									// Add service instance reference to MG service list
+									mgSvcInfo.services[svcInfo.name] = svcInfo
 
-	                                                                // Add MG Service reference to service instance
-	                                                                svcInfo.mgSvc = mgSvcInfo
+									// Add MG Service reference to service instance
+									svcInfo.mgSvc = mgSvcInfo
 
-	                                                                // Create Mobility Group
-	                                                                // NOTE: Hardcoded defaults here can be overridden via REST API
-	                                                                var mg mgModel.MobilityGroup
-	                                                                mg.Name = mgSvcName
-	                                                                mg.StateTransferMode = stateTransModeStateManaged
-	                                                                mg.StateTransferTrigger = stateTransTrigNetLocInRange
-	                                                                mg.SessionTransferMode = sessionTransModeForced
-	                                                                mg.LoadBalancingAlgorithm = lbAlgoHopCount
-	                                                                mgCreate(&mg)
-	                                                        }
+									// Create Mobility Group
+									// NOTE: Hardcoded defaults here can be overridden via REST API
+									var mg mgModel.MobilityGroup
+									mg.Name = mgSvcName
+									mg.StateTransferMode = stateTransModeStateManaged
+									mg.StateTransferTrigger = stateTransTrigNetLocInRange
+									mg.SessionTransferMode = sessionTransModeForced
+									mg.LoadBalancingAlgorithm = lbAlgoHopCount
+									mgCreate(&mg)
+								}
 								// Add service instance to service info map
-	                                                        svcInfoMap[svcInfo.name] = svcInfo
+								svcInfoMap[svcInfo.name] = svcInfo
 								svcToElemMap[userChartGroupElement[0]] = svcInfo.name
 								elemToSvcMap[svcInfo.name] = userChartGroupElement[0]
 

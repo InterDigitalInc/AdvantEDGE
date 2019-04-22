@@ -1,9 +1,18 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package main
 
 import (
 	"math/rand"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 	"time"
+
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 )
 
 func init() {

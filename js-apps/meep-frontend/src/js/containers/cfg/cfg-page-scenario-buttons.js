@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Button } from '@rmwc/button';
 import { TextField } from '@rmwc/textfield';
@@ -110,7 +118,7 @@ class CfgPageScenarioButtons extends Component {
         >
                     IMPORT
         </Button>
-    
+
         <Button raised
           style={buttonStyles}
           onClick={() => this.props.onExportScenario()}
@@ -119,7 +127,7 @@ class CfgPageScenarioButtons extends Component {
         >
                     EXPORT
         </Button>
-               
+
         <a id="export-scenario-link" download="config.yaml" hidden></a>
       </div>
     );
@@ -148,5 +156,3 @@ const ConnectedCfgPageScenarioButtons = connect(
 )(CfgPageScenarioButtons);
 
 export default ConnectedCfgPageScenarioButtons;
-
-

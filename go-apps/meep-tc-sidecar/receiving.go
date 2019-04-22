@@ -1,10 +1,19 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package main
 
 import (
 	"fmt"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 	"net"
 	"time"
+
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"

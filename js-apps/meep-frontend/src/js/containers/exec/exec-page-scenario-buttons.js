@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
@@ -104,7 +112,7 @@ class ExecPageScenarioButtons extends Component {
       </div>
     );
   }
-}  
+}
 
 const styles = {
   section1: {

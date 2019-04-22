@@ -1,4 +1,12 @@
-import { updateObject } from '../../util/update';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { updateObject } from '../../util/update';
 import { createElem } from '../../util/elem-utils';
 
 const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT = 'EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT';
@@ -7,7 +15,7 @@ const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT = 'EXEC_CHANGE_SELECTED_SCENARIO_ELE
 function execChangeSelectedScenarioElement(element) {
   return {
     type: EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT,
-    payload: element 
+    payload: element
   };
 }
 

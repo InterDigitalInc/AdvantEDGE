@@ -1,4 +1,12 @@
-import {
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
   DEFAULT_LATENCY_JITTER_INTER_DOMAIN,

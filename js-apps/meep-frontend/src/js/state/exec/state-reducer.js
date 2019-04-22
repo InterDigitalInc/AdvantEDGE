@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import {createSelector } from 'reselect';
 import { updateObject } from '../../util/update';
 import { EXEC_STATE_IDLE } from '../../meep-constants';
@@ -51,7 +59,7 @@ const scenarioPodsTerminating = createSelector(scenarioPodsPhasesSelector, (pods
 });
 
 const scenarioPodsTerminated = createSelector(scenarioPodsPhasesSelector, (pods) => {
-  return pods == null || !pods.length; 
+  return pods == null || !pods.length;
 });
 
 // Returns a list of scenario posds info and adds serviceMaps to external ones

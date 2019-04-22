@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Select } from '@rmwc/select';
@@ -12,7 +20,7 @@ import {
   PAGE_MONITOR
 } from '../../state/ui';
 
-import { 
+import {
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME
 } from '../../meep-constants';
@@ -55,10 +63,10 @@ class MonitorPageContainer extends Component {
     if (this.props.page != PAGE_MONITOR) {
       return null;
     }
-        
+
     return (
       <div style={{width: '100%', height: '100%'}}>
-        <div style={{width: '100%'}}>   
+        <div style={{width: '100%'}}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
               <Elevation className="component-style" z={2} style={styles.headline}>
@@ -92,12 +100,12 @@ class MonitorPageContainer extends Component {
             </GridCell>
           </Grid>
         </div>
-                
+
         <Grid style={{width: '100%', height: '100%'}} hidden={!this.state.dashboardSelected}>
           <GridInner style={{width: '100%', height: '100%'}}>
             <GridCell span={12} style={styles.inner}>
               <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>
-                                    
+
                 <div style={{flex: 1, padding: 10}}>
                   <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
                     <Iframe
@@ -114,7 +122,7 @@ class MonitorPageContainer extends Component {
             </GridCell>
           </GridInner>
         </Grid>
-                   
+
       </div>
     );
   }
@@ -147,7 +155,7 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    automaticRefresh: state.ui.automaticRefresh, 
+    automaticRefresh: state.ui.automaticRefresh,
     devMode: state.ui.devMode,
     page: state.ui.page,
     scenarioName: state.exec.scenario.name,

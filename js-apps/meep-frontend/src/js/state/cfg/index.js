@@ -1,4 +1,12 @@
-import { combineReducers } from 'redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { combineReducers } from 'redux';
 import { typeReducer } from './type-reducer';
 import { stateReducer } from './state-reducer';
 import { scenarioReducer } from './scenario-reducer';

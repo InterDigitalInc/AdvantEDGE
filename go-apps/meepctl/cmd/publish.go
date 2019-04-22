@@ -1,12 +1,19 @@
-// Copyright © 2019 InterDigital, Inc
-// This file is part of {{ .appName }}.
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 
 package cmd
 
 import (
 	"fmt"
-	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
 	"time"
+
+	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
 
 	"github.com/spf13/cobra"
 )

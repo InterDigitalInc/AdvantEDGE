@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
 import {
@@ -25,7 +33,7 @@ const CorePodsLed = (props) => {
             <ReactTooltip id='led' aria-haspopup='true' role='example' place='left' type={tooltipType}>
               <ul style={{listStyle: 'none'}}>
                 {
-                  props.corePodsErrors.length ? 
+                  props.corePodsErrors.length ?
                     _.map(props.corePodsErrors, (e) => {
                       return (
                         <li key={e.name} style={marginLeft}>
@@ -40,7 +48,7 @@ const CorePodsLed = (props) => {
             </ReactTooltip>
         </>
   );
-    
+
 };
 
 const MeepTopBar = (props) => {
@@ -62,7 +70,7 @@ const MeepTopBar = (props) => {
             <ToolbarTitle><span style={titleStyle}>{props.title}</span></ToolbarTitle>
           </ToolbarSection>
           <ToolbarSection alignEnd>
-            <CorePodsLed 
+            <CorePodsLed
               corePodsRunning={props.corePodsRunning}
               corePodsErrors={props.corePodsErrors}
             />
@@ -80,5 +88,3 @@ const titleStyle= {
 };
 
 export default MeepTopBar;
-
-

@@ -1,4 +1,12 @@
-import PropTypes from 'prop-types';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import PropTypes from 'prop-types';
 import { Elevation } from '@rmwc/elevation';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -20,7 +28,7 @@ import {
   cfgChangeTable
 } from '../../state/cfg';
 
-import { 
+import {
   getSortingByField,
   handleRequestSort,
   handleChangePage,
@@ -70,13 +78,13 @@ class CfgTable extends Component {
     };
     this.classes = props.classes;
   }
-    
+
   onRequestSort(event, property) {
     var table = updateObject({}, this.props.table);
     handleRequestSort(table, event, property);
     this.props.changeTable(table);
   }
-        
+
   onClick(/*event, name*/) {
     // var table = updateObject({}, this.props.table);
     // handleClick(table, event, name);
@@ -88,13 +96,13 @@ class CfgTable extends Component {
     handleChangePage(table, event, page);
     this.props.changeTable(table);
   }
-    
+
   onChangeRowsPerPage(event) {
     var table = updateObject({}, this.props.table);
     handleChangeRowsPerPage(table, event);
     this.props.changeTable(table);
   }
-    
+
   render() {
     const classes = this.classes;
     const table = this.props.table;
@@ -110,10 +118,10 @@ class CfgTable extends Component {
     return (
         <>
           <Grid>
-            <GridCell span={12}>    
+            <GridCell span={12}>
               <Elevation className="component-style" z={2}  style={styles.cfgTable}>
                 <div>
-                  <span className="mdc-typography--headline6">Network Elements </span>   
+                  <span className="mdc-typography--headline6">Network Elements </span>
                 </div>
                 <Paper className={classes.root}>
                   <div className={classes.tableWrapper}>

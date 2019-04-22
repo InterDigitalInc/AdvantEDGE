@@ -1,11 +1,19 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import axios from 'axios';
 import { updateObject } from '../util/update';
 
 // Import JS dependencies
-import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js'; 
+import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
 
 import MeepDrawer from './meep-drawer';
 import MeepTopBar from '../components/meep-top-bar';

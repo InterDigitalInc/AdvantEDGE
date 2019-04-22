@@ -1,4 +1,12 @@
-import { updateObject } from '../../util/update';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { updateObject } from '../../util/update';
 
 export const PAGE_CONFIGURE = 'page-configure-link';
 export const PAGE_EXECUTE = 'page-execute-link';
@@ -95,7 +103,7 @@ const uiExecChangeShowApps = (show) => {
   };
 };
 
-export { 
+export {
   // Event types
   UE_MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,

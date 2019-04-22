@@ -1,4 +1,12 @@
-import React, { Component }  from 'react';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import React, { Component }  from 'react';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 import * as YAML from 'yamljs';
 
@@ -23,7 +31,7 @@ class IDExportScenarioDialog extends Component {
     }
 
     this.exportScenarioTextFile = window.URL.createObjectURL(data);
-        
+
     return this.exportScenarioTextFile;
   }
 
@@ -44,7 +52,7 @@ class IDExportScenarioDialog extends Component {
   }
 
   render() {
-        
+
     return (
       <IDDialog
         title={this.props.title}

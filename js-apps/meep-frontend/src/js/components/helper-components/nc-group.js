@@ -1,4 +1,12 @@
-import React from 'react';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import React from 'react';
 import { Grid, GridCell  } from '@rmwc/grid';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 
@@ -254,7 +262,7 @@ const NCGroup = ({prefix, onUpdate, element}) => {
               {getElemFieldErr(element, throughputFieldName)}
             </span>
           </TextFieldHelperText>
-        </GridCell>   
+        </GridCell>
       </Grid>
     </div>
   );

@@ -1,4 +1,12 @@
-import React, { Component }  from 'react';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import React, { Component }  from 'react';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 import IDDialog from './id-dialog';
 import { MEEP_DLG_SAVE_SCENARIO } from '../../meep-constants';

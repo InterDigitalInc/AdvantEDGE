@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 import _ from 'lodash';
 import * as vis from 'vis';
 import { updateObject } from './update';
@@ -142,7 +150,7 @@ export function parseScenario(scenario) {
 
   // Add scenario to graph and table
   addScenarioNode(scenario, nodes);
-    
+
   // Domains
   for (var i in scenario.deployment.domains) {
     var domain = scenario.deployment.domains[i];
@@ -154,7 +162,7 @@ export function parseScenario(scenario) {
 
     // Zones
     for (var j in domain.zones) {
-      var zone = domain.zones[j];            
+      var zone = domain.zones[j];
 
       // Add zone to graph and table (ignore common zone)
       if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) == -1) {
@@ -193,7 +201,7 @@ export function parseScenario(scenario) {
         }
       }
     }
-  }  
+  }
 
   // Update table
   var table = {};
@@ -270,12 +278,12 @@ export function addElementToScenario(scenario, element) {
     scenarioElement = createExternalProcess(name, UE_APP_TYPE_STR, element);
     break;
   }
-        
+
   case ELEMENT_TYPE_EDGE_APP: {
     scenarioElement = createProcess(name, EDGE_APP_TYPE_STR, element);
     break;
   }
-        
+
   case ELEMENT_TYPE_CLOUD_APP: {
     scenarioElement = createProcess(name, CLOUD_APP_TYPE_STR, element);
     break;
@@ -311,7 +319,7 @@ export function addElementToScenario(scenario, element) {
         zone.networkLocations.push(scenarioElement);
         return;
       }
-    
+
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name == parent) {
@@ -379,7 +387,7 @@ export function updateElementInScenario(scenario, element) {
         zone.edgeFogPacketLoss = getElemFieldVal(element, FIELD_EDGE_FOG_PKT_LOSS);
         return;
       }
-    
+
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name == name) {
@@ -433,7 +441,7 @@ export function removeElementFromScenario(scenario, element) {
         domain.zones.splice(j, 1);
         return;
       }
-    
+
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name == name) {
@@ -470,8 +478,8 @@ export function createNewScenario(name) {
       interDomainLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTER_DOMAIN),
       interDomainThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_DOMAIN),
       interDomainPacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_DOMAIN),
-      domains: (name == 'None') ? [] : [ createDefaultDomain() ] 
-    }, 
+      domains: (name == 'None') ? [] : [ createDefaultDomain() ]
+    },
   };
   return scenario;
 }
@@ -539,7 +547,7 @@ export function createExternalProcess(name, type, element) {
       ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_SVC_MAP))
     }
   };
-    
+
   return process;
 }
 
@@ -549,7 +557,7 @@ export function getIngressServiceMapStr(ingressServiceMapArray) {
   // Loop through service map array
   for (var i = 0; i < ingressServiceMapArray.length; i++) {
     var svcMap = ingressServiceMapArray[i];
-    ingressServiceMapStr += ((i == 0) ? '' : ',') + 
+    ingressServiceMapStr += ((i == 0) ? '' : ',') +
             svcMap.externalPort + ':' + svcMap.name + ':' + svcMap.port + ':' + svcMap.protocol;
   }
   return ingressServiceMapStr;
@@ -587,9 +595,9 @@ export function createDomain(name, element) {
     name: name,
     type: DOMAIN_TYPE_STR,
     interZoneLatency: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY),
-    interZoneLatencyVariation: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR),        
-    interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),        
-    interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),        
+    interZoneLatencyVariation: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR),
+    interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),
+    interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),
     zones: [ createDefaultZone(name),]
   };
   return domain;
@@ -615,8 +623,8 @@ export function createNL(name, element) {
     name: name,
     type: NL_TYPE_STR,
     terminalLinkLatency: getElemFieldVal(element, FIELD_LINK_LATENCY),
-    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),        
-    terminalLinkThroughput: getElemFieldVal(element, FIELD_LINK_THROUGPUT),        
+    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
+    terminalLinkThroughput: getElemFieldVal(element, FIELD_LINK_THROUGPUT),
     terminalLinkPacketLoss: getElemFieldVal(element, FIELD_LINK_PKT_LOSS),
     physicalLocations: []
   };
@@ -649,22 +657,22 @@ export function createPL(name, type, element) {
   return pl;
 }
 
-export function createZone(name, element) {    
+export function createZone(name, element) {
   var zone = {
     id: name,
     name: name,
     type: ZONE_TYPE_STR,
     interEdgeLatency: getElemFieldVal(element, FIELD_INT_EDGE_LATENCY),
-    interEdgeLatencyVariation: getElemFieldVal(element, FIELD_INT_EDGE_LATENCY_VAR),        
-    interEdgeThroughput: getElemFieldVal(element, FIELD_INT_EDGE_THROUGPUT),        
+    interEdgeLatencyVariation: getElemFieldVal(element, FIELD_INT_EDGE_LATENCY_VAR),
+    interEdgeThroughput: getElemFieldVal(element, FIELD_INT_EDGE_THROUGPUT),
     interEdgePacketLoss: getElemFieldVal(element, FIELD_INT_EDGE_PKT_LOSS),
     interFogLatency: getElemFieldVal(element, FIELD_INT_FOG_LATENCY),
-    interFogLatencyVariation: getElemFieldVal(element, FIELD_INT_FOG_LATENCY_VAR),        
-    interFogThroughput: getElemFieldVal(element, FIELD_INT_FOG_THROUGPUT),        
+    interFogLatencyVariation: getElemFieldVal(element, FIELD_INT_FOG_LATENCY_VAR),
+    interFogThroughput: getElemFieldVal(element, FIELD_INT_FOG_THROUGPUT),
     interFogPacketLoss: getElemFieldVal(element, FIELD_INT_FOG_PKT_LOSS),
     edgeFogLatency: getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY),
-    edgeFogLatencyVariation: getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY_VAR),        
-    edgeFogThroughput: getElemFieldVal(element, FIELD_EDGE_FOG_THROUGPUT),        
+    edgeFogLatencyVariation: getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY_VAR),
+    edgeFogThroughput: getElemFieldVal(element, FIELD_EDGE_FOG_THROUGPUT),
     edgeFogPacketLoss: getElemFieldVal(element, FIELD_EDGE_FOG_PKT_LOSS),
     networkLocations: [ createDefaultNL(name),]
   };
@@ -742,7 +750,7 @@ export function getElementFromScenario(scenario, elementName) {
         setElemFieldVal(elem, FIELD_EDGE_FOG_PKT_LOSS, zone.edgeFogPacketLoss || 0);
         return elem;
       }
-    
+
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name == elementName) {
@@ -778,9 +786,9 @@ export function getElementFromScenario(scenario, elementName) {
             default:
               break;
             }
-            setElemFieldVal(elem, FIELD_PARENT, 
+            setElemFieldVal(elem, FIELD_PARENT,
               (domain.type == PUBLIC_DOMAIN_TYPE_STR) ? scenario.name :
-                (zone.type == COMMON_ZONE_TYPE_STR) ? domain.name : 
+                (zone.type == COMMON_ZONE_TYPE_STR) ? domain.name :
                   (nl.type == DEFAULT_NL_TYPE_STR) ? zone.name : nl.name);
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
             return elem;
@@ -818,7 +826,7 @@ export function getElementFromScenario(scenario, elementName) {
                 setElemFieldVal(elem, FIELD_CMD, process.commandExe || '');
                 setElemFieldVal(elem, FIELD_CMD_ARGS, process.commandArguments || '');
                 setElemFieldVal(elem, FIELD_IS_EXTERNAL, process.isExternal || false);
-    
+
                 if (process.serviceConfig) {
                   setElemFieldVal(elem, FIELD_PORT, process.serviceConfig.ports[0].port || '');
                   setElemFieldVal(elem, FIELD_PROTOCOL, process.serviceConfig.ports[0].protocol || '');
@@ -955,7 +963,7 @@ export function addNlNode(nl, parent, nodes, edges) {
 
   nodes.push(n);
   edges.push(e);
-} 
+}
 
 // Add physical location node
 export function addPlNode(pl, parent, nodes, edges) {
@@ -1073,7 +1081,7 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   default:
-    break; 
+    break;
   }
 
   // Set latency label
@@ -1108,7 +1116,7 @@ export function addProcessNode(proc, parent, nodes, edges) {
   } else if (proc.type == 'MEC-SVC') {
     n['level'] = (parent.type == 'EDGE') ? 4 : 5;
     n['group'] = (proc.isExternal) ? 'procExtMecSvc' : 'procIntMecSvc';
-  } else if (proc.type == 'UE-APP') {        
+  } else if (proc.type == 'UE-APP') {
     n['level'] = 5;
     n['group'] = (proc.isExternal) ? 'procExtUEApp' : 'procIntUEApp';
   } else if (proc.type == 'CLOUD-APP') {

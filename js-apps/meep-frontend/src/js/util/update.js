@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 export function updateObject(oldObject, newValues) {
   // Encapsulate the idea of passing a new object as the first parameter
   // to Object.assign to ensure we correctly copy data instead of mutating
@@ -15,6 +23,6 @@ export function updateItemInArray(array, itemId, updateItemCallback) {
     const updatedItem = updateItemCallback(item);
     return updatedItem;
   });
-  
+
   return updatedItems;
 }

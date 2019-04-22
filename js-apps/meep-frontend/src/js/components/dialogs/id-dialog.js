@@ -1,4 +1,12 @@
-import React from 'react';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import React from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 
 import {
@@ -17,7 +25,7 @@ const IDDialog = (props) => {
         props.onClose();
       }}
       data-cy={props.cydata}
-    > 
+    >
       <DialogTitle style={styles.title}>
         <Grid>
           <GridCell span={12}>
@@ -29,11 +37,11 @@ const IDDialog = (props) => {
       <DialogContent style={styles.content}>
         <Grid>
           <GridCell span={12}>
-            {props.children}    
+            {props.children}
           </GridCell>
         </Grid>
       </DialogContent>
-                
+
       <DialogActions style={styles.actions}>
         <Grid>
           <GridCell span={8}>
@@ -46,7 +54,7 @@ const IDDialog = (props) => {
                                 Cancel
             </DialogButton>
           </GridCell>
-            
+
           <GridCell span={2}>
             <DialogButton style={styles.button}
               action="accept"
@@ -58,8 +66,8 @@ const IDDialog = (props) => {
             </DialogButton>
           </GridCell>
         </Grid>
-      </DialogActions>    
-                    
+      </DialogActions>
+
     </Dialog>
   );
 };

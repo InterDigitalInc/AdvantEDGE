@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import * as YAML from 'yamljs';
@@ -16,7 +24,7 @@ import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dial
 import IDDeleteScenarioDialog from '../../components/dialogs/id-delete-scenario-dialog';
 import IDExportScenarioDialog from '../../components/dialogs/id-export-scenario-dialog';
 
-import { 
+import {
   cfgElemNew,
   cfgElemEdit,
   cfgElemClear,
@@ -145,7 +153,7 @@ class CfgPageContainer extends Component {
   validateNetworkElement(element) {
     var configMode = this.props.cfg.elementConfiguration.configurationMode;
     var data = this.props.cfg.table.entries;
-        
+
     // Clear previous error message
     this.props.cfgElemSetErrMsg('');
 
@@ -204,7 +212,7 @@ class CfgPageContainer extends Component {
         return false;
       }
     }
-    
+
 
     return true;
   }
@@ -246,7 +254,7 @@ class CfgPageContainer extends Component {
     if (!data.scenarios) {
       return;
     }
-        
+
     this.props.changeScenarioList(_.map(data.scenarios, 'name'));
   }
 
@@ -475,7 +483,7 @@ class CfgPageContainer extends Component {
     return (
       <div style={styles.page}>
         {this.renderDialogs()}
-                
+
         <div style={{width: '100%'}}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
@@ -531,7 +539,7 @@ class CfgPageContainer extends Component {
                     />
                   </Elevation>
                 </GridCell>
-              </GridInner>  
+              </GridInner>
             </Grid>
 
             <div style={{width: '100%'}}>
@@ -603,5 +611,3 @@ const ConnectedCfgPageContainer = connect(
 )(CfgPageContainer);
 
 export default ConnectedCfgPageContainer;
-
-

@@ -1,13 +1,22 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package main
 
 import (
 	"math"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 
 	logrus "github.com/sirupsen/logrus"
 )
@@ -141,7 +150,7 @@ func (u *destination) processRxTx() {
 	}
 	//ex :qdisc netem 1: root refcnt 2 limit 1000 delay 100.0ms  10.0ms 50% loss 50% rate 2Mbit\n Sent 756 bytes 8 pkt (dropped 4, overlimits 0 requeues 0
 	allStr := strings.Split(out, " ")
-	
+
 	//we have to read the allStr from the back since based on the results are always at the end but the characteristic may be different (no pkt loss, no normal distribution, etc)
 	var rcvedPkts int
 	var droppedPkts int
@@ -183,26 +192,24 @@ func (u *destination) processRxTx() {
 		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diff.Seconds()
 	}
 
-
-	
 	var throughputStr, throughputVal string
 	/*
-	if throughput > 1000 {
-		if throughput > 1000000 {
-			throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-			throughputStr = throughputVal + " Mbps"
+		if throughput > 1000 {
+			if throughput > 1000000 {
+				throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
+				throughputStr = throughputVal + " Mbps"
+			} else {
+				throughputVal = strconv.FormatFloat(throughput/1000, 'f', 3, 64)
+				throughputStr = throughputVal + " Kbps"
+			}
 		} else {
-			throughputVal = strconv.FormatFloat(throughput/1000, 'f', 3, 64)
-			throughputStr = throughputVal + " Kbps"
+			throughputVal = strconv.FormatFloat(throughput, 'f', 3, 64)
+			throughputStr = throughputVal + " bps"
 		}
-	} else {
-		throughputVal = strconv.FormatFloat(throughput, 'f', 3, 64)
-		throughputStr = throughputVal + " bps"
-	}
 	*/
 	//all the throughput in Mbps
-        throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-        throughputStr = throughputVal + " Mbps"
+	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
+	throughputStr = throughputVal + " Mbps"
 
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes

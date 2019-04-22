@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
@@ -57,7 +65,7 @@ class ExecPageContainer extends Component {
   componentDidMount() {
     this.props.changeCurrentEvent(UE_MOBILITY_EVENT);
   }
-   
+
   /**
      * Callback function to receive the result of the getScenarioList operation.
      * @callback module:api/ScenarioConfigurationApi~getScenarioListCallback
@@ -69,7 +77,7 @@ class ExecPageContainer extends Component {
       // TODO: consider showing an alert/toast
       return;
     }
-        
+
     this.props.changeDeployScenarioList(_.map(data.scenarios, 'name'));
   }
 
@@ -212,7 +220,7 @@ class ExecPageContainer extends Component {
     const scenarioName = (this.props.page === PAGE_EXECUTE)
       ? this.props.execScenarioName
       : this.props.cfgScenarioName;
-        
+
     const spanLeft = this.props.eventCreationMode ? 8 : 12;
     const spanRight = this.props.eventCreationMode ? 4 : 0;
     return (
@@ -233,7 +241,7 @@ class ExecPageContainer extends Component {
                   <GridCell span={8}>
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
-                        <ExecPageScenarioButtons 
+                        <ExecPageScenarioButtons
                           onDeploy={() => this.onDeployScenario()}
                           onSaveScenario={() => this.onSaveScenario()}
                           onTerminate={() => this.onTerminateScenario()}
@@ -250,7 +258,7 @@ class ExecPageContainer extends Component {
             </GridCell>
           </Grid>
         </div>
-                    
+
         {this.props.exec.state.scenario != EXEC_STATE_IDLE &&
           <>
               <Grid style={{width: '100%'}}>
@@ -276,7 +284,7 @@ class ExecPageContainer extends Component {
               </Grid>
           </>
         }
-        <ExecTable />     
+        <ExecTable />
       </div>
     );
   }
@@ -333,5 +341,3 @@ const ConnectedExecPageContainer = connect(
 )(ExecPageContainer);
 
 export default ConnectedExecPageContainer;
-
-

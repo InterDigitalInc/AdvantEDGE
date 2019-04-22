@@ -1,4 +1,12 @@
-import { connect } from 'react-redux';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
@@ -44,7 +52,7 @@ const EventCreationFields = (props) => {
   switch (props.currentEvent) {
   case UE_MOBILITY_EVENT:
     return (
-      <MobilityEventPane 
+      <MobilityEventPane
         element={props.element}
         eventTypes={props.eventTypes}
         api={props.api}
@@ -66,7 +74,7 @@ const EventCreationFields = (props) => {
         currentEvent={props.currentEvent}
         table={props.table}
         networkElements={props.networkElements}
-                    
+
       />
     );
   default:
@@ -114,7 +122,7 @@ class EventCreationPane extends Component {
       </div>
     );
   }
-}  
+}
 
 const styles = {
   block: {

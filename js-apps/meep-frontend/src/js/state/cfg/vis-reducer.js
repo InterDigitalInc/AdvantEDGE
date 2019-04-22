@@ -1,4 +1,12 @@
-import { updateObject } from '../../util/update';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import { updateObject } from '../../util/update';
 
 // CHANGE_VIS
 const CFG_CHANGE_VIS = 'CFG_CHANGE_VIS';
@@ -22,7 +30,7 @@ export {
   // Action creators
   cfgChangeVis,
   cfgChangeVisData,
-  
+
   CFG_CHANGE_VIS
 };
 
@@ -46,4 +54,3 @@ export function cfgVisReducer(state = initialState, action) {
     return state;
   }
 }
-

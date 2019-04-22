@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package main
 
 import (
@@ -104,11 +112,11 @@ func RedisDBRemoveEntry(keys ...string) error {
 
 // RedisDBJsonGetEntry - Retrieve entry from DB
 func RedisDBJsonGetEntry(key string, path string) (string, error) {
-        json, err := dbClient.JsonGet(key, path).Result()
-        if err != nil {
-                return "", err
-        }
-        return json, nil
+	json, err := dbClient.JsonGet(key, path).Result()
+	if err != nil {
+		return "", err
+	}
+	return json, nil
 }
 
 // RedisDBJsonSetEntry - Update existing entry or create new entry if it does not exist

@@ -1,4 +1,12 @@
-import _ from 'lodash';
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+ import _ from 'lodash';
 import { updateObject } from '../../util/update';
 import {createSelector } from 'reselect';
 import * as vis from 'vis';
@@ -69,7 +77,7 @@ const execVisFilteredData = createSelector([dataSelector, tableSelector, showApp
         newNodes.remove(key);
       }
     });
-        
+
     var newEdges = new vis.DataSet(_.values(data.edges._data));
     _.forOwn(data.edges._data, (edge, key) => {
       if (_.includes(appTypes, types[edge.from]) || _.includes(appTypes, types[edge.to])) {
@@ -105,4 +113,3 @@ export function execVisReducer(state = initialState, action) {
     return state;
   }
 }
-

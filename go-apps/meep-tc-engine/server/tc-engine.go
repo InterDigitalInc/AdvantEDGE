@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
 package server
 
 import (
@@ -7,9 +15,9 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/log"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/log"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -33,7 +41,7 @@ var lastOne string
 
 const MAX_THROUGHPUT = 9999999999 //easy value to spot in the array
 const COMMON_CORRELATION = 50
-const COMMON_PACKET_LOSS = 10 // 1000 -> 10.00%
+const COMMON_PACKET_LOSS = 10   // 1000 -> 10.00%
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 //index in array
 const LATENCY = 0
@@ -354,14 +362,14 @@ func stopScenario() {
 	Publish(channelTcLb, "delAll")
 }
 
-func validateLatencyVariation (value int) int {
+func validateLatencyVariation(value int) int {
 
 	if value < 0 {
 		value = 0
 	}
 	return value
 }
-	
+
 func parseScenario(scenario ceModel.Scenario) {
 	log.Debug("parseScenario")
 
@@ -522,39 +530,39 @@ func parseScenario(scenario ceModel.Scenario) {
 								userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
 								addSvc(userChartGroupElement[0])
 								svcInfo := new(serviceInfo)
-                                                        	svcInfo.name = proc.ServiceConfig.Name
-                                                        	svcInfo.node = proc.Name
-                                                        	svcInfo.ports = make(map[int32]*portInfo)
+								svcInfo.name = proc.ServiceConfig.Name
+								svcInfo.node = proc.Name
+								svcInfo.ports = make(map[int32]*portInfo)
 
 								portInfo := new(portInfo)
-                                                                value, err := strconv.ParseInt(userChartGroupElement[2], 10, 32)
+								value, err := strconv.ParseInt(userChartGroupElement[2], 10, 32)
 								if err == nil {
 									portInfo.port = int32(value)
 								}
-                                                                portInfo.protocol = userChartGroupElement[3]
-                                                                svcInfo.ports[portInfo.port] = portInfo
+								portInfo.protocol = userChartGroupElement[3]
+								svcInfo.ports[portInfo.port] = portInfo
 
 								//mgSvcName is the same name as above, only one name
 								mgSvcName := userChartGroupElement[1]
 								addSvc(userChartGroupElement[1])
 
 								// Add MG service to MG service info map if it does not exist yet
-                                                                mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-                                                                if !found {
-                                                                        mgSvcInfo = new(mgServiceInfo)
-                                                                        mgSvcInfo.services = make(map[string]*serviceInfo)
-                                                                        mgSvcInfo.name = mgSvcName
-                                                                        mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-                                                                }
+								mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
+								if !found {
+									mgSvcInfo = new(mgServiceInfo)
+									mgSvcInfo.services = make(map[string]*serviceInfo)
+									mgSvcInfo.name = mgSvcName
+									mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+								}
 
 								// Add service instance reference to MG service list
-                                                                mgSvcInfo.services[svcInfo.name] = svcInfo
+								mgSvcInfo.services[svcInfo.name] = svcInfo
 
-                                                                // Add MG Service reference to service instance
-                                                                svcInfo.mgSvc = mgSvcInfo
+								// Add MG Service reference to service instance
+								svcInfo.mgSvc = mgSvcInfo
 
 								// Add service instance to service info map
-	                                                        svcInfoMap[svcInfo.name] = svcInfo
+								svcInfoMap[svcInfo.name] = svcInfo
 								elemToSvcMap[svcInfo.name] = userChartGroupElement[0]
 							}
 						}
@@ -1008,12 +1016,12 @@ func applyMgSvcMapping() {
 			if !found {
 				// If not found, must be unique service
 				svcInfo = svcInfoMap[svcMap.svcName]
-                        }
+			}
 
 			svcName := elemToSvcMap[svcInfo.name]
-                                if svcName == "" {
-                                        svcName = svcInfo.name
-                                }
+			if svcName == "" {
+				svcName = svcInfo.name
+			}
 
 			// Populate rule fields
 			fields := make(map[string]interface{})
@@ -1084,7 +1092,7 @@ func getPlatformInfo() {
 			// Retrieve Pod Information if required
 			if podCount < podCountReq {
 				log.Debug("Checking for Pod IPs. podCountReq: ", podCountReq, " podCount:", podCount)
-				log.Info("update on the mappings(pod): ", podIPMap) 
+				log.Info("update on the mappings(pod): ", podIPMap)
 				// Retrieve all pods from k8s api with scenario label
 				pods, err := clientset.CoreV1().Pods("").List(
 					metav1.ListOptions{LabelSelector: fmt.Sprintf("meepScenario=%s", scenarioName)})
