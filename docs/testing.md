@@ -15,7 +15,9 @@ Before running the tests, do the following:
 
 - [Build AdvantEDGE](build.md)
 - [Deploy AdvantEDGE](deploy.md)
-- [Install the demo1 scenario](../examples/demo1/README.md)
+- Install the demo1 scenario:
+  - [Import demo1 scenario](use/base-ops.md#import-demo1-scenario-in-advantedge)
+  - [demo1 scenario information](../examples/demo1/README.md)
 - Make sure there is no deployed scenario
 
 ## Run tests

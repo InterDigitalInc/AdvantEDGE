@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/update';
 
 // CHANGE_VIS
 const CFG_CHANGE_VIS = 'CFG_CHANGE_VIS';

@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- // MEEP types
+// MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
 

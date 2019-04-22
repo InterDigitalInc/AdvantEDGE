@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import React, { Component }  from 'react';
+import React, { Component }  from 'react';
 
 import IDDialog from './id-dialog';
 import { MEEP_DLG_DEL_SCENARIO } from '../../meep-constants';

@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
-﻿// Import CSS
+// Import CSS
 import 'material-design-icons/iconfont/material-icons.css';
 import 'vis/dist/vis.min.css';
 import '../css/meep-controller.scss';

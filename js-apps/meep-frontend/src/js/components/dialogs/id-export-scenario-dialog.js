@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import React, { Component }  from 'react';
+import React, { Component }  from 'react';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 import * as YAML from 'yamljs';
 

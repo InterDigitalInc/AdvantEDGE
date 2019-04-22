@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { TYPE_EXEC } from '../../meep-constants';
+import { TYPE_EXEC } from '../../meep-constants';
 
 const initialState = TYPE_EXEC;
 

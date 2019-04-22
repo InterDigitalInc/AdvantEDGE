@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { connect } from 'react-redux';
+import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';

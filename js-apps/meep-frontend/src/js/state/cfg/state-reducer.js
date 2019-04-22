@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { CFG_STATE_IDLE } from '../../meep-constants';
+import { CFG_STATE_IDLE } from '../../meep-constants';
 
 const CFG_CHANGE_STATE = 'CFG_CHANGE_STATE';
 

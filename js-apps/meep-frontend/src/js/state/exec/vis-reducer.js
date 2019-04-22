@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import _ from 'lodash';
+import _ from 'lodash';
 import { updateObject } from '../../util/update';
 import {createSelector } from 'reselect';
 import * as vis from 'vis';

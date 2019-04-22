@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { combineReducers } from 'redux';
+import { combineReducers } from 'redux';
 
 import uiReducer from './ui';
 import cfgReducer from './cfg';

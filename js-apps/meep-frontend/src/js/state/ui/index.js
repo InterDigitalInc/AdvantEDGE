@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/update';
 
 export const PAGE_CONFIGURE = 'page-configure-link';
 export const PAGE_EXECUTE = 'page-execute-link';

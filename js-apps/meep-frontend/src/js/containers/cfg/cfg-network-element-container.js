@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import _ from 'lodash';
+import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Select  } from '@rmwc/select';
@@ -119,6 +119,11 @@ const validateName = (val) => {
   return null;
 };
 
+const validateOptionalName = (val) => {
+  if (val ==='') return null;
+  return validateName(val);
+};
+
 // const validateChars = (val) => {
 //   /*eslint-disable */
 //   if (val.match(/^.*?(?=[\^#%&$\*:<>\?/\{\|\} ]).*$/)) {
@@ -129,6 +134,11 @@ const validateName = (val) => {
 // };
 
 const notNull = val => val;
+const validateNotNull = val => {
+  if (!notNull(val)) {
+    return 'Value is required'
+  }
+};
 
 const validateNumber = (val) => {
   if (isNaN(val)) {
@@ -153,6 +163,8 @@ const validatePath = (val) => {
 };
 
 const validatePort = (port) => {
+  if (port === '') return null;
+
   const notIntError =  validateInt(port);
   if (notIntError) {
     return notIntError;
@@ -166,6 +178,8 @@ const validatePort = (port) => {
 };
 
 const validateExternalPort = (port) => {
+  if (port === '') return null;
+
   const notIntError =  validateInt(port);
   if (notIntError) {
     return notIntError;
@@ -179,6 +193,8 @@ const validateExternalPort = (port) => {
 };
 
 const validateProtocol = (protocol) => {
+  if (protocol === '') return null;
+
   if (protocol) {
     if ((protocol != '') && (protocol != 'TCP') && (protocol != 'UDP')) {
       return 'Must be TCP or UDP';
@@ -197,6 +213,8 @@ const validateEntries = validator => entries => {
 };
 
 const validateServiceMappingEntry = (entry) => {
+  if (entry === '') return null;
+
   const args = entry.split(':');
   if (args.length !== 4) return ` ${'Ext Port:Svc Name:Port:Protocol[,Ext Port: Svc Name:Port:Protocol]'}`;
 
@@ -209,13 +227,17 @@ const validateServiceMappingEntry = (entry) => {
 };
 
 const validateEnvironmentVariableEntry = (entry) => {
-  const parts = entry.split('=');
-  if (args.length !== 2) return `${'VAR=value[,VAR=value]'}`;
+  if (entry === '') return null;
 
-  return [validateName(args[0]), null].filter(notNull);
+  const parts = entry.split('=');
+  if (parts.length !== 2) return `${'VAR=value[,VAR=value]'}`;
+
+  return [validateName(parts[0]), validateNotNull(parts[1])].filter(notNull);
 };
 
 const validateChartGroupEntry = (entry) => {
+  if (entry === '') return null;
+
   const args = entry.split(':');
   if (args.length !== 4) return ` ${'Svc instance:svc group name:port:protocol'}`;
 
@@ -224,12 +246,13 @@ const validateChartGroupEntry = (entry) => {
     validateName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
-  ].filter(notNull);
+  ].filter(notNull)
+  .join(',');
 };
 
 const validateIngressServiceMapping = (entries) => validateEntries(validateServiceMappingEntry)(entries);
-const validateEnvironMentVariables = (entries) => validateEntries(envVariableEntries)(entries);
-
+const validateEnvironMentVariables = (entries) => validateEntries(validateEnvironmentVariableEntry)(entries);
+ 
 const validateCommandArguments = val => null;
 
 // COMPONENTS
@@ -348,6 +371,37 @@ const NCGroups = ({prefixes, onUpdate, element}) => {
   });
 };
 
+const UserChartFields = ({element, onUpdate}) => {
+  return (
+    <>
+      <CfgTextField
+        onUpdate={onUpdate}
+        element={element}
+        label="User Chart Location"
+        validate={validatePath}
+        fieldName={FIELD_CHART_LOC}
+        cydata={CFG_ELEM_CHART_LOC}
+      />
+      <CfgTextField
+        onUpdate={onUpdate}
+        element={element}
+        label="User Chart Group"
+        validate={validateChartGroupEntry}
+        fieldName={FIELD_CHART_GROUP}
+        cydata={CFG_ELEM_CHART_GROUP}
+      />
+      <CfgTextField
+        onUpdate={onUpdate}
+        element={element}
+        label="User Chart Alternate Values"
+        validate={validatePath}
+        fieldName={FIELD_CHART_VAL}
+        cydata={CFG_ELEM_CHART_ALT_VAL}
+      />
+    </>
+  );
+};
+
 // Display element-specific form fields
 const TypeRelatedFormFields = ({onUpdate, element}) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
@@ -378,7 +432,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         prefixes= {[PREFIX_INT_EDGE, PREFIX_INT_FOG, PREFIX_EDGE_FOG]}
       />
     );
-  case ELEMENT_TYPE_POA:
+  case ELEMENT_TYPE_POA: 
     return (
       <NCGroups
         onUpdate={onUpdate}
@@ -397,32 +451,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Location"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_LOC}
-                          cydata={CFG_ELEM_CHART_LOC}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Group"
-                          validate={validateChartGroupEntry}
-                          fieldName={FIELD_CHART_GROUP}
-                          cydata={CFG_ELEM_CHART_GROUP}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Alternate Values"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_VAL}
-                          cydata={CFG_ELEM_CHART_ALT_VAL}
-                        />
-                    </>
+                    <UserChartFields 
+                      onUpdate={onUpdate}
+                      element={element}
+                    />
                   :
                     <>
                         <CfgTextField
@@ -437,6 +469,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                           label="Environment variables"
+                          validate={validateEnvironMentVariables}
                           fieldName={FIELD_ENV_VAR}
                           cydata={CFG_ELEM_ENV}
                         />
@@ -446,7 +479,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                         />
                     </>
                 }
-
+                
             </>
     );
   case ELEMENT_TYPE_EXT_UE_APP:
@@ -472,31 +505,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Location"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_LOC}
-                          cydata={CFG_ELEM_CHART_LOC}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Group"
-                          fieldName={FIELD_CHART_GROUP}
-                          cydata={CFG_ELEM_CHART_GROUP}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Alternate Values"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_VAL}
-                          cydata={CFG_ELEM_CHART_ALT_VAL}
-                        />
-                    </>
+                    <UserChartFields 
+                      onUpdate={onUpdate}
+                      element={element}
+                    />
                   :
                     <>
                         <CfgTextField
@@ -515,6 +527,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                           label="Environment variables"
+                          validate={validateEnvironMentVariables}
                           fieldName={FIELD_ENV_VAR}
                           cydata={CFG_ELEM_ENV}
                         />
@@ -524,7 +537,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                         />
                     </>
                 }
-
+                
             </>
           );
   case ELEMENT_TYPE_EDGE_APP:
@@ -538,31 +551,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Location"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_LOC}
-                          cydata={CFG_ELEM_CHART_LOC}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Group"
-                          fieldName={FIELD_CHART_GROUP}
-                          cydata={CFG_ELEM_CHART_GROUP}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="User Chart Alternate Values"
-                          validate={validatePath}
-                          fieldName={FIELD_CHART_VAL}
-                          cydata={CFG_ELEM_CHART_ALT_VAL}
-                        />
-                    </>
+                    <UserChartFields 
+                      onUpdate={onUpdate}
+                      element={element}
+                    />
                   :
                     <>
                         <CfgTextField
@@ -589,6 +581,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                           label="Environment variables"
+                          validate={validateEnvironMentVariables}
                           fieldName={FIELD_ENV_VAR}
                           cydata={CFG_ELEM_ENV}
                         />
@@ -600,7 +593,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                 }
             </>
         );
-
+        
   default:
     return null;
   }
@@ -624,7 +617,7 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_DC,
       ELEMENT_TYPE_POA,
-    ]
+    ] 
   },
   {
     label: 'Physical Location',
@@ -665,7 +658,7 @@ parentTypes[ELEMENT_TYPE_CLOUD_APP] = [ELEMENT_TYPE_DC];
 
 const getParentTypes = (type) => {
   return parentTypes[type];
-};
+}; 
 
 const buttonStyles = {
   marginRight: 5
@@ -691,7 +684,7 @@ const ElementCfgButtons = ({configuredElement, configMode, onNewElement, onDelet
             >
                 NEW
             </Button>
-
+            
             <Button outlined
               data-cy={CFG_BTN_DEL_ELEM}
               style={buttonStyles}
@@ -708,11 +701,11 @@ const HeaderGroup = ({element, onTypeChange, onUpdate, disabled}) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
-
+    
   return (
         <>
             <Grid style={{marginTop: 10}}>
-              <IDSelect
+              <IDSelect 
                 label="Element Type"
                 span={6}
                 options={elementTypes}
@@ -763,15 +756,15 @@ export class CfgNetworkElementContainer extends Component {
 
     this.props.cfgElemUpdate(updatedElem);
   }
-
+    
   // Retrieve names of elements with matching type
   elementsOfType(types) {
     return _.chain(this.props.tableData)
-      .filter((e) => {
+      .filter((e) => { 
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         return _.includes(types, elemType);
       })
-      .map((e) => {
+      .map((e) => { 
         return getElemFieldVal(e, FIELD_NAME);
       })
       .value();
@@ -789,7 +782,7 @@ export class CfgNetworkElementContainer extends Component {
 
     this.props.cfgElemUpdate(elem);
   }
-
+    
   render() {
     const element = this.props.configuredElement;
     return (
@@ -803,7 +796,7 @@ export class CfgNetworkElementContainer extends Component {
           <GridCell span={5}>
             <GridInner align={'right'}>
               <GridCell span={12}>
-                <ElementCfgButtons
+                <ElementCfgButtons 
                   configuredElement={element}
                   configMode={this.props.configMode}
                   onNewElement={this.props.onNewElement}
@@ -843,7 +836,7 @@ export class CfgNetworkElementContainer extends Component {
       </div>
     );
   }
-}
+}  
 
 const styles = {
   outer: {
@@ -885,3 +878,4 @@ const ConnectedCfgNetworkElementContainer = connect(
 )(CfgNetworkElementContainer);
 
 export default ConnectedCfgNetworkElementContainer;
+

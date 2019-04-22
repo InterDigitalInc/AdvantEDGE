@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import React from 'react';
+import React from 'react';
 
 import {
   NO_SCENARIO_NAME,

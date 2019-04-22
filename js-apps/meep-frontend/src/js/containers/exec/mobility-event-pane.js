@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import _ from 'lodash';
+import _ from 'lodash';
 import React, { Component }  from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';

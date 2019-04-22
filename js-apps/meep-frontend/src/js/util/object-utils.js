@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- export function deepCopy(source) {
+export function deepCopy(source) {
   var dest = JSON.parse(JSON.stringify(source));
   return dest;
 }

@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import React from 'react';
+import React from 'react';
 import { Grid, GridCell  } from '@rmwc/grid';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 

@@ -9,3 +9,4 @@ Document | Description
 [use.md](use.md)                        | Get started using it
 [concepts.md](concepts.md)              | Define concepts
 [testing.md](testing.md)                | Testing
+[frontend.md](frontend.md)              | Frontend Internals

@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
- import {
+import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
   DEFAULT_LATENCY_JITTER_INTER_DOMAIN,
