@@ -46,6 +46,7 @@ func main() {
 		err := server.CtrlEngineInit()
 		if err != nil {
 			log.Error("Failed to initialize Ctrl Engine")
+			run = false
 			return
 		}
 

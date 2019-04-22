@@ -27,7 +27,7 @@ We typically use the convenience script procedure for the community edition from
 
 Versions we use:
 
-- 17.03, 18.03
+- 17.03, 18.03, 18.09
 
 How we do it:
 
@@ -38,6 +38,8 @@ sudo sh get-docker.sh
 
 # Add user to docker group
 sudo usermod -aG docker <your-user>
+
+# Restart shell to apply changes
 ```
 
 ## Kubernetes
@@ -110,7 +112,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ```
 ###### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 ```
-kubeadm init
+sudo kubeadm init
 
 # Once completed, follow onscreen instructions
 mkdir -p $HOME/.kube
@@ -149,7 +151,7 @@ sudo reboot
 We use [this](https://docs.helm.sh/using_helm/#installing-helm) procedure
 
 Versions we use:
-- 2.8.2, 2.12.3
+- 2.8.2, 2.12.3, 2.13.1
 
 How we do it:
 ###### STEP 1 - Install Helm [(details)](https://docs.helm.sh/using_helm/#installing-helm)
