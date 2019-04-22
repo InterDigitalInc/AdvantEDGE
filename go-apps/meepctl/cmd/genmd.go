@@ -12,7 +12,9 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -23,12 +25,17 @@ var genmdCmd = &cobra.Command{
 	Short: "Generate markdown files for meepctl",
 	Long:  `Generate markdown files for meepctl`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := doc.GenMarkdownTree(rootCmd, "/tmp")
+		outDir := viper.GetString("meep.gitdir") + "/docs/meepctl"
+		if _, err := os.Stat(outDir); os.IsNotExist(err) {
+			// default outdir not found ... use /tmp
+			outDir = "/tmp"
+		}
+		err := doc.GenMarkdownTree(rootCmd, outDir)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		fmt.Println("Markdown files can be found in /tmp folder")
+		fmt.Println("Markdown files can be found in ", outDir, " folder")
 	},
 }
 
