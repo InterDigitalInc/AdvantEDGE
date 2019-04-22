@@ -1,43 +1,45 @@
-## meepctl dockerize
+## meepctl build
 
-Dockerize core components
+Build core components
 
 ### Synopsis
 
-Dockerize core components
+Build core components
 
 AdvantEDGE is composed of a collection of micro-services.
 
-Dockerize command genrates AdvantEDGE Docker images and stores them in
-the local Docker registry.
+Build command genrates AdvantEDGE binaries.
 
 Valid targets:
   * all
+  * meep-frontend
   * meep-ctrl-engine
   * meep-initializer
   * meep-mg-manager
   * meep-mon-engine
   * meep-tc-engine
   * meep-tc-sidecar
+  * meep-virt-engine
 
 ```
-meepctl dockerize <target> [flags]
+meepctl build <target> [flags]
 ```
 
 ### Examples
 
 ```
-  # Dockerize all components
-    meepctl dockerize all
-  # Dockerize meep-ctrl-engine component only
-    meepctl dockerize meep-ctrl-engine
-			
+# Build all components
+	meepctl build all
+# Build meep-ctrl-engine component only
+	meepctl build meep-ctrl-engine
+		
 ```
 
 ### Options
 
 ```
-  -h, --help   help for dockerize
+      --codecov   Build a code coverage binary (dev. option)
+  -h, --help      help for build
 ```
 
 ### Options inherited from parent commands
