@@ -382,7 +382,8 @@ func parseScenario(scenario ceModel.Scenario) {
 	interDomainLatencyVariation = validateLatencyVariation(interDomainLatencyVariation)
 	interDomainLatencyCorrelation := COMMON_CORRELATION
 	interDomainThroughput := THROUGHPUT_UNIT * int(scenario.Deployment.InterDomainThroughput)
-	interDomainPacketLoss := 100 * int(scenario.Deployment.InterDomainPacketLoss)
+	// Packet loss (float) converted to hundredth & truncated
+	interDomainPacketLoss := int(100 * scenario.Deployment.InterDomainPacketLoss)
 
 	// Parse Domains
 	for _, domain := range scenario.Deployment.Domains {
@@ -391,7 +392,8 @@ func parseScenario(scenario ceModel.Scenario) {
 		interZoneLatencyVariation = validateLatencyVariation(interZoneLatencyVariation)
 		interZoneLatencyCorrelation := COMMON_CORRELATION
 		interZoneThroughput := THROUGHPUT_UNIT * int(domain.InterZoneThroughput)
-		interZonePacketLoss := 100 * int(domain.InterZonePacketLoss)
+		// Packet loss (float) converted to hundredth & truncated
+		interZonePacketLoss := int(100 * domain.InterZonePacketLoss)
 
 		// Parse Zones
 		for _, zone := range domain.Zones {
@@ -400,21 +402,24 @@ func parseScenario(scenario ceModel.Scenario) {
 			interFogLatencyVariation = validateLatencyVariation(interFogLatencyVariation)
 			interFogLatencyCorrelation := COMMON_CORRELATION
 			interFogThroughput := THROUGHPUT_UNIT * int(zone.InterFogThroughput)
-			interFogPacketLoss := 100 * int(zone.InterFogPacketLoss)
+			// Packet loss (float) converted to hundredth & truncated
+			interFogPacketLoss := int(100 * zone.InterFogPacketLoss)
 
 			interEdgeLatency := int(zone.InterEdgeLatency)
 			interEdgeLatencyVariation := int(zone.InterEdgeLatencyVariation)
 			interEdgeLatencyVariation = validateLatencyVariation(interEdgeLatencyVariation)
 			interEdgeLatencyCorrelation := COMMON_CORRELATION
 			interEdgeThroughput := THROUGHPUT_UNIT * int(zone.InterEdgeThroughput)
-			interEdgePacketLoss := 100 * int(zone.InterEdgePacketLoss)
+			// Packet loss (float) converted to hundredth & truncated
+			interEdgePacketLoss := int(100 * zone.InterEdgePacketLoss)
 
 			edgeFogLatency := int(zone.EdgeFogLatency)
 			edgeFogLatencyVariation := int(zone.EdgeFogLatencyVariation)
 			edgeFogLatencyVariation = validateLatencyVariation(edgeFogLatencyVariation)
 			edgeFogLatencyCorrelation := COMMON_CORRELATION
 			edgeFogThroughput := THROUGHPUT_UNIT * int(zone.EdgeFogThroughput)
-			edgeFogPacketLoss := 100 * int(zone.EdgeFogPacketLoss)
+			// Packet loss (float) converted to hundredth & truncated
+			edgeFogPacketLoss := int(100 * zone.EdgeFogPacketLoss)
 
 			parentEdge := ""
 			var revisitFogList []*NetElem
@@ -426,7 +431,8 @@ func parseScenario(scenario ceModel.Scenario) {
 				poaLatencyVariation = validateLatencyVariation(poaLatencyVariation)
 				poaLatencyCorrelation := COMMON_CORRELATION
 				poaThroughput := THROUGHPUT_UNIT * int(nl.TerminalLinkThroughput)
-				poaPacketLoss := 100 * int(nl.TerminalLinkPacketLoss)
+				// Packet loss (float) converted to hundredth & truncated
+				poaPacketLoss := int(100 * nl.TerminalLinkPacketLoss)
 
 				parentFog := ""
 				var revisitUEList []*NetElem
