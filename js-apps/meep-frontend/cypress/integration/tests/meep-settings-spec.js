@@ -7,10 +7,6 @@ import { selector, click, check, type, select, verify, verifyEnabled } from '../
 // Scenario Execution Tests
 describe('MEEP Settings', function() {
 
-  // Test Variables
-  let defaultScenario = 'None';
-  let demoScenario = 'demo-svc';
-
   // Test Setup
   beforeEach(() => {
     var meepUrl = Cypress.env('meep_url');

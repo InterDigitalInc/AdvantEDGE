@@ -7,10 +7,6 @@ import { selector, click, select, verify } from '../util/util';
 // Scenario Execution Tests
 describe('Scenario Monitoring', function() {
 
-  // Test Variables
-  let defaultScenario = 'None';
-  let demoScenario = 'demo-svc';
-
   // Test Setup
   beforeEach(() => {
     var meepUrl = Cypress.env('meep_url');

@@ -18,41 +18,33 @@ Before running the tests, do the following:
 - [Install the demo1 scenario](../examples/demo1/README.md)
 - Make sure there is no deployed scenario
 
-## Run tests using Cypress CLI
+## Run tests
+
+Test specification files are located [here](../js-apps/meep-frontend/cypress/integration/tests)
+
+### Cypress CLI
 
 ```
-cd js-apps
+# Run Cypress tests using CLI
+cd js-apps/meep-frontend
 npm run cy:run
 ```
 
-## Run tests using Cypress GUI
+>**NOTE**<br>
+>Default AdvantEDGE URL used by cypress is http://127.0.0.1:30000<br>
+>To run tests using another deployment:<br>
+>`npm run cy:run -- --env meep_url="http://<Node IP>:<MEEP FE port>"`
+
+
+## Cypress GUI
 
 ```
+# Run/Debug Cypress tests using GUI
+cd js-apps/meep-frontend
 npm run cy:open
 ```
 
-
-- To run tests from web-ui folder:
-          - CLI: npm run cy:run [-- --env meep_url="http://<Node IP>:<MEEP FE port>"]
-          - GUI: npm run cy:open [-- --env meep_url="http://<Node IP>:<MEEP FE port>"]
-          - NOTES:
-            - Default IP & port is 127.0.0.1:30000
-           - MEEP must be running
-            - No scenario must be deployed
-            - demo-svc scenario must exist in scenario DB
-        - Updated package versions
-
-
-The [_meepctl CLI tool_](meepctl/meepctl.md) tool is built & installed using a bash script.
-
-```
-cd ~/AdvantEDGE/go-apps/meepctl
-./install.sh
-```
-
-A first time install of meepctl must also be configured.
-
-```
-meepctl config set --ip <your-node-ip> --gitdir /home/<user>/AdvantEDGE
-```
-
+>**NOTE**<br>
+>Default AdvantEDGE URL used by cypress is http://127.0.0.1:30000<br>
+>To run tests using another deployment:<br>
+>`npm run cy:open -- --env meep_url="http://<Node IP>:<MEEP FE port>"`

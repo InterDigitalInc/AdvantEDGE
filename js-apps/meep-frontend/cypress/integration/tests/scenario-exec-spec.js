@@ -58,7 +58,7 @@ describe('Scenario Execution', function() {
 
   // Test Variables
   let defaultScenario = 'None';
-  let demoScenario = 'demo-svc';
+  let demoScenario = 'demo1';
 
   // Test Setup
   beforeEach(() => {

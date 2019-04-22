@@ -48,6 +48,10 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 
 - [Build AdvantEDGE](docs/build.md)
 
+## Testing
+
+The AdvantEDGE platform test procedures are described [here](docs/testing.md)
+
 ## Concepts
 An understanding of some AdvantEDGE concepts is helpful towards effectively using the platform and understanding how it works.  These core AdvantEDGE concepts are described [here](docs/concepts.md)
 - [x] Micro-service Architecture

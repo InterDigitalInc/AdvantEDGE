@@ -49,8 +49,8 @@ mkdir ~/gocode/bin
 
 ```
 # Add the following lines at the end of your $HOME/.profile
-GOPATH=$HOME/gocode
-PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
+export GOPATH=$HOME/gocode
+export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 ```
 
 ###### STEP 5 - Apply profile updates
