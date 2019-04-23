@@ -22,13 +22,7 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 
 ## Concepts
 
-The following AdvantEDGE concepts are described [here](docs/concepts.md)
-
-- [x] Micro-service Architecture
-- [x] Macro-network Model
-- [x] Network characteristics
-- [x] Network mobility
-- [x] External UE support
+Before getting started we recommend familiarity with key [AdvantEDGE concepts](docs/concepts.md)
 
 ## Getting started
 

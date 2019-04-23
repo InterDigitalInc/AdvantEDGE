@@ -1,10 +1,11 @@
 # AdvantEDGE Concepts
 ## Goal
-- [Define micro-service architecture](#micro-service-architecture)
-- [Define macro-network model](#macro-network-model)
-- [Define network characteristics](#network-characteristics)
-- [Define network mobility](#network-mobility)
-- [Define external UE support](#external-ue-support)
+- [Micro-service architecture](#micro-service-architecture)
+- [Macro-network model](#macro-network-model)
+- [Network characteristics](#network-characteristics)
+- [Network mobility](#network-mobility)
+- [External UE support](#external-ue-support)
+- [Frontend](./concepts/frontend.md)
 
 ## Micro-service architecture
 AdvantEDGE is a controller software that facillitates deployment of edge applications in a simulated network environment.

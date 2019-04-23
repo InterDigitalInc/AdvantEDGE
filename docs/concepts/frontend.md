@@ -112,7 +112,7 @@ The state of the application is updated through Redux _actions_ when user-initia
 
 The following diagram illustrates this general pattern as used in the _AdvantEDGE_ frontend.
 
- ![General Data Flow Pattern](images/meep-frontend-data-flow-pattern.png "General Data Flow Pattern")
+ ![General Data Flow Pattern](../images/meep-frontend-data-flow-pattern.png "General Data Flow Pattern")
 
  Here are some of the actions that are used in the implementation of the _AdvantEDGE_ application.
 
