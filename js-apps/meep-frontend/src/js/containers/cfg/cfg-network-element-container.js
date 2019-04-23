@@ -119,6 +119,17 @@ const validateName = (val) => {
   return null;
 };
 
+const validateVariableName = (val) => {
+  if (val) {
+    if (val.length > 30) {
+      return 'Maximum 30 characters';
+    } else if (!val.match(/^(([_a-z0-9A-Z][_-a-z0-9.]*)?[_a-z0-9A-Z])+$/)) {
+      return 'Alphanumeric or \'-\' or \'.\'';
+    }
+  }
+  return null;
+};
+
 const validateOptionalName = (val) => {
   if (val ==='') return null;
   return validateName(val);
@@ -232,7 +243,7 @@ const validateEnvironmentVariableEntry = (entry) => {
   const parts = entry.split('=');
   if (parts.length !== 2) return `${'VAR=value[,VAR=value]'}`;
 
-  return [validateName(parts[0]), validateNotNull(parts[1])].filter(notNull);
+  return [validateVariableName(parts[0]), validateNotNull(parts[1])].filter(notNull);
 };
 
 const validateChartGroupEntry = (entry) => {
