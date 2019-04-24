@@ -140,7 +140,7 @@ describe('Scenario Execution', function() {
 
     // Create Network Characteristic event
     cy.log('Create & Validate Network Characteristic event');
-    createNetCharEvent('SCENARIO', 'demo-svc', 60, 5, 1, 200000);
+    createNetCharEvent('SCENARIO', demoScenario, 60, 5, 1, 200000);
     createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
     createNetCharEvent('ZONE-INTER-EDGE', 'zone1', 5, 0, 1, 80000);
     createNetCharEvent('ZONE-INTER-FOG', 'zone1', 3, 2, 1, 75000);
