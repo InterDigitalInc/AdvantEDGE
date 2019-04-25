@@ -24,7 +24,7 @@ import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dial
 import IDDeleteScenarioDialog from '../../components/dialogs/id-delete-scenario-dialog';
 import IDExportScenarioDialog from '../../components/dialogs/id-export-scenario-dialog';
 
-import {
+import { 
   cfgElemNew,
   cfgElemEdit,
   cfgElemClear,
@@ -63,29 +63,33 @@ import {
   getElemFieldVal
 } from '../../util/elem-utils';
 
+import {
+  pipe,
+  filter,
+  log
+} from '../../util/functional';
+
 const firstElementIfPresent = (val) => Array.isArray(val) ? (val.length ? val[0] : null) : val;
 const notNull = x => x;
-const extractPort = svcMapEntry => firstElementIfPresent(svcMapEntry.split(':'))
+const extractPort = svcMapEntry => Number(firstElementIfPresent(svcMapEntry.split(':')))
 
 const externalPorts = elem => {
   return getElemFieldVal(elem, FIELD_SVC_MAP)
     .split(',')
     .map(extractPort)
     .filter(notNull)
-    .concat([getElemFieldVal(elem, FIELD_EXT_PORT)]
+    .concat([Number(getElemFieldVal(elem, FIELD_EXT_PORT))]
     .filter(notNull));
 }
 
-const intersection = (a1, a2) => {
-  let inter = [];
-  a1.forEach((elem) => {
-    if (_.includes(a2, elem)) {
-      inter.push(elem)
-    }
-  });
-
-  return inter;
+const hasExtPortsInCommon = elem1 => elem2 => {
+  const ports1 = externalPorts(elem1);
+  const ports2 = externalPorts(elem2)
+  const intersection = _.intersection(ports1, ports2);
+  return intersection.length
 };
+
+const hasDifferentName = elem1 => elem2 => elem1.name.val != elem2.name.val;
 
 class CfgPageContainer extends Component {
   constructor(props) {
@@ -153,7 +157,7 @@ class CfgPageContainer extends Component {
   validateNetworkElement(element) {
     var configMode = this.props.cfg.elementConfiguration.configurationMode;
     var data = this.props.cfg.table.entries;
-
+        
     // Clear previous error message
     this.props.cfgElemSetErrMsg('');
 
@@ -198,13 +202,11 @@ class CfgPageContainer extends Component {
     const extPorts = externalPorts(element);
 
     if (extPorts.length) {
-      const hasPortsInCommon = elem => {
-        const ports = externalPorts(elem);
-        const inter = intersection(extPorts, ports);
-        const intersect = _.flatten(inter).filter(notNull);
-        return intersect.length
-      };
-      const elemsWithSameExtPort = data.filter(hasPortsInCommon);
+     
+      const elemsWithSameExtPort = pipe(
+        filter(hasDifferentName(element)),
+        filter(hasExtPortsInCommon(element)),
+      )(data);
 
       if (elemsWithSameExtPort.length) {
         const elemNames = elemsWithSameExtPort.map(e => e.id);
@@ -212,7 +214,7 @@ class CfgPageContainer extends Component {
         return false;
       }
     }
-
+    
 
     return true;
   }
@@ -254,7 +256,7 @@ class CfgPageContainer extends Component {
     if (!data.scenarios) {
       return;
     }
-
+        
     this.props.changeScenarioList(_.map(data.scenarios, 'name'));
   }
 
@@ -483,7 +485,7 @@ class CfgPageContainer extends Component {
     return (
       <div style={styles.page}>
         {this.renderDialogs()}
-
+                
         <div style={{width: '100%'}}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
@@ -539,7 +541,7 @@ class CfgPageContainer extends Component {
                     />
                   </Elevation>
                 </GridCell>
-              </GridInner>
+              </GridInner>  
             </Grid>
 
             <div style={{width: '100%'}}>
@@ -611,3 +613,5 @@ const ConnectedCfgPageContainer = connect(
 )(CfgPageContainer);
 
 export default ConnectedCfgPageContainer;
+
+
