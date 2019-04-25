@@ -1,29 +1,36 @@
 # Runtime Environment Setup
-- Guidance on runtime pre-requisites installation
+
+- Guidance on runtime prerequisites installation
 - List versions known to work
 
 ## Overview
-AdvantEDGE requires the following pre-requisites
+
+AdvantEDGE runtime environment prerequisites:
+
 - [Ubuntu](#ubuntu)
 - [Dockers](#dockers)
 - [Kubernetes](#kubernetes)
 - [Helm](#helm)
 
-
 ## Ubuntu
+
 There are many installation guides out there; we use [this one](https://tutorials.ubuntu.com/tutorial/tutorial-install-ubuntu-desktop#0)
 
 Versions we use:
+
 - 16.04 LTS and 18.04 LTS
 - Kernel: 4.4, 4.15 and 4.18
 
 ## Dockers
+
 We typically use the convenience script procedure for the community edition from [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
 Versions we use:
-- 17.03, 18.03
+
+- 17.03, 18.03, 18.09
 
 How we do it:
+
 ```
 curl -fsSL https://get.docker.com -o get-docker.sh
 
@@ -31,11 +38,16 @@ sudo sh get-docker.sh
 
 # Add user to docker group
 sudo usermod -aG docker <your-user>
+
+# Restart shell to apply changes
 ```
+
 ## Kubernetes
+
 We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independent/install-kubeadm/)
 
 Versions we use:
+
 - 1.09, 1.10, 1.12, 1.13
 
 >**IMPORTANT NOTE #1**<br>
@@ -100,7 +112,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 ```
 ###### STEP 4 - Initialize master [(details)](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#initializing-your-master)
 ```
-kubeadm init
+sudo kubeadm init
 
 # Once completed, follow onscreen instructions
 mkdir -p $HOME/.kube
@@ -139,7 +151,7 @@ sudo reboot
 We use [this](https://docs.helm.sh/using_helm/#installing-helm) procedure
 
 Versions we use:
-- 2.8.2, 2.12.3
+- 2.8.2, 2.12.3, 2.13.1
 
 How we do it:
 ###### STEP 1 - Install Helm [(details)](https://docs.helm.sh/using_helm/#installing-helm)

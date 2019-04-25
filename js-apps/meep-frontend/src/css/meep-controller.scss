@@ -1,0 +1,163 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+// Set IDCC color theme
+$mdc-theme-primary: #379DD8;
+$mdc-theme-secondary: #FF9800;
+$mdc-theme-background: #FFFFFF;
+
+// Set default margin to 0px
+$mdc-layout-grid-default-margin: (
+  desktop: 0px,
+  tablet: 16px,
+  phone: 16px
+);
+
+// Set default gutter to 10px
+$mdc-layout-grid-default-gutter: (
+  desktop: 10px,
+  tablet: 16px,
+  phone: 16px
+) !default;
+
+@import "material-components-web/material-components-web";
+
+// Ensure layout covers the entire screen
+
+html {
+    height: 100%;
+}
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+}
+
+#meep-container {
+    width: 100%;
+}
+
+// UI
+#meep-container {
+    width: 100%;
+}
+.ui-body {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    background-color: #FCFCFC;
+}
+.ui-content {
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    box-sizing: border-box;
+}
+.ui-main {
+    padding: 16px;
+}
+.component-style {
+    background-color: #FFFFFF;
+}
+
+
+// Visualization
+.vis-network-placeholder {
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+.vis-network-div {
+    display:inline-block;
+    width:100%;
+    height:60vh;
+    margin-top: 10px;
+    background-color: #FFFFFF;
+}
+#vis-report {
+    display:inline-block;
+    width:200px;
+    vertical-align:top;
+}
+
+// Element configuration
+.cfg-network-element-div {
+    height:60vh;
+}
+
+// Navigation
+#idcc-toolbar {
+    @include mdc-top-app-bar-ink-color(#fff);
+}
+// #idcc-logo {
+//     height: 40px;
+//     width: 40px;
+//     padding-top: 4px;
+//     padding-bottom: 4px;
+// }
+#idcc-title {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 22px;
+}
+
+#cfg-vis-network-container {
+    padding: 10;
+};
+// #file-export-ta-div {
+//     margin-top: 10px;
+// }
+#page-operate {
+    display: none;
+}
+
+
+
+#refresh-interval-form-div {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 16px;
+}
+
+// Monitoring
+#idcc-monitoring-iframe {
+    height: 80vh;
+    width: 100%;
+    border-style: none;
+}
+
+// IDCC Styles
+.idcc-button {
+    @include mdc-button-ink-color(#fff);
+}
+.idcc-margin-top {
+    margin-top: 10px;
+}
+.idcc-margin-left {
+    margin-left: 20px;
+}
+.idcc-elevated-area {
+    margin-bottom: 10px;
+    padding: 10px;
+}
+.idcc-fullwidth {
+    width: 100%;
+}
+
+#new-element-error-message {
+    color: firebrick;
+}
+
+// Under construction logo
+.construction-div-img {
+    height: 50px;
+    vertical-align: middle;
+}

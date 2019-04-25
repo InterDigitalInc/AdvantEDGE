@@ -37,4 +37,5 @@ spec:
       initContainers:
         - name: init-{{ .Values.deployment.dependency }}
           image: busybox
+          imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }} ; do echo wiating for {{ .Values.deployment.dependency }}; sleep2; done;']
