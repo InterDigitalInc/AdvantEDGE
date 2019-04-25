@@ -31,7 +31,7 @@ class IDSaveScenarioDialog extends Component {
         err = 'Lowercase alphanumeric or \'-\'';
       }
     } else {
-      err = 'Please enter a scenario name'
+      err = 'Please enter a scenario name';
     }
 
     this.setState({

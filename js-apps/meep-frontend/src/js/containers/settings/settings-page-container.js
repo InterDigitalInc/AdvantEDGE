@@ -93,7 +93,7 @@ class SettingsPageContainer extends Component {
 
   render() {
 
-    if (this.props.page != PAGE_SETTINGS) {
+    if (this.props.page !== PAGE_SETTINGS) {
       return null;
     }
 

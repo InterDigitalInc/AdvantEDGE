@@ -127,7 +127,7 @@ class ExecTable extends Component {
     const page = table.page;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    if (!data || !data.length) return null;
+    if (!data || !data.length) {return null;}
 
     return (
       <Grid>
@@ -185,7 +185,7 @@ class ExecTable extends Component {
                             selected={isSelected}
                           >
                             <TableCell component="th" scope="row">{n.name}</TableCell>
-                            <TableCell className={ (n.logicalState == 'Running') ? classes.statusRunning : classes.statusPending}>
+                            <TableCell className={ (n.logicalState === 'Running') ? classes.statusRunning : classes.statusPending}>
                               {n.logicalState}
                             </TableCell>
                             <TableCell>

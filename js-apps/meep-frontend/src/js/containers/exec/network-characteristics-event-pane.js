@@ -93,7 +93,7 @@ class NetworkCharacteristicsEventPane extends Component {
       return;
     }
 
-    var neType = (this.state.currentElementType == 'DOMAIN') ? 'OPERATOR' : this.state.currentElementType;
+    var neType = (this.state.currentElementType === 'DOMAIN') ? 'OPERATOR' : this.state.currentElementType;
     var ncEvent = {
       name: 'name',
       type: this.props.currentEvent,
@@ -219,7 +219,7 @@ class NetworkCharacteristicsEventPane extends Component {
   getElementByName(name) {
     var elements = this.props.networkElements;
     for (var i = 0; i < elements.length; i++) {
-      if (getElemFieldVal(elements[i], FIELD_NAME) == name) {
+      if (getElemFieldVal(elements[i], FIELD_NAME) === name) {
         return elements[i];
       }
     }

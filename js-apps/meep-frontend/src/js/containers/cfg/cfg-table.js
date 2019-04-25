@@ -113,7 +113,7 @@ class CfgTable extends Component {
     const page = table.page;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    if (!data || data.length < 1) return null;
+    if (!data || data.length < 1) {return null;}
 
     return (
         <>

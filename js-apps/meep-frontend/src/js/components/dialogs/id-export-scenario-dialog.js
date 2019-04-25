@@ -37,7 +37,7 @@ class IDExportScenarioDialog extends Component {
 
   exportScenario() {
 
-    if (this.state.filename == '') {
+    if (this.state.filename === '') {
       // console.log('Invalid file name provided');
       // TODO: consider showing an alert
       return;
@@ -70,7 +70,7 @@ class IDExportScenarioDialog extends Component {
           onChange={
             (e) => {
               const val = e.target.value;
-              const err = (!val && val !=null)
+              const err = (!val && val !== null)
                 ? 'Please enter a filename'
                 : '';
               this.setState({
