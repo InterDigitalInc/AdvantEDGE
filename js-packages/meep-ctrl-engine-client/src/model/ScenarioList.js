@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * MEEP Controller REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
