@@ -59,7 +59,7 @@ const scenarioPodsTerminating = createSelector(scenarioPodsPhasesSelector, (pods
 });
 
 const scenarioPodsTerminated = createSelector(scenarioPodsPhasesSelector, (pods) => {
-  return pods === null || !pods.length;
+  return pods === null || pods === undefined || !pods.length;
 });
 
 // Returns a list of scenario posds info and adds serviceMaps to external ones
