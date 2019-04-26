@@ -53,7 +53,7 @@ import {
   TYPE_EXEC,
 
   // States
-  EXEC_STATE_IDLE,
+  EXEC_STATE_IDLE
 } from '../../meep-constants';
 
 
@@ -295,7 +295,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
-    padding: 10,
+    padding: 10
   },
   page: {
     height: 1500,
@@ -317,7 +317,7 @@ const mapStateToProps = state => {
     page: state.ui.page,
     execScenarioName: state.exec.scenario.name,
     cfgScenarioName: state.cfg.scenario.name,
-    execVisData: execVisFilteredData(state),
+    execVisData: execVisFilteredData(state)
   };
 };
 

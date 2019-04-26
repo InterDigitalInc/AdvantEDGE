@@ -57,7 +57,7 @@ import {
   PREFIX_INT_EDGE,
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
-  PREFIX_TERM_LINK,
+  PREFIX_TERM_LINK
 
 } from '../../meep-constants';
 

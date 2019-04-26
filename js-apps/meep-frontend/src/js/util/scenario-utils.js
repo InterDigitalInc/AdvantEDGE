@@ -123,7 +123,7 @@ import {
   TYPE_ZONE,
   TYPE_NET_LOC,
   TYPE_PHY_LOC,
-  TYPE_PROCESS,
+  TYPE_PROCESS
 
 } from '../meep-constants';
 
@@ -479,7 +479,7 @@ export function createNewScenario(name) {
       interDomainThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_DOMAIN),
       interDomainPacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_DOMAIN),
       domains: (name === 'None') ? [] : [ createDefaultDomain() ]
-    },
+    }
   };
   return scenario;
 }
@@ -598,7 +598,7 @@ export function createDomain(name, element) {
     interZoneLatencyVariation: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR),
     interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),
     interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),
-    zones: [ createDefaultZone(name),]
+    zones: [ createDefaultZone(name)]
   };
   return domain;
 }
@@ -612,7 +612,7 @@ export function createDefaultDomain() {
     interZoneLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTER_ZONE),
     interZoneThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_ZONE),
     interZonePacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_ZONE),
-    zones: [ createDefaultZone(PUBLIC_DOMAIN_TYPE_STR),]
+    zones: [ createDefaultZone(PUBLIC_DOMAIN_TYPE_STR)]
   };
   return domain;
 }
@@ -674,7 +674,7 @@ export function createZone(name, element) {
     edgeFogLatencyVariation: getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY_VAR),
     edgeFogThroughput: getElemFieldVal(element, FIELD_EDGE_FOG_THROUGPUT),
     edgeFogPacketLoss: getElemFieldVal(element, FIELD_EDGE_FOG_PKT_LOSS),
-    networkLocations: [ createDefaultNL(name),]
+    networkLocations: [ createDefaultNL(name)]
   };
   return zone;
 }
@@ -852,7 +852,7 @@ export function addScenarioNode(scenario, nodes) {
   var n = {
     id: scenario.name,
     label: 'Internet',
-    level: 0,
+    level: 0
   };
 
   var image = getScenarioSpecificImage(n.label, TYPE_SCENARIO, null);
@@ -872,12 +872,12 @@ export function addDomainNode(domain, parent, nodes, edges) {
   var n = {
     id: domain.id,
     label: domain.name,
-    level: 1,
+    level: 1
   };
 
   var e = {
     from: parent.name,
-    to: domain.id,
+    to: domain.id
   };
 
   var image = getScenarioSpecificImage(n.label, TYPE_DOMAIN, null);
@@ -903,7 +903,7 @@ export function addZoneNode(zone, parent, nodes, edges) {
   var n = {
     id: zone.id,
     label: zone.name,
-    level: 2,
+    level: 2
   };
 
   var e = {
@@ -939,12 +939,12 @@ export function addNlNode(nl, parent, nodes, edges) {
   var n = {
     id: nl.id,
     label: nl.name,
-    level: 3,
+    level: 3
   };
 
   var e = {
     from: parent.id,
-    to: nl.id,
+    to: nl.id
   };
 
   var image = getScenarioSpecificImage(n.label, TYPE_NET_LOC, null);
@@ -969,7 +969,7 @@ export function addNlNode(nl, parent, nodes, edges) {
 export function addPlNode(pl, parent, nodes, edges) {
   var n = {
     id: pl.id,
-    label: pl.name,
+    label: pl.name
   };
 
   var e = {
@@ -1097,7 +1097,7 @@ export function addPlNode(pl, parent, nodes, edges) {
 export function addProcessNode(proc, parent, nodes, edges) {
   var n = {
     id: proc.id,
-    label: proc.name,
+    label: proc.name
   };
 
   var e = {

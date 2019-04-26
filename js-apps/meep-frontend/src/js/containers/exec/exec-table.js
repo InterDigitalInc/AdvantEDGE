@@ -52,19 +52,19 @@ const ServiceMapsRow = (props) => {
 const execTableStyles = theme => ({
   root: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 3
   },
   table: {
-    minWidth: 1020,
+    minWidth: 1020
   },
   tableWrapper: {
-    overflowX: 'auto',
+    overflowX: 'auto'
   },
   tableHead: {
-    'background-color': '#379DD8',
+    'background-color': '#379DD8'
   },
   tableHeadColor: {
-    color: '#FFFFFF',
+    color: '#FFFFFF'
   },
   statusRunning: {
     color: '#388E3C',
@@ -209,8 +209,8 @@ class ExecTable extends Component {
                 count={data.length ? data.length : 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
-                backIconButtonProps={{'aria-label': 'Previous Page',}}
-                nextIconButtonProps={{'aria-label': 'Next Page',}}
+                backIconButtonProps={{'aria-label': 'Previous Page'}}
+                nextIconButtonProps={{'aria-label': 'Next Page'}}
                 onChangePage={(event, page) => this.onChangePage(event, page)}
                 onChangeRowsPerPage={event => this.onChangeRowsPerPage(event)}
               />
@@ -230,7 +230,7 @@ const styles = {
 };
 
 ExecTable.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -242,7 +242,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeTable: (table) => dispatch(execChangeTable(table)),
+    changeTable: (table) => dispatch(execChangeTable(table))
   };
 };
 

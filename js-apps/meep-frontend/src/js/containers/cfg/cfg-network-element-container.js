@@ -627,7 +627,7 @@ const elementTypes = [
     label: 'Network Location',
     options: [
       ELEMENT_TYPE_DC,
-      ELEMENT_TYPE_POA,
+      ELEMENT_TYPE_POA
     ] 
   },
   {
@@ -648,7 +648,7 @@ const elementTypes = [
       ELEMENT_TYPE_EXT_UE_APP,
       ELEMENT_TYPE_UE_APP
     ]
-  },
+  }
 ];
 
 var parentTypes = {};

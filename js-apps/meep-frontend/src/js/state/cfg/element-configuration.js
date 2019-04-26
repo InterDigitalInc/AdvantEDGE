@@ -20,7 +20,7 @@ const CFG_ELEM_MODE_EDIT = 'CFG_ELEM_MODE_EDIT';
 
 function cfgElemNew() {
   return {
-    type: CFG_ELEM_NEW,
+    type: CFG_ELEM_NEW
   };
 }
 
@@ -33,7 +33,7 @@ function cfgElemEdit(elem) {
 
 function cfgElemClear() {
   return {
-    type: CFG_ELEM_CLEAR,
+    type: CFG_ELEM_CLEAR
   };
 }
 

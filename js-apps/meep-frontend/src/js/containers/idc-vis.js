@@ -60,7 +60,7 @@ function createImageGroup(groups, name) {
       face: 'verdana'
     },
     color: {
-      background: '#FFFFFF',
+      background: '#FFFFFF'
     },
     shape: 'image',
     shapeProperties: {
@@ -122,7 +122,7 @@ class IDCVis extends Component {
           centralGravity: 0
         },
         minVelocity: 0.75,
-        solver: 'hierarchicalRepulsion',
+        solver: 'hierarchicalRepulsion'
       },
       nodes: {
         borderWidth: 2,
@@ -132,7 +132,7 @@ class IDCVis extends Component {
           face: 'verdana'
         },
         shape: 'box',
-        size: 21,
+        size: 21
       },
       edges: {
         width: 2,

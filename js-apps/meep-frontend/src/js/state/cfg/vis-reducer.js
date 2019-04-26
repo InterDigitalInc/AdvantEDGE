@@ -39,7 +39,7 @@ const initialState = {
   options: {},
   data: {
     nodes: [],
-    edges: [],
+    edges: []
   },
   showConfig: false
 };

@@ -50,7 +50,7 @@ import {
   CFG_STATE_LOADED,
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
-  ELEMENT_TYPE_SCENARIO,
+  ELEMENT_TYPE_SCENARIO
 } from '../../meep-constants';
 
 import {
@@ -562,7 +562,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
-    padding: 10,
+    padding: 10
   },
   inner: {
     height: '100%'

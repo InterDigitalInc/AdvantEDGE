@@ -192,7 +192,7 @@ const styles = {
     marginBotton: 25
   },
   inner: {
-    height: '100%',
+    height: '100%'
   },
   page: {
     height: 1500,
