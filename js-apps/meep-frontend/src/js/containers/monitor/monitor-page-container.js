@@ -16,9 +16,12 @@ import Iframe from 'react-iframe';
 import HeadlineBar from '../../components/headline-bar';
 
 import {
-  uiSetAutomaticRefresh,
-  PAGE_MONITOR
+  uiSetAutomaticRefresh
 } from '../../state/ui';
+
+import {
+  changeDashboardUrl
+} from '../../state/monitor';
 
 import { 
   MON_DASHBOARD_SELECT,
@@ -42,87 +45,92 @@ const selectOptions = [
 
 const kibanaDashboardUrl = 'http://' + location.hostname + ':32003/app/kibana#/dashboard';
 
+const DashboardContainer = (props) => {
+  if (!props.dashboardUrl) {
+    return null;
+  }
+  return (
+    <Grid style={{width: '100%', height: '100%'}} >
+      <GridInner style={{width: '100%', height: '100%'}}>
+        <GridCell span={12} style={styles.inner}>
+          <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>                
+            <div style={{flex: 1, padding: 10}}>
+              <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
+                <Iframe
+                  url={props.dashboardUrl}
+                  id="myId"
+                  display="initial"
+                  position="relative"
+                  allowFullScreen
+                  styles={{width: '100%', height: '100%'}}
+                />
+              </div>
+            </div>
+          </Elevation>
+        </GridCell>
+      </GridInner>
+    </Grid>
+  );
+};
+
+const MonitorPageHeadlineBar = (props) => {
+  return(
+    <div style={{width: '100%'}}>   
+      <Grid style={styles.headlineGrid}>
+        <GridCell span={12}>
+          <Elevation className="component-style" z={2} style={styles.headline}>
+            <GridInner>
+              <GridCell align={'middle'} span={6}>
+                <HeadlineBar
+                  titleLabel="Deployed Scenario"
+                  scenarioName={props.scenarioName}
+                />
+              </GridCell>
+              <GridCell span={4}>
+                <Select
+                  style={{width: '100%'}}
+                  label='Dashboard'
+                  outlined
+                  options={selectOptions}
+                  onChange={(e) => props.onChangeDashboard(e)}
+                  value={props.dashboardUrl}
+                  data-cy={MON_DASHBOARD_SELECT}
+                />
+              </GridCell>
+              <GridCell span={2} style={{paddingTop: 8}}>
+                <Button raised
+                  style={styles.button}
+                  onClick={() => window.open(kibanaDashboardUrl, '_blank')}
+                >
+                    OPEN KIBANA
+                </Button>
+              </GridCell>
+            </GridInner>
+          </Elevation>
+        </GridCell>
+      </Grid>
+    </div>
+  );
+};
+
 class MonitorPageContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      iFrameUrl: '',
-      dashboardSelected: null
-    };
+    this.state = {};
   }
 
   handleSelectionChange(e) {
-    this.setState({
-      iFrameUrl: e.target.value,
-      dashboardSelected: true
-    });
+    this.props.changeDashboardUrl(e.target.value);
   }
 
   render() {
-
-    if (this.props.page != PAGE_MONITOR) {
-      return null;
-    }
-        
     return (
       <div style={{width: '100%', height: '100%'}}>
-        <div style={{width: '100%'}}>   
-          <Grid style={styles.headlineGrid}>
-            <GridCell span={12}>
-              <Elevation className="component-style" z={2} style={styles.headline}>
-                <GridInner>
-                  <GridCell align={'middle'} span={6}>
-                    <HeadlineBar
-                      titleLabel="Deployed Scenario"
-                      scenarioName={this.props.scenarioName}
-                    />
-                  </GridCell>
-                  <GridCell span={4}>
-                    <Select
-                      style={{width: '100%'}}
-                      label='Dashboard'
-                      outlined
-                      options={selectOptions}
-                      onChange={(e) => this.handleSelectionChange(e)}
-                      data-cy={MON_DASHBOARD_SELECT}
-                    />
-                  </GridCell>
-                  <GridCell span={2} style={{paddingTop: 8}}>
-                    <Button raised
-                      style={styles.button}
-                      onClick={() => window.open(kibanaDashboardUrl, '_blank')}
-                    >
-                        OPEN KIBANA
-                    </Button>
-                  </GridCell>
-                </GridInner>
-              </Elevation>
-            </GridCell>
-          </Grid>
-        </div>
-                
-        <Grid style={{width: '100%', height: '100%'}} hidden={!this.state.dashboardSelected}>
-          <GridInner style={{width: '100%', height: '100%'}}>
-            <GridCell span={12} style={styles.inner}>
-              <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>
-                                    
-                <div style={{flex: 1, padding: 10}}>
-                  <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
-                    <Iframe
-                      url={this.state.iFrameUrl}
-                      id="myId"
-                      display="initial"
-                      position="relative"
-                      allowFullScreen
-                      styles={{width: '100%', height: '100%'}}
-                    />
-                  </div>
-                </div>
-              </Elevation>
-            </GridCell>
-          </GridInner>
-        </Grid>
-                   
+        <MonitorPageHeadlineBar
+          scenarioName={this.props.scenarioName}
+          onChangeDashboard={(e) => this.handleSelectionChange(e)}
+        />
+        <DashboardContainer dashboardUrl={this.props.dashboardUrl}/>
       </div>
     );
   }
@@ -162,12 +170,14 @@ const mapStateToProps = state => {
     devMode: state.ui.devMode,
     page: state.ui.page,
     scenarioName: state.exec.scenario.name,
+    dashboardUrl: state.monitor.dashboardUrl
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val))
+    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val)),
+    changeDashboardUrl: (url) => dispatch(changeDashboardUrl(url))
   };
 };
 
