@@ -1,7 +1,9 @@
 ---
 swagger: "2.0"
 info:
-  description: "MEEP Mobility Group Application REST API"
+  description: "Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved.\
+    \ The information provided herein is the proprietary and confidential information\
+    \ of InterDigital Communications, Inc.\n"
   version: "1.0.0"
   title: "MEEP Mobility Group Application REST API"
 basePath: "/v1"

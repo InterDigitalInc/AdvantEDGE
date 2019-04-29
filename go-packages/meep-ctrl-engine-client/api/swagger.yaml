@@ -1,7 +1,9 @@
 ---
 swagger: "2.0"
 info:
-  description: "MEEP Controller REST API"
+  description: "Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved.\
+    \ The information provided herein is the proprietary and confidential information\
+    \ of InterDigital Communications, Inc.\n"
   version: "1.0.0"
   title: "MEEP Controller REST API"
 basePath: "/v1"
@@ -2462,12 +2464,6 @@ definitions:
         nbPodRestart: "15005"
         startTime: "2018-09-10 14:24:00 +0000 UTC"
 parameters:
-  AppName:
-    in: "body"
-    name: "appName"
-    description: "App name string"
-    required: true
-    x-exportParamName: "AppName"
   Name:
     name: "name"
     in: "path"
@@ -2498,18 +2494,6 @@ parameters:
     schema:
       $ref: "http://localhost:8291/meep-model.yaml#/definitions/Event"
     x-exportParamName: "Event"
-  PodName:
-    in: "body"
-    name: "podName"
-    description: "Pod name string"
-    required: true
-    x-exportParamName: "PodName"
-  PodType:
-    in: "body"
-    name: "podType"
-    description: "Pod type string"
-    required: true
-    x-exportParamName: "PodType"
   Settings:
     in: "body"
     name: "settings"
@@ -2518,12 +2502,6 @@ parameters:
     schema:
       $ref: "http://localhost:8291/meep-model.yaml#/definitions/Settings"
     x-exportParamName: "Settings"
-  ScenarioName:
-    in: "body"
-    name: "scenarioName"
-    description: "Scenario name string"
-    required: true
-    x-exportParamName: "ScenarioName"
 responses:
   Std200:
     description: "OK"

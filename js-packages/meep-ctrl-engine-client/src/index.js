@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * MEEP Controller REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -25,7 +25,7 @@
   'use strict';
 
   /**
-   * MEEP_Controller_REST_API.<br>
+   * Copyright__c_2019_InterDigital_Communications_Inc__All_rights_reserved__The_information_provided_herein_is_the_proprietary_and_confidential_information_of_InterDigital_Communications_Inc_.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:
