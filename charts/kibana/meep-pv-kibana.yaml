@@ -1,0 +1,22 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-pv-kibana
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-pv-kibana
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "<WORKDIR>/kibana"
+  storageClassName: meep-pv-kibana
+

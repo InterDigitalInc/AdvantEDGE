@@ -78,6 +78,9 @@ repo:
     couchdb:
       chart: charts/couchdb
       pv: charts/couchdb/meep-pv-couchdb.yaml
+    kibana:
+      chart: charts/kibana
+      pv: charts/kibana/meep-pv-kibana.yaml
     redis:
       version: 4.0.1
       values: charts/redis/redis-values.yaml
