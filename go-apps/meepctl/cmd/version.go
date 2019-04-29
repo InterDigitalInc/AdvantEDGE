@@ -89,7 +89,7 @@ type versionInfo struct {
 }
 
 const meepctlVersion = "1.0.0"
-const na = "Not Available"
+const na = "NA"
 
 var corePodsNameMap = [...]string{
 	"couchdb",
@@ -133,52 +133,68 @@ func formatVersion(name string, version string, id string) string {
 }
 
 func getHelmVersion(cobraCmd *cobra.Command) {
-
+	clientStr := formatVersion("helm client", na, na)
+	serverStr := formatVersion("helm server", na, na)
 	cmd := exec.Command("helm", "version")
-	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	output = strings.Replace(output, "\"", "", -1)
-	outAll := strings.Split(output, "}")
-	outClient := outAll[0]
-	outServer := outAll[1]
-	//client part
-	out := strings.Split(outClient, ",")
-	clientStr := formatVersion("helm client", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1])
-	//server part
-	out = strings.Split(outServer, ",")
-	serverStr := formatVersion("helm server", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1])
+	output, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error getting helm version\n", err)
+	} else {
+		output = strings.Replace(output, "\"", "", -1)
+		outAll := strings.Split(output, "}")
+		outClient := outAll[0]
+		outServer := outAll[1]
+		//client part
+		out := strings.Split(outClient, ",")
+		clientStr = formatVersion("helm client", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1])
+		//server part
+		out = strings.Split(outServer, ",")
+		serverStr = formatVersion("helm server", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1])
+	}
 
 	fmt.Println(clientStr)
 	fmt.Println(serverStr)
 }
 
 func getDockerVersion(cobraCmd *cobra.Command) {
+	clientStr := formatVersion("docker client", na, na)
+	serverStr := formatVersion("docker server", na, na)
 	cmd := exec.Command("docker", "version")
-	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	output = strings.Replace(output, " ", "", -1)
-	output = strings.Replace(output, "\n", ":", -1)
-	out := strings.Split(output, ":")
+	output, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error getting docker version\n", err)
+	} else {
+		output = strings.Replace(output, " ", "", -1)
+		output = strings.Replace(output, "\n", ":", -1)
+		out := strings.Split(output, ":")
 
-	clientStr := formatVersion("docker client", out[3], out[9])
-	serverStr := formatVersion("docker server", out[24], out[30])
-
+		clientStr = formatVersion("docker client", out[3], out[9])
+		serverStr = formatVersion("docker server", out[24], out[30])
+	}
 	fmt.Println(clientStr)
 	fmt.Println(serverStr)
 }
 
 func getKubernetesVersion(cobraCmd *cobra.Command) {
+	clientStr := formatVersion("k8s client", na, na)
+	serverStr := formatVersion("k8s server", na, na)
 	cmd := exec.Command("kubectl", "version")
-	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	output = strings.Replace(output, "\"", "", -1)
-	output = strings.Replace(output, "\n", ":", -1)
-	out := strings.Split(output, ":")
+	output, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error getting kubernetes version\n", err)
+	} else {
+		output = strings.Replace(output, "\"", "", -1)
+		output = strings.Replace(output, "\n", ":", -1)
+		out := strings.Split(output, ":")
 
-	outVersion := strings.Split(out[4], ",")
-	outGitCommit := strings.Split(out[5], ",")
-	clientStr := formatVersion("k8s client", outVersion[0], outGitCommit[0])
+		outVersion := strings.Split(out[4], ",")
+		outGitCommit := strings.Split(out[5], ",")
+		clientStr = formatVersion("k8s client", outVersion[0], outGitCommit[0])
 
-	outVersion = strings.Split(out[17], ",")
-	outGitCommit = strings.Split(out[18], ",")
-	serverStr := formatVersion("k8s server", outVersion[0], outGitCommit[0])
+		outVersion = strings.Split(out[17], ",")
+		outGitCommit = strings.Split(out[18], ",")
+		serverStr = formatVersion("k8s server", outVersion[0], outGitCommit[0])
+	}
 	fmt.Println(clientStr)
 	fmt.Println(serverStr)
 
@@ -195,24 +211,26 @@ func getKubernetesVersion(cobraCmd *cobra.Command) {
 
 /* just a generic function that gets all the pod from all namespaces, filtering should be done by the caller */
 func getPodVersions(cobraCmd *cobra.Command) map[string]*versionInfo {
-
 	outMap := make(map[string]*versionInfo)
 	cmd := exec.Command("kubectl", "get", "pods", "--all-namespaces", "-o", "jsonpath={range .items[*]}{\"{\\\"Name\\\":\\\"\"}{.status.containerStatuses[].name}{\"\\\",\"}{\"\\\"Version\\\":\\\"\"}{.status.containerStatuses[].image}{\"\\\",\"}{\"\\\"VersionID\\\":\\\"\"}{.status.containerStatuses[].imageID}{\"\\\"}\\n\"}")
-	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-
-	pods := strings.Split(output, "\n")
-	for i := range pods {
-		vi := new(versionInfo)
-		err := json.Unmarshal([]byte(pods[i]), &vi)
-		if err != nil {
-			continue
-		}
-		if vi.Name != "" {
-			outMap[vi.Name] = vi
-			tv := strings.Split(vi.Version, ":")
-			vi.Version = tv[len(tv)-1]
-			tid := strings.Split(vi.VersionID, ":")
-			vi.VersionID = tid[len(tid)-1]
+	output, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error getting pods version\n", err)
+	} else {
+		pods := strings.Split(output, "\n")
+		for i := range pods {
+			vi := new(versionInfo)
+			err := json.Unmarshal([]byte(pods[i]), &vi)
+			if err != nil {
+				continue
+			}
+			if vi.Name != "" {
+				outMap[vi.Name] = vi
+				tv := strings.Split(vi.Version, ":")
+				vi.Version = tv[len(tv)-1]
+				tid := strings.Split(vi.VersionID, ":")
+				vi.VersionID = tid[len(tid)-1]
+			}
 		}
 	}
 	return outMap
