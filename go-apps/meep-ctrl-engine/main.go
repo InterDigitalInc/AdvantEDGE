@@ -60,7 +60,7 @@ func main() {
 
 	count := 0
 	for {
-		if run == false {
+		if !run {
 			log.Info("Ran for", count, "seconds")
 			break
 		}

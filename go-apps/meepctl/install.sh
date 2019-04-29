@@ -16,7 +16,12 @@ echo "...clean"
 go clean
 
 # Create vendor folder
+echo "...vendor"
 go mod vendor
+
+# Lint code
+echo "...lint"
+golangci-lint run
 
 # Build
 echo "...build"

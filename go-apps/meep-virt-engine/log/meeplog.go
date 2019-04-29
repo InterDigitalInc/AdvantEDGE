@@ -24,35 +24,35 @@ func MeepJSONLogInit() {
 func Info(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Info(args)
+	}).Info(args...)
 }
 
 func Debug(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Debug(args)
+	}).Debug(args...)
 }
 
 func Warn(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Warn(args)
+	}).Warn(args...)
 }
 func Error(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Error(args)
+	}).Error(args...)
 }
 func Panic(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Panic(args)
+	}).Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "virt-engine",
-	}).Fatal(args)
+	}).Fatal(args...)
 }
 
 func WithFields(fields log.Fields) *log.Entry {

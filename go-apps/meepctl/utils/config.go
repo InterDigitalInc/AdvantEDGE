@@ -123,7 +123,7 @@ func ConfigReadFile(filePath string) (cfg *Config) {
 		fmt.Println("Error unmarshalling config file [" + filePath + "]")
 		fmt.Println(err)
 		// Revert to default if unmarshall failed
-		yaml.Unmarshal([]byte(defaultConfig), cfg)
+		_ = yaml.Unmarshal([]byte(defaultConfig), cfg)
 	}
 
 	return cfg
@@ -189,15 +189,15 @@ func ConfigIPValid(ipAddr string) (valid bool, reason string) {
 		// only local address
 		addrs, _ := net.InterfaceAddrs()
 		var local = false
-		var localV4 []string
+		// var localV4 []string
 		for _, a := range addrs {
 			if strings.Contains(a.String(), ipAddr) {
 				local = true
 			}
-			aIP := strings.Split(a.String(), "/")[0]
-			if ConfigIsIpv4(aIP) {
-				localV4 = append(localV4, aIP)
-			}
+			// aIP := strings.Split(a.String(), "/")[0]
+			// if ConfigIsIpv4(aIP) {
+			// 	localV4 = append(localV4, aIP)
+			// }
 		}
 		if !local {
 			reason = "Not a local IP address [" + ipAddr + "]"

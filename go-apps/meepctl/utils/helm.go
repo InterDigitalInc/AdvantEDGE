@@ -82,11 +82,9 @@ func HelmInstall(name string, chart string, flags [][]string, cobraCmd *cobra.Co
 
 	start := time.Now()
 	cmd := exec.Command("helm", "install", "--name", name, chart, "--replace")
-	if flags != nil {
-		for _, f := range flags {
-			cmd.Args = append(cmd.Args, f[0])
-			cmd.Args = append(cmd.Args, f[1])
-		}
+	for _, f := range flags {
+		cmd.Args = append(cmd.Args, f[0])
+		cmd.Args = append(cmd.Args, f[1])
 	}
 	if verbose {
 		fmt.Println("Cmd:", cmd.Args)

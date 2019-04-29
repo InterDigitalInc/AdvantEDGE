@@ -9,7 +9,6 @@
 package helm
 
 import (
-	"encoding/json"
 	"strconv"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
@@ -46,20 +45,10 @@ type Resource struct {
 	Age  string
 }
 
-func prettyJsonPrint(v interface{}) {
-	j, err := json.MarshalIndent(v, "", " ")
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	log.Info(string(j))
-}
-
 func PrettyReleasesPrint(releases []Release) {
 	var lines []string
-	var l string
 
-	l = "#  NAME\tSTATE\t\tNAMESP.\t[RESOURCES]"
+	l := "#  NAME\tSTATE\t\tNAMESP.\t[RESOURCES]"
 	lines = append(lines, l)
 	for i, r := range releases {
 		l = strconv.Itoa(i) + "- " + r.Name

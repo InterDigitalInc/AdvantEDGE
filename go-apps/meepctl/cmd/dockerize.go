@@ -122,9 +122,9 @@ func dockerize(targetName string, cobraCmd *cobra.Command) {
 					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
 				}
 				cmd := exec.Command("rm", "-r", dstDataDir)
-				utils.ExecuteCmd(cmd, cobraCmd)
+				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
-				utils.ExecuteCmd(cmd, cobraCmd)
+				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 			} else {
 				fmt.Println("    Source data not found: " + srcDataDir + " --> " + dstDataDir)
 			}
@@ -135,14 +135,14 @@ func dockerize(targetName string, cobraCmd *cobra.Command) {
 	path := gitDir + "/" + target["bin"]
 	fmt.Println("Dockerizing", targetName)
 	cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", targetName, path)
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	// cleanup data
 	if len(data) != 0 {
 		for k := range data {
 			dstDataDir := binDir + "/" + k
 			cmd := exec.Command("rm", "-r", dstDataDir)
-			utils.ExecuteCmd(cmd, cobraCmd)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
 

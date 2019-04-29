@@ -6,6 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
+
 package logmain
 
 import (
@@ -20,35 +21,35 @@ func MeepJSONLogInit() {
 func Info(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Info(args)
+	}).Info(args...)
 }
 
 func Debug(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Debug(args)
+	}).Debug(args...)
 }
 
 func Warn(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Warn(args)
+	}).Warn(args...)
 }
 func Error(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Error(args)
+	}).Error(args...)
 }
 func Panic(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Panic(args)
+	}).Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "ctrl-engine",
-	}).Fatal(args)
+	}).Fatal(args...)
 }
 
 func WithFields(fields log.Fields) *log.Entry {

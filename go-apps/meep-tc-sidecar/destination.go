@@ -37,7 +37,6 @@ type destination struct {
 	host       string
 	remote     *net.IPAddr
 	remoteName string
-	display    string
 	ifbNumber  string
 	history    *history
 	historyRx  *historyRx
@@ -168,8 +167,7 @@ func (u *destination) processRxTx() {
 
 	//dropped rate in %
 	var pktDroppedRate float64
-	var pktDroppedRateStr string
-	pktDroppedRateStr = "0"
+	pktDroppedRateStr := "0"
 
 	totalPkts := rcvedPkts + droppedPkts
 	if totalPkts > 0 {
@@ -183,7 +181,6 @@ func (u *destination) processRxTx() {
 	previousRcvedBytes := u.historyRx.rcvedBytes
 
 	var throughput float64
-	throughput = 0
 	if previousRcvedBytes != 0 {
 
 		previousTime := u.historyRx.time
@@ -225,5 +222,4 @@ func (u *destination) processRxTx() {
 		"meep.sidecar.packet-loss":   pktDroppedRateStr,
 	}).Info("Measurements log")
 
-	return
 }

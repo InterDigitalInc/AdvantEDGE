@@ -77,7 +77,7 @@ func parseList(buf []byte, nameOnly bool) ([]Release, error) {
 		var r Release
 		// Name
 		r.Name = scanWords.Text()
-		if nameOnly == false {
+		if !nameOnly {
 			// Status
 			sp, err := GetReleaseStatus(r.Name)
 			r.Status = *sp

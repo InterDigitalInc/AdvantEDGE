@@ -5,7 +5,7 @@
  *
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
-*/
+ */
 
 package main
 
@@ -25,7 +25,6 @@ func init() {
 
 func main() {
 	log.Info(os.Args)
-
 	log.Info("Starting Monitoring Engine")
 
 	run := true
@@ -59,7 +58,7 @@ func main() {
 
 	count := 0
 	for {
-		if run == false {
+		if !run {
 			log.Info("Ran for", count, "seconds")
 			break
 		}

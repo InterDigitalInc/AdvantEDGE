@@ -22,6 +22,7 @@ import (
 )
 
 var buildCodecov bool
+var buildNolint bool
 
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
@@ -94,6 +95,7 @@ func init() {
 	// is called directly, e.g.:
 	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	buildCmd.Flags().BoolVar(&buildCodecov, "codecov", false, "Build a code coverage binary (dev. option)")
+	buildCmd.Flags().BoolVar(&buildNolint, "nolint", false, "Disable linting")
 }
 
 func buildAll(cobraCmd *cobra.Command) {
@@ -126,6 +128,7 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
+	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
 
 	// dependencies
 	fmt.Println("   + checking external dependencies")
@@ -163,6 +166,21 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 
+	// linter: ESLint
+	if lintEnabled && !buildNolint {
+		fmt.Println("   + running linter")
+		cmd := exec.Command("eslint", "src/js/")
+		cmd.Dir = srcDir
+		out, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println(out)
+			fmt.Println("Linting failed. Exiting...")
+			fmt.Println("To skip linting run build with --nolint")
+			return
+		}
+	}
+
 	//build
 	fmt.Println("   + building " + targetName)
 	cmd = exec.Command("npm", "run", "build", "--", "--output-path="+binDir)
@@ -181,6 +199,7 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
 	codecovCapable := utils.RepoCfg.GetBool("repo.core." + targetName + ".codecov")
+	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
 
 	// dependencies
 	fmt.Println("   + checking external dependencies")
@@ -190,6 +209,21 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	if err != nil {
 		fmt.Println("Error:", err)
 		fmt.Println(out)
+	}
+
+	// linter: goloangci-lint
+	if lintEnabled && !buildNolint {
+		fmt.Println("   + running linter")
+		cmd := exec.Command("golangci-lint", "run")
+		cmd.Dir = srcDir
+		out, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println(out)
+			fmt.Println("Linting failed. Exiting...")
+			fmt.Println("To skip linting run build with --nolint")
+			return
+		}
 	}
 
 	// for go, local dependencies are handled via the Go toolchain so nothing to do
@@ -228,8 +262,16 @@ func fixDeps(targetName string, cobraCmd *cobra.Command) {
 	switch targetName {
 	case "meep-initializer", "meep-mon-engine":
 		cmd := exec.Command("rm", srcDir+"/vendor/k8s.io/client-go/tools/cache/mutation_cache.go")
-		utils.ExecuteCmd(cmd, cobraCmd)
+		out, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println(out)
+		}
 		cmd = exec.Command("rm", "-Rf", srcDir+"/vendor/github.com/hashicorp/golang-lru")
-		utils.ExecuteCmd(cmd, cobraCmd)
+		out, err = utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println(out)
+		}
 	}
 }
