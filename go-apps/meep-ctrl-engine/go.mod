@@ -10,7 +10,7 @@ require (
 	github.com/flimzy/diff v0.1.5 // indirect
 	github.com/flimzy/kivik v1.8.1
 	github.com/flimzy/testy v0.1.16 // indirect
-	github.com/go-kivik/couchdb v1.8.1 // indirect
+	github.com/go-kivik/couchdb v1.8.1
 	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/btree v1.0.0 // indirect

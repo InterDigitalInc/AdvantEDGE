@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/flimzy/kivik"
+	_ "github.com/go-kivik/couchdb"
 	"github.com/gorilla/mux"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine/log"

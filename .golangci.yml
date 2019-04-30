@@ -32,7 +32,3 @@ linters:
         # - unparam
         - unused
         - varcheck
-
-linters-settings:
-    goimports:
-        write: true
