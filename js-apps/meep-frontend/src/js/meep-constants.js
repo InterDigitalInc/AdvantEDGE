@@ -31,6 +31,7 @@ export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
+export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
 // Configuration page states
 export const CFG_STATE_IDLE = 'IDLE';

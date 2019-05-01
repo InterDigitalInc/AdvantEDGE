@@ -8,7 +8,7 @@
  */
 import _ from 'lodash';
 import {createSelector } from 'reselect';
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 import { EXEC_STATE_IDLE } from '../../meep-constants';
 
 // Pod phases

@@ -10,7 +10,7 @@ import _ from 'lodash';
 import React, { Component }  from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 import NCGroup from '../../components/helper-components/nc-group';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 import IDSelect from '../../components/helper-components/id-select';

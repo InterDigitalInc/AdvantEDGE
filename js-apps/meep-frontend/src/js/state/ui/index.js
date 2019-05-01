@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 
 export const PAGE_CONFIGURE = 'page-configure-link';
 export const PAGE_EXECUTE = 'page-execute-link';
@@ -65,6 +65,7 @@ const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
 const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
 const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
 const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
+const IDC_DIALOG_CONFIRM = 'IDC_DIALOG_CONFIRM';
 
 
 // EXEC
@@ -119,6 +120,7 @@ export {
   IDC_DIALOG_EXPORT_SCENARIO,
   IDC_DIALOG_DEPLOY_SCENARIO,
   IDC_DIALOG_TERMINATE_SCENARIO,
+  IDC_DIALOG_CONFIRM,
 
   // Action creators
   uiChangeCurrentPage,

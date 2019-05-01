@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import axios from 'axios';
-import { updateObject } from '../util/update';
+import { updateObject } from '../util/object-util';
 
 // Import JS dependencies
 import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
@@ -101,7 +101,7 @@ class MeepContainer extends Component {
   }
 
   startPodsPhasesPeriodicCheck() {
-    this.podsPhasesIntervalTimer = setInterval(() => this.checkPodsPhases(), 1000);
+    // this.podsPhasesIntervalTimer = setInterval(() => this.checkPodsPhases(), 1000);
   }
 
   stopCorePodsPhasesPeriodicCheck() {
@@ -191,7 +191,7 @@ class MeepContainer extends Component {
         clearInterval(this.refreshIntervalTimer);
       } else {
         clearInterval(this.refreshIntervalTimer);
-        this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
+        // this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
       }
     });
   }

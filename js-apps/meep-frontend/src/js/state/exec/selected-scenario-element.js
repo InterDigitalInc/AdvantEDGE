@@ -6,7 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 import { createElem } from '../../util/elem-utils';
 
 const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT = 'EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT';

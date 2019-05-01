@@ -16,7 +16,7 @@ import { TextField, TextFieldHelperText  } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
 
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 import IDSelect from '../../components/helper-components/id-select';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 import NCGroup from '../../components/helper-components/nc-group';

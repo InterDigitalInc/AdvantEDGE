@@ -12,7 +12,7 @@ import React, { Component, createRef }  from 'react';
 import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import * as vis from 'vis';
-import { updateObject } from '../util/update';
+import { updateObject } from '../util/object-util';
 import { execChangeTable, execChangeVis, execVisFilteredData } from '../state/exec';
 import { cfgChangeTable, cfgChangeVis, cfgElemEdit } from '../state/cfg';
 
