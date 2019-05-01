@@ -71,8 +71,8 @@ import {
 } from '../state/ui';
 
 // MEEP Controller REST API JS client
-var basepath = 'http://' + location.host + location.pathname + 'v1';
-// var basepath = 'http://10.3.16.73:30000/v1';
+// var basepath = 'http://' + location.host + location.pathname + 'v1';
+var basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -356,6 +356,7 @@ class MeepContainer extends Component {
   }
 
   render() {
+    const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
     return (
       <div style={{width: '100%'}}>
         <MeepTopBar
@@ -366,8 +367,8 @@ class MeepContainer extends Component {
         />
 
         <div style={{display: 'flex'}}>
-          <div className="component-style" style={{overflow: 'hidden', flex: '0 0 250px', marginTop: '5px'}}>
-            <MeepDrawer open={this.props.mainDrawerOpen}/>
+          <div className="component-style" style={{overflow: 'hidden', flex: flexString, marginTop: '5px'}}>
+            <MeepDrawer open={this.props.mainDrawerOpen} style={{flex:1}}/>
           </div>
           <div style={{flex: '1', padding: 10}}>
             {this.renderPage()}

@@ -134,7 +134,8 @@ function createState(meepObject) {
   state.ui =  {
     devMode: false,
     currentDialog: '',
-    execShowApps: false
+    execShowApps: false,
+    mainDrawerOpen: true
   };
 
   return state;

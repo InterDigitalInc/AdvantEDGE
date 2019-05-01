@@ -136,7 +136,7 @@ export {
 
 const initialState = {
   page: PAGE_CONFIGURE,
-  mainDrawerOpen: false,
+  mainDrawerOpen: true,
   eventCreationMode: false,
   execCurrentEvent: null,
   currentEventType: UE_MOBILITY_EVENT,
