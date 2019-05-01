@@ -134,7 +134,7 @@ func deleteDep(cobraCmd *cobra.Command) {
 
 	// Wait for all pvc delete routines to complete
 	// NOTE: Must be checked after deleting couchdb & elastic
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 4; i++ {
 		fmt.Println(<-messages)
 	}
 
