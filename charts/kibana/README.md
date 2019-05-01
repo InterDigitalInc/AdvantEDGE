@@ -2,6 +2,10 @@
 
 [kibana](https://github.com/elastic/kibana) is your window into the Elastic Stack. Specifically, it's an open source (Apache Licensed), browser-based analytics and search dashboard for Elasticsearch.
 
+## Changes from the base chart
+
+A persistent volume is added to the base chart.
+ 
 ## TL;DR;
 
 ```console

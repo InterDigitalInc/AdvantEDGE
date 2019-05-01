@@ -122,11 +122,6 @@ func deleteDep(cobraCmd *cobra.Command) {
 		utils.ExecuteCmd(cmd, cobraCmd)
 		messages <- "Deleted elastic master-1 pvc"
 	}()
-	go func() {
-		cmd := exec.Command("kubectl", "delete", "pvc", "kibana")
-		utils.ExecuteCmd(cmd, cobraCmd)
-		messages <- "Deleted kibana pvc"
-	}()
 
 	k8sDelete("meep-redis", cobraCmd)
 	k8sDelete("kube-state-metrics", cobraCmd)
@@ -138,7 +133,7 @@ func deleteDep(cobraCmd *cobra.Command) {
 	k8sDelete("elastic", cobraCmd)
 
 	// Wait for all pvc delete routines to complete
-	// NOTE: Must be checked after deleting couchdb & elastic & kibana
+	// NOTE: Must be checked after deleting couchdb & elastic
 	for i := 0; i < 5; i++ {
 		fmt.Println(<-messages)
 	}
@@ -148,8 +143,6 @@ func deleteDep(cobraCmd *cobra.Command) {
 	cmd := exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.couchdb.pv"))
 	utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.pv"))
-	utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.kibana.pv"))
 	utils.ExecuteCmd(cmd, cobraCmd)
 }
 

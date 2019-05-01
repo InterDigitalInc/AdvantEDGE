@@ -1,4 +1,5 @@
 /*
+
  * Copyright (c) 2019
  * InterDigital Communications, Inc.
  * All rights reserved.
@@ -19,18 +20,21 @@ import (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Config allows to manage meepctl configuration",
-	Long: `Config allows to manage meepctl configuration
+	Short: "Config allows to manage meep environment configuration",
+	Long: `Config allows to manage meep environment configuration
 
 meepctl relies on a configuration file that lives here ~/.meepctl.yaml
 
 On first meepctl execution, the configuration file is created with default values
-It then needs to be initialized once by running initial configuration command (below)
+It then needs to be initialized once by running initial configuration command (below).
+It also manages dashboards and configuration items present in Kibana.
 `,
 	Example: ` # Initial configuration
  meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>
  # Help on set command
- meepctl config set --help`,
+ meepctl config set --help
+ # Help on kibana command
+ meepctl config kibana --help`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("")

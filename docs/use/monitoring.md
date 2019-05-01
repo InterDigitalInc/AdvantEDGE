@@ -18,23 +18,8 @@ To access Kibana frontend, open AdvantEDGE frontend `<your-node-ipaddress>:30000
 This will open a new browser tab with the Kibana frontend in it.
 
 ## Configure Monitoring
-Prior to using the monitoring pipeline, it is necessary to configure it.
-Configuration is done from the Kibana frontend.
+Prior to using the monitoring pipeline, it is necessary to configure it.<br>
+Configuration is done by issuing the meepctl command as follow:<br>
+'meepctl config kibana'<br>
 
-#### Configure Dashboards
-From Kibana:
-- Select _Management_ from the left menu
-- Click on _Saved Objects_
-- Click on _Import_ on the top right corner
-- Click on _Import_ in the _Import saved object_ box
-- Browse to the Git repo `AdvantEDGE/dashboard/` and select `basic-dashboards.json`
-- Click on _Open_
-- Click on _Import_ button on the bottom right corner
-- Click on _Done_
-
-#### Configure Index Pattern
-From Kibana:
-- Select _Management_ from the left menu
-- Click on _Index Patterns_
-- In the _Create Index Pattern_ box, select _filebeat*_
-- Click on the button with a _STAR icon_ on the top right corner
+As a result, all the saved objects needed to populate Kibana's dashboards and index pattern are set.
