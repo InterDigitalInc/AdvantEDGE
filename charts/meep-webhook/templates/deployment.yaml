@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-webhook.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "meep-webhook.name" . }}
+    chart: {{ template "meep-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-webhook.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ template "meep-webhook.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          args:
+            - -tlsCertFile=/etc/webhook/certs/cert.pem
+            - -tlsKeyFile=/etc/webhook/certs/key.pem
+            - -alsologtostderr
+            - -v=4
+            - 2>&1
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: meep-webhook-certs
+      initContainers:
+        - name: init-{{ .Values.deployment.dependency }}
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }} ; do echo wiating for {{ .Values.deployment.dependency }}; sleep2; done;']
