@@ -64,9 +64,8 @@ repo:
       es-curator:
         chart: charts/elasticsearch-curator
       kibana:
-        version: 0.14.5
-        values: charts/kibana/kibana-values.yaml
-        chart: stable/kibana
+        chart: charts/kibana
+        pv: charts/kibana/meep-pv-kibana.yaml
       filebeat:
         version: 1.0.2
         values: charts/filebeat/filebeat-values.yaml

@@ -157,6 +157,9 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, workdir+"/es-data")
 	cmd.Args = append(cmd.Args, workdir+"/es-master-0")
 	cmd.Args = append(cmd.Args, workdir+"/es-master-1")
+	cmd.Args = append(cmd.Args, workdir+"/kibana")
+
+
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + workdir + "]")
@@ -191,7 +194,6 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-es.yaml")
 	utils.ExecuteCmd(cmd, cobraCmd)
-
 }
 
 func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
@@ -275,9 +277,9 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	k8sDeploy("curator", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart"), nil, cobraCmd)
 	//---
-	flags = utils.HelmFlags(nil, "--version", "0.14.5")
-	flags = utils.HelmFlags(flags, "--values", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.kibana.values"))
-	k8sDeploy("kibana", "stable/kibana", flags, cobraCmd)
+	flags = utils.HelmFlags(nil, "", "")
+	flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+workdir+"/kibana/")
+	k8sDeploy("kibana", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart"), flags, cobraCmd)
 	//---
 	// Value file is modified, use the tmp/ version
 	flags = utils.HelmFlags(nil, "--version", "1.0.2")
