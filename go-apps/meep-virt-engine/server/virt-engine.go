@@ -9,9 +9,7 @@
 package server
 
 import (
-	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -26,17 +24,17 @@ func VirtEngineInit() {
 	log.Debug("Initializing MEEP Virtualization Engine")
 }
 
-func readAndPrintRequest(r *http.Request) {
-
-	// Read the Body content
-	var bodyBytes []byte
-	bodyBytes, _ = ioutil.ReadAll(r.Body)
-	log.Info(bodyBytes)
-
-	// Restore the io.ReadCloser to its original state
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-
-}
+// func readAndPrintRequest(r *http.Request) {
+//
+// 	// Read the Body content
+// 	var bodyBytes []byte
+// 	bodyBytes, _ = ioutil.ReadAll(r.Body)
+// 	log.Info(bodyBytes)
+//
+// 	// Restore the io.ReadCloser to its original state
+// 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+//
+// }
 
 func populateScenario(r *http.Request) (Scenario, error) {
 
@@ -87,7 +85,7 @@ func veTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	name := vars["name"]
 
 	// Retrieve list of releases
-	rels, err := helm.GetReleasesName()
+	rels, _ := helm.GetReleasesName()
 	var toDelete []helm.Chart
 	for _, rel := range rels {
 		if strings.Contains(rel.Name, name) {
@@ -100,7 +98,7 @@ func veTerminateScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Delete releases
 	if len(toDelete) > 0 {
-		err = helm.DeleteReleases(toDelete)
+		err := helm.DeleteReleases(toDelete)
 		log.Debug(err)
 	}
 

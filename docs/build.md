@@ -25,7 +25,13 @@ The [_meepctl CLI tool_](meepctl/meepctl.md) is used to build the AdvantEDGE bin
 
 ```
 meepctl build all
+
+# To build a single micro-service:
+# meepctl build <micro-service name>
 ```
+
+>**NOTE**<br>
+Linters are run by default on every build. To disable linting use the `--nolint` flag.
 
 This command generates the _core_ micro-service binaries, as well as the frontend web application.
 

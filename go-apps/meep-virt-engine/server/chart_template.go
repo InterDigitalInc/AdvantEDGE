@@ -240,7 +240,7 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 								}
 							}
 
-							if onlySetOnce == false {
+							if !onlySetOnce {
 								// TODO -- DO NOT CALL THIS FOR DEFAULT NAMESPACE
 								// setExtras(&scenarioTemplate)
 								onlySetOnce = true
@@ -334,11 +334,11 @@ func createUserChart(chartLocation string, altValueFile string, params string, n
 	return c
 }
 
-func setExtras(scenarioTemplate *ScenarioTemplate) {
-	scenarioTemplate.ServiceaccountCreate = "true"
-	scenarioTemplate.RbacCreate = "true"
-	scenarioTemplate.NamespaceCreate = "true"
-}
+// func setExtras(scenarioTemplate *ScenarioTemplate) {
+// 	scenarioTemplate.ServiceaccountCreate = "true"
+// 	scenarioTemplate.RbacCreate = "true"
+// 	scenarioTemplate.NamespaceCreate = "true"
+// }
 
 func setScenarioDefaults(scenarioTemplate *ScenarioTemplate) {
 	scenarioTemplate.NamespaceCreate = "false"
@@ -434,7 +434,7 @@ func createYamlScenarioFiles(scenarioTemplate ScenarioTemplate) (string, error) 
 	outputDirPath := homePath + "/.meep/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.ContainerName
 	log.Debug("Creation of the output path ", outputDirPath)
 
-	CopyDir(templateDefaultDir, outputDirPath)
+	_ = CopyDir(templateDefaultDir, outputDirPath)
 
 	outputFilePath := outputDirPath + "/values.yaml"
 

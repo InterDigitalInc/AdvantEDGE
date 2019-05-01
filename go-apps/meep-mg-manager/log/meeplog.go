@@ -23,32 +23,32 @@ func MeepJSONLogInit() {
 
 // Info -- Info logs
 func Info(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Info(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Info(args...)
 }
 
 // Debug -- Debug logs
 func Debug(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Debug(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Debug(args...)
 }
 
 // Warn -- Warn logs
 func Warn(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Warn(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Warn(args...)
 }
 
 // Error -- Error logs
 func Error(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Error(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Error(args...)
 }
 
 // Panic -- Panic logs
 func Panic(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Panic(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Panic(args...)
 }
 
 // Fatal -- Fatal logs
 func Fatal(args ...interface{}) {
-	log.WithFields(log.Fields{meepComponentField: meepComponent}).Fatal(args)
+	log.WithFields(log.Fields{meepComponentField: meepComponent}).Fatal(args...)
 }
 
 // WithFields -- Log with fields

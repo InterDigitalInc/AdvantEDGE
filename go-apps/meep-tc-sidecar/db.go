@@ -26,7 +26,7 @@ var pubsub *redis.PubSub
 
 // DBConnect - Establish connection to DB
 func DBConnect() error {
-	if dbClientStarted == false {
+	if !dbClientStarted {
 		err := openDB()
 		if err != nil {
 			return err
@@ -100,38 +100,35 @@ func DBForEachEntry(keyMatchStr string, entryHandler func(string, map[string]str
 // DBEntryExists - true if entry exists; false otherwise
 func DBEntryExists(key string) bool {
 	value := dbClient.Exists(key).Val()
-	if value == 0 {
-		return false
-	}
-	return true
+	return value != 0
 }
 
-// DBAddEntry - Add entry to DB
-func DBAddEntry(key string, fields map[string]string) error {
-	m := convertMapStrStrToMapStrInt(fields)
-	_, err := dbClient.HMSet(key, m).Result()
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// // DBAddEntry - Add entry to DB
+// func DBAddEntry(key string, fields map[string]string) error {
+// 	m := convertMapStrStrToMapStrInt(fields)
+// 	_, err := dbClient.HMSet(key, m).Result()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
-func convertMapStrStrToMapStrInt(src map[string]string) (dst map[string]interface{}) {
-	dst = make(map[string]interface{})
-	for key, value := range src {
-		dst[key] = value
-	}
-	return dst
-}
+// func convertMapStrStrToMapStrInt(src map[string]string) (dst map[string]interface{}) {
+// 	dst = make(map[string]interface{})
+// 	for key, value := range src {
+// 		dst[key] = value
+// 	}
+// 	return dst
+// }
 
-// DBRemoveEntry - Remove entry from DB
-func DBRemoveEntry(key string) error {
-	_, err := dbClient.Del(key).Result()
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// // DBRemoveEntry - Remove entry from DB
+// func DBRemoveEntry(key string) error {
+// 	_, err := dbClient.Del(key).Result()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 // Subscribe - Register as a listener for provided channels
 func Subscribe(channels ...string) error {

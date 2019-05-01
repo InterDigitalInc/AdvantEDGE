@@ -79,7 +79,6 @@ var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
 
-var wasChanged = false
 var measurementsRunning = false
 var flushRequired = false
 
@@ -100,7 +99,7 @@ func main() {
 	refreshLbRules()
 
 	// Listen for subscribed events. Provide event handler method.
-	Listen(eventHandler)
+	_ = Listen(eventHandler)
 }
 
 // initMeepSidecar - MEEP Sidecar initialization
@@ -182,13 +181,13 @@ func processLbMsg(payload string) {
 
 func refreshNetCharRules() {
 	// Create shape rules
-	createIfbs()
+	_ = createIfbs()
 
 	// Flush filters
 	flushFilters()
 
 	// Create new filters (lower priority than the old one)
-	createFilters()
+	_ = createFilters()
 
 	// // Delete unused filters
 	// deleteUnusedFilters()
@@ -302,15 +301,16 @@ func refreshLbRules() {
 	}
 
 	// Flush tracked connections to make sure new LB rules are hit
-	if flushRequired == true {
+	if flushRequired {
 		flushTrackedConnections()
 	}
 }
 
 func flushTrackedConnections() {
 	exec := k8s_exec.New()
-	k8s_ct.Exists(exec)
-	k8s_ct.Exec(exec, "-F")
+	if k8s_ct.Exists(exec) {
+		_ = k8s_ct.Exec(exec, "-F")
+	}
 	flushRequired = false
 }
 
@@ -398,7 +398,7 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 
 func startMeasurementThreads() {
 	// Only start measurements if not already running
-	if len(ifbs) != 0 && measurementsRunning == false {
+	if len(ifbs) != 0 && !measurementsRunning {
 		// Populate opts.dests used by all
 		callPing()
 		go workLatency()
@@ -538,7 +538,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 	return nil
 }
 
-func flushFilters() error {
+func flushFilters() {
 
 	// NOTE: Flush does not work on kernel version 4.4
 	//       Workaround is to manually remove all installed filters
@@ -550,10 +550,9 @@ func flushFilters() error {
 	// return nil
 
 	for _, ifbNumber := range filters {
-		cmdDeleteFilter(ifbNumber)
+		_ = cmdDeleteFilter(ifbNumber)
 	}
 	filters = map[string]string{}
-	return nil
 }
 
 func createFilters() error {
@@ -614,23 +613,22 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 // 	return nil
 // }
 
-func deleteUnusedIfbs() error {
+func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
 		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape:" + ifbNumber
-		if DBEntryExists(keyName) == false {
+		if !DBEntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb
-			cmdDeleteIfb(ifbNumber)
+			_ = cmdDeleteIfb(ifbNumber)
 			delete(ifbs, index)
 		}
 	}
-	return nil
 }
 
 func cmdExec(cli string) (string, error) {
 	parts := strings.Fields(cli)
 	head := parts[0]
-	parts = parts[1:len(parts)]
+	parts = parts[1:]
 
 	cmd := exec.Command(head, parts...)
 	var out bytes.Buffer

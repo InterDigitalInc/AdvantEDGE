@@ -50,14 +50,14 @@ var testCmd = &cobra.Command{
 					fmt.Println("  + Generating html report ", htmlReport)
 					cmd := exec.Command("go", "tool", "cover", "-html="+codecovFile, "-o", htmlReport)
 					cmd.Dir = targetDir
-					utils.ExecuteCmd(cmd, cobraCmd)
+					_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 					// go tool cover -func=c.out
 					txtReport := gitDir + "/test/codecov-" + k + ".txt"
 					fmt.Println("  + Generating text report ", txtReport)
 					cmd = exec.Command("go", "tool", "cover", "-func="+codecovFile, "-o", txtReport)
 					cmd.Dir = targetDir
-					utils.ExecuteCmd(cmd, cobraCmd)
+					_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 				}
 			}

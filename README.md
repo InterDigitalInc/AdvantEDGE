@@ -46,7 +46,7 @@ Before getting started we recommend familiarity with key [AdvantEDGE concepts](d
 
 ## Building
 
-- [Setup development environment (Ubuntu/Go/Node.js/NPM)](docs/setup_dev.md)
+- [Setup development environment (Ubuntu/Go/Node.js/NPM/Linters)](docs/setup_dev.md)
 
 - Clone the AdvantEDGE repo<br>
   `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>

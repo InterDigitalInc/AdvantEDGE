@@ -20,35 +20,35 @@ func MeepJSONLogInit() {
 func Info(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Info(args)
+	}).Info(args...)
 }
 
 func Debug(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Debug(args)
+	}).Debug(args...)
 }
 
 func Warn(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Warn(args)
+	}).Warn(args...)
 }
 func Error(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Error(args)
+	}).Error(args...)
 }
 func Panic(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Panic(args)
+	}).Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
 	log.WithFields(log.Fields{
 		"meep.component": "tc-engine",
-	}).Fatal(args)
+	}).Fatal(args...)
 }
 
 func WithFields(fields log.Fields) *log.Entry {

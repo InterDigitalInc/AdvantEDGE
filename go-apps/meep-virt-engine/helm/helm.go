@@ -35,7 +35,7 @@ func InstallCharts(charts []Chart) error {
 		state = StateInstalling
 		go func() {
 			log.Debug("Installing ", len(charts), " Charts...")
-			installCharts(charts)
+			_ = installCharts(charts)
 			log.Debug("Charts installed (", len(charts), ")")
 			state = StateIdle
 		}()
@@ -50,7 +50,7 @@ func DeleteReleases(charts []Chart) error {
 		state = StateDeleting
 		go func() {
 			log.Debug("Deleting ", len(charts), " Releases...")
-			deleteReleases(charts)
+			_ = deleteReleases(charts)
 			log.Debug("Releases deleted (", len(charts), ")")
 			state = StateIdle
 		}()

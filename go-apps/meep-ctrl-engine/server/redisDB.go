@@ -6,6 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
+
 package server
 
 import (
@@ -18,11 +19,9 @@ import (
 var dbClient *rejonson.Client
 var dbClientStarted = false
 
-var pubsub *redis.PubSub
-
-// DBConnect - Establish connection to DB
+// RedisDBConnect - Establish connection to DB
 func RedisDBConnect() error {
-	if dbClientStarted == false {
+	if !dbClientStarted {
 		err := openDB()
 		if err != nil {
 			return err
@@ -56,7 +55,7 @@ func openDB() error {
 	return nil
 }
 
-// DBFlush - Empty DB
+// RedisDBFlush - Empty DB
 func RedisDBFlush(module string) error {
 	var cursor uint64
 	var err error
@@ -91,7 +90,7 @@ func RedisDBFlush(module string) error {
 	return nil
 }
 
-// DBSetEntry - Update existing entry or create new entry if it does not exist
+// RedisDBSetEntry - Update existing entry or create new entry if it does not exist
 func RedisDBSetEntry(key string, fields map[string]interface{}) error {
 	// Update existing entry or create new entry if it does not exist
 	_, err := dbClient.HMSet(key, fields).Result()
@@ -101,7 +100,7 @@ func RedisDBSetEntry(key string, fields map[string]interface{}) error {
 	return nil
 }
 
-// DBRemoveEntry - Remove existing entries
+// RedisDBRemoveEntry - Remove existing entries
 func RedisDBRemoveEntry(keys ...string) error {
 	_, err := dbClient.Del(keys...).Result()
 	if err != nil {
@@ -129,7 +128,7 @@ func RedisDBJsonDelEntry(key string, path string) error {
 	return nil
 }
 
-// DBForEachEntry - Search for matching keys and run handler for each entry
+// RedisDBForEachEntry - Search for matching keys and run handler for each entry
 func RedisDBForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
 	var cursor uint64
 	var err error

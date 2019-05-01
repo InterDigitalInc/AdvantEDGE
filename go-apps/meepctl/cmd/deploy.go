@@ -123,18 +123,18 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 	//templates
 	templatedir := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.core.meep-virt-engine.template")
 	cmd = exec.Command("rm", "-rf", workdir+"/template-bak")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("mv", workdir+"/template", workdir+"/template-bak")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("cp", "-r", templatedir, workdir+"/template")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	//codecov
 	cmd = exec.Command("rm", "-rf", workdir+"/codecov-bak")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("mv", workdir+"/codecov", workdir+"/codecov-bak")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("mkdir", "-p", workdir+"/codecov")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	for _, targetName := range buildCmd.ValidArgs {
 		if targetName == "all" {
 			continue
@@ -142,7 +142,7 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 		codecovCapable := utils.RepoCfg.GetBool("repo.core." + targetName + ".codecov")
 		if codecovCapable {
 			cmd = exec.Command("mkdir", "-p", workdir+"/codecov/"+targetName)
-			utils.ExecuteCmd(cmd, cobraCmd)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
 
@@ -159,7 +159,6 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, workdir+"/es-master-1")
 	cmd.Args = append(cmd.Args, workdir+"/kibana")
 
-
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + workdir + "]")
@@ -168,32 +167,32 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 
 	//copy the yaml files in workdir and apply a modification to the tmp file, original is untouched
 	cmd = exec.Command("mkdir", "-p", workdir+"/tmp")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	pvCouch := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.couchdb.pv")
 	cmd = exec.Command("cp", pvCouch, workdir+"/tmp/meep-pv-couchdb.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	pvES := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.elastic.es.pv")
 	cmd = exec.Command("cp", pvES, workdir+"/tmp/meep-pv-es.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	valuesFB := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.elastic.filebeat.values")
 	cmd = exec.Command("cp", valuesFB, workdir+"/tmp/filebeat-values.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	//search and replace in yaml fil
 	tmpStr := strings.Replace(workdir, "/", "\\/", -1)
 	str := "s/<WORKDIR>/" + tmpStr + "/g"
 	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/meep-pv-couchdb.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/meep-pv-es.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/filebeat-values.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	// Local storage bindings
 	// @TODO move to respective charts
 	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-couchdb.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-es.yaml")
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
 func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
@@ -311,8 +310,8 @@ func deployDep(cobraCmd *cobra.Command) {
 			var f *os.File
 			f, err = os.Create(workdir + "/tmp/meep-metricbeat-values.yaml")
 			if err == nil {
-				f.WriteString(yaml)
-				f.Sync()
+				_, _ = f.WriteString(yaml)
+				_ = f.Sync()
 				f.Close()
 			}
 		}
@@ -326,25 +325,22 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy("metricbeat", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart"), flags, cobraCmd)
 }
 
-func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra.Command) (err error) {
-	err = nil
+func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra.Command) {
 	force, _ := cobraCmd.Flags().GetBool("force")
 
 	// If release exist && --force, delete
 	exist, _ := utils.IsHelmRelease(component, cobraCmd)
 	if exist {
 		if force {
-			utils.HelmDelete(component, cobraCmd)
+			_ = utils.HelmDelete(component, cobraCmd)
 		} else {
 			fmt.Println("Skipping " + component + ": already deployed -- use [-f, --force] flag to force deployment")
-			return err
+			return
 		}
 	}
 
 	// Deploy
-	utils.HelmInstall(component, chart, flags, cobraCmd)
-
-	return err
+	_ = utils.HelmInstall(component, chart, flags, cobraCmd)
 }
 
 func deployVirtEngine(cobraCmd *cobra.Command) {
@@ -362,7 +358,7 @@ func deployVirtEngine(cobraCmd *cobra.Command) {
 	// ensure directory
 	logdir := viper.GetString("meep.workdir") + "/log"
 	cmd := exec.Command("mkdir", "-p", logdir)
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	// start ext. component
 	file, err := os.Create(logdir + "/virt-engine.log")
 	if err != nil {
@@ -375,7 +371,7 @@ func deployVirtEngine(cobraCmd *cobra.Command) {
 	virtEngineApp := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
 	if deployCodecov && codecovCapable {
 		codecovFile := workdir + "/codecov/" + repo + "/codecov-meep-virt-engine.out"
-		utils.ExecuteCmd(cmd, cobraCmd)
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		cmd = exec.Command(virtEngineApp, "-test.coverprofile="+codecovFile, "__DEVEL--code-cov")
 	} else {
 		cmd = exec.Command(virtEngineApp)
@@ -401,8 +397,8 @@ func deployMeepUserAccount(cobraCmd *cobra.Command) {
 	gitdir := viper.GetString("meep.gitdir")
 
 	cmd := exec.Command("kubectl", "create", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.meep-user.service-account"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	cmd = exec.Command("kubectl", "create", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.meep-user.cluster-role-binding"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }

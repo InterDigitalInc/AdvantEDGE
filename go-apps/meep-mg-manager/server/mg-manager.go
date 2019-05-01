@@ -39,24 +39,27 @@ const eventTypeStateTransferStart = "STATE-TRANSFER-START"
 const eventTypeStateTransferComplete = "STATE-TRANSFER-COMPLETE"
 const eventTypeStateTransferCancel = "STATE-TRANSFER-CANCEL"
 
-const stateTransModeStateDirect = "STATE-DIRECT"
+// const stateTransModeStateDirect = "STATE-DIRECT"
 const stateTransModeStateManaged = "STATE-MANAGED"
-const stateTransModeInstanceDirect = "INSTANCE-DIRECT"
-const stateTransModeInstanceManaged = "INSTANCE-MANAGED"
-const stateTransModeNone = "NONE"
+
+// const stateTransModeInstanceDirect = "INSTANCE-DIRECT"
+// const stateTransModeInstanceManaged = "INSTANCE-MANAGED"
+// const stateTransModeNone = "NONE"
 
 const stateTransTrigNetLocInRange = "NET-LOC-IN-RANGE"
 const stateTransTrigNetLocChange = "NET-LOC-CHANGE"
-const stateTransTrigGPSProximity = "GPS-PROXIMITY"
-const stateTransTrigNone = "NONE"
 
-const sessionTransModeGraceful = "GRACEFUL"
+// const stateTransTrigGPSProximity = "GPS-PROXIMITY"
+// const stateTransTrigNone = "NONE"
+
+// const sessionTransModeGraceful = "GRACEFUL"
 const sessionTransModeForced = "FORCED"
 
 const lbAlgoHopCount = "HOP-COUNT"
-const lbAlgoLatency = "LATENCY"
-const lbAlgoDistance = "DISTANCE"
-const lbAlgoNone = "NONE"
+
+// const lbAlgoLatency = "LATENCY"
+// const lbAlgoDistance = "DISTANCE"
+// const lbAlgoNone = "NONE"
 
 type mgInfo struct {
 	mg                  mgModel.MobilityGroup
@@ -119,9 +122,6 @@ var mgSvcInfoMap = map[string]*mgServiceInfo{}
 var svcToElemMap = map[string]string{}
 var elemToSvcMap = map[string]string{}
 
-// Active scenario
-var activeScenario ceModel.Scenario
-
 // Network Element Info mapping
 var netElemInfoMap = map[string]*netElemInfo{}
 
@@ -161,7 +161,7 @@ func Init() (err error) {
 func Run() {
 
 	// Listen for subscribed events. Provide event handler method.
-	Listen(eventHandler)
+	_ = Listen(eventHandler)
 }
 
 func eventHandler(channel string, payload string) {
@@ -223,7 +223,7 @@ func clearScenario() {
 
 	// Flush module data and send update
 	DBFlush(moduleMgManager)
-	Publish(channelMgManagerLb, "")
+	_ = Publish(channelMgManagerLb, "")
 }
 
 func parseScenario(scenario ceModel.Scenario) {
@@ -296,7 +296,7 @@ func parseScenario(scenario ceModel.Scenario) {
 								mg.StateTransferTrigger = stateTransTrigNetLocInRange
 								mg.SessionTransferMode = sessionTransModeForced
 								mg.LoadBalancingAlgorithm = lbAlgoHopCount
-								mgCreate(&mg)
+								_ = mgCreate(&mg)
 							}
 
 							// Add service instance to service info map
@@ -339,7 +339,7 @@ func parseScenario(scenario ceModel.Scenario) {
 									mg.StateTransferTrigger = stateTransTrigNetLocInRange
 									mg.SessionTransferMode = sessionTransModeForced
 									mg.LoadBalancingAlgorithm = lbAlgoHopCount
-									mgCreate(&mg)
+									_ = mgCreate(&mg)
 								}
 								// Add service instance to service info map
 								svcInfoMap[svcInfo.name] = svcInfo
@@ -358,8 +358,8 @@ func parseScenario(scenario ceModel.Scenario) {
 func addNode(graph *dijkstra.Graph, node string, parent string) {
 	graph.AddMappedVertex(node)
 	if parent != "" {
-		graph.AddMappedArc(parent, node, 1)
-		graph.AddMappedArc(node, parent, 1)
+		_ = graph.AddMappedArc(parent, node, 1)
+		_ = graph.AddMappedArc(node, parent, 1)
 	}
 }
 
@@ -549,6 +549,7 @@ func startStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app string
 		event.Name = eventTypeStateTransferStart
 		event.Type_ = eventTypeStateTransferStart
 		event.UeId = ue.ue.Id
+		//lint:ignore SA1012 context.TODO not supported here
 		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
 		if err != nil {
 			log.Error(err.Error())
@@ -567,6 +568,7 @@ func completeStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app str
 		event.Name = eventTypeStateTransferComplete
 		event.Type_ = eventTypeStateTransferComplete
 		event.UeId = ue.ue.Id
+		//lint:ignore SA1012 context.TODO not supported here
 		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
 		if err != nil {
 			log.Error(err.Error())
@@ -585,6 +587,7 @@ func cancelStateTransfer(group *mgInfo, elem *netElemInfo, ue *ueInfo, app strin
 		event.Name = eventTypeStateTransferCancel
 		event.Type_ = eventTypeStateTransferCancel
 		event.UeId = ue.ue.Id
+		//lint:ignore SA1012 context.TODO not supported here
 		_, err := group.appInfoMap[app].appClient.StateTransferApi.HandleEvent(nil, event)
 		if err != nil {
 			log.Error(err.Error())
@@ -633,7 +636,7 @@ func applyMgSvcMapping() {
 	}
 
 	// Publish Edge LB rules update
-	Publish(channelMgManagerLb, "")
+	_ = Publish(channelMgManagerLb, "")
 }
 
 func mgCreate(mg *mgModel.MobilityGroup) error {
@@ -873,6 +876,7 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 				event.Type_ = eventTypeStateUpdate
 				event.UeId = ueInfo.ue.Id
 				event.AppState = appState
+				//lint:ignore SA1012 context.TODO not supported here
 				_, err := appInfo.appClient.StateTransferApi.HandleEvent(nil, event)
 				if err != nil {
 					log.Error(err.Error())

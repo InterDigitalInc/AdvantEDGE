@@ -37,8 +37,6 @@ const channelMgManagerLb string = moduleMgManager + "-" + typeLb
 const channelTcNet string = moduleTcEngine + "-" + typeNet
 const channelTcLb string = moduleTcEngine + "-" + typeLb
 
-var lastOne string
-
 const MAX_THROUGHPUT = 9999999999 //easy value to spot in the array
 const COMMON_CORRELATION = 50
 const COMMON_PACKET_LOSS = 10   // 1000 -> 10.00%
@@ -198,7 +196,7 @@ func Init() (err error) {
 func Run() {
 
 	// Listen for subscribed events. Provide event handler method.
-	Listen(eventHandler)
+	_ = Listen(eventHandler)
 }
 
 func eventHandler(channel string, payload string) {
@@ -256,7 +254,7 @@ func processActiveScenarioUpdate() {
 		applyNetCharRules()
 
 		// Publish update to TC Sidecars for enforcement
-		Publish(channelTcNet, "")
+		_ = Publish(channelTcNet, "")
 	}
 }
 
@@ -300,7 +298,7 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Publish update to TC Sidecars for enforcement
-	Publish(channelTcLb, "")
+	_ = Publish(channelTcLb, "")
 }
 
 func addPod(name string) {
@@ -358,8 +356,8 @@ func stopScenario() {
 	scenarioName = ""
 
 	DBFlush(moduleTcEngine)
-	Publish(channelTcNet, "delAll")
-	Publish(channelTcLb, "delAll")
+	_ = Publish(channelTcNet, "delAll")
+	_ = Publish(channelTcLb, "delAll")
 }
 
 func validateLatencyVariation(value int) int {
@@ -573,7 +571,7 @@ func parseScenario(scenario ceModel.Scenario) {
 							}
 						}
 						// Add pod-specific external service mapping, if any
-						if proc.IsExternal == true {
+						if proc.IsExternal {
 							for _, service := range proc.ExternalConfig.IngressServiceMap {
 								serviceMap := new(expServiceMap)
 								serviceMap.nodePort = service.ExternalPort
@@ -805,8 +803,7 @@ func updateValueBasedOnParent(parentIndex int, nc *NetChar, i int, j int) {
 	}
 	netCharTable[j][i][THROUGHPUT] = netCharTable[i][j][THROUGHPUT]
 
-	var valuef float64
-	valuef = float64(netCharTable[parentIndex][j][PACKET_LOSS]) / float64(10000) // 100.00 % == 1, 10.00% == 0.1 ... etc)
+	valuef := float64(netCharTable[parentIndex][j][PACKET_LOSS]) / float64(10000) // 100.00 % == 1, 10.00% == 0.1 ... etc)
 	valuef = float64(10000-nc.PacketLoss) * valuef
 	netCharTable[i][j][PACKET_LOSS] = nc.PacketLoss + int(valuef)
 	netCharTable[j][i][PACKET_LOSS] = netCharTable[i][j][PACKET_LOSS]
@@ -827,7 +824,7 @@ func applyNetCharRules() {
 	for j, dstElement := range indexToNetElemMap {
 
 		// Ignore dummy
-		if strings.Contains(dstElement.Name, "dummy") == true {
+		if strings.Contains(dstElement.Name, "dummy") {
 			continue
 		}
 
@@ -837,7 +834,7 @@ func applyNetCharRules() {
 				continue
 			}
 
-			if strings.Contains(srcElement.Name, "dummy") == true {
+			if strings.Contains(srcElement.Name, "dummy") {
 				continue
 			}
 
@@ -890,10 +887,10 @@ func applyNetCharRules() {
 						needCreate = true
 					}
 				}
-				if needCreate == true {
+				if needCreate {
 					dstElement.FilterInfoList = append(dstElement.FilterInfoList, filterInfo)
 				} else {
-					if needUpdate == true {
+					if needUpdate {
 						list := dstElement.FilterInfoList
 						_ = deleteFilterRule(&list[index])
 						list[index] = filterInfo //swap
@@ -901,7 +898,7 @@ func applyNetCharRules() {
 				}
 			}
 
-			if needCreate == true || needUpdate == true {
+			if needCreate || needUpdate {
 				dstElement.NextUniqueNumber++
 				_ = updateFilterRule(&filterInfo)
 			}
@@ -926,7 +923,7 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 
 	// Delete filter rule
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + ifbNumber
-	DBRemoveEntry(keyName)
+	err = DBRemoveEntry(keyName)
 	if err != nil {
 		return err
 	}
@@ -1009,7 +1006,7 @@ func applyMgSvcMapping() {
 				keys[key] = true
 
 				// Set rule information in DB
-				DBSetEntry(key, fields)
+				_ = DBSetEntry(key, fields)
 			}
 		}
 
@@ -1046,7 +1043,7 @@ func applyMgSvcMapping() {
 			keys[key] = true
 
 			// Set rule information in DB
-			DBSetEntry(key, fields)
+			_ = DBSetEntry(key, fields)
 		}
 	}
 
@@ -1063,7 +1060,7 @@ func removeEntryHandler(key string, fields map[string]string, userData interface
 	keys := userData.(*map[string]bool)
 
 	if _, found := (*keys)[key]; !found {
-		DBRemoveEntry(key)
+		_ = DBRemoveEntry(key)
 	}
 	return nil
 }
@@ -1188,55 +1185,55 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-func printfNetChar(nc NetChar) {
-	log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
-	log.Debug("throughput : ", nc.Throughput)
-	log.Debug("packet loss: ", nc.PacketLoss)
-}
-
-func printfElement(element NetElem) {
-	log.Debug("element name : ", element.Name)
-	log.Debug("element index : ", element.Index)
-	log.Debug("element parent name : ", element.ParentName)
-	log.Debug("element zone name : ", element.ZoneName)
-	log.Debug("element domain name : ", element.DomainName)
-	log.Debug("element type : ", element.Type)
-	log.Debug("element scenario name : ", element.ScenarioName)
-	log.Debug("element poa: ")
-	printfNetChar(element.Poa)
-	log.Debug("element poa-edge: ")
-	printfNetChar(element.EdgeFog)
-	log.Debug("element inter-fog: ")
-	printfNetChar(element.InterFog)
-	log.Debug("element inter-edge: ")
-	printfNetChar(element.InterEdge)
-	log.Debug("element inter-zone: ")
-	printfNetChar(element.InterZone)
-	log.Debug("element inter-domain: ")
-	printfNetChar(element.InterDomain)
-	log.Debug("element filter size: ", len(element.FilterInfoList))
-	log.Debug("element ip: ", element.Ip)
-	log.Debug("element next unique nb: ", element.NextUniqueNumber)
-}
-
-func printfFilterInfoList(filterInfoList []FilterInfo) {
-	for _, filterInfo := range filterInfoList {
-		printfFilterInfo(filterInfo)
-	}
-}
-
-func printfFilterInfo(filterInfo FilterInfo) {
-	log.Debug("***")
-	log.Debug("filterInfo PodName : ", filterInfo.PodName)
-	log.Debug("filterInfo srcIp : ", filterInfo.SrcIp)
-	log.Debug("filterInfo srcSvcIp : ", filterInfo.SrcSvcIp)
-	log.Debug("filterInfo srcName : ", filterInfo.SrcName)
-	log.Debug("filterInfo srcPort : ", filterInfo.SrcPort)
-	log.Debug("filterInfo dstPort : ", filterInfo.DstPort)
-	log.Debug("filterInfo uniqueNumber : ", filterInfo.UniqueNumber)
-	log.Debug("filterInfo latency : ", filterInfo.Latency)
-	log.Debug("filterInfo latencyVariation : ", filterInfo.LatencyVariation)
-	log.Debug("filterInfo latencyCorrelation : ", filterInfo.LatencyCorrelation)
-	log.Debug("filterInfo packetLoss : ", filterInfo.PacketLoss)
-	log.Debug("filterInfo dataRate : ", filterInfo.DataRate)
-}
+// func printfNetChar(nc NetChar) {
+// 	log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
+// 	log.Debug("throughput : ", nc.Throughput)
+// 	log.Debug("packet loss: ", nc.PacketLoss)
+// }
+//
+// func printfElement(element NetElem) {
+// 	log.Debug("element name : ", element.Name)
+// 	log.Debug("element index : ", element.Index)
+// 	log.Debug("element parent name : ", element.ParentName)
+// 	log.Debug("element zone name : ", element.ZoneName)
+// 	log.Debug("element domain name : ", element.DomainName)
+// 	log.Debug("element type : ", element.Type)
+// 	log.Debug("element scenario name : ", element.ScenarioName)
+// 	log.Debug("element poa: ")
+// 	printfNetChar(element.Poa)
+// 	log.Debug("element poa-edge: ")
+// 	printfNetChar(element.EdgeFog)
+// 	log.Debug("element inter-fog: ")
+// 	printfNetChar(element.InterFog)
+// 	log.Debug("element inter-edge: ")
+// 	printfNetChar(element.InterEdge)
+// 	log.Debug("element inter-zone: ")
+// 	printfNetChar(element.InterZone)
+// 	log.Debug("element inter-domain: ")
+// 	printfNetChar(element.InterDomain)
+// 	log.Debug("element filter size: ", len(element.FilterInfoList))
+// 	log.Debug("element ip: ", element.Ip)
+// 	log.Debug("element next unique nb: ", element.NextUniqueNumber)
+// }
+//
+// func printfFilterInfoList(filterInfoList []FilterInfo) {
+// 	for _, filterInfo := range filterInfoList {
+// 		printfFilterInfo(filterInfo)
+// 	}
+// }
+//
+// func printfFilterInfo(filterInfo FilterInfo) {
+// 	log.Debug("***")
+// 	log.Debug("filterInfo PodName : ", filterInfo.PodName)
+// 	log.Debug("filterInfo srcIp : ", filterInfo.SrcIp)
+// 	log.Debug("filterInfo srcSvcIp : ", filterInfo.SrcSvcIp)
+// 	log.Debug("filterInfo srcName : ", filterInfo.SrcName)
+// 	log.Debug("filterInfo srcPort : ", filterInfo.SrcPort)
+// 	log.Debug("filterInfo dstPort : ", filterInfo.DstPort)
+// 	log.Debug("filterInfo uniqueNumber : ", filterInfo.UniqueNumber)
+// 	log.Debug("filterInfo latency : ", filterInfo.Latency)
+// 	log.Debug("filterInfo latencyVariation : ", filterInfo.LatencyVariation)
+// 	log.Debug("filterInfo latencyCorrelation : ", filterInfo.LatencyCorrelation)
+// 	log.Debug("filterInfo packetLoss : ", filterInfo.PacketLoss)
+// 	log.Debug("filterInfo dataRate : ", filterInfo.DataRate)
+// }

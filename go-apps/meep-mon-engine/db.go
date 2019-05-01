@@ -5,7 +5,8 @@
  *
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
-*/
+ */
+
 package main
 
 import (
@@ -17,11 +18,9 @@ import (
 var dbClient *redis.Client
 var dbClientStarted = false
 
-var pubsub *redis.PubSub
-
 // DBConnect - Establish connection to DB
 func DBConnect() error {
-	if dbClientStarted == false {
+	if !dbClientStarted {
 		err := openDB()
 		if err != nil {
 			return err
@@ -105,44 +104,6 @@ func DBRemoveEntry(keys ...string) error {
 	_, err := dbClient.Del(keys...).Result()
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-// DBForEachEntry - Search for matching keys and run handler for each entry
-func DBForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
-	var cursor uint64
-	var err error
-
-	// Process in chunks of 50 matching entries to optimize processing speed & memory
-	for {
-		var keys []string
-		keys, cursor, err = dbClient.Scan(cursor, keyMatchStr, 50).Result()
-		if err != nil {
-			log.Debug("ERROR: ", err)
-			break
-		}
-
-		if len(keys) > 0 {
-			for i := 0; i < len(keys); i++ {
-				fields, err := dbClient.HGetAll(keys[i]).Result()
-				if err != nil || fields == nil {
-					log.Debug("Failed to retrieve entry fields")
-					break
-				}
-
-				// Invoke handler to process entry
-				err = entryHandler(keys[i], fields, userData)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		// Stop searching if cursor is back at beginning
-		if cursor == 0 {
-			break
-		}
 	}
 	return nil
 }

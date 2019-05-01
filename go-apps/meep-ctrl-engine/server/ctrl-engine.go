@@ -6,6 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
+
 package server
 
 import (
@@ -15,10 +16,6 @@ import (
 	"net/http"
 	"sort"
 	"strings"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	"github.com/flimzy/kivik"
 	_ "github.com/go-kivik/couchdb"
@@ -81,7 +78,7 @@ func connectDb(dbName string) (*kivik.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if debExists == false {
+	if !debExists {
 		log.Debug("Create new DB: " + dbName)
 		err = dbClient.CreateDB(context.TODO(), dbName)
 		if err != nil {
@@ -107,7 +104,7 @@ func getScenario(returnNilOnNotFound bool, db *kivik.DB, scenarioName string, sc
 	row, err := db.Get(context.TODO(), scenarioName)
 	if err != nil {
 		//that's a call to the couch DB.. in order not to return nil, we override it
-		if returnNilOnNotFound == true {
+		if returnNilOnNotFound {
 			if err.Error() == "Not Found: deleted" {
 				//specifically for the case where there is nothing.. so the scenario object will be empty
 				return nil
@@ -208,7 +205,7 @@ func removeScenario(db *kivik.DB, scenarioName string) error {
 
 	// Remove scenario from DB
 	log.Debug("Remove scenario from DB: " + scenarioName)
-	rev, err = db.Delete(context.TODO(), scenarioName, rev)
+	_, err = db.Delete(context.TODO(), scenarioName, rev)
 	if err != nil {
 		return err
 	}
@@ -240,161 +237,7 @@ func removeAllScenarios(db *kivik.DB) error {
 	// Loop through scenarios and remove each one
 	log.Debug("Loop through scenarios")
 	for rows.Next() {
-		removeScenario(db, rows.ID())
-	}
-
-	return nil
-}
-
-// ceGetActiveScenario retrieves the deployed scenario status
-func monitorActiveDeployment(deployment *Deployment) error {
-	log.Debug("monitorActiveDeployment")
-
-	// Connect to K8s API Server
-	clientset, err := connectToAPISvr()
-	if err != nil {
-		return err
-	}
-
-	// Retrieve all pods
-	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{LabelSelector: "vertical=edge-ar-vr"})
-	if err != nil {
-		return err
-	}
-	if len(pods.Items) == 0 {
-		log.Debug("No pods found in the cluster")
-		return nil
-	}
-
-	// Loop through all pods and populate scneario
-	log.Debug("Found ", len(pods.Items), " pods in the cluster")
-	for _, pod := range pods.Items {
-		podLabels := pod.ObjectMeta.Labels
-
-		// Retrieve pod information
-		domainID := podLabels["domainId"]
-		domainName := podLabels["domainName"]
-		domainType := podLabels["domainType"]
-		zoneID := podLabels["zoneId"]
-		zoneName := podLabels["zoneName"]
-		zoneType := podLabels["zoneType"]
-		networkLocationID := podLabels["networkLocationId"]
-		networkLocationName := podLabels["networkLocationName"]
-		networkLocationType := podLabels["networkLocationType"]
-		physicalLocationID := podLabels["physicalLocationId"]
-		physicalLocationName := podLabels["physicalLocationName"]
-		physicalLocationType := podLabels["physicalLocationType"]
-		physicalLocationIsExternal := (podLabels["physicalLocationIsExternal"] == "true")
-		processID := podLabels["processId"]
-		processName := podLabels["processName"]
-		processType := podLabels["processType"]
-		processIsExternal := (podLabels["processIsExternal"] == "true")
-
-		log.Debug("domainID[", domainID, "]",
-			"domainName[", domainName, "]",
-			"domainType[", domainType, "]",
-			"zoneID[", zoneID, "]",
-			"zoneName[", zoneName, "]",
-			"zoneType[", zoneType, "]",
-			"networkLocationID[", networkLocationID, "]",
-			"networkLocationName[", networkLocationName, "]",
-			"networkLocationType[", networkLocationType, "]",
-			"physicalLocationID[", physicalLocationID, "]",
-			"physicalLocationName[", physicalLocationName, "]",
-			"physicalLocationType[", physicalLocationType, "]",
-			"physicalLocationIsExternal[", physicalLocationIsExternal, "]",
-			"processID[", processID, "]",
-			"processName[", processName, "]",
-			"processType[", processType, "]",
-			"processIsExternal[", processIsExternal, "]")
-
-		// Get domain
-		var domain *Domain
-		for i, d := range deployment.Domains {
-			if d.Id == domainID {
-				domain = &deployment.Domains[i]
-				break
-			}
-		}
-		if domain == nil {
-			var newDomain Domain
-			newDomain.Id = domainID
-			newDomain.Name = domainName
-			newDomain.Type_ = domainType
-			deployment.Domains = append(deployment.Domains, newDomain)
-			domain = &deployment.Domains[len(deployment.Domains)-1]
-		}
-
-		// Get zone
-		var zone *Zone
-		for i, z := range domain.Zones {
-			if z.Id == zoneID {
-				zone = &domain.Zones[i]
-				break
-			}
-		}
-		if zone == nil {
-			var newZone Zone
-			newZone.Id = zoneID
-			newZone.Name = zoneName
-			newZone.Type_ = zoneType
-			domain.Zones = append(domain.Zones, newZone)
-			zone = &domain.Zones[len(domain.Zones)-1]
-		}
-
-		// Get networkLocation
-		var networkLocation *NetworkLocation
-		for i, nl := range zone.NetworkLocations {
-			if nl.Id == networkLocationID {
-				networkLocation = &zone.NetworkLocations[i]
-				break
-			}
-		}
-		if networkLocation == nil {
-			var newNetworkLocation NetworkLocation
-			newNetworkLocation.Id = networkLocationID
-			newNetworkLocation.Name = networkLocationName
-			newNetworkLocation.Type_ = networkLocationType
-			zone.NetworkLocations = append(zone.NetworkLocations, newNetworkLocation)
-			networkLocation = &zone.NetworkLocations[len(zone.NetworkLocations)-1]
-		}
-
-		// Get physicalLocation
-		var physicalLocation *PhysicalLocation
-		for i, nl := range networkLocation.PhysicalLocations {
-			if nl.Id == physicalLocationID {
-				physicalLocation = &networkLocation.PhysicalLocations[i]
-				break
-			}
-		}
-		if physicalLocation == nil {
-			var newPhysicalLocation PhysicalLocation
-			newPhysicalLocation.Id = physicalLocationID
-			newPhysicalLocation.Name = physicalLocationName
-			newPhysicalLocation.Type_ = physicalLocationType
-			newPhysicalLocation.IsExternal = physicalLocationIsExternal
-			networkLocation.PhysicalLocations = append(networkLocation.PhysicalLocations, newPhysicalLocation)
-			physicalLocation = &networkLocation.PhysicalLocations[len(networkLocation.PhysicalLocations)-1]
-		}
-
-		// Get Process
-		var process *Process
-		for i, p := range physicalLocation.Processes {
-			if p.Id == physicalLocationID {
-				process = &physicalLocation.Processes[i]
-				break
-			}
-		}
-		if process != nil {
-			log.Debug("Process[", process.Id, "] already exists in domain[", domain.Id, "] zone[", zone.Id, "] networkLocation[", networkLocation.Id, "] physicalLocation[", physicalLocation.Id, "]")
-		} else {
-			var newProcess Process
-			newProcess.Id = processID
-			newProcess.Name = processName
-			newProcess.Type_ = processType
-			newProcess.IsExternal = processIsExternal
-			physicalLocation.Processes = append(physicalLocation.Processes, newProcess)
-		}
+		_ = removeScenario(db, rows.ID())
 	}
 
 	return nil
@@ -418,9 +261,8 @@ func populateClientServiceMap(activeScenario *Scenario) {
 							// Create new client service map
 							var clientServiceMap ClientServiceMap
 							clientServiceMap.Client = proc.Name
-							for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
-								clientServiceMap.ServiceMap = append(clientServiceMap.ServiceMap, serviceMap)
-							}
+							clientServiceMap.ServiceMap = append(clientServiceMap.ServiceMap,
+								proc.ExternalConfig.IngressServiceMap...)
 
 							// Add new map to list
 							clientServiceMapList = append(clientServiceMapList, clientServiceMap)
@@ -430,22 +272,6 @@ func populateClientServiceMap(activeScenario *Scenario) {
 			}
 		}
 	}
-}
-
-func connectToAPISvr() (*kubernetes.Clientset, error) {
-	// Create the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	// Create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
-	}
-	return clientset, nil
 }
 
 // CtrlEngineInit Initializes the Controller Engine
@@ -699,11 +525,12 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Active scenario set with rev: ", rev)
 
 	// Activate scenario in virtualization Engine
-	resp, err := virtEngine.ScenarioDeploymentApi.ActivateScenario(nil, veScenario)
+	//lint:ignore SA1012 context.TODO not supported here
+	_, err = virtEngine.ScenarioDeploymentApi.ActivateScenario(nil, veScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
-		removeScenario(db, activeScenarioName)
+		_ = removeScenario(db, activeScenarioName)
 		return
 	}
 
@@ -716,16 +543,17 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
-		removeScenario(db, activeScenarioName)
+		_ = removeScenario(db, activeScenarioName)
 		return
 	}
 
 	// Activate scenario in TC Controller
-	resp, err = tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
+	//lint:ignore SA1012 context.TODO not supported here
+	resp, err := tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
-		removeScenario(db, activeScenarioName)
+		_ = removeScenario(db, activeScenarioName)
 		return
 	}
 
@@ -734,7 +562,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("Scenario not active")
 		http.Error(w, "Scenario not active", http.StatusBadRequest)
-		removeScenario(db, activeScenarioName)
+		_ = removeScenario(db, activeScenarioName)
 		return
 	}
 
@@ -900,13 +728,15 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Terminate scenario in TC Controller
-	resp, err := tcEngine.ScenarioDeploymentApi.DeleteNetworkCharacteristicsTable(nil)
+	//lint:ignore SA1012 context.TODO not supported here
+	_, err = tcEngine.ScenarioDeploymentApi.DeleteNetworkCharacteristicsTable(nil)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
 	// Terminate scenario in virtualization Engine
-	resp, err = virtEngine.ScenarioDeploymentApi.TerminateScenario(nil, scenario.Name)
+	//lint:ignore SA1012 context.TODO not supported here
+	resp, err := virtEngine.ScenarioDeploymentApi.TerminateScenario(nil, scenario.Name)
 	if err != nil {
 		log.Error(err.Error())
 	}
@@ -950,11 +780,11 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 		elementFound = true
 	}
 
-	for index_d, d := range scenario.Deployment.Domains {
-		if elementFound == true {
+	for dIndex, d := range scenario.Deployment.Domains {
+		if elementFound {
 			break
 		} else if elementType == "OPERATOR" && elementName == d.Name {
-			domain := &scenario.Deployment.Domains[index_d]
+			domain := &scenario.Deployment.Domains[dIndex]
 			domain.InterZoneLatency = netChar.Latency
 			domain.InterZoneLatencyVariation = netChar.LatencyVariation
 			domain.InterZoneThroughput = netChar.Throughput
@@ -964,11 +794,11 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 		}
 
 		// Parse zones
-		for index_z, z := range d.Zones {
-			if elementFound == true {
+		for zIndex, z := range d.Zones {
+			if elementFound {
 				break
 			} else if elementType == "ZONE-INTER-EDGE" && elementName == z.Name {
-				zone := &scenario.Deployment.Domains[index_d].Zones[index_z]
+				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterEdgeLatency = netChar.Latency
 				zone.InterEdgeLatencyVariation = netChar.LatencyVariation
 				zone.InterEdgeThroughput = netChar.Throughput
@@ -976,7 +806,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				elementFound = true
 				break
 			} else if elementType == "ZONE-INTER-FOG" && elementName == z.Name {
-				zone := &scenario.Deployment.Domains[index_d].Zones[index_z]
+				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterFogLatency = netChar.Latency
 				zone.InterFogLatencyVariation = netChar.LatencyVariation
 				zone.InterFogThroughput = netChar.Throughput
@@ -984,7 +814,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				elementFound = true
 				break
 			} else if elementType == "ZONE-EDGE-FOG" && elementName == z.Name {
-				zone := &scenario.Deployment.Domains[index_d].Zones[index_z]
+				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.EdgeFogLatency = netChar.Latency
 				zone.EdgeFogLatencyVariation = netChar.LatencyVariation
 				zone.EdgeFogThroughput = netChar.Throughput
@@ -994,21 +824,22 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 			}
 
 			// Parse Network Locations
-			for index_nl, nl := range z.NetworkLocations {
+			for nlIndex, nl := range z.NetworkLocations {
 				if elementType == "POA" && elementName == nl.Name {
-					netloc := &scenario.Deployment.Domains[index_d].Zones[index_z].NetworkLocations[index_nl]
+					netloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex]
 					netloc.TerminalLinkLatency = netChar.Latency
 					netloc.TerminalLinkLatencyVariation = netChar.LatencyVariation
 					netloc.TerminalLinkThroughput = netChar.Throughput
 					netloc.TerminalLinkPacketLoss = netChar.PacketLoss
 					elementFound = true
 					break
+
 				}
 			}
 		}
 	}
 
-	if elementFound == true {
+	if elementFound {
 		log.Debug("element was found and updates should be applied")
 	} else {
 		return "Element not found in the scenario", http.StatusNotFound
@@ -1036,6 +867,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 	}
 
 	// Activate scenario in TC Controller
+	//lint:ignore SA1012 context.TODO not supported here
 	_, err = tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
 	if err != nil {
 		return err.Error(), http.StatusNotFound
@@ -1125,6 +957,7 @@ func sendEventUeMobility(event Event) (string, int) {
 		}
 
 		// Activate scenario in TC Controller
+		//lint:ignore SA1012 context.TODO not supported here
 		_, err = tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
 		if err != nil {
 			return err.Error(), http.StatusNotFound
@@ -1192,7 +1025,7 @@ func sendEventPoasInRange(event Event) (string, int) {
 		log.Debug("UE Found. Checking for update to visible POAs")
 
 		// Compare new list of poas with current UE list and update if necessary
-		if Equal(poasInRange, ue.NetworkLocationsInRange) == false {
+		if !Equal(poasInRange, ue.NetworkLocationsInRange) {
 			log.Debug("Updating POAs in range for UE: " + ue.Name)
 			ue.NetworkLocationsInRange = poasInRange
 
@@ -1350,7 +1183,7 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 	//get will be unique... but reusing the generic function
 	var err error
-	if detailed == true {
+	if detailed {
 		err = RedisDBForEachEntry(keyName, getPodDetails, &podsStatus)
 	} else {
 		err = RedisDBForEachEntry(keyName, getPodStatesOnly, &podsStatus)
@@ -1367,6 +1200,7 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 		var podStatus PodStatus
 		podStatus.Name = "virt-engine"
 		//we do not care about the content of the answer, simply that there is one
+		//lint:ignore SA1012 context.TODO not supported here
 		_, resp, _ := virtEngine.ScenarioDeploymentApi.GetActiveScenario(nil, "dummy")
 
 		if resp != nil {
@@ -1383,8 +1217,7 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 		//if some are missing... its because its coming up and as such... we cannot return a success yet... adding one entry that will be false
 
-		var corePods map[string]bool
-		corePods = getCorePodsList()
+		corePods := getCorePodsList()
 
 		//loop through each of them by name
 		for _, statusPod := range podsStatus.PodStatus {

@@ -16,11 +16,10 @@ package cmd
 
 import (
 	"fmt"
-        "time"
+	"time"
 
-        "github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
-
-        "github.com/spf13/cobra"
+	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
+	"github.com/spf13/cobra"
 )
 
 // configKibana represents the configKibana command
@@ -29,18 +28,18 @@ var configKibana = &cobra.Command{
 	Short: "Configures Kibana (index pattern, saved objects such as dashboards, visualisations, etc.)",
 	Long: `Configures Kibana (index pattern, saved objects such as dashboards, visualisations, etc.)
         `,
-        Example: `  # Configure Kibana by downloading saved objects (dashboards, visualizations, etc) and applying a default index pattern
+	Example: `  # Configure Kibana by downloading saved objects (dashboards, visualizations, etc) and applying a default index pattern
   # NOTE: Any Kibana saved object will be overwritten in the process if the object Id are the same 
     meepctl config kibana.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		t, _ := cmd.Flags().GetBool("time")
-                start := time.Now()
-                utils.DeployKibanaDashboards(cmd)
+		start := time.Now()
+		utils.DeployKibanaDashboards(cmd)
 
-                elapsed := time.Since(start)
-                if t {
-                        fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-                }
+		elapsed := time.Since(start)
+		if t {
+			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
+		}
 
 	},
 }

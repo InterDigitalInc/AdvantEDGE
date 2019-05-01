@@ -5,7 +5,8 @@
  *
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
-*/
+ */
+
 package main
 
 import (
@@ -13,9 +14,9 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
-
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -154,7 +155,7 @@ func processEvent(obj interface{}, reason int) {
 			restartCount := 0
 			reasonFailureStr := ""
 			for i := 0; i < nbContainers; i++ {
-				if pod.Status.ContainerStatuses[i].Ready == true {
+				if pod.Status.ContainerStatuses[i].Ready {
 					okContainers++
 				} else {
 					if pod.Status.ContainerStatuses[i].State.Waiting != nil {
@@ -245,8 +246,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	DBSetEntry(key, fields)
-
+	_ = DBSetEntry(key, fields)
 }
 
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
@@ -255,8 +255,7 @@ func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	DBRemoveEntry(key)
-
+	_ = DBRemoveEntry(key)
 }
 
 func k8sConnect() (err error) {

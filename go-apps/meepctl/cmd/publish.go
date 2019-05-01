@@ -90,8 +90,8 @@ func publishImage(cobraCmd *cobra.Command, registry string, repo string, tag str
 		localTag, _ := utils.GetDockerTag(repo, cobraCmd)
 		localRepo := repo + ":" + localTag
 		newRepo := registry + "/" + repo + ":" + tag
-		utils.TagDockerImage(localRepo, newRepo, cobraCmd)
-		utils.PushDockerImage(newRepo, cobraCmd)
+		_ = utils.TagDockerImage(localRepo, newRepo, cobraCmd)
+		_ = utils.PushDockerImage(newRepo, cobraCmd)
 	} else {
 		fmt.Println("Image", repo, ":latest not found")
 	}

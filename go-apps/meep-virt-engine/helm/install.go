@@ -17,9 +17,8 @@ import (
 )
 
 func installCharts(charts []Chart) error {
-	var err error
 
-	err = ensureReleases(charts)
+	err := ensureReleases(charts)
 	if err != nil {
 		return err
 	}
@@ -34,11 +33,11 @@ func installCharts(charts []Chart) error {
 
 func ensureReleases(charts []Chart) error {
 	// ensure that releases do not already exist
-	releases, err := GetReleasesName()
+	releases, _ := GetReleasesName()
 	for _, c := range charts {
 		for _, r := range releases {
 			if c.ReleaseName == r.Name {
-				err = errors.New("Release [" + c.ReleaseName + "] already exists")
+				err := errors.New("Release [" + c.ReleaseName + "] already exists")
 				log.Error(err)
 				return err
 			}
@@ -85,6 +84,6 @@ func cleanReleases(charts []Chart) {
 	}
 
 	if cnt > 0 {
-		DeleteReleases(toClean)
+		_ = DeleteReleases(toClean)
 	}
 }

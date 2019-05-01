@@ -27,7 +27,7 @@ var pubsub *redis.PubSub
 
 // DBConnect - Establish connection to DB
 func DBConnect() error {
-	if dbClientStarted == false {
+	if !dbClientStarted {
 		err := openDB()
 		if err != nil {
 			return err

@@ -89,10 +89,18 @@ func deleteMeepUserAccount(cobraCmd *cobra.Command) {
 	gitdir := viper.GetString("meep.gitdir")
 
 	cmd := exec.Command("kubectl", "delete", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.meep-user.service-account"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	out, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
 
 	cmd = exec.Command("kubectl", "delete", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.meep-user.cluster-role-binding"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	out, err = utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
 }
 
 func deleteDep(cobraCmd *cobra.Command) {
@@ -102,26 +110,10 @@ func deleteDep(cobraCmd *cobra.Command) {
 	// NOTE: Helm charts don't remove pvc for statefulsets because helm did not create them
 	// Run in separate threads in order to complete uninstall successfully
 	messages := make(chan string)
-	go func() {
-		cmd := exec.Command("kubectl", "delete", "pvc", "database-storage-couchdb-couchdb-0")
-		utils.ExecuteCmd(cmd, cobraCmd)
-		messages <- "Deleted couchdb pvc"
-	}()
-	go func() {
-		cmd := exec.Command("kubectl", "delete", "pvc", "data-elastic-elasticsearch-data-0")
-		utils.ExecuteCmd(cmd, cobraCmd)
-		messages <- "Deleted elastic data-0 pvc"
-	}()
-	go func() {
-		cmd := exec.Command("kubectl", "delete", "pvc", "data-elastic-elasticsearch-master-0")
-		utils.ExecuteCmd(cmd, cobraCmd)
-		messages <- "Deleted elastic master-0 pvc"
-	}()
-	go func() {
-		cmd := exec.Command("kubectl", "delete", "pvc", "data-elastic-elasticsearch-master-1")
-		utils.ExecuteCmd(cmd, cobraCmd)
-		messages <- "Deleted elastic master-1 pvc"
-	}()
+	go k8sDeletePvc("database-storage-couchdb-couchdb-0", cobraCmd, messages)
+	go k8sDeletePvc("data-elastic-elasticsearch-data-0", cobraCmd, messages)
+	go k8sDeletePvc("data-elastic-elasticsearch-master-0", cobraCmd, messages)
+	go k8sDeletePvc("data-elastic-elasticsearch-master-1", cobraCmd, messages)
 
 	k8sDelete("meep-redis", cobraCmd)
 	k8sDelete("kube-state-metrics", cobraCmd)
@@ -141,9 +133,17 @@ func deleteDep(cobraCmd *cobra.Command) {
 	// Local storage bindings
 	// @TODO move to respective charts
 	cmd := exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.couchdb.pv"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	out, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
 	cmd = exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.pv"))
-	utils.ExecuteCmd(cmd, cobraCmd)
+	out, err = utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
 }
 
 func init() {
@@ -160,14 +160,24 @@ func init() {
 	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func k8sDelete(component string, cobraCmd *cobra.Command) (err error) {
-	err = nil
-
+func k8sDelete(component string, cobraCmd *cobra.Command) {
 	// If release exist
 	exist, _ := utils.IsHelmRelease(component, cobraCmd)
 	if exist {
 		// Delete
-		err = utils.HelmDelete(component, cobraCmd)
+		err := utils.HelmDelete(component, cobraCmd)
+		if err != nil {
+			fmt.Println("Helm delete failed with Error: ", err)
+		}
 	}
-	return err
+}
+
+func k8sDeletePvc(pvc string, cobraCmd *cobra.Command, messages chan string) {
+	cmd := exec.Command("kubectl", "delete", "pvc", pvc)
+	out, err := utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
+	messages <- "Deleted pvc: " + pvc
 }

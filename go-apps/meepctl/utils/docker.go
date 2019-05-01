@@ -6,6 +6,7 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
+
 package utils
 
 import (
