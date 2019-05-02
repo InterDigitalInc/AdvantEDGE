@@ -6,7 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/golang/glog"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
 	"k8s.io/api/admission/v1beta1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -82,7 +83,7 @@ func init() {
 // 	// skip special kubernete system namespaces
 // 	for _, namespace := range ignoredList {
 // 		if metadata.Namespace == namespace {
-// 			glog.Infof("Skip mutation for %v for it' in special namespace:%v", metadata.Name, metadata.Namespace)
+// 			log.Infof("Skip mutation for %v for it' in special namespace:%v", metadata.Name, metadata.Namespace)
 // 			return false
 // 		}
 // 	}
@@ -107,7 +108,7 @@ func init() {
 // 		}
 // 	}
 
-// 	glog.Infof("Mutation policy for %v/%v: status: %q required:%v", metadata.Namespace, metadata.Name, status, required)
+// 	log.Infof("Mutation policy for %v/%v: status: %q required:%v", metadata.Namespace, metadata.Name, status, required)
 // 	return required
 // }
 
@@ -191,7 +192,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	req := ar.Request
 	var pod corev1.Pod
 	if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
-		glog.Errorf("Could not unmarshal raw object: %v", err)
+		log.Error("Could not unmarshal raw object: %v", err)
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
@@ -199,12 +200,12 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	glog.Infof("AdmissionReview for Kind=%v, Namespace=%v Name=%v (%v) UID=%v patchOperation=%v UserInfo=%v",
+	log.Info("AdmissionReview for Kind=%v, Namespace=%v Name=%v (%v) UID=%v patchOperation=%v UserInfo=%v",
 		req.Kind, req.Namespace, req.Name, pod.Name, req.UID, req.Operation, req.UserInfo)
 
 	// // determine whether to perform mutation
 	// if !mutationRequired(ignoredNamespaces, &pod.ObjectMeta) {
-	// 	glog.Infof("Skipping mutation for %s/%s due to policy check", pod.Namespace, pod.Name)
+	// 	log.Infof("Skipping mutation for %s/%s due to policy check", pod.Namespace, pod.Name)
 	// 	return &v1beta1.AdmissionResponse{
 	// 		Allowed: true,
 	// 	}
@@ -222,7 +223,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	// 	}
 	// }
 
-	// glog.Infof("AdmissionResponse: patch=%v\n", string(patchBytes))
+	// log.Infof("AdmissionResponse: patch=%v\n", string(patchBytes))
 	// return &v1beta1.AdmissionResponse{
 	// 	Allowed: true,
 	// 	Patch:   patchBytes,
@@ -248,7 +249,7 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if len(body) == 0 {
-		glog.Error("empty body")
+		log.Error("empty body")
 		http.Error(w, "empty body", http.StatusBadRequest)
 		return
 	}
@@ -256,7 +257,7 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		glog.Errorf("Content-Type=%s, expect application/json", contentType)
+		log.Error("Content-Type=%s, expect application/json", contentType)
 		http.Error(w, "invalid Content-Type, expect `application/json`", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -264,7 +265,7 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 	if _, _, err := deserializer.Decode(body, nil, &ar); err != nil {
-		glog.Errorf("Can't decode body: %v", err)
+		log.Error("Can't decode body: %v", err)
 		admissionResponse = &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
@@ -284,12 +285,12 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(admissionReview)
 	if err != nil {
-		glog.Errorf("Can't encode response: %v", err)
+		log.Error("Can't encode response: %v", err)
 		http.Error(w, fmt.Sprintf("could not encode response: %v", err), http.StatusInternalServerError)
 	}
-	glog.Infof("Ready to write reponse ...")
+	log.Info("Ready to write reponse ...")
 	if _, err := w.Write(resp); err != nil {
-		glog.Errorf("Can't write response: %v", err)
+		log.Error("Can't write response: %v", err)
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
 	}
 }

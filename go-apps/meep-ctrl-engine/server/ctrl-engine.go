@@ -52,7 +52,7 @@ func getCorePodsList() map[string]bool {
 	innerMap := map[string]bool{
 		"couchdb-couchdb-0": false,
 		"meep-ctrl-engine":  false,
-		"meep-initializer":  false,
+		"meep-webhook":      false,
 		"meep-mg-manager":   false,
 		"meep-mon-engine":   false,
 		"meep-tc-engine":    false,

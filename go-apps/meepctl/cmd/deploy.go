@@ -145,7 +145,9 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
-
+	//certs
+	cmd = exec.Command("mkdir", "-p", workdir+"/certs")
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
 func ensureDepStorage(cobraCmd *cobra.Command) {
@@ -203,6 +205,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 		registry = registry + "/"
 	}
 	gitdir := viper.GetString("meep.gitdir") + "/"
+	workdir := viper.GetString("meep.workdir") + "/"
 
 	deployMeepUserAccount(cobraCmd)
 
@@ -247,17 +250,30 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	}
 	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-mg-manager.chart"), flags, cobraCmd)
 	//---
-	repo = "meep-initializer"
+	repo = "meep-webhook"
+	chartdir := gitdir + utils.RepoCfg.GetString("repo.core.meep-webhook.chart")
+	certdir := workdir + "certs"
+	cmd := exec.Command("sh", "-c", chartdir+"/webhook-create-signed-cert.sh --certdir "+certdir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-cert.pem | base64 -w0")
+	cert, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-key.pem | base64 -w0")
+	key, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("kubectl", "config", "view", "--raw", "--minify", "--flatten", "-o=jsonpath='{.clusters[].cluster.certificate-authority-data}'")
+	cabundle, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	flags = utils.HelmFlags(nil, "", "")
 	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
 	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
 	flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
 	flags = utils.HelmFlags(flags, "--set", "sidecar.image.tag="+tag)
+	flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
+	flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
+	flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
 	codecovCapable = utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
 	if deployCodecov && codecovCapable {
 		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
 	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-initializer.chart"), flags, cobraCmd)
+	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-webhook.chart"), flags, cobraCmd)
 	//---
 	deployVirtEngine(cobraCmd)
 }

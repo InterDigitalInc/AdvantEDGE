@@ -42,7 +42,7 @@ Valid targets:`,
 		`,
 	Args: cobra.ExactValidArgs(1),
 	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
-	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-initializer", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
+	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
 
 	Run: func(cmd *cobra.Command, args []string) {
 		target := ""
@@ -260,7 +260,7 @@ func fixDeps(targetName string, cobraCmd *cobra.Command) {
 	srcDir := gitDir + "/" + target["src"]
 
 	switch targetName {
-	case "meep-initializer", "meep-mon-engine":
+	case "meep-webhook", "meep-mon-engine":
 		cmd := exec.Command("rm", srcDir+"/vendor/k8s.io/client-go/tools/cache/mutation_cache.go")
 		out, err := utils.ExecuteCmd(cmd, cobraCmd)
 		if err != nil {

@@ -44,7 +44,7 @@ spec:
       volumes:
         - name: webhook-certs
           secret:
-            secretName: meep-webhook-certs
+            secretName: {{ template "meep-webhook.fullname" . }}
       initContainers:
         - name: init-{{ .Values.deployment.dependency }}
           image: busybox

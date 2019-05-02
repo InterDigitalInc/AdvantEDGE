@@ -73,7 +73,7 @@ Valid groups:
 func deleteCore(cobraCmd *cobra.Command) {
 	k8sDelete("meep-virt-engine", cobraCmd)
 	deleteVirtEngine(cobraCmd)
-	k8sDelete("meep-initializer", cobraCmd)
+	k8sDelete("meep-webhook", cobraCmd)
 	k8sDelete("meep-mg-manager", cobraCmd)
 	k8sDelete("meep-tc-engine", cobraCmd)
 	k8sDelete("meep-mon-engine", cobraCmd)

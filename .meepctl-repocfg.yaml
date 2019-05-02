@@ -23,14 +23,14 @@ repo:
       lint: false
       local-deps:
         meep-ctrl-engine-api: js-packages/meep-ctrl-engine-client
-    meep-initializer:
-      src: go-apps/meep-initializer
-      bin: bin/meep-initializer
-      chart: charts/meep-initializer
+    meep-webhook:
+      src: go-apps/meep-webhook
+      bin: bin/meep-webhook
+      chart: charts/meep-webhook
       build-flags:
         - -mod=vendor
       codecov: false
-      lint: false
+      lint: true
     meep-mg-manager:
       src: go-apps/meep-mg-manager
       bin: bin/meep-mg-manager

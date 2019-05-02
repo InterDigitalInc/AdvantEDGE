@@ -6,6 +6,7 @@ namespace: default
 serviceAccount: meep-webhook
 configMap: meep-webhook
 initializerConfig: meep-webhook
+meepOrigin: core
 
 deployment:
   replicas: 1
@@ -30,5 +31,8 @@ sidecar:
     tag: latest
     pullPolicy: IfNotPresent
 
-
-meepOrigin: core
+webhook:
+  name: meep-webhook.idcc.com
+  cabundle: ""
+  cert: ""
+  key: ""
