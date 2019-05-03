@@ -1,7 +1,7 @@
 # Demo1
 A simple scenario used to showcase platform capabilities.
 
-This has two applications _iperf server_ and _demo server_ deployed across multiple tiers of the network (fog/edge/cloud).
+This has two applications _iperf proxy_ and _demo server_ deployed across multiple tiers of the network (fog/edge/cloud).
 
 It has two clients (internal & external) that communicate with the servers.
 Internal client traffic is iperf only and has no GUI.
@@ -73,10 +73,18 @@ cd ~/AdvantEDGE/examples/demo1/
 ```
 > Demo Application binaries are dockerized (containerized) and the container images are stored in the local Docker registry.<br> Next time you want to use the demo scenario; demo application containers will be available
 
+#### Source code compilation
+Compiling from source code is available through the command:
+```
+cd ~/AdvantEDGE/examples/demo1/
+./build-demo1.sh
+```
+> As a result, both the iperf-proxy and demo-server app are compiled and demo-server is dockerized
+
 #### Configure demo specific dashboards
 Only need to do it once, or when the demo dashboard changes
 
-Follow the procedure described in [Configuring Monitoring](../../docs/use/monitoring.md#configure-dashboards) and import the demo specific dashboard from `AdvantEDGE/examples/demo1/demo1-dashboards.json`
+Follow the procedure described in [Configuring Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
 > Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
 

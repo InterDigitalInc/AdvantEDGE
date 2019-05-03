@@ -1,0 +1,98 @@
+---
+swagger: "2.0"
+info:
+  description: "This is the Demo iperf transit App API"
+  version: "0.0.1"
+  title: "Demo iperf transit App API"
+  termsOfService: "InterDigital Internal Only"
+host: "127.0.0.1:8086"
+basePath: "/v1"
+tags:
+- name: "Iperf App Info"
+schemes:
+- "http"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /iperf-app:
+    post:
+      tags:
+      - "Iperf App Info"
+      summary: "Sends iperf details to issue an iperf command on the host"
+      description: ""
+      operationId: "handleIperfInfo"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "iperfInfo"
+        description: "Demo transit Iperf Server Info"
+        required: true
+        schema:
+          $ref: "#/definitions/IperfInfo"
+        x-exportParamName: "IperfInfo"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        500:
+          description: "Intenal server error"
+definitions:
+  IperfInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Ue Name / UeId generating the traffic"
+      app:
+        type: "string"
+        description: "Selected Traffic App"
+      throughput:
+        type: "integer"
+        description: "Throughput of Traffic App (in Mbps)"
+    description: "Iperf info for transit iperf server basic information object"
+    example:
+      edgeInfo:
+      - name: "ue2"
+        app: "iperf"
+        throughput: 50
+parameters:
+  iperfInfo:
+    in: "body"
+    name: "iperfInfo"
+    description: "Demo transit Iperf Server Info"
+    required: true
+    schema:
+      $ref: "#/definitions/IperfInfo"
+    x-exportParamName: "IperfInfo"
+responses:
+  Std200:
+    description: "OK"
+  Std201:
+    description: "Created"
+  Std202:
+    description: "Accepted"
+  Std204:
+    description: "No content"
+  Std304:
+    description: "Not modified"
+  Std400:
+    description: "Bad request"
+  Std401:
+    description: "Not authorized"
+  Std403:
+    description: "Forbidden"
+  Std404:
+    description: "Not found"
+  Std409:
+    description: "Conflict"
+  Std416:
+    description: "Requested range not satisfiable"
+  Std500:
+    description: "Internal server error"
+externalDocs:
+  description: "Find out more about Demo Iperf Transit Server App API"
+  url: "http://www.localinfo/pdf"
