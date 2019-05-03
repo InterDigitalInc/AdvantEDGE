@@ -43,7 +43,7 @@ const corePodsErrors = createSelector(corePodsPhasesSelector, (phases) => {
 const scenarioPodsPending = createSelector(scenarioPodsPhasesSelector, (pods) => {
   var phasePending = false;
   _.each(pods, (pod) => {
-    phasePending |= (pod.logicalState === SCENARIO_PODS_PHASE_PENDING);
+    phasePending = phasePending || (pod.logicalState === SCENARIO_PODS_PHASE_PENDING);
   });
 
   return phasePending == true;
@@ -52,7 +52,7 @@ const scenarioPodsPending = createSelector(scenarioPodsPhasesSelector, (pods) =>
 const scenarioPodsTerminating = createSelector(scenarioPodsPhasesSelector, (pods) => {
   var phaseTerminating = false;
   _.each(pods, (pod) => {
-    phaseTerminating |= (pod.logicalState === SCENARIO_PODS_PHASE_TERMINATING);
+    phaseTerminating = phaseTerminating || (pod.logicalState === SCENARIO_PODS_PHASE_TERMINATING);
   });
 
   return phaseTerminating == true;

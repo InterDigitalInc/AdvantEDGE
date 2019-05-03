@@ -142,7 +142,7 @@ function createState(meepObject) {
 }
 
 // Initialize variables and listeners when document ready
-var loadedState = loadState();
+var loadedState = null; //loadState();
 let meepState = loadedState ? loadedState : createState(meep);
 
 // Uncomment if logger middleware is needed
