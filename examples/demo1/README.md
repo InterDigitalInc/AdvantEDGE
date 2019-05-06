@@ -1,7 +1,11 @@
 # Demo1
 A simple scenario used to showcase platform capabilities.
 
-This has two applications _iperf proxy_ and _demo server_ deployed across multiple tiers of the network (fog/edge/cloud).
+This scenario is composed of three applications (_iperf-server_, _iperf-proxy & _demo-server_) deployed across multiple tiers of the network (fog/edge/cloud).
+
+- The _iperf-server_ is the standard open-source _iperf-server_ that is containerized; it runs in the AdvantEDGE platform. It is used to generate traffic between the internal & external UE. The demo scenario contains multiple instances of the _iperf-server_ deployed across various tiers of the network. The _iperf-server_ image form the public iperf registry is used in this demo.
+- _iperf-proxy_ is a small server application runs on the host machine. It allows to control the local host iperf-client from the demo web-client. The demo scenario runs a single instance of the _iperf-proxy_. Source code is available in this repo; _iperf-proxy_ is built as part of this demo.
+- _demo-server_ is an edge application that is containerized; it runs in the AdvantEDGE platform. It has been developed to demonstrate AdvantEDGE capabilities. The demo scenario contains multiple instances of _demo-server_ deployed across various tiers of the network. Source code is available in this repo;_demo-server_ is built as part of this demo.
 
 It has two clients (internal & external) that communicate with the servers.
 Internal client traffic is iperf only and has no GUI.
