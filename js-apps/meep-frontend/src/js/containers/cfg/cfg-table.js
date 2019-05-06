@@ -22,7 +22,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 
 import {
   cfgChangeTable

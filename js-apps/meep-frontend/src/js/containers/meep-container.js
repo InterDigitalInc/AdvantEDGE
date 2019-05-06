@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import axios from 'axios';
-import { updateObject } from '../util/update';
+import { updateObject } from '../util/object-util';
 
 // Import JS dependencies
 import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
@@ -72,7 +72,7 @@ import {
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// var basepath = 'http://10.3.16.73:30000/v1';
+//var basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -109,8 +109,8 @@ class MeepContainer extends Component {
   }
 
   monitorTabFocus() {
-    var hidden, visibilityChange; 
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support 
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
       visibilityChange = 'visibilitychange';
     } else if (typeof document.msHidden !== 'undefined') {
@@ -119,7 +119,7 @@ class MeepContainer extends Component {
     } else if (typeof document.webkitHidden !== 'undefined') {
       hidden = 'webkitHidden';
       visibilityChange = 'webkitvisibilitychange';
-    } 
+    }
 
     const handleVisibilityChange = () => {
       if (document[hidden]) {
@@ -139,7 +139,7 @@ class MeepContainer extends Component {
       // TODO: consider showing an alert
       // console.log('This demo requires a browser, such as Google Chrome or Firefox, that supports the Page Visibility API.');
     } else {
-      // Handle page visibility change   
+      // Handle page visibility change
       document.addEventListener(visibilityChange, handleVisibilityChange, false);
     }
   }
@@ -162,7 +162,7 @@ class MeepContainer extends Component {
       }).catch(() => {
         this.props.changeScenarioPodsPhases([]);
       });
-        
+
     // Service maps
     axios.get(`${basepath}/active/serviceMaps`)
       .then(res => {
@@ -191,7 +191,7 @@ class MeepContainer extends Component {
         clearInterval(this.refreshIntervalTimer);
       } else {
         clearInterval(this.refreshIntervalTimer);
-        this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
+        // this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
       }
     });
   }
@@ -214,7 +214,7 @@ class MeepContainer extends Component {
     }
 
     if (!data.deployment) {
-      return;  
+      return;
     }
 
     // Store & Process deployed scenario
@@ -227,7 +227,7 @@ class MeepContainer extends Component {
     }, 2000);
   }
 
-  // Change & process scenario 
+  // Change & process scenario
   changeScenario(pageType, scenario) {
     // Change scenario state
     if (pageType == TYPE_CFG) {
@@ -236,7 +236,7 @@ class MeepContainer extends Component {
       this.props.execChangeScenario(scenario);
     }
 
-    // Parse Scenario object to retrieve visualization data and scenario table 
+    // Parse Scenario object to retrieve visualization data and scenario table
     var page = (pageType == TYPE_CFG) ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
@@ -322,17 +322,19 @@ class MeepContainer extends Component {
           newScenarioElem={(elem) => {this.newScenarioElem(TYPE_CFG, elem);}}
           updateScenarioElem={(elem) => {this.updateScenarioElem(TYPE_CFG, elem);}}
           deleteScenarioElem={(elem) => {this.deleteScenarioElem(TYPE_CFG, elem);}}
-        /> 
+        />
       );
 
     case PAGE_EXECUTE:
       return (
+        <>
         <ExecPageContainer style={{width: '100%'}}
           api={this.meepExecApi}
           cfgApi={this.meepCfgApi}
           refreshScenario={() => {this.refreshScenario();}}
           deleteScenario={() => {this.deleteScenario(TYPE_EXEC);}}
         />
+        </>
       );
 
     case PAGE_SETTINGS:
@@ -350,11 +352,11 @@ class MeepContainer extends Component {
 
     default:
       return null;
-
     }
   }
 
   render() {
+    const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
     return (
       <div style={{width: '100%'}}>
         <MeepTopBar
@@ -365,14 +367,14 @@ class MeepContainer extends Component {
         />
 
         <div style={{display: 'flex'}}>
-          <div className="component-style" style={{overflow: 'hidden', flex: '0 0 250px', marginTop: '5px'}}>
-            <MeepDrawer open={this.props.mainDrawerOpen}/>
+          <div className="component-style" style={{overflow: 'hidden', flex: flexString, marginTop: '5px'}}>
+            <MeepDrawer open={this.props.mainDrawerOpen} style={{flex:1}}/>
           </div>
           <div style={{flex: '1', padding: 10}}>
             {this.renderPage()}
           </div>
         </div>
-      </div>    
+      </div>
     );
   }
 }
@@ -419,5 +421,3 @@ const ConnectedMeepContainer = connect(
 )(MeepContainer);
 
 export default ConnectedMeepContainer;
-
-

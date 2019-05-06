@@ -12,11 +12,13 @@ import uiReducer from './ui';
 import cfgReducer from './cfg';
 import execReducer from './exec';
 import settingsReducer from './settings';
+import monitorReducer from './monitor';
 
 const meepReducer = combineReducers({
   ui: uiReducer,
   cfg: cfgReducer,
   exec: execReducer,
+  monitor: monitorReducer,
   settings: settingsReducer
 });
 

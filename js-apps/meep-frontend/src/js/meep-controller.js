@@ -21,10 +21,10 @@ import { Provider } from 'react-redux';
 import meepReducer from './state/meep-reducer';
 
 // To uncomment when save state is fixed
-// import {
-//   saveState,
-//   loadState
-// } from './util/persist';
+import {
+  saveState,
+  loadState
+} from './util/persist';
 
 // UI Components
 import MeepContainer from './containers/meep-container';
@@ -134,16 +134,16 @@ function createState(meepObject) {
   state.ui =  {
     devMode: false,
     currentDialog: '',
-    execShowApps: false
+    execShowApps: false,
+    mainDrawerOpen: true
   };
 
   return state;
 }
 
 // Initialize variables and listeners when document ready
-// var loadedState = loadState();
-// var meepState = loadedState ? loadedState : extractState(meep);
-var meepState = createState(meep);
+var loadedState = null; //loadState();
+let meepState = loadedState ? loadedState : createState(meep);
 
 // Uncomment if logger middleware is needed
 // var logger = store => () => action => {
@@ -155,9 +155,9 @@ const meepStore = createStore(meepReducer, meepState, applyMiddleware(thunk));
 window.meepStore = meepStore;
 
 // TODO: fix circularity in store
-// meepStore.subscribe(() => {
-//   saveState(meepStore.getState());
-// });
+meepStore.subscribe(() => {
+  saveState(meepStore.getState());
+});
 
 // Monitor Page
 let meepContainerPlaceholder = document.getElementById('meep-container');

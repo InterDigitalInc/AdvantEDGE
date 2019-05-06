@@ -8,121 +8,275 @@
  */
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
+import _ from 'lodash';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Select } from '@rmwc/select';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
 import Iframe from 'react-iframe';
 import HeadlineBar from '../../components/headline-bar';
+import { ListEditPane } from './list-edit-pane';
+import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 
 import {
-  uiSetAutomaticRefresh,
-  PAGE_MONITOR
+  IDC_DIALOG_CONFIRM,
+  uiChangeCurrentDialog,
 } from '../../state/ui';
+
+import {
+  uiSetAutomaticRefresh
+} from '../../state/ui';
+
+import {
+  deepCopy
+} from '../../util/object-util';
+
+import {
+  pipe,
+  filter
+} from '../../util/functional';
+
+import {
+  changeDashboardUrl,
+  changeDashboardOptions,
+  changeEditedDashboardOptions
+} from '../../state/monitor';
 
 import { 
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME
 } from '../../meep-constants';
 
-const selectOptions = [
-  {
-    label:  'Latency Dashboard',
-    value: 'http://' + location.hostname + ':32003/app/kibana#/dashboard/6745bb30-c29c-11e8-95a0-933bd4e05896?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-60s%2Cmode%3Arelative%2Cto%3Anow))',
-  },
-  {
-    label:  'Demo Service Internal UE (ue1)',
-    value: 'http://' + location.hostname + ':32003/app/kibana#/dashboard/434d37b0-1b6d-11e9-b72d-e70da2a5e139?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-15m%2Cmode%3Arelative%2Cto%3Anow))',
-  },
-  {
-    label:  'Demo Service External UE (ue2-ext)',
-    value: 'http://' + location.hostname + ':32003/app/kibana#/dashboard/788a4f70-1b73-11e9-b72d-e70da2a5e139?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-15m%2Cmode%3Arelative%2Cto%3Anow))',
-  }
-];
-
 const kibanaDashboardUrl = 'http://' + location.hostname + ':32003/app/kibana#/dashboard';
+
+const DashboardContainer = (props) => {
+  if (!props.dashboardUrl) {
+    return null;
+  }
+  return (
+    <Grid style={{width: '100%', height: '100%'}} >
+      <GridInner style={{width: '100%', height: '100%'}}>
+        <GridCell span={12} style={styles.inner}>
+          <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>                
+            <div style={{flex: 1, padding: 10}}>
+              <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
+                <Iframe
+                  url={props.dashboardUrl}
+                  id="myId"
+                  display="initial"
+                  position="relative"
+                  allowFullScreen
+                  styles={{width: '100%', height: '100%'}}
+                />
+              </div>
+            </div>
+          </Elevation>
+        </GridCell>
+      </GridInner>
+    </Grid>
+  );
+};
+
+const EditModeButton = ({isEditMode, startEditMode}) => {
+  return !isEditMode() ? (
+    <Button raised
+      style={styles.button}
+      onClick={startEditMode}
+    >
+        EDIT
+    </Button>
+  ) : null;
+};
+
+const MonitorPageHeadlineBar = (props) => {
+  return(
+    <div style={{width: '100%'}}>   
+      <Grid style={styles.headlineGrid}>
+        <GridCell span={12}>
+          <Elevation className="component-style" z={2} style={styles.headline}>
+            <GridInner>
+              <GridCell align={'middle'} span={5}>
+                <HeadlineBar
+                  titleLabel="Deployed Scenario"
+                  scenarioName={props.scenarioName}
+                />
+              </GridCell>
+              <GridCell span={3}>
+                <Select
+                  style={{width: '100%'}}
+                  label='Dashboard'
+                  disabled={props.dashboardSelectDisabled}
+                  outlined
+                  options={props.dashboardOptions}
+                  onChange={props.onChangeDashboard}
+                  data-cy={MON_DASHBOARD_SELECT}
+                />
+              </GridCell>
+              <GridCell span={4} style={{paddingTop: 8}}>
+                <Button raised
+                  style={styles.button}
+                  onClick={() => window.open(kibanaDashboardUrl, '_blank')}
+                >
+                    OPEN KIBANA
+                </Button>
+                <EditModeButton
+                  isEditMode={props.isEditMode}
+                  startEditMode={props.startEditMode}
+                  cancelEditMode={props.cancelEditMode}
+                />
+              </GridCell>
+            </GridInner>
+          </Elevation>
+        </GridCell>
+      </Grid>
+    </div>
+  );
+};
+
+const MainPane = (props) => {
+  if (props.editedDashboardOptions) {
+    return (
+      <Elevation z={4} style={{marginBottom: 10, padding: 10}}>
+        <ListEditPane
+          items={props.editedDashboardOptions}
+          cancelEditMode={props.cancelEditMode}
+          saveItems={props.saveDashboards}
+          addItem={props.addOption}
+          deleteItems={props.deleteOptions}
+          itemLabelLabel={'Dashboard Name'}
+          itemValueLabel={'Dashboard Url'}
+          updateItemLabel={props.updateOptionLabel}
+          updateItemValue={props.updateOptionValue}
+          updateItemSelection={props.updateOptionSelection}
+          canDelete={props.canDelete}
+        />
+      </Elevation>
+    );
+  } else {
+    return (
+      <DashboardContainer dashboardUrl={props.currentDashboardUrl}/>
+    );
+  }
+};
 
 class MonitorPageContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      iFrameUrl: '',
-      dashboardSelected: null
-    };
+    this.state = {};
   }
 
   handleSelectionChange(e) {
-    this.setState({
-      iFrameUrl: e.target.value,
-      dashboardSelected: true
+    this.props.changeDashboardUrl(e.target.value);
+  }
+
+  removeSelectedFlags() {
+    const options = _.map(this.props.editedDashboardOptions, (op) => {
+      return {label: op.label, value: op.value};
     });
+    return options;
+  }
+
+  startEditMode() {
+    const opts = JSON.parse(JSON.stringify(this.props.dashboardOptions));
+    const options = _.map(opts, (op, index) => {
+      return {...op, selected: false, index: index};
+    });
+    this.props.changeEditedDashboardOptions(options);
+  }
+
+  cancelEditMode() {
+    this.props.changeEditedDashboardOptions(null);
+  }
+
+  isEditMode() {
+    return this.props.editedDashboardOptions !== null;
+  }
+
+  addOption() {
+    const newOptions = [...this.props.editedDashboardOptions, {
+      label: '',
+      value: '',
+      selected: false,
+      index: this.props.editedDashboardOptions.length
+    }];
+    this.props.changeEditedDashboardOptions(newOptions);
+  }
+
+  updateOptionAttribute(index, attribute, value) {
+    let options = deepCopy(this.props.editedDashboardOptions);
+    let option = {...options[index], [attribute]: value};
+    options[index] = option;
+    this.props.changeEditedDashboardOptions(options);
+  }
+
+  performDeleteOptions() {
+    const isNotSelected = (option) => !option.selected;
+
+    const options = pipe(
+      filter(isNotSelected),
+      deepCopy
+    )(this.props.editedDashboardOptions);
+
+    this.props.changeEditedDashboardOptions(options);
+  }
+
+  deleteSelectedOptions() {
+    this.showDialog(IDC_DIALOG_CONFIRM);
+  }
+
+  canDelete() {
+    if (!this.props.editedDashboardOptions) {
+      return false;
+    }
+
+    let someSelected = _.reduce(this.props.editedDashboardOptions, (acc, option) => acc || option.selected);
+
+    return someSelected;
+  }
+
+  showDialog(id) {
+    this.props.showDialog(id);
+  }
+
+  closeDialog() {
+    this.showDialog(null);
+  }
+
+  saveDashboards() {
+    const options = deepCopy(this.props.editedDashboardOptions);
+    this.props.changeDashboardOptions(options);
+    this.props.changeEditedDashboardOptions(null);
   }
 
   render() {
-
-    if (this.props.page != PAGE_MONITOR) {
-      return null;
-    }
-        
     return (
       <div style={{width: '100%', height: '100%'}}>
-        <div style={{width: '100%'}}>   
-          <Grid style={styles.headlineGrid}>
-            <GridCell span={12}>
-              <Elevation className="component-style" z={2} style={styles.headline}>
-                <GridInner>
-                  <GridCell align={'middle'} span={6}>
-                    <HeadlineBar
-                      titleLabel="Deployed Scenario"
-                      scenarioName={this.props.scenarioName}
-                    />
-                  </GridCell>
-                  <GridCell span={4}>
-                    <Select
-                      style={{width: '100%'}}
-                      label='Dashboard'
-                      outlined
-                      options={selectOptions}
-                      onChange={(e) => this.handleSelectionChange(e)}
-                      data-cy={MON_DASHBOARD_SELECT}
-                    />
-                  </GridCell>
-                  <GridCell span={2} style={{paddingTop: 8}}>
-                    <Button raised
-                      style={styles.button}
-                      onClick={() => window.open(kibanaDashboardUrl, '_blank')}
-                    >
-                        OPEN KIBANA
-                    </Button>
-                  </GridCell>
-                </GridInner>
-              </Elevation>
-            </GridCell>
-          </Grid>
-        </div>
-                
-        <Grid style={{width: '100%', height: '100%'}} hidden={!this.state.dashboardSelected}>
-          <GridInner style={{width: '100%', height: '100%'}}>
-            <GridCell span={12} style={styles.inner}>
-              <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>
-                                    
-                <div style={{flex: 1, padding: 10}}>
-                  <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
-                    <Iframe
-                      url={this.state.iFrameUrl}
-                      id="myId"
-                      display="initial"
-                      position="relative"
-                      allowFullScreen
-                      styles={{width: '100%', height: '100%'}}
-                    />
-                  </div>
-                </div>
-              </Elevation>
-            </GridCell>
-          </GridInner>
-        </Grid>
-                   
+        <IDConfirmDialog
+          title='Delete selected dashboards'
+          open={this.props.currentDialog===IDC_DIALOG_CONFIRM}
+          onClose={() => {this.closeDialog();}}
+          onSubmit={() => this.performDeleteOptions()}
+        />
+        <MonitorPageHeadlineBar
+          scenarioName={this.props.scenarioName}
+          onChangeDashboard={(e) => this.handleSelectionChange(e)}
+          dashboardSelectDisabled={this.props.editedDashboardOptions !== null}
+          dashboardOptions={this.props.dashboardOptions}
+          isEditMode={() => this.isEditMode()}
+          startEditMode={() => this.startEditMode()}
+        />
+        <MainPane
+          editedDashboardOptions={this.props.editedDashboardOptions}
+          currentDashboardUrl={this.props.currentDashboardUrl}
+          cancelEditMode={() => this.cancelEditMode()}
+          saveDashboards={() => this.saveDashboards()}
+          addOption={() => this.addOption()}
+          deleteOptions={() => this.deleteSelectedOptions()}
+          updateOptionLabel={(index, value) => this.updateOptionAttribute(index,'label', value)}
+          updateOptionValue={(index, value) => this.updateOptionAttribute(index, 'value', value)}
+          updateOptionSelection={(index, value) => this.updateOptionAttribute(index, 'selected', value)}
+          canDelete={() => this.canDelete()}
+        />
       </div>
     );
   }
@@ -153,6 +307,9 @@ const styles = {
   button: {
     color: 'white',
     marginRight: 5
+  },
+  editListItemCell: {
+    padding: 5
   }
 };
 
@@ -162,12 +319,20 @@ const mapStateToProps = state => {
     devMode: state.ui.devMode,
     page: state.ui.page,
     scenarioName: state.exec.scenario.name,
+    currentDashboardUrl: state.monitor.currentDashboardUrl,
+    dashboardOptions: state.monitor.dashboardOptions,
+    editedDashboardOptions: state.monitor.editedDashboardOptions,
+    currentDialog: state.ui.currentDialog
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val))
+    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val)),
+    changeDashboardUrl: (url) => dispatch(changeDashboardUrl(url)),
+    changeEditedDashboardOptions: (mode) => dispatch(changeEditedDashboardOptions(mode)),
+    changeDashboardOptions: (mode) => dispatch(changeDashboardOptions(mode)),
+    showDialog: (type) => dispatch(uiChangeCurrentDialog(type)),
   };
 };
 

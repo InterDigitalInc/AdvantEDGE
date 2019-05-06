@@ -7,7 +7,7 @@
  * information of InterDigital Communications, Inc.
  */
 import _ from 'lodash';
-import { updateObject } from '../../util/update';
+import { updateObject } from '../../util/object-util';
 import {createSelector } from 'reselect';
 import * as vis from 'vis';
 

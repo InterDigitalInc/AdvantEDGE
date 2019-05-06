@@ -8,7 +8,7 @@
  */
 import _ from 'lodash';
 import * as vis from 'vis';
-import { updateObject } from './update';
+import { updateObject } from './object-util';
 
 import {
   // Element Fields
