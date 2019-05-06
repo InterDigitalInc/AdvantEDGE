@@ -1,4 +1,4 @@
-# AdvantEDGE
+![AdvantEDGE-logo](./docs/images/AdvantEDGE-logo_Blue-01.png)
 
 AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes.
 
