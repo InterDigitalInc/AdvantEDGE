@@ -71,8 +71,8 @@ import {
 } from '../state/ui';
 
 // MEEP Controller REST API JS client
-// var basepath = 'http://' + location.host + location.pathname + 'v1';
-var basepath = 'http://10.3.16.73:30000/v1';
+var basepath = 'http://' + location.host + location.pathname + 'v1';
+//var basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -109,8 +109,8 @@ class MeepContainer extends Component {
   }
 
   monitorTabFocus() {
-    var hidden, visibilityChange; 
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support 
+    var hidden, visibilityChange;
+    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
       visibilityChange = 'visibilitychange';
     } else if (typeof document.msHidden !== 'undefined') {
@@ -119,7 +119,7 @@ class MeepContainer extends Component {
     } else if (typeof document.webkitHidden !== 'undefined') {
       hidden = 'webkitHidden';
       visibilityChange = 'webkitvisibilitychange';
-    } 
+    }
 
     const handleVisibilityChange = () => {
       if (document[hidden]) {
@@ -139,7 +139,7 @@ class MeepContainer extends Component {
       // TODO: consider showing an alert
       // console.log('This demo requires a browser, such as Google Chrome or Firefox, that supports the Page Visibility API.');
     } else {
-      // Handle page visibility change   
+      // Handle page visibility change
       document.addEventListener(visibilityChange, handleVisibilityChange, false);
     }
   }
@@ -162,7 +162,7 @@ class MeepContainer extends Component {
       }).catch(() => {
         this.props.changeScenarioPodsPhases([]);
       });
-        
+
     // Service maps
     axios.get(`${basepath}/active/serviceMaps`)
       .then(res => {
@@ -214,7 +214,7 @@ class MeepContainer extends Component {
     }
 
     if (!data.deployment) {
-      return;  
+      return;
     }
 
     // Store & Process deployed scenario
@@ -227,7 +227,7 @@ class MeepContainer extends Component {
     }, 2000);
   }
 
-  // Change & process scenario 
+  // Change & process scenario
   changeScenario(pageType, scenario) {
     // Change scenario state
     if (pageType == TYPE_CFG) {
@@ -236,7 +236,7 @@ class MeepContainer extends Component {
       this.props.execChangeScenario(scenario);
     }
 
-    // Parse Scenario object to retrieve visualization data and scenario table 
+    // Parse Scenario object to retrieve visualization data and scenario table
     var page = (pageType == TYPE_CFG) ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
@@ -322,7 +322,7 @@ class MeepContainer extends Component {
           newScenarioElem={(elem) => {this.newScenarioElem(TYPE_CFG, elem);}}
           updateScenarioElem={(elem) => {this.updateScenarioElem(TYPE_CFG, elem);}}
           deleteScenarioElem={(elem) => {this.deleteScenarioElem(TYPE_CFG, elem);}}
-        /> 
+        />
       );
 
     case PAGE_EXECUTE:
@@ -374,7 +374,7 @@ class MeepContainer extends Component {
             {this.renderPage()}
           </div>
         </div>
-      </div>    
+      </div>
     );
   }
 }
@@ -421,5 +421,3 @@ const ConnectedMeepContainer = connect(
 )(MeepContainer);
 
 export default ConnectedMeepContainer;
-
-
