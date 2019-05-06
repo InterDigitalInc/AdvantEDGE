@@ -1,0 +1,44 @@
+{
+  "name": "meep-controller-web-ui-js",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "build:dev": "webpack-serve --port 8204 --host 10.3.16.136"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "6.26.3",
+    "babel-loader": "7.1.4",
+    "babel-preset-react": "6.24.1",
+    "css-loader": "^0.28.11",
+    "extract-loader": "^2.0.1",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "^1.1.11",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.8.3",
+    "sass-loader": "^6.0.7",
+    "style-loader": "^0.20.3",
+    "webpack": "^4.4.1",
+    "webpack-cli": "^3.2.3",
+    "webpack-serve": "^0.3.1"
+  },
+  "dependencies": {
+    "@material-ui/core": "^1.5.1",
+    "@material-ui/icons": "^1.1.1",
+    "classnames": "2.2.6",
+    "jquery": "3.3.1",
+    "material-components-web": "0.38.1",
+    "material-design-icons": "3.0.1",
+    "ol": "5.1.3",
+    "prop-types": "15.6.2",
+    "react": "16.4.1",
+    "react-dom": "16.4.1",
+    "superagent": "^4.0.0",
+    "warning": "^4.0.1"
+  }
+}

@@ -1,0 +1,191 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>AdvantEDGE Demo Client - Demo Service</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> -->
+</head>
+
+<body class="mdc-typography ui-body">
+
+    <!-- MAIN DRAWER -->
+    <aside id="main-drawer" class="mdc-drawer mdc-drawer--persistent">
+        <nav class="mdc-drawer__drawer">
+            <div class="idcc-margin-top mdc-top-app-bar--fixed-adjust"></div>
+            <div class="mdc-list-group">
+                <nav class="mdc-drawer__content mdc-list">
+                    <a id="page-status-link" class="mdc-list-item mdc-list-item--selected" href="#">
+                        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">dvr</i>Status
+                    </a>
+                    <a id="page-settings-link" class="mdc-list-item" href="#">
+                        <i class="material-icons mdc-list-item__graphic" aria-hidden="true">settings</i>Settings
+                    </a>
+                </nav>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- TOOLBAR -->
+    <header id="idcc-toolbar" class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4">
+        <div class="mdc-top-app-bar__row">
+            <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                <img id="idcc-logo" class="idcc-toolbar-menu mdc-top-app-bar__navigation-icon" src="img/ID-Icon-01-idcc.svg" alt="">
+                <span id="idcc-title" class="mdc-top-app-bar__title catalog-title">AdvantEDGE Demo Service</span>
+            </section>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="ui-content mdc-top-app-bar--fixed-adjust">
+        <main class="ui-main">
+
+            <!-- STATUS PAGE -->
+            <div id="page-status" class="idcc-page">
+
+                <div class="mdc-layout-grid">
+                    <div class="mdc-layout-grid__inner">
+                        <div class="mdc-layout-grid__cell--span-3 idcc-elevated-area mdc-elevation--z2">
+                            <div id="targeted-ue-name-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
+                                <input type="text" id="targeted-ue-name-tf" class="mdc-text-field__input" aria-controls="targeted-ue-name-validation-message">
+                                <label for="targeted-ue-name-tf" class="mdc-floating-label">Targeted UE Name</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+                            <div>
+                                <BR><div class="mdc-typography--headline6">Service Information</div>
+
+                                <table class="idcc-margin-top">
+                                    <tr>
+                                        <td><span class="idcc-margin-left mdc-typography--subtitle1">Name:<font color="white">...............</font></span></td>
+                                        <td><span id="svc-info-name" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <BR><BR><div class="mdc-typography--headline6">Node Information</div>
+
+                                <table class="idcc-margin-top">
+                                    <tr>
+                                        <td><span class="idcc-margin-left mdc-typography--subtitle1">Instance Name:</span></td>
+                                        <td><span id="node-svc-info-name" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="idcc-margin-left mdc-typography--subtitle1">IP           :</span></td>
+                                        <td><span id="node-svc-info-ip" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <BR><BR><div class="mdc-typography--headline6">Application Statistics</div>
+
+                                <table class="idcc-margin-top">
+                                    <tr>
+                                        <td><span class="idcc-margin-left mdc-typography--subtitle1">State Counter:<font color="white">....</font></span></td>
+                                        <td><span id="demo-svc-info-duration" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <div class="mdc-typography--headline6"></div>
+                                <br>
+                                <center><button id="start-demo-svc-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">RESTART COUNTER</button></center>
+                            </div>
+                            <div>
+                                <BR><BR><div class="mdc-typography--headline6">Traffic Generator*</div>
+                            </div>
+                            <div id="iperf-bw-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
+                                <input type="number" id="iperf-bw-tf" class="mdc-text-field__input" aria-controls="iperf-bw-validation-message">
+                                <label for="iperf-bw-tf" class="mdc-floating-label">Traffic Bandwidth (in Mbps)</label>
+
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+                            <div>
+                                <div class="mdc-typography--headline6"></div>
+                                <br>
+                                <center><button id="start-demo-iperf-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">START TRAFFIC</button><button id="stop-demo-iperf-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">STOP TRAFFIC</button></center>
+                            </div>
+                            <div><BR>* only enabled while app is running</div>
+                        </div>
+
+                        <div>
+                                <img id="demo-svc-app-pic" src="" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="page-settings" class="idcc-page" hidden>
+
+                <!-- General Settings -->
+                <div class="idcc-elevated-area mdc-elevation--z2">
+                    <div class="mdc-typography--headline6">General Settings</div>
+
+                    <div>
+                        <span class="idcc-margin-left mdc-typography--subtitle1">Drone information table refresh interval:</span>
+
+                        <div id="refresh-interval-form-div">
+                            <div id="refresh-interval-tf-div" class="mdc-text-field mdc-text-field--outlined mdc-text-field--dense" data-demo-no-auto-js>
+                                <input type="number" id="refresh-interval-tf" class="mdc-text-field__input" aria-controls="name-validation-message">
+                                <label for="refresh-interval-tf" class="mdc-floating-label">Interval (ms)</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+                            <p id="refresh-interval-validation-message" class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">
+                                500 < value < 60000
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="idcc-margin-left mdc-typography--subtitle1">Drone map style:</span>
+
+                        <div id="map-layer-select-div" class="idcc-margin-left mdc-layout-grid__cell--span-6 mdc-select mdc-select--outlined">
+                            <select id="map-layer-select" class="mdc-select__native-control">
+                                <option value="Road">Road (static)</option>
+                                <option value="RoadOnDemand">Road (dynamic)</option>
+                                <option value="Aerial" selected>Aerial</option>
+                                <option value="AerialWithLabels">Aerial with labels</option>
+                                <option value="collinsBart">Collins Bart</option>
+                                <option value="ordnanceSurvey">Ordnance Survey</option>
+                            </select>
+                            <label class="mdc-floating-label mdc-floating-label--float-above">Map Style</label>
+                            <div class="mdc-notched-outline">
+                                <svg>
+                                    <path class="mdc-notched-outline__path"></path>
+                                </svg>
+                            </div>
+                            <div class="mdc-notched-outline__idle"></div>
+                            <!-- <div class="mdc-line-ripple"></div> -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>
