@@ -1,39 +1,37 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
+	"github.com/ghodss/yaml"
 	"k8s.io/api/admission/v1beta1"
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	v1 "k8s.io/kubernetes/pkg/apis/core/v1"
 )
+
+const moduleCtrlEngine string = "ctrl-engine"
+const typeActive string = "active"
+const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
+const meepOrigin = "scenario"
+
+// Active scenarion name
+var activeScenarioName string
 
 var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
-
-	// (https://github.com/kubernetes/kubernetes/issues/57982)
-	defaulter = runtime.ObjectDefaulter(runtimeScheme)
-)
-
-var ignoredNamespaces = []string{
-	metav1.NamespaceSystem,
-	metav1.NamespacePublic,
-}
-
-const (
-	admissionWebhookAnnotationInjectKey = "sidecar-injector-webhook.morven.me/inject"
-	admissionWebhookAnnotationStatusKey = "sidecar-injector-webhook.morven.me/status"
 )
 
 type WebhookServer struct {
@@ -63,136 +61,255 @@ type patchOperation struct {
 func init() {
 	_ = corev1.AddToScheme(runtimeScheme)
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
-	// defaulting with webhooks:
-	// https://github.com/kubernetes/kubernetes/issues/57982
-	_ = v1.AddToScheme(runtimeScheme)
 }
 
-// // (https://github.com/kubernetes/kubernetes/issues/57982)
-// func applyDefaultsWorkaround(containers []corev1.Container, volumes []corev1.Volume) {
-// 	defaulter.Default(&corev1.Pod{
-// 		Spec: corev1.PodSpec{
-// 			Containers: containers,
-// 			Volumes:    volumes,
-// 		},
-// 	})
-// }
+func activeDBConnect() (err error) {
+	// Connect to Active DB
+	err = DBConnect()
+	if err != nil {
+		log.Error("Failed connection to Active DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Active DB")
 
-// // Check whether the target resoured need to be mutated
-// func mutationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
-// 	// skip special kubernete system namespaces
-// 	for _, namespace := range ignoredList {
-// 		if metadata.Namespace == namespace {
-// 			log.Infof("Skip mutation for %v for it' in special namespace:%v", metadata.Name, metadata.Namespace)
-// 			return false
-// 		}
-// 	}
+	// Subscribe to Pub-Sub events for MEEP Controller
+	// NOTE: Current implementation is RedisDB Pub-Sub
+	err = Subscribe(channelCtrlActive)
+	if err != nil {
+		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+		return
+	}
+	log.Info("Subscribed to Pub/Sub events")
 
-// 	annotations := metadata.GetAnnotations()
-// 	if annotations == nil {
-// 		annotations = map[string]string{}
-// 	}
+	// Initialize using current active scenario
+	processActiveScenarioUpdate()
 
-// 	status := annotations[admissionWebhookAnnotationStatusKey]
+	return nil
+}
 
-// 	// determine whether to perform mutation based on annotation for the target resource
-// 	var required bool
-// 	if strings.ToLower(status) == "injected" {
-// 		required = false
-// 	} else {
-// 		switch strings.ToLower(annotations[admissionWebhookAnnotationInjectKey]) {
-// 		default:
-// 			required = false
-// 		case "y", "yes", "true", "on":
-// 			required = true
-// 		}
-// 	}
+func activeDBListen() {
+	// Listen for subscribed events. Provide event handler method.
+	_ = Listen(eventHandler)
+}
 
-// 	log.Infof("Mutation policy for %v/%v: status: %q required:%v", metadata.Namespace, metadata.Name, status, required)
-// 	return required
-// }
+func eventHandler(channel string, payload string) {
+	// Handle Message according to Rx Channel
+	switch channel {
 
-// func addContainer(target, added []corev1.Container, basePath string) (patch []patchOperation) {
-// 	first := len(target) == 0
-// 	var value interface{}
-// 	for _, add := range added {
-// 		value = add
-// 		path := basePath
-// 		if first {
-// 			first = false
-// 			value = []corev1.Container{add}
-// 		} else {
-// 			path = path + "/-"
-// 		}
-// 		patch = append(patch, patchOperation{
-// 			Op:    "add",
-// 			Path:  path,
-// 			Value: value,
-// 		})
-// 	}
-// 	return patch
-// }
+	// MEEP Ctrl Engine active scenario update Channel
+	case channelCtrlActive:
+		log.Debug("Event received on channel: ", channelCtrlActive)
+		processActiveScenarioUpdate()
 
-// func addVolume(target, added []corev1.Volume, basePath string) (patch []patchOperation) {
-// 	first := len(target) == 0
-// 	var value interface{}
-// 	for _, add := range added {
-// 		value = add
-// 		path := basePath
-// 		if first {
-// 			first = false
-// 			value = []corev1.Volume{add}
-// 		} else {
-// 			path = path + "/-"
-// 		}
-// 		patch = append(patch, patchOperation{
-// 			Op:    "add",
-// 			Path:  path,
-// 			Value: value,
-// 		})
-// 	}
-// 	return patch
-// }
+	default:
+		log.Warn("Unsupported channel")
+	}
+}
 
-// func updateAnnotation(target map[string]string, added map[string]string) (patch []patchOperation) {
-// 	for key, value := range added {
-// 		if target == nil || target[key] == "" {
-// 			target = map[string]string{}
-// 			patch = append(patch, patchOperation{
-// 				Op:   "add",
-// 				Path: "/metadata/annotations",
-// 				Value: map[string]string{
-// 					key: value,
-// 				},
-// 			})
-// 		} else {
-// 			patch = append(patch, patchOperation{
-// 				Op:    "replace",
-// 				Path:  "/metadata/annotations/" + key,
-// 				Value: value,
-// 			})
-// 		}
-// 	}
-// 	return patch
-// }
+func processActiveScenarioUpdate() {
+	// Retrieve active scenario from DB
+	jsonScenario, err := DBJsonGetEntry(moduleCtrlEngine+":"+typeActive, ".")
+	if err != nil {
+		log.Error(err.Error())
+		clearScenario()
+		return
+	}
 
-// // create mutation patch for resoures
-// func createPatch(pod *corev1.Pod, sidecarConfig *Config, annotations map[string]string) ([]byte, error) {
-// 	var patch []patchOperation
+	// Unmarshal Active scenario
+	var scenario ceModel.Scenario
+	err = json.Unmarshal([]byte(jsonScenario), &scenario)
+	if err != nil {
+		log.Error(err.Error())
+		clearScenario()
+		return
+	}
 
-// 	patch = append(patch, addContainer(pod.Spec.Containers, sidecarConfig.Containers, "/spec/containers")...)
-// 	patch = append(patch, addVolume(pod.Spec.Volumes, sidecarConfig.Volumes, "/spec/volumes")...)
-// 	patch = append(patch, updateAnnotation(pod.Annotations, annotations)...)
+	// Parse scenario
+	parseScenario(scenario)
+}
 
-// 	return json.Marshal(patch)
-// }
+func clearScenario() {
+	log.Debug("clearScenario() -- Resetting all variables")
+	activeScenarioName = ""
+}
+
+func parseScenario(scenario ceModel.Scenario) {
+	log.Debug("parseScenario")
+
+	// Update active scenatio name
+	activeScenarioName = scenario.Name
+	log.Info("Active scenario name set to: ", activeScenarioName)
+}
+
+func loadConfig(configFile string) (*Config, error) {
+	data, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, err
+	}
+	return &cfg, nil
+}
+
+// Retrieve App Name from provided network element name string, if any
+func getAppName(name string) string {
+	names := bytes.Split([]byte(name), []byte(activeScenarioName+"-"))
+	if len(names) != 2 {
+		return ""
+	}
+	return string(names[1])
+}
+
+func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string) (patch []byte, err error) {
+
+	// Apply labels
+	newLabels := make(map[string]string)
+	newLabels["meepApp"] = meepAppName
+	newLabels["meepOrigin"] = meepOrigin
+	newLabels["meepScenario"] = activeScenarioName
+	newLabels["processId"] = meepAppName
+
+	var patchOps []patchOperation
+	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarConfig.Containers, "/spec/template/spec/containers")...)
+	patchOps = append(patchOps, addVolume(template.Spec.Volumes, sidecarConfig.Volumes, "/spec/template/spec/volumes")...)
+	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
+
+	patch, err = json.Marshal(patchOps)
+	if err != nil {
+		return nil, err
+	}
+
+	return patch, nil
+}
+
+func addContainer(target, added []corev1.Container, basePath string) (patch []patchOperation) {
+	first := len(target) == 0
+	var value interface{}
+	for _, add := range added {
+		value = add
+		path := basePath
+		if first {
+			first = false
+			value = []corev1.Container{add}
+		} else {
+			path = path + "/-"
+		}
+		patch = append(patch, patchOperation{
+			Op:    "add",
+			Path:  path,
+			Value: value,
+		})
+	}
+	return patch
+}
+
+func addVolume(target, added []corev1.Volume, basePath string) (patch []patchOperation) {
+	first := len(target) == 0
+	var value interface{}
+	for _, add := range added {
+		value = add
+		path := basePath
+		if first {
+			first = false
+			value = []corev1.Volume{add}
+		} else {
+			path = path + "/-"
+		}
+		patch = append(patch, patchOperation{
+			Op:    "add",
+			Path:  path,
+			Value: value,
+		})
+	}
+	return patch
+}
+
+func updateLabels(target map[string]string, added map[string]string, basePath string) (patch []patchOperation) {
+	for key, value := range added {
+		path := basePath + "/" + key
+		op := "add"
+		if target != nil && target[key] != "" {
+			op = "replace"
+		}
+		patch = append(patch, patchOperation{
+			Op:    op,
+			Path:  path,
+			Value: value,
+		})
+	}
+	return patch
+}
 
 // main mutation process
 func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	req := ar.Request
-	var pod corev1.Pod
-	if err := json.Unmarshal(req.Object.Raw, &pod); err != nil {
-		log.Error("Could not unmarshal raw object: %v", err)
+	log.Info("Mutate request Name[", req.Name, "] Kind[", req.Kind, "] Namespace[", req.Namespace, "]")
+
+	// Ignore if no active scenario
+	if activeScenarioName == "" {
+		log.Info("No active scenario. Ignoring request...")
+		return &v1beta1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+
+	// Retrieve resource-specific information
+	var resourceName string
+	var template corev1.PodTemplateSpec
+
+	switch req.Kind.Kind {
+	case "Deployment":
+		// Unmarshal Deployment
+		var deployment appsv1.Deployment
+		if err := json.Unmarshal(req.Object.Raw, &deployment); err != nil {
+			log.Error("Could not unmarshal raw object: ", err.Error())
+			return &v1beta1.AdmissionResponse{
+				Result: &metav1.Status{
+					Message: err.Error(),
+				},
+			}
+		}
+		log.Info("Deployment Name: ", deployment.Name)
+		resourceName = deployment.Name
+		template = deployment.Spec.Template
+
+	case "StatefulSet":
+		// Unmarshal StatefulSet
+		var statefulset appsv1.StatefulSet
+		if err := json.Unmarshal(req.Object.Raw, &statefulset); err != nil {
+			log.Error("Could not unmarshal raw object: ", err.Error())
+			return &v1beta1.AdmissionResponse{
+				Result: &metav1.Status{
+					Message: err.Error(),
+				},
+			}
+		}
+		log.Info("StatefulSet Name: ", statefulset.Name)
+		resourceName = statefulset.Name
+		template = statefulset.Spec.Template
+
+	default:
+		log.Info("Unsupported admission request Kind[", req.Kind.Kind, "]")
+		return &v1beta1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+
+	// Retrieve App Name from resource name
+	meepAppName := getAppName(resourceName)
+	if meepAppName == "" {
+		log.Info("Resource not part of active scenario. Ignoring request...")
+		return &v1beta1.AdmissionResponse{
+			Allowed: true,
+		}
+	}
+	log.Info("MEEP App Name: ", meepAppName)
+
+	// Get sidecar patch
+	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, meepAppName)
+	if err != nil {
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
@@ -200,43 +317,14 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	log.Info("AdmissionReview for Kind=%v, Namespace=%v Name=%v (%v) UID=%v patchOperation=%v UserInfo=%v",
-		req.Kind, req.Namespace, req.Name, pod.Name, req.UID, req.Operation, req.UserInfo)
-
-	// // determine whether to perform mutation
-	// if !mutationRequired(ignoredNamespaces, &pod.ObjectMeta) {
-	// 	log.Infof("Skipping mutation for %s/%s due to policy check", pod.Namespace, pod.Name)
-	// 	return &v1beta1.AdmissionResponse{
-	// 		Allowed: true,
-	// 	}
-	// }
-
-	// // Workaround: https://github.com/kubernetes/kubernetes/issues/57982
-	// applyDefaultsWorkaround(whsvr.sidecarConfig.Containers, whsvr.sidecarConfig.Volumes)
-	// annotations := map[string]string{admissionWebhookAnnotationStatusKey: "injected"}
-	// patchBytes, err := createPatch(&pod, whsvr.sidecarConfig, annotations)
-	// if err != nil {
-	// 	return &v1beta1.AdmissionResponse{
-	// 		Result: &metav1.Status{
-	// 			Message: err.Error(),
-	// 		},
-	// 	}
-	// }
-
-	// log.Infof("AdmissionResponse: patch=%v\n", string(patchBytes))
-	// return &v1beta1.AdmissionResponse{
-	// 	Allowed: true,
-	// 	Patch:   patchBytes,
-	// 	PatchType: func() *v1beta1.PatchType {
-	// 		pt := v1beta1.PatchTypeJSONPatch
-	// 		return &pt
-	// 	}(),
-	// }
-
+	log.Info("AdmissionResponse: patch=", string(patch))
 	return &v1beta1.AdmissionResponse{
-		Result: &metav1.Status{
-			Message: "MUTATE SUCCESSFULLY CALLED",
-		},
+		Allowed: true,
+		Patch:   patch,
+		PatchType: func() *v1beta1.PatchType {
+			pt := v1beta1.PatchTypeJSONPatch
+			return &pt
+		}(),
 	}
 }
 
@@ -257,7 +345,7 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		log.Error("Content-Type=%s, expect application/json", contentType)
+		log.Error("Content-Type=", contentType, ", expect application/json")
 		http.Error(w, "invalid Content-Type, expect `application/json`", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -265,7 +353,7 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 	var admissionResponse *v1beta1.AdmissionResponse
 	ar := v1beta1.AdmissionReview{}
 	if _, _, err := deserializer.Decode(body, nil, &ar); err != nil {
-		log.Error("Can't decode body: %v", err)
+		log.Error("Can't decode body: ", err.Error())
 		admissionResponse = &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
@@ -285,12 +373,12 @@ func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(admissionReview)
 	if err != nil {
-		log.Error("Can't encode response: %v", err)
+		log.Error("Can't encode response: ", err.Error())
 		http.Error(w, fmt.Sprintf("could not encode response: %v", err), http.StatusInternalServerError)
 	}
 	log.Info("Ready to write reponse ...")
 	if _, err := w.Write(resp); err != nil {
-		log.Error("Can't write response: %v", err)
+		log.Error("Can't write response: ", err.Error())
 		http.Error(w, fmt.Sprintf("could not write response: %v", err), http.StatusInternalServerError)
 	}
 }

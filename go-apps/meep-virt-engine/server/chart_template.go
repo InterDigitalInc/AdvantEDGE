@@ -156,17 +156,17 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 							deploymentTemplate.ContainerName = proc.Name
 							deploymentTemplate.ContainerImageRepository = proc.Image
 							deploymentTemplate.ContainerImagePullPolicy = "IfNotPresent"
-							deploymentTemplate.SidecarEnabled = "true"
+							// deploymentTemplate.SidecarEnabled = "true"
 							deploymentTemplate.SidecarName = "meep-tc-sidecar"
 							deploymentTemplate.SidecarImageRepository = "meep-tc-sidecar"
 							deploymentTemplate.SidecarImageRepositoryTag = "latest"
 							deploymentTemplate.SidecarImagePullPolicy = "IfNotPresent"
 							setEnv(deploymentTemplate, proc.Environment)
 							setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
-							addMatchLabel(deploymentTemplate, "meepApp: "+proc.Id)
-							addTemplateLabel(deploymentTemplate, "processId: "+proc.Id)
-							addTemplateLabel(deploymentTemplate, "meepScenario: "+scenario.Name)
-							addTemplateLabel(deploymentTemplate, "meepApp: "+proc.Id)
+							addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+							addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+							// addTemplateLabel(deploymentTemplate, "processId: "+proc.Id)
+							// addTemplateLabel(deploymentTemplate, "meepScenario: "+scenario.Name)
 
 							// Enable Service template if present
 							if proc.ServiceConfig != nil {

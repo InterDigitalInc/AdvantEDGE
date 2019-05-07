@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Values.configMap }}
 data:
-  config: |
+  sidecarconfig.yaml: |
     containers:
     - name: {{ .Values.sidecar.name }}
       image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
@@ -12,4 +12,3 @@ data:
         capabilities:
           add:
             - NET_ADMIN
-

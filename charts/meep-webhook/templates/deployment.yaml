@@ -32,6 +32,7 @@ spec:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
           args:
+            - -sidecarCfgFile=/etc/webhook/config/sidecarconfig.yaml
             - -tlsCertFile=/etc/webhook/certs/cert.pem
             - -tlsKeyFile=/etc/webhook/certs/key.pem
             - -alsologtostderr
@@ -41,10 +42,15 @@ spec:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
               readOnly: true
+            - name: webhook-config
+              mountPath: /etc/webhook/config
       volumes:
         - name: webhook-certs
           secret:
             secretName: {{ template "meep-webhook.fullname" . }}
+        - name: webhook-config
+          configMap:
+            name: {{ .Values.configMap }}
       initContainers:
         - name: init-{{ .Values.deployment.dependency }}
           image: busybox

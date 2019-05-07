@@ -13,6 +13,6 @@ webhooks:
       caBundle: {{ .Values.webhook.cabundle }}
     rules:
       - operations: [ "CREATE" ]
-        apiGroups: [""]
+        apiGroups: ["apps", ""]
         apiVersions: ["v1"]
-        resources: ["pods"]
+        resources: ["deployments", "statefulsets"]

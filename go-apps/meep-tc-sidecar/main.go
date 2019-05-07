@@ -116,6 +116,10 @@ func initMeepSidecar() error {
 
 	// Retrieve Environment variables
 	podName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
+	if podName == "" {
+		log.Error("MEEP_POD_NAME not set. Exiting.")
+		return errors.New("MEEP_POD_NAME not set")
+	}
 	log.Info("MEEP_POD_NAME: ", podName)
 
 	// Create IPtables client
@@ -147,7 +151,7 @@ func initMeepSidecar() error {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
-	log.Info("Successfully subsribed to Pub/Sub events")
+	log.Info("Successfully subscribed to Pub/Sub events")
 
 	return nil
 }

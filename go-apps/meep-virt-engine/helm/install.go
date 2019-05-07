@@ -50,12 +50,12 @@ func install(charts []Chart) error {
 	for _, c := range charts {
 		var cmd *exec.Cmd
 		if c.Type == "MEEP-TYPE" {
-			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "--replace")
+			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set", "fullnameOverride="+c.ReleaseName, c.Location, "--replace")
 		} else { //c.Type == "USERCHART-TYPE"
 			if strings.Trim(c.AlternateValues, " ") == "" {
-				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "--replace")
+				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set", "fullnameOverride="+c.ReleaseName, c.Location, "--replace")
 			} else {
-				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "-f", c.AlternateValues, "--replace")
+				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set", "fullnameOverride="+c.ReleaseName, c.Location, "-f", c.AlternateValues, "--replace")
 			}
 		}
 		_, err := cmd.CombinedOutput()

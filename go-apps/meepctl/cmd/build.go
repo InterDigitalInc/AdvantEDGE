@@ -54,7 +54,7 @@ Valid targets:`,
 		t, _ := cmd.Flags().GetBool("time")
 
 		if v {
-			fmt.Println("Dockerize called")
+			fmt.Println("Build called")
 			fmt.Println("[arg]  target:", target)
 			fmt.Println("[flag] codecov:", buildCodecov)
 			fmt.Println("[flag] verbose:", v)
@@ -260,7 +260,15 @@ func fixDeps(targetName string, cobraCmd *cobra.Command) {
 	srcDir := gitDir + "/" + target["src"]
 
 	switch targetName {
-	case "meep-webhook", "meep-mon-engine":
+	case "meep-webhook":
+		cmd := exec.Command("rm", "-Rf", srcDir+"/vendor/github.com/hashicorp/golang-lru")
+		out, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println(out)
+		}
+
+	case "meep-mon-engine":
 		cmd := exec.Command("rm", srcDir+"/vendor/k8s.io/client-go/tools/cache/mutation_cache.go")
 		out, err := utils.ExecuteCmd(cmd, cobraCmd)
 		if err != nil {
