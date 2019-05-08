@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: "meep-demo-iperf"
+  ports:
+  - name: port-80
+    port: 80
+    targetPort: 80
+    protocol: UDP
+

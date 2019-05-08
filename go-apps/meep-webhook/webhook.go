@@ -171,11 +171,26 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	newLabels["meepScenario"] = activeScenarioName
 	newLabels["processId"] = meepAppName
 
+	// Add environment variables to sidecar containers
+	var envVars []corev1.EnvVar
+	var envVar corev1.EnvVar
+	envVar.Name = "MEEP_POD_NAME"
+	envVar.Value = meepAppName
+	envVars = append(envVars, envVar)
+
+	var sidecarContainers []corev1.Container
+	for _, container := range sidecarConfig.Containers {
+		container.Env = envVars
+		sidecarContainers = append(sidecarContainers, container)
+	}
+
+	// Create patch operations
 	var patchOps []patchOperation
-	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarConfig.Containers, "/spec/template/spec/containers")...)
+	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarContainers, "/spec/template/spec/containers")...)
 	patchOps = append(patchOps, addVolume(template.Spec.Volumes, sidecarConfig.Volumes, "/spec/template/spec/volumes")...)
 	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
 
+	// Serialize patch
 	patch, err = json.Marshal(patchOps)
 	if err != nil {
 		return nil, err
@@ -196,6 +211,7 @@ func addContainer(target, added []corev1.Container, basePath string) (patch []pa
 		} else {
 			path = path + "/-"
 		}
+
 		patch = append(patch, patchOperation{
 			Op:    "add",
 			Path:  path,
@@ -317,7 +333,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	log.Info("AdmissionResponse: patch=", string(patch))
+	log.Debug("AdmissionResponse: patch=", string(patch))
 	return &v1beta1.AdmissionResponse{
 		Allowed: true,
 		Patch:   patch,

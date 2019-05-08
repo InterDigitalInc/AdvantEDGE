@@ -26,28 +26,22 @@ const SERVICE_NODE_PORT_MAX = 32767
 const DEFAULT_DUMMY_CONTAINER_IMAGE = "nginx"
 
 type DeploymentTemplate struct {
-	Enabled                   string
-	Name                      string
-	ReplicaCount              string
-	ApiVersion                string
-	MatchLabels               []string
-	TemplateNamespace         string
-	TemplateLabels            []string
-	ContainerName             string
-	ContainerImageRepository  string
-	ContainerImagePullPolicy  string
-	ContainerEnvEnabled       string
-	ContainerEnv              []string
-	ContainerCommandEnabled   string
-	ContainerCommand          []string
-	ContainerCommandArg       []string
-	ContainerPort             string
-	ContainerProtocol         string
-	SidecarEnabled            string
-	SidecarName               string
-	SidecarImageRepository    string
-	SidecarImageRepositoryTag string
-	SidecarImagePullPolicy    string
+	Enabled                  string
+	Name                     string
+	ReplicaCount             string
+	ApiVersion               string
+	MatchLabels              []string
+	TemplateLabels           []string
+	ContainerName            string
+	ContainerImageRepository string
+	ContainerImagePullPolicy string
+	ContainerEnvEnabled      string
+	ContainerEnv             []string
+	ContainerCommandEnabled  string
+	ContainerCommand         []string
+	ContainerCommandArg      []string
+	ContainerPort            string
+	ContainerProtocol        string
 }
 
 type ServiceTemplate struct {
@@ -87,13 +81,10 @@ type ServiceMapTemplate struct {
 
 // helm values.yaml template
 type ScenarioTemplate struct {
-	Deployment           DeploymentTemplate
-	Service              ServiceTemplate
-	External             ExternalTemplate
-	ServiceaccountCreate string
-	RbacCreate           string
-	NamespaceCreate      string
-	NamespaceName        string
+	Deployment    DeploymentTemplate
+	Service       ServiceTemplate
+	External      ExternalTemplate
+	NamespaceName string
 }
 
 func addTemplateLabel(deploymentTemplate *DeploymentTemplate, label string) {
@@ -124,7 +115,6 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 
 	var charts []helm.Chart
 	serviceMap := map[string]string{}
-	onlySetOnce := false
 
 	// Parse domains
 	for _, domain := range scenario.Deployment.Domains {
@@ -152,21 +142,13 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 							// Fill deployment template information
 							deploymentTemplate.Enabled = "true"
 							deploymentTemplate.Name = proc.Name
-							deploymentTemplate.TemplateNamespace = scenario.Name
 							deploymentTemplate.ContainerName = proc.Name
 							deploymentTemplate.ContainerImageRepository = proc.Image
 							deploymentTemplate.ContainerImagePullPolicy = "IfNotPresent"
-							// deploymentTemplate.SidecarEnabled = "true"
-							deploymentTemplate.SidecarName = "meep-tc-sidecar"
-							deploymentTemplate.SidecarImageRepository = "meep-tc-sidecar"
-							deploymentTemplate.SidecarImageRepositoryTag = "latest"
-							deploymentTemplate.SidecarImagePullPolicy = "IfNotPresent"
 							setEnv(deploymentTemplate, proc.Environment)
 							setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
 							addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
 							addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
-							// addTemplateLabel(deploymentTemplate, "processId: "+proc.Id)
-							// addTemplateLabel(deploymentTemplate, "meepScenario: "+scenario.Name)
 
 							// Enable Service template if present
 							if proc.ServiceConfig != nil {
@@ -215,7 +197,7 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 							// Enable External template if set
 							if proc.IsExternal {
 								externalTemplate.Enabled = "true"
-								addExtSelector(externalTemplate, "meepApp: "+proc.Id)
+								addExtSelector(externalTemplate, "meepAppId: "+proc.Id)
 
 								// Add ingress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
@@ -238,12 +220,6 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 
 									externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcMapTemplate)
 								}
-							}
-
-							if !onlySetOnce {
-								// TODO -- DO NOT CALL THIS FOR DEFAULT NAMESPACE
-								// setExtras(&scenarioTemplate)
-								onlySetOnce = true
 							}
 
 							chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
@@ -334,16 +310,7 @@ func createUserChart(chartLocation string, altValueFile string, params string, n
 	return c
 }
 
-// func setExtras(scenarioTemplate *ScenarioTemplate) {
-// 	scenarioTemplate.ServiceaccountCreate = "true"
-// 	scenarioTemplate.RbacCreate = "true"
-// 	scenarioTemplate.NamespaceCreate = "true"
-// }
-
 func setScenarioDefaults(scenarioTemplate *ScenarioTemplate) {
-	scenarioTemplate.NamespaceCreate = "false"
-	scenarioTemplate.ServiceaccountCreate = "false"
-	scenarioTemplate.RbacCreate = "false"
 	setDeploymentDefaults(&scenarioTemplate.Deployment)
 	setServiceDefaults(&scenarioTemplate.Service)
 	setExternalDefaults(&scenarioTemplate.External)
@@ -353,7 +320,6 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.Enabled = "false"
 	deploymentTemplate.ReplicaCount = "1"
 	deploymentTemplate.ApiVersion = "v1"
-	deploymentTemplate.SidecarEnabled = "false"
 	deploymentTemplate.ContainerEnvEnabled = "false"
 	deploymentTemplate.ContainerCommandEnabled = "false"
 }

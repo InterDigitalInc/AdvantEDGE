@@ -2,6 +2,12 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+namespace:
+  name: default
+
+serviceaccount:
+  user: meep-user
+
 deployment:
   enabled: {{.Deployment.Enabled}}
   replicaCount: {{.Deployment.ReplicaCount}}
@@ -34,22 +40,11 @@ deployment:
       {{- end}}
 
   template:
-  #  namespace: {{.Deployment.TemplateNamespace}}
     namespace: default
     labels:
     {{- range .Deployment.TemplateLabels}}
       {{.}}
     {{- end}}
-
-  meepOrigin: scenario
-
-  sidecar:
-    enabled: {{.Deployment.SidecarEnabled}}
-    name: {{.Deployment.SidecarName}}
-    image:
-      repository: {{.Deployment.SidecarImageRepository}}
-      tag: {{.Deployment.SidecarImageRepositoryTag}}
-      pullPolicy: {{.Deployment.SidecarImagePullPolicy}}
 
   resources: {}
   nodeSelector: {}
@@ -110,16 +105,3 @@ external:
       targetPort: {{.Port}}
       protocol: {{.Protocol}}
     {{- end}}
-
-serviceaccount:
-  create: {{.ServiceaccountCreate}}
-  user: meep-user
-
-rbac:
-  create: {{.RbacCreate}}
-
-namespace:
-#  create: {{.NamespaceCreate}}
-#  name: {{.NamespaceName}}
-  create: false
-  name: default
