@@ -3,4 +3,4 @@
 # Declare variables to be passed into your templates.
 
 service:
-  name: "zone1-edge1-svc"
+  name: "zone1-edge1-iperf"

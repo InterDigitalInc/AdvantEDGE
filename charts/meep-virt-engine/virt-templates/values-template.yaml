@@ -2,11 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace:
-  name: default
-
-serviceaccount:
-  user: meep-user
+namespace: default
 
 deployment:
   enabled: {{.Deployment.Enabled}}
@@ -77,10 +73,6 @@ service:
     enabled: {{.Service.MeServiceEnabled}}
     name: {{.Service.MeServiceName}}
     namespace: default
-    selector:
-    {{- range .Service.MeServiceSelector}}
-      {{.}}
-    {{- end}}
     type: ClusterIP
 
 external:

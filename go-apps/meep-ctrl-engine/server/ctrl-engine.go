@@ -48,14 +48,14 @@ var clientServiceMapList []ClientServiceMap
 func getCorePodsList() map[string]bool {
 
 	innerMap := map[string]bool{
-		"couchdb-couchdb-0": false,
-		"meep-ctrl-engine":  false,
-		"meep-webhook":      false,
-		"meep-mg-manager":   false,
-		"meep-mon-engine":   false,
-		"meep-tc-engine":    false,
-		"metricbeat":        false,
-		"virt-engine":       false,
+		"meep-couchdb":     false,
+		"meep-ctrl-engine": false,
+		"meep-webhook":     false,
+		"meep-mg-manager":  false,
+		"meep-mon-engine":  false,
+		"meep-tc-engine":   false,
+		"meep-metricbeat":  false,
+		"virt-engine":      false,
 	}
 	return innerMap
 }
@@ -65,7 +65,7 @@ func connectDb(dbName string) (*kivik.DB, error) {
 
 	// Connect to Couch DB
 	log.Debug("Establish new couchDB connection")
-	dbClient, err := kivik.New(context.TODO(), "couch", "http://couchdb-svc-couchdb:5984/")
+	dbClient, err := kivik.New(context.TODO(), "couch", "http://meep-couchdb-svc-couchdb:5984/")
 	if err != nil {
 		return nil, err
 	}

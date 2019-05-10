@@ -264,89 +264,16 @@ func parseScenario(scenario ceModel.Scenario) {
 							netElem.netLocsInRange[netLoc] = true
 						}
 
-						// Store service information, if any
-						if proc.ServiceConfig != nil && proc.UserChartLocation == "" {
-							svcInfo := new(serviceInfo)
-							svcInfo.name = proc.ServiceConfig.Name
-							svcInfo.node = proc.Name
-
-							// Store MG Service info, if any
-							mgSvcName := proc.ServiceConfig.MeSvcName
-							if mgSvcName != "" {
-								// Add MG service to MG service info map if it does not exist yet
-								mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-								if !found {
-									mgSvcInfo = new(mgServiceInfo)
-									mgSvcInfo.services = make(map[string]*serviceInfo)
-									mgSvcInfo.name = mgSvcName
-									mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-								}
-
-								// Add service instance reference to MG service list
-								mgSvcInfo.services[svcInfo.name] = svcInfo
-
-								// Add MG Service reference to service instance
-								svcInfo.mgSvc = mgSvcInfo
-
-								// Create Mobility Group
-								// NOTE: Hardcoded defaults here can be overridden via REST API
-								var mg mgModel.MobilityGroup
-								mg.Name = mgSvcName
-								mg.StateTransferMode = stateTransModeStateManaged
-								mg.StateTransferTrigger = stateTransTrigNetLocInRange
-								mg.SessionTransferMode = sessionTransModeForced
-								mg.LoadBalancingAlgorithm = lbAlgoHopCount
-								_ = mgCreate(&mg)
-							}
-
-							// Add service instance to service info map
-							svcInfoMap[svcInfo.name] = svcInfo
-							svcToElemMap[svcInfo.name] = svcInfo.name
-							elemToSvcMap[svcInfo.name] = svcInfo.name
-
+						// Store service information from service config
+						if proc.ServiceConfig != nil {
+							addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.MeSvcName, proc.Name)
 						}
-						if proc.UserChartLocation != "" {
-							if proc.UserChartGroup != "" {
-								//code is duplicated for the if above but using the userChartGroup textfielf from a userchart
-								userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
-								svcInfo := new(serviceInfo)
-								svcInfo.name = proc.ServiceConfig.Name
-								svcInfo.node = proc.Name
 
-								//mgSvcName is the same name as above, only one name
-								mgSvcName := userChartGroupElement[1]
-								if mgSvcName != "" {
-									// Add MG service to MG service info map if it does not exist yet
-									mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-									if !found {
-										mgSvcInfo = new(mgServiceInfo)
-										mgSvcInfo.services = make(map[string]*serviceInfo)
-										mgSvcInfo.name = mgSvcName
-										mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-									}
-
-									// Add service instance reference to MG service list
-									mgSvcInfo.services[svcInfo.name] = svcInfo
-
-									// Add MG Service reference to service instance
-									svcInfo.mgSvc = mgSvcInfo
-
-									// Create Mobility Group
-									// NOTE: Hardcoded defaults here can be overridden via REST API
-									var mg mgModel.MobilityGroup
-									mg.Name = mgSvcName
-									mg.StateTransferMode = stateTransModeStateManaged
-									mg.StateTransferTrigger = stateTransTrigNetLocInRange
-									mg.SessionTransferMode = sessionTransModeForced
-									mg.LoadBalancingAlgorithm = lbAlgoHopCount
-									_ = mgCreate(&mg)
-								}
-								// Add service instance to service info map
-								svcInfoMap[svcInfo.name] = svcInfo
-								svcToElemMap[userChartGroupElement[0]] = svcInfo.name
-								elemToSvcMap[svcInfo.name] = userChartGroupElement[0]
-
-							}
+						// Store service information from user chart
+						// Format: <service instance name>:[group service name]:<port>:<protocol>
+						if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
+							userChartGroup := strings.Split(proc.UserChartGroup, ":")
+							addServiceInfo(userChartGroup[0], userChartGroup[1], proc.Name)
 						}
 					}
 				}
@@ -361,6 +288,46 @@ func addNode(graph *dijkstra.Graph, node string, parent string) {
 		_ = graph.AddMappedArc(parent, node, 1)
 		_ = graph.AddMappedArc(node, parent, 1)
 	}
+}
+
+// Create & store new service & MG service information
+func addServiceInfo(svcName string, mgSvcName string, nodeName string) {
+	svcInfo := new(serviceInfo)
+	svcInfo.name = svcName
+	svcInfo.node = nodeName
+
+	// Store MG Service info
+	if mgSvcName != "" {
+		// Add MG service to MG service info map if it does not exist yet
+		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
+		if !found {
+			mgSvcInfo = new(mgServiceInfo)
+			mgSvcInfo.services = make(map[string]*serviceInfo)
+			mgSvcInfo.name = mgSvcName
+			mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+		}
+
+		// Add service instance reference to MG service list
+		mgSvcInfo.services[svcInfo.name] = svcInfo
+
+		// Add MG Service reference to service instance
+		svcInfo.mgSvc = mgSvcInfo
+
+		// Create Mobility Group
+		// NOTE: Hardcoded defaults here can be overridden via REST API
+		var mg mgModel.MobilityGroup
+		mg.Name = mgSvcName
+		mg.StateTransferMode = stateTransModeStateManaged
+		mg.StateTransferTrigger = stateTransTrigNetLocInRange
+		mg.SessionTransferMode = sessionTransModeForced
+		mg.LoadBalancingAlgorithm = lbAlgoHopCount
+		_ = mgCreate(&mg)
+	}
+
+	// Add service instance to service info map
+	svcInfoMap[svcInfo.name] = svcInfo
+	svcToElemMap[svcInfo.name] = svcInfo.name
+	elemToSvcMap[svcInfo.name] = svcInfo.name
 }
 
 func getNetElem(name string) *netElemInfo {

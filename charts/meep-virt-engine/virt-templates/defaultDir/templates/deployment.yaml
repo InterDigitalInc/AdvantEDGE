@@ -3,7 +3,7 @@ apiVersion: apps/{{.Values.deployment.apiVersion}}
 kind: Deployment
 metadata:
   name: {{template "meep.fullname" .}}
-  namespace: {{.Values.namespace.name}}
+  namespace: {{.Values.namespace}}
 spec:
   replicas: {{.Values.deployment.replicaCount}}
   selector:
@@ -20,7 +20,6 @@ spec:
         {{- end}}
 
     spec:
-      serviceAccountName: {{.Values.serviceaccount.user}}
       containers:
       {{- if not .Values.external.enabled}}
       {{- with .Values.deployment}}

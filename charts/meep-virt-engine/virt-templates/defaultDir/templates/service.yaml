@@ -32,17 +32,13 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{.Values.service.meservice.name}}
-  namespace: {{.Values.service.namespace}}
+  namespace: {{.Values.service.meservice.namespace}}
   labels:
     {{- range $key, $value := .Values.service.labels}}
     {{$key}}: {{$value | quote}}
     {{- end}}
 spec:
   type: {{.Values.service.meservice.type}}
-  selector:
-  {{- range $key, $value := .Values.service.meservice.selector}}
-    {{$key}}: {{$value}}
-  {{- end}}
   ports:
   {{- range .Values.service.ports}}
   - name: {{.name}}

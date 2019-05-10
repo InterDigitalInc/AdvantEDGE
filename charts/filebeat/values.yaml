@@ -3,7 +3,7 @@ image:
 
 config:
   output.elasticsearch:
-    hosts: '[elastic-elasticsearch-client]'
+    hosts: '[meep-elasticsearch-client]'
 
   # output.logstash:
   #   hosts: ["logstash:5044"]

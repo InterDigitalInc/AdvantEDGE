@@ -21,7 +21,7 @@ image:
 config:
   elasticsearch:
     hosts:
-      - elastic-elasticsearch-client
+      - meep-elasticsearch-client
     port: 9200
 
 configMaps:

@@ -153,7 +153,7 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 func ensureDepStorage(cobraCmd *cobra.Command) {
 	workdir := viper.GetString("meep.workdir")
 
-	// Local storage strucutre
+	// Local storage structure
 	cmd := exec.Command("mkdir", "-p", workdir)
 	cmd.Args = append(cmd.Args, workdir+"/couchdb")
 	cmd.Args = append(cmd.Args, workdir+"/es-data")
@@ -170,9 +170,6 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	//copy the yaml files in workdir and apply a modification to the tmp file, original is untouched
 	cmd = exec.Command("mkdir", "-p", workdir+"/tmp")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	pvCouch := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.couchdb.pv")
-	cmd = exec.Command("cp", pvCouch, workdir+"/tmp/meep-pv-couchdb.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	pvES := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.elastic.es.pv")
 	cmd = exec.Command("cp", pvES, workdir+"/tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
@@ -182,17 +179,13 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	//search and replace in yaml fil
 	tmpStr := strings.Replace(workdir, "/", "\\/", -1)
 	str := "s/<WORKDIR>/" + tmpStr + "/g"
-	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/meep-pv-couchdb.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/filebeat-values.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	// Local storage bindings
-	// @TODO move to respective charts
-	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-couchdb.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	// @TODO move to respective chart
 	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
@@ -279,66 +272,55 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 }
 
 func deployDep(cobraCmd *cobra.Command) {
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	gitDir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir")
 
 	// Storage
 	ensureDepStorage(cobraCmd)
 	// Runtime
-	flags := utils.HelmFlags(nil, "--version", "1.9.1")
+	repo := "meep-elasticsearch"
+	chart := utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
+	flags := utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.es.version"))
 	flags = utils.HelmFlags(flags, "--values", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.es.values"))
-	k8sDeploy("elastic", "incubator/elasticsearch", flags, cobraCmd)
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	k8sDeploy("curator", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart"), nil, cobraCmd)
+	repo = "meep-curator"
+	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart")
+	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	flags = utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+workdir+"/kibana/")
-	k8sDeploy("kibana", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart"), flags, cobraCmd)
+	repo = "meep-kibana"
+	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart")
+	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"/kibana/")
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	// Value file is modified, use the tmp/ version
-	flags = utils.HelmFlags(nil, "--version", "1.0.2")
+	repo = "meep-filebeat"
+	chart = utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
+	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.filebeat.version"))
 	flags = utils.HelmFlags(flags, "--values", workdir+"/tmp/filebeat-values.yaml")
-	k8sDeploy("filebeat", "stable/filebeat", flags, cobraCmd)
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	k8sDeploy("couchdb", gitDir+utils.RepoCfg.GetString("repo.dep.couchdb.chart"), nil, cobraCmd)
+	repo = "meep-couchdb"
+	chart = gitDir + utils.RepoCfg.GetString("repo.dep.couchdb.chart")
+	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"/couchdb/")
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	flags = utils.HelmFlags(nil, "--version", "4.0.1")
+	repo = "meep-redis"
+	chart = utils.RepoCfg.GetString("repo.dep.redis.chart")
+	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.redis.version"))
 	flags = utils.HelmFlags(flags, "--values", gitDir+utils.RepoCfg.GetString("repo.dep.redis.values"))
-	k8sDeploy("meep-redis", "stable/redis", flags, cobraCmd)
+	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	k8sDeploy("kube-state-metrics", gitDir+utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart"), nil, cobraCmd)
-	//--- MetricBeat
-	cmd := exec.Command("kubectl", "get", "svc", "elastic-elasticsearch-client", "-o=go-template={{printf \"%s\" .spec.clusterIP}}")
-	if verbose {
-		fmt.Println("Cmd:", cmd.Args)
-	}
-	out, err := cmd.CombinedOutput()
-	if err == nil {
-		ip := string(out)
-		if verbose {
-			fmt.Println("Result:" + ip)
-		}
-		cmd = exec.Command("sed", "-e", "s/<NODE-IP>/"+ip+"/", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.template"))
-		var yaml string
-		yaml, err = utils.ExecuteCmd(cmd, cobraCmd)
-		if err == nil {
-			var f *os.File
-			f, err = os.Create(workdir + "/tmp/meep-metricbeat-values.yaml")
-			if err == nil {
-				_, _ = f.WriteString(yaml)
-				_ = f.Sync()
-				f.Close()
-			}
-		}
-	}
-	if err != nil {
-		fmt.Println("Error starting metric beat")
-		fmt.Println(err)
-	}
+	repo = "meep-kube-state-metrics"
+	chart = gitDir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
+	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	//---
+	repo = "meep-metricbeat"
+	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
 	flags = utils.HelmFlags(nil, "--set", "image.pullPolicy=IfNotPresent")
-	flags = utils.HelmFlags(flags, "--values", workdir+"/tmp/meep-metricbeat-values.yaml")
-	k8sDeploy("metricbeat", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart"), flags, cobraCmd)
+	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 
 func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra.Command) {

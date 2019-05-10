@@ -7,22 +7,23 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: "meep-demo-svc"
+      app: {{ template "meep.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       namespace: {{ .Values.namespace }}
       labels:
-      app: "meep-demo-svc"
+        app: {{ template "meep.name" . }}
+        release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Values.serviceaccount }}
       containers:
-        - name: {{ .Values.deployment.name }}
+        - name: svc
           image: {{ .Values.deployment.image.name }}
           imagePullPolicy: {{ .Values.deployment.image.pullpolicy }}
           env:
             - name: MGM_APP_ID
-              value: {{ .Values.deployment.env.id }}
+              value: "{{ .Values.service.name }}"
             - name: MGM_APP_PORT
-              value: {{ .Values.deployment.env.port }}
+              value: "{{ .Values.service.port }}"
             - name: MGM_GROUP_NAME
-              value: {{ .Values.deployment.env.group }}
+              value: "{{ .Values.service.group }}"

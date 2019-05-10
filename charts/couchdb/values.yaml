@@ -35,8 +35,28 @@ persistentVolume:
   enabled: true
   accessModes:
     - ReadWriteOnce
-  size: 1Gi
-  storageClass: "meep-pv-couchdb"
+  size: 10Gi
+  reclaimPolicy: Retain
+  location: "<WORKDIR>/couchdb"
+
+persistentVolumeClaim:
+  # set to true to use pvc
+  enabled: true
+  # set to true to use you own pvc
+  existingClaim: false
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: "10Gi"
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If set to "fullname", storageClassName: <template fullname>
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  storageClass: "fullname"
 
 ## The CouchDB image
 image:

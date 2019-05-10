@@ -22,7 +22,7 @@ daemonset:
       rotate_every_kb: 10000
       number_of_files: 5
     output.elasticsearch:
-      hosts: ["http://<NODE-IP>:9200"]
+      hosts: ["http://meep-elasticsearch-client:9200"]
   modules:
     system:
       enabled: true
@@ -90,7 +90,7 @@ deployment:
       rotate_every_kb: 10000
       number_of_files: 5
     output.elasticsearch:
-      hosts: ["http://<NODE-IP>:9200"]
+      hosts: ["http://meep-elasticsearch-client:9200"]
   modules:
     kubernetes:
       enabled: true

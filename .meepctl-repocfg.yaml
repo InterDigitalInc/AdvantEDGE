@@ -66,30 +66,26 @@ repo:
   dep:
     elastic:
       es:
-        version: 1.9.1
-        values: charts/elasticsearch/elastic-values.yaml
         chart: incubator/elasticsearch
+        version: "1.9.1"
+        values: charts/elasticsearch/elastic-values.yaml
         pv: charts/elasticsearch/meep-pv-es.yaml
       es-curator:
         chart: charts/elasticsearch-curator
       kibana:
         chart: charts/kibana
-        pv: charts/kibana/meep-pv-kibana.yaml
       filebeat:
-        version: 1.0.2
-        values: charts/filebeat/filebeat-values.yaml
         chart: stable/filebeat
+        version: "1.0.2"
+        values: charts/filebeat/values.yaml
       metricbeat:
-        template: charts/metricbeat/values-template.yaml
-        values: charts/metricbeat/values.yaml
         chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
-      pv: charts/couchdb/meep-pv-couchdb.yaml
     redis:
-      version: 4.0.1
-      values: charts/redis/redis-values.yaml
       chart: stable/redis
+      version: "4.0.1"
+      values: charts/redis/values.yaml
     k8s:
       kube-state-metrics:
         chart: charts/kube-state-metrics

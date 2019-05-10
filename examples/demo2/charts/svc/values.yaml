@@ -3,14 +3,14 @@
 # Declare variables to be passed into your templates.
 
 namespace: default
-serviceaccount: meep-user
 
 deployment:
-  name: svc
   image:
     name: demo-server
     pullpolicy: IfNotPresent
-  env:
-    id: "none"
-    port: "80"
-    group: "svc"
+
+service:
+  name: ""
+  port: 80
+  protocol: TCP
+  group: svc

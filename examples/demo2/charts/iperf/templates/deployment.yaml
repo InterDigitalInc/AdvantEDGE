@@ -7,16 +7,17 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: "meep-demo-iperf"
+      app: {{ template "meep.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       namespace: {{ .Values.namespace }}
       labels:
-        app: "meep-demo-iperf"
+        app: {{ template "meep.name" . }}
+        release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Values.serviceaccount }}
       containers:
-        - name: {{ .Values.deployment.name }}
+        - name: iperf
           image: {{ .Values.deployment.image.name }}
           imagePullPolicy: {{ .Values.deployment.image.pullpolicy }}
           command:

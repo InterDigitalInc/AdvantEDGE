@@ -157,6 +157,7 @@ deployment:
                                             name: zone1-edge1-iperf
                                             type: EDGE-APP
                                             userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-e1-iperf-values.yaml
                                             userChartGroup: 'zone1-edge1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null
@@ -206,6 +207,7 @@ deployment:
                                             name: zone1-fog1-iperf
                                             type: EDGE-APP
                                             userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-f1-iperf-values.yaml
                                             userChartGroup: 'zone1-fog1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null
@@ -353,6 +355,7 @@ deployment:
                                             name: zone2-edge1-iperf
                                             type: EDGE-APP
                                             userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z2-e1-iperf-values.yaml
                                             userChartGroup: 'zone2-edge1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null

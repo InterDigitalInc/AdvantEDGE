@@ -14,18 +14,11 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
 )
 
-const (
-	ChartMeepType      = "MEEP-TYPE"
-	ChartUserChartType = "USERCHART-TYPE"
-)
-
 type Chart struct {
-	Type            string
-	ChartName       string
-	ReleaseName     string
-	Location        string
-	AlternateValues string
-	Parameters      string
+	ChartName   string
+	ReleaseName string
+	Location    string
+	ValuesFile  string
 }
 
 type Release struct {

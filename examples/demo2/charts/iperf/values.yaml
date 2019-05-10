@@ -3,10 +3,14 @@
 # Declare variables to be passed into your templates.
 
 namespace: default
-serviceaccount: meep-user
 
 deployment:
-  name: iperf
   image:
     name: gophernet/iperf-server
     pullpolicy: IfNotPresent
+
+service:
+  name: ""
+  port: 80
+  protocol: UDP
+  group: iperf

@@ -133,7 +133,6 @@ const typeExpSvc string = "EXP-SVC"
 // Scenario service mappings
 var svcInfoMap = map[string]*serviceInfo{}
 var mgSvcInfoMap = map[string]*mgServiceInfo{}
-var elemToSvcMap = map[string]string{}
 
 // Pod Info mapping
 var podInfoMap = map[string]*podInfo{}
@@ -344,7 +343,6 @@ func stopScenario() {
 
 	svcInfoMap = map[string]*serviceInfo{}
 	mgSvcInfoMap = map[string]*mgServiceInfo{}
-	elemToSvcMap = map[string]string{}
 	podInfoMap = map[string]*podInfo{}
 
 	tcEngineState = stateIdle
@@ -485,91 +483,29 @@ func parseScenario(scenario ceModel.Scenario) {
 						podInfo.expSvcMap = make(map[int32]*expServiceMap)
 						podInfoMap[proc.Name] = podInfo
 
-						// Add service to list of scenario services
-						if proc.ServiceConfig != nil && proc.UserChartLocation == "" {
-							addSvc(proc.ServiceConfig.Name)
-							svcInfo := new(serviceInfo)
-							svcInfo.name = proc.ServiceConfig.Name
-							svcInfo.node = proc.Name
-							svcInfo.ports = make(map[int32]*portInfo)
-
-							// Add ports to service information
-							for _, port := range proc.ServiceConfig.Ports {
-								portInfo := new(portInfo)
-								portInfo.port = port.Port
-								portInfo.expPort = port.ExternalPort
-								portInfo.protocol = port.Protocol
-								svcInfo.ports[portInfo.port] = portInfo
-							}
-
-							// Store MG Service info, if any
-							mgSvcName := proc.ServiceConfig.MeSvcName
-							if mgSvcName != "" {
-								addSvc(mgSvcName)
-
-								// Add MG service to MG service info map if it does not exist yet
-								mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-								if !found {
-									mgSvcInfo = new(mgServiceInfo)
-									mgSvcInfo.services = make(map[string]*serviceInfo)
-									mgSvcInfo.name = mgSvcName
-									mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-								}
-
-								// Add service instance reference to MG service list
-								mgSvcInfo.services[svcInfo.name] = svcInfo
-
-								// Add MG Service reference to service instance
-								svcInfo.mgSvc = mgSvcInfo
-							}
-
-							// Add service instance to service info map
-							svcInfoMap[svcInfo.name] = svcInfo
+						// Store service information from service config
+						if proc.ServiceConfig != nil {
+							addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
 						}
-						//serviceConfig contains the name so it can't be empty, but userCHart info should not be present at the same time as port info
-						//need to make sure of that with the frontend validation
-						if proc.UserChartLocation != "" {
-							if proc.UserChartGroup != "" {
-								//code is duplicated for the if above but using the userChartGroup textfielf from a userchart
-								userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
-								addSvc(userChartGroupElement[0])
-								svcInfo := new(serviceInfo)
-								svcInfo.name = proc.ServiceConfig.Name
-								svcInfo.node = proc.Name
-								svcInfo.ports = make(map[int32]*portInfo)
 
-								portInfo := new(portInfo)
-								value, err := strconv.ParseInt(userChartGroupElement[2], 10, 32)
-								if err == nil {
-									portInfo.port = int32(value)
-								}
-								portInfo.protocol = userChartGroupElement[3]
-								svcInfo.ports[portInfo.port] = portInfo
+						// Store service information from user chart
+						// Format: <service instance name>:[group service name]:<port>:<protocol>
+						if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
+							userChartGroup := strings.Split(proc.UserChartGroup, ":")
 
-								//mgSvcName is the same name as above, only one name
-								mgSvcName := userChartGroupElement[1]
-								addSvc(userChartGroupElement[1])
-
-								// Add MG service to MG service info map if it does not exist yet
-								mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
-								if !found {
-									mgSvcInfo = new(mgServiceInfo)
-									mgSvcInfo.services = make(map[string]*serviceInfo)
-									mgSvcInfo.name = mgSvcName
-									mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
-								}
-
-								// Add service instance reference to MG service list
-								mgSvcInfo.services[svcInfo.name] = svcInfo
-
-								// Add MG Service reference to service instance
-								svcInfo.mgSvc = mgSvcInfo
-
-								// Add service instance to service info map
-								svcInfoMap[svcInfo.name] = svcInfo
-								elemToSvcMap[svcInfo.name] = userChartGroupElement[0]
+							// Retrieve service ports
+							var servicePorts []ceModel.ServicePort
+							port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
+							if err != nil {
+								var servicePort ceModel.ServicePort
+								servicePort.Port = int32(port)
+								servicePort.Protocol = userChartGroup[3]
+								servicePorts = append(servicePorts, servicePort)
 							}
+
+							addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
 						}
+
 						// Add pod-specific external service mapping, if any
 						if proc.IsExternal {
 							for _, service := range proc.ExternalConfig.IngressServiceMap {
@@ -662,6 +598,50 @@ func parseScenario(scenario ceModel.Scenario) {
 		curNetCharList = append(curNetCharList, elementFogArray...)
 		curNetCharList = append(curNetCharList, elementUEArray...)
 	}
+}
+
+// Create & store new service & MG service information
+func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName string, nodeName string) {
+	// Add service instance service map
+	addSvc(svcName)
+
+	// Create new service info
+	svcInfo := new(serviceInfo)
+	svcInfo.name = svcName
+	svcInfo.node = nodeName
+	svcInfo.ports = make(map[int32]*portInfo)
+
+	// Add ports to service information
+	for _, port := range svcPorts {
+		portInfo := new(portInfo)
+		portInfo.port = port.Port
+		portInfo.expPort = port.ExternalPort
+		portInfo.protocol = port.Protocol
+		svcInfo.ports[portInfo.port] = portInfo
+	}
+
+	// Store MG Service info, if any
+	if mgSvcName != "" {
+		addSvc(mgSvcName)
+
+		// Add MG service to MG service info map if it does not exist yet
+		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
+		if !found {
+			mgSvcInfo = new(mgServiceInfo)
+			mgSvcInfo.services = make(map[string]*serviceInfo)
+			mgSvcInfo.name = mgSvcName
+			mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+		}
+
+		// Add service instance reference to MG service list
+		mgSvcInfo.services[svcInfo.name] = svcInfo
+
+		// Add MG Service reference to service instance
+		svcInfo.mgSvc = mgSvcInfo
+	}
+
+	// Add service instance to service info map
+	svcInfoMap[svcInfo.name] = svcInfo
 }
 
 func getElement(name string) *NetElem {
@@ -984,11 +964,6 @@ func applyMgSvcMapping() {
 			// Add one rule per port
 			for _, portInfo := range svcInfo.ports {
 
-				svcName := elemToSvcMap[svcInfo.name]
-				if svcName == "" {
-					svcName = svcInfo.name
-				}
-
 				// Populate rule fields
 				fields := make(map[string]interface{})
 				fields["svc-type"] = typeMgSvc
@@ -996,8 +971,8 @@ func applyMgSvcMapping() {
 				fields["svc-ip"] = svcIPMap[svcInfo.mgSvc.name]
 				fields["svc-protocol"] = portInfo.protocol
 				fields["svc-port"] = portInfo.port
-				fields["lb-svc-name"] = svcName
-				fields["lb-svc-ip"] = svcIPMap[svcName]
+				fields["lb-svc-name"] = svcInfo.name
+				fields["lb-svc-ip"] = svcIPMap[svcInfo.name]
 				fields["lb-svc-port"] = portInfo.port
 
 				// Make unique key
@@ -1021,11 +996,6 @@ func applyMgSvcMapping() {
 				svcInfo = svcInfoMap[svcMap.svcName]
 			}
 
-			svcName := elemToSvcMap[svcInfo.name]
-			if svcName == "" {
-				svcName = svcInfo.name
-			}
-
 			// Populate rule fields
 			fields := make(map[string]interface{})
 			fields["svc-type"] = typeExpSvc
@@ -1033,8 +1003,8 @@ func applyMgSvcMapping() {
 			fields["svc-ip"] = "0.0.0.0/0"
 			fields["svc-protocol"] = svcMap.protocol
 			fields["svc-port"] = svcMap.nodePort
-			fields["lb-svc-name"] = svcName
-			fields["lb-svc-ip"] = svcIPMap[svcName]
+			fields["lb-svc-name"] = svcInfo.name
+			fields["lb-svc-ip"] = svcIPMap[svcInfo.name]
 			fields["lb-svc-port"] = svcMap.svcPort
 
 			// Make unique key
