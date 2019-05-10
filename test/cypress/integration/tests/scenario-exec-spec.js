@@ -1,6 +1,6 @@
 // Import MEEP Contstants
-import * as meep from '../../../src/js/meep-constants';
-import * as states from '../../../src/js/state/ui/index';
+import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
+import * as states from '../../../../js-apps/meep-frontend/src/js/state/ui/index';
 
 // Import element utils
 import {
@@ -48,7 +48,7 @@ import {
   FIELD_LINK_PKT_LOSS,
 
   getElemFieldVal,
-} from '../../../src/js/util/elem-utils';
+} from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
@@ -58,7 +58,6 @@ describe('Scenario Execution', function() {
 
   // Test Variables
   let defaultScenario = 'None';
-  let demoScenario = 'demo1';
 
   // Test Setup
   beforeEach(() => {
@@ -71,7 +70,48 @@ describe('Scenario Execution', function() {
     cy.visit(meepUrl);
   });
 
-  it('Deploy & Terminate Demo Scenario', function() {
+  // ------------------------------
+  //            TESTS
+  // ------------------------------
+
+  // Demo1 scenario testing (Virt-Engine)
+  it('Deploy & Test DEMO1 scenario', function() {
+    let scenario = 'demo1';
+
+    // Deploy demo scenario
+    deployScenario(scenario);
+
+    // Test events
+    testCancelEvent();
+    testMobilityEvent();
+    testNetCharEvent(scenario);
+
+    // Terminate demo scenario
+    terminateScenario(scenario);
+  });
+
+  // Demo2 scenario testing (User Charts)
+  it('Deploy & Test DEMO2 scenario', function() {
+    let scenario = 'demo2';
+
+    // Deploy demo scenario
+    deployScenario(scenario);
+
+    // Test events
+    testCancelEvent();
+    testMobilityEvent();
+    testNetCharEvent(scenario);
+
+    // Terminate demo scenario
+    terminateScenario(scenario);
+  });
+
+  // ------------------------------
+  //          FUNCTIONS
+  // ------------------------------
+
+  // Deploy scenario with provided name
+  function deployScenario(name) {
     // Go to execution page
     cy.log('Go to execution page');
     click(meep.MEEP_TAB_EXEC);
@@ -81,89 +121,8 @@ describe('Scenario Execution', function() {
     verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
 
-    // Deploy Demo Scenario
-    cy.log('Deploy Demo Scenario: ' + demoScenario);
-    click(meep.EXEC_BTN_DEPLOY);
-    cy.wait(1000);
-    select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, demoScenario);
-    click(meep.MEEP_DLG_DEPLOY_SCENARIO, 'Ok');
-    cy.wait(1000);
-    verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
-    verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
-    verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, true);
-    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', demoScenario);
-
-    // Terminate Scenario
-    cy.log('Terminate Demo Scenario: ' + demoScenario);
-    click(meep.EXEC_BTN_TERMINATE);
-    click(meep.MEEP_DLG_TERMINATE_SCENARIO, 'Ok');
-    cy.wait(1000);
-    verifyEnabled(meep.EXEC_BTN_DEPLOY, true, 120000);
-    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, false);
-    verifyEnabled(meep.EXEC_BTN_EVENT, false);
-    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
-  });
-
-  it('Send UE Mobility Events', function() {
-    // Deploy demo scenario
-    cy.log('Deploy demo scenario: ' + demoScenario);
-    deployScenario(demoScenario);
-
-    // Cancel Event creation
-    cy.log('Cancel event creation');
-    click(meep.EXEC_BTN_EVENT);
-    verifyForm(meep.EXEC_EVT_TYPE, true);
-    verifyEnabled(meep.MEEP_BTN_CANCEL, true);
-    // verifyEnabled(meep.MEEP_BTN_APPLY, false)
-    click(meep.MEEP_BTN_CANCEL);
-
-    // Create & Validate Mobility events
-    cy.log('Create Mobility events');
-    createMobilityEvent('ue1', 'zone1-poa2');
-    createMobilityEvent('ue1', 'zone2-poa1');
-    createMobilityEvent('ue1', 'zone1-poa1');
-    createMobilityEvent('ue2-ext', 'zone1-poa2');
-    createMobilityEvent('ue2-ext', 'zone2-poa1');
-    createMobilityEvent('ue2-ext', 'zone1-poa1');
-
-    // Terminate demo scenario
-    cy.log('Terminate demo scenario: ' + demoScenario);
-    terminateScenario();
-  });
-
-  it('Send Network Characteristics Events', function() {
-    // Deploy demo scenario
-    cy.log('Deploy demo scenario: ' + demoScenario);
-    deployScenario(demoScenario);
-
-    // Create Network Characteristic event
-    cy.log('Create & Validate Network Characteristic event');
-    createNetCharEvent('SCENARIO', demoScenario, 60, 5, 1, 200000);
-    createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('ZONE-INTER-EDGE', 'zone1', 5, 0, 1, 80000);
-    createNetCharEvent('ZONE-INTER-FOG', 'zone1', 3, 2, 1, 75000);
-    createNetCharEvent('ZONE-EDGE-FOG', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('ZONE-INTER-EDGE', 'zone2', 5, 0, 1, 80000);
-    createNetCharEvent('ZONE-INTER-FOG', 'zone2', 3, 2, 1, 75000);
-    createNetCharEvent('ZONE-EDGE-FOG', 'zone2', 6, 2, 1, 70000);
-    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
-    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
-    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
-
-    // Terminate demo scenario
-    cy.log('Terminate demo scenario: ' + demoScenario);
-    terminateScenario();
-  });
-
-
-  // Deploy scenario with provided name
-  function deployScenario(name) {
-    // Go to execution page
-    click(meep.MEEP_TAB_EXEC);
-
     // Deploy scenario
+    cy.log('Deploy scenario: ' + name);
     click(meep.EXEC_BTN_DEPLOY);
     cy.wait(1000);
     select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, name);
@@ -177,7 +136,8 @@ describe('Scenario Execution', function() {
   }
 
   // Terminate deployed scenario
-  function terminateScenario() {
+  function terminateScenario(name) {
+    cy.log('Terminate Scenario: ' + name);
     click(meep.EXEC_BTN_TERMINATE);
     click(meep.MEEP_DLG_TERMINATE_SCENARIO, 'Ok');
     cy.wait(1000);
@@ -186,6 +146,44 @@ describe('Scenario Execution', function() {
     verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
+  }
+
+  // Cancel Event creation
+  function testCancelEvent() {
+    cy.log('Cancel event creation');
+    click(meep.EXEC_BTN_EVENT);
+    verifyForm(meep.EXEC_EVT_TYPE, true);
+    verifyEnabled(meep.MEEP_BTN_CANCEL, true);
+    // verifyEnabled(meep.MEEP_BTN_APPLY, false)
+    click(meep.MEEP_BTN_CANCEL);
+    cy.wait(1000);
+  }
+
+  // Create & Validate Mobility events
+  function testMobilityEvent() {
+    cy.log('Create Mobility events');
+    createMobilityEvent('ue1', 'zone1-poa2');
+    createMobilityEvent('ue1', 'zone2-poa1');
+    createMobilityEvent('ue1', 'zone1-poa1');
+    createMobilityEvent('ue2-ext', 'zone1-poa2');
+    createMobilityEvent('ue2-ext', 'zone2-poa1');
+    createMobilityEvent('ue2-ext', 'zone1-poa1');
+  }
+
+  // Create Network Characteristic events
+  function testNetCharEvent(scenario) {
+    cy.log('Create & Validate Network Characteristic event');
+    createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
+    createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
+    createNetCharEvent('ZONE-INTER-EDGE', 'zone1', 5, 0, 1, 80000);
+    createNetCharEvent('ZONE-INTER-FOG', 'zone1', 3, 2, 1, 75000);
+    createNetCharEvent('ZONE-EDGE-FOG', 'zone1', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE-INTER-EDGE', 'zone2', 5, 0, 1, 80000);
+    createNetCharEvent('ZONE-INTER-FOG', 'zone2', 3, 2, 1, 75000);
+    createNetCharEvent('ZONE-EDGE-FOG', 'zone2', 6, 2, 1, 70000);
+    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
+    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
+    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
   }
 
   // Create a Mobility event
@@ -204,6 +202,8 @@ describe('Scenario Execution', function() {
 
   // Create a Network Characteristic event
   function createNetCharEvent(elemType, name, l, lv, pl, tp) {
+    cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
+      '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
     select(meep.EXEC_EVT_TYPE, states.NETWORK_CHARACTERISTICS_EVENT);
     select(meep.EXEC_EVT_NC_TYPE, elemType);

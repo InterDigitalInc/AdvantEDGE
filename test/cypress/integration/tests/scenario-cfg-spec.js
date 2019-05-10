@@ -1,5 +1,5 @@
 // Import MEEP Contstants
-import * as meep from '../../../src/js/meep-constants';
+import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
 
 // Import element utils
 import {
@@ -47,7 +47,7 @@ import {
   FIELD_LINK_PKT_LOSS,
 
   getElemFieldVal,
-} from '../../../src/js/util/elem-utils';
+} from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';

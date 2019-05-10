@@ -1,5 +1,5 @@
 // Import MEEP Contstants
-import * as meep from '../../../src/js/meep-constants';
+import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
 
 // Import Test utility functions
 import { selector, click, select, verify } from '../util/util';
