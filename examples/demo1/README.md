@@ -1,4 +1,5 @@
 # Demo1
+
 A simple scenario used to showcase platform capabilities.
 
 This scenario is composed of three applications (_iperf-server_, _iperf-proxy & _demo-server_) deployed across multiple tiers of the network (fog/edge/cloud).
@@ -12,6 +13,7 @@ Internal client traffic is iperf only and has no GUI.
 External client accesses both iperf and demo servers and has a GUI.
 
 The platform capabilities demonstrated with this scenario are:
+
 - Scenario deployment (dynamic charts)
 - Network tiering
 - Internal & external clients
@@ -22,6 +24,7 @@ The platform capabilities demonstrated with this scenario are:
 - Monitoring (demo specific dashboards)
 
 ## Scenario composition
+
 The scenario is composed of the following components:
 
 - 2 distant cloud application: _iperf_ server and _demo_ server
@@ -35,11 +38,13 @@ The scenario is composed of the following components:
   - 1 external UE that runs a Demo client
 
 #### Internal UE application
+
 Upon scenario startup, internal UE application (an iperf client) connects automatically to the closest iperf server and starts transferring traffic.
 
 As the UE moves around the network, edge node instance will change.
 
 #### External UE
+
 External UE application is a javascript application running in an external browser.
 
 To start the aooplcation, load the following page in the browser `<AdvantEDGE-node-ip-address>:31111`
@@ -47,6 +52,7 @@ To start the aooplcation, load the following page in the browser `<AdvantEDGE-no
 The application shows details about the connection, allows to start a state counter and iperf traffic and presents an image. See Iperf & Demo server sub-sections for more details.
 
 #### Iperf server
+
 This is a standard iperf server that will terminate iperf client connections.
 
 There is an iperf client running in the internal UE and another one in the external UE.
@@ -54,6 +60,7 @@ There is an iperf client running in the internal UE and another one in the exter
 External UE needs the iperf proxy running to be able to control the iperf client from the javascript GUI.
 
 #### Demo server
+
 Demo server is a web server that maintains a UE state and also stores unique data.
 Only the external UE accesses the demo server.
 
@@ -65,39 +72,48 @@ On the UE GUI, the counter is started by pressing the button.
 When the external UE moves in the network and transitions from one edge instance to another, the "UE state" (e.g. the counter value) is transferred using the application state transfer. On the UE GUI, the counter continue incrementing (e.g. not reset to zero) when the UE moves in the network.
 
 ## Using the scenario
+
 The following steps need to be done prior to using this scenario
 
-#### Dockerize demo applications
-Only need to do it once, or when the demo application changes
+#### Build demo binaries
 
-In a command line shell
-```
-cd ~/AdvantEDGE/examples/demo1/
-./dockerize.sh
-```
-> Demo Application binaries are dockerized (containerized) and the container images are stored in the local Docker registry.<br> Next time you want to use the demo scenario; demo application containers will be available
+To build _iperf-proxy_ & _demo-server_ binaries from source code:
 
-#### Source code compilation
-Compiling from source code is available through the command:
 ```
 cd ~/AdvantEDGE/examples/demo1/
 ./build-demo1.sh
 ```
-> As a result, both the iperf-proxy and demo-server app are compiled and demo-server is dockerized
+
+> **NOTE:** Binary files are created in ./bin/ folder
+
+#### Dockerize demo applications
+
+Demo Application binaries must be dockerized (containerized) as container images in the local Docker registry. This step is necessary every time the demo binaries are updated.
+
+To generate docker images from demo binary files:
+
+```
+cd ~/AdvantEDGE/examples/demo1/
+./dockerize.sh
+```
 
 #### Configure demo specific dashboards
+
 Only need to do it once, or when the demo dashboard changes
 
-Follow the procedure described in [Configuring Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `AdvantEDGE/examples/demo1/demo1-dashboards.json`
+Follow the procedure described in [Scenario Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
-> Demo specific dashboards are stored in Kibana.<br> Next time you want to use the demo scenario; demo specific dashboard will be available.
+> Demo specific dashboards are stored in Kibana.<br>
+> Next time you want to use the demo scenario; demo specific dashboard will be available.
 
 #### Start iperf proxy
+
 Do it everytime you start using the demo when the iperf-proxy is not running
 
 This demo scenario requires iperf installed on the AdvantEDGE host and the iperf proxy running.
 
 If `which iperf` returns nothing, install iperf
+
 ```
 sudo apt-get install iperf
 # the following should now return /usr/bin/iperf
@@ -105,6 +121,7 @@ which iperf
 ```
 
 Start iperf proxy, in a command line shell
+
 ```
 cd ~/AdvantEDGE/examples/demo1/bin/iperf-proxy
 ./iperf-proxy

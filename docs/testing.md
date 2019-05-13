@@ -15,20 +15,30 @@ Before running the tests, do the following:
 
 - [Build AdvantEDGE](build.md)
 - [Deploy AdvantEDGE](deploy.md)
-- Install the demo1 scenario:
+- Install the [demo1](../examples/demo1/README.md) & [demo2](../examples/demo2/README.md) scenarios:
   - [Import demo1 scenario](use/base-ops.md#import-demo1-scenario-in-advantedge)
-  - [demo1 scenario information](../examples/demo1/README.md)
+  - Use the same import procedure for demo2 scenario
 - Make sure there is no deployed scenario
+- [Install Cypress](#install-cypress)
+
+## Install Cypress
+
+To install Cypress run the following commands:
+
+```
+cd ~/AdvantEDGE/test
+npm ci
+```
 
 ## Run tests
 
-Test specification files are located [here](../js-apps/meep-frontend/cypress/integration/tests)
+Test specification files are located [here](../test/cypress/integration/tests)
 
 ### Cypress CLI
 
 ```
 # Run Cypress tests using CLI
-cd js-apps/meep-frontend
+cd ~/AdvantEDGE/test
 npm run cy:run
 ```
 
@@ -42,7 +52,7 @@ npm run cy:run
 
 ```
 # Run/Debug Cypress tests using GUI
-cd js-apps/meep-frontend
+cd ~/AdvantEDGE/test
 npm run cy:open
 ```
 

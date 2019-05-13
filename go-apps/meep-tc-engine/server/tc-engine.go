@@ -496,7 +496,7 @@ func parseScenario(scenario ceModel.Scenario) {
 							// Retrieve service ports
 							var servicePorts []ceModel.ServicePort
 							port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
-							if err != nil {
+							if err == nil {
 								var servicePort ceModel.ServicePort
 								servicePort.Port = int32(port)
 								servicePort.Protocol = userChartGroup[3]
