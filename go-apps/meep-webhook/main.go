@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ *
+ * NOTICE: File content based on https://github.com/morvencao/kube-mutating-webhook-tutorial (Apache 2.0)
+ */
+
 package main
 
 import (
