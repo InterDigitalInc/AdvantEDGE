@@ -1,8 +1,11 @@
 swagger: '2.0'
 info:
-  description: MEEP Mobility Group Manager Model
+  description: >
+    Copyright (c) 2019 InterDigital Communications, Inc.
+    All rights reserved.
+    The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc.
   version: 1.0.0
-  title: EEP Mobility Group Manager Model
+  title: MEEP Mobility Group Manager Model
 definitions:
   MobilityGroup:
     type: object
