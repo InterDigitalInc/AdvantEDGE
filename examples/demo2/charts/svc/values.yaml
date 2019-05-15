@@ -6,7 +6,7 @@ namespace: default
 
 deployment:
   image:
-    name: demo-server
+    name: advantedge-master.com:5000/demo-server
     pullpolicy: IfNotPresent
 
 service:
