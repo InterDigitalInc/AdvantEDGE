@@ -14,9 +14,9 @@ When multi-edge application instances are registered to the MG, the MG Manager i
 > *Note: The MG Manager uses the MG configuration to determine when to send events and which events to send to the application instances.*
 
 The Edge Application State Transfer & MEEP Controller REST API definitions can be found here:
-- [MEEP Mobility Group Manager REST API](../../interfaces/meep-mg-manager.yaml)
-- [MEEP Mobility Group Application REST API](../../interfaces/meep-mg-app-api-client.yaml)
-- [MEEP Controller REST API](../../interfaces/meep-ctrl-engine.yaml)
+- [MEEP Mobility Group Manager REST API](../../go-apps/meep-mg-manager/api/swagger.yaml)
+- [MEEP Mobility Group Application REST API](../../go-apps/meep-mg-manager/client-app-api/meep-mg-app-api-client.yaml)
+- [MEEP Controller REST API](../../go-apps/meep-ctrl-engine/api/swagger.yaml)
 
 ## Mobility Group Creation
 Mobility Groups are automatically created at scenario deployment time based on the multi-edge groups defined in the scenario.
