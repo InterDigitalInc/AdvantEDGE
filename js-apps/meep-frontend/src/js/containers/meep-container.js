@@ -191,7 +191,7 @@ class MeepContainer extends Component {
         clearInterval(this.refreshIntervalTimer);
       } else {
         clearInterval(this.refreshIntervalTimer);
-        // this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
+        this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
       }
     });
   }

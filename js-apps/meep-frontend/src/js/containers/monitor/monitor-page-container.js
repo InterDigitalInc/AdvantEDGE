@@ -162,7 +162,6 @@ const MainPane = (props) => {
 class MonitorPageContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
   }
 
   handleSelectionChange(e) {
@@ -179,7 +178,7 @@ class MonitorPageContainer extends Component {
   startEditMode() {
     const opts = JSON.parse(JSON.stringify(this.props.dashboardOptions));
     const options = _.map(opts, (op, index) => {
-      return {...op, selected: false, index: index};
+      return {...op, data: {selected: false}, index: index};
     });
     this.props.changeEditedDashboardOptions(options);
   }
@@ -196,7 +195,7 @@ class MonitorPageContainer extends Component {
     const newOptions = [...this.props.editedDashboardOptions, {
       label: '',
       value: '',
-      selected: false,
+      data: {selected: false},
       index: this.props.editedDashboardOptions.length
     }];
     this.props.changeEditedDashboardOptions(newOptions);
@@ -210,7 +209,7 @@ class MonitorPageContainer extends Component {
   }
 
   performDeleteOptions() {
-    const isNotSelected = (option) => !option.selected;
+    const isNotSelected = (option) => !option.data.selected;
 
     const options = pipe(
       filter(isNotSelected),
@@ -224,12 +223,16 @@ class MonitorPageContainer extends Component {
     this.showDialog(IDC_DIALOG_CONFIRM);
   }
 
+  isOptionSelected(option) {
+    return _.includes(this.state.selectedIndices, option.index);
+  }
+
   canDelete() {
     if (!this.props.editedDashboardOptions) {
       return false;
     }
 
-    let someSelected = _.reduce(this.props.editedDashboardOptions, (acc, option) => acc || option.selected);
+    let someSelected = _.reduce(this.props.editedDashboardOptions, (acc, option) => acc || option.data.selected);
 
     return someSelected;
   }
@@ -274,7 +277,7 @@ class MonitorPageContainer extends Component {
           deleteOptions={() => this.deleteSelectedOptions()}
           updateOptionLabel={(index, value) => this.updateOptionAttribute(index,'label', value)}
           updateOptionValue={(index, value) => this.updateOptionAttribute(index, 'value', value)}
-          updateOptionSelection={(index, value) => this.updateOptionAttribute(index, 'selected', value)}
+          updateOptionSelection={(index, value) => this.updateOptionAttribute(index, 'data', {selected: value})}
           canDelete={() => this.canDelete()}
         />
       </div>
