@@ -22,8 +22,8 @@ import meepReducer from './state/meep-reducer';
 
 // To uncomment when save state is fixed
 import {
-  saveState,
-  loadState
+  saveState
+  // loadState
 } from './util/persist';
 
 // UI Components

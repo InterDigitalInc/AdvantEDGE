@@ -54,6 +54,7 @@ const CorePodsLed = (props) => {
 const MeepTopBar = (props) => {
   /*eslint-disable */
   const logo = require('../../img/ID-Icon-01-idcc.svg');
+  const advantEdge = require('../../img/AdvantEDGE-logo-NoTagline_White_RGB.png');
   /*eslint-enable */
   return (
     <Toolbar>
@@ -66,6 +67,12 @@ const MeepTopBar = (props) => {
               src={logo}
               alt=""
               onClick={() => {props.toggleMainDrawer();}}
+            />
+            <img
+              id='AdvantEdgeLogo'
+              height={50}
+              src={advantEdge}
+              alt=''
             />
             <ToolbarTitle><span style={titleStyle}>{props.title}</span></ToolbarTitle>
           </ToolbarSection>

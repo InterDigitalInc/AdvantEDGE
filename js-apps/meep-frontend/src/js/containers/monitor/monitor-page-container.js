@@ -20,7 +20,7 @@ import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 
 import {
   IDC_DIALOG_CONFIRM,
-  uiChangeCurrentDialog,
+  uiChangeCurrentDialog
 } from '../../state/ui';
 
 import {
@@ -332,7 +332,7 @@ const mapDispatchToProps = dispatch => {
     changeDashboardUrl: (url) => dispatch(changeDashboardUrl(url)),
     changeEditedDashboardOptions: (mode) => dispatch(changeEditedDashboardOptions(mode)),
     changeDashboardOptions: (mode) => dispatch(changeDashboardOptions(mode)),
-    showDialog: (type) => dispatch(uiChangeCurrentDialog(type)),
+    showDialog: (type) => dispatch(uiChangeCurrentDialog(type))
   };
 };
 

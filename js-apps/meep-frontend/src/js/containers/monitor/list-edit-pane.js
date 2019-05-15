@@ -9,7 +9,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { Grid, GridCell } from '@rmwc/grid';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Button } from '@rmwc/button';
 

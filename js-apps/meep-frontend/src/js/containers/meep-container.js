@@ -71,8 +71,8 @@ import {
 } from '../state/ui';
 
 // MEEP Controller REST API JS client
-var basepath = 'http://' + location.host + location.pathname + 'v1';
-//var basepath = 'http://10.3.16.73:30000/v1';
+// var basepath = 'http://' + location.host + location.pathname + 'v1';
+var basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -360,7 +360,7 @@ class MeepContainer extends Component {
     return (
       <div style={{width: '100%'}}>
         <MeepTopBar
-          title="AdvantEDGE Controller"
+          title=""
           toggleMainDrawer={() => this.props.toggleMainDrawer()}
           corePodsRunning={this.props.corePodsRunning}
           corePodsErrors={this.props.corePodsErrors}
