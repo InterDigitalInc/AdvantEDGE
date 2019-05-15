@@ -1,0 +1,6 @@
+# Default values for generic values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+service:
+  name: "zone1-edge1-svc"

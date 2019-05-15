@@ -7,10 +7,11 @@ vendor/
 dist/
 bin/meep-ctrl-engine/meep-ctrl-engine
 bin/meep-frontend
-bin/meep-initializer/meep-initializer
+bin/meep-webhook/meep-webhook
 bin/meep-mg-manager/meep-mg-manager
 bin/meep-mon-engine/meep-mon-engine
 bin/meep-tc-engine/meep-tc-engine
 bin/meep-tc-sidecar/meep-tc-sidecar
 bin/meep-virt-engine/meep-virt-engine
 bin/meepctl
+examples/demo1/bin

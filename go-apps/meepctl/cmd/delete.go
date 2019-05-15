@@ -73,7 +73,7 @@ Valid groups:
 func deleteCore(cobraCmd *cobra.Command) {
 	k8sDelete("meep-virt-engine", cobraCmd)
 	deleteVirtEngine(cobraCmd)
-	k8sDelete("meep-initializer", cobraCmd)
+	k8sDelete("meep-webhook", cobraCmd)
 	k8sDelete("meep-mg-manager", cobraCmd)
 	k8sDelete("meep-tc-engine", cobraCmd)
 	k8sDelete("meep-mon-engine", cobraCmd)
@@ -110,36 +110,29 @@ func deleteDep(cobraCmd *cobra.Command) {
 	// NOTE: Helm charts don't remove pvc for statefulsets because helm did not create them
 	// Run in separate threads in order to complete uninstall successfully
 	messages := make(chan string)
-	go k8sDeletePvc("database-storage-couchdb-couchdb-0", cobraCmd, messages)
-	go k8sDeletePvc("data-elastic-elasticsearch-data-0", cobraCmd, messages)
-	go k8sDeletePvc("data-elastic-elasticsearch-master-0", cobraCmd, messages)
-	go k8sDeletePvc("data-elastic-elasticsearch-master-1", cobraCmd, messages)
+	go k8sDeletePvc("data-meep-elasticsearch-data-0", cobraCmd, messages)
+	go k8sDeletePvc("data-meep-elasticsearch-master-0", cobraCmd, messages)
+	go k8sDeletePvc("data-meep-elasticsearch-master-1", cobraCmd, messages)
 
 	k8sDelete("meep-redis", cobraCmd)
-	k8sDelete("kube-state-metrics", cobraCmd)
-	k8sDelete("metricbeat", cobraCmd)
-	k8sDelete("couchdb", cobraCmd)
-	k8sDelete("kibana", cobraCmd)
-	k8sDelete("filebeat", cobraCmd)
-	k8sDelete("curator", cobraCmd)
-	k8sDelete("elastic", cobraCmd)
+	k8sDelete("meep-kube-state-metrics", cobraCmd)
+	k8sDelete("meep-metricbeat", cobraCmd)
+	k8sDelete("meep-couchdb", cobraCmd)
+	k8sDelete("meep-kibana", cobraCmd)
+	k8sDelete("meep-filebeat", cobraCmd)
+	k8sDelete("meep-curator", cobraCmd)
+	k8sDelete("meep-elasticsearch", cobraCmd)
 
 	// Wait for all pvc delete routines to complete
-	// NOTE: Must be checked after deleting couchdb & elastic
-	for i := 0; i < 4; i++ {
+	// NOTE: Must be checked after deleting elastic
+	for i := 0; i < 3; i++ {
 		fmt.Println(<-messages)
 	}
 
 	// Local storage bindings
 	// @TODO move to respective charts
-	cmd := exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.couchdb.pv"))
+	cmd := exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.pv"))
 	out, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
-	}
-	cmd = exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.pv"))
-	out, err = utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		fmt.Println("Error:", err)
 		fmt.Println(out)

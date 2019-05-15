@@ -49,19 +49,17 @@ func ensureReleases(charts []Chart) error {
 func install(charts []Chart) error {
 	for _, c := range charts {
 		var cmd *exec.Cmd
-		if c.Type == "MEEP-TYPE" {
-			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "--replace")
-		} else { //c.Type == "USERCHART-TYPE"
-			if strings.Trim(c.AlternateValues, " ") == "" {
-				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "--replace")
-			} else {
-				cmd = exec.Command("helm", "install", "--name", c.ReleaseName, c.Location, "-f", c.AlternateValues, "--replace")
-			}
+		if strings.Trim(c.ValuesFile, " ") == "" {
+			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set",
+				"fullnameOverride="+c.ReleaseName, c.Location, "--replace")
+		} else {
+			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set",
+				"fullnameOverride="+c.ReleaseName, c.Location, "-f", c.ValuesFile, "--replace")
 		}
-		_, err := cmd.CombinedOutput()
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			err = errors.New("Failed to install Release [" + c.ReleaseName + "] at " + c.Location)
-			log.Error(err)
+			log.Error("Failed to install Release [" + c.ReleaseName + "] at " + c.Location)
+			log.Error("Error(", err.Error(), "): ", string(out))
 			return err
 		}
 	}

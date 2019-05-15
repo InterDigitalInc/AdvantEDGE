@@ -39,7 +39,7 @@ Valid targets:`,
     meepctl dockerize meep-ctrl-engine
 			`,
 	Args:      cobra.ExactValidArgs(1),
-	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-initializer", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar"},
+	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar"},
 	Run: func(cmd *cobra.Command, args []string) {
 		target := ""
 		if len(args) > 0 {

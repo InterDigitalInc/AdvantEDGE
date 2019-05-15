@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep.fullname" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "meep.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ template "meep.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: iperf
+          image: {{ .Values.deployment.image.name }}
+          imagePullPolicy: {{ .Values.deployment.image.pullpolicy }}
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - export; iperf -s -p $IPERF_SERVICE_PORT;

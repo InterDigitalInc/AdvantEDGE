@@ -99,7 +99,7 @@ var corePodsNameMap = [...]string{
 	"kibana",
 	"kube-state-metrics",
 	"meep-ctrl-engine",
-	"meep-initializer",
+	"meep-webhook",
 	"meep-mg-manager",
 	"meep-mon-engine",
 	"meep-redis",

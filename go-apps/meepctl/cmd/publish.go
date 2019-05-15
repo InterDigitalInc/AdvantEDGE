@@ -57,9 +57,7 @@ Core images are pushed from local-registry/core-repo:latest to registry/core-rep
 		publishImage(cmd, registry, "meep-tc-engine", tag)
 		publishImage(cmd, registry, "meep-tc-sidecar", tag)
 		publishImage(cmd, registry, "meep-mg-manager", tag)
-		publishImage(cmd, registry, "meep-initializer", tag)
-		publishImage(cmd, registry, "iperf-transit-app-svr", tag)
-		publishImage(cmd, registry, "demo-svc-app-svr", tag)
+		publishImage(cmd, registry, "meep-webhook", tag)
 		elapsed := time.Since(start)
 		if t {
 			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())

@@ -22,7 +22,6 @@ import (
 	"github.com/gorilla/mux"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine/log"
-	tce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-tc-engine-client"
 	ve "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client"
 )
 
@@ -41,7 +40,6 @@ const NOUP = "2"
 const NB_CORE_PODS = 9 //although virt-engine is not a pod yet... it is considered as one as is appended to the list of pods
 
 var virtEngine *ve.APIClient
-var tcEngine *tce.APIClient
 
 var db *kivik.DB
 
@@ -50,14 +48,14 @@ var clientServiceMapList []ClientServiceMap
 func getCorePodsList() map[string]bool {
 
 	innerMap := map[string]bool{
-		"couchdb-couchdb-0": false,
-		"meep-ctrl-engine":  false,
-		"meep-initializer":  false,
-		"meep-mg-manager":   false,
-		"meep-mon-engine":   false,
-		"meep-tc-engine":    false,
-		"metricbeat":        false,
-		"virt-engine":       false,
+		"meep-couchdb":     false,
+		"meep-ctrl-engine": false,
+		"meep-webhook":     false,
+		"meep-mg-manager":  false,
+		"meep-mon-engine":  false,
+		"meep-tc-engine":   false,
+		"meep-metricbeat":  false,
+		"virt-engine":      false,
 	}
 	return innerMap
 }
@@ -67,7 +65,7 @@ func connectDb(dbName string) (*kivik.DB, error) {
 
 	// Connect to Couch DB
 	log.Debug("Establish new couchDB connection")
-	dbClient, err := kivik.New(context.TODO(), "couch", "http://couchdb-svc-couchdb:5984/")
+	dbClient, err := kivik.New(context.TODO(), "couch", "http://meep-couchdb-svc-couchdb:5984/")
 	if err != nil {
 		return nil, err
 	}
@@ -304,16 +302,6 @@ func CtrlEngineInit() (err error) {
 	}
 	log.Info("Created Virt Engine client")
 
-	// Create client for TC Controller API
-	tcCfg := tce.NewConfiguration()
-	tcCfg.BasePath = "http://meep-tc-engine/v1"
-	tcEngine = tce.NewAPIClient(tcCfg)
-	if tcEngine == nil {
-		log.Debug("Cannot find the TC Engine API")
-		return err
-	}
-	log.Info("Created TC Engine client")
-
 	return nil
 }
 
@@ -526,30 +514,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Activate scenario in virtualization Engine
 	//lint:ignore SA1012 context.TODO not supported here
-	_, err = virtEngine.ScenarioDeploymentApi.ActivateScenario(nil, veScenario)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		_ = removeScenario(db, activeScenarioName)
-		return
-	}
-
-	// Apply network characteristics on active scenario
-
-	// !!!!! IMPORTANT NOTE !!!!!
-	// Active scenario stored in DB is unmarshalled into a TC Engine Scenario object
-	var tceScenario tce.Scenario
-	err = getScenario(false, db, activeScenarioName, &tceScenario)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		_ = removeScenario(db, activeScenarioName)
-		return
-	}
-
-	// Activate scenario in TC Controller
-	//lint:ignore SA1012 context.TODO not supported here
-	resp, err := tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
+	resp, err := virtEngine.ScenarioDeploymentApi.ActivateScenario(nil, veScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -727,13 +692,6 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 	}
 
-	// Terminate scenario in TC Controller
-	//lint:ignore SA1012 context.TODO not supported here
-	_, err = tcEngine.ScenarioDeploymentApi.DeleteNetworkCharacteristicsTable(nil)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
 	// Terminate scenario in virtualization Engine
 	//lint:ignore SA1012 context.TODO not supported here
 	resp, err := virtEngine.ScenarioDeploymentApi.TerminateScenario(nil, scenario.Name)
@@ -856,23 +814,6 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 	//    - Update any deployed location services
 	//    - Inform monitoring engine?
 
-	// Inform TC Controller of updated scenario
-
-	// !!!!! IMPORTANT NOTE !!!!!
-	// Active scenario stored in DB is unmarshalled into a TC Scenario object
-	var tceScenario tce.Scenario
-	err = getScenario(false, db, activeScenarioName, &tceScenario)
-	if err != nil {
-		return err.Error(), http.StatusNotFound
-	}
-
-	// Activate scenario in TC Controller
-	//lint:ignore SA1012 context.TODO not supported here
-	_, err = tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
-	if err != nil {
-		return err.Error(), http.StatusNotFound
-	}
-
 	return "", -1
 }
 
@@ -945,23 +886,6 @@ func sendEventUeMobility(event Event) (string, int) {
 		// TODO in Execution Engine:
 		//    - Update any deployed location services
 		//    - Inform monitoring engine?
-
-		// Inform TC Controller of updated scenario
-
-		// !!!!! IMPORTANT NOTE !!!!!
-		// Active scenario stored in DB is unmarshalled into a TC Scenario object
-		var tceScenario tce.Scenario
-		err = getScenario(false, db, activeScenarioName, &tceScenario)
-		if err != nil {
-			return err.Error(), http.StatusNotFound
-		}
-
-		// Activate scenario in TC Controller
-		//lint:ignore SA1012 context.TODO not supported here
-		_, err = tcEngine.ScenarioDeploymentApi.ActivateScenario(nil, tceScenario)
-		if err != nil {
-			return err.Error(), http.StatusNotFound
-		}
 
 	} else {
 		err := "Failed to find UE or destination PoA"

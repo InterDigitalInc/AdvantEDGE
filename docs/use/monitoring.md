@@ -18,8 +18,11 @@ To access Kibana frontend, open AdvantEDGE frontend `<your-node-ipaddress>:30000
 This will open a new browser tab with the Kibana frontend in it.
 
 ## Configure Monitoring
-Prior to using the monitoring pipeline, it is necessary to configure it.<br>
-Configuration is done by issuing the meepctl command as follow:<br>
-'meepctl config kibana'<br>
+Prior to using the monitoring pipeline, it is necessary to configure it.
+Configuration is done by issuing the following command:
+
+'''
+meepctl config kibana
+'''
 
 As a result, all the saved objects needed to populate Kibana's dashboards and index pattern are set.

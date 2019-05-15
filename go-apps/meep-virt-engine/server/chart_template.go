@@ -11,6 +11,8 @@ package server
 
 import (
 	"os"
+	"os/user"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -26,41 +28,34 @@ const SERVICE_NODE_PORT_MAX = 32767
 const DEFAULT_DUMMY_CONTAINER_IMAGE = "nginx"
 
 type DeploymentTemplate struct {
-	Enabled                   string
-	Name                      string
-	ReplicaCount              string
-	ApiVersion                string
-	MatchLabels               []string
-	TemplateNamespace         string
-	TemplateLabels            []string
-	ContainerName             string
-	ContainerImageRepository  string
-	ContainerImagePullPolicy  string
-	ContainerEnvEnabled       string
-	ContainerEnv              []string
-	ContainerCommandEnabled   string
-	ContainerCommand          []string
-	ContainerCommandArg       []string
-	ContainerPort             string
-	ContainerProtocol         string
-	SidecarEnabled            string
-	SidecarName               string
-	SidecarImageRepository    string
-	SidecarImageRepositoryTag string
-	SidecarImagePullPolicy    string
+	Enabled                  string
+	Name                     string
+	ReplicaCount             string
+	ApiVersion               string
+	MatchLabels              []string
+	TemplateLabels           []string
+	ContainerName            string
+	ContainerImageRepository string
+	ContainerImagePullPolicy string
+	ContainerEnvEnabled      string
+	ContainerEnv             []string
+	ContainerCommandEnabled  string
+	ContainerCommand         []string
+	ContainerCommandArg      []string
+	ContainerPort            string
+	ContainerProtocol        string
 }
 
 type ServiceTemplate struct {
-	Enabled           string
-	Name              string
-	Namespace         string
-	Labels            []string
-	Selector          []string
-	Type              string
-	Ports             []ServicePortTemplate
-	MeServiceEnabled  string
-	MeServiceName     string
-	MeServiceSelector []string
+	Enabled          string
+	Name             string
+	Namespace        string
+	Labels           []string
+	Selector         []string
+	Type             string
+	Ports            []ServicePortTemplate
+	MeServiceEnabled string
+	MeServiceName    string
 }
 
 type ServicePortTemplate struct {
@@ -87,14 +82,14 @@ type ServiceMapTemplate struct {
 
 // helm values.yaml template
 type ScenarioTemplate struct {
-	Deployment           DeploymentTemplate
-	Service              ServiceTemplate
-	External             ExternalTemplate
-	ServiceaccountCreate string
-	RbacCreate           string
-	NamespaceCreate      string
-	NamespaceName        string
+	Deployment    DeploymentTemplate
+	Service       ServiceTemplate
+	External      ExternalTemplate
+	NamespaceName string
 }
+
+// Service map
+var serviceMap map[string]string
 
 func addTemplateLabel(deploymentTemplate *DeploymentTemplate, label string) {
 	deploymentTemplate.TemplateLabels = append(deploymentTemplate.TemplateLabels, label)
@@ -112,10 +107,6 @@ func addSelector(serviceTemplate *ServiceTemplate, selector string) {
 	serviceTemplate.Selector = append(serviceTemplate.Selector, selector)
 }
 
-func addMeSelector(serviceTemplate *ServiceTemplate, selector string) {
-	serviceTemplate.MeServiceSelector = append(serviceTemplate.MeServiceSelector, selector)
-}
-
 func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 	externalTemplate.Selector = append(externalTemplate.Selector, selector)
 }
@@ -123,8 +114,7 @@ func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 
 	var charts []helm.Chart
-	serviceMap := map[string]string{}
-	onlySetOnce := false
+	serviceMap = map[string]string{}
 
 	// Parse domains
 	for _, domain := range scenario.Deployment.Domains {
@@ -144,29 +134,66 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 						externalTemplate := &scenarioTemplate.External
 						setScenarioDefaults(&scenarioTemplate)
 
-						if proc.UserChartLocation == "" {
+						// Fill general scenario template information
+						scenarioTemplate.NamespaceName = scenario.Name
+						deploymentTemplate.Name = proc.Name
 
-							// Fill scenario template information
-							scenarioTemplate.NamespaceName = scenario.Name
+						// Create charts
+						if proc.UserChartLocation != "" {
+							log.Debug("Processing user-defined chart for element[", proc.Name, "]")
+
+							// Add user-defined chart
+							newChart := createChart(scenario.Name+"-"+proc.Name, getFullPath(proc.UserChartLocation),
+								getFullPath(proc.UserChartAlternateValues))
+							charts = append(charts, newChart)
+							log.Debug("user chart added ", len(charts))
+
+							// Parse User Chart Group to find new group services
+							// Create charts only for group services that do not exist yet
+							// Format: <service instance name>:[group service name]:<port>:<protocol>
+							userChartGroup := strings.Split(proc.UserChartGroup, ":")
+							meSvcName := userChartGroup[1]
+							if meSvcName != "" {
+								if _, found := serviceMap[meSvcName]; !found {
+									serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+									serviceTemplate.MeServiceEnabled = "true"
+									serviceTemplate.MeServiceName = meSvcName
+									addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+
+									serviceTemplate.Namespace = scenario.Name
+									addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
+
+									// NOTE: Every service within a group must expose the same port & protocol
+									var portTemplate ServicePortTemplate
+									portTemplate.Port = userChartGroup[2]
+									portTemplate.Protocol = userChartGroup[3]
+									serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
+
+									// Create chart files
+									chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
+									if err != nil {
+										log.Debug("yaml creation file process: ", err)
+										return nil, err
+									}
+
+									// Create virt-engine chart for new group service
+									newChart := createChart(scenario.Name+"-"+proc.Name+"-svc", chartLocation, "")
+									charts = append(charts, newChart)
+									log.Debug("chart added for user chart group service ", len(charts))
+								}
+							}
+						} else {
+							log.Debug("Processing virt-engine chart for element[", proc.Name, "]")
 
 							// Fill deployment template information
 							deploymentTemplate.Enabled = "true"
-							deploymentTemplate.Name = proc.Name
-							deploymentTemplate.TemplateNamespace = scenario.Name
 							deploymentTemplate.ContainerName = proc.Name
 							deploymentTemplate.ContainerImageRepository = proc.Image
 							deploymentTemplate.ContainerImagePullPolicy = "IfNotPresent"
-							deploymentTemplate.SidecarEnabled = "true"
-							deploymentTemplate.SidecarName = "meep-tc-sidecar"
-							deploymentTemplate.SidecarImageRepository = "meep-tc-sidecar"
-							deploymentTemplate.SidecarImageRepositoryTag = "latest"
-							deploymentTemplate.SidecarImagePullPolicy = "IfNotPresent"
 							setEnv(deploymentTemplate, proc.Environment)
 							setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
-							addMatchLabel(deploymentTemplate, "meepApp: "+proc.Id)
-							addTemplateLabel(deploymentTemplate, "processId: "+proc.Id)
-							addTemplateLabel(deploymentTemplate, "meepScenario: "+scenario.Name)
-							addTemplateLabel(deploymentTemplate, "meepApp: "+proc.Id)
+							addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+							addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
 
 							// Enable Service template if present
 							if proc.ServiceConfig != nil {
@@ -181,14 +208,13 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 								addTemplateLabel(deploymentTemplate, "meepSvc: "+svcName)
 
 								// Create and store ME Service template only with first occurrence.
-								// If it already exists then add the matching pod label but don't creat the service again.
+								// If it already exists then add the matching pod label but don't create the service again.
 								meSvcName := proc.ServiceConfig.MeSvcName
 								if meSvcName != "" {
 									if _, found := serviceMap[meSvcName]; !found {
 										serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
 										serviceTemplate.MeServiceEnabled = "true"
 										serviceTemplate.MeServiceName = meSvcName
-										addMeSelector(serviceTemplate, "meepMeSvc: "+meSvcName)
 									}
 									addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
 									addTemplateLabel(deploymentTemplate, "meepMeSvc: "+meSvcName)
@@ -215,7 +241,7 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 							// Enable External template if set
 							if proc.IsExternal {
 								externalTemplate.Enabled = "true"
-								addExtSelector(externalTemplate, "meepApp: "+proc.Id)
+								addExtSelector(externalTemplate, "meepAppId: "+proc.Id)
 
 								// Add ingress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
@@ -240,69 +266,17 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 								}
 							}
 
-							if !onlySetOnce {
-								// TODO -- DO NOT CALL THIS FOR DEFAULT NAMESPACE
-								// setExtras(&scenarioTemplate)
-								onlySetOnce = true
-							}
-
+							// Create chart files
 							chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
 							if err != nil {
 								log.Debug("yaml creation file process: ", err)
 								return nil, err
 							}
-							newChart := createChart(chartLocation, scenario.Name+"-"+proc.Name)
+
+							// Create virt-engine chart
+							newChart := createChart(scenario.Name+"-"+proc.Name, chartLocation, "")
 							charts = append(charts, newChart)
 							log.Debug("chart added ", len(charts))
-						} else {
-							newChart := createUserChart(proc.UserChartLocation, proc.UserChartAlternateValues, "", scenario.Name+"-"+proc.Name)
-							charts = append(charts, newChart)
-							log.Debug("user chart added ", len(charts))
-
-							userChartGroupElement := strings.Split(proc.UserChartGroup, ":")
-
-							//create top level service for the first time only
-							if proc.ServiceConfig != nil {
-								meSvcName := userChartGroupElement[1]
-								if meSvcName != "" {
-
-									if _, found := serviceMap[meSvcName]; !found {
-										serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-
-										serviceTemplate.MeServiceEnabled = "true"
-										serviceTemplate.MeServiceName = meSvcName
-										addMeSelector(serviceTemplate, "meepMeSvc: "+meSvcName)
-
-										addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
-
-										serviceTemplate.Namespace = scenario.Name
-										addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
-
-										// Create and store ME Service template only with first occurrence.
-										// If it already exists then add the matching pod label but don't creat the service again.
-
-										var portTemplate ServicePortTemplate
-										portTemplate.Port = userChartGroupElement[2]
-										portTemplate.Protocol = userChartGroupElement[3]
-
-										serviceTemplate.Type = "ClusterIP"
-										serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
-
-										//values needed to create the helm chart in ~/.meep
-										scenarioTemplate.NamespaceName = scenario.Name
-										deploymentTemplate.ContainerName = proc.Name
-
-										chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
-										if err != nil {
-											log.Debug("yaml creation file process: ", err)
-											return nil, err
-										}
-										newChart := createChart(chartLocation, scenario.Name+"-"+proc.Name+"svc")
-										charts = append(charts, newChart)
-										log.Debug("chart added for top lvl service ", len(charts))
-									}
-								}
-							}
 						}
 					}
 				}
@@ -311,39 +285,37 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 	}
 
 	return charts, nil
-
 }
 
-func createChart(chartLocation string, name string) helm.Chart {
-	var c helm.Chart
-	c.Type = "MEEP-TYPE"
-	c.ReleaseName = "meep-" + name
-	c.ChartName = name
-	c.Location = chartLocation
-	return c
+func createChart(name string, chartLocation string, valuesFile string) helm.Chart {
+	var chart helm.Chart
+	chart.ChartName = name
+	chart.ReleaseName = "meep-" + name
+	chart.Location = chartLocation
+	chart.ValuesFile = valuesFile
+	return chart
 }
 
-func createUserChart(chartLocation string, altValueFile string, params string, name string) helm.Chart {
-	var c helm.Chart
-	c.Type = "USERCHART-TYPE"
-	c.ReleaseName = "meep-" + name
-	c.ChartName = name
-	c.Location = chartLocation
-	c.AlternateValues = altValueFile
-	c.Parameters = params
-	return c
-}
+func getFullPath(path string) string {
+	fullPath := path
 
-// func setExtras(scenarioTemplate *ScenarioTemplate) {
-// 	scenarioTemplate.ServiceaccountCreate = "true"
-// 	scenarioTemplate.RbacCreate = "true"
-// 	scenarioTemplate.NamespaceCreate = "true"
-// }
+	// Get home directory
+	usr, err := user.Current()
+	if err != nil {
+		return fullPath
+	}
+	homeDir := usr.HomeDir
+
+	// Replace ~ with home directory
+	if path == "~" {
+		fullPath = homeDir
+	} else if strings.HasPrefix(path, "~/") {
+		fullPath = filepath.Join(homeDir, path[2:])
+	}
+	return fullPath
+}
 
 func setScenarioDefaults(scenarioTemplate *ScenarioTemplate) {
-	scenarioTemplate.NamespaceCreate = "false"
-	scenarioTemplate.ServiceaccountCreate = "false"
-	scenarioTemplate.RbacCreate = "false"
 	setDeploymentDefaults(&scenarioTemplate.Deployment)
 	setServiceDefaults(&scenarioTemplate.Service)
 	setExternalDefaults(&scenarioTemplate.External)
@@ -353,7 +325,6 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.Enabled = "false"
 	deploymentTemplate.ReplicaCount = "1"
 	deploymentTemplate.ApiVersion = "v1"
-	deploymentTemplate.SidecarEnabled = "false"
 	deploymentTemplate.ContainerEnvEnabled = "false"
 	deploymentTemplate.ContainerCommandEnabled = "false"
 }
@@ -431,7 +402,7 @@ func createYamlScenarioFiles(scenarioTemplate ScenarioTemplate) (string, error) 
 		return "", err
 	}
 
-	outputDirPath := homePath + "/.meep/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.ContainerName
+	outputDirPath := homePath + "/.meep/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.Name
 	log.Debug("Creation of the output path ", outputDirPath)
 
 	_ = CopyDir(templateDefaultDir, outputDirPath)

@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  {{- if (eq "" .Values.service.name) }}
+  name: {{ template "meep.fullname" . }}
+  {{- else }}
+  name: {{ .Values.service.name }}
+  {{- end }}
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ template "meep.name" . }}
+    release: {{ .Release.Name }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.port }}
+    protocol: {{ .Values.service.protocol }}
+

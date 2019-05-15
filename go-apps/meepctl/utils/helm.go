@@ -81,7 +81,7 @@ func HelmInstall(name string, chart string, flags [][]string, cobraCmd *cobra.Co
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
 	start := time.Now()
-	cmd := exec.Command("helm", "install", "--name", name, chart, "--replace")
+	cmd := exec.Command("helm", "install", "--name", name, "--set", "fullnameOverride="+name, chart, "--replace")
 	for _, f := range flags {
 		cmd.Args = append(cmd.Args, f[0])
 		cmd.Args = append(cmd.Args, f[1])
@@ -92,7 +92,7 @@ func HelmInstall(name string, chart string, flags [][]string, cobraCmd *cobra.Co
 	out, err := cmd.CombinedOutput()
 	elapsed := time.Since(start)
 	if err != nil {
-		err = errors.New("Error intalling component [" + name + "]")
+		err = errors.New("Error installing component [" + name + "]")
 		fmt.Println(err)
 	} else {
 		r := FormatResult("Deployed "+name, elapsed, cobraCmd)

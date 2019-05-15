@@ -15,7 +15,6 @@ fi
 $BASEDIR/../demo-client/js/build.sh
 
 # Build Web UI Distribution using Webpack config
-echo "Building Demo Service Frontend Web UI"
 cd $BASEDIR
 npm ci
 rm -r $BASEDIR/dist
