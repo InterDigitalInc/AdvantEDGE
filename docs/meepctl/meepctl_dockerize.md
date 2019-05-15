@@ -14,7 +14,7 @@ the local Docker registry.
 Valid targets:
   * all
   * meep-ctrl-engine
-  * meep-initializer
+  * meep-webhook
   * meep-mg-manager
   * meep-mon-engine
   * meep-tc-engine
