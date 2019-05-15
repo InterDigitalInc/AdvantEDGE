@@ -43,32 +43,40 @@ func ExecuteCmd(cmd *exec.Cmd, cobraCmd *cobra.Command) (output string, err erro
 	return output, err
 }
 
-// KillProcess kill a process by name
-func KillProcess(name string, cobraCmd *cobra.Command) {
+// GetProcess get a running process ID by name
+func GetProcess(name string, cobraCmd *cobra.Command) (string, error) {
 	cmd := exec.Command("pidof", name)
 	pid, err := ExecuteCmd(cmd, cobraCmd)
-	if err == nil {
-		pid = strings.TrimSuffix(pid, "\n")
-		cmd = exec.Command("kill", "-9", pid)
-		_, err = ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			fmt.Println("Error terminating " + name)
-			fmt.Println(err)
-		}
+	if err != nil {
+		return pid, err
+	}
+	pid = strings.TrimSuffix(pid, "\n")
+	return pid, nil
+}
+
+// WaitProcess get a running process ID by name
+func WaitProcess(pid string, timeout string, cobraCmd *cobra.Command) error {
+	cmd := exec.Command("timeout", timeout, "tail", "--pid="+pid, "-f", "/dev/null")
+	_, err := ExecuteCmd(cmd, cobraCmd)
+	return err
+}
+
+// KillProcess kill a process by PID
+func KillProcess(pid string, cobraCmd *cobra.Command) {
+	cmd := exec.Command("kill", "-9", pid)
+	_, err := ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error terminating " + pid)
+		fmt.Println(err)
 	}
 }
 
-// InterruptProcess SIGINT a process by name
-func InterruptProcess(name string, cobraCmd *cobra.Command) {
-	cmd := exec.Command("pidof", name)
-	pid, err := ExecuteCmd(cmd, cobraCmd)
-	if err == nil {
-		pid = strings.TrimSuffix(pid, "\n")
-		cmd = exec.Command("kill", "-2", pid)
-		_, err = ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			fmt.Println("Error interrupting " + name)
-			fmt.Println(err)
-		}
+// InterruptProcess SIGINT a process by PID
+func InterruptProcess(pid string, cobraCmd *cobra.Command) {
+	cmd := exec.Command("kill", "-2", pid)
+	_, err := ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error interrupting " + pid)
+		fmt.Println(err)
 	}
 }
