@@ -20,7 +20,7 @@ repo:
       src: js-apps/meep-frontend
       bin: bin/meep-frontend
       codecov: false
-      lint: false
+      lint: true
       local-deps:
         meep-ctrl-engine-api: js-packages/meep-ctrl-engine-client
     meep-webhook:
