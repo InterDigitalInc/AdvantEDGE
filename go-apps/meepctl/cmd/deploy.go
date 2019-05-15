@@ -110,7 +110,7 @@ func init() {
 }
 
 func ensureCoreStorage(cobraCmd *cobra.Command) {
-	workdir := viper.GetString("meep.workdir")
+	workdir := viper.GetString("meep.workdir") + "/"
 
 	// Local storage strucutre
 	cmd := exec.Command("mkdir", "-p", workdir)
@@ -122,18 +122,18 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 
 	//templates
 	templatedir := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.core.meep-virt-engine.template")
-	cmd = exec.Command("rm", "-rf", workdir+"/template-bak")
+	cmd = exec.Command("rm", "-rf", workdir+"template-bak")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("mv", workdir+"/template", workdir+"/template-bak")
+	cmd = exec.Command("mv", workdir+"template", workdir+"template-bak")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("cp", "-r", templatedir, workdir+"/template")
+	cmd = exec.Command("cp", "-r", templatedir, workdir+"template")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	//codecov
-	cmd = exec.Command("rm", "-rf", workdir+"/codecov-bak")
+	cmd = exec.Command("rm", "-rf", workdir+"codecov-bak")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("mv", workdir+"/codecov", workdir+"/codecov-bak")
+	cmd = exec.Command("mv", workdir+"codecov", workdir+"codecov-bak")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("mkdir", "-p", workdir+"/codecov")
+	cmd = exec.Command("mkdir", "-p", workdir+"codecov")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	for _, targetName := range buildCmd.ValidArgs {
 		if targetName == "all" {
@@ -141,25 +141,25 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 		}
 		codecovCapable := utils.RepoCfg.GetBool("repo.core." + targetName + ".codecov")
 		if codecovCapable {
-			cmd = exec.Command("mkdir", "-p", workdir+"/codecov/"+targetName)
+			cmd = exec.Command("mkdir", "-p", workdir+"codecov/"+targetName)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
 	//certs
-	cmd = exec.Command("mkdir", "-p", workdir+"/certs")
+	cmd = exec.Command("mkdir", "-p", workdir+"certs")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
 func ensureDepStorage(cobraCmd *cobra.Command) {
-	workdir := viper.GetString("meep.workdir")
+	workdir := viper.GetString("meep.workdir") + "/"
 
 	// Local storage structure
 	cmd := exec.Command("mkdir", "-p", workdir)
-	cmd.Args = append(cmd.Args, workdir+"/couchdb")
-	cmd.Args = append(cmd.Args, workdir+"/es-data")
-	cmd.Args = append(cmd.Args, workdir+"/es-master-0")
-	cmd.Args = append(cmd.Args, workdir+"/es-master-1")
-	cmd.Args = append(cmd.Args, workdir+"/kibana")
+	cmd.Args = append(cmd.Args, workdir+"couchdb")
+	cmd.Args = append(cmd.Args, workdir+"es-data")
+	cmd.Args = append(cmd.Args, workdir+"es-master-0")
+	cmd.Args = append(cmd.Args, workdir+"es-master-1")
+	cmd.Args = append(cmd.Args, workdir+"kibana")
 
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
@@ -168,25 +168,25 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	}
 
 	//copy the yaml files in workdir and apply a modification to the tmp file, original is untouched
-	cmd = exec.Command("mkdir", "-p", workdir+"/tmp")
+	cmd = exec.Command("mkdir", "-p", workdir+"tmp")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	pvES := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.elastic.es.pv")
-	cmd = exec.Command("cp", pvES, workdir+"/tmp/meep-pv-es.yaml")
+	cmd = exec.Command("cp", pvES, workdir+"tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	valuesFB := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.dep.elastic.filebeat.values")
-	cmd = exec.Command("cp", valuesFB, workdir+"/tmp/filebeat-values.yaml")
+	cmd = exec.Command("cp", valuesFB, workdir+"tmp/filebeat-values.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	//search and replace in yaml fil
 	tmpStr := strings.Replace(workdir, "/", "\\/", -1)
 	str := "s/<WORKDIR>/" + tmpStr + "/g"
-	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/meep-pv-es.yaml")
+	cmd = exec.Command("sed", "-i", str, workdir+"tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("sed", "-i", str, workdir+"/tmp/filebeat-values.yaml")
+	cmd = exec.Command("sed", "-i", str, workdir+"tmp/filebeat-values.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	// Local storage bindings
 	// @TODO move to respective chart
-	cmd = exec.Command("kubectl", "apply", "-f", workdir+"/tmp/meep-pv-es.yaml")
+	cmd = exec.Command("kubectl", "apply", "-f", workdir+"tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
@@ -204,76 +204,41 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 
 	//---
 	repo := "meep-ctrl-engine"
-	flags := utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
-	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
-	codecovCapable := utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	if deployCodecov && codecovCapable {
-		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
-	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-ctrl-engine.chart"), flags, cobraCmd)
+	chart := gitdir + utils.RepoCfg.GetString("repo.core.meep-ctrl-engine.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
 	repo = "meep-mon-engine"
-	flags = utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
-	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
-	codecovCapable = utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	if deployCodecov && codecovCapable {
-		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
-	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-mon-engine.chart"), flags, cobraCmd)
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-mon-engine.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
 	repo = "meep-tc-engine"
-	flags = utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
-	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
-	codecovCapable = utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	if deployCodecov && codecovCapable {
-		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
-	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-tc-engine.chart"), flags, cobraCmd)
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-tc-engine.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
 	repo = "meep-mg-manager"
-	flags = utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
-	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
-	codecovCapable = utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	if deployCodecov && codecovCapable {
-		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
-	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-mg-manager.chart"), flags, cobraCmd)
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-mg-manager.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
 	repo = "meep-webhook"
-	chartdir := gitdir + utils.RepoCfg.GetString("repo.core.meep-webhook.chart")
-	certdir := workdir + "certs"
-	cmd := exec.Command("sh", "-c", chartdir+"/webhook-create-signed-cert.sh --certdir "+certdir)
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-cert.pem | base64 -w0")
-	cert, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-key.pem | base64 -w0")
-	key, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("kubectl", "config", "view", "--raw", "--minify", "--flatten", "-o=jsonpath='{.clusters[].cluster.certificate-authority-data}'")
-	cabundle, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	flags = utils.HelmFlags(nil, "", "")
-	flags = utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
-	flags = utils.HelmFlags(flags, "--set", "image.tag="+tag)
-	flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-webhook.chart")
+	cert, key, cabundle := createWebhookCerts(chart, workdir+"certs", cobraCmd)
+	flags := utils.HelmFlags(nil, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
 	flags = utils.HelmFlags(flags, "--set", "sidecar.image.tag="+tag)
 	flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 	flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 	flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
-	codecovCapable = utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	if deployCodecov && codecovCapable {
-		flags = utils.HelmFlags(flags, "--set", "codecov.enabled=true")
-	}
-	k8sDeploy(repo, gitdir+utils.RepoCfg.GetString("repo.core.meep-webhook.chart"), flags, cobraCmd)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
-	deployVirtEngine(cobraCmd)
+	repo = "meep-virt-engine"
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
+	flags = utils.HelmFlags(nil, "--set", "service.ip="+viper.GetString("node.ip"))
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	deployVirtEngineExt(repo, cobraCmd)
 }
 
 func deployDep(cobraCmd *cobra.Command) {
 	gitDir := viper.GetString("meep.gitdir") + "/"
-	workdir := viper.GetString("meep.workdir")
+	workdir := viper.GetString("meep.workdir") + "/"
 
 	// Storage
 	ensureDepStorage(cobraCmd)
@@ -291,19 +256,19 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	repo = "meep-kibana"
 	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart")
-	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"/kibana/")
+	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"kibana/")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	// Value file is modified, use the tmp/ version
 	repo = "meep-filebeat"
 	chart = utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
 	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.filebeat.version"))
-	flags = utils.HelmFlags(flags, "--values", workdir+"/tmp/filebeat-values.yaml")
+	flags = utils.HelmFlags(flags, "--values", workdir+"tmp/filebeat-values.yaml")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-couchdb"
 	chart = gitDir + utils.RepoCfg.GetString("repo.dep.couchdb.chart")
-	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"/couchdb/")
+	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"couchdb/")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-redis"
@@ -321,6 +286,16 @@ func deployDep(cobraCmd *cobra.Command) {
 	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
 	flags = utils.HelmFlags(nil, "--set", "image.pullPolicy=IfNotPresent")
 	k8sDeploy(repo, chart, flags, cobraCmd)
+}
+
+func k8sDeployCore(repo string, registry string, tag string, chart string, flags [][]string, cobraCmd *cobra.Command) {
+	coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+registry+repo)
+	coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+tag)
+	codecovCapable := utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
+	if deployCodecov && codecovCapable {
+		coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
+	}
+	k8sDeploy(repo, chart, coreFlags, cobraCmd)
 }
 
 func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra.Command) {
@@ -341,20 +316,27 @@ func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra
 	_ = utils.HelmInstall(component, chart, flags, cobraCmd)
 }
 
-func deployVirtEngine(cobraCmd *cobra.Command) {
-	// MEEP Virtualization Engine - both int. & ext. components
+func deployVirtEngineExt(component string, cobraCmd *cobra.Command) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	flags := utils.HelmFlags(nil, "--set", "service.ip="+viper.GetString("node.ip"))
-	repo := "meep-virt-engine"
-	workdir := viper.GetString("meep.workdir")
-
+	force, _ := cobraCmd.Flags().GetBool("force")
+	gitDir := viper.GetString("meep.gitdir") + "/"
+	workdir := viper.GetString("meep.workdir") + "/"
 	start := time.Now()
-	// first, in cluster components
-	k8sDeploy(repo, viper.GetString("meep.gitdir")+"/"+utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart"), flags, cobraCmd)
-	// second, ext. cluster components
-	deleteVirtEngine(cobraCmd)
+
+	// If release exist && --force, delete
+	pid, err := utils.GetProcess(component, cobraCmd)
+	if err == nil && pid != "" {
+		if force {
+			deleteVirtEngine(cobraCmd)
+		} else {
+			fmt.Println("Skipping " + component + " (ext.): already deployed -- use [-f, --force] flag to force deployment")
+			return
+		}
+	}
+
+	// Deploy
 	// ensure directory
-	logdir := viper.GetString("meep.workdir") + "/log"
+	logdir := workdir + "log"
 	cmd := exec.Command("mkdir", "-p", logdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	// start ext. component
@@ -365,10 +347,10 @@ func deployVirtEngine(cobraCmd *cobra.Command) {
 		return
 	}
 
-	codecovCapable := utils.RepoCfg.GetBool("repo.core." + repo + ".codecov")
-	virtEngineApp := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
+	codecovCapable := utils.RepoCfg.GetBool("repo.core." + component + ".codecov")
+	virtEngineApp := gitDir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
 	if deployCodecov && codecovCapable {
-		codecovFile := workdir + "/codecov/" + repo + "/codecov-meep-virt-engine.out"
+		codecovFile := workdir + "/codecov/" + component + "/codecov-meep-virt-engine.out"
 		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		cmd = exec.Command(virtEngineApp, "-test.coverprofile="+codecovFile, "__DEVEL--code-cov")
 	} else {
@@ -399,4 +381,17 @@ func deployMeepUserAccount(cobraCmd *cobra.Command) {
 
 	cmd = exec.Command("kubectl", "create", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.meep-user.cluster-role-binding"))
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (string, string, string) {
+	cmd := exec.Command("sh", "-c", chart+"/webhook-create-signed-cert.sh --certdir "+certdir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-cert.pem | base64 -w0")
+	cert, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-key.pem | base64 -w0")
+	key, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("kubectl", "config", "view", "--raw", "--minify", "--flatten",
+		"-o=jsonpath='{.clusters[].cluster.certificate-authority-data}'")
+	cabundle, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	return cert, key, cabundle
 }

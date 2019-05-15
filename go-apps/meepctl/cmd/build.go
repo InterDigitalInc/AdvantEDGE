@@ -252,6 +252,15 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 		fmt.Println("Error:", err)
 		fmt.Println(out)
 	}
+
+	// Copy Dockerfile
+	cmd = exec.Command("cp", "Dockerfile", binDir)
+	cmd.Dir = srcDir
+	out, err = utils.ExecuteCmd(cmd, cobraCmd)
+	if err != nil {
+		fmt.Println("Error:", err)
+		fmt.Println(out)
+	}
 }
 
 func fixDeps(targetName string, cobraCmd *cobra.Command) {
