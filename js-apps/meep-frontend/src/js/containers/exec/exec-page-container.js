@@ -53,7 +53,7 @@ import {
   TYPE_EXEC,
 
   // States
-  EXEC_STATE_IDLE,
+  EXEC_STATE_IDLE
 } from '../../meep-constants';
 
 
@@ -73,7 +73,7 @@ class ExecPageContainer extends Component {
      * @param {module:model/ScenarioList} data The data returned by the service call.
      */
   getScenarioListDeployCb(error, data) {
-    if (error != null) {
+    if (error !== null) {
       // TODO: consider showing an alert/toast
       return;
     }
@@ -101,7 +101,7 @@ class ExecPageContainer extends Component {
      * @param {String} error Error message, if any.
      */
   terminateScenarioCb(error) {
-    if (error != null) {
+    if (error !== null) {
       // TODO consider showing an alert  (i.e. toast)
       return;
     }
@@ -213,7 +213,7 @@ class ExecPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page != PAGE_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE) {
       return null;
     }
 
@@ -259,7 +259,7 @@ class ExecPageContainer extends Component {
           </Grid>
         </div>
 
-        {this.props.exec.state.scenario != EXEC_STATE_IDLE &&
+        {this.props.exec.state.scenario !== EXEC_STATE_IDLE &&
           <>
               <Grid style={{width: '100%'}}>
                 <GridInner>
@@ -295,7 +295,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
-    padding: 10,
+    padding: 10
   },
   page: {
     height: 1500,
@@ -317,7 +317,7 @@ const mapStateToProps = state => {
     page: state.ui.page,
     execScenarioName: state.exec.scenario.name,
     cfgScenarioName: state.cfg.scenario.name,
-    execVisData: execVisFilteredData(state),
+    execVisData: execVisFilteredData(state)
   };
 };
 

@@ -22,7 +22,7 @@ class IDDeployScenarioDialog extends Component {
   }
 
   onDeployScenario() {
-    if (this.state.selectedScenario == '') {
+    if (this.state.selectedScenario === '') {
       // console.log('Invalid scenario name');
       // TODO: consider showing an alert
       return;

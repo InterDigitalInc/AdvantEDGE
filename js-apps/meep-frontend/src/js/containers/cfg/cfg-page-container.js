@@ -50,7 +50,7 @@ import {
   CFG_STATE_LOADED,
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
-  ELEMENT_TYPE_SCENARIO,
+  ELEMENT_TYPE_SCENARIO
 } from '../../meep-constants';
 
 import {
@@ -65,13 +65,12 @@ import {
 
 import {
   pipe,
-  filter,
-  log
+  filter
 } from '../../util/functional';
 
 const firstElementIfPresent = (val) => Array.isArray(val) ? (val.length ? val[0] : null) : val;
 const notNull = x => x;
-const extractPort = svcMapEntry => Number(firstElementIfPresent(svcMapEntry.split(':')))
+const extractPort = svcMapEntry => Number(firstElementIfPresent(svcMapEntry.split(':')));
 
 const externalPorts = elem => {
   return getElemFieldVal(elem, FIELD_SVC_MAP)
@@ -79,17 +78,17 @@ const externalPorts = elem => {
     .map(extractPort)
     .filter(notNull)
     .concat([Number(getElemFieldVal(elem, FIELD_EXT_PORT))]
-    .filter(notNull));
-}
+      .filter(notNull));
+};
 
 const hasExtPortsInCommon = elem1 => elem2 => {
   const ports1 = externalPorts(elem1);
-  const ports2 = externalPorts(elem2)
+  const ports2 = externalPorts(elem2);
   const intersection = _.intersection(ports1, ports2);
-  return intersection.length
+  return intersection.length;
 };
 
-const hasDifferentName = elem1 => elem2 => elem1.name.val != elem2.name.val;
+const hasDifferentName = elem1 => elem2 => elem1.name.val !== elem2.name.val;
 
 class CfgPageContainer extends Component {
   constructor(props) {
@@ -107,7 +106,7 @@ class CfgPageContainer extends Component {
 
   // EDIT
   onEditElement(element) {
-    if (element != null) {
+    if (element !== null) {
       this.props.cfgElemEdit(element);
     } else {
       this.props.cfgElemClear();
@@ -118,12 +117,12 @@ class CfgPageContainer extends Component {
   onSaveElement(element) {
 
     // Validate network element
-    if (this.validateNetworkElement(element) == false) {
+    if (this.validateNetworkElement(element) === false) {
       return;
     }
 
     // Add/update element in scenario
-    if (this.props.cfg.elementConfiguration.configurationMode == CFG_ELEM_MODE_NEW) {
+    if (this.props.cfg.elementConfiguration.configurationMode === CFG_ELEM_MODE_NEW) {
       this.props.newScenarioElem(element);
     } else {
       this.props.updateScenarioElem(element);
@@ -146,7 +145,7 @@ class CfgPageContainer extends Component {
 
   findIndexByKeyValue(_array, key, value) {
     for (var i = 0; i < _array.length; i++) {
-      if (getElemFieldVal(_array[i], key) == value) {
+      if (getElemFieldVal(_array[i], key) === value) {
         return i;
       }
     }
@@ -171,29 +170,29 @@ class CfgPageContainer extends Component {
 
     // Verify element type
     var type = getElemFieldVal(element, FIELD_TYPE);
-    if (type == null) {
+    if (type === null) {
       this.props.cfgElemSetErrMsg('Missing element type');
       return false;
     }
 
     // Check for valid & unique network element name (except if editing)
     var name = getElemFieldVal(element, FIELD_NAME);
-    if (name == null || name == '') {
+    if (name === null || name === '') {
       this.props.cfgElemSetErrMsg('Missing element name');
       return false;
     }
-    if (configMode === CFG_ELEM_MODE_NEW && (this.findIndexByKeyValue(data, FIELD_NAME, name) != -1)) {
+    if (configMode === CFG_ELEM_MODE_NEW && (this.findIndexByKeyValue(data, FIELD_NAME, name) !== -1)) {
       this.props.cfgElemSetErrMsg('Element name already exists');
       return false;
     }
 
     // Nothing else to validate for Scenario element
-    if (type == ELEMENT_TYPE_SCENARIO) {
+    if (type === ELEMENT_TYPE_SCENARIO) {
       return true;
     }
 
     // Make sure parent exists
-    if (this.findIndexByKeyValue(data, FIELD_NAME, getElemFieldVal(element, FIELD_PARENT)) == -1) {
+    if (this.findIndexByKeyValue(data, FIELD_NAME, getElemFieldVal(element, FIELD_PARENT)) === -1) {
       this.props.cfgElemSetErrMsg('Parent does not exist');
       return false;
     }
@@ -231,7 +230,7 @@ class CfgPageContainer extends Component {
      * @param {String} response The complete HTTP response.
      */
   getScenarioLoadCb(error, data/*, response*/) {
-    if (error != null) {
+    if (error !== null) {
       // TODO: consider showgina an alert
       return;
     }
@@ -249,7 +248,7 @@ class CfgPageContainer extends Component {
      * @param {String} response The complete HTTP response.
      */
   getScenarioListLoadCb(error, data/*, response*/) {
-    if (error != null) {
+    if (error !== null) {
       // TODO: consider showgina an alert
       return;
     }
@@ -269,7 +268,7 @@ class CfgPageContainer extends Component {
      */
   getScenarioImportCb(error, /* data, response*/) {
     // Update configuration page state based on whether scenario already exists
-    if (error == null) {
+    if (error === null) {
       // TODO: consider showgina an alert
       this.setPageState(CFG_STATE_LOADED);
     } else {
@@ -286,7 +285,7 @@ class CfgPageContainer extends Component {
      */
   createScenarioCb(error, /*data, response*/) {
     // Update configuration page state based on whether scenario was successfully created
-    if (error == null) {
+    if (error === null) {
       // TODO: consider showgina an alert
       this.setPageState(CFG_STATE_LOADED);
     } else {
@@ -304,7 +303,7 @@ class CfgPageContainer extends Component {
      */
   setScenarioCb(error, /* data, response*/) {
     // Update configuration page state based on whether scenario was successfully saved
-    if (error == null) {
+    if (error === null) {
       // TODO: consider showgina an alert
       this.setPageState(CFG_STATE_LOADED);
     } else {
@@ -321,7 +320,7 @@ class CfgPageContainer extends Component {
      * @param {String} response The complete HTTP response.
      */
   deleteScenarioCb(error, /* data, response*/) {
-    if (error != null) {
+    if (error !== null) {
       // TODO: consider showgina an alert
     }
     // TODO: consider showing an alert
@@ -352,7 +351,7 @@ class CfgPageContainer extends Component {
     scenarioCopy.name = scenarioName;
 
     // Create new scenario if scenario is new
-    if (cfg.state == CFG_STATE_NEW || scenarioName !== cfg.scenario.name) {
+    if (cfg.state === CFG_STATE_NEW || scenarioName !== cfg.scenario.name) {
       this.props.api.createScenario(scenarioName, scenarioCopy, (error, data, response) => this.createScenarioCb(error, data, response));
     } else {
       this.props.api.setScenario(scenarioName, scenarioCopy, (error, data, response) => this.setScenarioCb(error, data, response));
@@ -478,7 +477,7 @@ class CfgPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page != PAGE_CONFIGURE) {
+    if (this.props.page !== PAGE_CONFIGURE) {
       return null;
     }
 
@@ -517,7 +516,7 @@ class CfgPageContainer extends Component {
           </Grid>
         </div>
 
-        {this.props.cfgState != CFG_STATE_IDLE &&
+        {this.props.cfgState !== CFG_STATE_IDLE &&
           <>
             <Grid style={{width: '100%'}}>
               <GridInner>
@@ -563,7 +562,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
-    padding: 10,
+    padding: 10
   },
   inner: {
     height: '100%'

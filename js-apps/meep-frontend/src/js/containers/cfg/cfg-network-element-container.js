@@ -130,10 +130,10 @@ const validateVariableName = (val) => {
   return null;
 };
 
-const validateOptionalName = (val) => {
-  if (val ==='') return null;
-  return validateName(val);
-};
+// const validateOptionalName = (val) => {
+//   if (val ==='') {return null;}
+//   return validateName(val);
+// };
 
 // const validateChars = (val) => {
 //   /*eslint-disable */
@@ -147,7 +147,7 @@ const validateOptionalName = (val) => {
 const notNull = val => val;
 const validateNotNull = val => {
   if (!notNull(val)) {
-    return 'Value is required'
+    return 'Value is required';
   }
 };
 
@@ -160,9 +160,9 @@ const validateNumber = (val) => {
 
 const validateInt = (val) => {
   const numberError = validateNumber(val);
-  if (numberError) return numberError;
+  if (numberError) {return numberError;}
   return (val.indexOf('.') === -1) ? null : 'Must be an integer';
-}
+};
 
 const validatePath = (val) => {
   /*eslint-disable */
@@ -174,7 +174,7 @@ const validatePath = (val) => {
 };
 
 const validatePort = (port) => {
-  if (port === '') return null;
+  if (port === '') {return null;}
 
   const notIntError =  validateInt(port);
   if (notIntError) {
@@ -189,7 +189,7 @@ const validatePort = (port) => {
 };
 
 const validateExternalPort = (port) => {
-  if (port === '') return null;
+  if (port === '') {return null;}
 
   const notIntError =  validateInt(port);
   if (notIntError) {
@@ -204,10 +204,10 @@ const validateExternalPort = (port) => {
 };
 
 const validateProtocol = (protocol) => {
-  if (protocol === '') return null;
+  if (protocol === '') {return null;}
 
   if (protocol) {
-    if ((protocol != '') && (protocol != 'TCP') && (protocol != 'UDP')) {
+    if ((protocol !== '') && (protocol !== 'TCP') && (protocol !== 'UDP')) {
       return 'Must be TCP or UDP';
     }
   }
@@ -224,10 +224,10 @@ const validateEntries = validator => entries => {
 };
 
 const validateServiceMappingEntry = (entry) => {
-  if (entry === '') return null;
+  if (entry === '') {return null;}
 
   const args = entry.split(':');
-  if (args.length !== 4) return ` ${'Ext Port:Svc Name:Port:Protocol[,Ext Port: Svc Name:Port:Protocol]'}`;
+  if (args.length !== 4) {return ` ${'Ext Port:Svc Name:Port:Protocol[,Ext Port: Svc Name:Port:Protocol]'}`;}
 
   return [
     validateExternalPort(args[0]),
@@ -238,19 +238,19 @@ const validateServiceMappingEntry = (entry) => {
 };
 
 const validateEnvironmentVariableEntry = (entry) => {
-  if (entry === '') return null;
+  if (entry === '') {return null;}
 
   const parts = entry.split('=');
-  if (parts.length !== 2) return `${'VAR=value[,VAR=value]'}`;
+  if (parts.length !== 2) {return `${'VAR=value[,VAR=value]'}`;}
 
   return [validateVariableName(parts[0]), validateNotNull(parts[1])].filter(notNull);
 };
 
 const validateChartGroupEntry = (entry) => {
-  if (entry === '') return null;
+  if (entry === '') {return null;}
 
   const args = entry.split(':');
-  if (args.length !== 4) return ` ${'Svc instance:svc group name:port:protocol'}`;
+  if (args.length !== 4) {return ` ${'Svc instance:svc group name:port:protocol'}`;}
 
   return [
     validateName(args[0]),
@@ -258,13 +258,13 @@ const validateChartGroupEntry = (entry) => {
     validatePort(args[2]),
     validateProtocol(args[3])
   ].filter(notNull)
-  .join(',');
+    .join(',');
 };
 
 const validateIngressServiceMapping = (entries) => validateEntries(validateServiceMappingEntry)(entries);
 const validateEnvironMentVariables = (entries) => validateEntries(validateEnvironmentVariableEntry)(entries);
  
-const validateCommandArguments = val => null;
+const validateCommandArguments = () => null;
 
 // COMPONENTS
 const CfgTextField = (props) => {
@@ -462,10 +462,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <UserChartFields 
-                      onUpdate={onUpdate}
-                      element={element}
-                    />
+                  <UserChartFields 
+                    onUpdate={onUpdate}
+                    element={element}
+                  />
                   :
                     <>
                         <CfgTextField
@@ -516,10 +516,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <UserChartFields 
-                      onUpdate={onUpdate}
-                      element={element}
-                    />
+                  <UserChartFields 
+                    onUpdate={onUpdate}
+                    element={element}
+                  />
                   :
                     <>
                         <CfgTextField
@@ -550,7 +550,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                 }
                 
             </>
-          );
+    );
   case ELEMENT_TYPE_EDGE_APP:
     return (
             <>
@@ -562,10 +562,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     User-Defined Chart
                 </Checkbox>
                 {chartEnabled ?
-                    <UserChartFields 
-                      onUpdate={onUpdate}
-                      element={element}
-                    />
+                  <UserChartFields 
+                    onUpdate={onUpdate}
+                    element={element}
+                  />
                   :
                     <>
                         <CfgTextField
@@ -603,7 +603,7 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                     </>
                 }
             </>
-        );
+    );
         
   default:
     return null;
@@ -627,7 +627,7 @@ const elementTypes = [
     label: 'Network Location',
     options: [
       ELEMENT_TYPE_DC,
-      ELEMENT_TYPE_POA,
+      ELEMENT_TYPE_POA
     ] 
   },
   {
@@ -648,7 +648,7 @@ const elementTypes = [
       ELEMENT_TYPE_EXT_UE_APP,
       ELEMENT_TYPE_UE_APP
     ]
-  },
+  }
 ];
 
 var parentTypes = {};
@@ -682,7 +682,7 @@ const ElementCfgButtons = ({configuredElement, configMode, onNewElement, onDelet
   };
 
   const canDeleteElement = () => {
-    return configuredElement && configMode == CFG_ELEM_MODE_EDIT;
+    return configuredElement && configMode === CFG_ELEM_MODE_EDIT;
   };
 
   return (

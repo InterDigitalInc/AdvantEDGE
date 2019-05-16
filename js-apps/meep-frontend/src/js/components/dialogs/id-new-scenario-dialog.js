@@ -45,13 +45,13 @@ class IDNewScenarioDialog extends Component {
      */
   getScenarioNewCb(error/*, data, response*/) {
 
-    if (error == null) {
+    if (error === null) {
       // TODO: consider showing an alert
       return;
     }
 
     // Validate scenario name
-    if (this.state.scenarioName == '' || this.state.err != null) {
+    if (this.state.scenarioName === '' || this.state.err !== null) {
       // TODO: consider showing an alert
       return;
     }

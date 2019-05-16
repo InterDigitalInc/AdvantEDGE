@@ -93,7 +93,7 @@ class SettingsPageContainer extends Component {
 
   render() {
 
-    if (this.props.page != PAGE_SETTINGS) {
+    if (this.props.page !== PAGE_SETTINGS) {
       return null;
     }
 
@@ -192,7 +192,7 @@ const styles = {
     marginBotton: 25
   },
   inner: {
-    height: '100%',
+    height: '100%'
   },
   page: {
     height: 1500,

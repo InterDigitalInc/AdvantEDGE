@@ -72,7 +72,7 @@ import {
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-//var basepath = 'http://10.3.16.73:30000/v1';
+// var basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -191,7 +191,7 @@ class MeepContainer extends Component {
         clearInterval(this.refreshIntervalTimer);
       } else {
         clearInterval(this.refreshIntervalTimer);
-        // this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
+        this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
       }
     });
   }
@@ -207,7 +207,7 @@ class MeepContainer extends Component {
      * @param {module:model/Scenario} data The data returned by the service call.
      */
   getActiveScenarioCb(error, data) {
-    if (error != null) {
+    if (error !== null) {
       // console.log(error);
       // TODO consider showing an alert
       return;
@@ -230,20 +230,20 @@ class MeepContainer extends Component {
   // Change & process scenario
   changeScenario(pageType, scenario) {
     // Change scenario state
-    if (pageType == TYPE_CFG) {
+    if (pageType === TYPE_CFG) {
       this.props.cfgChangeScenario(scenario);
     } else {
       this.props.execChangeScenario(scenario);
     }
 
-    // Parse Scenario object to retrieve visualization data and scenario table
-    var page = (pageType == TYPE_CFG) ? this.props.cfg : this.props.exec;
+    // Parse Scenario object to retrieve visualization data and scenario table 
+    var page = (pageType === TYPE_CFG) ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     var updatedTable = updateObject(page.table, parsedScenario.table);
 
     // Dispatch state updates
-    if (pageType == TYPE_CFG) {
+    if (pageType === TYPE_CFG) {
       this.props.cfgChangeVisData(updatedVisData);
       this.props.cfgChangeTable(updatedTable);
 
@@ -288,7 +288,7 @@ class MeepContainer extends Component {
 
   // Add new element to scenario
   newScenarioElem(pageType, element) {
-    var scenario = (pageType == TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -296,7 +296,7 @@ class MeepContainer extends Component {
 
   // Update element in scenario
   updateScenarioElem(pageType, element) {
-    var scenario = (pageType == TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     updateElementInScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -304,7 +304,7 @@ class MeepContainer extends Component {
 
   // Delete element in scenario (also deletes child elements)
   deleteScenarioElem(pageType, element) {
-    var scenario = (pageType == TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     removeElementFromScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -360,7 +360,7 @@ class MeepContainer extends Component {
     return (
       <div style={{width: '100%'}}>
         <MeepTopBar
-          title="AdvantEDGE Controller"
+          title=""
           toggleMainDrawer={() => this.props.toggleMainDrawer()}
           corePodsRunning={this.props.corePodsRunning}
           corePodsErrors={this.props.corePodsErrors}

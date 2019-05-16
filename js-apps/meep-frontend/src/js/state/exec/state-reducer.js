@@ -34,7 +34,7 @@ const corePodsErrors = createSelector(corePodsPhasesSelector, (phases) => {
   var statii = _.chain(phases).map(p => {
     return {name: p.name, status: p.logicalState};
   }).filter((item) => {
-    return item.status != CORE_PODS_PHASE_RUNNING;
+    return item.status !== CORE_PODS_PHASE_RUNNING;
   }).value();
   return statii;
 });
@@ -46,7 +46,7 @@ const scenarioPodsPending = createSelector(scenarioPodsPhasesSelector, (pods) =>
     phasePending = phasePending || (pod.logicalState === SCENARIO_PODS_PHASE_PENDING);
   });
 
-  return phasePending == true;
+  return phasePending === true;
 });
 
 const scenarioPodsTerminating = createSelector(scenarioPodsPhasesSelector, (pods) => {
@@ -55,11 +55,11 @@ const scenarioPodsTerminating = createSelector(scenarioPodsPhasesSelector, (pods
     phaseTerminating = phaseTerminating || (pod.logicalState === SCENARIO_PODS_PHASE_TERMINATING);
   });
 
-  return phaseTerminating == true;
+  return phaseTerminating === true;
 });
 
 const scenarioPodsTerminated = createSelector(scenarioPodsPhasesSelector, (pods) => {
-  return pods == null || !pods.length;
+  return pods === null || pods === undefined || !pods.length;
 });
 
 // Returns a list of scenario posds info and adds serviceMaps to external ones

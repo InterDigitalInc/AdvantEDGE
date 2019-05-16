@@ -57,7 +57,7 @@ import {
   PREFIX_INT_EDGE,
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
-  PREFIX_TERM_LINK,
+  PREFIX_TERM_LINK
 
 } from '../../meep-constants';
 
@@ -82,13 +82,12 @@ const validateLatency = (val) => {
     return 'Value is required';
   }
   if (val) {
-    if (isNaN(val)) return 'Latency value should be a number';
-    if ((val != '') && val < MIN_LATENCY_VALUE || val > MAX_LATENCY_VALUE) {
+    if (isNaN(val)) {return 'Latency value should be a number';}
+    if ((val !== '') && val < MIN_LATENCY_VALUE || val > MAX_LATENCY_VALUE) {
       return `Out of range (${MIN_LATENCY_VALUE}-${MAX_LATENCY_VALUE})`;
     }
-    if (!isInt(val)) {
-      return 'Latency value should be an integer';
-    }
+    if (!isInt(val)) {return 'Latency value should be an integer';}
+    
   }
   return null;
 };
@@ -98,8 +97,8 @@ const validateLatencyVariation = (val) => {
     return 'Value is required';
   }
   if (val) {
-    if (isNaN(val)) return 'Latency variation should be a number';
-    if ((val != '') && val < MIN_LATENCY_VARIATION_VALUE || val > MAX_LATENCY_VARIATION_VALUE) {
+    if (isNaN(val)) {return 'Latency variation should be a number';}
+    if ((val !== '') && val < MIN_LATENCY_VARIATION_VALUE || val > MAX_LATENCY_VARIATION_VALUE) {
       return `Out of range (${MIN_LATENCY_VARIATION_VALUE}-${MAX_LATENCY_VARIATION_VALUE})`;
     }
     if (!isInt(val)) {
@@ -114,8 +113,8 @@ const validatePacketLoss = (val) => {
     return 'Value is required';
   }
   if (val && val !== '0') {
-    if (isNaN(val)) return 'Packet loss value should be a number';
-    if ((val != '') && val < MIN_PACKET_LOSS_VALUE || val > MAX_PACKET_LOSS_VALUE) {
+    if (isNaN(val)) {return 'Packet loss value should be a number';}
+    if ((val !== '') && val < MIN_PACKET_LOSS_VALUE || val > MAX_PACKET_LOSS_VALUE) {
       return `Out of range (${MIN_PACKET_LOSS_VALUE}-${MAX_PACKET_LOSS_VALUE})`;
     }
     if (!Number(val) || val[val.length-1] === '.') {
@@ -133,8 +132,8 @@ const validateThroughput = (val) => {
     return 'Value is required';
   }
   if (val) {
-    if (isNaN(val)) return 'Throughput value should be a number';
-    if ((val != '') && val < MIN_THROUGHPUT_VALUE || val > MAX_THROUGHPUT_VALUE) {
+    if (isNaN(val)) {return 'Throughput value should be a number';}
+    if ((val !== '') && val < MIN_THROUGHPUT_VALUE || val > MAX_THROUGHPUT_VALUE) {
       return `Out of range (${MIN_THROUGHPUT_VALUE}-${MAX_THROUGHPUT_VALUE})`;
     }
   }

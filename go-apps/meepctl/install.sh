@@ -30,7 +30,3 @@ go build -o ./$IMAGE_NAME .
 # Install
 echo "...install"
 go install
-
-# Re-generate the doc
-echo "...updating meepctl doc"
-meepctl genmd

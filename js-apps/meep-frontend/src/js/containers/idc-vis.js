@@ -60,7 +60,7 @@ function createImageGroup(groups, name) {
       face: 'verdana'
     },
     color: {
-      background: '#FFFFFF',
+      background: '#FFFFFF'
     },
     shape: 'image',
     shapeProperties: {
@@ -122,7 +122,7 @@ class IDCVis extends Component {
           centralGravity: 0
         },
         minVelocity: 0.75,
-        solver: 'hierarchicalRepulsion',
+        solver: 'hierarchicalRepulsion'
       },
       nodes: {
         borderWidth: 2,
@@ -132,7 +132,7 @@ class IDCVis extends Component {
           face: 'verdana'
         },
         shape: 'box',
-        size: 21,
+        size: 21
       },
       edges: {
         width: 2,
@@ -221,16 +221,16 @@ class IDCVis extends Component {
     this.initializeVisualizationOptions(newVis, this.configRef.current);
 
     var domNode = ReactDOM.findDOMNode(this);
-    newVis.network = new vis.Network(domNode, (this.props.type == TYPE_CFG) ? newVis.data : this.props.execVisData, newVis.options);
+    newVis.network = new vis.Network(domNode, (this.props.type === TYPE_CFG) ? newVis.data : this.props.execVisData, newVis.options);
 
     this.table = updateObject(this.getTable(), {data: newVis.data});
     this.changeVis(newVis);
     this.changeTable(this.table);
 
     // Configuration Visualization handlers
-    if (this.props.type == TYPE_CFG) {
+    if (this.props.type === TYPE_CFG) {
       newVis.network.on('click', (obj) => {
-        if (!this.props.cfgVis.data.nodes.get) return;
+        if (!this.props.cfgVis.data.nodes.get) {return;}
         // meep.cfg.vis.reportContainer.innerHTML = "x:" + obj.pointer.canvas.x + ", y:" + obj.pointer.canvas.y;
 
         var clickedNodes = this.props.cfgVis.data.nodes.get(obj.nodes);
@@ -255,7 +255,7 @@ class IDCVis extends Component {
 
   getElementByName(entries, name) {
     for (var i = 0; i < entries.length; i++) {
-      if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
+      if (getElemFieldVal(entries[i], FIELD_NAME) === name) {
         return entries[i];
       }
     }
@@ -313,7 +313,7 @@ class IDCVis extends Component {
   // Toggle visualization controls
   toggleConfig(filterStr) {
     var vis = this.getVis();
-    if (vis.showConfig == false || (vis.showConfig == true && vis.options.configure.filter == filterStr)) {
+    if (vis.showConfig === false || (vis.showConfig === true && vis.options.configure.filter === filterStr)) {
       vis.showConfig = !vis.showConfig;
     }
     vis.options.configure.enabled = vis.showConfig;

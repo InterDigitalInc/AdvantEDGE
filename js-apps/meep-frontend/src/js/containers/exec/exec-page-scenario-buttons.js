@@ -34,7 +34,7 @@ class ExecPageScenarioButtons extends Component {
   }
 
   canDeploy() {
-    return this.props.podsTerminated && (this.props.scenarioState.scenario != EXEC_STATE_DEPLOYED);
+    return this.props.podsTerminated && (this.props.scenarioState.scenario !== EXEC_STATE_DEPLOYED);
   }
 
   canTerminate() {

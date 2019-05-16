@@ -22,8 +22,8 @@ import meepReducer from './state/meep-reducer';
 
 // To uncomment when save state is fixed
 import {
-  saveState,
-  loadState
+  saveState
+  // loadState
 } from './util/persist';
 
 // UI Components
@@ -39,17 +39,17 @@ import {
   TYPE_EXEC,
   CFG_STATE_IDLE,
   EXEC_STATE_IDLE,
-  NO_SCENARIO_NAME,
+  NO_SCENARIO_NAME
 } from './meep-constants';
 
 import {
-  createNewScenario,
+  createNewScenario
 } from './util/scenario-utils';
 
 // MEEP Controller Frontend state information
 const meep = {
   ui: {
-    page: PAGE_CONFIGURE,
+    page: PAGE_CONFIGURE
   },
   cfg: {
     type: TYPE_CFG,
@@ -61,7 +61,7 @@ const meep = {
       options: {},
       data: {
         nodes: [],
-        edges: [],
+        edges: []
       },
       showConfig: false
     },
@@ -72,14 +72,14 @@ const meep = {
       orderBy: 'name',
       rowsPerPage: 10,
       page: 0,
-      refresh: () => {},
+      refresh: () => {}
     }
   },
   exec: {
     type: TYPE_EXEC,
     state: EXEC_STATE_IDLE,
     scenario: {
-      name: NO_SCENARIO_NAME,
+      name: NO_SCENARIO_NAME
     },
     vis: {
       type: TYPE_EXEC,
@@ -87,7 +87,7 @@ const meep = {
       options: {},
       data: {
         nodes: [],
-        edges: [],
+        edges: []
       },
       showConfig: false
     },
@@ -98,11 +98,11 @@ const meep = {
       orderBy: 'name',
       rowsPerPage: 10,
       page: 0,
-      refresh: () => {},
+      refresh: () => {}
     }
   },
   settings: {
-    debug: false,
+    debug: false
   }
 };
 

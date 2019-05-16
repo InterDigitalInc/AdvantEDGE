@@ -40,27 +40,27 @@ import {
   FIELD_TYPE,
   FIELD_NAME,
   FIELD_PARENT,
-  getElemFieldVal,
+  getElemFieldVal
 } from '../../util/elem-utils';
 
 // Network Element Cfg Styles & Table
 const cfgTableStyles = theme => ({
   root: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 3
   },
   table: {
-    minWidth: 1020,
+    minWidth: 1020
   },
   tableWrapper: {
-    overflowX: 'auto',
+    overflowX: 'auto'
   },
   tableHead: {
-    'background-color': '#379DD8',
+    'background-color': '#379DD8'
   },
   tableHeadColor: {
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF'
+  }
 });
 
 const cfgTableColumnData = [
@@ -113,7 +113,7 @@ class CfgTable extends Component {
     const page = table.page;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    if (!data || data.length < 1) return null;
+    if (!data || data.length < 1) {return null;}
 
     return (
         <>
@@ -193,8 +193,8 @@ class CfgTable extends Component {
                     count={data.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
-                    backIconButtonProps={{'aria-label': 'Previous Page',}}
-                    nextIconButtonProps={{'aria-label': 'Next Page',}}
+                    backIconButtonProps={{'aria-label': 'Previous Page'}}
+                    nextIconButtonProps={{'aria-label': 'Next Page'}}
                     onChangePage={(event, page) => this.onChangePage(event, page)}
                     onChangeRowsPerPage={event => this.onChangeRowsPerPage(event)}
                   />
@@ -215,7 +215,7 @@ const styles = {
 };
 
 CfgTable.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -226,7 +226,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeTable: (table) => dispatch(cfgChangeTable(table)),
+    changeTable: (table) => dispatch(cfgChangeTable(table))
   };
 };
 

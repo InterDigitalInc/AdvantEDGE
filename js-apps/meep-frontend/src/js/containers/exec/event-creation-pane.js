@@ -96,7 +96,7 @@ class EventCreationPane extends Component {
   }
 
   render() {
-    if (this.props.page != PAGE_EXECUTE) { return null; }
+    if (this.props.page !== PAGE_EXECUTE) { return null; }
 
     return (
       <div style={{padding: 10}}>
