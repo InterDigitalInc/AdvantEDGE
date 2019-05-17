@@ -10,20 +10,17 @@
 package main
 
 import (
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/gorilla/handlers"
-
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func init() {
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-virt-engine")
 }
 
 func main() {
@@ -42,21 +39,22 @@ func main() {
 	}()
 
 	go func() {
-		server.VirtEngineInit()
+		err := server.VirtEngineInit()
+		if err != nil {
+			log.Error("Failed to initialize Virt. Engine")
+			run = false
+			return
+		}
 
-		router := server.NewRouter()
-
-		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
-		header := handlers.AllowedHeaders([]string{"content-type"})
-
-		log.Fatal(http.ListenAndServe(":30219", handlers.CORS(methods, header)(router)))
+		// Start TC Engine Event Handler thread
+		server.ListenEvents()
 		run = false
 	}()
 
 	count := 0
 	for {
 		if !run {
-			log.Info("Ran for", count, "seconds")
+			log.Info("Ran for ", count, " seconds")
 			break
 		}
 		time.Sleep(time.Second)
