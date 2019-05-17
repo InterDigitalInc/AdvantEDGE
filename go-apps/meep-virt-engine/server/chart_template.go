@@ -18,8 +18,8 @@ import (
 	"text/template"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
 	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const SERVICE_PORT_MIN = 1
