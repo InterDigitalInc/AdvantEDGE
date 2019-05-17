@@ -1,0 +1,16 @@
+{
+  "name": "meep-tests",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "cy:run": "cypress run --spec 'cypress/integration/tests/*' --config video=false",
+    "cy:open": "cypress open"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^3.1.5"
+  },
+  "dependencies": {}
+}

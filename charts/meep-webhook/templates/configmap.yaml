@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMap }}
+data:
+  sidecarconfig.yaml: |
+    containers:
+    - name: {{ .Values.sidecar.name }}
+      image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+      imagePullPolicy: {{ .Values.sidecar.image.pullPolicy }}
+      securityContext:
+        capabilities:
+          add:
+            - NET_ADMIN

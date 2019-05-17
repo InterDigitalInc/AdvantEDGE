@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep.fullname" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "meep.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ template "meep.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: svc
+          image: {{ .Values.deployment.image.name }}
+          imagePullPolicy: {{ .Values.deployment.image.pullpolicy }}
+          env:
+            - name: MGM_APP_ID
+              value: "{{ .Values.service.name }}"
+            - name: MGM_APP_PORT
+              value: "{{ .Values.service.port }}"
+            - name: MGM_GROUP_NAME
+              value: "{{ .Values.service.group }}"

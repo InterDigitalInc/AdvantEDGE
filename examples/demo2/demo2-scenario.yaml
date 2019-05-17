@@ -66,8 +66,8 @@ deployment:
                                             id: cloud1-svc
                                             name: cloud1-svc
                                             type: CLOUD-APP
-                                            image: demo-svc-app-svr
-                                            environment: 'MGM_GROUP_NAME=svc-cloud, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80, MEEP_POD_NAME=cloud1-svc'
+                                            image: demo-server
+                                            environment: 'MGM_GROUP_NAME=cloud1-svc,MGM_APP_ID=cloud1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: cloud1-svc
                                                 ports:
@@ -156,21 +156,18 @@ deployment:
                                             id: zone1-edge1-iperf
                                             name: zone1-edge1-iperf
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone1-edge1-iperf
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-iperf
-                                            userChartAlternateValues: /home/englab/sim/zone1-edge1-iperf-value.yaml
-                                            userChartGroup: 'azone1-edge1-iperf:iperf:80:UDP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-e1-iperf-values.yaml
+                                            userChartGroup: 'zone1-edge1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
                                             externalConfig: null
                                             status: null
+                                            userChartAlternateValues: null
                                         -
                                             id: zone1-edge1-svc
                                             name: zone1-edge1-svc
@@ -180,9 +177,9 @@ deployment:
                                                 ports:
                                                     - {protocol: null, port: null, externalPort: null}
                                                 meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-svc
-                                            userChartAlternateValues: /home/englab/sim/zone1-edge1-svc-value.yaml
-                                            userChartGroup: 'azone1-edge1-svc:svc:80:TCP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-e1-svc-values.yaml
+                                            userChartGroup: 'zone1-edge1-svc:svc:80:TCP'
                                             isExternal: null
                                             image: null
                                             environment: null
@@ -209,21 +206,18 @@ deployment:
                                             id: zone1-fog1-iperf
                                             name: zone1-fog1-iperf
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone1-fog1-iperf
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-iperf
-                                            userChartAlternateValues: /home/englab/sim/zone1-fog1-iperf-value.yaml
-                                            userChartGroup: 'azone1-fog1-iperf:iperf:80:UDP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-f1-iperf-values.yaml
+                                            userChartGroup: 'zone1-fog1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
                                             externalConfig: null
                                             status: null
+                                            userChartAlternateValues: null
                                         -
                                             id: zone1-fog1-svc
                                             name: zone1-fog1-svc
@@ -233,9 +227,9 @@ deployment:
                                                 ports:
                                                     - {protocol: null, port: null, externalPort: null}
                                                 meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-svc
-                                            userChartAlternateValues: /home/englab/sim/zone1-fog1-svc-value.yaml
-                                            userChartGroup: 'azone1-fog1-svc:svc:80:TCP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-f1-svc-values.yaml
+                                            userChartGroup: 'zone1-fog1-svc:svc:80:TCP'
                                             isExternal: null
                                             image: null
                                             environment: null
@@ -360,21 +354,18 @@ deployment:
                                             id: zone2-edge1-iperf
                                             name: zone2-edge1-iperf
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone2-edge1-iperf
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-iperf
-                                            userChartAlternateValues: /home/englab/sim/zone2-edge1-iperf-value.yaml
-                                            userChartGroup: 'azone2-edge1-iperf:iperf:80:UDP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z2-e1-iperf-values.yaml
+                                            userChartGroup: 'zone2-edge1-iperf:iperf:80:UDP'
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
                                             externalConfig: null
                                             status: null
+                                            userChartAlternateValues: null
                                         -
                                             id: zone2-edge1-svc
                                             name: zone2-edge1-svc
@@ -384,9 +375,9 @@ deployment:
                                                 ports:
                                                     - {protocol: null, port: null, externalPort: null}
                                                 meSvcName: null
-                                            userChartLocation: /home/englab/sim/zoneX-edgeX-svc
-                                            userChartAlternateValues: /home/englab/sim/zone2-edge1-svc-value.yaml
-                                            userChartGroup: 'azone2-edge1-svc:svc:80:TCP'
+                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
+                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z2-e1-svc-values.yaml
+                                            userChartGroup: 'zone2-edge1-svc:svc:80:TCP'
                                             isExternal: null
                                             image: null
                                             environment: null

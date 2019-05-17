@@ -1,0 +1,114 @@
+// Set IDCC color theme
+$mdc-theme-primary: #379DD8;
+$mdc-theme-secondary: #FF9800;
+$mdc-theme-background: #fff;
+
+// Set default margin to 0px
+$mdc-layout-grid-default-margin: (
+  desktop: 0px,
+  tablet: 16px,
+  phone: 16px
+);
+
+// Set default gutter to 10px
+$mdc-layout-grid-default-gutter: (
+  desktop: 0px,
+  tablet: 16px,
+  phone: 16px
+) !default;
+
+@import "material-components-web/material-components-web";
+
+// Ensure layout covers the entire screen
+html {
+    height: 100%;
+}
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+}
+
+// UI
+.ui-body {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
+.ui-content {
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    box-sizing: border-box;
+}
+.ui-main {
+    padding: 16px;
+}
+
+// Navigation
+#idcc-toolbar {
+    @include mdc-top-app-bar-ink-color(#fff);
+}
+// #idcc-logo {
+//     height: 40px;
+//     width: 40px;
+//     padding-top: 4px;
+//     padding-bottom: 4px;
+// }
+#idcc-title {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 22px;
+}
+#page-status {
+    display: none;
+}
+#page-settings {
+    display: none;
+}
+
+#refresh-interval-form-div {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 16px;
+}
+
+// IDCC Styles
+
+.idcc-button {
+    @include mdc-button-ink-color(#fff);
+}
+.idcc-margin-top {
+    margin-top: 10px;
+}
+.idcc-margin-left {
+    margin-left: 10px;
+}
+.idcc-elevated-area {
+    margin-bottom: 10px;
+    padding: 10px;
+}
+.idcc-fullwidth {
+    width: 100%;
+}
+.idcc-width-40 {
+    width: 40px;
+}
+.idcc-status-ok {
+    font-weight: bold;
+    color: #008000;
+}
+.idcc-status-ra {
+    font-weight: bold;
+    color: #FF8000;
+}
+
+
+// Map
+#map {
+    height: 60vh;
+    width: 100%;
+}

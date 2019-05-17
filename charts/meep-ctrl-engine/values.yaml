@@ -13,11 +13,14 @@ deployment:
 image:
   repository: meep-ctrl-engine
   tag: latest
-  pullPolicy: IfNotPresent 
+  pullPolicy: IfNotPresent
 
 service:
   type: NodePort
   targetPort: 80
   nodePort: 30000
+
+codecov:
+  enabled: false
 
 meepOrigin: core

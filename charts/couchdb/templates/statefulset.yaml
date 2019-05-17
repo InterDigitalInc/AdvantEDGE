@@ -117,27 +117,7 @@ spec:
         - name: database-storage
           emptyDir: {}
 {{- else }}
-  volumeClaimTemplates:
-    - metadata:
-        name: database-storage
-        labels:
-          app: {{ template "couchdb.name" . }}
-          chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-          release: {{ .Release.Name }}
-          heritage: {{ .Release.Service }}
-      spec:
-        accessModes:
-        {{- range .Values.persistentVolume.accessModes }}
-          - {{ . | quote }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.persistentVolume.size | quote }}
-      {{- if .Values.persistentVolume.storageClass }}
-      {{- if (eq "-" .Values.persistentVolume.storageClass) }}
-        storageClassName: ""
-      {{- else }}
-        storageClassName: "{{ .Values.persistentVolume.storageClass }}"
-      {{- end }}
-      {{- end }}
+        - name: database-storage
+          persistentVolumeClaim:
+            claimName: {{ template "couchdb.fullname" . }}
 {{- end }}

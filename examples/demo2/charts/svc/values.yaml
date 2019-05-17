@@ -1,0 +1,16 @@
+# Default values for generic values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+
+deployment:
+  image:
+    name: demo-server
+    pullpolicy: IfNotPresent
+
+service:
+  name: ""
+  port: 80
+  protocol: TCP
+  group: svc

@@ -1,0 +1,38 @@
+# Default values for meep-initializer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+serviceAccount: meep-webhook
+configMap: meep-webhook
+initializerConfig: meep-webhook
+meepOrigin: core
+
+deployment:
+  replicas: 1
+  port: 443
+  protocol: TCP
+  dependency: meep-redis-master
+
+service:
+  type: NodePort
+  targetPort: 443
+  nodePort: 30006
+
+image:
+  repository: meep-webhook
+  tag: latest
+  pullPolicy: IfNotPresent
+
+sidecar:
+  name: meep-tc-sidecar
+  image:
+    repository: meep-tc-sidecar
+    tag: latest
+    pullPolicy: IfNotPresent
+
+webhook:
+  name: meep-webhook.idcc.com
+  cabundle: ""
+  cert: ""
+  key: ""
