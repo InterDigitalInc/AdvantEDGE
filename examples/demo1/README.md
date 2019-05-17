@@ -75,7 +75,9 @@ When the external UE moves in the network and transitions from one edge instance
 
 The following steps need to be done prior to using this scenario
 
-#### Build demo binaries
+#### Obtain demo binaries
+
+##### Build from source
 
 To build _iperf-proxy_ & _demo-server_ binaries from source code:
 
@@ -85,6 +87,14 @@ cd ~/AdvantEDGE/examples/demo1/
 ```
 
 > **NOTE:** Binary files are created in ./bin/ folder
+
+##### Optionally use pre-built binaries (from GitHub release)
+
+```
+# Get bin folder tarball from desired release
+cd ~/AdvantEDGE/examples/demo1
+tar -zxvf demo1.<version>.linux-amd64.tar.gz
+```
 
 #### Dockerize demo applications
 
@@ -99,12 +109,7 @@ cd ~/AdvantEDGE/examples/demo1/
 
 #### Configure demo specific dashboards
 
-Only need to do it once, or when the demo dashboard changes
-
-Follow the procedure described in [Scenario Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `AdvantEDGE/examples/demo1/demo1-dashboards.json`
-
-> Demo specific dashboards are stored in Kibana.<br>
-> Next time you want to use the demo scenario; demo specific dashboard will be available.
+Follow the procedure described in [Scenario Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `~/AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
 #### Start iperf proxy
 

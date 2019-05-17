@@ -48,11 +48,11 @@ We use the kubeadm method from [here](https://kubernetes.io/docs/setup/independe
 
 Versions we use:
 
-- 1.09, 1.10, 1.12, 1.13, 1.14
+- 1.13, 1.14
 
 >**IMPORTANT NOTE**<br>
 K8s deployment has a dependency on the node's IP address.<br>
-From our experience, it is **strongly recommended** to ensure that your platfrom always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IPon your network.<br>
+From our experience, it is **strongly recommended** to ensure that your platfrom always gets the same IP address for the main interface when it reboots. It also makes usage of the platform easier since it will reside at a well-known IP on your network.<br>
 Depending on your network setup, this can be achieved either by setting a static IP address on the host or configuring the DHCP server to always give the same IP address to your platform.<br>
 
 How we do it:
