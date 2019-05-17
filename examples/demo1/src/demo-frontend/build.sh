@@ -18,4 +18,4 @@ $BASEDIR/../demo-client/js/build.sh
 cd $BASEDIR
 npm ci
 rm -r $BASEDIR/dist
-npm run build
+npm run build -- --output-path=$BASEDIR/../../bin/demo-frontend

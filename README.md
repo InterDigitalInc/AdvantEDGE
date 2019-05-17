@@ -30,15 +30,30 @@ Before getting started we recommend familiarity with key [AdvantEDGE concepts](d
 
 - [Setup runtime environment (Ubuntu/Dockers/Kubernetes/Helm)](docs/setup_runtime.md)
 
-- Clone the AdvantEDGE repo<br>
-  `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>
-  (*assuming local gitdir =* `~/AdvantEDGE`)
+- Clone the AdvantEDGE repo
+  ```
+  git clone https://github.com/<your-fork>/AdvantEDGE.git
+  ```
+  > **Note:** Assumes local gitdir = `~/AdvantEDGE`
+
+- Obtain AdvantEDGE binaries
+  - [Build from source](#building)
+  - Optionally use pre-built binaries (from GitHub release)
+    ```
+    # Get bin folder tarball from desired release
+    cd ~/AdvantEDGE
+    tar -zxvf advantedge.<version>.linux-amd64.tar.gz
+    ```
 
 - Setup [*meepctl*](docs/meepctl/meepctl.md) tool
-  1. Copy to an executable path<br>
-    `sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/`
-  2. Configure<br>
-    `meepctl config set --ip <your-node-ip> --gitdir /home/<user>/AdvantEDGE`
+  - Copy to an executable path
+    ```
+    sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/
+    ```
+  - Configure
+    ```
+    meepctl config set --ip <your-node-ip> --gitdir /home/<user>/AdvantEDGE
+    ```
 
 - [Deploy AdvantEDGE](docs/deploy.md)
 

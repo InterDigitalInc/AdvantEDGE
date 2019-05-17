@@ -15,7 +15,7 @@ echo ""
 # Copy frontend to bin folder
 rm -r $DEMOBIN/static
 mkdir -p $DEMOBIN/static
-cp -Rf $BASEDIR/src/demo-frontend/dist/* $DEMOBIN/static
+cp -Rf $BASEDIR/bin/demo-frontend/* $DEMOBIN/static
 
 # Copy Dockerfile to bin folder
 cp $BASEDIR/src/demo-server/Dockerfile $DEMOBIN
