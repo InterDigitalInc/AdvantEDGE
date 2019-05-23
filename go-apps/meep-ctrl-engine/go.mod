@@ -3,7 +3,6 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine
 go 1.12
 
 require (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 	github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db // indirect
 	github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351
@@ -39,8 +38,6 @@ require (
 	k8s.io/klog v0.0.0-20181108234604-8139d8cb77af // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
-
-replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client => ../../go-packages/meep-virt-engine-client
 
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
 
