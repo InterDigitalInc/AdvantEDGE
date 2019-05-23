@@ -16,19 +16,26 @@ import (
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	pinger "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pinger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
-var activeScenarioName string = ""
+const moduleCtrlEngine string = "ctrl-engine"
+const typeActive string = "active"
+const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 
-const activeScenarioEventKey string = redis.ModuleCtrlEngine + ":" + redis.TypeActive
+var activeScenarioName string = ""
+var ping *pinger.Pingee
+var rc *redis.Connector
+
+const activeScenarioEventKey string = moduleCtrlEngine + ":" + typeActive
 const redisAddr string = "localhost:30379"
 
 // VirtEngineInit - Initialize virtualization engine
 func VirtEngineInit() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
 	// Connect to Redis DB
-	err = redis.DBConnect(redisAddr)
+	rc, err = redis.NewConnector(redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
@@ -37,12 +44,24 @@ func VirtEngineInit() (err error) {
 
 	// Subscribe to Pub-Sub events for MEEP Controller
 	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = redis.Subscribe(redis.ChannelCtrlActive)
+	err = rc.Subscribe(channelCtrlActive)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
 	log.Info("Subscribed to Redis Events")
+
+	// Setup for liveness monitoring
+	ping, err = pinger.NewPingee(redisAddr, "meep-virt-engine")
+	if err != nil {
+		log.Error("Failed to initialize pigner. Error: ", err)
+		return err
+	}
+	err = ping.Start()
+	if err != nil {
+		log.Error("Failed pinger listen. Error: ", err)
+		return err
+	}
 
 	return nil
 }
@@ -50,7 +69,7 @@ func VirtEngineInit() (err error) {
 // ListenEvents - Redis DB event listener
 func ListenEvents() {
 	// Listen for subscribed events. Provide event handler method.
-	_ = redis.Listen(eventHandler)
+	_ = rc.Listen(eventHandler)
 
 }
 
@@ -59,7 +78,7 @@ func eventHandler(channel string, payload string) {
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update event
-	case redis.ChannelCtrlActive:
+	case channelCtrlActive:
 		log.Debug("Event received on channel: ", channel)
 		processActiveScenarioUpdate()
 
@@ -70,7 +89,7 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	// Retrieve active scenario from DB
-	jsonScenario, err := redis.DBJsonGetEntry(activeScenarioEventKey, ".")
+	jsonScenario, err := rc.JSONGetEntry(activeScenarioEventKey, ".")
 	log.Debug("Scenario Event:", jsonScenario)
 	if err != nil {
 		terminateScenario(activeScenarioName)
