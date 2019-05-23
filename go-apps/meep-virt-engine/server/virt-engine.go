@@ -16,8 +16,8 @@ import (
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	pinger "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-pinger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
 const moduleCtrlEngine string = "ctrl-engine"
@@ -25,7 +25,7 @@ const typeActive string = "active"
 const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 
 var activeScenarioName string = ""
-var ping *pinger.Pingee
+var watchdogClient *watchdog.Pingee
 var rc *redis.Connector
 
 const activeScenarioEventKey string = moduleCtrlEngine + ":" + typeActive
@@ -52,14 +52,14 @@ func VirtEngineInit() (err error) {
 	log.Info("Subscribed to Redis Events")
 
 	// Setup for liveness monitoring
-	ping, err = pinger.NewPingee(redisAddr, "meep-virt-engine")
+	watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
 	if err != nil {
 		log.Error("Failed to initialize pigner. Error: ", err)
 		return err
 	}
-	err = ping.Start()
+	err = watchdogClient.Start()
 	if err != nil {
-		log.Error("Failed pinger listen. Error: ", err)
+		log.Error("Failed watchdog client listen. Error: ", err)
 		return err
 	}
 
