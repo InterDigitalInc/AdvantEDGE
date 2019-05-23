@@ -11,8 +11,7 @@ package redisdb
 
 import (
 	"errors"
-	"net"
-	"reflect"
+	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -26,47 +25,51 @@ var dbClientStarted = false
 
 var pubsub *redis.PubSub
 
-const ModuleCtrlEngine string = "ctrl-engine"
-const TypeActive string = "active"
-const ChannelCtrlActive string = ModuleCtrlEngine + "-" + TypeActive
-
-// DBConnect - Establish connection to DB
-func DBConnect(addr string) error {
-	if !dbClientStarted {
-		err := openDB(addr)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+// Connector - Implements a Redis connector
+type Connector struct {
+	addr          string
+	connected     bool
+	client        *rejonson.Client
+	pubsub        *redis.PubSub
+	isListening   bool
+	doneListening chan bool
 }
 
-func openDB(addr string) error {
-	if addr == "" {
-		addr = "meep-redis-master:6379"
+// NewConnector - Creates and initialize a Redis connector
+func NewConnector(addr string) (rc *Connector, err error) {
+	rc = new(Connector)
+	err = rc.connectDB(addr)
+	if err != nil {
+		return nil, err
 	}
-	redisClient := redis.NewClient(&redis.Options{
 
-		Addr:     addr,
+	return rc, nil
+}
+
+func (rc *Connector) connectDB(addr string) error {
+	if addr == "" {
+		rc.addr = "meep-redis-master:6379"
+	} else {
+		rc.addr = addr
+	}
+	log.Debug("Redis Connector connecting to ", rc.addr)
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     rc.addr,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	rejonsonClient := rejonson.ExtendClient(redisClient)
+	rc.client = rejonson.ExtendClient(redisClient)
 
-	pong, err := rejonsonClient.Ping().Result()
+	pong, err := rc.client.Ping().Result()
 
-	if pong == "" {
-		log.Info("pong is null")
+	if pong == "" || err != nil {
+		log.Error("Redis Connector unable to connect ", rc.addr)
 		return err
 	}
 
-	if err != nil {
-		log.Info("Redis DB not accessible")
-		return err
-	}
-	dbClientStarted = true
-	dbClient = rejonsonClient
-	log.Info("Redis DB opened and well!")
+	rc.connected = true
+	log.Info("Redis Connector connected to ", rc.addr)
 	return nil
 }
 
@@ -162,10 +165,13 @@ func openDB(addr string) error {
 // 	return nil
 // }
 
-// DBJsonGetEntry - Retrieve entry from DB
-func DBJsonGetEntry(key string, path string) (string, error) {
+// JSONGetEntry - Retrieve entry from DB
+func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
+	if !rc.connected {
+		return "", errors.New("Redis Connector is disconnected (JSONGetEntry)")
+	}
 	// Update existing entry or create new entry if it does not exist
-	json, err := dbClient.JsonGet(key, path).Result()
+	json, err := rc.client.JsonGet(key, path).Result()
 	if err != nil {
 		return "", err
 	}
@@ -192,49 +198,89 @@ func DBJsonGetEntry(key string, path string) (string, error) {
 // }
 
 // Subscribe - Register as a listener for provided channels
-func Subscribe(channels ...string) error {
-	pubsub = dbClient.Subscribe(channels...)
+func (rc *Connector) Subscribe(channels ...string) error {
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (Subscribe)")
+	}
+
+	rc.pubsub = rc.client.Subscribe(channels...)
+	return nil
+}
+
+// Unsubscribe - Unregister as a listener for provided channels
+func (rc *Connector) Unsubscribe(channels ...string) error {
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (Unsubscribe)")
+	}
+	if rc.pubsub != nil {
+		rc.pubsub.Unsubscribe(channels...)
+	}
 	return nil
 }
 
 // Listen - Wait for subscribed events
-func Listen(handler func(string, string)) error {
-
-	// Make sure listener is subscribed to pubsub
-	if pubsub == nil {
-		return errors.New("Not subscribed to pubsub")
+func (rc *Connector) Listen(handler func(string, string)) error {
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (Listen)")
+	}
+	if rc.pubsub == nil {
+		return errors.New("Not subscribed to pubsub (Listen)")
 	}
 
+	rc.isListening = true
+	rc.doneListening = make(chan bool, 1)
 	// Main listening loop
 	for {
 		// Wait for subscribed channel events, or timeout
-		msg, err := pubsub.ReceiveTimeout(time.Second)
+		msg, err := rc.pubsub.ReceiveTimeout(time.Second)
 		if err != nil {
-			if reflect.TypeOf(err) == reflect.TypeOf(&net.OpError{}) &&
-				reflect.TypeOf(err.(*net.OpError).Err).String() == "*net.timeoutError" {
-				// Timeout, ignore and wait for next event
+			if !strings.Contains(err.Error(), "timeout") {
+				log.Debug("Listen Error: ", err)
+			}
+		} else {
+			channel := ""
+			payload := ""
+
+			// Process published event
+			switch m := msg.(type) {
+			// Process Subscription
+			case *redis.Subscription:
+				log.Info("Subscription Message: ", m.Kind, " to channel ", m.Channel, ". Total subscriptions: ", m.Count)
 				continue
+			// Process received Message
+			case *redis.Message:
+				channel = m.Channel
+				payload = m.Payload
+				log.Info("RX-MSG [", channel, "] ", payload)
+				handler(channel, payload)
 			}
 		}
 
-		// Process published event
-		switch m := msg.(type) {
-
-		// Process Subscription
-		case *redis.Subscription:
-			log.Info("Subscription Message: ", m.Kind, " to channel ", m.Channel, ". Total subscriptions: ", m.Count)
-
-		// Process received Message
-		case *redis.Message:
-			log.Info("MSG on ", m.Channel, ": ", m.Payload)
-			handler(m.Channel, m.Payload)
+		if !rc.isListening {
+			log.Debug("Redis Connector exiting listen routine")
+			rc.doneListening <- true
+			return nil
 		}
 	}
 }
 
-// // Publish - Publish message to channel
-// func Publish(channel string, message string) error {
-// 	log.Info("Publish to channel: ", channel, " Message: ", message)
-// 	_, err := dbClient.Publish(channel, message).Result()
-// 	return err
-// }
+// StopListen - Stop the listening goroutine
+func (rc *Connector) StopListen() {
+	if rc.isListening {
+		// stop the listen goroutine
+		rc.isListening = false
+		// synchronize on completion
+		<-rc.doneListening
+	}
+}
+
+// Publish - Publish message to channel
+func (rc *Connector) Publish(channel string, message string) error {
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (Publish)")
+	}
+
+	log.Info("TX-MSG [", channel, "] ", message)
+	_, err := rc.client.Publish(channel, message).Result()
+	return err
+}
