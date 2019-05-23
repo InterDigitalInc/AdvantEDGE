@@ -26,13 +26,14 @@ var buildNolint bool
 
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
-	Use:   "build <target>",
+	Use:   "build <targets>",
 	Short: "Build core components",
 	Long: `Build core components
 
 AdvantEDGE is composed of a collection of micro-services.
 
 Build command genrates AdvantEDGE binaries.
+Multiple targets can be specified (e.g. meepctl build <target1> <target2>...)
 
 Valid targets:`,
 	Example: `# Build all components
@@ -40,14 +41,14 @@ Valid targets:`,
 # Build meep-ctrl-engine component only
 	meepctl build meep-ctrl-engine
 		`,
-	Args: cobra.ExactValidArgs(1),
+	Args: cobra.OnlyValidArgs,
 	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
 	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		target := ""
-		if len(args) > 0 {
-			target = args[0]
+		targets := args
+		if len(targets) == 0 {
+			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
 		}
 
 		v, _ := cmd.Flags().GetBool("verbose")
@@ -55,7 +56,7 @@ Valid targets:`,
 
 		if v {
 			fmt.Println("Build called")
-			fmt.Println("[arg]  target:", target)
+			fmt.Println("[arg]  targets:", targets)
 			fmt.Println("[flag] codecov:", buildCodecov)
 			fmt.Println("[flag] verbose:", v)
 			fmt.Println("[flag] time:", t)
@@ -63,12 +64,13 @@ Valid targets:`,
 
 		start := time.Now()
 		utils.InitRepoConfig()
-		if target == "all" {
-			buildAll(cmd)
-		} else {
-			build(target, cmd)
+		for _, target := range targets {
+			if target == "all" {
+				buildAll(cmd)
+			} else {
+				build(target, cmd)
+			}
 		}
-
 		elapsed := time.Since(start)
 		if t {
 			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
