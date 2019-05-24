@@ -10,80 +10,126 @@ package server
 
 import (
 	"encoding/json"
-	"net/http"
 	"os"
 	"strings"
 
-	"github.com/gorilla/mux"
-
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
+	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
-func VirtEngineInit() {
+const moduleCtrlEngine string = "ctrl-engine"
+const typeActive string = "active"
+const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
+
+var activeScenarioName string = ""
+var watchdogClient *watchdog.Pingee
+var rc *redis.Connector
+
+const activeScenarioEventKey string = moduleCtrlEngine + ":" + typeActive
+const redisAddr string = "localhost:30379"
+
+// VirtEngineInit - Initialize virtualization engine
+func VirtEngineInit() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
+	// Connect to Redis DB
+	rc, err = redis.NewConnector(redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
+
+	// Subscribe to Pub-Sub events for MEEP Controller
+	// NOTE: Current implementation is RedisDB Pub-Sub
+	err = rc.Subscribe(channelCtrlActive)
+	if err != nil {
+		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+		return err
+	}
+	log.Info("Subscribed to Redis Events")
+
+	// Setup for liveness monitoring
+	watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
+	if err != nil {
+		log.Error("Failed to initialize pigner. Error: ", err)
+		return err
+	}
+	err = watchdogClient.Start()
+	if err != nil {
+		log.Error("Failed watchdog client listen. Error: ", err)
+		return err
+	}
+
+	return nil
 }
 
-// func readAndPrintRequest(r *http.Request) {
-//
-// 	// Read the Body content
-// 	var bodyBytes []byte
-// 	bodyBytes, _ = ioutil.ReadAll(r.Body)
-// 	log.Info(bodyBytes)
-//
-// 	// Restore the io.ReadCloser to its original state
-// 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-//
-// }
+// ListenEvents - Redis DB event listener
+func ListenEvents() {
+	// Listen for subscribed events. Provide event handler method.
+	_ = rc.Listen(eventHandler)
 
-func populateScenario(r *http.Request) (Scenario, error) {
+}
 
-	log.Debug("populateScenario")
+func eventHandler(channel string, payload string) {
+	// Handle Message according to Rx Channel
+	switch channel {
 
-	var scenario Scenario
+	// MEEP Ctrl Engine active scenario update event
+	case channelCtrlActive:
+		log.Debug("Event received on channel: ", channel)
+		processActiveScenarioUpdate()
+
+	default:
+		log.Warn("Unsupported channel event: ", channel)
+	}
+}
+
+func processActiveScenarioUpdate() {
+	// Retrieve active scenario from DB
+	jsonScenario, err := rc.JSONGetEntry(activeScenarioEventKey, ".")
+	log.Debug("Scenario Event:", jsonScenario)
+	if err != nil {
+		terminateScenario(activeScenarioName)
+		activeScenarioName = ""
+	} else {
+		activateScenario(jsonScenario)
+	}
+}
+
+func unmarshallScenario(jsonScenario string) (model.Scenario, error) {
+
+	log.Debug("unmarshallScenario")
+
+	var scenario model.Scenario
 
 	//readAndPrintRequest(r)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&scenario)
-
+	err := json.Unmarshal([]byte(jsonScenario), &scenario)
 	if err != nil {
 		log.Error(err.Error())
 		return scenario, err
 	}
-
 	return scenario, nil
 }
 
-func veActivateScenario(w http.ResponseWriter, r *http.Request) {
-	scenario, err := populateScenario(r)
+func activateScenario(jsonScenario string) {
+	scenario, err := unmarshallScenario(jsonScenario)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error("Error unmarshalling scenario: ", jsonScenario)
 		return
 	}
 
+	activeScenarioName = scenario.Name
 	err = CreateYamlScenarioFile(scenario)
-	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		log.Error("Error creating scenario charts: ", err)
+		return
 	}
 }
 
-func veGetActiveScenario(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
-func veSendEvent(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-}
-
-func veTerminateScenario(w http.ResponseWriter, r *http.Request) {
-	// Read Parameters
-	vars := mux.Vars(r)
-	name := vars["name"]
-
+func terminateScenario(name string) {
 	// Retrieve list of releases
 	rels, _ := helm.GetReleasesName()
 	var toDelete []helm.Chart
@@ -109,6 +155,4 @@ func veTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Removing charts ", path)
 		os.RemoveAll(path)
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

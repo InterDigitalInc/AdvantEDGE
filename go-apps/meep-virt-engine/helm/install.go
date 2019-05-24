@@ -13,7 +13,7 @@ import (
 	"os/exec"
 	"strings"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func installCharts(charts []Chart) error {

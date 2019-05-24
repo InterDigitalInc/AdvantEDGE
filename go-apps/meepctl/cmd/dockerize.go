@@ -23,7 +23,7 @@ import (
 
 // dockerizeCmd represents the dockerize command
 var dockerizeCmd = &cobra.Command{
-	Use:   "dockerize <target>",
+	Use:   "dockerize <targets>",
 	Short: "Dockerize core components",
 	Long: `Dockerize core components
 
@@ -31,6 +31,7 @@ AdvantEDGE is composed of a collection of micro-services.
 
 Dockerize command genrates AdvantEDGE Docker images and stores them in
 the local Docker registry.
+Multiple targets can be specified (e.g. meepctl dockerize <target1> <target2>...)
 
 Valid targets:`,
 	Example: `  # Dockerize all components
@@ -38,12 +39,12 @@ Valid targets:`,
   # Dockerize meep-ctrl-engine component only
     meepctl dockerize meep-ctrl-engine
 			`,
-	Args:      cobra.ExactValidArgs(1),
+	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar"},
 	Run: func(cmd *cobra.Command, args []string) {
-		target := ""
-		if len(args) > 0 {
-			target = args[0]
+		targets := args
+		if len(targets) == 0 {
+			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
 		}
 
 		v, _ := cmd.Flags().GetBool("verbose")
@@ -51,17 +52,19 @@ Valid targets:`,
 
 		if v {
 			fmt.Println("Dockerize called")
-			fmt.Println("[arg]  target:", target)
+			fmt.Println("[arg]  targets:", targets)
 			fmt.Println("[flag] verbose:", v)
 			fmt.Println("[flag] time:", t)
 		}
 
 		start := time.Now()
 		utils.InitRepoConfig()
-		if target == "all" {
-			dockerizeAll(cmd)
-		} else {
-			dockerize(target, cmd)
+		for _, target := range targets {
+			if target == "all" {
+				dockerizeAll(cmd)
+			} else {
+				dockerize(target, cmd)
+			}
 		}
 
 		elapsed := time.Since(start)

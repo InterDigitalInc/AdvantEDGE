@@ -18,7 +18,8 @@ import (
 	"text/template"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
+	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const SERVICE_PORT_MIN = 1
@@ -111,7 +112,7 @@ func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 	externalTemplate.Selector = append(externalTemplate.Selector, selector)
 }
 
-func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
+func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 
 	var charts []helm.Chart
 	serviceMap = map[string]string{}
@@ -370,7 +371,7 @@ func setCommand(deployment *DeploymentTemplate, command string, commandArgs stri
 	}
 }
 
-func CreateYamlScenarioFile(scenario Scenario) error {
+func CreateYamlScenarioFile(scenario model.Scenario) error {
 
 	//var charts []helm.Chart
 	charts, err := populateScenarioTemplate(scenario)

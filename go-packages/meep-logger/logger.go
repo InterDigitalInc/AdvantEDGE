@@ -15,6 +15,12 @@ import (
 
 var componentName string
 
+func MeepTextLogInit(name string) {
+	log.SetFormatter(&log.TextFormatter{})
+	log.SetLevel(log.DebugLevel)
+	componentName = name
+}
+
 func MeepJSONLogInit(name string) {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel)

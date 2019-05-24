@@ -17,6 +17,8 @@ master:
   disableCommands: ""
   persistence:
     enabled: false
+  service:
+    type: NodePort
+    nodePort: 30379
 
 meepOrigin: core
-
