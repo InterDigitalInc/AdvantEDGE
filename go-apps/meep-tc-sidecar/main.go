@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	logrus "github.com/sirupsen/logrus"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 
@@ -81,6 +82,7 @@ var filters = map[string]string{}
 
 var measurementsRunning = false
 var flushRequired = false
+var firstTimePass = true
 
 // Run - MEEP Sidecar execution
 func main() {
@@ -185,16 +187,31 @@ func processLbMsg(payload string) {
 
 func refreshNetCharRules() {
 	// Create shape rules
-	_ = createIfbs()
+        start := time.Now()
 
-	// Flush filters
-	flushFilters()
+
+
+	_ = initializeOnFirstPass()
+
+	_ = createIfbs()
+        elapsed := time.Since(start)
+        log.WithFields(logrus.Fields{
+                "meep.component":              "sidecar",
+                "meep.time.location":          "createIfbs done",
+                "meep.time.exec":              elapsed,
+        }).Info("Time execution log")
 
 	// Create new filters (lower priority than the old one)
 	_ = createFilters()
+        elapsed = time.Since(start)
+        log.WithFields(logrus.Fields{
+                "meep.component":              "sidecar",
+                "meep.time.location":          "createFilters done",
+                "meep.time.exec":              elapsed,
+        }).Info("Time execution log")
 
 	// // Delete unused filters
-	// deleteUnusedFilters()
+	deleteUnusedFilters()
 
 	// Delete unused ifbs
 	deleteUnusedIfbs()
@@ -541,7 +558,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 
 	return nil
 }
-
+/*
 func flushFilters() {
 
 	// NOTE: Flush does not work on kernel version 4.4
@@ -558,7 +575,7 @@ func flushFilters() {
 	}
 	filters = map[string]string{}
 }
-
+*/
 func createFilters() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter*"
 	err := DBForEachEntry(keyName, createFiltersHandler, nil)
@@ -571,51 +588,44 @@ func createFilters() error {
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
 
-	// if filters[ifbNumber] == "" {
-	ipSrc := fields["srcIp"]
-	ipSvcSrc := fields["srcSvcIp"]
-	srcName := fields["srcName"]
+	if filters[ifbNumber] == "" {
+		ipSrc := fields["srcIp"]
+		ipSvcSrc := fields["srcSvcIp"]
+		srcName := fields["srcName"]
 
-	err := cmdCreateFilter(ifbNumber, ipSrc)
-	if err != nil {
-		return err
-	}
+		cmdCreateFilter(ifbNumber, ipSrc)
 
-	if ipSvcSrc != "" {
-		err := cmdCreateFilter(ifbNumber, ipSvcSrc)
-		if err != nil {
-			return err
+		if ipSvcSrc != "" {
+			cmdCreateFilter(ifbNumber, ipSvcSrc)
+		}
+
+		filters[ifbNumber] = ifbNumber
+
+		// Loop through dests to update them
+		for _, u := range opts.dests {
+			if u.remoteName == srcName {
+				sem <- 1
+				u.ifbNumber = ifbNumber
+				<-sem
+				break
+			}
 		}
 	}
-
-	filters[ifbNumber] = ifbNumber
-
-	// Loop through dests to update them
-	for _, u := range opts.dests {
-		if u.remoteName == srcName {
-			sem <- 1
-			u.ifbNumber = ifbNumber
-			<-sem
-			break
-		}
-	}
-	// }
 
 	return nil
 }
 
-// func deleteUnusedFilters() error {
-// 	for index, ifbNumber := range filters {
-// 		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
-// 		if DBEntryExists(keyName) == false {
-// 			log.Debug("filter removed: ", ifbNumber)
-// 			// Remove old filter
-// 			cmdDeleteFilter(ifbNumber)
-// 			delete(filters, index)
-// 		}
-// 	}
-// 	return nil
-// }
+func deleteUnusedFilters() {
+ 	for index, ifbNumber := range filters {
+ 		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
+ 		if !DBEntryExists(keyName) {
+ 			log.Debug("filter removed: ", ifbNumber)
+ 			// Remove old filter
+ 			_ = cmdDeleteFilter(ifbNumber)
+ 			delete(filters, index)
+ 		}
+ 	}
+}
 
 func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
@@ -650,14 +660,10 @@ func cmdExec(cli string) (string, error) {
 
 func cmdCreateIfb(shape map[string]string) error {
 	ifbNumber := shape["ifb_uniqueId"]
-	_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
-	if err != nil {
-		return err
-	}
 
 	//"ip link add $ifb$ifbnumber type ifb"
 	str := "ip link add ifb" + ifbNumber + " type ifb"
-	_, err = cmdExec(str)
+	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("ERROR ifb" + ifbNumber + " already exist in sidecar")
 		return err
@@ -746,17 +752,28 @@ func cmdDeleteFilter(ifbNumber string) error {
 	return nil
 }
 
-func cmdCreateFilter(ifbNumber string, ipSrc string) error {
+func initializeOnFirstPass() error {
 
-	_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
-	if err != nil {
-		return err
-	}
+        if(firstTimePass == true) {
+                _, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
+                if err != nil {
+                        log.Info("Error: ", err)
+                        return err
+                }
 
-	_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
-	if err != nil {
-		return err
-	}
+                _, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
+                if err != nil {
+                        log.Info("Error: ", err)
+                        return err
+                }
+                firstTimePass = false
+        }
+	return nil
+}
+
+func cmdCreateFilter(ifbNumber string, ipSrc string) {
+
+//	start := time.Now()
 
 	//"tc filter add dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + ifbNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
@@ -764,12 +781,19 @@ func cmdCreateFilter(ifbNumber string, ipSrc string) error {
 	//fonction must be a replace... a replace Adds if not there or replace if existing
 	//"tc filter replace dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + ifbNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
-	_, err = cmdExec(str)
+	_, err := cmdExec(str)
 	if err != nil {
-		return err
+		log.Info("Error: ", err)
+		return
 	}
-
-	return nil
+/*	elapsed := time.Since(start)
+        log.WithFields(logrus.Fields{
+                "meep.component":              "sidecar",
+                "meep.time.location":          "cmdCreateFilter",
+                "meep.time.exec":              elapsed,
+		"meep.time.ifb":               ifbNumber,
+        }).Info("Time execution log")
+*/
 }
 
 func randSeq(n int) string {
