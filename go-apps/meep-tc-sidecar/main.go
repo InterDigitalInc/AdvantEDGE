@@ -16,7 +16,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-	logrus "github.com/sirupsen/logrus"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
 
@@ -187,28 +186,12 @@ func processLbMsg(payload string) {
 
 func refreshNetCharRules() {
 	// Create shape rules
-        start := time.Now()
-
-
-
 	_ = initializeOnFirstPass()
 
 	_ = createIfbs()
-        elapsed := time.Since(start)
-        log.WithFields(logrus.Fields{
-                "meep.component":              "sidecar",
-                "meep.time.location":          "createIfbs done",
-                "meep.time.exec":              elapsed,
-        }).Info("Time execution log")
 
 	// Create new filters (lower priority than the old one)
 	_ = createFilters()
-        elapsed = time.Since(start)
-        log.WithFields(logrus.Fields{
-                "meep.component":              "sidecar",
-                "meep.time.location":          "createFilters done",
-                "meep.time.exec":              elapsed,
-        }).Info("Time execution log")
 
 	// // Delete unused filters
 	deleteUnusedFilters()
@@ -558,6 +541,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 
 	return nil
 }
+
 /*
 func flushFilters() {
 
@@ -616,15 +600,15 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 }
 
 func deleteUnusedFilters() {
- 	for index, ifbNumber := range filters {
- 		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
- 		if !DBEntryExists(keyName) {
- 			log.Debug("filter removed: ", ifbNumber)
- 			// Remove old filter
- 			_ = cmdDeleteFilter(ifbNumber)
- 			delete(filters, index)
- 		}
- 	}
+	for index, ifbNumber := range filters {
+		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
+		if !DBEntryExists(keyName) {
+			log.Debug("filter removed: ", ifbNumber)
+			// Remove old filter
+			_ = cmdDeleteFilter(ifbNumber)
+			delete(filters, index)
+		}
+	}
 }
 
 func deleteUnusedIfbs() {
@@ -754,26 +738,24 @@ func cmdDeleteFilter(ifbNumber string) error {
 
 func initializeOnFirstPass() error {
 
-        if(firstTimePass == true) {
-                _, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
-                if err != nil {
-                        log.Info("Error: ", err)
-                        return err
-                }
+	if firstTimePass {
+		_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
+		if err != nil {
+			log.Info("Error: ", err)
+			return err
+		}
 
-                _, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
-                if err != nil {
-                        log.Info("Error: ", err)
-                        return err
-                }
-                firstTimePass = false
-        }
+		_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
+		if err != nil {
+			log.Info("Error: ", err)
+			return err
+		}
+		firstTimePass = false
+	}
 	return nil
 }
 
 func cmdCreateFilter(ifbNumber string, ipSrc string) {
-
-//	start := time.Now()
 
 	//"tc filter add dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + ifbNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
@@ -786,14 +768,6 @@ func cmdCreateFilter(ifbNumber string, ipSrc string) {
 		log.Info("Error: ", err)
 		return
 	}
-/*	elapsed := time.Since(start)
-        log.WithFields(logrus.Fields{
-                "meep.component":              "sidecar",
-                "meep.time.location":          "cmdCreateFilter",
-                "meep.time.exec":              elapsed,
-		"meep.time.ifb":               ifbNumber,
-        }).Info("Time execution log")
-*/
 }
 
 func randSeq(n int) string {
