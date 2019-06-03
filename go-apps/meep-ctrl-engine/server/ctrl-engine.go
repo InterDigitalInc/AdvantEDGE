@@ -53,6 +53,7 @@ func getCorePodsList() map[string]bool {
 		"meep-webhook":     false,
 		"meep-mg-manager":  false,
 		"meep-mon-engine":  false,
+                "meep-loc-serv":    false,
 		"meep-tc-engine":   false,
 		"meep-metricbeat":  false,
 		"virt-engine":      false,

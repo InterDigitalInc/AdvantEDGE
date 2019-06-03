@@ -39,7 +39,7 @@ Valid targets:`,
   # Dockerize meep-ctrl-engine component only
   meepctl dockerize meep-ctrl-engine`,
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar"},
+	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-loc-serv", "meep-tc-engine", "meep-tc-sidecar"},
 	Run: func(cmd *cobra.Command, args []string) {
 		if !utils.ConfigValidate("") {
 			fmt.Println("Fix configuration issues")
