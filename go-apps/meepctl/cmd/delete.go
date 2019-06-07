@@ -140,6 +140,7 @@ func deleteDep(cobraCmd *cobra.Command) {
 	k8sDelete("meep-filebeat", cobraCmd)
 	k8sDelete("meep-curator", cobraCmd)
 	k8sDelete("meep-elasticsearch", cobraCmd)
+	k8sDelete("meep-docker-registry", cobraCmd)
 
 	// Wait for all pvc delete routines to complete
 	// NOTE: Must be checked after deleting elastic

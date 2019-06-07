@@ -6,8 +6,8 @@ namespace: default
 
 deployment:
   image:
-    name: advantedge-master.com:5000/demo-server
-    pullpolicy: IfNotPresent
+    name: meep-docker-registry:30001/demo-server
+    pullpolicy: Always
 
 service:
   name: ""

@@ -13,7 +13,7 @@ deployment:
 image:
   repository: meep-tc-engine
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: NodePort

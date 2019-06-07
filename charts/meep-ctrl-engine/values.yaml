@@ -13,7 +13,7 @@ deployment:
 image:
   repository: meep-ctrl-engine
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: NodePort

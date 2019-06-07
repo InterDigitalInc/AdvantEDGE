@@ -22,14 +22,14 @@ service:
 image:
   repository: meep-webhook
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 sidecar:
   name: meep-tc-sidecar
   image:
-    repository: meep-tc-sidecar
+    repository: meep-docker-registry:30001/meep-tc-sidecar
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
 webhook:
   name: meep-webhook.idcc.com

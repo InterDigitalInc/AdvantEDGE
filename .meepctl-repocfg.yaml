@@ -64,6 +64,8 @@ repo:
       codecov: true
       lint: true
   dep:
+    docker-registry:
+      chart: charts/docker-registry
     elastic:
       es:
         chart: incubator/elasticsearch

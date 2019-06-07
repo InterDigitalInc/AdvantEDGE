@@ -106,8 +106,8 @@ func dockerizeAll(cobraCmd *cobra.Command) {
 func dockerize(targetName string, cobraCmd *cobra.Command) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	gitDir := viper.GetString("meep.gitdir")
-	binDir := gitDir + "/" + target["bin"]
+	gitdir := viper.GetString("meep.gitdir")
+	bindir := gitdir + "/" + target["bin"]
 
 	if len(target) == 0 {
 		fmt.Println("Invalid target:", targetName)
@@ -118,8 +118,8 @@ func dockerize(targetName string, cobraCmd *cobra.Command) {
 	data := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".docker-data")
 	if len(data) != 0 {
 		for k, v := range data {
-			dstDataDir := binDir + "/" + k
-			srcDataDir := gitDir + "/" + v
+			dstDataDir := bindir + "/" + k
+			srcDataDir := gitdir + "/" + v
 			if _, err := os.Stat(srcDataDir); !os.IsNotExist(err) {
 				if verbose {
 					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
@@ -134,16 +134,18 @@ func dockerize(targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 
-	// dockerize
-	path := gitDir + "/" + target["bin"]
+	// dockerize & push to private meep docker registry
+	path := gitdir + "/" + target["bin"]
 	fmt.Println("Dockerizing", targetName)
-	cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", targetName, path)
+	cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", "meep-docker-registry:30001/"+targetName, path)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	cmd = exec.Command("docker", "push", "meep-docker-registry:30001/"+targetName)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 
 	// cleanup data
 	if len(data) != 0 {
 		for k := range data {
-			dstDataDir := binDir + "/" + k
+			dstDataDir := bindir + "/" + k
 			cmd := exec.Command("rm", "-r", dstDataDir)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
