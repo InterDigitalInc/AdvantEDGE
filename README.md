@@ -1,5 +1,9 @@
 ![AdvantEDGE-logo](./docs/images/AdvantEDGE-logo_Blue-01.png)
 
+_Complete AdvantEDGE documentation is now available in the [AdvantEDGE Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki)_
+
+------
+
 AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes.
 
 > AdvantEDGE provides an emulation environment, enabling experimentation with Edge Computing Technologies, Applications, and Services.  The platform facilitates users to explore edge / fog deployment models and their impact to applications and services in short and agile iterations.
@@ -27,57 +31,35 @@ An understanding of some AdvantEDGE concepts is helpful towards effectively usin
 Before getting started we recommend familiarity with key [AdvantEDGE concepts](docs/concepts.md)
 
 ## Getting started
+To get started using AdvantEDGE, the following high-level steps are needed:
 
-- [Setup runtime environment (Ubuntu/Dockers/Kubernetes/Helm)](docs/setup_runtime.md)
+- Setup runtime environment (Ubuntu/Dockers/Kubernetes/Helm)
+- Clone AdvantEDGE repo
+- Install & Configure meepctl tool
+- Deploy AdvantEDGE micro-services
 
-- Clone the AdvantEDGE repo
-  ```
-  git clone https://github.com/<your-fork>/AdvantEDGE.git
-  ```
-  > **Note:** Assumes local gitdir = `~/AdvantEDGE`
+Step-by-step details are available in the [Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki#getting-started)
 
-- Obtain AdvantEDGE binaries
-  - [Build from source](#building)
-  - Optionally use pre-built binaries (from GitHub release)
-    ```
-    # Get bin folder tarball from desired release
-    cd ~/AdvantEDGE
-    tar -zxvf advantedge.<version>.linux-amd64.tar.gz
-    ```
-
-- Setup [*meepctl*](docs/meepctl/meepctl.md) tool
-  - Copy to an executable path
-    ```
-    sudo cp ~/AdvantEDGE/bin/meepctl/meepctl /usr/local/bin/
-    ```
-  - Configure
-    ```
-    meepctl config set --ip <your-node-ip> --gitdir /home/<user>/AdvantEDGE
-    ```
-
-- [Deploy AdvantEDGE](docs/deploy.md)
-
-- [Use AdvantEDGE](docs/use.md)
 
 ## Building
+The backend portion of AdvantEDGE is implemented as a collection of micro-services in Golang.
 
-- [Setup development environment (Ubuntu/Go/Node.js/NPM/Linters)](docs/setup_dev.md)
+The frontend portion of AdvantEDGE is implemented using Javascript, React and Redux technologies.
 
-- Clone the AdvantEDGE repo<br>
-  `git clone https://github.com/<your-fork>/AdvantEDGE.git`<br>
-  (*assuming local gitdir =* `~/AdvantEDGE`)
+To re-build either of these components, you first need to setup the development environment and then use the meepctl tool.
 
-- [Build AdvantEDGE](docs/build.md)
+Step-by-step details are available in the [Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki#building)
 
 ## Testing
+The AdvantEDGE platform comes with automated system tests using Cypress.
 
-The AdvantEDGE platform test procedures are described [here](docs/testing.md)
+Step-by-step details are available in the [Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki/test-advantedge)
 
 ## Upstream communication
 
 We use GitHub issues.
 
-So just open an issue in the repo to provide user feedback, report software bugs or request enhancements.
+So just open an issue in the repo to provide user feedback, report bugs or request enhancements.
 
 ## Licensing
 
