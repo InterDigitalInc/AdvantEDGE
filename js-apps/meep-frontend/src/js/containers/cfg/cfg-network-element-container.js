@@ -635,14 +635,14 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_UE,
       ELEMENT_TYPE_FOG,
-      ELEMENT_TYPE_EDGE,
-      ELEMENT_TYPE_CN
+      ELEMENT_TYPE_EDGE
+      // ELEMENT_TYPE_CN
     ]
   },
   {
     label: 'Process',
     options: [
-      ELEMENT_TYPE_MECSVC,
+      // ELEMENT_TYPE_MECSVC,
       ELEMENT_TYPE_EDGE_APP,
       ELEMENT_TYPE_CLOUD_APP,
       ELEMENT_TYPE_EXT_UE_APP,
