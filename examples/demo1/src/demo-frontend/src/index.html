@@ -62,6 +62,27 @@
                                 </div>
                                 <div class="mdc-notched-outline__idle"></div>
                             </div>
+                            <div id="targeted-ue-app-name-1-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
+                                <input type="text" id="targeted-ue-app-name-1-tf" class="mdc-text-field__input" aria-controls="targeted-ue-app-name-validation-message">
+                                <label for="targeted-ue-app-name-1-tf" class="mdc-floating-label">Targeted UE App Name</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+                            <div id="targeted-ue-app-name-2-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
+                                <input type="text" id="targeted-ue-app-name-2-tf" class="mdc-text-field__input" aria-controls="targeted-ue-app-name-validation-message">
+                                <label for="targeted-ue-app-name-2-tf" class="mdc-floating-label">Targeted UE App Name</label>
+                                <div class="mdc-notched-outline">
+                                    <svg>
+                                        <path class="mdc-notched-outline__path"/>
+                                    </svg>
+                                </div>
+                                <div class="mdc-notched-outline__idle"></div>
+                            </div>
+
                             <div>
                                 <BR><div class="mdc-typography--headline6">Service Information</div>
 
@@ -73,7 +94,7 @@
                                 </table>
                             </div>
                             <div>
-                                <BR><BR><div class="mdc-typography--headline6">Node Information</div>
+                                <BR><div class="mdc-typography--headline6">Node Information</div>
 
                                 <table class="idcc-margin-top">
                                     <tr>
@@ -87,7 +108,25 @@
                                 </table>
                             </div>
                             <div>
-                                <BR><BR><div class="mdc-typography--headline6">Application Statistics</div>
+                                <BR><div class="mdc-typography--headline6">UEs Location</div>
+
+                                <table class="idcc-margin-top">
+                                    <tr>
+                                        <td><span class="idcc-margin-left mdc-typography--subtitle1">Name<font color="white">....</font></span></td>
+					<td><span class="idcc-margin-left mdc-typography--subtitle1">Location (Zone / POA)<font color="white">....</font></span></td>
+                                    </tr>
+                                    <tr>
+					<td><span id="demo-svc-loc-serv-address-1" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                        <td><span id="demo-svc-loc-serv-location-1" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span id="demo-svc-loc-serv-address-2" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                        <td><span id="demo-svc-loc-serv-location-2" class="idcc-margin-left mdc-typography--subtitle1"></span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <BR><div class="mdc-typography--headline6">Application Statistics</div>
 
                                 <table class="idcc-margin-top">
                                     <tr>
@@ -102,7 +141,7 @@
                                 <center><button id="start-demo-svc-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">RESTART COUNTER</button></center>
                             </div>
                             <div>
-                                <BR><BR><div class="mdc-typography--headline6">Traffic Generator*</div>
+                                <BR><div class="mdc-typography--headline6">Traffic Generator*</div>
                             </div>
                             <div id="iperf-bw-tf-div" class="idcc-fullwidth mdc-text-field mdc-text-field--outlined">
                                 <input type="number" id="iperf-bw-tf" class="mdc-text-field__input" aria-controls="iperf-bw-validation-message">
@@ -120,7 +159,7 @@
                                 <br>
                                 <center><button id="start-demo-iperf-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">START TRAFFIC</button><button id="stop-demo-iperf-button" class="idcc-button mdc-button mdc-button--raised mdc-button--dense">STOP TRAFFIC</button></center>
                             </div>
-                            <div><BR>* only enabled while app is running</div>
+                            <div>* only enabled while app is running</div>
                         </div>
 
                         <div>

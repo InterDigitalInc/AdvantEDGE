@@ -45,15 +45,15 @@ var nextUserSubscriptionIdAvailable int
 
 //var nextZoneStatusSubscriptionIdAvailable = 1
 
-var zonalSubscriptionEnteringMap = map[string]string{}
-var zonalSubscriptionLeavingMap = map[string]string{}
-var zonalSubscriptionTransferringMap = map[string]string{}
-var zonalSubscriptionMap = map[string]string{}
+var zonalSubscriptionEnteringMap = map[int]string{}
+var zonalSubscriptionLeavingMap = map[int]string{}
+var zonalSubscriptionTransferringMap = map[int]string{}
+var zonalSubscriptionMap = map[int]string{}
 
-var userSubscriptionEnteringMap = map[string]string{}
-var userSubscriptionLeavingMap = map[string]string{}
-var userSubscriptionTransferringMap = map[string]string{}
-var userSubscriptionMap = map[string]string{}
+var userSubscriptionEnteringMap = map[int]string{}
+var userSubscriptionLeavingMap = map[int]string{}
+var userSubscriptionTransferringMap = map[int]string{}
+var userSubscriptionMap = map[int]string{}
 
 var pubsub *redis.PubSub
 var LOC_SERV_DB = 5
@@ -119,62 +119,66 @@ func createClient(notifyPath string) (*subs.APIClient, error) {
 	return subsAppClient, nil
 }
 
-func deregisterZonal(subsId string) {
-	zoneId := zonalSubscriptionMap[subsId]
+func deregisterZonal(subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
 	zonalSubscriptionMap[subsId] = ""
-	zonalSubscriptionEnteringMap[zoneId] = ""
-	zonalSubscriptionLeavingMap[zoneId] = ""
-	zonalSubscriptionTransferringMap[zoneId] = ""
+	zonalSubscriptionEnteringMap[subsId] = ""
+	zonalSubscriptionLeavingMap[subsId] = ""
+	zonalSubscriptionTransferringMap[subsId] = ""
 }
 
-func registerZonal(zoneId string, event []UserEventType, subsId string) {
+func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
+
+	subsId, _ := strconv.Atoi(subsIdStr)
 
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
 			case ENTERING:
-				zonalSubscriptionEnteringMap[zoneId] = subsId
+				zonalSubscriptionEnteringMap[subsId] = zoneId
 			case LEAVING:
-				zonalSubscriptionLeavingMap[zoneId] = subsId
+				zonalSubscriptionLeavingMap[subsId] = zoneId
 			case TRANSFERRING:
-				zonalSubscriptionTransferringMap[zoneId] = subsId
+				zonalSubscriptionTransferringMap[subsId] = zoneId
 			default:
 			}
 		}
 	} else {
-		zonalSubscriptionEnteringMap[zoneId] = subsId
-		zonalSubscriptionLeavingMap[zoneId] = subsId
-		zonalSubscriptionTransferringMap[zoneId] = subsId
+		zonalSubscriptionEnteringMap[subsId] = zoneId
+		zonalSubscriptionLeavingMap[subsId] = zoneId
+		zonalSubscriptionTransferringMap[subsId] = zoneId
 	}
 	zonalSubscriptionMap[subsId] = zoneId
 }
 
-func deregisterUser(subsId string) {
-	userAddress := userSubscriptionMap[subsId]
+func deregisterUser(subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
 	userSubscriptionMap[subsId] = ""
-	userSubscriptionEnteringMap[userAddress] = ""
-	userSubscriptionLeavingMap[userAddress] = ""
-	userSubscriptionTransferringMap[userAddress] = ""
+	userSubscriptionEnteringMap[subsId] = ""
+	userSubscriptionLeavingMap[subsId] = ""
+	userSubscriptionTransferringMap[subsId] = ""
 }
 
-func registerUser(userAddress string, event []UserEventType, subsId string) {
+func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
+
+	subsId, _ := strconv.Atoi(subsIdStr)
 
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
 			case ENTERING:
-				userSubscriptionEnteringMap[userAddress] = subsId
+				userSubscriptionEnteringMap[subsId] = userAddress
 			case LEAVING:
-				userSubscriptionLeavingMap[userAddress] = subsId
+				userSubscriptionLeavingMap[subsId] = userAddress
 			case TRANSFERRING:
-				userSubscriptionTransferringMap[userAddress] = subsId
+				userSubscriptionTransferringMap[subsId] = userAddress
 			default:
 			}
 		}
 	} else {
-		userSubscriptionEnteringMap[userAddress] = subsId
-		userSubscriptionLeavingMap[userAddress] = subsId
-		userSubscriptionTransferringMap[userAddress] = subsId
+		userSubscriptionEnteringMap[subsId] = userAddress
+		userSubscriptionLeavingMap[subsId] = userAddress
+		userSubscriptionTransferringMap[subsId] = userAddress
 	}
 	userSubscriptionMap[subsId] = userAddress
 }
@@ -190,57 +194,53 @@ func checkNotificationRegistrations(payload string) {
 
 func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
-	//user is the same so we just need to get it once
-	subsId := userSubscriptionEnteringMap[userId]
-	if subsId == "" {
-		subsId = userSubscriptionLeavingMap[userId]
-	}
-	if subsId == "" {
-		subsId = userSubscriptionTransferringMap[userId]
-	}
-	if subsId == "" {
-		return
-	}
+	//check all that applies
+	for subsId, value := range userSubscriptionMap {
 
-	jsonInfo := db.DbJsonGet(dbClient, subsId, moduleLocServ+":"+typeUserSubscription)
-	if jsonInfo == "" {
-		return
-	}
+		if value == userId {
 
-	subscription := convertJsonToUserSubscription(jsonInfo)
-
-	var zonal subs.TrackingNotification
-	zonal.Address = userId
-	zonal.Timestamp = time.Now().String()
-
-	zonal.CallbackData = subscription.ClientCorrelator
-
-	if newZoneId != oldZoneId {
-		if userSubscriptionEnteringMap[userId] != "" {
-			zonal.ZoneId = newZoneId
-			zonal.CurrentAccessPointId = newApId
-			zonal.UserEventType = "ENTERING"
-			go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-			log.Info("User Notify Entering event in zone " + newZoneId + " for user " + userId)
-		}
-		if oldZoneId != "" {
-			if userSubscriptionLeavingMap[userId] != "" {
-				zonal.ZoneId = oldZoneId
-				zonal.CurrentAccessPointId = oldApId
-				zonal.UserEventType = "LEAVING"
-				go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-				log.Info("User Notify Leaving event in zone " + oldZoneId + " for user " + userId)
+			subsIdStr := strconv.Itoa(subsId)
+			jsonInfo := db.DbJsonGet(dbClient, subsIdStr, moduleLocServ+":"+typeUserSubscription)
+			if jsonInfo == "" {
+				return
 			}
-		}
-	} else {
-		if newApId != oldApId {
-			if userSubscriptionTransferringMap[userId] != "" {
-				zonal.ZoneId = newZoneId
-				zonal.CurrentAccessPointId = newApId
-				zonal.PreviousAccessPointId = oldApId
-				zonal.UserEventType = "TRANSFERRING"
-				go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-				log.Info("User Notify Transferring event within zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
+
+			subscription := convertJsonToUserSubscription(jsonInfo)
+
+			var zonal subs.TrackingNotification
+			zonal.Address = userId
+			zonal.Timestamp = time.Now().String()
+
+			zonal.CallbackData = subscription.ClientCorrelator
+
+			if newZoneId != oldZoneId {
+				if userSubscriptionEnteringMap[subsId] != "" {
+					zonal.ZoneId = newZoneId
+					zonal.CurrentAccessPointId = newApId
+					zonal.UserEventType = "ENTERING"
+					go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
+				}
+				if oldZoneId != "" {
+					if userSubscriptionLeavingMap[subsId] != "" {
+						zonal.ZoneId = oldZoneId
+						zonal.CurrentAccessPointId = oldApId
+						zonal.UserEventType = "LEAVING"
+						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
+					}
+				}
+			} else {
+				if newApId != oldApId {
+					if userSubscriptionTransferringMap[subsId] != "" {
+						zonal.ZoneId = newZoneId
+						zonal.CurrentAccessPointId = newApId
+						zonal.PreviousAccessPointId = oldApId
+						zonal.UserEventType = "TRANSFERRING"
+						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						log.Info("User Notification" + "(" + subsIdStr + "): " + " Transferring event within zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
+					}
+				}
 			}
 		}
 	}
@@ -258,64 +258,71 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
-	if newZoneId != oldZoneId {
+	//check all that applies
+	for subsId, value := range zonalSubscriptionMap {
 
-		if zonalSubscriptionEnteringMap[newZoneId] != "" {
-			subsId := zonalSubscriptionEnteringMap[newZoneId]
-			jsonInfo := db.DbJsonGet(dbClient, subsId, moduleLocServ+":"+typeZonalSubscription)
-			if jsonInfo != "" {
-				subscription := convertJsonToZonalSubscription(jsonInfo)
+		if value == newZoneId {
 
-				var zonal subs.TrackingNotification
-				zonal.ZoneId = newZoneId
-				zonal.CurrentAccessPointId = newApId
-				zonal.Address = userId
-				zonal.UserEventType = "ENTERING"
-				zonal.Timestamp = time.Now().String()
-				zonal.CallbackData = subscription.ClientCorrelator
-				go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-				log.Info("Zonal Notify Entering event in zone " + newZoneId + " for user " + userId)
+			if newZoneId != oldZoneId {
+
+				if zonalSubscriptionEnteringMap[subsId] != "" {
+					subsIdStr := strconv.Itoa(subsId)
+					jsonInfo := db.DbJsonGet(dbClient, subsIdStr, moduleLocServ+":"+typeZonalSubscription)
+					if jsonInfo != "" {
+						subscription := convertJsonToZonalSubscription(jsonInfo)
+
+						var zonal subs.TrackingNotification
+						zonal.ZoneId = newZoneId
+						zonal.CurrentAccessPointId = newApId
+						zonal.Address = userId
+						zonal.UserEventType = "ENTERING"
+						zonal.Timestamp = time.Now().String()
+						zonal.CallbackData = subscription.ClientCorrelator
+						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						log.Info("Zonal Notify Entering event in zone " + newZoneId + " for user " + userId)
+					}
+				}
+			} else {
+				if newApId != oldApId {
+					if zonalSubscriptionTransferringMap[subsId] != "" {
+						subsIdStr := strconv.Itoa(subsId)
+						jsonInfo := db.DbJsonGet(dbClient, subsIdStr, moduleLocServ+":"+typeZonalSubscription)
+						if jsonInfo != "" {
+							subscription := convertJsonToZonalSubscription(jsonInfo)
+
+							var zonal subs.TrackingNotification
+							zonal.ZoneId = newZoneId
+							zonal.CurrentAccessPointId = newApId
+							zonal.PreviousAccessPointId = oldApId
+							zonal.Address = userId
+							zonal.UserEventType = "TRANSFERRING"
+							zonal.Timestamp = time.Now().String()
+							zonal.CallbackData = subscription.ClientCorrelator
+							go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+							log.Info("Zonal Notify Transferring event in zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
+						}
+					}
+				}
 			}
-		}
-		if zonalSubscriptionLeavingMap[oldZoneId] != "" {
-			subsId := zonalSubscriptionLeavingMap[oldZoneId]
-			jsonInfo := db.DbJsonGet(dbClient, subsId, moduleLocServ+":"+typeZonalSubscription)
-			if jsonInfo != "" {
+		} else {
+			if value == oldZoneId {
+				if zonalSubscriptionLeavingMap[subsId] != "" {
+					subsIdStr := strconv.Itoa(subsId)
+					jsonInfo := db.DbJsonGet(dbClient, subsIdStr, moduleLocServ+":"+typeZonalSubscription)
+					if jsonInfo != "" {
 
-				subscription := convertJsonToZonalSubscription(jsonInfo)
+						subscription := convertJsonToZonalSubscription(jsonInfo)
 
-				var zonal subs.TrackingNotification
-				zonal.ZoneId = oldZoneId
-				zonal.CurrentAccessPointId = oldApId
-				zonal.Address = userId
-				zonal.UserEventType = "LEAVING"
-				zonal.Timestamp = time.Now().String()
-				zonal.CallbackData = subscription.ClientCorrelator
-				go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-				log.Info("Zonal Notify Leaving event in zone " + oldZoneId + " for user " + userId)
-			}
-		}
-	} else {
-		if newApId != oldApId {
-			if zonalSubscriptionTransferringMap[newZoneId] != "" {
-				subsId := zonalSubscriptionTransferringMap[newZoneId]
-				jsonInfo := db.DbJsonGet(dbClient, subsId, moduleLocServ+":"+typeZonalSubscription)
-				if jsonInfo != "" {
-					subscription := convertJsonToZonalSubscription(jsonInfo)
-
-					var zonal subs.TrackingNotification
-					zonal.ZoneId = newZoneId
-					zonal.CurrentAccessPointId = newApId
-					zonal.PreviousAccessPointId = oldApId
-					zonal.Address = userId
-					zonal.UserEventType = "TRANSFERRING"
-					zonal.Timestamp = time.Now().String()
-					zonal.CallbackData = subscription.ClientCorrelator
-
-					go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsId, zonal)
-
-					//						go client.NotificationsApi.TrackingNotification(context.TODO(), subsId, zonal)
-					log.Info("Zonal Notify Transferring event in zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
+						var zonal subs.TrackingNotification
+						zonal.ZoneId = oldZoneId
+						zonal.CurrentAccessPointId = oldApId
+						zonal.Address = userId
+						zonal.UserEventType = "LEAVING"
+						zonal.Timestamp = time.Now().String()
+						zonal.CallbackData = subscription.ClientCorrelator
+						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						log.Info("Zonal Notify Leaving event in zone " + oldZoneId + " for user " + userId)
+					}
 				}
 			}
 		}
@@ -964,20 +971,18 @@ func zonalTrafficReInit() {
 				maxZonalSubscriptionId = subscriptionId
 			}
 
-			subscriptionIdStr := strconv.Itoa(subscriptionId)
-
 			for i := 0; i < len(zone.UserEventCriteria); i++ {
 				switch zone.UserEventCriteria[i] {
 				case ENTERING:
-					zonalSubscriptionEnteringMap[zone.ZoneId] = subscriptionIdStr
+					zonalSubscriptionEnteringMap[subscriptionId] = zone.ZoneId
 				case LEAVING:
-					zonalSubscriptionLeavingMap[zone.ZoneId] = subscriptionIdStr
+					zonalSubscriptionLeavingMap[subscriptionId] = zone.ZoneId
 				case TRANSFERRING:
-					zonalSubscriptionTransferringMap[zone.ZoneId] = subscriptionIdStr
+					zonalSubscriptionTransferringMap[subscriptionId] = zone.ZoneId
 				default:
 				}
 			}
-			zonalSubscriptionMap[strconv.Itoa(subscriptionId)] = zone.ZoneId
+			zonalSubscriptionMap[subscriptionId] = zone.ZoneId
 		}
 	}
 	nextZonalSubscriptionIdAvailable = maxZonalSubscriptionId + 1
@@ -1002,20 +1007,18 @@ func userTrackingReInit() {
 				maxUserSubscriptionId = subscriptionId
 			}
 
-			subscriptionIdStr := strconv.Itoa(subscriptionId)
-
 			for i := 0; i < len(user.UserEventCriteria); i++ {
 				switch user.UserEventCriteria[i] {
 				case ENTERING:
-					userSubscriptionEnteringMap[user.Address] = subscriptionIdStr
+					userSubscriptionEnteringMap[subscriptionId] = user.Address
 				case LEAVING:
-					userSubscriptionLeavingMap[user.Address] = subscriptionIdStr
+					userSubscriptionLeavingMap[subscriptionId] = user.Address
 				case TRANSFERRING:
-					userSubscriptionTransferringMap[user.Address] = subscriptionIdStr
+					userSubscriptionTransferringMap[subscriptionId] = user.Address
 				default:
 				}
 			}
-			userSubscriptionMap[strconv.Itoa(subscriptionId)] = user.Address
+			userSubscriptionMap[subscriptionId] = user.Address
 		}
 	}
 	nextUserSubscriptionIdAvailable = maxUserSubscriptionId + 1

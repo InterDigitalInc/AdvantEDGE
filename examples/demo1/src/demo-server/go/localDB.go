@@ -21,11 +21,13 @@ var mgAppPort string
 
 var ueIdToStateValueMap map[string]UeState
 var ueIdToTickerMap map[string]*time.Ticker
+var ueIdToUserInfoMap map[string]*UserInfo
 
 func Init() {
 
 	ueIdToStateValueMap = make(map[string]UeState)
 	ueIdToTickerMap = make(map[string]*time.Ticker)
+        ueIdToUserInfoMap = make(map[string]*UserInfo)
 
 
 
@@ -192,3 +194,34 @@ func localDBHandleEvent(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
 }
 
+func localDBUpdateTrackedUes(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+        var notif TrackingNotification
+        decoder := json.NewDecoder(r.Body)
+        err := decoder.Decode(&notif)
+        if err != nil {
+                log.Println(err.Error())
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+
+	var userInfo UserInfo
+	userInfo.Address = notif.Address
+	userInfo.ZoneId = notif.ZoneId
+	userInfo.AccessPointId = notif.CurrentAccessPointId
+
+	ueIdToUserInfoMap[notif.Address] = &userInfo 
+        w.WriteHeader(http.StatusOK)
+
+}
+
+func getLocalDBUserInfo(ueId string) *UserInfo {
+
+	userInfo, ok := ueIdToUserInfoMap[ueId]
+	if ok == false {
+                return nil
+        }
+
+	return userInfo
+}

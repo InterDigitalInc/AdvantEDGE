@@ -65,10 +65,24 @@ var routes = Routes{
 	},
 
         Route{
+                "RcvTrackingNotification",
+                strings.ToUpper("Post"),
+                "/v1/location_notifications/{subscriptionId}",
+                RcvTrackingNotification,
+        },
+
+        Route{
                 "HandleEvent",
                 strings.ToUpper("Post"),
                 "/v1/mg/event",
                 HandleEvent,
+        },
+
+        Route{
+                "GetUeLocation",
+                strings.ToUpper("Get"),
+                "/v1/location/{ueId}",
+                GetUeLocation,
         },
 
 	Route{

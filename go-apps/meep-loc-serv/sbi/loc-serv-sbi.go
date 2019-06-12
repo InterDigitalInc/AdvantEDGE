@@ -106,6 +106,8 @@ func processActiveScenarioUpdate() {
 		//scenario being terminated, we just clear every loc-service entries from the DB controlled by the SBI
 		db.RedisDBFlush(dbClient, moduleLocServ+":"+typeUser+":")
 		db.RedisDBFlush(dbClient, moduleLocServ+":"+typeZone+":") //also removes accesspoints associated to the zone
+		//clear everything related to the location service upon a scenario termination, even the subscription
+		//db.RedisDBFlush(dbClient, moduleLocServ+":")
 		return
 	}
 	// Unmarshal Active scenario

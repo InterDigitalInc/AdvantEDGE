@@ -114,20 +114,37 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MeepDemoAppApi.EdgeAppInfoApi* | [**getEdgeInfo**](docs/EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add infoo
+*MeepDemoAppApi.EdgeAppInfoApi* | [**getEdgeInfo**](docs/EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add info
+*MeepDemoAppApi.NotificationsApi* | [**rcvTrackingNotification**](docs/NotificationsApi.md#rcvTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 *MeepDemoAppApi.StateTransferApi* | [**handleEvent**](docs/StateTransferApi.md#handleEvent) | **POST** /mg/event | Send event notification to registered Mobility Group Application
+*MeepDemoAppApi.UELocationApi* | [**getUeLocation**](docs/UELocationApi.md#getUeLocation) | **GET** /location/{ueId} | Retrieves the UE location values
 *MeepDemoAppApi.UEStateApi* | [**createUeState**](docs/UEStateApi.md#createUeState) | **POST** /ue/{ueId} | Registers the UE and starts a counter
-*MeepDemoAppApi.UEStateApi* | [**deleteUe**](docs/UEStateApi.md#deleteUe) | **DELETE** /ue/{ueId} | Deregistration of a UE
 *MeepDemoAppApi.UEStateApi* | [**getUeState**](docs/UEStateApi.md#getUeState) | **GET** /ue/{ueId} | Retrieves the UE state values
-*MeepDemoAppApi.UEStateApi* | [**updateUeState**](docs/UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE states values
 
 
 ## Documentation for Models
 
+ - [MeepDemoAppApi.AccessPointId](docs/AccessPointId.md)
+ - [MeepDemoAppApi.Address](docs/Address.md)
+ - [MeepDemoAppApi.CallbackData](docs/CallbackData.md)
  - [MeepDemoAppApi.EdgeInfo](docs/EdgeInfo.md)
+ - [MeepDemoAppApi.InterestRealm](docs/InterestRealm.md)
  - [MeepDemoAppApi.MobilityGroupAppState](docs/MobilityGroupAppState.md)
  - [MeepDemoAppApi.MobilityGroupEvent](docs/MobilityGroupEvent.md)
+ - [MeepDemoAppApi.NumberOfAccessPoints](docs/NumberOfAccessPoints.md)
+ - [MeepDemoAppApi.NumberOfUsers](docs/NumberOfUsers.md)
+ - [MeepDemoAppApi.ResourceURL](docs/ResourceURL.md)
+ - [MeepDemoAppApi.SubscriptionId](docs/SubscriptionId.md)
+ - [MeepDemoAppApi.Timestamp](docs/Timestamp.md)
+ - [MeepDemoAppApi.TrackingNotification](docs/TrackingNotification.md)
  - [MeepDemoAppApi.UeState](docs/UeState.md)
+ - [MeepDemoAppApi.UserEventType](docs/UserEventType.md)
+ - [MeepDemoAppApi.UserId](docs/UserId.md)
+ - [MeepDemoAppApi.UserInfo](docs/UserInfo.md)
+ - [MeepDemoAppApi.UserList](docs/UserList.md)
+ - [MeepDemoAppApi.UserTrackingNotification](docs/UserTrackingNotification.md)
+ - [MeepDemoAppApi.ZoneId](docs/ZoneId.md)
+ - [MeepDemoAppApi.ZoneInfo](docs/ZoneInfo.md)
 
 
 ## Documentation for Authorization
