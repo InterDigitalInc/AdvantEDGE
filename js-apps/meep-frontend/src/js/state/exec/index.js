@@ -13,6 +13,7 @@ import { createSelector } from 'reselect';
 import { typeReducer } from './type-reducer';
 import { stateReducer } from './state-reducer';
 import { scenarioReducer } from './scenario-reducer';
+import { displayedScenarioReducer } from './displayed-scenario-reducer';
 import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
@@ -22,6 +23,7 @@ import { getElemFieldVal, FIELD_TYPE } from '../../util/elem-utils';
 export * from './type-reducer';
 export * from './state-reducer';
 export * from './scenario-reducer';
+export * from './displayed-scenario-reducer';
 export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';
@@ -42,6 +44,7 @@ const execReducer = combineReducers({
   type: typeReducer,
   state: stateReducer,
   scenario: scenarioReducer,
+  displayedScenario: displayedScenarioReducer,
   vis: execVisReducer,
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,

@@ -12,7 +12,8 @@ import React, { Component }  from 'react';
 import * as YAML from 'yamljs';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import IDCVis from '../idc-vis';
+// import IDCVis from '../idc-vis';
+import IDCGraph from '../idc-graph';
 import CfgNetworkElementContainer from './cfg-network-element-container';
 import CfgPageScenarioButtons from './cfg-page-scenario-buttons';
 
@@ -533,7 +534,7 @@ class CfgPageContainer extends Component {
                 <GridCell span={8}>
                   <Elevation className="component-style" z={2}>
                     <div style={{padding: 10}}>
-                      <IDCVis
+                      <IDCGraph
                         type={TYPE_CFG}
                         onEditElement={(elem) => this.onEditElement(elem)}
                       />

@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import IDCVis from '../idc-vis';
+import IDCGraph from '../idc-graph';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
@@ -266,7 +266,11 @@ class ExecPageContainer extends Component {
                   <GridCell span={spanLeft}>
                     <Elevation className="component-style" z={2}>
                       <div style={{padding: 10}}>
-                        <IDCVis type={TYPE_EXEC}/>
+                        <IDCGraph
+                          type={TYPE_EXEC}
+                          width={1100}
+                          height={500}
+                        />
                       </div>
                     </Elevation>
                   </GridCell>
