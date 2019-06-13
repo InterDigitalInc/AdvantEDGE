@@ -1,144 +1,217 @@
----
-swagger: "2.0"
+swagger: '2.0'
 info:
-  description: "This is the MEEP Demo App API"
-  version: "0.0.1"
-  title: "MEEP Demo App API"
-  termsOfService: "InterDigital Internal Only"
-host: "127.0.0.1:8086"
-basePath: "/v1"
-tags:
-- name: "Edge App Info"
-- name: "UE State"
-- name: "State Transfer"
-- name: "UE Location"
-- name: "Notifications"
-  description: "AdvantEDGE Location Subscription Notification Callbacks (user and\
-    \ zonal)"
+  description: This is the MEEP Demo App API
+  version: 0.0.1
+  title: MEEP Demo App API
+  termsOfService: InterDigital Internal Only
+host: '127.0.0.1:8086'
+basePath: /v1
 schemes:
-- "http"
+  - http
 consumes:
-- "application/json"
+  - application/json
 produces:
-- "application/json"
+  - application/json
+parameters:
+  Path.UeId:
+    name: ueId
+    in: path
+    description: 'Identity of a ue, refered to as ue id'
+    required: true
+    type: string
+  event:
+    name: event
+    in: body
+    description: Mobility Group event notification
+    required: true
+    schema:
+      $ref: '#/definitions/MobilityGroupEvent'
+    x-exportParamName: event
+  Path.SubscriptionId:
+    name: "subscriptionId"
+    in: "path"
+    description: "Identity of a notification subscription (user or zonal)"
+    required: true
+    type: "string"
+    x-exportParamName: "SubscriptionId"
+  Body.TrackingNotification:
+    in: "body"
+    name: "Notification"
+    description: "Zonal or User Tracking Notification"
+    required: true
+    schema:
+      $ref: "#/definitions/TrackingNotification"
+    x-exportParamName: "Notification"
+tags:
+  - name: Edge App Info
+  - name: UE State
+  - name: State Transfer
+  - name: UE Location
+  - name: Notifications
+    description: "AdvantEDGE Location Subscription Notification Callbacks (user and zonal)"
+
 paths:
   /edge-app:
     get:
       tags:
-      - "Edge App Info"
-      summary: "Retrieve edge add info"
-      description: ""
-      operationId: "getEdgeInfo"
+        - Edge App Info
+      summary: Retrieve edge add info
+      description: ''
+      operationId: getEdgeInfo
       produces:
-      - "application/json"
-      parameters: []
+        - application/json
       responses:
-        200:
-          description: "OK"
+        '200':
+          description: OK
           schema:
-            $ref: "#/definitions/EdgeInfo"
-        404:
-          description: "Not found"
-  /ue/{ueId}:
+            $ref: '#/definitions/EdgeInfo'
+        '404':
+          description: Not found
+  '/ue/{ueId}':
     get:
       tags:
-      - "UE State"
-      summary: "Retrieves the UE state values"
-      description: ""
-      operationId: "getUeState"
+        - UE State
+      summary: Retrieves the UE state values
+      description: ''
+      operationId: getUeState
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "ueId"
-        in: "path"
-        description: "UE identifier"
-        required: true
-        type: "string"
-        x-exportParamName: "UeId"
+        - name: ueId
+          in: path
+          description: UE identifier
+          required: true
+          type: string
+          x-exportParamName: UeId
       responses:
-        200:
-          description: "OK"
+        '200':
+          description: OK
           schema:
-            $ref: "#/definitions/UeState"
-        400:
-          description: "Bad request"
-        404:
-          description: "Not found"
+            $ref: '#/definitions/UeState'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+    delete:
+      tags:
+        - UE State
+      summary: Deregistration of a UE
+      description: ''
+      operationId: deleteUeState
+      produces:
+        - application/json
+      parameters:
+        - name: ueId
+          in: path
+          description: UE identifier
+          required: true
+          type: string
+          x-exportParamName: UeId
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+    put:
+      tags:
+        - UE State
+      summary: Updates the UE state values
+      description: ''
+      operationId: updateUeState
+      produces:
+        - application/json
+      parameters:
+        - name: ueId
+          in: path
+          description: UE identifier
+          required: true
+          type: string
+          x-exportParamName: UeId
+        - in: "body"
+          name: "UeState"
+          description: "Ue state values"
+          required: true
+          schema:
+            $ref: '#/definitions/UeState'
+          x-exportParamName: "UeState"
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
     post:
       tags:
-      - "UE State"
-      summary: "Registers the UE and starts a counter"
-      description: ""
-      operationId: "createUeState"
+        - UE State
+      summary: Registers the UE and starts a counter
+      description: ''
+      operationId: createUeState
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "ueId"
-        in: "path"
-        description: "UE identifier"
-        required: true
-        type: "string"
-        x-exportParamName: "UeId"
+        - name: ueId
+          in: path
+          description: UE identifier
+          required: true
+          type: string
+          x-exportParamName: UeId
       responses:
-        200:
-          description: "OK"
-        400:
-          description: "Bad request"
-        500:
-          description: "Intenal server error"
+        '200':
+          description: OK
+        '400':
+          description: Bad request
+        '500':
+          description: Intenal server error
   /mg/event:
     post:
       tags:
-      - "State Transfer"
-      summary: "Send event notification to registered Mobility Group Application"
-      description: ""
-      operationId: "handleEvent"
+        - State Transfer
+      summary: Send event notification to registered Mobility Group Application
+      description: ''
+      operationId: handleEvent
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - in: "body"
-        name: "event"
-        description: "Mobility Group event notification"
-        required: true
-        schema:
-          $ref: "#/definitions/MobilityGroupEvent"
-        x-exportParamName: "Event"
+        - $ref: '#/parameters/event'
       responses:
-        200:
-          description: "OK"
-        400:
-          description: "Bad request"
-        404:
-          description: "Not found"
-  /location/{ueId}:
+        '200':
+          description: OK
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+  '/location/{ueId}':
     get:
       tags:
-      - "UE Location"
-      summary: "Retrieves the UE location values"
-      description: ""
-      operationId: "getUeLocation"
+        - UE Location
+      summary: Retrieves the UE location values
+      description: ''
+      operationId: getUeLocation
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "ueId"
-        in: "path"
-        description: "UE identifier"
-        required: true
-        type: "string"
-        x-exportParamName: "UeId"
+        - name: ueId
+          in: path
+          description: UE identifier
+          required: true
+          type: string
+          x-exportParamName: UeId
       responses:
-        200:
-          description: "OK"
+        '200':
+          description: OK
           schema:
-            $ref: "#/definitions/UserInfo"
-        400:
-          description: "Bad request"
-        404:
-          description: "Not found"
+            $ref: '#/definitions/UserInfo'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
   /location_notifications/{subscriptionId}:
     post:
       tags:
-      - "Notifications"
+      - Notifications
       summary: "This operation is used by the AdvantEDGE Location Service to issue\
         \ a callback notification towards an ME application with a zonal or user tracking\
         \ subscription"
@@ -163,73 +236,66 @@ paths:
           description: "No Content"
 definitions:
   EdgeInfo:
-    type: "object"
+    type: object
     properties:
       svc:
-        type: "string"
-        description: "Edge app service"
+        type: string
+        description: Edge app service
       name:
-        type: "string"
-        description: "Edge app local name"
+        type: string
+        description: Edge app local name
       ip:
-        type: "string"
-        description: "IP address where the local edge app reside"
-    description: "Edge app basic information object"
+        type: string
+        description: IP address where the local edge app reside
+    description: Edge app basic information object
     example:
       edgeInfo:
-      - svc: "game"
-        name: "edge1-zone1-game"
-        ip: "10.32.0.13"
+        - svc: game
+          name: edge1-zone1-game
+          ip: 10.32.0.13
   MobilityGroupAppState:
-    type: "object"
+    type: object
     properties:
       ueId:
-        type: "string"
-        description: "Mobility Group UE Identifier"
+        type: string
+        description: Mobility Group UE Identifier
       ueState:
-        type: "string"
-        description: "Mobility Group Application State for provided UE"
-    description: "Mobility Group Application State"
-    example:
-      ueState: "ueState"
-      ueId: "ueId"
+        type: string
+        description: Mobility Group Application State for provided UE
+    description: Mobility Group Application State
   MobilityGroupEvent:
-    type: "object"
+    type: object
     properties:
       name:
-        type: "string"
-        description: "Mobility Group event name"
+        type: string
+        description: Mobility Group event name
       type:
-        type: "string"
-        description: "Mobility Group event type"
+        type: string
+        description: Mobility Group event type
         enum:
-        - "STATE-UPDATE"
-        - "STATE-TRANSFER-START"
-        - "STATE-TRANSFER-COMPLETE"
-        - "STATE-TRANSFER-CANCEL"
+          - STATE-UPDATE
+          - STATE-TRANSFER-START
+          - STATE-TRANSFER-COMPLETE
+          - STATE-TRANSFER-CANCEL
       ueId:
-        type: "string"
-        description: "Mobility Group UE identifier"
+        type: string
+        description: Mobility Group UE identifier
       appState:
-        $ref: "#/definitions/MobilityGroupAppState"
-    description: "Event object"
-    example:
-      appState:
-        ueState: "ueState"
-        ueId: "ueId"
-      name: "name"
-      type: "STATE-UPDATE"
-      ueId: "ueId"
+        $ref: '#/definitions/MobilityGroupAppState'
+    description: Event object
   UeState:
-    type: "object"
+    type: object
     properties:
       duration:
-        type: "integer"
-        description: "Duration since the game stated"
-    description: "Ue state basic information object"
+        type: integer
+        description: Duration since the game stated
+      trafficBw:
+        type: integer
+        description: Traffic info for the registered Ue
+    description: Ue state basic information object
     example:
       ueState:
-      - duration: 32
+        - duration: 32
   AccessPointId:
     type: "string"
     description: "Unique identifier of a point of access"
@@ -296,12 +362,6 @@ definitions:
         $ref: "#/definitions/ZoneId"
       resourceURL:
         $ref: "#/definitions/ResourceURL"
-    example:
-      address: "acr:10.1.34.67"
-      resourceURL: "http://172.1.19.2:8081/myService/123456"
-      accessPointId: "001010000000000000000000000000001 or poa001"
-      zoneId: "zone001"
-      userId: "client001"
   UserList:
     type: "object"
     required:
@@ -384,61 +444,33 @@ definitions:
       interestRealma: "NY"
       currentAccessPointId: "001010000000000000000000000000001 or poa001"
       timestamp: "2017-01-01T02:51:43Z"
-parameters:
-  Path.UeId:
-    name: "ueId"
-    in: "path"
-    description: "Identity of a ue, refered to as ue id"
-    required: true
-    type: "string"
-  event:
-    in: "body"
-    name: "event"
-    description: "Mobility Group event notification"
-    required: true
-    schema:
-      $ref: "#/definitions/MobilityGroupEvent"
-    x-exportParamName: "Event"
-  Path.SubscriptionId:
-    name: "subscriptionId"
-    in: "path"
-    description: "Identity of a notification subscription (user or zonal)"
-    required: true
-    type: "string"
-    x-exportParamName: "SubscriptionId"
-  Body.TrackingNotification:
-    in: "body"
-    name: "Notification"
-    description: "Zonal or User Tracking Notification"
-    required: true
-    schema:
-      $ref: "#/definitions/TrackingNotification"
-    x-exportParamName: "Notification"
 responses:
   Std200:
-    description: "OK"
+    description: OK
   Std201:
-    description: "Created"
+    description: Created
   Std202:
-    description: "Accepted"
+    description: Accepted
   Std204:
-    description: "No content"
+    description: No content
   Std304:
-    description: "Not modified"
+    description: Not modified
   Std400:
-    description: "Bad request"
+    description: Bad request
   Std401:
-    description: "Not authorized"
+    description: Not authorized
   Std403:
-    description: "Forbidden"
+    description: Forbidden
   Std404:
-    description: "Not found"
+    description: Not found
   Std409:
-    description: "Conflict"
+    description: Conflict
   Std416:
-    description: "Requested range not satisfiable"
+    description: Requested range not satisfiable
   Std500:
-    description: "Internal server error"
+    description: Internal server error
 externalDocs:
-  description: "Find out more about MEEP Demo App API"
-  url: "http://www.localinfo/pdf"
+  description: Find out more about MEEP Demo App API
+  url: 'http://www.localinfo/pdf'
+
+

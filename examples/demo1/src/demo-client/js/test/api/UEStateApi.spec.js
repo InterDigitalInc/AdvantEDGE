@@ -60,10 +60,30 @@
         done();
       });
     });
+    describe('deleteUeState', function() {
+      it('should call deleteUeState successfully', function(done) {
+        //uncomment below and update the code to test deleteUeState
+        //instance.deleteUeState(function(error) {
+        //  if (error) throw error;
+        //expect().to.be();
+        //});
+        done();
+      });
+    });
     describe('getUeState', function() {
       it('should call getUeState successfully', function(done) {
         //uncomment below and update the code to test getUeState
         //instance.getUeState(function(error) {
+        //  if (error) throw error;
+        //expect().to.be();
+        //});
+        done();
+      });
+    });
+    describe('updateUeState', function() {
+      it('should call updateUeState successfully', function(done) {
+        //uncomment below and update the code to test updateUeState
+        //instance.updateUeState(function(error) {
         //  if (error) throw error;
         //expect().to.be();
         //});

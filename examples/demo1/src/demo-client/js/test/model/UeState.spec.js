@@ -62,6 +62,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property trafficBw (base name: "trafficBw")', function() {
+      // uncomment below and update the code to test the property trafficBw
+      //var instance = new MeepDemoAppApi.UeState();
+      //expect(instance).to.be();
+    });
+
   });
 
 }));

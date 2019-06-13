@@ -95,6 +95,53 @@
     }
 
     /**
+     * Callback function to receive the result of the deleteUeState operation.
+     * @callback module:api/UEStateApi~deleteUeStateCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Deregistration of a UE
+     * 
+     * @param {String} ueId UE identifier
+     * @param {module:api/UEStateApi~deleteUeStateCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.deleteUeState = function(ueId, callback) {
+      var postBody = null;
+
+      // verify the required parameter 'ueId' is set
+      if (ueId === undefined || ueId === null) {
+        throw new Error("Missing the required parameter 'ueId' when calling deleteUeState");
+      }
+
+
+      var pathParams = {
+        'ueId': ueId
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/ue/{ueId}', 'DELETE',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
      * Callback function to receive the result of the getUeState operation.
      * @callback module:api/UEStateApi~getUeStateCallback
      * @param {String} error Error message, if any.
@@ -137,6 +184,59 @@
 
       return this.apiClient.callApi(
         '/ue/{ueId}', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the updateUeState operation.
+     * @callback module:api/UEStateApi~updateUeStateCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Updates the UE state values
+     * 
+     * @param {String} ueId UE identifier
+     * @param {module:model/UeState} ueState Ue state values
+     * @param {module:api/UEStateApi~updateUeStateCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.updateUeState = function(ueId, ueState, callback) {
+      var postBody = ueState;
+
+      // verify the required parameter 'ueId' is set
+      if (ueId === undefined || ueId === null) {
+        throw new Error("Missing the required parameter 'ueId' when calling updateUeState");
+      }
+
+      // verify the required parameter 'ueState' is set
+      if (ueState === undefined || ueState === null) {
+        throw new Error("Missing the required parameter 'ueState' when calling updateUeState");
+      }
+
+
+      var pathParams = {
+        'ueId': ueId
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/ue/{ueId}', 'PUT',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

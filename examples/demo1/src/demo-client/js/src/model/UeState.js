@@ -49,6 +49,7 @@
     var _this = this;
 
 
+
   };
 
   /**
@@ -65,6 +66,9 @@
       if (data.hasOwnProperty('duration')) {
         obj['duration'] = ApiClient.convertToType(data['duration'], 'Number');
       }
+      if (data.hasOwnProperty('trafficBw')) {
+        obj['trafficBw'] = ApiClient.convertToType(data['trafficBw'], 'Number');
+      }
     }
     return obj;
   }
@@ -74,6 +78,11 @@
    * @member {Number} duration
    */
   exports.prototype['duration'] = undefined;
+  /**
+   * Traffic info for the registered Ue
+   * @member {Number} trafficBw
+   */
+  exports.prototype['trafficBw'] = undefined;
 
 
 

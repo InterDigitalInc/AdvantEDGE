@@ -119,7 +119,9 @@ Class | Method | HTTP request | Description
 *MeepDemoAppApi.StateTransferApi* | [**handleEvent**](docs/StateTransferApi.md#handleEvent) | **POST** /mg/event | Send event notification to registered Mobility Group Application
 *MeepDemoAppApi.UELocationApi* | [**getUeLocation**](docs/UELocationApi.md#getUeLocation) | **GET** /location/{ueId} | Retrieves the UE location values
 *MeepDemoAppApi.UEStateApi* | [**createUeState**](docs/UEStateApi.md#createUeState) | **POST** /ue/{ueId} | Registers the UE and starts a counter
+*MeepDemoAppApi.UEStateApi* | [**deleteUeState**](docs/UEStateApi.md#deleteUeState) | **DELETE** /ue/{ueId} | Deregistration of a UE
 *MeepDemoAppApi.UEStateApi* | [**getUeState**](docs/UEStateApi.md#getUeState) | **GET** /ue/{ueId} | Retrieves the UE state values
+*MeepDemoAppApi.UEStateApi* | [**updateUeState**](docs/UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE state values
 
 
 ## Documentation for Models
