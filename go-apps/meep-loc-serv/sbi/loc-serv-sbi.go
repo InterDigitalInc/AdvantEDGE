@@ -10,6 +10,7 @@ package sbi
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/log"
@@ -165,11 +166,15 @@ func parseScenario(scenario ceModel.Scenario) {
 					updateAccessPointInfoCB(zone.Name, nl.Name, "WIFI", "SERVICEABLE", nbApUsers, basepathURL+"zones/"+zone.Name+"/accessPoints/"+nl.Name)
 					nbAccessPoints++
 					nbZoneUsers += nbApUsers
+					nbApUsersStr := strconv.Itoa(nbApUsers)
+					_ = db.RedisDBPublish(dbClient, locServChannel, zone.Name+":"+nl.Name+":"+nbApUsersStr+":")
 				default:
 				}
 			}
 			if zone.Name != "" && !strings.Contains(zone.Name, "-COMMON") {
 				updateZoneInfoCB(zone.Name, nbAccessPoints, 0, nbZoneUsers, basepathURL+"zones/"+zone.Name)
+				nbZoneUsersStr := strconv.Itoa(nbZoneUsers)
+				_ = db.RedisDBPublish(dbClient, locServChannel, zone.Name+":::"+nbZoneUsersStr)
 			}
 		}
 	}

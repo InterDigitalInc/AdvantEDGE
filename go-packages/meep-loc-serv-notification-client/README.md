@@ -22,6 +22,7 @@ All URIs are relative to *http://172.0.0.1:8081/location/v1/*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *NotificationsApi* | [**TrackingNotification**](docs/NotificationsApi.md#trackingnotification) | **Post** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+*NotificationsApi* | [**ZoneStatusNotification**](docs/NotificationsApi.md#zonestatusnotification) | **Post** /zone_status_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
 
 
 ## Documentation For Models
@@ -30,8 +31,12 @@ Class | Method | HTTP request | Description
  - [Address](docs/Address.md)
  - [CallbackData](docs/CallbackData.md)
  - [InterestRealm](docs/InterestRealm.md)
+ - [Link](docs/Link.md)
  - [NumberOfAccessPoints](docs/NumberOfAccessPoints.md)
  - [NumberOfUsers](docs/NumberOfUsers.md)
+ - [NumberOfUsersInAp](docs/NumberOfUsersInAp.md)
+ - [NumberOfUsersInZone](docs/NumberOfUsersInZone.md)
+ - [OperationStatus](docs/OperationStatus.md)
  - [ResourceUrl](docs/ResourceUrl.md)
  - [SubscriptionId](docs/SubscriptionId.md)
  - [Timestamp](docs/Timestamp.md)
@@ -43,6 +48,7 @@ Class | Method | HTTP request | Description
  - [UserTrackingNotification](docs/UserTrackingNotification.md)
  - [ZoneId](docs/ZoneId.md)
  - [ZoneInfo](docs/ZoneInfo.md)
+ - [ZoneStatusNotification](docs/ZoneStatusNotification.md)
 
 
 ## Documentation For Authorization

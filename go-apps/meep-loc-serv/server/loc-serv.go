@@ -22,7 +22,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/log"
 	db "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/redis"
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
-	subs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
+	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
+
 	"github.com/KromDaniel/rejonson"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -42,8 +43,7 @@ const locServChannel string = moduleLocServ
 
 var nextZonalSubscriptionIdAvailable int
 var nextUserSubscriptionIdAvailable int
-
-//var nextZoneStatusSubscriptionIdAvailable = 1
+var nextZoneStatusSubscriptionIdAvailable int
 
 var zonalSubscriptionEnteringMap = map[int]string{}
 var zonalSubscriptionLeavingMap = map[int]string{}
@@ -54,6 +54,17 @@ var userSubscriptionEnteringMap = map[int]string{}
 var userSubscriptionLeavingMap = map[int]string{}
 var userSubscriptionTransferringMap = map[int]string{}
 var userSubscriptionMap = map[int]string{}
+
+var zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
+
+type ZoneStatusCheck struct {
+	ZoneId                 string
+	Serviceable            bool
+	Unserviceable          bool
+	Unknown                bool
+	NbUsersInZoneThreshold int
+	NbUsersInAPThreshold   int
+}
 
 var pubsub *redis.PubSub
 var LOC_SERV_DB = 5
@@ -68,6 +79,7 @@ func Init() (err error) {
 		log.Error("Failed connection to Active DB for server. Error: ", err)
 		return err
 	}
+
 	log.Info("Connected to Active location service DB")
 
 	// Subscribe to Pub-Sub events for MEEP Controller
@@ -80,6 +92,7 @@ func Init() (err error) {
 
 	userTrackingReInit()
 	zonalTrafficReInit()
+	zoneStatusReInit()
 
 	_ = sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo)
 	return nil
@@ -106,17 +119,47 @@ func eventHandler(channel string, payload string) {
 	}
 }
 
-func createClient(notifyPath string) (*subs.APIClient, error) {
+func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
 	// Create & store client for App REST API
-	subsAppClientCfg := subs.NewConfiguration()
+	subsAppClientCfg := clientNotifOMA.NewConfiguration()
 	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := subs.NewAPIClient(subsAppClientCfg)
+	subsAppClient := clientNotifOMA.NewAPIClient(subsAppClientCfg)
 	if subsAppClient == nil {
 		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
 		err := errors.New("Failed to create Subscription App REST API client")
 		return nil, err
 	}
 	return subsAppClient, nil
+}
+
+func deregisterZoneStatus(subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	zonalSubscriptionMap[subsId] = ""
+}
+
+func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold uint32, nbOfUsersAPThreshold uint32, opStatus []OperationStatus, subsIdStr string) {
+
+	subsId, _ := strconv.Atoi(subsIdStr)
+
+	var zoneStatus ZoneStatusCheck
+	if opStatus != nil {
+		for i := 0; i < len(opStatus); i++ {
+			switch opStatus[i] {
+			case SERVICEABLE:
+				zoneStatus.Serviceable = true
+			case UNSERVICEABLE:
+				zoneStatus.Unserviceable = true
+			case OPSTATUS_UNKNOWN:
+				zoneStatus.Unknown = true
+			default:
+			}
+		}
+	}
+	zoneStatus.NbUsersInZoneThreshold = (int)(nbOfUsersZoneThreshold)
+	zoneStatus.NbUsersInAPThreshold = (int)(nbOfUsersAPThreshold)
+	zoneStatus.ZoneId = zoneId
+
+	zoneStatusSubscriptionMap[subsId] = &zoneStatus
 }
 
 func deregisterZonal(subsIdStr string) {
@@ -189,6 +232,65 @@ func checkNotificationRegistrations(payload string) {
 		//value is split in 5 newZoneId:oldZoneId:newAccessPointId:oldAccessPointId:userAddress
 		checkNotificationRegisteredUsers(values[0], values[1], values[2], values[3], values[4])
 		checkNotificationRegisteredZones(values[0], values[1], values[2], values[3], values[4])
+	} else {
+		if len(values) == 4 {
+			//value is split in 4 zoneId:accessPointId:nbUsersInAP:nbUsersInZone
+			checkNotificationRegisteredZoneStatus(values[0], values[1], values[2], values[3])
+		}
+	}
+}
+
+func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAPStr string, nbUsersInZoneStr string) {
+
+	//check all that applies
+	for subsId, zoneStatus := range zoneStatusSubscriptionMap {
+		if zoneStatus.ZoneId == zoneId {
+
+			nbUsersInZone := 0
+			nbUsersInAP := -1
+			zoneWarning := false
+			apWarning := false
+			if nbUsersInZoneStr != "" {
+				nbUsersInZone, _ = strconv.Atoi(nbUsersInZoneStr)
+				if nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
+					zoneWarning = true
+				}
+			}
+			if nbUsersInAPStr != "" {
+				nbUsersInAP, _ = strconv.Atoi(nbUsersInAPStr)
+				if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
+					apWarning = true
+				}
+			}
+
+			if zoneWarning || apWarning {
+				subsIdStr := strconv.Itoa(subsId)
+				jsonInfo := db.DbJsonGet(dbClient, subsIdStr, moduleLocServ+":"+typeZoneStatusSubscription)
+				if jsonInfo == "" {
+					return
+				}
+
+				subscription := convertJsonToZoneStatusSubscription(jsonInfo)
+
+				var zoneStatusNotif clientNotifOMA.ZoneStatusNotification
+				zoneStatusNotif.ZoneId = zoneId
+				if apWarning {
+					zoneStatusNotif.AccessPointId = apId
+					zoneStatusNotif.NumberOfUsersInAP = (uint32)(nbUsersInAP)
+				}
+				if zoneWarning {
+					zoneStatusNotif.NumberOfUsersInZone = (uint32)(nbUsersInZone)
+				}
+				zoneStatusNotif.Timestamp = time.Now().String()
+				go sendStatusNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zoneStatusNotif)
+				if apWarning {
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
+				} else {
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInZoneStr + " users in total")
+				}
+			}
+
+		}
 	}
 }
 
@@ -207,7 +309,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 
 			subscription := convertJsonToUserSubscription(jsonInfo)
 
-			var zonal subs.TrackingNotification
+			var zonal clientNotifOMA.TrackingNotification
 			zonal.Address = userId
 			zonal.Timestamp = time.Now().String()
 
@@ -246,7 +348,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 	}
 }
 
-func sendNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification subs.TrackingNotification) {
+func sendNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.TrackingNotification) {
 	client, err := createClient(notifyUrl)
 	if err != nil {
 		log.Error(err)
@@ -254,6 +356,16 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 	}
 
 	_, _ = client.NotificationsApi.TrackingNotification(ctx, subscriptionId, notification)
+}
+
+func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.ZoneStatusNotification) {
+	client, err := createClient(notifyUrl)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	_, _ = client.NotificationsApi.ZoneStatusNotification(ctx, subscriptionId, notification)
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
@@ -271,7 +383,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 					if jsonInfo != "" {
 						subscription := convertJsonToZonalSubscription(jsonInfo)
 
-						var zonal subs.TrackingNotification
+						var zonal clientNotifOMA.TrackingNotification
 						zonal.ZoneId = newZoneId
 						zonal.CurrentAccessPointId = newApId
 						zonal.Address = userId
@@ -290,7 +402,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						if jsonInfo != "" {
 							subscription := convertJsonToZonalSubscription(jsonInfo)
 
-							var zonal subs.TrackingNotification
+							var zonal clientNotifOMA.TrackingNotification
 							zonal.ZoneId = newZoneId
 							zonal.CurrentAccessPointId = newApId
 							zonal.PreviousAccessPointId = oldApId
@@ -313,7 +425,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 
 						subscription := convertJsonToZonalSubscription(jsonInfo)
 
-						var zonal subs.TrackingNotification
+						var zonal clientNotifOMA.TrackingNotification
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
 						zonal.Address = userId
@@ -696,10 +808,10 @@ func zonalTrafficSubGetById(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	jsonUserInfo := db.DbJsonGet(dbClient, vars["subscriptionId"], moduleLocServ+":"+typeZonalSubscription)
+	jsonInfo := db.DbJsonGet(dbClient, vars["subscriptionId"], moduleLocServ+":"+typeZonalSubscription)
 
-	if jsonUserInfo != "" {
-		fmt.Fprintf(w, jsonUserInfo)
+	if jsonInfo != "" {
+		fmt.Fprintf(w, jsonInfo)
 
 	} else {
 		w.WriteHeader(http.StatusNotFound)
@@ -799,6 +911,16 @@ func populateZonalTrafficList(key string, jsonInfo string, dummy1 string, dummy2
 
 func zoneStatusDelById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	err := db.DbJsonDelete(dbClient, vars["subscriptionId"], moduleLocServ+":"+typeZoneStatusSubscription)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	deregisterZoneStatus(vars["subscriptionId"])
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -823,16 +945,78 @@ func zoneStatusGet(w http.ResponseWriter, r *http.Request) {
 
 func zoneStatusGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	jsonInfo := db.DbJsonGet(dbClient, vars["subscriptionId"], moduleLocServ+":"+typeZoneStatusSubscription)
+
+	if jsonInfo != "" {
+		fmt.Fprintf(w, jsonInfo)
+
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
 func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	subs := new(ZoneStatusSubscription)
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&subs)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	newSubsId := nextZoneStatusSubscriptionIdAvailable
+	nextZoneStatusSubscriptionIdAvailable++
+	subsIdStr := strconv.Itoa(newSubsId)
+
+	subs.ResourceURL = basepathURL + "subscriptions/zoneStatus/" + subsIdStr
+
+	_ = db.DbJsonSet(dbClient, subsIdStr, convertZoneStatusSubscriptionToJson(subs), moduleLocServ+":"+typeZoneStatusSubscription)
+
+	registerZoneStatus(subs.ZoneId, subs.NumberOfUsersZoneThreshold, subs.NumberOfUsersAPThreshold, subs.OperationStatus, subsIdStr)
+
+	jsonResponse, err := json.Marshal(subs)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	subs := new(ZoneStatusSubscription)
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&subs)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	subsIdStr := vars["subscriptionId"]
+	subs.ResourceURL = basepathURL + "subscriptions/zoneStatus/" + subsIdStr
+
+	_ = db.DbJsonSet(dbClient, subsIdStr, convertZoneStatusSubscriptionToJson(subs), moduleLocServ+":"+typeZoneStatusSubscription)
+
+	deregisterZoneStatus(subsIdStr)
+	registerZoneStatus(subs.ZoneId, subs.NumberOfUsersZoneThreshold, subs.NumberOfUsersAPThreshold, subs.OperationStatus, subsIdStr)
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -951,6 +1135,49 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 
 		_ = db.DbJsonSet(dbClient, apId, convertAccessPointInfoToJson(apInfo), moduleLocServ+":"+typeZone+":"+zoneId+":"+typeAccessPoint)
 	}
+}
+
+func zoneStatusReInit() {
+
+	//reusing the object response for the get multiple zoneStatusSubscription
+	var zoneList InlineResponse2002NotificationSubscriptionList
+
+	_ = db.DbJsonGetList(dbClient, "", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneList)
+
+	maxZoneStatusSubscriptionId := 0
+	for _, zone := range zoneList.ZoneStatusSubscription {
+		resourceUrl := strings.Split(zone.ResourceURL, "/")
+		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
+		if err != nil {
+			log.Error(err)
+		} else {
+			if subscriptionId > maxZoneStatusSubscriptionId {
+				maxZoneStatusSubscriptionId = subscriptionId
+			}
+
+			var zoneStatus ZoneStatusCheck
+			opStatus := zone.OperationStatus
+			if opStatus != nil {
+				for i := 0; i < len(opStatus); i++ {
+					switch opStatus[i] {
+					case SERVICEABLE:
+						zoneStatus.Serviceable = true
+					case UNSERVICEABLE:
+						zoneStatus.Unserviceable = true
+					case OPSTATUS_UNKNOWN:
+						zoneStatus.Unknown = true
+					default:
+					}
+				}
+			}
+			zoneStatus.NbUsersInZoneThreshold = (int)(zone.NumberOfUsersZoneThreshold)
+			zoneStatus.NbUsersInAPThreshold = (int)(zone.NumberOfUsersAPThreshold)
+			zoneStatus.ZoneId = zone.ZoneId
+			zoneStatusSubscriptionMap[subscriptionId] = &zoneStatus
+		}
+	}
+	nextZoneStatusSubscriptionIdAvailable = maxZoneStatusSubscriptionId + 1
+
 }
 
 func zonalTrafficReInit() {

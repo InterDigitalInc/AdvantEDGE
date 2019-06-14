@@ -11,17 +11,17 @@ package server
 
 // A type containing zone status subscription.
 type ZoneStatusSubscription struct {
-	ClientCorrelator *ClientCorrelator `json:"clientCorrelator,omitempty"`
+	ClientCorrelator string `json:"clientCorrelator,omitempty"`
 
-	ResourceURL *ResourceUrl `json:"resourceURL,omitempty"`
+	ResourceURL string `json:"resourceURL,omitempty"`
 
-	CallbackReference *CallbackReference `json:"callbackReference"`
+	CallbackReference CallbackReference `json:"callbackReference"`
 
-	ZoneId *ZoneId `json:"zoneId"`
+	ZoneId string `json:"zoneId"`
 
-	NumberOfUsersZoneThreshold *NumberOfUsersZoneThreshold `json:"numberOfUsersZoneThreshold,omitempty"`
+	NumberOfUsersZoneThreshold uint32 `json:"numberOfUsersZoneThreshold,omitempty"`
 
-	NumberOfUsersAPThreshold *NumberOfUsersApThreshold `json:"numberOfUsersAPThreshold,omitempty"`
+	NumberOfUsersAPThreshold uint32 `json:"numberOfUsersAPThreshold,omitempty"`
 
 	// List of operation status values to generate notifications for (these apply to all access points within a zone).
 	OperationStatus []OperationStatus `json:"operationStatus,omitempty"`

@@ -14,7 +14,7 @@ type TrackingNotification struct {
 	CallbackData string `json:"callbackData"`
 	ZoneId string `json:"zoneId,omitempty"`
 	Address string `json:"address,omitempty"`
-	InterestRealm string `json:"interestRealma,omitempty"`
+	InterestRealma string `json:"interestRealma,omitempty"`
 	UserEventType UserEventType `json:"userEventType,omitempty"`
 	CurrentAccessPointId string `json:"currentAccessPointId,omitempty"`
 	PreviousAccessPointId string `json:"previousAccessPointId,omitempty"`

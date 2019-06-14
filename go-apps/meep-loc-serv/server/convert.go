@@ -81,6 +81,28 @@ func convertAccessPointInfoToJson(apInfo *AccessPointInfo) string {
 	return string(jsonInfo)
 }
 
+func convertZoneStatusSubscriptionToJson(zonalSubs *ZoneStatusSubscription) string {
+
+	jsonInfo, err := json.Marshal(*zonalSubs)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToZoneStatusSubscription(jsonInfo string) *ZoneStatusSubscription {
+
+	var zonal ZoneStatusSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &zonal)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &zonal
+}
+
 func convertZonalSubscriptionToJson(zonalSubs *ZonalTrafficSubscription) string {
 
 	jsonInfo, err := json.Marshal(*zonalSubs)

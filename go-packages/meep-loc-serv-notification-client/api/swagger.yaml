@@ -44,6 +44,32 @@ paths:
       responses:
         204:
           description: "No Content"
+  /zone_status_notifications/{subscriptionId}:
+    post:
+      tags:
+      - "notifications"
+      summary: "This operation is used by the AdvantEDGE Location Service to issue\
+        \ a callback notification towards an ME application with a zone status tracking\
+        \ subscription"
+      description: "Zone status tracking subscription notification"
+      operationId: "ZoneStatusNotification"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Identity of a notification subscription (user or zonal)"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      - in: "body"
+        name: "Notification"
+        description: "Zone Status Notification"
+        required: true
+        schema:
+          $ref: "#/definitions/ZoneStatusNotification"
+        x-exportParamName: "Notification"
+      responses:
+        204:
+          description: "No Content"
 definitions:
   AccessPointId:
     type: "string"
@@ -64,6 +90,21 @@ definitions:
     description: "Details about the access point, geographical position, industry,\
       \ etc."
     example: "NY"
+  Link:
+    type: "object"
+    required:
+    - "href"
+    - "rel"
+    properties:
+      rel:
+        type: "object"
+        description: "Describes the relationship between the URI and the resource."
+        properties: {}
+      href:
+        type: "object"
+        description: "URI"
+        properties: {}
+    description: "Link to other resources"
   NumberOfAccessPoints:
     type: "integer"
     format: "uint32"
@@ -74,6 +115,28 @@ definitions:
     format: "uint32"
     description: "The number of users currently on the access point"
     example: "7"
+  NumberOfUsersInAP:
+    type: "integer"
+    format: "uint32"
+    description: "This element shall be present when ZoneStatusSubscription includes\
+      \ numberOfUsersAPThreshold element and the number of users in an access point\
+      \ exceeds the threshold defined in the subscription."
+    example: "12"
+  NumberOfUsersInZone:
+    type: "integer"
+    format: "uint32"
+    description: "This element shall be present when ZoneStatusSubscription includes\
+      \ numberOfUsersZoneThreshold element and the number of users in a zone exceeds\
+      \ the threshold defined in this subscription."
+    example: "20"
+  OperationStatus:
+    type: "string"
+    description: "The operation status of the access point"
+    example: "Serviceable"
+    enum:
+    - "Serviceable"
+    - "Unserviceable"
+    - "Unknown"
   ResourceURL:
     type: "string"
     format: "url"
@@ -162,6 +225,44 @@ definitions:
       numberOfUsers:
         $ref: "#/definitions/NumberOfUsers"
     description: "A type containing zone information."
+  ZoneStatusNotification:
+    type: "object"
+    required:
+    - "timestamp"
+    - "zoneId"
+    properties:
+      callbackData:
+        $ref: "#/definitions/CallbackData"
+      zoneId:
+        $ref: "#/definitions/ZoneId"
+      accessPointId:
+        $ref: "#/definitions/AccessPointId"
+      numberOfUsersInZone:
+        $ref: "#/definitions/NumberOfUsersInZone"
+      numberOfUsersInAP:
+        $ref: "#/definitions/NumberOfUsersInAP"
+      operationStatus:
+        $ref: "#/definitions/OperationStatus"
+      timestamp:
+        $ref: "#/definitions/Timestamp"
+      link:
+        type: "array"
+        example: "rel=\"ZonalStatusSubscription\" href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalStatus/sub123\""
+        description: "Link to other resources that are in relationship with this notification.\
+          \ The server SHOULD include a link to the related subscription. No other\
+          \ links are required or suggested by this specification."
+        items:
+          $ref: "#/definitions/Link"
+    description: "A type containing zone status notification."
+    example:
+      operationStatus: "Serviceable"
+      callbackData: "1234"
+      accessPointId: "001010000000000000000000000000001 or poa001"
+      link: "rel=\"ZonalStatusSubscription\" href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalStatus/sub123\""
+      zoneId: "zone001"
+      numberOfUsersInZone: "20"
+      numberOfUsersInAP: "12"
+      timestamp: "2017-01-01T02:51:43Z"
   TrackingNotification:
     type: "object"
     required:
@@ -209,6 +310,14 @@ parameters:
     required: true
     schema:
       $ref: "#/definitions/TrackingNotification"
+    x-exportParamName: "Notification"
+  Body.ZoneStatusNotification:
+    in: "body"
+    name: "Notification"
+    description: "Zone Status Notification"
+    required: true
+    schema:
+      $ref: "#/definitions/ZoneStatusNotification"
     x-exportParamName: "Notification"
 externalDocs:
   description: "Find out more about MEC Location Services"
