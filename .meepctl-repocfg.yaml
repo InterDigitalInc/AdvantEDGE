@@ -68,9 +68,7 @@ repo:
       chart: charts/docker-registry
     elastic:
       es:
-        chart: incubator/elasticsearch
-        version: "1.9.1"
-        values: charts/elasticsearch/elastic-values.yaml
+        chart: charts/elasticsearch
         pv: charts/elasticsearch/meep-pv-es.yaml
       es-curator:
         chart: charts/elasticsearch-curator

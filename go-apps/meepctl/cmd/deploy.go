@@ -27,7 +27,7 @@ var deployCodecov bool
 
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
-	Use:   "deploy <group> [registry] [tag]",
+	Use:   "deploy <group>",
 	Short: "Deploy containers on the K8s cluster",
 	Long: `Deploy containers on the K8s cluster
 
@@ -40,27 +40,20 @@ Default registry/tag are: local registry & latest
 Valid groups:
   * core: AdvantEDGE core containers
   * dep:  Dependency containers
-  * all:  All containers
-		`,
+  * all:  All containers`,
 	Example: `  # Deploy all containers
-    meepctl deploy all
+  meepctl deploy all
   # Delete and re-deploy only AdvantEDGE core containers
-    meepctl deploy core --force
+  meepctl deploy core --force
   # Deploy AdvantEDGE version 1.0.0 from my.registry.com
-	  meepctl deploy core my.registry.com 1.0.0
+  meepctl deploy core my.registry.com 1.0.0
 			`,
-	Args: cobra.RangeArgs(1, 3),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		group := args[0]
-		registry := ""
-		if len(args) > 1 {
-			registry = args[1]
-		}
-		tag := "latest"
-		if len(args) > 2 {
-			tag = args[2]
-		}
 
+		registry, _ := cmd.Flags().GetString("registry")
+		tag, _ := cmd.Flags().GetString("tag")
 		f, _ := cmd.Flags().GetBool("force")
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
@@ -76,6 +69,11 @@ Valid groups:
 
 		start := time.Now()
 		utils.InitRepoConfig()
+		if registry == "" {
+			registry = viper.GetString("meep.registry")
+		}
+		fmt.Println("Using docker registry:", registry)
+
 		if group == "all" {
 			deployDep(cmd)
 			deployCore(cmd, registry, tag)
@@ -96,17 +94,10 @@ Valid groups:
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	deployCmd.Flags().BoolP("force", "f", false, "Deployed components are deleted and deployed")
 	deployCmd.Flags().BoolVar(&deployCodecov, "codecov", false, "Use when deploying code coverage binaries (dev. option)")
+	deployCmd.Flags().StringP("registry", "r", "", "Override registry from config file")
+	deployCmd.Flags().StringP("tag", "", "latest", "Repo tag to use")
 }
 
 func ensureCoreStorage(cobraCmd *cobra.Command) {
@@ -254,9 +245,7 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-elasticsearch"
-	chart = utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
-	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.es.version"))
-	flags = utils.HelmFlags(flags, "--values", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.values"))
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-curator"

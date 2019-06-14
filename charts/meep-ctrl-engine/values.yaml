@@ -10,6 +10,14 @@ deployment:
   port: 80
   protocol: TCP
 
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          
 image:
   repository: meep-ctrl-engine
   tag: latest
