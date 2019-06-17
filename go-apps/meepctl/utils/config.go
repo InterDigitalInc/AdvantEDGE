@@ -26,8 +26,10 @@ import (
 var RepoCfg *viper.Viper
 
 // Config version needs to be bumped only when new elements are added
+const configVersion string = "1.1.0"
+
 var defaultConfig = `
-version: 1.0.0
+version: 1.1.0
 
 node:
   ip: ""
@@ -130,6 +132,26 @@ func ConfigReadFile(filePath string) (cfg *Config) {
 	}
 
 	return cfg
+}
+
+// ConfigValidateVersion validates config file
+func ConfigValidateVersion(filePath string) (valid bool) {
+	if filePath == "" {
+		filePath = ConfigGetDefaultPath()
+	}
+	cfg := ConfigReadFile(filePath)
+
+	// Validate version
+	if cfg.Version != configVersion {
+		fmt.Println("")
+		fmt.Println("  WARNING    meepctl version[" + configVersion + "] != config file version[" + cfg.Version + "]")
+		fmt.Println("             config file location: " + filePath)
+		fmt.Println("             To fix, erase the config file and run meepctl tool again; it will generate a new one.")
+		fmt.Println("             NOTE: The new config file will have the default configuration which you will have to update again.")
+		fmt.Println("")
+		return false
+	}
+	return true
 }
 
 // ConfigValidate validates config file
