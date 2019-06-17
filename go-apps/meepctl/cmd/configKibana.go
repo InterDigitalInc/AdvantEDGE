@@ -29,6 +29,7 @@ var configKibana = &cobra.Command{
 	Long: `Configures Kibana (index pattern, saved objects such as dashboards, visualisations, etc.)
 Any Kibana saved object will be overwritten in the process if the object Id are the same 
 meepctl config kibana.`,
+	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		t, _ := cmd.Flags().GetBool("time")
 		start := time.Now()

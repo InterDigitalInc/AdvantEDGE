@@ -21,14 +21,13 @@ import (
 
 // configSet represents the set command
 var configRegistry = &cobra.Command{
-	Use:   "registry [name:port]",
-	Short: "get/get docker registry meepctl config file",
-	Long:  `Get/Set docker registry in the meepctl config file`,
-	Example: `  # Get currently configured docker registry
-  meepctl config registry
-  # Set docker registry
-  meepctl config registry meep-docker-registry:30001`,
+	Use:     "registry [name:port]",
+	Short:   "get/get docker registry meepctl config file",
+	Long:    "Get/Set docker registry in the meepctl config file",
+	Example: "  meepctl config registry meep-docker-registry:30001",
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
+		key := "meep.registry"
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
 		if v {
@@ -38,26 +37,24 @@ var configRegistry = &cobra.Command{
 		}
 
 		start := time.Now()
-		if len(args) > 0 {
+		value := viper.GetString(key)
+
+		if len(args) == 0 {
+			_ = cmd.Help()
+			fmt.Println("")
+		} else {
 			registry := args[0]
-			// valid, reason := utils.ConfigGitdirValid(gitdir)
-			// if valid {
 			cfg := utils.ConfigReadFile(viper.ConfigFileUsed())
 			cfg.Meep.Registry = registry
 			err := utils.ConfigWriteFile(cfg, viper.ConfigFileUsed())
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println("Updated meep.registry with [" + registry + "]")
-			// } else {
-			// 	fmt.Println("Invalid Gitdir: " + reason)
-			// 	fmt.Println("")
-			// 	_ = cmd.Help()
-			// }
-		} else {
-			key := "meep.registry"
-			fmt.Println(key, ":", viper.GetString(key))
+			value = registry
 		}
+		fmt.Println("========================================")
+		fmt.Println(key, ":", value)
+		fmt.Println("========================================")
 
 		elapsed := time.Since(start)
 		if t {

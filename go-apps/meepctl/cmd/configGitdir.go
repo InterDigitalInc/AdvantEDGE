@@ -21,14 +21,13 @@ import (
 
 // configSet represents the set command
 var configGitdir = &cobra.Command{
-	Use:   "gitdir [GIT dir path]",
-	Short: "get/set GIT directory path in the meepctl config file",
-	Long:  `Get/Set GIT directory path in the meepctl config file`,
-	Example: `  # Get currently configured GIT directory
-  meepctl config gitdir
-  # Configure GIT directory
-  meepctl config gitdir /home/some-user/AdvantEDGE`,
+	Use:     "gitdir [GIT dir path]",
+	Short:   "get/set GIT directory path in the meepctl config file",
+	Long:    "Get/Set GIT directory path in the meepctl config file",
+	Example: "  meepctl config gitdir /home/some-user/AdvantEDGE",
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
+		key := "meep.gitdir"
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
 		if v {
@@ -38,9 +37,13 @@ var configGitdir = &cobra.Command{
 		}
 
 		start := time.Now()
-		if len(args) > 0 {
+		value := viper.GetString(key)
+		if len(args) == 0 {
+			_ = cmd.Help()
+			fmt.Println("")
+		} else {
 			gitdir := args[0]
-			valid, reason := utils.ConfigGitdirValid(gitdir)
+			valid, reason := utils.ConfigPathValid(gitdir)
 			if valid {
 				cfg := utils.ConfigReadFile(viper.ConfigFileUsed())
 				cfg.Meep.Gitdir = gitdir
@@ -49,21 +52,21 @@ var configGitdir = &cobra.Command{
 					fmt.Println(err)
 				}
 				fmt.Println("Updated meep.gitdir with [" + gitdir + "]")
+				value = gitdir
 			} else {
 				fmt.Println("Invalid Gitdir: " + reason)
 				fmt.Println("")
 				_ = cmd.Help()
 			}
-		} else {
-			key := "meep.gitdir"
-			fmt.Println(key, ":", viper.GetString(key))
 		}
+		fmt.Println("========================================")
+		fmt.Println(key, ":", value)
+		fmt.Println("========================================")
 
 		elapsed := time.Since(start)
 		if t {
 			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
 		}
-
 	},
 }
 

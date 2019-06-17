@@ -43,10 +43,9 @@ Valid targets:`,
 	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		configValid := utils.ConfigValidate("")
-		if !configValid {
-			fmt.Println("Fix configuration issues before building")
-			os.Exit(0)
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
 		}
 
 		targets := args

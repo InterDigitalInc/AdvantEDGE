@@ -43,6 +43,11 @@ Valid groups:
 	Args:      cobra.ExactValidArgs(1),
 	ValidArgs: []string{"all", "dep", "core"},
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		group := args[0]
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")

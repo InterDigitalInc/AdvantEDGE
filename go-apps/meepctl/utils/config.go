@@ -152,7 +152,7 @@ func ConfigValidate(filePath string) (valid bool) {
 	}
 
 	// Validate Gitdir
-	valid, reason = ConfigGitdirValid(cfg.Meep.Gitdir)
+	valid, reason = ConfigPathValid(cfg.Meep.Gitdir)
 	if !valid {
 		fmt.Println("")
 		fmt.Println("  WARNING    invalid meepctl config: meep.gitdir")
@@ -164,17 +164,17 @@ func ConfigValidate(filePath string) (valid bool) {
 	return configValid
 }
 
-// ConfigGitdirValid validates IP address
-func ConfigGitdirValid(gitdir string) (valid bool, reason string) {
+// ConfigPathValid validates IP address
+func ConfigPathValid(path string) (valid bool, reason string) {
 	valid = true
-	fi, err := os.Stat(gitdir)
+	fi, err := os.Stat(path)
 
 	if err != nil {
-		reason = "Path error  [" + gitdir + "]"
+		reason = "Path error  [" + path + "]"
 		valid = false
 	} else {
 		if !fi.IsDir() {
-			reason = "Not a directory [" + gitdir + "]"
+			reason = "Not a directory [" + path + "]"
 			valid = false
 		}
 	}

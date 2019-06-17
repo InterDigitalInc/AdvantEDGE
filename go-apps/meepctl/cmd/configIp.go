@@ -21,14 +21,13 @@ import (
 
 // configSet represents the set command
 var configIp = &cobra.Command{
-	Use:   "ip [IP]",
-	Short: "get/get node IP address in the meepctl config file",
-	Long:  `Get/Set node IP address in the meepctl config file`,
-	Example: `  # Get currently configured node IP address
-  meepctl config ip
-  # Set node IP Address to 1.2.3.4
-  meepctl config ip 1.2.3.4`,
+	Use:     "ip [IP]",
+	Short:   "get/get node IP address in the meepctl config file",
+	Long:    "Get/Set node IP address in the meepctl config file",
+	Example: "meepctl config ip 1.2.3.4",
+	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
+		key := "node.ip"
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
 		if v {
@@ -38,7 +37,12 @@ var configIp = &cobra.Command{
 		}
 
 		start := time.Now()
-		if len(args) > 0 {
+		value := viper.GetString(key)
+
+		if len(args) == 0 {
+			_ = cmd.Help()
+			fmt.Println("")
+		} else {
 			ip := args[0]
 			valid, reason := utils.ConfigIPValid(ip)
 			if valid {
@@ -47,18 +51,17 @@ var configIp = &cobra.Command{
 				err := utils.ConfigWriteFile(cfg, viper.ConfigFileUsed())
 				if err != nil {
 					fmt.Println(err)
-					return
 				}
-				fmt.Println("Updated node.ip with [" + ip + "]")
+				value = ip
 			} else {
 				fmt.Println("Invalid IP: " + reason)
 				fmt.Println("")
 				_ = cmd.Help()
 			}
-		} else {
-			key := "node.ip"
-			fmt.Println(key, ":", viper.GetString(key))
 		}
+		fmt.Println("========================================")
+		fmt.Println(key, ":", value)
+		fmt.Println("========================================")
 
 		elapsed := time.Since(start)
 		if t {

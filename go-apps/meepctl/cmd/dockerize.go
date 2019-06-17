@@ -41,34 +41,42 @@ Valid targets:`,
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar"},
 	Run: func(cmd *cobra.Command, args []string) {
-		targets := args
-		if len(targets) == 0 {
-			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
 			return
 		}
 
+		targets := args
+		if len(targets) == 0 {
+			fmt.Println("Error: Need to specify at least one target from ", cmd.ValidArgs)
+			fmt.Println("")
+			_ = cmd.Help()
+			return
+		}
+
+		r, _ := cmd.Flags().GetString("registry")
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
-		registry, _ := cmd.Flags().GetString("registry")
 
 		if v {
 			fmt.Println("Dockerize called")
 			fmt.Println("[arg]  targets:", targets)
+			fmt.Println("[flag] registry:", r)
 			fmt.Println("[flag] verbose:", v)
 			fmt.Println("[flag] time:", t)
 		}
 
 		start := time.Now()
 		utils.InitRepoConfig()
-		if registry == "" {
-			registry = viper.GetString("meep.registry")
+		if r == "" {
+			r = viper.GetString("meep.registry")
 		}
-		fmt.Println("Using docker registry:", registry)
+		fmt.Println("Using docker registry:", r)
 		for _, target := range targets {
 			if target == "all" {
-				dockerizeAll(registry, cmd)
+				dockerizeAll(r, cmd)
 			} else {
-				dockerize(registry, target, cmd)
+				dockerize(r, target, cmd)
 			}
 		}
 

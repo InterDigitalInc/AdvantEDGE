@@ -46,10 +46,15 @@ Valid groups:
   # Delete and re-deploy only AdvantEDGE core containers
   meepctl deploy core --force
   # Deploy AdvantEDGE version 1.0.0 from my.registry.com
-  meepctl deploy core my.registry.com 1.0.0
+  meepctl deploy core --registry my.registry.com --tag 1.0.0
 			`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		group := args[0]
 
 		registry, _ := cmd.Flags().GetString("registry")

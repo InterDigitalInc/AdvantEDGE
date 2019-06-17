@@ -33,12 +33,12 @@ Values may be changed using the available commands described below.`,
 		sort.Strings(keys)
 
 		_ = cmd.Help()
-
 		fmt.Println("")
-		fmt.Println("CONFIGURED VALUES")
+		fmt.Println("========================================")
 		for _, key := range keys {
 			fmt.Println(key, ":", viper.GetString(key))
 		}
+		fmt.Println("========================================")
 	},
 }
 
