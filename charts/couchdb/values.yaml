@@ -129,3 +129,11 @@ couchdbConfig:
   #   q: 8 # Create 8 shards for each database
 
 meepOrigin: core
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists

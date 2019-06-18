@@ -27,10 +27,9 @@ var configKibana = &cobra.Command{
 	Use:   "kibana",
 	Short: "Configures Kibana (index pattern, saved objects such as dashboards, visualisations, etc.)",
 	Long: `Configures Kibana (index pattern, saved objects such as dashboards, visualisations, etc.)
-        `,
-	Example: `  # Configure Kibana by downloading saved objects (dashboards, visualizations, etc) and applying a default index pattern
-  # NOTE: Any Kibana saved object will be overwritten in the process if the object Id are the same 
-    meepctl config kibana.`,
+Any Kibana saved object will be overwritten in the process if the object Id are the same 
+meepctl config kibana.`,
+	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		t, _ := cmd.Flags().GetBool("time")
 		start := time.Now()
@@ -40,21 +39,9 @@ var configKibana = &cobra.Command{
 		if t {
 			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
 		}
-
 	},
 }
 
 func init() {
 	configCmd.AddCommand(configKibana)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configKibana.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configKibana.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

@@ -26,15 +26,18 @@ import (
 var RepoCfg *viper.Viper
 
 // Config version needs to be bumped only when new elements are added
+const configVersion string = "1.1.0"
+
 var defaultConfig = `
-version: 1.0.0
+version: 1.1.0
 
 node:
-  ip: "Not-Initialized"
+  ip: ""
 
 meep:
-  gitdir: "Not-Initialized"
+  gitdir: ""
   workdir: "<DEFAULT>/.meep"
+  registry: "meep-docker-registry:30001"
 `
 
 // Node parameters node
@@ -49,6 +52,8 @@ type Meep struct {
 	Gitdir string `json:"gitdir,omitempty"`
 	// MEEP work directory
 	Workdir string `json:"workdir,omitempty"`
+	// MEEP docker registry
+	Registry string `json:"registry,omitempty"`
 }
 
 // Config structure
@@ -129,46 +134,69 @@ func ConfigReadFile(filePath string) (cfg *Config) {
 	return cfg
 }
 
+// ConfigValidateVersion validates config file
+func ConfigValidateVersion(filePath string) (valid bool) {
+	if filePath == "" {
+		filePath = ConfigGetDefaultPath()
+	}
+	cfg := ConfigReadFile(filePath)
+
+	// Validate version
+	if cfg.Version != configVersion {
+		fmt.Println("")
+		fmt.Println("  WARNING    meepctl version[" + configVersion + "] != config file version[" + cfg.Version + "]")
+		fmt.Println("             config file location: " + filePath)
+		fmt.Println("             To fix, erase the config file and run meepctl tool again; it will generate a new one.")
+		fmt.Println("             NOTE: The new config file will have the default configuration which you will have to update again.")
+		fmt.Println("")
+		return false
+	}
+	return true
+}
+
 // ConfigValidate validates config file
 func ConfigValidate(filePath string) (valid bool) {
 	if filePath == "" {
 		filePath = ConfigGetDefaultPath()
 	}
 	cfg := ConfigReadFile(filePath)
+	configValid := true
 
 	// Validate IPV4
-	ipValid, reason := ConfigIPValid(cfg.Node.IP)
-	if !ipValid {
+	valid, reason := ConfigIPValid(cfg.Node.IP)
+	if !valid {
 		fmt.Println("")
 		fmt.Println("  WARNING    invalid meepctl config: node.ip")
 		fmt.Println("             Reason: " + reason)
-		fmt.Println("             Fix with:  ./meepctl config set --ip <node-ip-address>")
-		return false
+		fmt.Println("             Fix with:  meepctl config ip <node-ip-address>")
+		fmt.Println("")
+		configValid = false
 	}
 
 	// Validate Gitdir
-	ipValid, reason = ConfigGitdirValid(cfg.Meep.Gitdir)
-	if !ipValid {
+	valid, reason = ConfigPathValid(cfg.Meep.Gitdir)
+	if !valid {
 		fmt.Println("")
 		fmt.Println("  WARNING    invalid meepctl config: meep.gitdir")
 		fmt.Println("             Reason: " + reason)
-		fmt.Println("             Fix with:  ./meepctl config set --gitdir <path-to-gitdir>")
-		return false
+		fmt.Println("             Fix with:  meepctl config gitdir <path-to-gitdir>")
+		fmt.Println("")
+		configValid = false
 	}
-	return true
+	return configValid
 }
 
-// ConfigGitdirValid validates IP address
-func ConfigGitdirValid(gitdir string) (valid bool, reason string) {
+// ConfigPathValid validates IP address
+func ConfigPathValid(path string) (valid bool, reason string) {
 	valid = true
-	fi, err := os.Stat(gitdir)
+	fi, err := os.Stat(path)
 
 	if err != nil {
-		reason = "Path error  [" + gitdir + "]"
+		reason = "Path error  [" + path + "]"
 		valid = false
 	} else {
 		if !fi.IsDir() {
-			reason = "Not a directory [" + gitdir + "]"
+			reason = "Not a directory [" + path + "]"
 			valid = false
 		}
 	}

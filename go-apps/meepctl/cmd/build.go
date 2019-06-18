@@ -28,27 +28,30 @@ var buildNolint bool
 var buildCmd = &cobra.Command{
 	Use:   "build <targets>",
 	Short: "Build core components",
-	Long: `Build core components
+	Long: `AdvantEDGE is composed of a collection of micro-services.
 
-AdvantEDGE is composed of a collection of micro-services.
-
-Build command genrates AdvantEDGE binaries.
+Build command generates AdvantEDGE binaries.
 Multiple targets can be specified (e.g. meepctl build <target1> <target2>...)
 
 Valid targets:`,
-	Example: `# Build all components
-	meepctl build all
-# Build meep-ctrl-engine component only
-	meepctl build meep-ctrl-engine
-		`,
+	Example: `  # Build all components
+  meepctl build all
+  # Build meep-ctrl-engine component only
+  meepctl build meep-ctrl-engine`,
 	Args: cobra.OnlyValidArgs,
 	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
 	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
 
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		targets := args
 		if len(targets) == 0 {
 			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
+			os.Exit(0)
 		}
 
 		v, _ := cmd.Flags().GetBool("verbose")

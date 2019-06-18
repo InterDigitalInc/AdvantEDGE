@@ -46,6 +46,11 @@ Valid groups:
 	Args:      cobra.MaximumNArgs(1),
 	ValidArgs: []string{"all", "dep", "core"},
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		group := ""
 		if len(args) > 0 {
 			group = args[0]

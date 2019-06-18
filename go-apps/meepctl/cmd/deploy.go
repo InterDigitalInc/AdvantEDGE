@@ -27,7 +27,7 @@ var deployCodecov bool
 
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
-	Use:   "deploy <group> [registry] [tag]",
+	Use:   "deploy <group>",
 	Short: "Deploy containers on the K8s cluster",
 	Long: `Deploy containers on the K8s cluster
 
@@ -40,27 +40,25 @@ Default registry/tag are: local registry & latest
 Valid groups:
   * core: AdvantEDGE core containers
   * dep:  Dependency containers
-  * all:  All containers
-		`,
+  * all:  All containers`,
 	Example: `  # Deploy all containers
-    meepctl deploy all
+  meepctl deploy all
   # Delete and re-deploy only AdvantEDGE core containers
-    meepctl deploy core --force
+  meepctl deploy core --force
   # Deploy AdvantEDGE version 1.0.0 from my.registry.com
-	  meepctl deploy core my.registry.com 1.0.0
+  meepctl deploy core --registry my.registry.com --tag 1.0.0
 			`,
-	Args: cobra.RangeArgs(1, 3),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		group := args[0]
-		registry := ""
-		if len(args) > 1 {
-			registry = args[1]
-		}
-		tag := "latest"
-		if len(args) > 2 {
-			tag = args[2]
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
 		}
 
+		group := args[0]
+
+		registry, _ := cmd.Flags().GetString("registry")
+		tag, _ := cmd.Flags().GetString("tag")
 		f, _ := cmd.Flags().GetBool("force")
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
@@ -76,6 +74,11 @@ Valid groups:
 
 		start := time.Now()
 		utils.InitRepoConfig()
+		if registry == "" {
+			registry = viper.GetString("meep.registry")
+		}
+		fmt.Println("Using docker registry:", registry)
+
 		if group == "all" {
 			deployDep(cmd)
 			deployCore(cmd, registry, tag)
@@ -96,17 +99,10 @@ Valid groups:
 
 func init() {
 	rootCmd.AddCommand(deployCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	deployCmd.Flags().BoolP("force", "f", false, "Deployed components are deleted and deployed")
 	deployCmd.Flags().BoolVar(&deployCodecov, "codecov", false, "Use when deploying code coverage binaries (dev. option)")
+	deployCmd.Flags().StringP("registry", "r", "", "Override registry from config file")
+	deployCmd.Flags().StringP("tag", "", "latest", "Repo tag to use")
 }
 
 func ensureCoreStorage(cobraCmd *cobra.Command) {
@@ -237,25 +233,33 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 }
 
 func deployDep(cobraCmd *cobra.Command) {
-	gitDir := viper.GetString("meep.gitdir") + "/"
+	var repo string
+	var chart string
+	var flags [][]string
+	gitdir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir") + "/"
 
 	// Storage
 	ensureDepStorage(cobraCmd)
+
 	// Runtime
-	repo := "meep-elasticsearch"
-	chart := utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
-	flags := utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.es.version"))
-	flags = utils.HelmFlags(flags, "--values", gitDir+utils.RepoCfg.GetString("repo.dep.elastic.es.values"))
+	repo = "meep-docker-registry"
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.docker-registry.chart")
+	createRegistryCerts(chart, workdir+"certs", cobraCmd)
+	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	//---
+	repo = "meep-elasticsearch"
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-curator"
-	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart")
 	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kibana"
-	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart")
 	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"kibana/")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
@@ -267,23 +271,23 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-couchdb"
-	chart = gitDir + utils.RepoCfg.GetString("repo.dep.couchdb.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.couchdb.chart")
 	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"couchdb/")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-redis"
 	chart = utils.RepoCfg.GetString("repo.dep.redis.chart")
 	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.redis.version"))
-	flags = utils.HelmFlags(flags, "--values", gitDir+utils.RepoCfg.GetString("repo.dep.redis.values"))
+	flags = utils.HelmFlags(flags, "--values", gitdir+utils.RepoCfg.GetString("repo.dep.redis.values"))
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"
-	chart = gitDir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
 	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-metricbeat"
-	chart = gitDir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
 	flags = utils.HelmFlags(nil, "--set", "image.pullPolicy=IfNotPresent")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }
@@ -319,7 +323,7 @@ func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra
 func deployVirtEngineExt(component string, cobraCmd *cobra.Command) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	force, _ := cobraCmd.Flags().GetBool("force")
-	gitDir := viper.GetString("meep.gitdir") + "/"
+	gitdir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir") + "/"
 	start := time.Now()
 
@@ -348,7 +352,7 @@ func deployVirtEngineExt(component string, cobraCmd *cobra.Command) {
 	}
 
 	codecovCapable := utils.RepoCfg.GetBool("repo.core." + component + ".codecov")
-	virtEngineApp := gitDir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
+	virtEngineApp := gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
 	if deployCodecov && codecovCapable {
 		codecovFile := workdir + "/codecov/" + component + "/codecov-meep-virt-engine.out"
 		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
@@ -394,4 +398,9 @@ func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (
 		"-o=jsonpath='{.clusters[].cluster.certificate-authority-data}'")
 	cabundle, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	return cert, key, cabundle
+}
+
+func createRegistryCerts(chart string, certdir string, cobraCmd *cobra.Command) {
+	cmd := exec.Command("sh", "-c", chart+"/create-signed-cert.sh --certdir "+certdir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
