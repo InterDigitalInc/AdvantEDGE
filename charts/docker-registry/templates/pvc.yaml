@@ -1,4 +1,4 @@
-{{- if .Values.persistence.enabled }}
+{{- if .Values.persistence.enabled}}
 {{- if not .Values.persistence.existingClaim -}}
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -19,7 +19,11 @@ spec:
 {{- if (eq "-" .Values.persistence.storageClass) }}
   storageClassName: ""
 {{- else }}
+{{- if (eq "fullname" .Values.persistence.storageClass) }}
+  storageClassName: "{{ template "docker-registry.fullname" . }}"
+{{- else }}
   storageClassName: "{{ .Values.persistence.storageClass }}"
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

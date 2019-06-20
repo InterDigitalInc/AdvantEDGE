@@ -93,7 +93,7 @@ type versionInfo struct {
 	VersionID string `json:"id,omitempty"`
 }
 
-const meepctlVersion = "1.0.0"
+const meepctlVersion = "1.1.0"
 const na = "NA"
 
 var corePodsNameMap = [...]string{
