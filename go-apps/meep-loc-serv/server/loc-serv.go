@@ -1046,7 +1046,7 @@ func cleanUp() {
 	userSubscriptionMap = map[int]string{}
 
 	zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
-	
+
 }
 
 func updateUserInfo(address string, zoneId string, accessPointId string) {
