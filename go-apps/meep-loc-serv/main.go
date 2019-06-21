@@ -25,7 +25,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/server"
 
 	"github.com/gorilla/handlers"
@@ -33,7 +34,7 @@ import (
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-loc-serv")
 }
 
 func main() {
@@ -59,9 +60,6 @@ func main() {
 			run = false
 			return
 		}
-
-		// Start Location Service Event Handler thread
-		go server.Run()
 
 		// Start Location Service REST API Server
 		router := server.NewRouter()

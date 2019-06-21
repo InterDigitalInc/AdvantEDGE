@@ -205,7 +205,6 @@ func localDBUpdateTrackedUes(w http.ResponseWriter, r *http.Request) {
                 http.Error(w, err.Error(), http.StatusInternalServerError)
                 return
         }
-
 	var userInfo UserInfo
 	userInfo.Address = notif.Address
 	userInfo.ZoneId = notif.ZoneId

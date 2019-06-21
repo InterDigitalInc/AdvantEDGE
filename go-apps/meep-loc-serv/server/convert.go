@@ -12,7 +12,7 @@ package server
 import (
 	"encoding/json"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func convertJsonToUserInfo(jsonInfo string) *UserInfo {

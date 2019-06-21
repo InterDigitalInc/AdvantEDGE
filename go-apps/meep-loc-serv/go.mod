@@ -5,14 +5,14 @@ go 1.12
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db // indirect
-	github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351
 	github.com/antihax/optional v0.0.0-20180407024304-ca021399b1a6 // indirect
 	github.com/flimzy/diff v0.1.5 // indirect
 	github.com/flimzy/kivik v1.8.1 // indirect
 	github.com/flimzy/testy v0.1.16 // indirect
 	github.com/go-kivik/couchdb v1.8.1 // indirect
-	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
@@ -29,7 +29,6 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
-	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a // indirect
@@ -46,3 +45,7 @@ require (
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
 
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client => ../../go-packages/meep-loc-serv-notification-client
+
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
+
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis

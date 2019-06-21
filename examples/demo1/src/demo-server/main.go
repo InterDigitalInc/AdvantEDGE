@@ -92,6 +92,5 @@ func registerLocServ(ue string) {
 		
         }
 
-
 }
 

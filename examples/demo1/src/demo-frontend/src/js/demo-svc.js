@@ -277,8 +277,12 @@ function initializeUI() {
     targetedUeAppNameDialogTextfield2.valid = true;
     $('#targeted-ue-app-name-2-tf-div').hide();
 
-    defaultUserInfo1("ue1-iperf", "Starting position")
-    defaultUserInfo2("ue2-svc", "Starting position")
+    //ues are starting by default in zone1 and poa1, so hardcoded because the subscriptions are only sent after the tracking starts 
+    //and this app only tracks notifications, not queries where they are located
+    //a work-around would be to have the demo-server do a get for the location knowing it is registering for the event, and then fake
+    //a notification to trigger the app
+    defaultUserInfo1("ue1-iperf", "zone1 / zone1-poa1")
+    defaultUserInfo2("ue2-svc", "zone1 / zone1-poa1")
 
 
     iperfBwDialogTextfield = new mdc.textField.MDCTextField(document.querySelector('#iperf-bw-tf-div'));
