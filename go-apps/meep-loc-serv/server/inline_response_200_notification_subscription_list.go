@@ -12,5 +12,6 @@ package server
 type InlineResponse200NotificationSubscriptionList struct {
 	ZonalTrafficSubscription []ZonalTrafficSubscription `json:"zonalTrafficSubscription,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL,omitempty"`
 }

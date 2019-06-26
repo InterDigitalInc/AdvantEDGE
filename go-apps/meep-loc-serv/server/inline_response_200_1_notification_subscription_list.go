@@ -12,5 +12,6 @@ package server
 type InlineResponse2001NotificationSubscriptionList struct {
 	UserTrackingSubscription []UserTrackingSubscription `json:"userTrackingSubscription,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL,omitempty"`
 }

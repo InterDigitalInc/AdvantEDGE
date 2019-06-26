@@ -14,14 +14,15 @@ type ConnectionType string
 
 // List of ConnectionType
 const (
-	FEMTO           ConnectionType = "Femto"
-	LTE_FEMTO       ConnectionType = "LTE-femto"
-	SMALLCELL       ConnectionType = "Smallcell"
-	LTE_SMALLCELL   ConnectionType = "LTE-smallcell"
-	WIFI            ConnectionType = "Wifi"
-	PICO            ConnectionType = "Pico"
-	MICRO           ConnectionType = "Micro"
-	MACRO           ConnectionType = "Macro"
-	WIMAX           ConnectionType = "Wimax"
+	FEMTO         ConnectionType = "Femto"
+	LTE_FEMTO     ConnectionType = "LTE-femto"
+	SMALLCELL     ConnectionType = "Smallcell"
+	LTE_SMALLCELL ConnectionType = "LTE-smallcell"
+	WIFI          ConnectionType = "Wifi"
+	PICO          ConnectionType = "Pico"
+	MICRO         ConnectionType = "Micro"
+	MACRO         ConnectionType = "Macro"
+	WIMAX         ConnectionType = "Wimax"
+	//CONTYPE_ added in order to make this const unique, (already used in other ENUMS for the same API), unknown is also a keyword that cannot be used in go
 	CONTYPE_UNKNOWN ConnectionType = "Unknown"
 )

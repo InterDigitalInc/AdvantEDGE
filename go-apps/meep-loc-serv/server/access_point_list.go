@@ -11,10 +11,13 @@ package server
 
 // A type containing list of access points.
 type AccessPointList struct {
+
+	// Identifier of zone
 	ZoneId string `json:"zoneId"`
 
 	// Collection of the access point information list.
 	AccessPoint []AccessPointInfo `json:"accessPoint,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 }

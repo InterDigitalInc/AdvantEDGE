@@ -9,23 +9,35 @@
 
 package server
 
+import (
+	"time"
+)
+
 // A type containing zonal presence notification
 type ZonalPresenceNotification struct {
-	CallbackData *CallbackData `json:"callbackData,omitempty"`
 
-	ZoneId *ZoneId `json:"zoneId"`
+	// CallBackData if passed by the application during the associated ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
+	CallbackData string `json:"callbackData,omitempty"`
 
-	Address *Address `json:"address"`
+	// Identifier of zone
+	ZoneId string `json:"zoneId"`
 
-	InterestRealm *InterestRealm `json:"interestRealm,omitempty"`
+	// Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI).
+	Address string `json:"address"`
+
+	// Interest realm of access point (e.g. geographical area, a type of industry etc.).
+	InterestRealm string `json:"interestRealm,omitempty"`
 
 	UserEventType *UserEventType `json:"userEventType"`
 
-	CurrentAccessPointId *CurrentAccessPointId `json:"currentAccessPointId"`
+	// Zone ID
+	CurrentAccessPointId string `json:"currentAccessPointId"`
 
-	PreviousAccessPointId *PreviousAccessPointId `json:"previousAccessPointId,omitempty"`
+	// Zone ID
+	PreviousAccessPointId string `json:"previousAccessPointId,omitempty"`
 
-	Timestamp *Timestamp `json:"timestamp"`
+	// Indicates the time of day for zonal presence notification.
+	Timestamp time.Time `json:"timestamp"`
 
 	// Link to other resources that are in relationship with this notification. The server SHOULD include a link to the related subscription. No other links are required or suggested by this specification.
 	Link []Link `json:"link,omitempty"`

@@ -11,13 +11,19 @@ package server
 
 // A type containing zone information.
 type ZoneInfo struct {
+
+	// Identifier of zone
 	ZoneId string `json:"zoneId"`
 
-	NumberOfAccessPoints uint32 `json:"numberOfAccessPoints"`
+	// The number of access points within the zone
+	NumberOfAccessPoints int32 `json:"numberOfAccessPoints"`
 
-	NumberOfUnservicableAccessPoints uint32 `json:"numberOfUnservicableAccessPoints"`
+	// Number of inoperable access points within the zone.
+	NumberOfUnservicableAccessPoints int32 `json:"numberOfUnservicableAccessPoints"`
 
-	NumberOfUsers uint32 `json:"numberOfUsers"`
+	// The number of users currently on the access point.
+	NumberOfUsers int32 `json:"numberOfUsers"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 }

@@ -219,7 +219,6 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 }
 
 func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string, entryHandler func(string, string, string, string, interface{}) error, dataList interface{}) error {
-
 	if !rc.connected {
                 return errors.New("Redis Connector is disconnected (JSONGetList)")
         }
@@ -235,7 +234,6 @@ func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string,
 
 // JSONSetEntry - update existing entry from DB or create a new one if it doesnt't exist
 func (rc *Connector) JSONSetEntry(key string, path string, json string) error {
-	log.Info("SIMON in JSONSetEntry")
         if !rc.connected {
                 return errors.New("Redis Connector is disconnected (JSONSetEntry)")
         }

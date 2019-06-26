@@ -14,8 +14,8 @@ type ZoneStatusNotification struct {
 	CallbackData string `json:"callbackData,omitempty"`
 	ZoneId string `json:"zoneId"`
 	AccessPointId string `json:"accessPointId,omitempty"`
-	NumberOfUsersInZone uint32 `json:"numberOfUsersInZone,omitempty"`
-	NumberOfUsersInAP uint32 `json:"numberOfUsersInAP,omitempty"`
+	NumberOfUsersInZone int32 `json:"numberOfUsersInZone,omitempty"`
+	NumberOfUsersInAP int32 `json:"numberOfUsersInAP,omitempty"`
 	OperationStatus *OperationStatus `json:"operationStatus,omitempty"`
 	Timestamp string `json:"timestamp"`
 	// Link to other resources that are in relationship with this notification. The server SHOULD include a link to the related subscription. No other links are required or suggested by this specification.

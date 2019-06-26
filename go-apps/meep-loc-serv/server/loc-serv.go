@@ -109,7 +109,7 @@ func deregisterZoneStatus(subsIdStr string) {
 	zonalSubscriptionMap[subsId] = ""
 }
 
-func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold uint32, nbOfUsersAPThreshold uint32, opStatus []OperationStatus, subsIdStr string) {
+func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAPThreshold int32, opStatus []OperationStatus, subsIdStr string) {
 
 	subsId, _ := strconv.Atoi(subsIdStr)
 
@@ -248,10 +248,10 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 				zoneStatusNotif.ZoneId = zoneId
 				if apWarning {
 					zoneStatusNotif.AccessPointId = apId
-					zoneStatusNotif.NumberOfUsersInAP = (uint32)(nbUsersInAP)
+					zoneStatusNotif.NumberOfUsersInAP = (int32)(nbUsersInAP)
 				}
 				if zoneWarning {
-					zoneStatusNotif.NumberOfUsersInZone = (uint32)(nbUsersInZone)
+					zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
 				}
 				zoneStatusNotif.Timestamp = time.Now().String()
 				go sendStatusNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zoneStatusNotif)
@@ -1103,13 +1103,13 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		zoneInfo = convertJsonToZoneInfo(jsonZoneInfo)
 
 		if nbAccessPoints != -1 {
-			zoneInfo.NumberOfAccessPoints = uint32(nbAccessPoints)
+			zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
 		}
 		if nbUnsrvAccessPoints != -1 {
-			zoneInfo.NumberOfUnservicableAccessPoints = uint32(nbUnsrvAccessPoints)
+			zoneInfo.NumberOfUnservicableAccessPoints = int32(nbUnsrvAccessPoints)
 		}
 		if nbUsers != -1 {
-			zoneInfo.NumberOfUsers = uint32(nbUsers)
+			zoneInfo.NumberOfUsers = int32(nbUsers)
 		}
 		//updateDB
 		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
@@ -1117,9 +1117,9 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		zoneInfo.ZoneId = zoneId
 		zoneInfo.ResourceURL = basepathURL + "zones/" + zoneId
 
-		zoneInfo.NumberOfAccessPoints = uint32(nbAccessPoints)
-		zoneInfo.NumberOfUnservicableAccessPoints = uint32(nbUnsrvAccessPoints)
-		zoneInfo.NumberOfUsers = uint32(nbUsers)
+		zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
+		zoneInfo.NumberOfUnservicableAccessPoints = int32(nbUnsrvAccessPoints)
+		zoneInfo.NumberOfUsers = int32(nbUsers)
 
 		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
 	}
@@ -1140,7 +1140,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 			apInfo.OperationStatus = &opStatus
 		}
 		if nbUsers != -1 {
-			apInfo.NumberOfUsers = uint32(nbUsers)
+			apInfo.NumberOfUsers = int32(nbUsers)
 		}
 		//updateDB
 		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
@@ -1152,7 +1152,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 		apInfo.ConnectionType = &conType
 		opStatus := convertStringToOperationStatus(opStatusStr)
 		apInfo.OperationStatus = &opStatus
-		apInfo.NumberOfUsers = uint32(nbUsers)
+		apInfo.NumberOfUsers = int32(nbUsers)
 
 		//unsued optional attributes
 		//apInfo.LocationInfo.Latitude

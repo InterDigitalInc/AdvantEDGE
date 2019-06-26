@@ -11,17 +11,24 @@ package server
 
 // A type containing user information.
 type UserInfo struct {
+
+	// Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI).
 	Address string `json:"address"`
 
+	// Identifier of access point, <E-CGI><Cell Portion ID> (reference ETSI TS 129 171). Where the E-CGI is made up of the PLMN and Cell Identity (28 bit string). Then the PLMN is made up of the 3 digit MCC & 2 or 3 digit MNC. The Cell Portion is an optional element
 	AccessPointId string `json:"accessPointId"`
 
+	// Identifier of zone
 	ZoneId string `json:"zoneId"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 
 	LocationInfo *LocationInfo `json:"locationInfo,omitempty"`
 
+	// Contextual information of a user location (e.g., aisle, floor, room number, etc.)
 	ContextLocationInfo string `json:"contextLocationInfo,omitempty"`
 
+	// Reserved for future use.
 	AncillaryInfo string `json:"ancillaryInfo,omitempty"`
 }

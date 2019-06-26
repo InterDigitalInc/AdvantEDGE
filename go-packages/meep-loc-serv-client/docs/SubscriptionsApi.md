@@ -31,7 +31,7 @@ This operation is used for retrieving an individual subscription to user trackin
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
@@ -50,7 +50,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubGet**
-> InlineResponse2001 UserTrackingSubGet(ctx, )
+> InlineResponse20010 UserTrackingSubGet(ctx, )
 
 
 This operation is used for retrieving all active subscriptions to user tracking change notifications.
@@ -60,7 +60,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponse2001**](inline_response_200_1.md)
+[**InlineResponse20010**](inline_response_200_10.md)
 
 ### Authorization
 
@@ -74,7 +74,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubGetById**
-> interface{} UserTrackingSubGetById(ctx, subscriptionId)
+> InlineResponse2011 UserTrackingSubGetById(ctx, subscriptionId)
 
 
 This operation is used for retrieving an individual subscription to user tracking change notification.
@@ -83,12 +83,12 @@ This operation is used for retrieving an individual subscription to user trackin
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2011**](inline_response_201_1.md)
 
 ### Authorization
 
@@ -102,7 +102,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubPost**
-> interface{} UserTrackingSubPost(ctx, userTrackingSubscription)
+> InlineResponse2011 UserTrackingSubPost(ctx, userTrackingSubscription)
 
 
 This operation is used for creating a new subscription to user tracking change notification
@@ -111,12 +111,12 @@ This operation is used for creating a new subscription to user tracking change n
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **userTrackingSubscription** | [**UserTrackingSubscription**](UserTrackingSubscription.md)| User Tracking Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2011**](inline_response_201_1.md)
 
 ### Authorization
 
@@ -130,7 +130,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubPutById**
-> interface{} UserTrackingSubPutById(ctx, subscriptionId, userTrackingSubscription)
+> InlineResponse2011 UserTrackingSubPutById(ctx, subscriptionId, userTrackingSubscription)
 
 
 This operation is used for updating an individual subscription to user tracking change notification.
@@ -139,13 +139,13 @@ This operation is used for updating an individual subscription to user tracking 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
   **userTrackingSubscription** | [**UserTrackingSubscription**](UserTrackingSubscription.md)| User Tracking Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2011**](inline_response_201_1.md)
 
 ### Authorization
 
@@ -168,7 +168,7 @@ This operation is used for cancelling a subscription and stopping corresponding 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
@@ -187,7 +187,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubGet**
-> InlineResponse200 ZonalTrafficSubGet(ctx, )
+> InlineResponse2009 ZonalTrafficSubGet(ctx, )
 
 
 This operation is used for retrieving all active subscriptions to zonal traffic change notifications.
@@ -197,7 +197,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponse200**](inline_response_200.md)
+[**InlineResponse2009**](inline_response_200_9.md)
 
 ### Authorization
 
@@ -211,7 +211,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubGetById**
-> interface{} ZonalTrafficSubGetById(ctx, subscriptionId)
+> InlineResponse201 ZonalTrafficSubGetById(ctx, subscriptionId)
 
 
 This operation is used for updating an individual subscription to zonal traffic change notification.
@@ -220,12 +220,12 @@ This operation is used for updating an individual subscription to zonal traffic 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse201**](inline_response_201.md)
 
 ### Authorization
 
@@ -239,7 +239,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubPost**
-> interface{} ZonalTrafficSubPost(ctx, zonalTrafficSubscription)
+> InlineResponse201 ZonalTrafficSubPost(ctx, zonalTrafficSubscription)
 
 
 This operation is used for creating a new subscription to zonal traffic change notification.
@@ -248,12 +248,12 @@ This operation is used for creating a new subscription to zonal traffic change n
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **zonalTrafficSubscription** | [**ZonalTrafficSubscription**](ZonalTrafficSubscription.md)| Zonal Traffic Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse201**](inline_response_201.md)
 
 ### Authorization
 
@@ -267,7 +267,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubPutById**
-> interface{} ZonalTrafficSubPutById(ctx, subscriptionId, zonalTrafficSubscription)
+> InlineResponse201 ZonalTrafficSubPutById(ctx, subscriptionId, zonalTrafficSubscription)
 
 
 This operation is used for updating an individual subscription to zonal traffic change notification.
@@ -276,13 +276,13 @@ This operation is used for updating an individual subscription to zonal traffic 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
   **zonalTrafficSubscription** | [**ZonalTrafficSubscription**](ZonalTrafficSubscription.md)| Zonal Traffic Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse201**](inline_response_201.md)
 
 ### Authorization
 
@@ -305,7 +305,7 @@ This operation is used for cancelling a subscription and stopping corresponding 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
@@ -324,7 +324,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusGet**
-> InlineResponse2002 ZoneStatusGet(ctx, )
+> InlineResponse20011 ZoneStatusGet(ctx, )
 
 
 This operation is used for creating a new subscription to zone status change notification.
@@ -334,7 +334,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponse2002**](inline_response_200_2.md)
+[**InlineResponse20011**](inline_response_200_11.md)
 
 ### Authorization
 
@@ -348,7 +348,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusGetById**
-> interface{} ZoneStatusGetById(ctx, subscriptionId)
+> InlineResponse20012 ZoneStatusGetById(ctx, subscriptionId)
 
 
 This operation is used for retrieving an individual subscription to zone status change notification.
@@ -357,12 +357,12 @@ This operation is used for retrieving an individual subscription to zone status 
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse20012**](inline_response_200_12.md)
 
 ### Authorization
 
@@ -376,7 +376,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusPost**
-> interface{} ZoneStatusPost(ctx, zoneStatusSubscription)
+> InlineResponse2012 ZoneStatusPost(ctx, zoneStatusSubscription)
 
 
 This operation is used for creating a new subscription to zone status change notification.
@@ -385,12 +385,12 @@ This operation is used for creating a new subscription to zone status change not
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **zoneStatusSubscription** | [**ZoneStatusSubscription**](ZoneStatusSubscription.md)| Zone Status Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2012**](inline_response_201_2.md)
 
 ### Authorization
 
@@ -404,7 +404,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusPutById**
-> interface{} ZoneStatusPutById(ctx, subscriptionId, zoneStatusSubscription)
+> InlineResponse20012 ZoneStatusPutById(ctx, subscriptionId, zoneStatusSubscription)
 
 
 This operation is used for updating an individual subscription to zone status change notification.
@@ -413,13 +413,13 @@ This operation is used for updating an individual subscription to zone status ch
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **subscriptionId** | **string**| Subscription ID | 
   **zoneStatusSubscription** | [**ZoneStatusSubscription**](ZoneStatusSubscription.md)| Zone Status Subscription | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse20012**](inline_response_200_12.md)
 
 ### Authorization
 

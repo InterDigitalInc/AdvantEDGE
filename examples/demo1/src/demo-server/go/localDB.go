@@ -59,9 +59,6 @@ func Init() {
                 //return err
         }
 
-//	mgName = "demoSvc"
-//	mgAppId = "zone1-fog1-demoSvc"
-//	mgAppPort = "80"	
         // Register edge app instance with MG Manager
         var mgApp mgm.MobilityGroupApp
         mgApp.Id = mgAppId

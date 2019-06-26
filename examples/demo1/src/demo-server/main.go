@@ -69,8 +69,9 @@ func registerLocServ(ue string) {
         newString = strings.Replace(newString, "-", "_", -1)
 
         myPodIp := os.Getenv(newString)
-
-	subscription.CallbackReference.NotifyURL = "http://" + myPodIp + "/v1"
+	var cb locServClient.UserTrackingSubscriptionCallbackReference
+	cb.NotifyURL = "http://" + myPodIp + "/v1"
+	subscription.CallbackReference = &cb
 
 	_, resp, err := locServ.SubscriptionsApi.UserTrackingSubPost(nil, subscription)
         if err != nil {

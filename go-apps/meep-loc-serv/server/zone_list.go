@@ -15,5 +15,6 @@ type ZoneList struct {
 	// Collection of the zone information list.
 	Zone []ZoneInfo `json:"zone,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 }

@@ -15,5 +15,6 @@ type UserList struct {
 	// Collection of the zone information list.
 	User []UserInfo `json:"user,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 }

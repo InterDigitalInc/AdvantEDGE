@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 
 # **ZonesByIdGetAps**
-> interface{} ZonesByIdGetAps(ctx, zoneId, optional)
+> InlineResponse2005 ZonesByIdGetAps(ctx, zoneId, optional)
 
 
 Access point status can be retrieved for sets of access points matching attribute in the request.
@@ -20,21 +20,21 @@ Access point status can be retrieved for sets of access points matching attribut
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **zoneId** | **string**| Zone ID | 
- **optional** | ***ZonesByIdGetApsOpts** | optional parameters | nil if no parameters
+ **optional** | **map[string]interface{}** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a pointer to a ZonesByIdGetApsOpts struct
+Optional parameters are passed through a map[string]interface{}.
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
-
- **interestRealm** | **optional.String**| Interest realm of access point (e.g. geographical area, a type of industry etc.). | 
+ **zoneId** | **string**| Zone ID | 
+ **interestRealm** | **string**| Interest realm of access point (e.g. geographical area, a type of industry etc.). | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2005**](inline_response_200_5.md)
 
 ### Authorization
 
@@ -48,7 +48,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonesByIdGetApsById**
-> interface{} ZonesByIdGetApsById(ctx, zoneId, accessPointId)
+> InlineResponse2006 ZonesByIdGetApsById(ctx, zoneId, accessPointId)
 
 
 Access point status can be retrieved for sets of access points matching attribute in the request.
@@ -57,13 +57,13 @@ Access point status can be retrieved for sets of access points matching attribut
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **zoneId** | **string**| Zone ID | 
   **accessPointId** | **string**| Access Point ID | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2006**](inline_response_200_6.md)
 
 ### Authorization
 
@@ -77,7 +77,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonesGet**
-> interface{} ZonesGet(ctx, )
+> InlineResponse2003 ZonesGet(ctx, )
 
 
 Used to get a list of identifiers for zones authorized for use by the application.
@@ -87,7 +87,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2003**](inline_response_200_3.md)
 
 ### Authorization
 
@@ -101,7 +101,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonesGetById**
-> interface{} ZonesGetById(ctx, zoneId)
+> InlineResponse2004 ZonesGetById(ctx, zoneId)
 
 
 Used to get the status of a zone.
@@ -110,12 +110,12 @@ Used to get the status of a zone.
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
   **zoneId** | **string**| Zone ID | 
 
 ### Return type
 
-[**interface{}**](interface{}.md)
+[**InlineResponse2004**](inline_response_200_4.md)
 
 ### Authorization
 

@@ -9,8 +9,14 @@
 
 package server
 
+import (
+	"time"
+)
+
 // A type containing access point information.
 type AccessPointInfo struct {
+
+	// Identifier of access point, <E-CGI><Cell Portion ID> (reference ETSI TS 129 171). Where the E-CGI is made up of the PLMN and Cell Identity (28 bit string). Then the PLMN is made up of the 3 digit MCC & 2 or 3 digit MNC. The Cell Portion is an optional element
 	AccessPointId string `json:"accessPointId"`
 
 	LocationInfo *LocationInfo `json:"locationInfo,omitempty"`
@@ -19,11 +25,15 @@ type AccessPointInfo struct {
 
 	OperationStatus *OperationStatus `json:"operationStatus"`
 
-	NumberOfUsers uint32 `json:"numberOfUsers"`
+	// The number of users currently on the access point.
+	NumberOfUsers int32 `json:"numberOfUsers"`
 
-	Timezone string `json:"timezone,omitempty"`
+	// Time zone of access point
+	Timezone time.Time `json:"timezone,omitempty"`
 
+	// Interest realm of access point (e.g. geographical area, a type of industry etc.).
 	InterestRealm string `json:"interestRealm,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL"`
 }

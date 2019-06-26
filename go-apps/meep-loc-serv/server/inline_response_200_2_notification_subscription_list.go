@@ -9,9 +9,9 @@
 
 package server
 
-//Changed from the standard ETSI API, mistakenly used zonalTraffic rather than zoneStatus
 type InlineResponse2002NotificationSubscriptionList struct {
 	ZoneStatusSubscription []ZoneStatusSubscription `json:"zoneStatusSubscription,omitempty"`
 
+	// Self referring URL.
 	ResourceURL string `json:"resourceURL,omitempty"`
 }
