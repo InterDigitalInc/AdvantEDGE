@@ -119,6 +119,17 @@ const validateName = (val) => {
   return null;
 };
 
+const validateFullName = (val) => {
+  if (val) {
+    if (val.length > 60) {
+      return 'Maximum 60 characters';
+    } else if (!val.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
+      return 'Lowercase alphanumeric or \'-\' or \'.\'';
+    }
+  }
+  return null;
+};
+
 const validateVariableName = (val) => {
   if (val) {
     if (val.length > 30) {
@@ -231,7 +242,7 @@ const validateServiceMappingEntry = (entry) => {
 
   return [
     validateExternalPort(args[0]),
-    validateName(args[1]),
+    validateFullName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
   ].filter(notNull);
@@ -253,7 +264,7 @@ const validateChartGroupEntry = (entry) => {
   if (args.length !== 4) {return ` ${'Svc instance:svc group name:port:protocol'}`;}
 
   return [
-    validateName(args[0]),
+    validateFullName(args[0]),
     validateName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
