@@ -56,6 +56,7 @@
 
 
 
+
   };
 
   /**
@@ -89,6 +90,9 @@
       }
       if (data.hasOwnProperty('terminalLinkPacketLoss')) {
         obj['terminalLinkPacketLoss'] = ApiClient.convertToType(data['terminalLinkPacketLoss'], 'Number');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('physicalLocations')) {
         obj['physicalLocations'] = ApiClient.convertToType(data['physicalLocations'], [PhysicalLocation]);
@@ -132,6 +136,11 @@
    * @member {Number} terminalLinkPacketLoss
    */
   exports.prototype['terminalLinkPacketLoss'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
   /**
    * @member {Array.<module:model/PhysicalLocation>} physicalLocations
    */

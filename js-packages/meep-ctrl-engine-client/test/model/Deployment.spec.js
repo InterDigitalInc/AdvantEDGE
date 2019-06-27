@@ -80,6 +80,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property meta (base name: "meta")', function() {
+      // uncomment below and update the code to test the property meta
+      //var instane = new MeepControllerRestApi.Deployment();
+      //expect(instance).to.be();
+    });
+
     it('should have the property domains (base name: "domains")', function() {
       // uncomment below and update the code to test the property domains
       //var instane = new MeepControllerRestApi.Deployment();

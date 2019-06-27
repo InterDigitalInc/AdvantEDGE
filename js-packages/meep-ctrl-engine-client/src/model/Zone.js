@@ -64,6 +64,7 @@
 
 
 
+
   };
 
   /**
@@ -121,6 +122,9 @@
       }
       if (data.hasOwnProperty('edgeFogPacketLoss')) {
         obj['edgeFogPacketLoss'] = ApiClient.convertToType(data['edgeFogPacketLoss'], 'Number');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('networkLocations')) {
         obj['networkLocations'] = ApiClient.convertToType(data['networkLocations'], [NetworkLocation]);
@@ -204,6 +208,11 @@
    * @member {Number} edgeFogPacketLoss
    */
   exports.prototype['edgeFogPacketLoss'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
   /**
    * @member {Array.<module:model/NetworkLocation>} networkLocations
    */

@@ -62,6 +62,7 @@
 
 
 
+
   };
 
   /**
@@ -116,6 +117,9 @@
       }
       if (data.hasOwnProperty('userChartGroup')) {
         obj['userChartGroup'] = ApiClient.convertToType(data['userChartGroup'], 'String');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
       }
     }
     return obj;
@@ -189,6 +193,11 @@
    * @member {String} userChartGroup
    */
   exports.prototype['userChartGroup'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
 
 
   /**

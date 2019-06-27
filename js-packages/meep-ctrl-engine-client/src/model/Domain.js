@@ -56,6 +56,7 @@
 
 
 
+
   };
 
   /**
@@ -89,6 +90,9 @@
       }
       if (data.hasOwnProperty('interZonePacketLoss')) {
         obj['interZonePacketLoss'] = ApiClient.convertToType(data['interZonePacketLoss'], 'Number');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('zones')) {
         obj['zones'] = ApiClient.convertToType(data['zones'], [Zone]);
@@ -132,6 +136,11 @@
    * @member {Number} interZonePacketLoss
    */
   exports.prototype['interZonePacketLoss'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
   /**
    * @member {Array.<module:model/Zone>} zones
    */

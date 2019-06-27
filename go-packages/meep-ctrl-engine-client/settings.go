@@ -9,6 +9,6 @@
 
 package client
 
-// MEEP settings
+// MEEP settings - Key/Value Pair Map (string, string)
 type Settings struct {
 }

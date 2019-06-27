@@ -54,6 +54,7 @@
 
 
 
+
   };
 
   /**
@@ -81,6 +82,9 @@
       }
       if (data.hasOwnProperty('networkLocationsInRange')) {
         obj['networkLocationsInRange'] = ApiClient.convertToType(data['networkLocationsInRange'], ['String']);
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('processes')) {
         obj['processes'] = ApiClient.convertToType(data['processes'], [Process]);
@@ -113,6 +117,11 @@
    * @member {Array.<String>} networkLocationsInRange
    */
   exports.prototype['networkLocationsInRange'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
   /**
    * @member {Array.<module:model/Process>} processes
    */

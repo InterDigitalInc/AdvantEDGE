@@ -51,4 +51,7 @@ type Process struct {
 
 	// Chart supplemental information related to the group (service)
 	UserChartGroup string `json:"userChartGroup,omitempty"`
+
+	// Key/Value Pair Map (string, string)
+	Meta map[string]string `json:"meta,omitempty"`
 }

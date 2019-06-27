@@ -26,5 +26,8 @@ type PhysicalLocation struct {
 
 	NetworkLocationsInRange []string `json:"networkLocationsInRange,omitempty"`
 
+	// Key/Value Pair Map (string, string)
+	Meta map[string]string `json:"meta,omitempty"`
+
 	Processes []Process `json:"processes,omitempty"`
 }

@@ -33,5 +33,8 @@ type Domain struct {
 	// Packet lost (in terms of percentage) between zones within the domain
 	InterZonePacketLoss float64 `json:"interZonePacketLoss,omitempty"`
 
+	// Key/Value Pair Map (string, string)
+	Meta map[string]string `json:"meta,omitempty"`
+
 	Zones []Zone `json:"zones,omitempty"`
 }

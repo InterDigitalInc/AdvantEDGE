@@ -34,6 +34,11 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between domains
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       domains:
         type: array
         items:
@@ -365,6 +370,11 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between zones within the domain
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       zones:
         type: array
         items:
@@ -687,6 +697,11 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) for all terminal links within the network location
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       physicalLocations:
         type: array
         items:
@@ -755,6 +770,11 @@ definitions:
         items:
           type: string
           description: Names of network locations within range of physical location
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       processes:
         type: array
         items:
@@ -942,6 +962,11 @@ definitions:
       userChartGroup:
         type: string
         description: Chart supplemental information related to the group (service)
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
     description: Application or service object
   Release:
     type: object
@@ -1949,8 +1974,11 @@ definitions:
           External port number on which to expose the application (30000 - 32767)  <li>Only one application allowed per external port <li>Scenario builder must configure to prevent conflicts
     description: Service port object
   Settings:
+    type: object
+    description: MEEP settings - Key/Value Pair Map (string, string)
+    additionalProperties:
+      type: string
     type: string
-    description: MEEP settings
   Zone:
     type: object
     properties:
@@ -2005,6 +2033,11 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       networkLocations:
         type: array
         items:

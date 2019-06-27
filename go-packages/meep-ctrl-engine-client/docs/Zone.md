@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **EdgeFogLatencyVariation** | **int32** | Latency variation in ms between fog nodes (or PoAs) and edge nodes within zone | [optional] [default to null]
 **EdgeFogThroughput** | **int32** | The limit of the traffic supported between fog nodes (or PoAs) and edge nodes within the zone | [optional] [default to null]
 **EdgeFogPacketLoss** | **float64** | Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone | [optional] [default to null]
+**Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **NetworkLocations** | [**[]NetworkLocation**](NetworkLocation.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

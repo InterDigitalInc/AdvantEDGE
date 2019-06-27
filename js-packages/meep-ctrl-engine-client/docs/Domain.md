@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **interZoneLatencyVariation** | **Number** | Latency variation in ms between zones within domain | [optional] 
 **interZoneThroughput** | **Number** | The limit of the traffic supported between zones within the domain | [optional] 
 **interZonePacketLoss** | **Number** | Packet lost (in terms of percentage) between zones within the domain | [optional] 
+**meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **zones** | [**[Zone]**](Zone.md) |  | [optional] 
 
 

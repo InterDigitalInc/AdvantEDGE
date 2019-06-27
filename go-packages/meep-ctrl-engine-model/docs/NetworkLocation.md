@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **TerminalLinkLatencyVariation** | **int32** | Latency variation in ms for all terminal links within network location | [optional] [default to null]
 **TerminalLinkThroughput** | **int32** | The limit of the traffic supported for all terminal links within the network location | [optional] [default to null]
 **TerminalLinkPacketLoss** | **float64** | Packet lost (in terms of percentage) for all terminal links within the network location | [optional] [default to null]
+**Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **PhysicalLocations** | [**[]PhysicalLocation**](PhysicalLocation.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
