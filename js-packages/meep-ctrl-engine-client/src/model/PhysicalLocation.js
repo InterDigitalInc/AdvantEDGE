@@ -55,6 +55,7 @@
 
 
 
+
   };
 
   /**
@@ -85,6 +86,9 @@
       }
       if (data.hasOwnProperty('meta')) {
         obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
+      }
+      if (data.hasOwnProperty('userMeta')) {
+        obj['userMeta'] = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('processes')) {
         obj['processes'] = ApiClient.convertToType(data['processes'], [Process]);
@@ -122,6 +126,11 @@
    * @member {Object.<String, String>} meta
    */
   exports.prototype['meta'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} userMeta
+   */
+  exports.prototype['userMeta'] = undefined;
   /**
    * @member {Array.<module:model/Process>} processes
    */

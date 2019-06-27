@@ -152,6 +152,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property userMeta (base name: "userMeta")', function() {
+      // uncomment below and update the code to test the property userMeta
+      //var instane = new MeepControllerRestApi.Zone();
+      //expect(instance).to.be();
+    });
+
     it('should have the property networkLocations (base name: "networkLocations")', function() {
       // uncomment below and update the code to test the property networkLocations
       //var instane = new MeepControllerRestApi.Zone();

@@ -60,5 +60,8 @@ type Zone struct {
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 
+	// Key/Value Pair Map (string, string)
+	UserMeta map[string]string `json:"userMeta,omitempty"`
+
 	NetworkLocations []NetworkLocation `json:"networkLocations,omitempty"`
 }

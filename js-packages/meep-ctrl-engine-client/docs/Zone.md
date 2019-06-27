@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **edgeFogThroughput** | **Number** | The limit of the traffic supported between fog nodes (or PoAs) and edge nodes within the zone | [optional] 
 **edgeFogPacketLoss** | **Number** | Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **networkLocations** | [**[NetworkLocation]**](NetworkLocation.md) |  | [optional] 
 
 

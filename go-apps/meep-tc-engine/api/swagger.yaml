@@ -455,6 +455,11 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       domains:
         type: "array"
         items:
@@ -793,6 +798,11 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       zones:
         type: "array"
         items:
@@ -1014,6 +1024,11 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       networkLocations:
         type: "array"
         items:
@@ -1128,6 +1143,11 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       physicalLocations:
         type: "array"
         items:
@@ -1196,6 +1216,11 @@ definitions:
           type: "string"
           description: "Names of network locations within range of physical location"
       meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
@@ -1274,6 +1299,11 @@ definitions:
         type: "string"
         description: "Chart supplemental information related to the group (service)"
       meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:

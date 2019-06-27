@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **userChartAlternateValues** | **String** | Chart values.yaml file location for the deployment of the chart provided by the user | [optional] 
 **userChartGroup** | **String** | Chart supplemental information related to the group (service) | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 
 
 <a name="TypeEnum"></a>
