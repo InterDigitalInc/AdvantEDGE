@@ -35,7 +35,7 @@ const redisAddr string = "localhost:30379"
 func VirtEngineInit() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
 	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisAddr)
+	rc, err = redis.NewConnector(redisAddr, 0)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err

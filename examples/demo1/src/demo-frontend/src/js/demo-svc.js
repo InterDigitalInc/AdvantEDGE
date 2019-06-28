@@ -44,6 +44,8 @@ var mapLayerSelect;
 var mapLayers = [];
 var map;
 var targetedUeNameDialogTextfield;
+var targetedUeAppNameDialogTextfield1;
+var targetedUeAppNameDialogTextfield2;
 var iperfBwDialogTextfield;
 
 
@@ -54,6 +56,7 @@ console.log("basepath: " + basepath);
 demoSvcRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 var ueStateApi = new demoSvcRestApiClient.UEStateApi();
 var edgeInfoApi = new demoSvcRestApiClient.EdgeAppInfoApi();
+var locInfoApi = new demoSvcRestApiClient.UELocationApi();
 
 //iperfTransitRestApiClient.ApiClient.instance.basePath = "http://iperf-transit-iperf-transit-server/v1";
 
@@ -108,6 +111,26 @@ function showTrafficGenerator() {
     $('#stop-demo-iperf-button').show();
 }
 
+
+/**
+ * Callback function to receive the result of the getUserInfo operation.
+ * @callback module:api/userApi~getUserInfoCallback
+ * @param {String} error Error message, if any.
+ * @param {module:model/UeState} data The data returned by the service call.
+ * @param {String} response The complete HTTP response.
+ */
+function getUserInfoLocationCb(error, data, response) {
+    console.log("Received getUserInfo response");
+
+    if (error != null) {
+        console.log(error);
+    } else {
+        console.log(data);
+        if (data != null) {
+            updateUserInfo(data.address, data);
+        }
+    }
+}
 
 /**
  * Callback function to receive the result of the getUeState operation.
@@ -191,6 +214,27 @@ function demoIperfOffButtonCb(error, data, response) {
     }
 }
 
+function defaultUserInfo1(address, defaultLocation) {
+    $('#demo-svc-loc-serv-address-1').text(address);
+    $('#demo-svc-loc-serv-location-1').text(defaultLocation);
+}
+
+function defaultUserInfo2(address, defaultLocation) {
+    $('#demo-svc-loc-serv-address-2').text(address);
+    $('#demo-svc-loc-serv-location-2').text(defaultLocation);
+}
+
+function updateUserInfo(address, data) {
+    if (address == "ue1-iperf") {
+        $('#demo-svc-loc-serv-address-1').text(data.address);
+        $('#demo-svc-loc-serv-location-1').text(data.zoneId + " / " + data.accessPointId);
+    }
+    if (address == "ue2-svc") {
+        $('#demo-svc-loc-serv-address-2').text(data.address);
+        $('#demo-svc-loc-serv-location-2').text(data.zoneId + " / " + data.accessPointId);
+    }
+}
+
 function updateGameStats(data) {
     $('#demo-svc-info-duration').text(data.duration);
     showTrafficGenerator();
@@ -201,6 +245,8 @@ function refreshGameInfo() {
     console.log("Sending regular update request");
     edgeInfoApi.getEdgeInfo(getEdgeInfoCb);
     ueStateApi.getUeState(targetedUeNameDialogTextfield.value, getUeStateCb);
+    locInfoApi.getUeLocation(targetedUeAppNameDialogTextfield1.value, getUserInfoLocationCb);
+    locInfoApi.getUeLocation(targetedUeAppNameDialogTextfield2.value, getUserInfoLocationCb);
 }
 
 // Initialize UI
@@ -218,6 +264,27 @@ function initializeUI() {
     targetedUeNameDialogTextfield.value = "ue2-ext";
     targetedUeNameDialogTextfield.valid = true;
     $('#targeted-ue-name-tf-div').hide();
+
+    targetedUeAppNameDialogTextfield1 = new mdc.textField.MDCTextField(document.querySelector('#targeted-ue-app-name-1-tf-div'));
+    //setting a default value for now
+    targetedUeAppNameDialogTextfield1.value = "ue1-iperf";
+    targetedUeAppNameDialogTextfield1.valid = true;
+    $('#targeted-ue-app-name-1-tf-div').hide();
+
+    targetedUeAppNameDialogTextfield2 = new mdc.textField.MDCTextField(document.querySelector('#targeted-ue-app-name-2-tf-div'));
+    //setting a default value for now
+    targetedUeAppNameDialogTextfield2.value = "ue2-svc";
+    targetedUeAppNameDialogTextfield2.valid = true;
+    $('#targeted-ue-app-name-2-tf-div').hide();
+
+    //ues are starting by default in zone1 and poa1, so hardcoded because the subscriptions are only sent after the tracking starts 
+    //and this app only tracks notifications, not queries where they are located
+    //a work-around would be to have the demo-server do a get for the location knowing it is registering for the event, and then fake
+    //a notification to trigger the app
+    defaultUserInfo1("ue1-iperf", "zone1 / zone1-poa1")
+    defaultUserInfo2("ue2-svc", "zone1 / zone1-poa1")
+
+
     iperfBwDialogTextfield = new mdc.textField.MDCTextField(document.querySelector('#iperf-bw-tf-div'));
     iperfBwDialogTextfield.valid = true;
 

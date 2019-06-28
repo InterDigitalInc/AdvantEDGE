@@ -44,7 +44,7 @@ func NewPinger(dbAddr string, name string) (p *Pinger, err error) {
 	p.pongChannel = p.name + ":pong"
 
 	// Connect to Redis DB
-	p.rc, err = redis.NewConnector(dbAddr)
+	p.rc, err = redis.NewConnector(dbAddr, 0)
 	if err != nil {
 		log.Error("Pinger ", p.name, " failedconnection to Redis:")
 		log.Error(err)

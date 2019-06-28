@@ -8,6 +8,8 @@ Name | Type | Description | Notes
 **type** | **String** | Physical location type | [optional] 
 **isExternal** | **Boolean** | true: Physical location is external to MEEP false: Physical location is internal to MEEP | [optional] 
 **networkLocationsInRange** | **[String]** |  | [optional] 
+**meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **processes** | [**[Process]**](Process.md) |  | [optional] 
 
 

@@ -45,6 +45,14 @@ repo:
         - -mod=vendor
       codecov: true
       lint: true
+    meep-loc-serv:
+      src: go-apps/meep-loc-serv
+      bin: bin/meep-loc-serv
+      chart: charts/meep-loc-serv
+      build-flags:
+        - -mod=vendor
+      codecov: true
+      lint: true
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine

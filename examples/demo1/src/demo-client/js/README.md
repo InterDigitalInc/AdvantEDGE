@@ -50,11 +50,11 @@ command above from.
 #### git
 #
 If the library is hosted at a git repository, e.g.
-https://github.com/YOUR_USERNAME/meep_demo_app_api
+https://github.com/GIT_USER_ID/GIT_REPO_ID
 then install it via:
 
 ```shell
-    npm install YOUR_USERNAME/meep_demo_app_api --save
+    npm install GIT_USER_ID/GIT_REPO_ID --save
 ```
 
 ### For browser
@@ -114,12 +114,14 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MeepDemoAppApi.EdgeAppInfoApi* | [**getEdgeInfo**](docs/EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add infoo
+*MeepDemoAppApi.EdgeAppInfoApi* | [**getEdgeInfo**](docs/EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add info
+*MeepDemoAppApi.NotificationsApi* | [**rcvTrackingNotification**](docs/NotificationsApi.md#rcvTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 *MeepDemoAppApi.StateTransferApi* | [**handleEvent**](docs/StateTransferApi.md#handleEvent) | **POST** /mg/event | Send event notification to registered Mobility Group Application
+*MeepDemoAppApi.UELocationApi* | [**getUeLocation**](docs/UELocationApi.md#getUeLocation) | **GET** /location/{ueId} | Retrieves the UE location values
 *MeepDemoAppApi.UEStateApi* | [**createUeState**](docs/UEStateApi.md#createUeState) | **POST** /ue/{ueId} | Registers the UE and starts a counter
-*MeepDemoAppApi.UEStateApi* | [**deleteUe**](docs/UEStateApi.md#deleteUe) | **DELETE** /ue/{ueId} | Deregistration of a UE
+*MeepDemoAppApi.UEStateApi* | [**deleteUeState**](docs/UEStateApi.md#deleteUeState) | **DELETE** /ue/{ueId} | Deregistration of a UE
 *MeepDemoAppApi.UEStateApi* | [**getUeState**](docs/UEStateApi.md#getUeState) | **GET** /ue/{ueId} | Retrieves the UE state values
-*MeepDemoAppApi.UEStateApi* | [**updateUeState**](docs/UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE states values
+*MeepDemoAppApi.UEStateApi* | [**updateUeState**](docs/UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE state values
 
 
 ## Documentation for Models
@@ -127,7 +129,14 @@ Class | Method | HTTP request | Description
  - [MeepDemoAppApi.EdgeInfo](docs/EdgeInfo.md)
  - [MeepDemoAppApi.MobilityGroupAppState](docs/MobilityGroupAppState.md)
  - [MeepDemoAppApi.MobilityGroupEvent](docs/MobilityGroupEvent.md)
+ - [MeepDemoAppApi.SubscriptionId](docs/SubscriptionId.md)
+ - [MeepDemoAppApi.TrackingNotification](docs/TrackingNotification.md)
  - [MeepDemoAppApi.UeState](docs/UeState.md)
+ - [MeepDemoAppApi.UserEventType](docs/UserEventType.md)
+ - [MeepDemoAppApi.UserInfo](docs/UserInfo.md)
+ - [MeepDemoAppApi.UserList](docs/UserList.md)
+ - [MeepDemoAppApi.UserTrackingNotification](docs/UserTrackingNotification.md)
+ - [MeepDemoAppApi.ZoneInfo](docs/ZoneInfo.md)
 
 
 ## Documentation for Authorization

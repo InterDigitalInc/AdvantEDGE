@@ -1326,6 +1326,16 @@ definitions:
         type: "number"
         format: "double"
         description: "Packet lost (in terms of percentage) between domains"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       domains:
         type: "array"
         items:
@@ -1659,6 +1669,16 @@ definitions:
         format: "double"
         description: "Packet lost (in terms of percentage) between zones within the\
           \ domain"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       zones:
         type: "array"
         items:
@@ -1875,6 +1895,16 @@ definitions:
         format: "double"
         description: "Packet lost (in terms of percentage) between fog nodes (or PoAs)\
           \ and edge nodes within the zone"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       networkLocations:
         type: "array"
         items:
@@ -1984,6 +2014,16 @@ definitions:
         format: "double"
         description: "Packet lost (in terms of percentage) for all terminal links\
           \ within the network location"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       physicalLocations:
         type: "array"
         items:
@@ -2051,6 +2091,16 @@ definitions:
         items:
           type: "string"
           description: "Names of network locations within range of physical location"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
       processes:
         type: "array"
         items:
@@ -2124,6 +2174,16 @@ definitions:
       userChartGroup:
         type: "string"
         description: "Chart supplemental information related to the group (service)"
+      meta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
+      userMeta:
+        type: "object"
+        description: "Key/Value Pair Map (string, string)"
+        additionalProperties:
+          type: "string"
     description: "Application or service object"
   ServiceConfig:
     type: "object"
@@ -2345,8 +2405,10 @@ definitions:
     example:
       event: "event"
   Settings:
-    type: "string"
-    description: "MEEP settings"
+    type: "object"
+    description: "MEEP settings - Key/Value Pair Map (string, string)"
+    additionalProperties:
+      type: "string"
   PodsStatus:
     type: "object"
     properties:
