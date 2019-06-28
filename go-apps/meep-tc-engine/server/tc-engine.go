@@ -61,6 +61,8 @@ type NetChar struct {
 	PacketLoss         int
 }
 
+//NextUniqueNumber is reserving 2 spaces for each unique number to apply changes starting with odd number and using even number to apply the 1st change
+//and come bask on the odd number for the next update to apply
 type NetElem struct {
 	Name             string
 	Type             string
@@ -860,6 +862,13 @@ func applyNetCharRules() {
 							needUpdate = false
 						} else { //there is a difference... replace the old one
 							needUpdate = true //store the index
+							//using a convention where one odd and even number reserved for the same rule (applied and updated one)nd using one after the other
+							if storedFilterInfo.UniqueNumber%2 == 0 {
+								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber - 1
+							} else {
+								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber + 1
+							}
+
 							index = indx
 						}
 						break
@@ -878,11 +887,15 @@ func applyNetCharRules() {
 				}
 			}
 
-			if needCreate || needUpdate {
-				dstElement.NextUniqueNumber++
+			if needCreate {
+				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
+				dstElement.NextUniqueNumber += 2
 				_ = updateFilterRule(&filterInfo)
+			} else {
+				if needUpdate {
+					_ = updateFilterRule(&filterInfo)
+				}
 			}
-
 			indexToNetElemMap[j] = dstElement
 			curNetCharList[j] = dstElement
 		}
