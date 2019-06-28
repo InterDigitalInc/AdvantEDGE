@@ -152,35 +152,37 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 							// Parse User Chart Group to find new group services
 							// Create charts only for group services that do not exist yet
 							// Format: <service instance name>:[group service name]:<port>:<protocol>
-							userChartGroup := strings.Split(proc.UserChartGroup, ":")
-							meSvcName := userChartGroup[1]
-							if meSvcName != "" {
-								if _, found := serviceMap[meSvcName]; !found {
-									serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-									serviceTemplate.MeServiceEnabled = "true"
-									serviceTemplate.MeServiceName = meSvcName
-									addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+							if proc.UserChartGroup != "" {
+								userChartGroup := strings.Split(proc.UserChartGroup, ":")
+								meSvcName := userChartGroup[1]
+								if meSvcName != "" {
+									if _, found := serviceMap[meSvcName]; !found {
+										serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+										serviceTemplate.MeServiceEnabled = "true"
+										serviceTemplate.MeServiceName = meSvcName
+										addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
 
-									serviceTemplate.Namespace = scenario.Name
-									addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
+										serviceTemplate.Namespace = scenario.Name
+										addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
 
-									// NOTE: Every service within a group must expose the same port & protocol
-									var portTemplate ServicePortTemplate
-									portTemplate.Port = userChartGroup[2]
-									portTemplate.Protocol = userChartGroup[3]
-									serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
+										// NOTE: Every service within a group must expose the same port & protocol
+										var portTemplate ServicePortTemplate
+										portTemplate.Port = userChartGroup[2]
+										portTemplate.Protocol = userChartGroup[3]
+										serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
 
-									// Create chart files
-									chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
-									if err != nil {
-										log.Debug("yaml creation file process: ", err)
-										return nil, err
+										// Create chart files
+										chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
+										if err != nil {
+											log.Debug("yaml creation file process: ", err)
+											return nil, err
+										}
+
+										// Create virt-engine chart for new group service
+										newChart := createChart(scenario.Name+"-"+proc.Name+"-svc", chartLocation, "")
+										charts = append(charts, newChart)
+										log.Debug("chart added for user chart group service ", len(charts))
 									}
-
-									// Create virt-engine chart for new group service
-									newChart := createChart(scenario.Name+"-"+proc.Name+"-svc", chartLocation, "")
-									charts = append(charts, newChart)
-									log.Debug("chart added for user chart group service ", len(charts))
 								}
 							}
 						} else {
@@ -247,10 +249,10 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 								// Add ingress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
 									var ingressSvcMapTemplate ServiceMapTemplate
-									ingressSvcMapTemplate.Name = "ingress-" + proc.Id + "-" + serviceMap.Name
 									ingressSvcMapTemplate.NodePort = strconv.Itoa(int(serviceMap.ExternalPort))
 									ingressSvcMapTemplate.Port = strconv.Itoa(int(serviceMap.Port))
 									ingressSvcMapTemplate.Protocol = serviceMap.Protocol
+									ingressSvcMapTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcMapTemplate.NodePort
 
 									externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcMapTemplate)
 								}

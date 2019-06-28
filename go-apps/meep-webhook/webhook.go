@@ -166,7 +166,7 @@ func loadConfig(configFile string) (*Config, error) {
 
 // Retrieve App Name from provided network element name string, if any
 func getAppName(name string) string {
-	names := bytes.Split([]byte(name), []byte(activeScenarioName+"-"))
+	names := bytes.Split([]byte(name), []byte("meep-"+activeScenarioName+"-"))
 	if len(names) != 2 {
 		return ""
 	}

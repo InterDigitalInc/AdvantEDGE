@@ -130,6 +130,12 @@ func activateScenario(jsonScenario string) {
 }
 
 func terminateScenario(name string) {
+	// Make sure scenario name is valid
+	if name == "" {
+		log.Warn("Trying to terminate empty scenario")
+		return
+	}
+
 	// Retrieve list of releases
 	rels, _ := helm.GetReleasesName()
 	var toDelete []helm.Chart
