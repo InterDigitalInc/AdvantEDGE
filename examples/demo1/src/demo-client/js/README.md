@@ -50,11 +50,11 @@ command above from.
 #### git
 #
 If the library is hosted at a git repository, e.g.
-https://github.com/YOUR_USERNAME/meep_demo_app_api
+https://github.com/GIT_USER_ID/GIT_REPO_ID
 then install it via:
 
 ```shell
-    npm install YOUR_USERNAME/meep_demo_app_api --save
+    npm install GIT_USER_ID/GIT_REPO_ID --save
 ```
 
 ### For browser
@@ -126,26 +126,16 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
- - [MeepDemoAppApi.AccessPointId](docs/AccessPointId.md)
- - [MeepDemoAppApi.Address](docs/Address.md)
- - [MeepDemoAppApi.CallbackData](docs/CallbackData.md)
  - [MeepDemoAppApi.EdgeInfo](docs/EdgeInfo.md)
- - [MeepDemoAppApi.InterestRealm](docs/InterestRealm.md)
  - [MeepDemoAppApi.MobilityGroupAppState](docs/MobilityGroupAppState.md)
  - [MeepDemoAppApi.MobilityGroupEvent](docs/MobilityGroupEvent.md)
- - [MeepDemoAppApi.NumberOfAccessPoints](docs/NumberOfAccessPoints.md)
- - [MeepDemoAppApi.NumberOfUsers](docs/NumberOfUsers.md)
- - [MeepDemoAppApi.ResourceURL](docs/ResourceURL.md)
  - [MeepDemoAppApi.SubscriptionId](docs/SubscriptionId.md)
- - [MeepDemoAppApi.Timestamp](docs/Timestamp.md)
  - [MeepDemoAppApi.TrackingNotification](docs/TrackingNotification.md)
  - [MeepDemoAppApi.UeState](docs/UeState.md)
  - [MeepDemoAppApi.UserEventType](docs/UserEventType.md)
- - [MeepDemoAppApi.UserId](docs/UserId.md)
  - [MeepDemoAppApi.UserInfo](docs/UserInfo.md)
  - [MeepDemoAppApi.UserList](docs/UserList.md)
  - [MeepDemoAppApi.UserTrackingNotification](docs/UserTrackingNotification.md)
- - [MeepDemoAppApi.ZoneId](docs/ZoneId.md)
  - [MeepDemoAppApi.ZoneInfo](docs/ZoneInfo.md)
 
 

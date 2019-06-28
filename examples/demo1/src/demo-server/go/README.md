@@ -1,4 +1,4 @@
-# Go API Server for swagger
+# Go API Server for server
 
 This is the MEEP Demo App API
 
@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://github.com/swagger-api/swagger-codegen/blob/master/README.md)
 
 - API version: 0.0.1
-- Build date: 2019-06-11T17:44:50.982Z
+- Build date: 2019-06-28T10:54:17.832-04:00
 
 
 ### Running the server

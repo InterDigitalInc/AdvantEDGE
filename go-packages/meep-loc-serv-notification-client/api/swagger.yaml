@@ -71,64 +71,6 @@ paths:
         204:
           description: "No Content"
 definitions:
-  AccessPointId:
-    type: "string"
-    description: "Unique identifier of a point of access"
-    example: "001010000000000000000000000000001 or poa001"
-  Address:
-    type: "string"
-    description: "Address of the user or device based on the connected access point\
-      \ - address = acr:<UE IP address>"
-    example: "acr:10.1.34.67"
-  CallbackData:
-    type: "string"
-    description: "CallBackData if passed by the application during the associated\
-      \ Subscription (Zone or User Tracking) operation"
-    example: "1234"
-  InterestRealm:
-    type: "string"
-    description: "Details about the access point, geographical position, industry,\
-      \ etc."
-    example: "NY"
-  Link:
-    type: "object"
-    required:
-    - "href"
-    - "rel"
-    properties:
-      rel:
-        type: "object"
-        description: "Describes the relationship between the URI and the resource."
-        properties: {}
-      href:
-        type: "object"
-        description: "URI"
-        properties: {}
-    description: "Link to other resources"
-  NumberOfAccessPoints:
-    type: "integer"
-    format: "uint32"
-    description: "Number of access points or points of access within a Location Zone"
-    example: "10"
-  NumberOfUsers:
-    type: "integer"
-    format: "uint32"
-    description: "The number of users currently on the access point"
-    example: "7"
-  NumberOfUsersInAP:
-    type: "integer"
-    format: "uint32"
-    description: "This element shall be present when ZoneStatusSubscription includes\
-      \ numberOfUsersAPThreshold element and the number of users in an access point\
-      \ exceeds the threshold defined in the subscription."
-    example: "12"
-  NumberOfUsersInZone:
-    type: "integer"
-    format: "uint32"
-    description: "This element shall be present when ZoneStatusSubscription includes\
-      \ numberOfUsersZoneThreshold element and the number of users in a zone exceeds\
-      \ the threshold defined in this subscription."
-    example: "20"
   OperationStatus:
     type: "string"
     description: "The operation status of the access point"
@@ -137,26 +79,11 @@ definitions:
     - "Serviceable"
     - "Unserviceable"
     - "Unknown"
-  ResourceURL:
-    type: "string"
-    format: "url"
-    description: "URL where the UE may be contacted for some service (application\
-      \ specific)"
-    example: "http://172.1.19.2:8081/myService/123456"
   SubscriptionId:
     type: "string"
     description: "Unique Identifier for a notification subscription.  Created by the\
       \ MEC Location Service and used to reference an individual subscription"
     example: "sub123"
-  Timestamp:
-    type: "string"
-    format: "date-time"
-    description: "Indicates the time of day for zonal presence notification."
-    example: "2017-01-01T02:51:43Z"
-  UserId:
-    type: "string"
-    description: "Unique identifier of a user or client node"
-    example: "client001"
   UserInfo:
     type: "object"
     required:
@@ -166,15 +93,31 @@ definitions:
     - "zoneId"
     properties:
       userId:
-        $ref: "#/definitions/UserId"
+        type: "string"
+        example: "client001"
+        description: "Unique identifier of a user or client node"
       address:
-        $ref: "#/definitions/Address"
+        type: "string"
+        format: "uri"
+        example: "acr:192.0.2.1"
+        description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)."
       accessPointId:
-        $ref: "#/definitions/AccessPointId"
+        type: "string"
+        example: "001010000000000000000000000000001"
+        description: "Identifier of access point, <E-CGI><Cell Portion ID> (reference\
+          \ ETSI TS 129 171). Where the E-CGI is made up of the PLMN and Cell Identity\
+          \ (28 bit string). Then the PLMN is made up of the 3 digit MCC & 2 or 3\
+          \ digit MNC. The Cell Portion is an optional element"
       zoneId:
-        $ref: "#/definitions/ZoneId"
+        type: "string"
+        example: "zone01"
+        description: "Identifier of zone"
       resourceURL:
-        $ref: "#/definitions/ResourceURL"
+        type: "string"
+        format: "url"
+        example: "http://localhost:8291/myService/123456"
+        description: "URL where the UE may be contacted for some service (application\
+          \ specific)"
   UserList:
     type: "object"
     required:
@@ -189,7 +132,7 @@ definitions:
     enum:
     - "Entering"
     - "Transferring"
-    - "Exiting"
+    - "Leaving"
   UserTrackingNotification:
     type: "object"
     required:
@@ -198,19 +141,21 @@ definitions:
     - "userInfo"
     properties:
       callbackData:
-        $ref: "#/definitions/CallbackData"
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common]."
       userInfo:
         $ref: "#/definitions/UserInfo"
       timeStamp:
-        $ref: "#/definitions/Timestamp"
+        type: "string"
+        format: "date-time"
+        example: "2017-01-01T02:51:43Z"
+        description: "Indicates the time of day for zonal presence notification."
       userEventType:
         $ref: "#/definitions/UserEventType"
     description: "User tracking notification - callback generated toward an ME app\
       \ with a user tracking subscription"
-  ZoneId:
-    type: "string"
-    description: "Unique Identifier of a Location Zone"
-    example: "zone001"
   ZoneInfo:
     type: "object"
     required:
@@ -219,11 +164,20 @@ definitions:
     - "zoneId"
     properties:
       zoneId:
-        $ref: "#/definitions/ZoneId"
+        type: "string"
+        example: "zone01"
+        description: "Identifier of zone"
       numberOfAccessPoints:
-        $ref: "#/definitions/NumberOfAccessPoints"
+        type: "integer"
+        format: "uint32"
+        example: 10
+        description: "Number of access points or points of access within a Location\
+          \ Zone"
       numberOfUsers:
-        $ref: "#/definitions/NumberOfUsers"
+        type: "integer"
+        format: "uint32"
+        example: 7
+        description: "The number of users currently on the access point"
     description: "A type containing zone information."
   ZoneStatusNotification:
     type: "object"
@@ -232,19 +186,42 @@ definitions:
     - "zoneId"
     properties:
       callbackData:
-        $ref: "#/definitions/CallbackData"
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common]."
       zoneId:
-        $ref: "#/definitions/ZoneId"
+        type: "string"
+        example: "zone01"
+        description: "Identifier of zone"
       accessPointId:
-        $ref: "#/definitions/AccessPointId"
+        type: "string"
+        example: "001010000000000000000000000000001"
+        description: "Identifier of access point, <E-CGI><Cell Portion ID> (reference\
+          \ ETSI TS 129 171). Where the E-CGI is made up of the PLMN and Cell Identity\
+          \ (28 bit string). Then the PLMN is made up of the 3 digit MCC & 2 or 3\
+          \ digit MNC. The Cell Portion is an optional element"
       numberOfUsersInZone:
-        $ref: "#/definitions/NumberOfUsersInZone"
+        type: "integer"
+        format: "uint32"
+        example: 20
+        description: "This element shall be present when ZoneStatusSubscription includes\
+          \ numberOfUsersZoneThreshold element and the number of users in a zone exceeds\
+          \ the threshold defined in this subscription."
       numberOfUsersInAP:
-        $ref: "#/definitions/NumberOfUsersInAP"
+        type: "integer"
+        format: "uint32"
+        example: 12
+        description: "This element shall be present when ZoneStatusSubscription includes\
+          \ numberOfUsersAPThreshold element and the number of users in an access\
+          \ point exceeds the threshold defined in the subscription."
       operationStatus:
         $ref: "#/definitions/OperationStatus"
       timestamp:
-        $ref: "#/definitions/Timestamp"
+        type: "string"
+        format: "date-time"
+        example: "2017-01-01T02:51:43Z"
+        description: "Indicates the time of day for zonal presence notification."
       link:
         type: "array"
         example: "rel=\"ZonalStatusSubscription\" href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalStatus/sub123\""
@@ -269,21 +246,39 @@ definitions:
     - "callbackData"
     properties:
       callbackData:
-        $ref: "#/definitions/CallbackData"
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common]."
       zoneId:
-        $ref: "#/definitions/ZoneId"
+        type: "string"
+        example: "zone01"
+        description: "Identifier of zone"
       address:
-        $ref: "#/definitions/Address"
-      interestRealma:
-        $ref: "#/definitions/InterestRealm"
+        type: "string"
+        format: "uri"
+        example: "acr:192.0.2.1"
+        description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)."
+      interestRealm:
+        type: "string"
+        example: "LA"
+        description: "Interest realm of access point (e.g. geographical area, a type\
+          \ of industry etc.)."
       userEventType:
         $ref: "#/definitions/UserEventType"
       currentAccessPointId:
-        $ref: "#/definitions/AccessPointId"
+        type: "string"
+        example: "zone01"
+        description: "Zone ID"
       previousAccessPointId:
-        $ref: "#/definitions/AccessPointId"
+        type: "string"
+        example: "zone02"
+        description: "Zone ID"
       timestamp:
-        $ref: "#/definitions/Timestamp"
+        type: "string"
+        format: "date-time"
+        example: "2017-01-01T02:51:43Z"
+        description: "Indicates the time of day for zonal presence notification."
     description: "Zonal or User tracking notification - callback generated toward\
       \ an ME app with a zonal or user tracking subscription"
     example:

@@ -10,12 +10,13 @@
 package client
 
 import (
-	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	"fmt"
+
+	"golang.org/x/net/context"
 )
 
 // Linger please
@@ -25,22 +26,18 @@ var (
 
 type NotificationsApiService service
 
-/* 
-NotificationsApiService This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+/* NotificationsApiService This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 Zonal or User location tracking subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription (user or zonal)
- * @param notification Zonal or User Tracking Notification
-
-
-*/
+* @param ctx context.Context for authentication, logging, tracing, etc.
+@param subscriptionId Identity of a notification subscription (user or zonal)
+@param notification Zonal or User Tracking Notification
+@return */
 func (a *NotificationsApiService) TrackingNotification(ctx context.Context, subscriptionId string, notification TrackingNotification) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		
 	)
 
 	// create path and map variables
@@ -61,7 +58,9 @@ func (a *NotificationsApiService) TrackingNotification(ctx context.Context, subs
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{
+		"application/json",
+	}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -79,42 +78,27 @@ func (a *NotificationsApiService) TrackingNotification(ctx context.Context, subs
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarHttpResponse, err
-	}
-
-
+	defer localVarHttpResponse.Body.Close()
 	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body: localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		
-		return localVarHttpResponse, newErr
+		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
+		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
 	}
 
-	return localVarHttpResponse, nil
+	return localVarHttpResponse, err
 }
 
-/* 
-NotificationsApiService This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
+/* NotificationsApiService This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
 Zone status tracking subscription notification
- * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param subscriptionId Identity of a notification subscription (user or zonal)
- * @param notification Zone Status Notification
-
-
-*/
+* @param ctx context.Context for authentication, logging, tracing, etc.
+@param subscriptionId Identity of a notification subscription (user or zonal)
+@param notification Zone Status Notification
+@return */
 func (a *NotificationsApiService) ZoneStatusNotification(ctx context.Context, subscriptionId string, notification ZoneStatusNotification) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		
 	)
 
 	// create path and map variables
@@ -135,7 +119,9 @@ func (a *NotificationsApiService) ZoneStatusNotification(ctx context.Context, su
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{"application/json"}
+	localVarHttpHeaderAccepts := []string{
+		"application/json",
+	}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -153,22 +139,11 @@ func (a *NotificationsApiService) ZoneStatusNotification(ctx context.Context, su
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-
-	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
-	localVarHttpResponse.Body.Close()
-	if err != nil {
-		return localVarHttpResponse, err
-	}
-
-
+	defer localVarHttpResponse.Body.Close()
 	if localVarHttpResponse.StatusCode >= 300 {
-		newErr := GenericSwaggerError{
-			body: localVarBody,
-			error: localVarHttpResponse.Status,
-		}
-		
-		return localVarHttpResponse, newErr
+		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
+		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
 	}
 
-	return localVarHttpResponse, nil
+	return localVarHttpResponse, err
 }

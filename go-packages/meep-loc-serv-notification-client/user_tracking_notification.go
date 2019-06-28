@@ -9,10 +9,20 @@
 
 package client
 
+import (
+	"time"
+)
+
 // User tracking notification - callback generated toward an ME app with a user tracking subscription
 type UserTrackingNotification struct {
+
+	// CallBackData if passed by the application during the associated ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
 	CallbackData string `json:"callbackData"`
+
 	UserInfo *UserInfo `json:"userInfo"`
-	TimeStamp string `json:"timeStamp"`
+
+	// Indicates the time of day for zonal presence notification.
+	TimeStamp time.Time `json:"timeStamp"`
+
 	UserEventType *UserEventType `json:"userEventType,omitempty"`
 }

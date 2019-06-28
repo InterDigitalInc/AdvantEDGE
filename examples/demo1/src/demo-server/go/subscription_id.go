@@ -9,6 +9,6 @@
 
 package server
 
-type UserList struct {
-	UserList []UserInfo `json:"userList"`
+// Unique Identifier for a notification subscription.  Created by the MEC Location Service and used to reference an individual subscription
+type SubscriptionId struct {
 }

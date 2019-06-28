@@ -9,11 +9,6 @@
 
 package client
 
-type UserEventType string
-
-// List of UserEventType
-const (
-	ENTERING_UserEventType UserEventType = "Entering"
-	TRANSFERRING_UserEventType UserEventType = "Transferring"
-	EXITING_UserEventType UserEventType = "Exiting"
-)
+// Unique Identifier for a notification subscription.  Created by the MEC Location Service and used to reference an individual subscription
+type SubscriptionId struct {
+}

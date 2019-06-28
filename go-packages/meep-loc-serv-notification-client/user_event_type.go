@@ -9,10 +9,11 @@
 
 package client
 
-type UserInfo struct {
-	UserId string `json:"userId,omitempty"`
-	Address string `json:"address"`
-	AccessPointId string `json:"accessPointId"`
-	ZoneId string `json:"zoneId"`
-	ResourceURL string `json:"resourceURL"`
-}
+type UserEventType string
+
+// List of UserEventType
+const (
+	ENTERING     UserEventType = "Entering"
+	TRANSFERRING UserEventType = "Transferring"
+	LEAVING      UserEventType = "Leaving"
+)
