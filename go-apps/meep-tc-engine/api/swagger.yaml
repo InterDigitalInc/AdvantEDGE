@@ -1282,6 +1282,8 @@ definitions:
         description: "Executable to invoke at container start up"
       serviceConfig:
         $ref: "#/definitions/ServiceConfig"
+      gpuConfig:
+        $ref: "#/definitions/GpuConfig"
       externalConfig:
         $ref: "#/definitions/ExternalConfig"
       status:
@@ -1338,6 +1340,16 @@ definitions:
           \ - 32767)  <li>Only one application allowed per external port <li>Scenario\
           \ builder must configure to prevent conflicts\n"
     description: "Service port object"
+  GpuConfig:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        description: "Requested GPU type"
+      count:
+        type: "integer"
+        description: "Number of GPUs requested"
+    description: "GPU configuration object"
   ExternalConfig:
     type: "object"
     properties:

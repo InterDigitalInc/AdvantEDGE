@@ -110,6 +110,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property gpuConfig (base name: "gpuConfig")', function() {
+      // uncomment below and update the code to test the property gpuConfig
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
     it('should have the property externalConfig (base name: "externalConfig")', function() {
       // uncomment below and update the code to test the property externalConfig
       //var instane = new MeepControllerRestApi.Process();
