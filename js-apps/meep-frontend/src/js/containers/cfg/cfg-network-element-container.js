@@ -657,10 +657,6 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                         />
-                        <GpuGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -668,6 +664,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           validate={validateName}
                           fieldName={FIELD_GROUP}
                           cydata={CFG_ELEM_GROUP}
+                        />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
                         />
                         <CfgTextField
                           onUpdate={onUpdate}
