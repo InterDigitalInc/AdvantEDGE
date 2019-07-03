@@ -59,7 +59,8 @@ import {
   FIELD_NAME,
   FIELD_SVC_MAP,
   FIELD_EXT_PORT,
-
+  FIELD_GPU_COUNT,
+  FIELD_GPU_TYPE,
   getElemFieldVal
 } from '../../util/elem-utils';
 
@@ -197,6 +198,16 @@ class CfgPageContainer extends Component {
       return false;
     }
 
+    // If GPU requested, make sure type is set
+    var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
+    if (gpuCount) {
+      var gpuType = getElemFieldVal(element, FIELD_GPU_TYPE);
+      if (gpuType === null || gpuType === '') {
+        this.props.cfgElemSetErrMsg('GPU type not selected');
+        return false;
+      }
+    }
+
     // TODO -- verify node port not already used
     const extPorts = externalPorts(element);
 
@@ -214,7 +225,6 @@ class CfgPageContainer extends Component {
       }
     }
     
-
     return true;
   }
 

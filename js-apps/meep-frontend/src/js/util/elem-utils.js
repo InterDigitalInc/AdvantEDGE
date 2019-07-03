@@ -43,6 +43,8 @@ export const FIELD_PORT = 'port';
 export const FIELD_PROTOCOL = 'protocol';
 export const FIELD_GROUP = 'group';
 export const FIELD_SVC_MAP = 'ingressServiceMap';
+export const FIELD_GPU_COUNT = 'gpuCount';
+export const FIELD_GPU_TYPE = 'gpuType';
 export const FIELD_ENV_VAR = 'envVar';
 export const FIELD_CMD = 'cmd';
 export const FIELD_CMD_ARGS = 'cmdArgs';
@@ -103,6 +105,8 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_PROTOCOL,               '');
   setElemFieldVal(elem, FIELD_GROUP,                  '');
   setElemFieldVal(elem, FIELD_SVC_MAP,                '');
+  setElemFieldVal(elem, FIELD_GPU_COUNT,              '');
+  setElemFieldVal(elem, FIELD_GPU_TYPE,               '');
   setElemFieldVal(elem, FIELD_ENV_VAR,                '');
   setElemFieldVal(elem, FIELD_CMD,                    '');
   setElemFieldVal(elem, FIELD_CMD_ARGS,               '');

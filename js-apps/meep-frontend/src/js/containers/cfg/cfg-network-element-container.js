@@ -30,6 +30,8 @@ import {
   FIELD_PORT,
   FIELD_PROTOCOL,
   FIELD_GROUP,
+  FIELD_GPU_COUNT,
+  FIELD_GPU_TYPE,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -70,6 +72,9 @@ import {
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
+  // GPU types
+  GPU_TYPE_NVIDIA,
+
   // NC Group Prefixes
   PREFIX_INT_DOM,
   PREFIX_INT_ZONE,
@@ -88,6 +93,8 @@ import {
   CFG_ELEM_PORT,
   CFG_ELEM_EXT_PORT,
   CFG_ELEM_PROT,
+  CFG_ELEM_GPU_COUNT,
+  CFG_ELEM_GPU_TYPE,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_CHART_CHECK,
@@ -107,6 +114,8 @@ const SERVICE_PORT_MIN = 1;
 const SERVICE_PORT_MAX = 65535;
 const SERVICE_NODE_PORT_MIN = 30000;
 const SERVICE_NODE_PORT_MAX = 32767;
+const GPU_COUNT_MIN = 1;
+const GPU_COUNT_MAX = 4;
 
 const validateName = (val) => {
   if (val) {
@@ -195,6 +204,21 @@ const validatePort = (port) => {
   const p = Number(port);
   if ((p !== '') && ((p < SERVICE_PORT_MIN) || (p > SERVICE_PORT_MAX))) {
     return SERVICE_PORT_MIN + ' < port < ' + SERVICE_PORT_MAX;
+  }
+  return null;
+};
+
+const validateGpuCount = (count) => {
+  if (count === '') {return null;}
+
+  const notIntError =  validateInt(count);
+  if (notIntError) {
+    return notIntError;
+  }
+
+  const p = Number(count);
+  if ((p !== '') && ((p < GPU_COUNT_MIN) || (p > GPU_COUNT_MAX))) {
+    return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
   }
   return null;
 };
@@ -354,6 +378,40 @@ const PortProtocolGroup = ({onUpdate, element}) => {
   );
 };
 
+const gpuTypes = [
+  GPU_TYPE_NVIDIA
+];
+
+const GpuGroup = ({onUpdate, element}) => {
+  var type = getElemFieldVal(element, FIELD_GPU_TYPE) || '';
+
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={4}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateGpuCount}
+        isNumber={true}
+        label="GPU Count"
+        fieldName={FIELD_GPU_COUNT}
+        cydata={CFG_ELEM_GPU_COUNT}
+      />
+      <GridCell span={8} style={{paddingTop: 16}}>
+        <IDSelect 
+          label="GPU Type"
+          span={8}
+          options={gpuTypes}
+          onChange={(elem) => onUpdate(FIELD_GPU_TYPE, elem.target.value, null)}
+          value={type}
+          disabled={false}
+          cydata={CFG_ELEM_GPU_TYPE}
+        />
+      </GridCell>
+    </Grid>
+  );
+};
+
 const CommandGroup = ({onUpdate, element}) => {
   return (
     <Grid>
@@ -487,6 +545,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           fieldName={FIELD_IMAGE}
                           cydata={CFG_ELEM_IMG}
                         />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -545,6 +607,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                         />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -588,6 +654,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           cydata={CFG_ELEM_IMG}
                         />
                         <PortProtocolGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
+                        <GpuGroup
                           onUpdate={onUpdate}
                           element={element}
                         />

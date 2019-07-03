@@ -19,6 +19,8 @@ import {
   FIELD_PORT,
   FIELD_PROTOCOL,
   FIELD_GROUP,
+  FIELD_GPU_COUNT,
+  FIELD_GPU_TYPE,
   FIELD_SVC_MAP,
   FIELD_ENV_VAR,
   FIELD_CMD,
@@ -486,6 +488,7 @@ export function createNewScenario(name) {
 
 export function createProcess(name, type, element) {
   var port = getElemFieldVal(element, FIELD_PORT);
+  var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
 
   var process = {
     id: name,
@@ -500,6 +503,7 @@ export function createProcess(name, type, element) {
     commandArguments: null,
     commandExe: null,
     serviceConfig: null,
+    gpuConfig: null,
     externalConfig: null
   };
 
@@ -523,6 +527,10 @@ export function createProcess(name, type, element) {
           externalPort: (getElemFieldVal(element, FIELD_EXT_PORT) === '') ? null : getElemFieldVal(element, FIELD_EXT_PORT)
         }
       ]
+    };
+    process.gpuConfig = (isNaN(gpuCount) || !gpuCount) ? null : {
+      type: (getElemFieldVal(element, FIELD_GPU_TYPE) === '') ? null : getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
+      count: gpuCount
     };
   }
 
@@ -832,6 +840,11 @@ export function getElementFromScenario(scenario, elementName) {
                   setElemFieldVal(elem, FIELD_PROTOCOL, process.serviceConfig.ports[0].protocol || '');
                   setElemFieldVal(elem, FIELD_GROUP, process.serviceConfig.meSvcName || '');
                   setElemFieldVal(elem, FIELD_EXT_PORT, process.serviceConfig.ports[0].externalPort || '');
+                }
+
+                if (process.gpuConfig) {
+                  setElemFieldVal(elem, FIELD_GPU_COUNT, process.gpuConfig.count || '');
+                  setElemFieldVal(elem, FIELD_GPU_TYPE, process.gpuConfig.type || '');
                 }
               }
 
