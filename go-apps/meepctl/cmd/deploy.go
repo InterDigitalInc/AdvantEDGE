@@ -35,7 +35,8 @@ AdvantEDGE is composed of a collection of micro-services (a.k.a the groups).
 
 Deploy command starts a group of containers the in the K8s cluster.
 Optional registry & tag parameters allows to specify a shared registry & tag for core images.
-Default registry/tag are: local registry & latest
+Default registry is configured in ~/.meepctl.yaml.
+Defaut tag is: latest
 
 Valid groups:
   * core: AdvantEDGE core containers

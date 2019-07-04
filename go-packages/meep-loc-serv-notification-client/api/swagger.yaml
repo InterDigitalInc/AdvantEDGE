@@ -71,6 +71,21 @@ paths:
         204:
           description: "No Content"
 definitions:
+  Link:
+    type: "object"
+    required:
+    - "href"
+    - "rel"
+    properties:
+      rel:
+        type: "object"
+        description: "Describes the relationship between the URI and the resource."
+        properties: {}
+      href:
+        type: "object"
+        description: "URI"
+        properties: {}
+    description: "Link to other resources"
   OperationStatus:
     type: "string"
     description: "The operation status of the access point"
@@ -84,6 +99,56 @@ definitions:
     description: "Unique Identifier for a notification subscription.  Created by the\
       \ MEC Location Service and used to reference an individual subscription"
     example: "sub123"
+  TrackingNotification:
+    type: "object"
+    required:
+    - "callbackData"
+    properties:
+      callbackData:
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common]."
+      zoneId:
+        type: "string"
+        example: "zone01"
+        description: "Identifier of zone"
+      address:
+        type: "string"
+        format: "uri"
+        example: "acr:192.0.2.1"
+        description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)."
+      interestRealm:
+        type: "string"
+        example: "LA"
+        description: "Interest realm of access point (e.g. geographical area, a type\
+          \ of industry etc.)."
+      userEventType:
+        $ref: "#/definitions/UserEventType"
+      currentAccessPointId:
+        type: "string"
+        example: "zone01"
+        description: "Zone ID"
+      previousAccessPointId:
+        type: "string"
+        example: "zone02"
+        description: "Zone ID"
+      timestamp:
+        type: "string"
+        format: "date-time"
+        example: "2017-01-01T02:51:43Z"
+        description: "Indicates the time of day for zonal presence notification."
+    description: "Zonal or User tracking notification - callback generated toward\
+      \ an ME app with a zonal or user tracking subscription"
+    example:
+      address: "acr:10.1.34.67"
+      userEventType: {}
+      callbackData: "1234"
+      previousAccessPointId: "001010000000000000000000000000001 or poa001"
+      zoneId: "zone001"
+      interestRealma: "NY"
+      currentAccessPointId: "001010000000000000000000000000001 or poa001"
+      timestamp: "2017-01-01T02:51:43Z"
   UserInfo:
     type: "object"
     required:
@@ -239,56 +304,6 @@ definitions:
       zoneId: "zone001"
       numberOfUsersInZone: "20"
       numberOfUsersInAP: "12"
-      timestamp: "2017-01-01T02:51:43Z"
-  TrackingNotification:
-    type: "object"
-    required:
-    - "callbackData"
-    properties:
-      callbackData:
-        type: "string"
-        example: "1234"
-        description: "CallBackData if passed by the application during the associated\
-          \ ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common]."
-      zoneId:
-        type: "string"
-        example: "zone01"
-        description: "Identifier of zone"
-      address:
-        type: "string"
-        format: "uri"
-        example: "acr:192.0.2.1"
-        description: "Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI)."
-      interestRealm:
-        type: "string"
-        example: "LA"
-        description: "Interest realm of access point (e.g. geographical area, a type\
-          \ of industry etc.)."
-      userEventType:
-        $ref: "#/definitions/UserEventType"
-      currentAccessPointId:
-        type: "string"
-        example: "zone01"
-        description: "Zone ID"
-      previousAccessPointId:
-        type: "string"
-        example: "zone02"
-        description: "Zone ID"
-      timestamp:
-        type: "string"
-        format: "date-time"
-        example: "2017-01-01T02:51:43Z"
-        description: "Indicates the time of day for zonal presence notification."
-    description: "Zonal or User tracking notification - callback generated toward\
-      \ an ME app with a zonal or user tracking subscription"
-    example:
-      address: "acr:10.1.34.67"
-      userEventType: {}
-      callbackData: "1234"
-      previousAccessPointId: "001010000000000000000000000000001 or poa001"
-      zoneId: "zone001"
-      interestRealma: "NY"
-      currentAccessPointId: "001010000000000000000000000000001 or poa001"
       timestamp: "2017-01-01T02:51:43Z"
 parameters:
   Path.SubscriptionId:

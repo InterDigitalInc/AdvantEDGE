@@ -43,8 +43,9 @@ type DeploymentTemplate struct {
 	ContainerCommandEnabled  string
 	ContainerCommand         []string
 	ContainerCommandArg      []string
-	ContainerPort            string
-	ContainerProtocol        string
+	GpuEnabled               string
+	GpuType                  string
+	GpuCount                 string
 }
 
 type ServiceTemplate struct {
@@ -241,6 +242,13 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 								}
 							}
 
+							// Enable GPU template if present
+							if proc.GpuConfig != nil {
+								deploymentTemplate.GpuEnabled = "true"
+								deploymentTemplate.GpuType = proc.GpuConfig.Type_
+								deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
+							}
+
 							// Enable External template if set
 							if proc.IsExternal {
 								externalTemplate.Enabled = "true"
@@ -330,6 +338,7 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.ApiVersion = "v1"
 	deploymentTemplate.ContainerEnvEnabled = "false"
 	deploymentTemplate.ContainerCommandEnabled = "false"
+	deploymentTemplate.GpuEnabled = "false"
 }
 
 func setServiceDefaults(serviceTemplate *ServiceTemplate) {

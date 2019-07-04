@@ -60,6 +60,8 @@ export const CFG_ELEM_ENV = 'cfg-elem-env';
 export const CFG_ELEM_PORT = 'cfg-elem-port';
 export const CFG_ELEM_EXT_PORT = 'cfg-elem-ext-port';
 export const CFG_ELEM_PROT = 'cfg-elem-prot';
+export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
+export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
@@ -150,6 +152,9 @@ export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
 export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_DC = 0;
+
+// GPU Types
+export const GPU_TYPE_NVIDIA = 'NVIDIA';
 
 // Monitoring Page IDs
 export const MON_DASHBOARD_SELECT = 'mon-dashboard-select';

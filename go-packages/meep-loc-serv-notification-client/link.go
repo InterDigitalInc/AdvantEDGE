@@ -11,8 +11,10 @@ package client
 
 // Link to other resources
 type Link struct {
+
 	// Describes the relationship between the URI and the resource.
 	Rel *interface{} `json:"rel"`
+
 	// URI
 	Href *interface{} `json:"href"`
 }

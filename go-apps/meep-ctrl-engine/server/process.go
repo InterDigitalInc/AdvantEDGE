@@ -38,6 +38,8 @@ type Process struct {
 
 	ServiceConfig *ServiceConfig `json:"serviceConfig,omitempty"`
 
+	GpuConfig *GpuConfig `json:"gpuConfig,omitempty"`
+
 	ExternalConfig *ExternalConfig `json:"externalConfig,omitempty"`
 
 	// Process status

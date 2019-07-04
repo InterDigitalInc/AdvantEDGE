@@ -50,6 +50,7 @@ Class | Method | HTTP request | Description
  - [EventPoasInRange](docs/EventPoasInRange.md)
  - [EventUeMobility](docs/EventUeMobility.md)
  - [ExternalConfig](docs/ExternalConfig.md)
+ - [GpuConfig](docs/GpuConfig.md)
  - [NetworkLocation](docs/NetworkLocation.md)
  - [PhysicalLocation](docs/PhysicalLocation.md)
  - [PodStatus](docs/PodStatus.md)

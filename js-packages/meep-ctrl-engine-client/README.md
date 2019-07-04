@@ -143,6 +143,7 @@ Class | Method | HTTP request | Description
  - [MeepControllerRestApi.EventPoasInRange](docs/EventPoasInRange.md)
  - [MeepControllerRestApi.EventUeMobility](docs/EventUeMobility.md)
  - [MeepControllerRestApi.ExternalConfig](docs/ExternalConfig.md)
+ - [MeepControllerRestApi.GpuConfig](docs/GpuConfig.md)
  - [MeepControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
  - [MeepControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)
  - [MeepControllerRestApi.PodStatus](docs/PodStatus.md)

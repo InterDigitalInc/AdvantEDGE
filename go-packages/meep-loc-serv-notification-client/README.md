@@ -27,6 +27,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [Link](docs/Link.md)
  - [OperationStatus](docs/OperationStatus.md)
  - [SubscriptionId](docs/SubscriptionId.md)
  - [TrackingNotification](docs/TrackingNotification.md)

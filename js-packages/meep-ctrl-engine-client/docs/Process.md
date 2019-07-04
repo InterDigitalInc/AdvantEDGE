@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **commandArguments** | **String** | Arguments to command executable | [optional] 
 **commandExe** | **String** | Executable to invoke at container start up | [optional] 
 **serviceConfig** | [**ServiceConfig**](ServiceConfig.md) |  | [optional] 
+**gpuConfig** | [**GpuConfig**](GpuConfig.md) |  | [optional] 
 **externalConfig** | [**ExternalConfig**](ExternalConfig.md) |  | [optional] 
 **status** | **String** | Process status | [optional] 
 **userChartLocation** | **String** | Chart location for the deployment of the chart provided by the user | [optional] 

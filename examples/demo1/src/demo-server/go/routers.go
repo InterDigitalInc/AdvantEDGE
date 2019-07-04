@@ -64,26 +64,26 @@ var routes = Routes{
 		GetEdgeInfo,
 	},
 
-        Route{
-                "RcvTrackingNotification",
-                strings.ToUpper("Post"),
-                "/v1/location_notifications/{subscriptionId}",
-                RcvTrackingNotification,
-        },
+	Route{
+		"RcvTrackingNotification",
+		strings.ToUpper("Post"),
+		"/v1/location_notifications/{subscriptionId}",
+		RcvTrackingNotification,
+	},
 
-        Route{
-                "HandleEvent",
-                strings.ToUpper("Post"),
-                "/v1/mg/event",
-                HandleEvent,
-        },
+	Route{
+		"HandleEvent",
+		strings.ToUpper("Post"),
+		"/v1/mg/event",
+		HandleEvent,
+	},
 
-        Route{
-                "GetUeLocation",
-                strings.ToUpper("Get"),
-                "/v1/location/{ueId}",
-                GetUeLocation,
-        },
+	Route{
+		"GetUeLocation",
+		strings.ToUpper("Get"),
+		"/v1/location/{ueId}",
+		GetUeLocation,
+	},
 
 	Route{
 		"CreateUeState",
@@ -106,11 +106,10 @@ var routes = Routes{
 		GetUeState,
 	},
 
-        Route{
-                "UpdateUeState",
-                strings.ToUpper("Put"),
-                "/v1/ue/{ueId}",
-                UpdateUeState,
-        },
-
+	Route{
+		"UpdateUeState",
+		strings.ToUpper("Put"),
+		"/v1/ue/{ueId}",
+		UpdateUeState,
+	},
 }
