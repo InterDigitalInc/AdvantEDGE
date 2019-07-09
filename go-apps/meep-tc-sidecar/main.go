@@ -524,20 +524,10 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-
-	if ifbs[ifbNumber] == "" {
-		// Update the rule
-		err := cmdCreateIfb(fields)
-		if err != nil {
-			return err
-		}
-
-		err = cmdSetIfb(fields)
-		if err != nil {
-			return err
-		}
-		ifbs[ifbNumber] = ifbNumber
-	}
+	// Update the rule
+	_ = cmdCreateIfb(fields)
+	ifbs[ifbNumber] = ifbNumber
+	_ = cmdSetIfb(fields)
 
 	return nil
 }
@@ -572,26 +562,33 @@ func createFilters() error {
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
 
-	if filters[ifbNumber] == "" {
+	_, exists := filters[ifbNumber]
+
+	if !exists {
+
 		ipSrc := fields["srcIp"]
 		ipSvcSrc := fields["srcSvcIp"]
 		srcName := fields["srcName"]
 
-		cmdCreateFilter(ifbNumber, ipSrc)
+		err := cmdCreateFilter(ifbNumber, ipSrc)
+		if err == nil {
 
-		if ipSvcSrc != "" {
-			cmdCreateFilter(ifbNumber, ipSvcSrc)
+			if ipSvcSrc != "" {
+				err = cmdCreateFilter(ifbNumber, ipSvcSrc)
+			}
 		}
+		if err == nil {
 
-		filters[ifbNumber] = ifbNumber
+			filters[ifbNumber] = ifbNumber
 
-		// Loop through dests to update them
-		for _, u := range opts.dests {
-			if u.remoteName == srcName {
-				sem <- 1
-				u.ifbNumber = ifbNumber
-				<-sem
-				break
+			// Loop through dests to update them
+			for _, u := range opts.dests {
+				if u.remoteName == srcName {
+					sem <- 1
+					u.ifbNumber = ifbNumber
+					<-sem
+					break
+				}
 			}
 		}
 	}
@@ -630,13 +627,16 @@ func cmdExec(cli string) (string, error) {
 
 	cmd := exec.Command(head, parts...)
 	var out bytes.Buffer
+	var outErr bytes.Buffer
+
 	cmd.Stdout = &out
+	cmd.Stderr = &outErr
+
 	err := cmd.Run() // will wait for command to return
 	if err != nil {
-		log.Info("ignoring error in exec command: ", err, " for command: ", cli)
-		//we do not return an error, otherwise it will reset the pod
-		//an error occur if you try to crete over something that is pre-existing, which should not be an error as it is possible
-		//		return err
+		log.Info("error in exec command: ", err, " for command: ", cli)
+		log.Info("detailed output: ", outErr.String(), "---", out.String())
+		return "", err
 	}
 
 	return out.String(), nil
@@ -755,7 +755,7 @@ func initializeOnFirstPass() error {
 	return nil
 }
 
-func cmdCreateFilter(ifbNumber string, ipSrc string) {
+func cmdCreateFilter(ifbNumber string, ipSrc string) error {
 
 	//"tc filter add dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + ifbNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
@@ -766,8 +766,9 @@ func cmdCreateFilter(ifbNumber string, ipSrc string) {
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("Error: ", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func randSeq(n int) string {
