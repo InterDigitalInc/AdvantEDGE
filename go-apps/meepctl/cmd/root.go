@@ -26,27 +26,21 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "meepctl",
 	Short: "meepctl - CLI application to control the AdvantEDGE platform",
-	Long: `
-meepctl - CLI application to control the AdvantEDGE platform
-
-  Find more information [here](https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md)
-`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Long: `CLI application to control the AdvantEDGE platform
+Find more information [here](https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md)`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	_, err := utils.ConfigCreateIfNotExist()
-	if err != nil {
-		fmt.Println("Error accessing config file at $(HOME)/.meepctl.yaml")
-		fmt.Println(err)
+	// Initialize configuration
+	cfgInitialized := utils.ConfigInit()
+	if !cfgInitialized {
+		fmt.Println("Failed to initialize configuration")
 		os.Exit(1)
 	}
-	utils.ConfigValidate("")
 
+	// Run command
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

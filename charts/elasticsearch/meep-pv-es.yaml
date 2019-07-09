@@ -58,24 +58,3 @@ spec:
     path: "<WORKDIR>/es-data"
   storageClassName: meep-pv-es-data
 
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: meep-pv-logstash
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
-
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: meep-pv-logstash
-spec:
-  capacity:
-    storage: 2Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "<WORKDIR>/logstash"
-  storageClassName: meep-pv-logstash

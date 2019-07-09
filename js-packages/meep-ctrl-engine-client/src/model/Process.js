@@ -16,18 +16,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ExternalConfig', 'model/ServiceConfig'], factory);
+    define(['ApiClient', 'model/ExternalConfig', 'model/GpuConfig', 'model/ServiceConfig'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./ExternalConfig'), require('./ServiceConfig'));
+    module.exports = factory(require('../ApiClient'), require('./ExternalConfig'), require('./GpuConfig'), require('./ServiceConfig'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.Process = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.ExternalConfig, root.MeepControllerRestApi.ServiceConfig);
+    root.MeepControllerRestApi.Process = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.ExternalConfig, root.MeepControllerRestApi.GpuConfig, root.MeepControllerRestApi.ServiceConfig);
   }
-}(this, function(ApiClient, ExternalConfig, ServiceConfig) {
+}(this, function(ApiClient, ExternalConfig, GpuConfig, ServiceConfig) {
   'use strict';
 
 
@@ -47,6 +47,9 @@
    */
   var exports = function() {
     var _this = this;
+
+
+
 
 
 
@@ -102,6 +105,9 @@
       if (data.hasOwnProperty('serviceConfig')) {
         obj['serviceConfig'] = ServiceConfig.constructFromObject(data['serviceConfig']);
       }
+      if (data.hasOwnProperty('gpuConfig')) {
+        obj['gpuConfig'] = GpuConfig.constructFromObject(data['gpuConfig']);
+      }
       if (data.hasOwnProperty('externalConfig')) {
         obj['externalConfig'] = ExternalConfig.constructFromObject(data['externalConfig']);
       }
@@ -116,6 +122,12 @@
       }
       if (data.hasOwnProperty('userChartGroup')) {
         obj['userChartGroup'] = ApiClient.convertToType(data['userChartGroup'], 'String');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
+      }
+      if (data.hasOwnProperty('userMeta')) {
+        obj['userMeta'] = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       }
     }
     return obj;
@@ -166,6 +178,10 @@
    */
   exports.prototype['serviceConfig'] = undefined;
   /**
+   * @member {module:model/GpuConfig} gpuConfig
+   */
+  exports.prototype['gpuConfig'] = undefined;
+  /**
    * @member {module:model/ExternalConfig} externalConfig
    */
   exports.prototype['externalConfig'] = undefined;
@@ -189,6 +205,16 @@
    * @member {String} userChartGroup
    */
   exports.prototype['userChartGroup'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} userMeta
+   */
+  exports.prototype['userMeta'] = undefined;
 
 
   /**

@@ -53,6 +53,8 @@
 
 
 
+
+
   };
 
   /**
@@ -77,6 +79,12 @@
       }
       if (data.hasOwnProperty('interDomainPacketLoss')) {
         obj['interDomainPacketLoss'] = ApiClient.convertToType(data['interDomainPacketLoss'], 'Number');
+      }
+      if (data.hasOwnProperty('meta')) {
+        obj['meta'] = ApiClient.convertToType(data['meta'], {'String': 'String'});
+      }
+      if (data.hasOwnProperty('userMeta')) {
+        obj['userMeta'] = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       }
       if (data.hasOwnProperty('domains')) {
         obj['domains'] = ApiClient.convertToType(data['domains'], [Domain]);
@@ -105,6 +113,16 @@
    * @member {Number} interDomainPacketLoss
    */
   exports.prototype['interDomainPacketLoss'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} meta
+   */
+  exports.prototype['meta'] = undefined;
+  /**
+   * Key/Value Pair Map (string, string)
+   * @member {Object.<String, String>} userMeta
+   */
+  exports.prototype['userMeta'] = undefined;
   /**
    * @member {Array.<module:model/Domain>} domains
    */

@@ -22,7 +22,8 @@ cp $BASEDIR/src/demo-server/Dockerfile $DEMOBIN
 
 # Dockerize demo 
 cd $DEMOBIN
-docker build --no-cache --rm -t demo-server .
+docker build --no-cache --rm -t meep-docker-registry:30001/demo-server .
+docker push meep-docker-registry:30001/demo-server
 
 echo ""
 echo ">>> Demo Service dockerize completed"

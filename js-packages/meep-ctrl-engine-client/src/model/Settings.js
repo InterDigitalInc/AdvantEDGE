@@ -41,13 +41,15 @@
 
   /**
    * Constructs a new <code>Settings</code>.
-   * MEEP settings
+   * MEEP settings - Key/Value Pair Map (string, string)
    * @alias module:model/Settings
    * @class
+   * @extends Object
    */
   var exports = function() {
     var _this = this;
 
+    return _this;
   };
 
   /**
@@ -60,6 +62,7 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      ApiClient.constructFromObject(data, obj, 'String');
 
     }
     return obj;

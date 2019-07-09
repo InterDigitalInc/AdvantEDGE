@@ -32,7 +32,11 @@ var testCmd = &cobra.Command{
 	Use this command after terminating codecov execution to genrate a report.
 	`,
 	Run: func(cobraCmd *cobra.Command, args []string) {
-		utils.InitRepoConfig()
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		targets := utils.RepoCfg.GetStringMapString("repo.core")
 
 		for k := range targets {

@@ -57,5 +57,11 @@ type Zone struct {
 	// Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
 	EdgeFogPacketLoss float64 `json:"edgeFogPacketLoss,omitempty"`
 
+	// Key/Value Pair Map (string, string)
+	Meta map[string]string `json:"meta,omitempty"`
+
+	// Key/Value Pair Map (string, string)
+	UserMeta map[string]string `json:"userMeta,omitempty"`
+
 	NetworkLocations []NetworkLocation `json:"networkLocations,omitempty"`
 }

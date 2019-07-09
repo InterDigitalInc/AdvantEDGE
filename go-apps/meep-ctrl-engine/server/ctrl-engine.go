@@ -16,13 +16,14 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/flimzy/kivik"
 	_ "github.com/go-kivik/couchdb"
 	"github.com/gorilla/mux"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine/log"
-	ve "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-virt-engine-client"
+	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
 const scenarioDBName = "scenarios"
@@ -39,9 +40,8 @@ const NOUP = "2"
 
 const NB_CORE_PODS = 9 //although virt-engine is not a pod yet... it is considered as one as is appended to the list of pods
 
-var virtEngine *ve.APIClient
-
 var db *kivik.DB
+var virtWatchdog *watchdog.Watchdog
 
 var clientServiceMapList []ClientServiceMap
 
@@ -53,6 +53,7 @@ func getCorePodsList() map[string]bool {
 		"meep-webhook":     false,
 		"meep-mg-manager":  false,
 		"meep-mon-engine":  false,
+		"meep-loc-serv":    false,
 		"meep-tc-engine":   false,
 		"meep-metricbeat":  false,
 		"virt-engine":      false,
@@ -292,15 +293,17 @@ func CtrlEngineInit() (err error) {
 	}
 	log.Info("Connected to Active DB")
 
-	// Create client for Virtualization Engine API
-	veCfg := ve.NewConfiguration()
-	veCfg.BasePath = "http://meep-virt-engine/v1"
-	virtEngine = ve.NewAPIClient(veCfg)
-	if virtEngine == nil {
-		log.Debug("Cannot find the Virtualization Engine API")
+	// Setup for virt-engine monitoring
+	virtWatchdog, err = watchdog.NewWatchdog("", "meep-virt-engine")
+	if err != nil {
+		log.Error("Failed to initialize virt-engine watchdog. Error: ", err)
 		return err
 	}
-	log.Info("Created Virt Engine client")
+	err = virtWatchdog.Start(time.Second, 3*time.Second)
+	if err != nil {
+		log.Error("Failed to start virt-engine watchdog. Error: ", err)
+		return err
+	}
 
 	return nil
 }
@@ -492,55 +495,27 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve scenario to activate from DB
-
-	// !!!!! IMPORTANT NOTE !!!!!
-	// Scenario stored in DB is unmarshalled into a VE Scenario object
-	var veScenario ve.Scenario
-	err = getScenario(false, db, scenarioName, &veScenario)
+	err = getScenario(false, db, scenarioName, &activeScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	// Set active scenario in DB
-	rev, err := addScenario(db, activeScenarioName, veScenario)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	log.Debug("Active scenario set with rev: ", rev)
-
-	// Activate scenario in virtualization Engine
-	//lint:ignore SA1012 context.TODO not supported here
-	resp, err := virtEngine.ScenarioDeploymentApi.ActivateScenario(nil, veScenario)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		_ = removeScenario(db, activeScenarioName)
-		return
-	}
-
-	// Retrieve active scenario stored in DB
-	err = getScenario(false, db, activeScenarioName, &activeScenario)
-	if err != nil {
-		log.Error("Scenario not active")
-		http.Error(w, "Scenario not active", http.StatusBadRequest)
-		_ = removeScenario(db, activeScenarioName)
 		return
 	}
 
 	// Populate active external client service map
 	populateClientServiceMap(&activeScenario)
 
+	// Set active scenario in DB
+	_, err = addScenario(db, activeScenarioName, activeScenario)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Return response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if resp != nil {
-		w.WriteHeader(resp.StatusCode)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // ceGetActiveScenario retrieves the deployed scenario status
@@ -589,7 +564,7 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 // ceGetActiveClientServiceMaps retrieves the deployed scenario external client service mappings
 // NOTE: query parameters 'client' and 'service' may be specified to filter results
 func ceGetActiveClientServiceMaps(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceGetActiveClientServiceMaps")
+	//log.Debug("ceGetActiveClientServiceMaps")
 	var filteredList *[]ClientServiceMap
 
 	// Retrieve client ID & service name from query parameters
@@ -690,22 +665,13 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	err = RedisDBPublish(channelCtrlActive, "")
 	if err != nil {
 		log.Error(err.Error())
-	}
-
-	// Terminate scenario in virtualization Engine
-	//lint:ignore SA1012 context.TODO not supported here
-	resp, err := virtEngine.ScenarioDeploymentApi.TerminateScenario(nil, scenario.Name)
-	if err != nil {
-		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if resp != nil {
-		w.WriteHeader(resp.StatusCode)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func ceGetEventList(w http.ResponseWriter, r *http.Request) {
@@ -1123,16 +1089,8 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 		// ***** virt-engine is not a pod yet, but we need to make sure it is started to have a functional system
 		var podStatus PodStatus
 		podStatus.Name = "virt-engine"
-		//we do not care about the content of the answer, simply that there is one
-		//lint:ignore SA1012 context.TODO not supported here
-		_, resp, _ := virtEngine.ScenarioDeploymentApi.GetActiveScenario(nil, "dummy")
-
-		if resp != nil {
-			if resp.StatusCode == http.StatusOK {
-				podStatus.LogicalState = "Running"
-			} else {
-				podStatus.LogicalState = "InternalError"
-			}
+		if virtWatchdog.IsAlive() {
+			podStatus.LogicalState = "Running"
 		} else {
 			podStatus.LogicalState = "NotRunning"
 		}

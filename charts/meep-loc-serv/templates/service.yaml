@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "meep-loc-serv.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "meep-loc-serv.name" . }}
+    chart: {{ template "meep-loc-serv.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ template "meep-loc-serv.name" . }}
+    release: {{ .Release.Name }}
+  ports:
+    - port: {{ .Values.deployment.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
+

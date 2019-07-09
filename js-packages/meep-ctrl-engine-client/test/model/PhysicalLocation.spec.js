@@ -86,6 +86,18 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property meta (base name: "meta")', function() {
+      // uncomment below and update the code to test the property meta
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property userMeta (base name: "userMeta")', function() {
+      // uncomment below and update the code to test the property userMeta
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
     it('should have the property processes (base name: "processes")', function() {
       // uncomment below and update the code to test the property processes
       //var instane = new MeepControllerRestApi.PhysicalLocation();

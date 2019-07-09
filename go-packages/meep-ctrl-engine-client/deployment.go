@@ -24,5 +24,11 @@ type Deployment struct {
 	// Packet lost (in terms of percentage) between domains
 	InterDomainPacketLoss float64 `json:"interDomainPacketLoss,omitempty"`
 
+	// Key/Value Pair Map (string, string)
+	Meta map[string]string `json:"meta,omitempty"`
+
+	// Key/Value Pair Map (string, string)
+	UserMeta map[string]string `json:"userMeta,omitempty"`
+
 	Domains []Domain `json:"domains,omitempty"`
 }

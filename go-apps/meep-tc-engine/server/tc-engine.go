@@ -990,10 +990,14 @@ func applyMgSvcMapping() {
 
 			// Get Service info from exposed service name
 			// Check if MG Service first
-			svcInfo, found := podInfo.mgSvcMap[svcMap.svcName]
-			if !found {
+			var svcInfo *serviceInfo
+			var found bool
+			if svcInfo, found = podInfo.mgSvcMap[svcMap.svcName]; !found {
 				// If not found, must be unique service
-				svcInfo = svcInfoMap[svcMap.svcName]
+				if svcInfo, found = svcInfoMap[svcMap.svcName]; !found {
+					log.Warn("Failed to find service instance: ", svcMap.svcName)
+					continue
+				}
 			}
 
 			// Populate rule fields

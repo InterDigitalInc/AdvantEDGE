@@ -30,6 +30,8 @@ import {
   FIELD_PORT,
   FIELD_PROTOCOL,
   FIELD_GROUP,
+  FIELD_GPU_COUNT,
+  FIELD_GPU_TYPE,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -70,6 +72,9 @@ import {
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
+  // GPU types
+  GPU_TYPE_NVIDIA,
+
   // NC Group Prefixes
   PREFIX_INT_DOM,
   PREFIX_INT_ZONE,
@@ -88,6 +93,8 @@ import {
   CFG_ELEM_PORT,
   CFG_ELEM_EXT_PORT,
   CFG_ELEM_PROT,
+  CFG_ELEM_GPU_COUNT,
+  CFG_ELEM_GPU_TYPE,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_CHART_CHECK,
@@ -107,11 +114,24 @@ const SERVICE_PORT_MIN = 1;
 const SERVICE_PORT_MAX = 65535;
 const SERVICE_NODE_PORT_MIN = 30000;
 const SERVICE_NODE_PORT_MAX = 32767;
+const GPU_COUNT_MIN = 1;
+const GPU_COUNT_MAX = 4;
 
 const validateName = (val) => {
   if (val) {
     if (val.length > 30) {
       return 'Maximum 30 characters';
+    } else if (!val.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
+      return 'Lowercase alphanumeric or \'-\' or \'.\'';
+    }
+  }
+  return null;
+};
+
+const validateFullName = (val) => {
+  if (val) {
+    if (val.length > 60) {
+      return 'Maximum 60 characters';
     } else if (!val.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
       return 'Lowercase alphanumeric or \'-\' or \'.\'';
     }
@@ -188,6 +208,21 @@ const validatePort = (port) => {
   return null;
 };
 
+const validateGpuCount = (count) => {
+  if (count === '') {return null;}
+
+  const notIntError =  validateInt(count);
+  if (notIntError) {
+    return notIntError;
+  }
+
+  const p = Number(count);
+  if ((p !== '') && ((p < GPU_COUNT_MIN) || (p > GPU_COUNT_MAX))) {
+    return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
+  }
+  return null;
+};
+
 const validateExternalPort = (port) => {
   if (port === '') {return null;}
 
@@ -231,7 +266,7 @@ const validateServiceMappingEntry = (entry) => {
 
   return [
     validateExternalPort(args[0]),
-    validateName(args[1]),
+    validateFullName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
   ].filter(notNull);
@@ -253,7 +288,7 @@ const validateChartGroupEntry = (entry) => {
   if (args.length !== 4) {return ` ${'Svc instance:svc group name:port:protocol'}`;}
 
   return [
-    validateName(args[0]),
+    validateFullName(args[0]),
     validateName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
@@ -337,6 +372,40 @@ const PortProtocolGroup = ({onUpdate, element}) => {
           options={['TCP', 'UDP']}
           onChange={(event) => onUpdate(FIELD_PROTOCOL, event.target.value, null)}
           data-cy={CFG_ELEM_PROT}
+        />
+      </GridCell>
+    </Grid>
+  );
+};
+
+const gpuTypes = [
+  GPU_TYPE_NVIDIA
+];
+
+const GpuGroup = ({onUpdate, element}) => {
+  var type = getElemFieldVal(element, FIELD_GPU_TYPE) || '';
+
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={4}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateGpuCount}
+        isNumber={true}
+        label="GPU Count"
+        fieldName={FIELD_GPU_COUNT}
+        cydata={CFG_ELEM_GPU_COUNT}
+      />
+      <GridCell span={8} style={{paddingTop: 16}}>
+        <IDSelect 
+          label="GPU Type"
+          span={8}
+          options={gpuTypes}
+          onChange={(elem) => onUpdate(FIELD_GPU_TYPE, elem.target.value, null)}
+          value={type}
+          disabled={false}
+          cydata={CFG_ELEM_GPU_TYPE}
         />
       </GridCell>
     </Grid>
@@ -476,6 +545,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           fieldName={FIELD_IMAGE}
                           cydata={CFG_ELEM_IMG}
                         />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -534,6 +607,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           onUpdate={onUpdate}
                           element={element}
                         />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -588,6 +665,10 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                           fieldName={FIELD_GROUP}
                           cydata={CFG_ELEM_GROUP}
                         />
+                        <GpuGroup
+                          onUpdate={onUpdate}
+                          element={element}
+                        />
                         <CfgTextField
                           onUpdate={onUpdate}
                           element={element}
@@ -635,14 +716,14 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_UE,
       ELEMENT_TYPE_FOG,
-      ELEMENT_TYPE_EDGE,
-      ELEMENT_TYPE_CN
+      ELEMENT_TYPE_EDGE
+      // ELEMENT_TYPE_CN
     ]
   },
   {
     label: 'Process',
     options: [
-      ELEMENT_TYPE_MECSVC,
+      // ELEMENT_TYPE_MECSVC,
       ELEMENT_TYPE_EDGE_APP,
       ELEMENT_TYPE_CLOUD_APP,
       ELEMENT_TYPE_EXT_UE_APP,

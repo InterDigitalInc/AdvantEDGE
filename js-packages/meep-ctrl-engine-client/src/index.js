@@ -16,12 +16,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ClientServiceMap', 'model/Deployment', 'model/Domain', 'model/Event', 'model/EventList', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/EventUeMobility', 'model/ExternalConfig', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServiceMap', 'model/ServicePort', 'model/Settings', 'model/Zone', 'api/MEEPSettingsApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
+    define(['ApiClient', 'model/ClientServiceMap', 'model/Deployment', 'model/Domain', 'model/Event', 'model/EventList', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/EventUeMobility', 'model/ExternalConfig', 'model/GpuConfig', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServiceMap', 'model/ServicePort', 'model/Settings', 'model/Zone', 'api/MEEPSettingsApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/ClientServiceMap'), require('./model/Deployment'), require('./model/Domain'), require('./model/Event'), require('./model/EventList'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/EventUeMobility'), require('./model/ExternalConfig'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServiceMap'), require('./model/ServicePort'), require('./model/Settings'), require('./model/Zone'), require('./api/MEEPSettingsApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/ClientServiceMap'), require('./model/Deployment'), require('./model/Domain'), require('./model/Event'), require('./model/EventList'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/EventUeMobility'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServiceMap'), require('./model/ServicePort'), require('./model/Settings'), require('./model/Zone'), require('./api/MEEPSettingsApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
   }
-}(function(ApiClient, ClientServiceMap, Deployment, Domain, Event, EventList, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, EventUeMobility, ExternalConfig, NetworkLocation, PhysicalLocation, PodStatus, PodsStatus, Process, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServiceMap, ServicePort, Settings, Zone, MEEPSettingsApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
+}(function(ApiClient, ClientServiceMap, Deployment, Domain, Event, EventList, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, EventUeMobility, ExternalConfig, GpuConfig, NetworkLocation, PhysicalLocation, PodStatus, PodsStatus, Process, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServiceMap, ServicePort, Settings, Zone, MEEPSettingsApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
   'use strict';
 
   /**
@@ -111,6 +111,11 @@
      * @property {module:model/ExternalConfig}
      */
     ExternalConfig: ExternalConfig,
+    /**
+     * The GpuConfig model constructor.
+     * @property {module:model/GpuConfig}
+     */
+    GpuConfig: GpuConfig,
     /**
      * The NetworkLocation model constructor.
      * @property {module:model/NetworkLocation}

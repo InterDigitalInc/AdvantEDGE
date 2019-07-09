@@ -12,6 +12,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
@@ -20,46 +21,27 @@ import (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Config allows to manage meep environment configuration",
-	Long: `Config allows to manage meep environment configuration
+	Short: "manage meep environment configuration",
+	Long: `Get/Set meep environment configuration.
+Config file location: ~/.meepctl.yaml
 
-meepctl relies on a configuration file that lives here ~/.meepctl.yaml
-
-On first meepctl execution, the configuration file is created with default values
-It then needs to be initialized once by running initial configuration command (below).
-It also manages dashboards and configuration items present in Kibana.
-`,
-	Example: ` # Initial configuration
- meepctl config set --ip <your-node-ip> --gitdir <path-to-advantedge-git-dir>
- # Help on set command
- meepctl config set --help
- # Help on kibana command
- meepctl config kibana --help`,
+Config file is created with default values if it does not already exist.
+Values may be changed using the available commands described below.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		keys := viper.AllKeys()
+		sort.Strings(keys)
+
+		_ = cmd.Help()
 		fmt.Println("")
-		fmt.Println("   PARAMETER\t\tDESCRIPTION\t\t\t CURRENT VALUE")
-		fmt.Println("   version\t\tconfig file version\t\t", viper.GetString("version"))
-		fmt.Println("   node.ip\t\tnode's IP address\t\t", viper.GetString("node.ip"))
-		fmt.Println("   meep.gitdir\t\tAdvantEDGE repo path\t\t", viper.GetString("meep.gitdir"))
-		fmt.Println("   meep.workdir\t\tRuntime storage path\t\t", viper.GetString("meep.workdir"))
-		fmt.Println("")
-		fmt.Println(cmd.Long)
-		fmt.Println(cmd.Example)
-		fmt.Println("")
+		fmt.Println("========================================")
+		for _, key := range keys {
+			fmt.Println(key, ":", viper.GetString(key))
+		}
+		fmt.Println("========================================")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(configCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

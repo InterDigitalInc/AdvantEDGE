@@ -11,7 +11,7 @@ package helm
 import (
 	"fmt"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const (

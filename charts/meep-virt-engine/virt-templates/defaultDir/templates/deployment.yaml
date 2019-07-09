@@ -47,21 +47,19 @@ spec:
               value: {{$val | quote}}
           {{- end}}
         {{- end}}
-        {{- if .resources}}
           resources:
-            {{toYaml .resources | indent 12}}
-        {{- end}}
+{{toYaml .resources | indent 12}}
       {{- end}}
       {{- end}}
 
       nodeSelector:
-        {{toYaml .Values.deployment.nodeSelector | indent 8}}
+{{toYaml .Values.deployment.nodeSelector | indent 8}}
 
       affinity:
-        {{toYaml .Values.deployment.affinity | indent 8}}
+{{toYaml .Values.deployment.affinity | indent 8}}
 
       tolerations:
-        {{toYaml .Values.deployment.tolerations | indent 8}}
+{{toYaml .Values.deployment.tolerations | indent 8}}
 {{- end}}
 
 

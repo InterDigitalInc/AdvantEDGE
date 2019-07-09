@@ -32,17 +32,19 @@ Delete command removes a group of containers from the K8s cluster.
 
 Valid groups:
   * core: AdvantEDGE core containers
-  * dep:  Dependency containers
-  * all:  All containers
-			`,
-	Example: `  # Delete all containers
-    meepctl delete all
+  * dep:  Dependency containers`,
+	Example: `  # Delete dependency containers
+  meepctl delete dep
   # Delete only AdvantEDGE core containers
-    meepctl delete core
-			`,
+  meepctl delete core`,
 	Args:      cobra.ExactValidArgs(1),
-	ValidArgs: []string{"all", "dep", "core"},
+	ValidArgs: []string{"dep", "core"},
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		group := args[0]
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
@@ -54,11 +56,7 @@ Valid groups:
 		}
 
 		start := time.Now()
-		utils.InitRepoConfig()
-		if group == "all" {
-			deleteCore(cmd)
-			deleteDep(cmd)
-		} else if group == "core" {
+		if group == "core" {
 			deleteCore(cmd)
 		} else if group == "dep" {
 			deleteDep(cmd)
@@ -77,6 +75,7 @@ func deleteCore(cobraCmd *cobra.Command) {
 	k8sDelete("meep-mg-manager", cobraCmd)
 	k8sDelete("meep-tc-engine", cobraCmd)
 	k8sDelete("meep-mon-engine", cobraCmd)
+	k8sDelete("meep-loc-serv", cobraCmd)
 	k8sDelete("meep-ctrl-engine", cobraCmd)
 	deleteMeepUserAccount(cobraCmd)
 }
@@ -140,6 +139,7 @@ func deleteDep(cobraCmd *cobra.Command) {
 	k8sDelete("meep-filebeat", cobraCmd)
 	k8sDelete("meep-curator", cobraCmd)
 	k8sDelete("meep-elasticsearch", cobraCmd)
+	k8sDelete("meep-docker-registry", cobraCmd)
 
 	// Wait for all pvc delete routines to complete
 	// NOTE: Must be checked after deleting elastic

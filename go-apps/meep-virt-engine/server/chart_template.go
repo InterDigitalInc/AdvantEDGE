@@ -18,7 +18,8 @@ import (
 	"text/template"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/log"
+	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const SERVICE_PORT_MIN = 1
@@ -42,8 +43,9 @@ type DeploymentTemplate struct {
 	ContainerCommandEnabled  string
 	ContainerCommand         []string
 	ContainerCommandArg      []string
-	ContainerPort            string
-	ContainerProtocol        string
+	GpuEnabled               string
+	GpuType                  string
+	GpuCount                 string
 }
 
 type ServiceTemplate struct {
@@ -111,7 +113,7 @@ func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 	externalTemplate.Selector = append(externalTemplate.Selector, selector)
 }
 
-func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
+func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 
 	var charts []helm.Chart
 	serviceMap = map[string]string{}
@@ -151,35 +153,37 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 							// Parse User Chart Group to find new group services
 							// Create charts only for group services that do not exist yet
 							// Format: <service instance name>:[group service name]:<port>:<protocol>
-							userChartGroup := strings.Split(proc.UserChartGroup, ":")
-							meSvcName := userChartGroup[1]
-							if meSvcName != "" {
-								if _, found := serviceMap[meSvcName]; !found {
-									serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-									serviceTemplate.MeServiceEnabled = "true"
-									serviceTemplate.MeServiceName = meSvcName
-									addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+							if proc.UserChartGroup != "" {
+								userChartGroup := strings.Split(proc.UserChartGroup, ":")
+								meSvcName := userChartGroup[1]
+								if meSvcName != "" {
+									if _, found := serviceMap[meSvcName]; !found {
+										serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+										serviceTemplate.MeServiceEnabled = "true"
+										serviceTemplate.MeServiceName = meSvcName
+										addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
 
-									serviceTemplate.Namespace = scenario.Name
-									addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
+										serviceTemplate.Namespace = scenario.Name
+										addServiceLabel(serviceTemplate, "meepScenario: "+scenario.Name)
 
-									// NOTE: Every service within a group must expose the same port & protocol
-									var portTemplate ServicePortTemplate
-									portTemplate.Port = userChartGroup[2]
-									portTemplate.Protocol = userChartGroup[3]
-									serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
+										// NOTE: Every service within a group must expose the same port & protocol
+										var portTemplate ServicePortTemplate
+										portTemplate.Port = userChartGroup[2]
+										portTemplate.Protocol = userChartGroup[3]
+										serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
 
-									// Create chart files
-									chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
-									if err != nil {
-										log.Debug("yaml creation file process: ", err)
-										return nil, err
+										// Create chart files
+										chartLocation, err := createYamlScenarioFiles(scenarioTemplate)
+										if err != nil {
+											log.Debug("yaml creation file process: ", err)
+											return nil, err
+										}
+
+										// Create virt-engine chart for new group service
+										newChart := createChart(scenario.Name+"-"+proc.Name+"-svc", chartLocation, "")
+										charts = append(charts, newChart)
+										log.Debug("chart added for user chart group service ", len(charts))
 									}
-
-									// Create virt-engine chart for new group service
-									newChart := createChart(scenario.Name+"-"+proc.Name+"-svc", chartLocation, "")
-									charts = append(charts, newChart)
-									log.Debug("chart added for user chart group service ", len(charts))
 								}
 							}
 						} else {
@@ -238,6 +242,13 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 								}
 							}
 
+							// Enable GPU template if present
+							if proc.GpuConfig != nil {
+								deploymentTemplate.GpuEnabled = "true"
+								deploymentTemplate.GpuType = proc.GpuConfig.Type_
+								deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
+							}
+
 							// Enable External template if set
 							if proc.IsExternal {
 								externalTemplate.Enabled = "true"
@@ -246,10 +257,10 @@ func populateScenarioTemplate(scenario Scenario) ([]helm.Chart, error) {
 								// Add ingress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
 									var ingressSvcMapTemplate ServiceMapTemplate
-									ingressSvcMapTemplate.Name = "ingress-" + proc.Id + "-" + serviceMap.Name
 									ingressSvcMapTemplate.NodePort = strconv.Itoa(int(serviceMap.ExternalPort))
 									ingressSvcMapTemplate.Port = strconv.Itoa(int(serviceMap.Port))
 									ingressSvcMapTemplate.Protocol = serviceMap.Protocol
+									ingressSvcMapTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcMapTemplate.NodePort
 
 									externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcMapTemplate)
 								}
@@ -327,6 +338,7 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.ApiVersion = "v1"
 	deploymentTemplate.ContainerEnvEnabled = "false"
 	deploymentTemplate.ContainerCommandEnabled = "false"
+	deploymentTemplate.GpuEnabled = "false"
 }
 
 func setServiceDefaults(serviceTemplate *ServiceTemplate) {
@@ -370,7 +382,7 @@ func setCommand(deployment *DeploymentTemplate, command string, commandArgs stri
 	}
 }
 
-func CreateYamlScenarioFile(scenario Scenario) error {
+func CreateYamlScenarioFile(scenario model.Scenario) error {
 
 	//var charts []helm.Chart
 	charts, err := populateScenarioTemplate(scenario)

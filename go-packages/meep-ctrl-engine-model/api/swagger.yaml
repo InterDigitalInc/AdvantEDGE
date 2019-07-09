@@ -34,6 +34,16 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between domains
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       domains:
         type: array
         items:
@@ -365,6 +375,16 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between zones within the domain
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       zones:
         type: array
         items:
@@ -659,6 +679,16 @@ definitions:
     description: |-
       External Process configuration.
       NOTE: Only valid if 'isExternal' is set.
+  GpuConfig:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Requested GPU type
+      count:
+        type: integer
+        description: Number of GPUs requested
+    description: GPU configuration object
   NetworkLocation:
     type: object
     properties:
@@ -687,6 +717,16 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) for all terminal links within the network location
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       physicalLocations:
         type: array
         items:
@@ -755,6 +795,16 @@ definitions:
         items:
           type: string
           description: Names of network locations within range of physical location
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       processes:
         type: array
         items:
@@ -928,6 +978,8 @@ definitions:
         description: Executable to invoke at container start up
       serviceConfig:
         $ref: '#/definitions/ServiceConfig'
+      gpuConfig:
+        $ref: '#/definitions/GpuConfig'
       externalConfig:
         $ref: '#/definitions/ExternalConfig'
       status:
@@ -942,6 +994,16 @@ definitions:
       userChartGroup:
         type: string
         description: Chart supplemental information related to the group (service)
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
     description: Application or service object
   Release:
     type: object
@@ -1949,8 +2011,10 @@ definitions:
           External port number on which to expose the application (30000 - 32767)  <li>Only one application allowed per external port <li>Scenario builder must configure to prevent conflicts
     description: Service port object
   Settings:
-    type: string
-    description: MEEP settings
+    type: object
+    description: MEEP settings - Key/Value Pair Map (string, string)
+    additionalProperties:
+      type: string
   Zone:
     type: object
     properties:
@@ -2005,6 +2069,16 @@ definitions:
         type: number
         format: double
         description: Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
+      meta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: Key/Value Pair Map (string, string)
+        additionalProperties:
+          type: string
       networkLocations:
         type: array
         items:

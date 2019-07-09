@@ -98,7 +98,9 @@ tar -zxvf demo1.<version>.linux-amd64.tar.gz
 
 #### Dockerize demo applications
 
-Demo Application binaries must be dockerized (containerized) as container images in the local Docker registry. This step is necessary every time the demo binaries are updated.
+Demo Application binaries must be dockerized (containerized) as container images in the Docker registry. This step is necessary every time the demo binaries are updated.
+
+> **NOTE:** Make sure you have deployed the AdvantEDGE dependencies (e.g. docker registry) before dockerizing the demo binaries.
 
 To generate docker images from demo binary files:
 

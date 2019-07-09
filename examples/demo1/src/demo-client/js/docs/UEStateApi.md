@@ -5,9 +5,9 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createUeState**](UEStateApi.md#createUeState) | **POST** /ue/{ueId} | Registers the UE and starts a counter
-[**deleteUe**](UEStateApi.md#deleteUe) | **DELETE** /ue/{ueId} | Deregistration of a UE
+[**deleteUeState**](UEStateApi.md#deleteUeState) | **DELETE** /ue/{ueId} | Deregistration of a UE
 [**getUeState**](UEStateApi.md#getUeState) | **GET** /ue/{ueId} | Retrieves the UE state values
-[**updateUeState**](UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE states values
+[**updateUeState**](UEStateApi.md#updateUeState) | **PUT** /ue/{ueId} | Updates the UE state values
 
 
 <a name="createUeState"></a>
@@ -56,9 +56,9 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="deleteUe"></a>
-# **deleteUe**
-> deleteUe(ueId)
+<a name="deleteUeState"></a>
+# **deleteUeState**
+> deleteUeState(ueId)
 
 Deregistration of a UE
 
@@ -80,7 +80,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.deleteUe(ueId, callback);
+apiInstance.deleteUeState(ueId, callback);
 ```
 
 ### Parameters
@@ -152,7 +152,7 @@ No authorization required
 # **updateUeState**
 > updateUeState(ueId, ueState)
 
-Updates the UE states values
+Updates the UE state values
 
 
 
@@ -164,7 +164,7 @@ var apiInstance = new MeepDemoAppApi.UEStateApi();
 
 var ueId = "ueId_example"; // String | UE identifier
 
-var ueState = new MeepDemoAppApi.UeState(); // UeState | Ue state basic information
+var ueState = new MeepDemoAppApi.UeState(); // UeState | Ue state values
 
 
 var callback = function(error, data, response) {
@@ -182,7 +182,7 @@ apiInstance.updateUeState(ueId, ueState, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ueId** | **String**| UE identifier | 
- **ueState** | [**UeState**](UeState.md)| Ue state basic information | 
+ **ueState** | [**UeState**](UeState.md)| Ue state values | 
 
 ### Return type
 

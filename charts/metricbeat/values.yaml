@@ -105,7 +105,7 @@ deployment:
             # Uncomment this to get k8s events:
             # - event
           period: 10s
-          hosts: ["kube-state-metrics:8080"]
+          hosts: ["meep-kube-state-metrics:8080"]
           add_metadata: true
           in_cluster: true
 

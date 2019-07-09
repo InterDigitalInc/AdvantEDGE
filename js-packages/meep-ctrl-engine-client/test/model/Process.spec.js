@@ -110,6 +110,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property gpuConfig (base name: "gpuConfig")', function() {
+      // uncomment below and update the code to test the property gpuConfig
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
     it('should have the property externalConfig (base name: "externalConfig")', function() {
       // uncomment below and update the code to test the property externalConfig
       //var instane = new MeepControllerRestApi.Process();
@@ -136,6 +142,18 @@
 
     it('should have the property userChartGroup (base name: "userChartGroup")', function() {
       // uncomment below and update the code to test the property userChartGroup
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property meta (base name: "meta")', function() {
+      // uncomment below and update the code to test the property meta
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property userMeta (base name: "userMeta")', function() {
+      // uncomment below and update the code to test the property userMeta
       //var instane = new MeepControllerRestApi.Process();
       //expect(instance).to.be();
     });

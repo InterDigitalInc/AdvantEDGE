@@ -4,14 +4,14 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getEdgeInfo**](EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add infoo
+[**getEdgeInfo**](EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add info
 
 
 <a name="getEdgeInfo"></a>
 # **getEdgeInfo**
 > EdgeInfo getEdgeInfo()
 
-Retrieve edge add infoo
+Retrieve edge add info
 
 
 

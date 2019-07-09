@@ -23,19 +23,16 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const configVersion string = "1.1.0"
+
+const defaultNotSet string = "not set"
+const defaultIP string = ""
+const defaultGitDir string = ""
+const defaultWorkDir string = ".meep"
+const defaultRegistry string = "meep-docker-registry:30001"
+
+var Cfg *Config
 var RepoCfg *viper.Viper
-
-// Config version needs to be bumped only when new elements are added
-var defaultConfig = `
-version: 1.0.0
-
-node:
-  ip: "Not-Initialized"
-
-meep:
-  gitdir: "Not-Initialized"
-  workdir: "<DEFAULT>/.meep"
-`
 
 // Node parameters node
 type Node struct {
@@ -49,15 +46,74 @@ type Meep struct {
 	Gitdir string `json:"gitdir,omitempty"`
 	// MEEP work directory
 	Workdir string `json:"workdir,omitempty"`
+	// MEEP docker registry
+	Registry string `json:"registry,omitempty"`
 }
 
 // Config structure
 type Config struct {
-	Version string `json:"version,omitempty"`
 	// Node parameters
 	Node Node `json:"ip,omitempty"`
 	// Meep parameters
 	Meep Meep `json:"meep,omitempty"`
+}
+
+// ConfigInit initializes the meep configuration
+func ConfigInit() bool {
+
+	// Initialize Config variable
+	Cfg = &Config{
+		Node: Node{
+			IP: defaultNotSet,
+		},
+		Meep: Meep{
+			Gitdir:   defaultNotSet,
+			Workdir:  defaultNotSet,
+			Registry: defaultNotSet,
+		},
+	}
+
+	// Locate configuration file or create a new one if it does not exist
+	// NOTE: meepctl uses config file located in $(HOME)/.meepctl.yaml
+	path := ConfigGetDefaultPath()
+	if path == "" {
+		fmt.Println("Error accessing config file at $(HOME)/.meepctl.yaml")
+		os.Exit(1)
+	}
+	_, err := os.Stat(path)
+	if err == nil {
+		// Update configuration object from config file
+		_ = ConfigReadFile(Cfg, path)
+	} else if !os.IsNotExist(err) {
+		fmt.Println("Error accessing config file at $(HOME)/.meepctl.yaml")
+		fmt.Println(err)
+		return false
+	}
+
+	// Create default entries if they don't exist
+	valuesUpdated := ConfigSetDefaultValues(Cfg)
+	if valuesUpdated {
+		err = ConfigWriteFile(Cfg, path)
+		if err != nil {
+			fmt.Println("Failed to update config file with error: " + err.Error())
+			return false
+		}
+		fmt.Println("Updated config file @ " + path)
+	}
+
+	// Set Repo config if gitdir is set
+	repoCfgFile := Cfg.Meep.Gitdir + "/.meepctl-repocfg.yaml"
+	if Cfg.Meep.Gitdir != "" {
+		RepoCfg = viper.New()
+		RepoCfg.SetConfigFile(repoCfgFile)
+		if err = RepoCfg.ReadInConfig(); err == nil {
+			fmt.Println("Using repo config file:", RepoCfg.ConfigFileUsed())
+		} else {
+			RepoCfg = nil
+		}
+	}
+
+	return true
 }
 
 // ConfigGetDefaultPath get default config file path
@@ -71,104 +127,124 @@ func ConfigGetDefaultPath() (path string) {
 	return home + "/.meepctl.yaml"
 }
 
-// ConfigCreateIfNotExist test for config file existence & create default if needed
-func ConfigCreateIfNotExist() (exist bool, err error) {
-	path := ConfigGetDefaultPath()
-	if path == "" {
-		os.Exit(1)
+func ConfigSetDefaultValues(cfg *Config) bool {
+	updated := false
+	if cfg.Node.IP == defaultNotSet {
+		cfg.Node.IP = defaultIP
+		updated = true
 	}
-
-	// meepctl uses this config file located in $(HOME)/.meepctl.yaml
-	// If it does not exist, create one.
-	_, err = os.Stat(path)
-	if err == nil {
-		// we're good
-		return true, nil
-	} else if os.IsNotExist(err) {
-		// file does not exist so create default
-		cfg := ConfigReadFile("") // returns default config
-		err = ConfigWriteFile(cfg, path)
-		fmt.Println("Creating default config file @ " + path)
-		return true, err
-	} // else file may exist ... just return the error
-	return true, err
+	if cfg.Meep.Gitdir == defaultNotSet {
+		cfg.Meep.Gitdir = defaultGitDir
+		updated = true
+	}
+	if cfg.Meep.Workdir == defaultNotSet {
+		home, _ := homedir.Dir()
+		cfg.Meep.Workdir = home + "/" + defaultWorkDir
+		updated = true
+	}
+	if cfg.Meep.Registry == defaultNotSet {
+		cfg.Meep.Registry = defaultRegistry
+		updated = true
+	}
+	return updated
 }
 
 // ConfigReadFile read the configuration file
-func ConfigReadFile(filePath string) (cfg *Config) {
-	var err error
-	var data []byte
-	cfg = new(Config)
-
-	// Read from config file
-	if filePath != "" {
-		data, err = ioutil.ReadFile(filePath)
-		if err != nil {
-			fmt.Println("Error reading config file [" + filePath + "]")
-			fmt.Println(err)
-			return nil
-		}
+func ConfigReadFile(cfg *Config, filePath string) (err error) {
+	if filePath == "" {
+		return nil
 	}
-	// Revert to default if readfile failed
-	if len(data) == 0 {
-		data = []byte(defaultConfig)
-		str := fmt.Sprintf("%s", data)
-		home, _ := homedir.Dir()
-		newStr := strings.Replace(str, "<DEFAULT>", home, -1)
-		data = []byte(newStr)
+
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("Error reading config file [" + filePath + "]")
+		fmt.Println(err)
+		return err
 	}
 
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
 		fmt.Println("Error unmarshalling config file [" + filePath + "]")
 		fmt.Println(err)
-		// Revert to default if unmarshall failed
-		_ = yaml.Unmarshal([]byte(defaultConfig), cfg)
+		return err
 	}
 
-	return cfg
+	return nil
+}
+
+// ConfigWriteFile writes the configuration file
+func ConfigWriteFile(cfg *Config, filePath string) (err error) {
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		err = errors.New("Error marshalling config")
+		return err
+	}
+
+	err = ioutil.WriteFile(filePath, data, os.ModePerm)
+	if err != nil {
+		err = errors.New("Error writing config file [" + filePath + "]")
+		return err
+	}
+
+	return nil
 }
 
 // ConfigValidate validates config file
 func ConfigValidate(filePath string) (valid bool) {
-	if filePath == "" {
-		filePath = ConfigGetDefaultPath()
-	}
-	cfg := ConfigReadFile(filePath)
+	configValid := true
 
 	// Validate IPV4
-	ipValid, reason := ConfigIPValid(cfg.Node.IP)
-	if !ipValid {
+	valid, reason := ConfigIPValid(Cfg.Node.IP)
+	if !valid {
 		fmt.Println("")
 		fmt.Println("  WARNING    invalid meepctl config: node.ip")
 		fmt.Println("             Reason: " + reason)
-		fmt.Println("             Fix with:  ./meepctl config set --ip <node-ip-address>")
-		return false
+		fmt.Println("             Fix:  meepctl config ip <node-ip-address>")
+		fmt.Println("")
+		configValid = false
 	}
 
-	// Validate Gitdir
-	ipValid, reason = ConfigGitdirValid(cfg.Meep.Gitdir)
-	if !ipValid {
+	// Validate Gitdir & repo version
+	valid, reason = ConfigPathValid(Cfg.Meep.Gitdir)
+	if !valid {
 		fmt.Println("")
 		fmt.Println("  WARNING    invalid meepctl config: meep.gitdir")
 		fmt.Println("             Reason: " + reason)
-		fmt.Println("             Fix with:  ./meepctl config set --gitdir <path-to-gitdir>")
-		return false
+		fmt.Println("             Fix:  meepctl config gitdir <path-to-gitdir>")
+		fmt.Println("")
+		configValid = false
+	} else if RepoCfg == nil {
+		fmt.Println("")
+		fmt.Println("  WARNING    repocfg file not found")
+		fmt.Println("             Fix: set gitdir to point to a valid repo")
+		fmt.Println("")
+		configValid = false
+	} else {
+		repoVer := RepoCfg.GetString("version")
+		if repoVer != configVersion {
+			fmt.Println("")
+			fmt.Println("  WARNING    meepctl version[" + configVersion + "] != repocfg version[" + repoVer + "]")
+			fmt.Println("             repocfg file: " + RepoCfg.ConfigFileUsed())
+			fmt.Println("             Fix: upgrade meepctl binary to matching version or set gitdir to repo with matching version")
+			fmt.Println("")
+			configValid = false
+		}
 	}
-	return true
+
+	return configValid
 }
 
-// ConfigGitdirValid validates IP address
-func ConfigGitdirValid(gitdir string) (valid bool, reason string) {
+// ConfigPathValid validates IP address
+func ConfigPathValid(path string) (valid bool, reason string) {
 	valid = true
-	fi, err := os.Stat(gitdir)
+	fi, err := os.Stat(path)
 
 	if err != nil {
-		reason = "Path error  [" + gitdir + "]"
+		reason = "Path error  [" + path + "]"
 		valid = false
 	} else {
 		if !fi.IsDir() {
-			reason = "Not a directory [" + gitdir + "]"
+			reason = "Not a directory [" + path + "]"
 			valid = false
 		}
 	}
@@ -210,23 +286,6 @@ func ConfigIPValid(ipAddr string) (valid bool, reason string) {
 	return valid, reason
 }
 
-// ConfigWriteFile writes the configuration file
-func ConfigWriteFile(cfg *Config, filePath string) (err error) {
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		err = errors.New("Error marshalling config")
-		return err
-	}
-
-	err = ioutil.WriteFile(filePath, data, os.ModePerm)
-	if err != nil {
-		err = errors.New("Error writing config file [" + filePath + "]")
-		return err
-	}
-
-	return nil
-}
-
 // ConfigIsIpv4 checks if IP address is IPV4
 func ConfigIsIpv4(host string) bool {
 	parts := strings.Split(host, ".")
@@ -243,18 +302,4 @@ func ConfigIsIpv4(host string) bool {
 		}
 	}
 	return true
-}
-
-// InitRepoConfig initializes & returns the repo config
-func InitRepoConfig() *viper.Viper {
-	repodir := viper.GetString("meep.gitdir")
-	RepoCfg = viper.New()
-	RepoCfg.SetConfigFile(repodir + "/.meepctl-repocfg.yaml")
-	if err := RepoCfg.ReadInConfig(); err == nil {
-		fmt.Println("Using repo config file:", RepoCfg.ConfigFileUsed())
-	} else {
-		RepoCfg = nil
-		fmt.Println(err)
-	}
-	return RepoCfg
 }
