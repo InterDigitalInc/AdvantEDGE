@@ -46,9 +46,8 @@ var configIp = &cobra.Command{
 			ip := args[0]
 			valid, reason := utils.ConfigIPValid(ip)
 			if valid {
-				cfg := utils.ConfigReadFile(viper.ConfigFileUsed())
-				cfg.Node.IP = ip
-				err := utils.ConfigWriteFile(cfg, viper.ConfigFileUsed())
+				utils.Cfg.Node.IP = ip
+				err := utils.ConfigWriteFile(utils.Cfg, viper.ConfigFileUsed())
 				if err != nil {
 					fmt.Println(err)
 				}

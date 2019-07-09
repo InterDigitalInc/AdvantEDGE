@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -67,7 +68,6 @@ Valid targets:`,
 		}
 
 		start := time.Now()
-		utils.InitRepoConfig()
 		if r == "" {
 			r = viper.GetString("meep.registry")
 		}
@@ -138,12 +138,17 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 
-	// dockerize & push to private meep docker registry
+	// Obtain checksum of bin folder contents to add as a label in docker image
 	path := gitdir + "/" + target["bin"]
+	cmd := exec.Command("/bin/sh", "-c", "find "+path+" -type f | xargs sha256sum | sort | sha256sum")
+	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	checksum := strings.Split(output, " ")
+
+	// dockerize & push to private meep docker registry
 	fmt.Println("dockerizing", targetName)
 	if registry != "" {
 		tag := registry + "/" + targetName
-		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", tag, path)
+		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, path)
 		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		cmd = exec.Command("docker", "push", tag)
 		_, err := utils.ExecuteCmd(cmd, cobraCmd)
@@ -152,7 +157,7 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 			return
 		}
 	} else {
-		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "-t", targetName, path)
+		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, path)
 		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	}
 

@@ -56,7 +56,6 @@ Valid groups:
 		}
 
 		start := time.Now()
-		utils.InitRepoConfig()
 		if group == "core" {
 			deleteCore(cmd)
 		} else if group == "dep" {

@@ -37,7 +37,6 @@ var testCmd = &cobra.Command{
 			return
 		}
 
-		utils.InitRepoConfig()
 		targets := utils.RepoCfg.GetStringMapString("repo.core")
 
 		for k := range targets {

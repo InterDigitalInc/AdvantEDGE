@@ -66,7 +66,6 @@ Valid targets:`,
 		}
 
 		start := time.Now()
-		utils.InitRepoConfig()
 		for _, target := range targets {
 			if target == "all" {
 				buildAll(cmd)

@@ -33,16 +33,14 @@ Find more information [here](https://kopsvas19p.interdigital.com/wbu-tep/AdvantE
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	_, err := utils.ConfigCreateIfNotExist()
-	if err != nil {
-		fmt.Println("Error accessing config file at $(HOME)/.meepctl.yaml")
-		fmt.Println(err)
+	// Initialize configuration
+	cfgInitialized := utils.ConfigInit()
+	if !cfgInitialized {
+		fmt.Println("Failed to initialize configuration")
 		os.Exit(1)
 	}
-	_ = utils.ConfigValidateVersion("")
-	// if !configValid {
-	// 	os.Exit(1)
-	// }
+
+	// Run command
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

@@ -73,7 +73,6 @@ Valid groups:
 		}
 
 		start := time.Now()
-		utils.InitRepoConfig()
 		if registry == "" {
 			registry = viper.GetString("meep.registry")
 		}

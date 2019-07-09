@@ -31,6 +31,11 @@ Any Kibana saved object will be overwritten in the process if the object Id are 
 meepctl config kibana.`,
 	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
+		if !utils.ConfigValidate("") {
+			fmt.Println("Fix configuration issues")
+			return
+		}
+
 		t, _ := cmd.Flags().GetBool("time")
 		start := time.Now()
 		utils.DeployKibanaDashboards(cmd)

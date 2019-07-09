@@ -45,9 +45,8 @@ var configGitdir = &cobra.Command{
 			gitdir := args[0]
 			valid, reason := utils.ConfigPathValid(gitdir)
 			if valid {
-				cfg := utils.ConfigReadFile(viper.ConfigFileUsed())
-				cfg.Meep.Gitdir = gitdir
-				err := utils.ConfigWriteFile(cfg, viper.ConfigFileUsed())
+				utils.Cfg.Meep.Gitdir = gitdir
+				err := utils.ConfigWriteFile(utils.Cfg, viper.ConfigFileUsed())
 				if err != nil {
 					fmt.Println(err)
 				}

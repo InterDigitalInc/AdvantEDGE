@@ -44,9 +44,8 @@ var configRegistry = &cobra.Command{
 			fmt.Println("")
 		} else {
 			registry := args[0]
-			cfg := utils.ConfigReadFile(viper.ConfigFileUsed())
-			cfg.Meep.Registry = registry
-			err := utils.ConfigWriteFile(cfg, viper.ConfigFileUsed())
+			utils.Cfg.Meep.Registry = registry
+			err := utils.ConfigWriteFile(utils.Cfg, viper.ConfigFileUsed())
 			if err != nil {
 				fmt.Println(err)
 			}
