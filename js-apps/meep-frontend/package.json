@@ -38,6 +38,7 @@
     "webpack-serve": "^0.3.1"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.1.0",
     "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",
     "axios": "^0.18.0",
@@ -50,9 +51,9 @@
     "material-components-web": "0.38.1",
     "material-design-icons": "3.0.1",
     "prop-types": "15.6.2",
-    "react": "16.4.1",
+    "react": "^16.8.6",
     "react-d3-graph": "^2.0.2",
-    "react-dom": "16.4.1",
+    "react-dom": "^16.8.6",
     "react-iframe": "^1.5.0",
     "react-redux": "^5.1.1",
     "react-split-pane": "^0.1.87",

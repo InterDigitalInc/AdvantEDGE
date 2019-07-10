@@ -1191,3 +1191,14 @@ export function getScenarioSpecificImage(label, nodeType, plType) {
 
   return image;
 }
+
+export const getScenarioNodeChildren = (node) => {
+  if (node.collapsed) {
+    return null;
+  }
+  return node.domains || node.zones || node.networkLocations || node.physicalLocations || node.processes;
+};
+
+export const isApp = node => {
+  return node.data.type && (node.data.type === 'EDGE-APP' || node.data.type === 'UE-APP' || node.data.type === 'CLOUD-APP');
+};

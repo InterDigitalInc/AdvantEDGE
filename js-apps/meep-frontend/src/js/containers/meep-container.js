@@ -96,7 +96,7 @@ class MeepContainer extends Component {
   }
 
   startRefreshCycle() {
-    this.startPodsPhasesPeriodicCheck();
+    // this.startPodsPhasesPeriodicCheck();
     this.monitorTabFocus();
   }
 
@@ -126,7 +126,7 @@ class MeepContainer extends Component {
         this.stopCorePodsPhasesPeriodicCheck();
         this.stopAutomaticRefresh();
       } else {
-        this.startPodsPhasesPeriodicCheck();
+        // this.startPodsPhasesPeriodicCheck();
 
         if (this.props.automaticRefresh) {
           this.startAutomaticRefresh();

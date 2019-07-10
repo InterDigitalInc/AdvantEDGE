@@ -11,7 +11,10 @@ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import IDCVis from '../idc-vis';
 import IDCGraph from '../idc-graph';
+import IDCAreaChart from '../idc-area-chart';
+import DashboardContainer from '../dashboard-container';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
@@ -175,9 +178,9 @@ class ExecPageContainer extends Component {
 
   showApps(show) {
     this.props.changeShowApps(show);
-    _.defer(() => {
-      this.props.execVis.network.setData(this.props.execVisData);
-    });
+    // _.defer(() => {
+    //   this.props.execVis.network.setData(this.props.execVisData);
+    // });
   }
 
   renderDialogs() {
@@ -266,11 +269,7 @@ class ExecPageContainer extends Component {
                   <GridCell span={spanLeft}>
                     <Elevation className="component-style" z={2}>
                       <div style={{padding: 10}}>
-                        <IDCGraph
-                          type={TYPE_EXEC}
-                          width={1100}
-                          height={500}
-                        />
+                        <DashboardContainer />
                       </div>
                     </Elevation>
                   </GridCell>

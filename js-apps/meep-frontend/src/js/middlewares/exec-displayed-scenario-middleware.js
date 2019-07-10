@@ -15,62 +15,14 @@ import {
 } from '../meep-constants';
 import { getScenarioSpecificImage } from '../util/scenario-utils';
 
-const data = {  
-  'children':[  
-    {  
-      'name':'boss1',
-      'children':[  
-        {  
-          'name':'mister_a',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_b',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_c',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_d',
-          'colname':'level3'
-        }
-      ],
-      'colname':'level2'
-    },
-    {  
-      'name':'boss2',
-      'children':[  
-        {  
-          'name':'mister_e',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_f',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_g',
-          'colname':'level3'
-        },
-        {  
-          'name':'mister_h',
-          'colname':'level3'
-        }
-      ],
-      'colname':'level2'
-    }
-  ],
-  'name':'CEO'
-};
+const softwareIcon = 'software-icon.svg';
 
 const computeDisplayedScenario = scenario => {
   // TODO: replaced with real computed scenario
   let root = scenario.deployment;
   root.iconName = 'cloud-black.svg';
 
-  visitScenario(setImageForChildren)(root);
+  visitNodes(setImage)(root);
   return root;
 };
 
@@ -102,60 +54,90 @@ const getChildrenInfo = node => {
   if (node.processes) {
     return {
       fieldName: 'processes',
-      type: 'COMMON'
+      type: node.processes[0].type
     };
   }
 
   return null;
 };
 
+const getChildrenFieldName = node => {
+  let fieldName = null;
+  if (node.domains) {
+    fieldName = 'domains';
+  }
+  if (node.zones) {
+    fieldName = 'zones';
+  }
+  if (node.networkLocations) {
+    fieldName = 'networkLocations';
+  }
+  if (node.physicalLocations) {
+    fieldName = 'physicalLocations';
+  }
+  if (node.processes) {
+    fieldName = 'processes';
+  }
+
+  return fieldName;
+};
+
+const getChildrenType = node => {
+  let fieldName = getChildrenFieldName(node);
+
+  if (fieldName && node[fieldName].length) {
+    return node[fieldName][0].type;
+  }
+
+  return '';
+};
+
 const getImageForType = type => {
   switch(type) {
+  case undefined:
+    return 'cloud-black.svg';
+  case 'DEFAULT':
+    return 'tower-02-idcc.svg';
   case 'ZONE':
     return 'tower-02-idcc.svg';
   case 'EDGE':
     return 'edge-idcc.svg';
   case 'PUBLIC':
-    return '';
+    return 'cloud-outline-black.svg';
   case 'OPERATOR':
     return 'fog-idcc.svg';
   case 'COMMON':
-    return 'Gear-01-idcc.svg';
+    return 'tower-02-idcc.svg';
+  case 'UE-APP':
+    return 'drone-blue.svg';
+  case 'UE':
+    return 'phone.svg';
+  case 'EDGE-APP':
+    return 'drone-black.svg';
+  case 'CLOUD-APP':
+    return 'drone-blue.svg';
+  case 'POA':
+    return 'switch-blue.svg';
+  case 'FOG':
+    return 'fog-idcc.svg';
+  case 'DC':
+    return 'cloud-outline-black.svg';
   default:
     return 'Gear-01-idcc.svg';
   }
 };
 
-const setImageForChildren = node => {
-  const info = getChildrenInfo(node);
-  if (!info) {
-    return;
-  }
-
-  const {fieldName, type} = info;
-  if (fieldName && type) {
-    _.each(node[fieldName], c => {
-      c.iconName = getImageForType(type);
-      // console.log(`iconName for type ${type} is ${c.iconName}`);
-    });
-  }
+const setImage = node => {
+  const iconName = getImageForType(node.type);
+  node.iconName = iconName;
 };
 
-const visitScenario = f => node => {
-  // console.log(`Visiting scenario for node with type ${node.type}`);
-  const ff = f;
-  ff(node);
-  const info = getChildrenInfo(node);
-
-  if (!info) {
-    return;
-  }
-  
-  const {fieldName, type} = info;
-  if (fieldName && type) {
-    _.each(node[fieldName], c => {
-      visitScenario(ff)(c);
-    });
+const visitNodes = f => node => {
+  f(node);
+  // console.log('visitingNode ' + node.name + ' of type: ' + node.type);
+  const childrenFieldName = getChildrenFieldName(node);
+  if (node[childrenFieldName]) {
+    _.each(node[childrenFieldName], c => visitNodes(f)(c));
   }
 };
 
