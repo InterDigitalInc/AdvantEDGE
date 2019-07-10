@@ -42,7 +42,8 @@ import {
   // Event types
   UE_MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE
+  PAGE_EXECUTE,
+  PAGE_EXPERIMENTAL_EXECUTE
 } from '../../state/ui';
 
 import {
@@ -216,7 +217,7 @@ class ExecPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE && this.props.page !== PAGE_EXPERIMENTAL_EXECUTE) {
       return null;
     }
 
@@ -269,7 +270,8 @@ class ExecPageContainer extends Component {
                   <GridCell span={spanLeft}>
                     <Elevation className="component-style" z={2}>
                       <div style={{padding: 10}}>
-                        <DashboardContainer />
+                        {this.props.experimental ? (<DashboardContainer />) : (<IDCVis type={TYPE_EXEC} />)}
+                        
                       </div>
                     </Elevation>
                   </GridCell>
