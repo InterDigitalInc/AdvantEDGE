@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -82,6 +83,10 @@ var filters = map[string]string{}
 var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
+
+var currentTransactionId = 0
+var dbTransactionId = 0
+var lastTransactionIdApplied = 0
 
 // Run - MEEP Sidecar execution
 func main() {
@@ -175,8 +180,11 @@ func eventHandler(channel string, payload string) {
 }
 
 func processNetCharMsg(payload string) {
-	// NOTE: Payload contains no information yet. For now reevaluate Net Char rules on every received event.
+	// NOTE: Payload contains only a transaction Id
+	currentTransactionId, _ = strconv.Atoi(payload)
+	_ = getTransactionIdApplied() //sets dbTransactionId and will apply it
 	refreshNetCharRules()
+	lastTransactionIdApplied = dbTransactionId
 }
 
 func processLbMsg(payload string) {
@@ -513,6 +521,21 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 	return nil
 }
 
+func getTransactionIdApplied() error {
+	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
+	err := DBForEachEntry(keyName, getDbStateHandler, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getDbStateHandler(key string, fields map[string]string, userData interface{}) error {
+	var err error
+	dbTransactionId, err = strconv.Atoi(fields["transactionIdStored"])
+	return err
+}
+
 func createIfbs() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape*"
 	err := DBForEachEntry(keyName, createIfbsHandler, nil)
@@ -525,9 +548,20 @@ func createIfbs() error {
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
 	// Update the rule
-	_ = cmdCreateIfb(fields)
-	ifbs[ifbNumber] = ifbNumber
-	_ = cmdSetIfb(fields)
+	_, exists := filters[ifbNumber]
+
+	if !exists {
+		_ = cmdCreateIfb(fields)
+		ifbs[ifbNumber] = ifbNumber
+		_ = cmdSetIfb(fields)
+	} else {
+		if lastTransactionIdApplied < currentTransactionId {
+			_ = cmdSetIfb(fields)
+			log.Info("Transactions processed on the TC-Engine quicker than they can be processed: current ", currentTransactionId, " and last applied ", lastTransactionIdApplied)
+		} else {
+			log.Info("Transactions processed on the TC-Engine already applied ", currentTransactionId, " vs last applied ", lastTransactionIdApplied)
+		}
+	}
 
 	return nil
 }

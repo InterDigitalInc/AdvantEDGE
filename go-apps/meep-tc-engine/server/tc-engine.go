@@ -163,6 +163,7 @@ var podCountReq = 0
 var podCount = 0
 var svcCountReq = 0
 var svcCount = 0
+var nextTransactionId = 1
 
 // Init - TC Engine initialization
 func Init() (err error) {
@@ -254,8 +255,13 @@ func processActiveScenarioUpdate() {
 		// Apply network characteristic rules
 		applyNetCharRules()
 
+		//Update the Db for state information (only transactionId for now)
+		updateDbState(nextTransactionId)
+
 		// Publish update to TC Sidecars for enforcement
-		_ = Publish(channelTcNet, "")
+		transactionIdStr := strconv.Itoa(nextTransactionId)
+		_ = Publish(channelTcNet, transactionIdStr)
+		nextTransactionId++
 	}
 }
 
@@ -797,6 +803,15 @@ func populateNetChar(nc *NetChar, latency int, latencyVariation int, latencyCorr
 	nc.LatencyCorrelation = latencyCorrelation
 	nc.Throughput = throughput
 	nc.PacketLoss = packetLoss
+}
+
+func updateDbState(transactionId int) {
+
+	var dbState = make(map[string]interface{})
+	dbState["transactionIdStored"] = transactionId
+
+	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
+	_ = DBSetEntry(keyName, dbState)
 }
 
 func applyNetCharRules() {
