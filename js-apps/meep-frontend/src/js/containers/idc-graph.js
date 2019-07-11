@@ -401,12 +401,14 @@ class IDCGraph extends Component {
     const data = this.root; // || this.props.displayedScenario;
     this.root = d3.hierarchy(data, getScenarioNodeChildren);
     
-    this.nodes = this.root.descendants();
+    const compareTypes = (a, b)  => {
+      return a.data.type < b.data.type;
+    };
+    this.nodes = this.root.descendants().sort(compareTypes);
 
     copyAttributesRecursive(data)(this.root);
 
     let tree = d3.tree().size([this.props.height, this.props.width - 100]);
-    let cluster = d3.cluster().size([this.props.height, this.props.width - 100]);
     clusterFlip(tree)(this.root);
   }
 
