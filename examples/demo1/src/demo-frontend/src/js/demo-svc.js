@@ -225,11 +225,11 @@ function defaultUserInfo2(address, defaultLocation) {
 }
 
 function updateUserInfo(address, data) {
-    if (address == "ue1-iperf") {
+    if (address == "ue1") {
         $('#demo-svc-loc-serv-address-1').text(data.address);
         $('#demo-svc-loc-serv-location-1').text(data.zoneId + " / " + data.accessPointId);
     }
-    if (address == "ue2-svc") {
+    if (address == "ue2-ext") {
         $('#demo-svc-loc-serv-address-2').text(data.address);
         $('#demo-svc-loc-serv-location-2').text(data.zoneId + " / " + data.accessPointId);
     }
@@ -267,13 +267,13 @@ function initializeUI() {
 
     targetedUeAppNameDialogTextfield1 = new mdc.textField.MDCTextField(document.querySelector('#targeted-ue-app-name-1-tf-div'));
     //setting a default value for now
-    targetedUeAppNameDialogTextfield1.value = "ue1-iperf";
+    targetedUeAppNameDialogTextfield1.value = "ue1";
     targetedUeAppNameDialogTextfield1.valid = true;
     $('#targeted-ue-app-name-1-tf-div').hide();
 
     targetedUeAppNameDialogTextfield2 = new mdc.textField.MDCTextField(document.querySelector('#targeted-ue-app-name-2-tf-div'));
     //setting a default value for now
-    targetedUeAppNameDialogTextfield2.value = "ue2-svc";
+    targetedUeAppNameDialogTextfield2.value = "ue2-ext";
     targetedUeAppNameDialogTextfield2.valid = true;
     $('#targeted-ue-app-name-2-tf-div').hide();
 
@@ -281,8 +281,8 @@ function initializeUI() {
     //and this app only tracks notifications, not queries where they are located
     //a work-around would be to have the demo-server do a get for the location knowing it is registering for the event, and then fake
     //a notification to trigger the app
-    defaultUserInfo1("ue1-iperf", "zone1 / zone1-poa1")
-    defaultUserInfo2("ue2-svc", "zone1 / zone1-poa1")
+    defaultUserInfo1("ue1", "zone1 / zone1-poa1")
+    defaultUserInfo2("ue2-ext", "zone1 / zone1-poa1")
 
 
     iperfBwDialogTextfield = new mdc.textField.MDCTextField(document.querySelector('#iperf-bw-tf-div'));

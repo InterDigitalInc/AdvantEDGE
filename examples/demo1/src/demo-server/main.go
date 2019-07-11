@@ -37,8 +37,8 @@ func main() {
         methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
         header := handlers.AllowedHeaders([]string{"content-type"})
 
-	registerLocServ("ue2-svc")
-	registerLocServ("ue1-iperf")
+	registerLocServ("ue2-ext")
+	registerLocServ("ue1")
 
         http.ListenAndServe(":80", handlers.CORS(methods, header)(router))
 }

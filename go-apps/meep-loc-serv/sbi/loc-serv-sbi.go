@@ -127,21 +127,17 @@ func parseScenario(scenario ceModel.Scenario) {
 				// Parse Physical locations
 				for _, pl := range nl.PhysicalLocations {
 
-					// Parse Processes
-					for _, proc := range pl.Processes {
-
-						switch pl.Type_ {
-						case "UE":
-							updateUserInfoCB(proc.Name, zone.Name, nl.Name)
-							nbApUsers++
-						default:
-						}
+					switch pl.Type_ {
+					case "UE":
+						updateUserInfoCB(pl.Name, zone.Name, nl.Name)
+						nbApUsers++
+					default:
 					}
 				}
 
 				switch nl.Type_ {
 				case "POA":
-					updateAccessPointInfoCB(zone.Name, nl.Name, "WIFI", "SERVICEABLE", nbApUsers)
+					updateAccessPointInfoCB(zone.Name, nl.Name, "UNKNOWN", "SERVICEABLE", nbApUsers)
 					nbAccessPoints++
 					nbZoneUsers += nbApUsers
 				default:
