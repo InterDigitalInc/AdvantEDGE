@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-metrics-engine.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "meep-metrics-engine.name" . }}
+    chart: {{ template "meep-metrics-engine.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-metrics-engine.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ template "meep-metrics-engine.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      {{- if .Values.codecov.enabled}}
+      volumes:
+        - name: codecov-storage
+          persistentVolumeClaim:
+            claimName: meep-metrics-engine-codecov-pvc
+      {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.codecov.enabled}}
+          command: [ "/meep-metrics-engine" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-metrics-engine.out", "__DEVEL--code-cov" ]
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          {{- if .Values.codecov.enabled}}
+          volumeMounts:
+          - name: codecov-storage
+            mountPath: /codecov
+          {{- end}}
+              

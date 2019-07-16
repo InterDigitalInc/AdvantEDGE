@@ -438,6 +438,7 @@ func callPing() {
 			name := pod.name
 			dst := destination{
 				host:       pod.ipAddr,
+				hostName:   podName,
 				remote:     &ipaddr,
 				remoteName: name,
 				ifbNumber:  pod.IfbNumber,

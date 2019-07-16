@@ -76,6 +76,7 @@ func deleteCore(cobraCmd *cobra.Command) {
 	k8sDelete("meep-tc-engine", cobraCmd)
 	k8sDelete("meep-mon-engine", cobraCmd)
 	k8sDelete("meep-loc-serv", cobraCmd)
+	k8sDelete("meep-metrics-engine", cobraCmd)
 	k8sDelete("meep-ctrl-engine", cobraCmd)
 	deleteMeepUserAccount(cobraCmd)
 }

@@ -35,6 +35,7 @@ type historyRx struct {
 
 type destination struct {
 	host       string
+	hostName   string
 	remote     *net.IPAddr
 	remoteName string
 	ifbNumber  string
@@ -130,9 +131,11 @@ func (u *destination) compute() (st stat) {
 	// log.Info("Measurements log for ", u.remote, " : ", st.last, ", avg: ", st.mean)
 	log.WithFields(logrus.Fields{
 		"meep.component":              "sidecar",
+		"meep.sidecar.msgType":        "latency",
 		"meep.sidecar.latency-latest": st.last / 1000000,
 		"meep.sidecar.latency-avg":    st.mean / 1000000,
-		"meep.sidecar.latency-dest":   u.remoteName,
+		"meep.sidecar.src":            u.hostName,
+		"meep.sidecar.dest":           u.remoteName,
 	}).Info("Measurements log")
 
 	return
@@ -213,7 +216,9 @@ func (u *destination) processRxTx() {
 
 	log.WithFields(logrus.Fields{
 		"meep.component":             "sidecar",
-		"meep.sidecar.pod-dest":      u.remoteName,
+		"meep.sidecar.msgType":       "ingressPacketStats",
+		"meep.sidecar.src":           u.hostName,
+		"meep.sidecar.dest":          u.remoteName,
 		"meep.sidecar.rx":            rcvedPkts,
 		"meep.sidecar.rxd":           droppedPkts,
 		"meep.sidecar.rxBytes":       rcvedBytes,
