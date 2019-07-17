@@ -11,10 +11,11 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 	"fmt"
-	"net/http"
 	"io"
+	"net/http"
+	"net/url"
+
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	"github.com/gorilla/mux"
 	"github.com/olivere/elastic"
@@ -22,16 +23,25 @@ import (
 
 type LogDataResponse struct {
 	Msg       string `json:"msg"`
-	MsgType   string `json:"meep.sidecar.msgType"`
-	Src       string `json:"meep.sidecar.src"`
-	Dest      string `json:"meep.sidecar.dest"`
+	MsgType   string `json:"meep.log.msgType"`
+	Src       string `json:"meep.log.src"`
+	Dest      string `json:"meep.log.dest"`
 	Timestamp string `json:"@timestamp"`
 
-	Rx         int32   `json:"meep.sidecar.rx"`
-	RxBytes    int32   `json:"meep.sidecar.rxBytes"`
-	PacketLoss string  `json:"meep.sidecar.packet-loss"`
-	Latency    int32   `json:"meep.sidecar.latency-latest"`
-	Throughput float32 `json:"meep.sidecar.throughput"`
+	/*** specific fields for all message types
+
+	/*** ingressPacketStats ***/
+	Rx         int32   `json:"meep.log.rx"`
+	RxBytes    int32   `json:"meep.log.rxBytes"`
+	PacketLoss string  `json:"meep.log.packet-loss"`
+	Throughput float32 `json:"meep.log.throughput"`
+
+	/*** latency ***/
+	Latency int32 `json:"meep.log.latency-latest"`
+
+	/*** mobilityEvent ***/
+	NewPoa string `json:"meep.log.newPoa"`
+	OldPoa string `json:"meep.log.oldPoa"`
 }
 
 // Init - Location Service initialization
@@ -74,22 +84,22 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 
 	bq = bq.Must(elastic.NewTermQuery("msg", "Measurements log"))
 	if msgType != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.sidecar.msgType", msgType))
+		bq = bq.Must(elastic.NewTermQuery("meep.log.msgType", msgType))
 	}
 	if dst != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.sidecar.dest", dst))
+		bq = bq.Must(elastic.NewTermQuery("meep.log.dest", dst))
 	}
 	if src != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.sidecar.src", src))
+		bq = bq.Must(elastic.NewTermQuery("meep.log.src", src))
 	}
-        u, _ := url.Parse(r.URL.String())
-        q := u.Query()
-        timeBegin := q.Get("timeBegin")
-        timeEnd := q.Get("timeEnd")
+	u, _ := url.Parse(r.URL.String())
+	q := u.Query()
+	timeBegin := q.Get("timeBegin")
+	timeEnd := q.Get("timeEnd")
 
 	//default values
 	if timeBegin == "" {
-		timeBegin= "now-1m"
+		timeBegin = "now-1m"
 	}
 	if timeEnd == "" {
 		timeEnd = "now"
@@ -99,9 +109,9 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 	log.Info("Search query: ", "Measurements log", " + ", msgType, " + ", dst, " + ", src, " + ", timeBegin, " + ", timeEnd)
 
 	searchQuery := client.Scroll("filebeat*").
-		Query(bq).   // specify the query
-		Size(1000)    // take documents 0-9
-//		Pretty(true) // pretty print request and response JSON
+		Query(bq). // specify the query
+		Size(1000) // take documents 0-9
+		//		Pretty(true) // pretty print request and response JSON
 
 	docs := 0
 	pages := 0
@@ -144,40 +154,45 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 	log.Info("Total number of results: ", docs, " in ", pages, " different queries")
 	jsonResponse, err := json.Marshal(dataResponseList)
 
-        if err != nil {
-                log.Error(err.Error())
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
-        w.WriteHeader(http.StatusOK)
-        fmt.Fprintf(w, string(jsonResponse))
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func convertToDataResponse(logDataResponse *LogDataResponse) (*DataResponse) {
-	
+func convertToDataResponse(logDataResponse *LogDataResponse) *DataResponse {
+
 	if logDataResponse == nil {
 		return nil
 	}
 
 	msgType := logDataResponse.MsgType
 
-        var resp DataResponse
-        resp.DataType = msgType
-        resp.Src = logDataResponse.Src
-        resp.Dest = logDataResponse.Dest
-        resp.Timestamp = logDataResponse.Timestamp
+	var resp DataResponse
+	resp.DataType = msgType
+	resp.Src = logDataResponse.Src
+	resp.Dest = logDataResponse.Dest
+	resp.Timestamp = logDataResponse.Timestamp
 
-	switch(msgType) {
+	switch msgType {
 	case "latency":
-	        var data DataResponseData
-        	data.Latency = logDataResponse.Latency
+		var data DataResponseData
+		data.Latency = logDataResponse.Latency
 		resp.Data = &data
-	case "packetStats":
+	case "ingressPacketStats":
 		var data DataResponseData
 		data.Rx = logDataResponse.Rx
 		data.RxBytes = logDataResponse.RxBytes
 		data.Throughput = logDataResponse.Throughput
 		data.PacketLoss = logDataResponse.PacketLoss
+		resp.Data = &data
+	case "mobilityEvent":
+		var data DataResponseData
+		data.NewPoa = logDataResponse.NewPoa
+		data.OldPoa = logDataResponse.OldPoa
 		resp.Data = &data
 	default:
 	}

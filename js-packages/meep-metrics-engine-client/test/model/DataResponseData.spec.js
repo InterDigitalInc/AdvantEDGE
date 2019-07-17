@@ -86,6 +86,18 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property newPoa (base name: "newPoa")', function() {
+      // uncomment below and update the code to test the property newPoa
+      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property oldPoa (base name: "oldPoa")', function() {
+      // uncomment below and update the code to test the property oldPoa
+      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //expect(instance).to.be();
+    });
+
   });
 
 }));

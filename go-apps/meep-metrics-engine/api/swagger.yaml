@@ -304,6 +304,14 @@ definitions:
         type: "integer"
         example: 63
         description: "Latency measured betwen 2 pods in ms"
+      newPoa:
+        type: "string"
+        example: "poa1"
+        description: "New poa affected by a mobility event"
+      oldPoa:
+        type: "string"
+        example: "poa1"
+        description: "Old poa affected by a mobility event"
 parameters:
   Path.Dest:
     name: "dest"

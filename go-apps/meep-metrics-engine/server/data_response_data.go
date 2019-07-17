@@ -25,4 +25,10 @@ type DataResponseData struct {
 
 	// Latency measured betwen 2 pods in ms
 	Latency int32 `json:"latency,omitempty"`
+
+	// New poa affected by a mobility event
+	NewPoa string `json:"newPoa,omitempty"`
+
+	// Old poa affected by a mobility event
+	OldPoa string `json:"oldPoa,omitempty"`
 }

@@ -24,6 +24,7 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine/log"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
+	logrus "github.com/sirupsen/logrus"
 )
 
 const scenarioDBName = "scenarios"
@@ -848,6 +849,14 @@ func sendEventUeMobility(event Event) (string, int) {
 			return err.Error(), http.StatusNotFound
 		}
 		log.Debug("Active scenario updated with rev: ", rev)
+		log.WithFields(logrus.Fields{
+			"meep.log.component": "ctrl-engine",
+			"meep.log.msgType":   "mobilityEvent",
+			"meep.log.oldPoa":    oldNL.Name,
+			"meep.log.newPoa":    newNL.Name,
+			"meep.log.src":       ue.Name,
+			"meep.log.dest":      ue.Name,
+		}).Info("Measurements log")
 
 		// TODO in Execution Engine:
 		//    - Update any deployed location services

@@ -52,6 +52,8 @@
 
 
 
+
+
   };
 
   /**
@@ -79,6 +81,12 @@
       }
       if (data.hasOwnProperty('latency')) {
         obj['latency'] = ApiClient.convertToType(data['latency'], 'Number');
+      }
+      if (data.hasOwnProperty('newPoa')) {
+        obj['newPoa'] = ApiClient.convertToType(data['newPoa'], 'String');
+      }
+      if (data.hasOwnProperty('oldPoa')) {
+        obj['oldPoa'] = ApiClient.convertToType(data['oldPoa'], 'String');
       }
     }
     return obj;
@@ -109,6 +117,16 @@
    * @member {Number} latency
    */
   exports.prototype['latency'] = undefined;
+  /**
+   * New poa affected by a mobility event
+   * @member {String} newPoa
+   */
+  exports.prototype['newPoa'] = undefined;
+  /**
+   * Old poa affected by a mobility event
+   * @member {String} oldPoa
+   */
+  exports.prototype['oldPoa'] = undefined;
 
 
 
