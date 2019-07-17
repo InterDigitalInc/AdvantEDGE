@@ -94,8 +94,8 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 	}
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
-	timeBegin := q.Get("timeBegin")
-	timeEnd := q.Get("timeEnd")
+	timeBegin := q.Get("startTime")
+	timeEnd := q.Get("stopTime")
 
 	//default values
 	if timeBegin == "" {
