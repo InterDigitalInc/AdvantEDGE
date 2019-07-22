@@ -270,7 +270,7 @@ class ExecPageContainer extends Component {
                   <GridCell span={spanLeft}>
                     <Elevation className="component-style" z={2}>
                       <div style={{padding: 10}}>
-                        {this.props.experimental ? (<DashboardContainer />) : (<IDCVis type={TYPE_EXEC} />)}
+                        {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
                         
                       </div>
                     </Elevation>

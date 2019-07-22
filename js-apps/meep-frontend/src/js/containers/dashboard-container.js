@@ -9,6 +9,7 @@ import * as d3 from 'd3';
 
 import IDCAreaChart from './idc-area-chart';
 import IDCGraph from './idc-graph';
+import IDCAppsView from './idc-apps-view';
 
 import {
   getScenarioNodeChildren,
@@ -16,7 +17,8 @@ import {
 } from '../util/scenario-utils';
 
 import {
-  execFakeChangeSelectedDestination
+  execFakeChangeSelectedDestination,
+  execFakeAddPingBucket
 } from '../state/exec';
 
 const newDataPoint = (date) => {
@@ -150,42 +152,119 @@ class DashboardContainer extends Component {
     //     data: updateData(that.state.data)
     //   });
     // }, 1000);
+
+    this.bucketCount = 0;
+    this.dataTimer = setInterval(() => this.nextDataBucket(this.bucketCount), 1000);
+  }
+
+  componendDidUnmount() {
+    clearInterval(this.dataTimer);
+  }
+
+  nextDataBucket() {
+    this.apps = this.getRoot().descendants().filter(isApp);
+    const nbNewPings = this.apps.length*10;
+    const srcNodeIndex = () => {
+      return Math.floor((Math.random()*this.apps.length));
+    };
+
+    const destNodeIndex = (srcIdx) => {
+      // const destIdx = (srcIdx + 1 + Math.ceil(Math.random()*2)*2) % apps.length;
+      const destIdx = (srcIdx + 1 + Math.ceil((Math.random()*this.apps.length - 1))) % this.apps.length;
+      // const index = Math.floor(Math.random()*destinations.length);
+      return destIdx;
+    };
+
+    const funcs = [x => 0.2*(1 + Math.sin(x-5)), x => 0.2*(1 + Math.cos(x)), x => 0.2 * (1 + Math.random() * Math.cos(x)*Math.sin(x-12))];
+
+    const newPing = (date, i, bucketCount) => {
+      const srcIdx = srcNodeIndex();
+      const destIdx = destNodeIndex(srcIdx);
+      const delay = Math.random() + 0.2;
+
+      const amplitude = 0.2*(destIdx % 3)*(destIdx%5) + 1;
+      const frequency = 0.3*(destIdx % 3)*(destIdx%5) + 1;
+      const phase = (destIdx % 5)*(destIdx%7);
+      const x = bucketCount % 25;
+      const func = funcs[destIdx % 3];
+      const ping = {
+        src: this.apps[srcIdx].data.id,
+        dest: this.apps[destIdx].data.id,
+        date: date,
+        delay: amplitude*func((x - phase)*frequency)
+      };
+
+      return ping;
+    };
+
+    let newPings = [];
+    const now = new Date();
+    for(let i=0; i < nbNewPings; i++) {
+      newPings.push(newPing(now, i, this.bucketCount));
+    }
+
+    const dataBucket = {
+      date: now,
+      pings: newPings
+    };
+
+    this.props.addPingBucket(dataBucket);
+    this.bucketCount += 1;
   }
 
   componentWillUnmount() {
     clearInterval(this.timer);
   }
 
-  calculateDestinations() {
-    this.root = this.props.displayedScenario;
-    const data = this.root; // || this.props.displayedScenario;
-    this.root = d3.hierarchy(data, getScenarioNodeChildren);
-    const apps = this.root.descendants().filter(isApp);
-    return apps.map(a => a.data.id);
+  getRoot() {
+    return d3.hierarchy(this.props.displayedScenario, getScenarioNodeChildren);
   }
 
   render() {
-   
-    const destinations = this.calculateDestinations();
 
+    const root = this.getRoot();
+    const nodes = root.descendants();
+   
     const nbBuckets = this.props.nbBuckets || 25;
     const max = maxValue(this.props.pingBuckets);
     const min = minValue(this.props.pingBuckets);
 
+    const apps = nodes.filter(isApp);
+    const destinations = apps.map(a => a.data.id);
+    const colorRange = colorArray(destinations.length);
     const dataPoints = pingBucketsToData(this.props.pingBuckets)(nbBuckets)(destinations);
 
-    const colorRange = colorArray(destinations.length);
+    const showApps = this.props.showAppsView;
+    const span = showApps ? 6 : 12;
+
+    let graph = null;
+
+    if (showApps) {
+      graph = (
+        <IDCAppsView
+          apps={apps}
+          pingBuckets={this.props.pingBuckets}
+          colorRange={colorRange}
+          width={700}
+          height={600}
+
+          onNodeClicked={() => {}}
+        />
+      );
+    } else {
+      graph = (<IDCGraph 
+        width={1000}
+        height={600}
+      />);
+    }
+
     return (
       <Grid>
-        <GridCell span={6}>
-          <IDCGraph 
-            width={700}
-            height={600}
-            renderApps={true}
-            colorRange={colorRange}
-          />
+        <GridCell span={span}>
+          {graph}
         </GridCell>
-        <GridCell span={6}>
+
+        {showApps ? (<GridCell span={6}>
           <IDCAreaChart
             data={dataPoints}
             width={700} height={600}
@@ -194,8 +273,9 @@ class DashboardContainer extends Component {
             onKeySelected={(dest) => this.props.changeSelectedDestination(dest)}
             min={min}
             max={max}
-          />    
-        </GridCell>
+          />
+        </GridCell>) 
+          : null}
       </Grid>
       
     );
@@ -211,7 +291,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest))
+    changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
+    addPingBucket: (b) => dispatch(execFakeAddPingBucket(b))
   };
 };
 
