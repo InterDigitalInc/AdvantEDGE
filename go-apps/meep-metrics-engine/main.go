@@ -37,6 +37,7 @@ func main() {
 	log.Info("Starting Metric Engine Service")
 
 	run := true
+
 	go func() {
 		sigchan := make(chan os.Signal, 10)
 		signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
@@ -66,7 +67,7 @@ func main() {
 	count := 0
 	for {
 		if !run {
-			log.Info("Ran for", count, "seconds")
+			log.Info("Ran for ", count, " seconds")
 			break
 		}
 		time.Sleep(time.Second)

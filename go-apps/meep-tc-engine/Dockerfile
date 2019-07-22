@@ -7,4 +7,4 @@
 
 FROM debian:9.6-slim
 COPY ./meep-tc-engine /meep-tc-engine
-ENTRYPOINT /meep-tc-engine
+ENTRYPOINT ["/meep-tc-engine"]

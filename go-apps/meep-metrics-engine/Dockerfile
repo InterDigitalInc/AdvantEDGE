@@ -7,4 +7,4 @@
 
 FROM debian:9.6-slim
 COPY ./meep-metrics-engine /meep-metrics-engine
-ENTRYPOINT /meep-metrics-engine
+ENTRYPOINT ["/meep-metrics-engine"]

@@ -136,6 +136,7 @@ spec:
           subPath: elasticsearch.keystore
           readOnly: true
 {{- end }}
+      terminationGracePeriodSeconds: 5
 {{- if .Values.image.pullSecrets }}
       imagePullSecrets:
       {{- range $pullSecret := .Values.image.pullSecrets }}

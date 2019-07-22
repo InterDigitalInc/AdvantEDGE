@@ -8,4 +8,4 @@
 FROM debian:9.6-slim
 COPY ./meep-ctrl-engine /meep-ctrl-engine
 COPY ./static /static
-ENTRYPOINT /meep-ctrl-engine
+ENTRYPOINT ["/meep-ctrl-engine"]

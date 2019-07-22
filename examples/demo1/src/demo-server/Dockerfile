@@ -15,4 +15,4 @@
 FROM debian
 COPY ./demo-server /demo-server
 COPY ./static /static
-ENTRYPOINT /demo-server
+ENTRYPOINT ["/demo-server"]

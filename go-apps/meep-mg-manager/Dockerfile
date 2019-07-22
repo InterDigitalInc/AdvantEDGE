@@ -7,4 +7,4 @@
 
 FROM debian:9.6-slim
 COPY ./meep-mg-manager /meep-mg-manager
-ENTRYPOINT /meep-mg-manager
+ENTRYPOINT ["/meep-mg-manager"]

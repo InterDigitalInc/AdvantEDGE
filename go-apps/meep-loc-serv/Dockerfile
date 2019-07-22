@@ -7,4 +7,4 @@
 
 FROM debian:9.6-slim
 COPY ./meep-loc-serv /meep-loc-serv
-ENTRYPOINT /meep-loc-serv
+ENTRYPOINT ["/meep-loc-serv"]

@@ -65,7 +65,7 @@ func main() {
 	count := 0
 	for {
 		if !run {
-			log.Info("Ran for", count, "seconds")
+			log.Info("Ran for ", count, " seconds")
 			break
 		}
 		time.Sleep(time.Second)

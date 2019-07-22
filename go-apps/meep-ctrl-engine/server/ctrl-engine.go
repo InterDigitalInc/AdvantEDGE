@@ -39,7 +39,7 @@ const ALLUP = "0"
 const ATLEASTONENOTUP = "1"
 const NOUP = "2"
 
-const NB_CORE_PODS = 9 //although virt-engine is not a pod yet... it is considered as one as is appended to the list of pods
+const NB_CORE_PODS = 10 //although virt-engine is not a pod yet... it is considered as one as is appended to the list of pods
 
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
@@ -49,15 +49,16 @@ var clientServiceMapList []ClientServiceMap
 func getCorePodsList() map[string]bool {
 
 	innerMap := map[string]bool{
-		"meep-couchdb":     false,
-		"meep-ctrl-engine": false,
-		"meep-webhook":     false,
-		"meep-mg-manager":  false,
-		"meep-mon-engine":  false,
-		"meep-loc-serv":    false,
-		"meep-tc-engine":   false,
-		"meep-metricbeat":  false,
-		"virt-engine":      false,
+		"meep-couchdb":        false,
+		"meep-ctrl-engine":    false,
+		"meep-loc-serv":       false,
+		"meep-metricbeat":     false,
+		"meep-metrics-engine": false,
+		"meep-mg-manager":     false,
+		"meep-mon-engine":     false,
+		"meep-tc-engine":      false,
+		"meep-webhook":        false,
+		"virt-engine":         false,
 	}
 	return innerMap
 }
