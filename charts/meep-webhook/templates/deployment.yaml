@@ -44,6 +44,7 @@ spec:
               readOnly: true
             - name: webhook-config
               mountPath: /etc/webhook/config
+      terminationGracePeriodSeconds: 5
       volumes:
         - name: webhook-certs
           secret:
