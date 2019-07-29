@@ -61,6 +61,8 @@ type NetChar struct {
 	PacketLoss         int
 }
 
+//NextUniqueNumber is reserving 2 spaces for each unique number to apply changes starting with odd number and using even number to apply the 1st change
+//and come bask on the odd number for the next update to apply
 type NetElem struct {
 	Name             string
 	Type             string
@@ -161,6 +163,7 @@ var podCountReq = 0
 var podCount = 0
 var svcCountReq = 0
 var svcCount = 0
+var nextTransactionId = 1
 
 // Init - TC Engine initialization
 func Init() (err error) {
@@ -252,8 +255,13 @@ func processActiveScenarioUpdate() {
 		// Apply network characteristic rules
 		applyNetCharRules()
 
+		//Update the Db for state information (only transactionId for now)
+		updateDbState(nextTransactionId)
+
 		// Publish update to TC Sidecars for enforcement
-		_ = Publish(channelTcNet, "")
+		transactionIdStr := strconv.Itoa(nextTransactionId)
+		_ = Publish(channelTcNet, transactionIdStr)
+		nextTransactionId++
 	}
 }
 
@@ -797,6 +805,15 @@ func populateNetChar(nc *NetChar, latency int, latencyVariation int, latencyCorr
 	nc.PacketLoss = packetLoss
 }
 
+func updateDbState(transactionId int) {
+
+	var dbState = make(map[string]interface{})
+	dbState["transactionIdStored"] = transactionId
+
+	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
+	_ = DBSetEntry(keyName, dbState)
+}
+
 func applyNetCharRules() {
 	log.Debug("applyNetCharRules")
 
@@ -860,6 +877,13 @@ func applyNetCharRules() {
 							needUpdate = false
 						} else { //there is a difference... replace the old one
 							needUpdate = true //store the index
+							//using a convention where one odd and even number reserved for the same rule (applied and updated one)nd using one after the other
+							if storedFilterInfo.UniqueNumber%2 == 0 {
+								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber - 1
+							} else {
+								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber + 1
+							}
+
 							index = indx
 						}
 						break
@@ -878,11 +902,15 @@ func applyNetCharRules() {
 				}
 			}
 
-			if needCreate || needUpdate {
-				dstElement.NextUniqueNumber++
+			if needCreate {
+				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
+				dstElement.NextUniqueNumber += 2
 				_ = updateFilterRule(&filterInfo)
+			} else {
+				if needUpdate {
+					_ = updateFilterRule(&filterInfo)
+				}
 			}
-
 			indexToNetElemMap[j] = dstElement
 			curNetCharList[j] = dstElement
 		}
