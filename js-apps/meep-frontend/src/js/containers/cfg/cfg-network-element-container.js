@@ -186,7 +186,7 @@ const validateInt = (val) => {
 
 const validatePath = (val) => {
   /*eslint-disable */
-  if (val.match(/^.*?(?=[\^#%&$\*:<>\?\{\|\} ]).*$/)) {
+  if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
   /*eslint-enable */
     return 'Invalid characters';
   }
