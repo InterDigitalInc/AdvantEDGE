@@ -16,9 +16,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
-
-	logrus "github.com/sirupsen/logrus"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 type history struct {
@@ -129,7 +127,7 @@ func (u *destination) compute() (st stat) {
 
 	// avg is only of last 50 measurements as only the last 50 durations are kept
 	// log.Info("Measurements log for ", u.remote, " : ", st.last, ", avg: ", st.mean)
-	log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"meep.log.component":      "sidecar",
 		"meep.log.msgType":        "latency",
 		"meep.log.latency-latest": st.last / 1000000,
@@ -214,7 +212,7 @@ func (u *destination) processRxTx() {
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes
 
-	log.WithFields(logrus.Fields{
+	log.WithFields(log.Fields{
 		"meep.log.component":     "sidecar",
 		"meep.log.msgType":       "ingressPacketStats",
 		"meep.log.src":           u.hostName,

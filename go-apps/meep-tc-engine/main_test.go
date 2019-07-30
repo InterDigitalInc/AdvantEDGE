@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 // Build:

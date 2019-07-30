@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/log"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

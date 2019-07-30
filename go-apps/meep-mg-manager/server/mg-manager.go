@@ -16,8 +16,8 @@ import (
 	"strings"
 	"sync"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/log"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 

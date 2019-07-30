@@ -16,15 +16,15 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/log"
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/gorilla/handlers"
 )
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-tc-engine")
 }
 
 func main() {

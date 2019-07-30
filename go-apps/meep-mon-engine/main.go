@@ -15,12 +15,12 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-mon-engine")
 }
 
 func main() {

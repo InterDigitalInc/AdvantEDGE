@@ -22,9 +22,8 @@ import (
 	_ "github.com/go-kivik/couchdb"
 	"github.com/gorilla/mux"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
-	logrus "github.com/sirupsen/logrus"
 )
 
 const scenarioDBName = "scenarios"
@@ -850,7 +849,7 @@ func sendEventUeMobility(event Event) (string, int) {
 			return err.Error(), http.StatusNotFound
 		}
 		log.Debug("Active scenario updated with rev: ", rev)
-		log.WithFields(logrus.Fields{
+		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
 			"meep.log.msgType":   "mobilityEvent",
 			"meep.log.oldPoa":    oldNL.Name,
