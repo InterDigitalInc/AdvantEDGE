@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,15 +22,15 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.MetricsEngineServiceApi);
+    factory(root.expect, root.MeepMetricsEngineServiceRestApi);
   }
-}(this, function(expect, MetricsEngineServiceApi) {
+}(this, function(expect, MeepMetricsEngineServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new MetricsEngineServiceApi.MetricsApi();
+    instance = new MeepMetricsEngineServiceRestApi.MetricsApi();
   });
 
   var getProperty = function(object, getter, property) {
@@ -54,36 +54,6 @@
       it('should call metricsGet successfully', function(done) {
         //uncomment below and update the code to test metricsGet
         //instance.metricsGet(function(error) {
-        //  if (error) throw error;
-        //expect().to.be();
-        //});
-        done();
-      });
-    });
-    describe('metricsGetByDataType', function() {
-      it('should call metricsGetByDataType successfully', function(done) {
-        //uncomment below and update the code to test metricsGetByDataType
-        //instance.metricsGetByDataType(function(error) {
-        //  if (error) throw error;
-        //expect().to.be();
-        //});
-        done();
-      });
-    });
-    describe('metricsGetByDataTypeByDest', function() {
-      it('should call metricsGetByDataTypeByDest successfully', function(done) {
-        //uncomment below and update the code to test metricsGetByDataTypeByDest
-        //instance.metricsGetByDataTypeByDest(function(error) {
-        //  if (error) throw error;
-        //expect().to.be();
-        //});
-        done();
-      });
-    });
-    describe('metricsGetByTypeByDestBySrc', function() {
-      it('should call metricsGetByTypeByDestBySrc successfully', function(done) {
-        //uncomment below and update the code to test metricsGetByTypeByDestBySrc
-        //instance.metricsGetByTypeByDestBySrc(function(error) {
         //  if (error) throw error;
         //expect().to.be();
         //});

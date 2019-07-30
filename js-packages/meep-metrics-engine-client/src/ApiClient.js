@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,10 +22,10 @@
     module.exports = factory(require('superagent'), require('querystring'));
   } else {
     // Browser globals (root is window)
-    if (!root.MetricsEngineServiceApi) {
-      root.MetricsEngineServiceApi = {};
+    if (!root.MeepMetricsEngineServiceRestApi) {
+      root.MeepMetricsEngineServiceRestApi = {};
     }
-    root.MetricsEngineServiceApi.ApiClient = factory(root.superagent, root.querystring);
+    root.MeepMetricsEngineServiceRestApi.ApiClient = factory(root.superagent, root.querystring);
   }
 }(this, function(superagent, querystring) {
   'use strict';
@@ -46,9 +46,9 @@
     /**
      * The base URL against which to resolve every API call's (relative) path.
      * @type {String}
-     * @default http://127.0.0.1:8086/v1
+     * @default http://localhost/v1
      */
-    this.basePath = 'http://127.0.0.1:8086/v1'.replace(/\/+$/, '');
+    this.basePath = 'http://localhost/v1'.replace(/\/+$/, '');
 
     /**
      * The authentication methods to be included for all API calls.

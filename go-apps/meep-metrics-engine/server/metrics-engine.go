@@ -17,11 +17,10 @@ import (
 	"net/url"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	"github.com/gorilla/mux"
 	"github.com/olivere/elastic"
 )
 
-type LogDataResponse struct {
+type ElasticFormatedLogResponse struct {
 	Msg       string `json:"msg"`
 	MsgType   string `json:"meep.log.msgType"`
 	Src       string `json:"meep.log.src"`
@@ -50,25 +49,6 @@ func Init() (err error) {
 }
 
 func metricsGet(w http.ResponseWriter, r *http.Request) {
-	getMetrics(w, r, "*", "*", "*")
-}
-
-func metricsGetByMsgType(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	getMetrics(w, r, vars["msgType"], "*", "*")
-}
-
-func metricsGetByMsgTypeByDst(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	getMetrics(w, r, vars["msgType"], vars["dst"], "*")
-}
-
-func metricsGetByMsgTypeByDstBySrc(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	getMetrics(w, r, vars["msgType"], vars["dst"], vars["src"])
-}
-
-func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst string, src string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	client, err := elastic.NewClient(elastic.SetURL("http://meep-elasticsearch-client:9200"))
@@ -81,19 +61,26 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 
 	// Search with a term query
 	bq := elastic.NewBoolQuery()
-
 	bq = bq.Must(elastic.NewTermQuery("msg", "Measurements log"))
-	if msgType != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.log.msgType", msgType))
-	}
-	if dst != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.log.dest", dst))
-	}
-	if src != "*" {
-		bq = bq.Must(elastic.NewTermQuery("meep.log.src", src))
-	}
+
 	u, _ := url.Parse(r.URL.String())
 	q := u.Query()
+
+	msgType := q.Get("dataType")
+	if msgType != "" {
+		bq = bq.Must(elastic.NewTermQuery("meep.log.msgType", msgType))
+	}
+
+	dst := q.Get("dest")
+	if dst != "" {
+		bq = bq.Must(elastic.NewTermQuery("meep.log.dest", dst))
+	}
+
+	src := q.Get("src")
+	if src != "" {
+		bq = bq.Must(elastic.NewTermQuery("meep.log.src", src))
+	}
+
 	timeBegin := q.Get("startTime")
 	timeEnd := q.Get("stopTime")
 
@@ -116,7 +103,7 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 	docs := 0
 	pages := 0
 	print := 0
-	var dataResponseList DataResponseList
+	var logResponseList LogResponseList
 	for {
 		res, err := searchQuery.Do(context.Background())
 		if err == io.EOF {
@@ -139,60 +126,62 @@ func getMetrics(w http.ResponseWriter, r *http.Request, msgType string, dst stri
 
 		for _, hit := range res.Hits.Hits {
 			//item := make(map[string]interface{})
-			var t LogDataResponse
+			var t ElasticFormatedLogResponse
 			err := json.Unmarshal(*hit.Source, &t)
 			if err != nil {
 				log.Info("Deserialization failed")
 				//                                continue
 			}
-			dataResponse := convertToDataResponse(&t)
-			dataResponseList.DataResponse = append(dataResponseList.DataResponse, *dataResponse)
+			logResponse := convertToLogResponse(&t)
+			logResponseList.LogResponse = append(logResponseList.LogResponse, *logResponse)
 			print++
 			docs++
 		}
 	}
 	log.Info("Total number of results: ", docs, " in ", pages, " different queries")
-	jsonResponse, err := json.Marshal(dataResponseList)
+	if docs > 0 {
+		jsonResponse, err := json.Marshal(logResponseList)
 
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Fprintf(w, string(jsonResponse))
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func convertToDataResponse(logDataResponse *LogDataResponse) *DataResponse {
+func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogResponse {
 
-	if logDataResponse == nil {
+	if esLogResponse == nil {
 		return nil
 	}
 
-	msgType := logDataResponse.MsgType
+	msgType := esLogResponse.MsgType
 
-	var resp DataResponse
+	var resp LogResponse
 	resp.DataType = msgType
-	resp.Src = logDataResponse.Src
-	resp.Dest = logDataResponse.Dest
-	resp.Timestamp = logDataResponse.Timestamp
+	resp.Src = esLogResponse.Src
+	resp.Dest = esLogResponse.Dest
+	resp.Timestamp = esLogResponse.Timestamp
 
 	switch msgType {
 	case "latency":
-		var data DataResponseData
-		data.Latency = logDataResponse.Latency
+		var data LogResponseData
+		data.Latency = esLogResponse.Latency
 		resp.Data = &data
 	case "ingressPacketStats":
-		var data DataResponseData
-		data.Rx = logDataResponse.Rx
-		data.RxBytes = logDataResponse.RxBytes
-		data.Throughput = logDataResponse.Throughput
-		data.PacketLoss = logDataResponse.PacketLoss
+		var data LogResponseData
+		data.Rx = esLogResponse.Rx
+		data.RxBytes = esLogResponse.RxBytes
+		data.Throughput = esLogResponse.Throughput
+		data.PacketLoss = esLogResponse.PacketLoss
 		resp.Data = &data
 	case "mobilityEvent":
-		var data DataResponseData
-		data.NewPoa = logDataResponse.NewPoa
-		data.OldPoa = logDataResponse.OldPoa
+		var data LogResponseData
+		data.NewPoa = esLogResponse.NewPoa
+		data.OldPoa = esLogResponse.OldPoa
 		resp.Data = &data
 	default:
 	}

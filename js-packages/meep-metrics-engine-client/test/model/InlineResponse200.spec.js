@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,15 +22,15 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.MetricsEngineServiceApi);
+    factory(root.expect, root.MeepMetricsEngineServiceRestApi);
   }
-}(this, function(expect, MetricsEngineServiceApi) {
+}(this, function(expect, MeepMetricsEngineServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new MetricsEngineServiceApi.InlineResponse200();
+    instance = new MeepMetricsEngineServiceRestApi.InlineResponse200();
   });
 
   var getProperty = function(object, getter, property) {
@@ -52,13 +52,13 @@
   describe('InlineResponse200', function() {
     it('should create an instance of InlineResponse200', function() {
       // uncomment below and update the code to test InlineResponse200
-      //var instane = new MetricsEngineServiceApi.InlineResponse200();
-      //expect(instance).to.be.a(MetricsEngineServiceApi.InlineResponse200);
+      //var instane = new MeepMetricsEngineServiceRestApi.InlineResponse200();
+      //expect(instance).to.be.a(MeepMetricsEngineServiceRestApi.InlineResponse200);
     });
 
-    it('should have the property dataResponseList (base name: "dataResponseList")', function() {
-      // uncomment below and update the code to test the property dataResponseList
-      //var instane = new MetricsEngineServiceApi.InlineResponse200();
+    it('should have the property logResponseList (base name: "logResponseList")', function() {
+      // uncomment below and update the code to test the property logResponseList
+      //var instane = new MeepMetricsEngineServiceRestApi.InlineResponse200();
       //expect(instance).to.be();
     });
 

@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -16,32 +16,32 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/DataResponseData'], factory);
+    define(['ApiClient', 'model/LogResponseData'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./DataResponseData'));
+    module.exports = factory(require('../ApiClient'), require('./LogResponseData'));
   } else {
     // Browser globals (root is window)
-    if (!root.MetricsEngineServiceApi) {
-      root.MetricsEngineServiceApi = {};
+    if (!root.MeepMetricsEngineServiceRestApi) {
+      root.MeepMetricsEngineServiceRestApi = {};
     }
-    root.MetricsEngineServiceApi.DataResponse = factory(root.MetricsEngineServiceApi.ApiClient, root.MetricsEngineServiceApi.DataResponseData);
+    root.MeepMetricsEngineServiceRestApi.LogResponse = factory(root.MeepMetricsEngineServiceRestApi.ApiClient, root.MeepMetricsEngineServiceRestApi.LogResponseData);
   }
-}(this, function(ApiClient, DataResponseData) {
+}(this, function(ApiClient, LogResponseData) {
   'use strict';
 
 
 
 
   /**
-   * The DataResponse model module.
-   * @module model/DataResponse
+   * The LogResponse model module.
+   * @module model/LogResponse
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>DataResponse</code>.
-   * @alias module:model/DataResponse
+   * Constructs a new <code>LogResponse</code>.
+   * @alias module:model/LogResponse
    * @class
    * @param dest {String} Pod where the log message is taken from
    * @param dataType {String} Pod where the log message is taken from
@@ -59,11 +59,11 @@
   };
 
   /**
-   * Constructs a <code>DataResponse</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>LogResponse</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/DataResponse} obj Optional instance to populate.
-   * @return {module:model/DataResponse} The populated <code>DataResponse</code> instance.
+   * @param {module:model/LogResponse} obj Optional instance to populate.
+   * @return {module:model/LogResponse} The populated <code>LogResponse</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
@@ -82,7 +82,7 @@
         obj['timestamp'] = ApiClient.convertToType(data['timestamp'], 'String');
       }
       if (data.hasOwnProperty('data')) {
-        obj['data'] = DataResponseData.constructFromObject(data['data']);
+        obj['data'] = LogResponseData.constructFromObject(data['data']);
       }
     }
     return obj;
@@ -109,7 +109,7 @@
    */
   exports.prototype['timestamp'] = undefined;
   /**
-   * @member {module:model/DataResponseData} data
+   * @member {module:model/LogResponseData} data
    */
   exports.prototype['data'] = undefined;
 

@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,15 +22,15 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.MetricsEngineServiceApi);
+    factory(root.expect, root.MeepMetricsEngineServiceRestApi);
   }
-}(this, function(expect, MetricsEngineServiceApi) {
+}(this, function(expect, MeepMetricsEngineServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new MetricsEngineServiceApi.Dest();
+    instance = new MeepMetricsEngineServiceRestApi.LogResponseList();
   });
 
   var getProperty = function(object, getter, property) {
@@ -49,11 +49,17 @@
       object[property] = value;
   }
 
-  describe('Dest', function() {
-    it('should create an instance of Dest', function() {
-      // uncomment below and update the code to test Dest
-      //var instane = new MetricsEngineServiceApi.Dest();
-      //expect(instance).to.be.a(MetricsEngineServiceApi.Dest);
+  describe('LogResponseList', function() {
+    it('should create an instance of LogResponseList', function() {
+      // uncomment below and update the code to test LogResponseList
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseList();
+      //expect(instance).to.be.a(MeepMetricsEngineServiceRestApi.LogResponseList);
+    });
+
+    it('should have the property logResponse (base name: "logResponse")', function() {
+      // uncomment below and update the code to test the property logResponse
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseList();
+      //expect(instance).to.be();
     });
 
   });

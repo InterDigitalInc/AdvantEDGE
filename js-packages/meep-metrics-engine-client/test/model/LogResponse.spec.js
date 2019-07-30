@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,15 +22,15 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.MetricsEngineServiceApi);
+    factory(root.expect, root.MeepMetricsEngineServiceRestApi);
   }
-}(this, function(expect, MetricsEngineServiceApi) {
+}(this, function(expect, MeepMetricsEngineServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new MetricsEngineServiceApi.DataResponse();
+    instance = new MeepMetricsEngineServiceRestApi.LogResponse();
   });
 
   var getProperty = function(object, getter, property) {
@@ -49,40 +49,40 @@
       object[property] = value;
   }
 
-  describe('DataResponse', function() {
-    it('should create an instance of DataResponse', function() {
-      // uncomment below and update the code to test DataResponse
-      //var instane = new MetricsEngineServiceApi.DataResponse();
-      //expect(instance).to.be.a(MetricsEngineServiceApi.DataResponse);
+  describe('LogResponse', function() {
+    it('should create an instance of LogResponse', function() {
+      // uncomment below and update the code to test LogResponse
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
+      //expect(instance).to.be.a(MeepMetricsEngineServiceRestApi.LogResponse);
     });
 
     it('should have the property dest (base name: "dest")', function() {
       // uncomment below and update the code to test the property dest
-      //var instane = new MetricsEngineServiceApi.DataResponse();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
       //expect(instance).to.be();
     });
 
     it('should have the property dataType (base name: "dataType")', function() {
       // uncomment below and update the code to test the property dataType
-      //var instane = new MetricsEngineServiceApi.DataResponse();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
       //expect(instance).to.be();
     });
 
     it('should have the property src (base name: "src")', function() {
       // uncomment below and update the code to test the property src
-      //var instane = new MetricsEngineServiceApi.DataResponse();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
       //expect(instance).to.be();
     });
 
     it('should have the property timestamp (base name: "timestamp")', function() {
       // uncomment below and update the code to test the property timestamp
-      //var instane = new MetricsEngineServiceApi.DataResponse();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
       //expect(instance).to.be();
     });
 
     it('should have the property data (base name: "data")', function() {
       // uncomment below and update the code to test the property data
-      //var instane = new MetricsEngineServiceApi.DataResponse();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponse();
       //expect(instance).to.be();
     });
 

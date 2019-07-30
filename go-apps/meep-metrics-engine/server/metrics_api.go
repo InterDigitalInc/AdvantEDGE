@@ -16,15 +16,3 @@ import (
 func MetricsGet(w http.ResponseWriter, r *http.Request) {
 	metricsGet(w, r)
 }
-
-func MetricsGetByMsgType(w http.ResponseWriter, r *http.Request) {
-	metricsGetByMsgType(w, r)
-}
-
-func MetricsGetByMsgTypeByDst(w http.ResponseWriter, r *http.Request) {
-	metricsGetByMsgTypeByDst(w, r)
-}
-
-func MetricsGetByMsgTypeByDstBySrc(w http.ResponseWriter, r *http.Request) {
-	metricsGetByMsgTypeByDstBySrc(w, r)
-}

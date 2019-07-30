@@ -16,32 +16,32 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/LogResponseList'], factory);
+    define(['ApiClient', 'model/LogResponse'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./LogResponseList'));
+    module.exports = factory(require('../ApiClient'), require('./LogResponse'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepMetricsEngineServiceRestApi) {
       root.MeepMetricsEngineServiceRestApi = {};
     }
-    root.MeepMetricsEngineServiceRestApi.InlineResponse200 = factory(root.MeepMetricsEngineServiceRestApi.ApiClient, root.MeepMetricsEngineServiceRestApi.LogResponseList);
+    root.MeepMetricsEngineServiceRestApi.LogResponseList = factory(root.MeepMetricsEngineServiceRestApi.ApiClient, root.MeepMetricsEngineServiceRestApi.LogResponse);
   }
-}(this, function(ApiClient, LogResponseList) {
+}(this, function(ApiClient, LogResponse) {
   'use strict';
 
 
 
 
   /**
-   * The InlineResponse200 model module.
-   * @module model/InlineResponse200
+   * The LogResponseList model module.
+   * @module model/LogResponseList
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>InlineResponse200</code>.
-   * @alias module:model/InlineResponse200
+   * Constructs a new <code>LogResponseList</code>.
+   * @alias module:model/LogResponseList
    * @class
    */
   var exports = function() {
@@ -51,27 +51,27 @@
   };
 
   /**
-   * Constructs a <code>InlineResponse200</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>LogResponseList</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/InlineResponse200} obj Optional instance to populate.
-   * @return {module:model/InlineResponse200} The populated <code>InlineResponse200</code> instance.
+   * @param {module:model/LogResponseList} obj Optional instance to populate.
+   * @return {module:model/LogResponseList} The populated <code>LogResponseList</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('logResponseList')) {
-        obj['logResponseList'] = LogResponseList.constructFromObject(data['logResponseList']);
+      if (data.hasOwnProperty('logResponse')) {
+        obj['logResponse'] = ApiClient.convertToType(data['logResponse'], [LogResponse]);
       }
     }
     return obj;
   }
 
   /**
-   * @member {module:model/LogResponseList} logResponseList
+   * @member {Array.<module:model/LogResponse>} logResponse
    */
-  exports.prototype['logResponseList'] = undefined;
+  exports.prototype['logResponse'] = undefined;
 
 
 

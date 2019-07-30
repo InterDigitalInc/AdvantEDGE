@@ -1,11 +1,11 @@
 ---
 swagger: "2.0"
 info:
-  description: "This is Metrics Engine Services API"
+  description: "Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved.\
+    \ The information provided herein is the proprietary and confidential information\
+    \ of InterDigital Communications, Inc.\n"
   version: "1.0.0"
-  title: "Metrics Engine Service API"
-  termsOfService: "InterDigital Internal Only"
-host: "127.0.0.1:8086"
+  title: "MEEP Metrics Engine Service REST API"
 basePath: "/v1"
 tags:
 - name: "metrics"
@@ -21,178 +21,28 @@ paths:
     get:
       tags:
       - "metrics"
-      description: "Used to get a list of all metrics "
+      description: "Used to get a list of all metrics for a specific message type,\
+        \ destination pd and source pod combination"
       operationId: "metricsGet"
       produces:
       - "application/json"
       parameters:
-      - name: "startTime"
-        in: "query"
-        description: "Starting timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StartTime"
-        x-optionalDataType: "String"
-      - name: "stopTime"
-        in: "query"
-        description: "Ending timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StopTime"
-        x-optionalDataType: "String"
-      responses:
-        200:
-          description: "Successful response to a query regarding metrics based on\
-            \ search criteria"
-          schema:
-            $ref: "#/definitions/Inline_response_200"
-          examples:
-            application/json:
-              dataResponseList:
-                dataResponse:
-                - dest: "pod1"
-                  dataType: "latency"
-                  src: "pod2"
-                  timestamp: "2019-07-09T13:47:04.279+0000"
-                - dest: "pod2"
-                  dataType: "latency"
-                  src: "pod1"
-                  timestamp: "2019-07-09T13:47:04.379+0000"
-  /metrics/{dataType}:
-    get:
-      tags:
-      - "metrics"
-      description: "Used to get a list of all metrics for a specific message type"
-      operationId: "metricsGetByDataType"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "dataType"
-        in: "path"
-        description: "Log Message Type"
-        required: true
-        type: "string"
-        x-exportParamName: "DataType"
-      - name: "startTime"
-        in: "query"
-        description: "Starting timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StartTime"
-        x-optionalDataType: "String"
-      - name: "stopTime"
-        in: "query"
-        description: "Ending timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StopTime"
-        x-optionalDataType: "String"
-      responses:
-        200:
-          description: "Successful response to a query regarding metrics based on\
-            \ search criteria"
-          schema:
-            $ref: "#/definitions/DataResponseList"
-          examples:
-            application/json:
-              dataResponseList:
-                dataResponse:
-                - dest: "pod1"
-                  dataType: "latency"
-                  src: "pod2"
-                  timestamp: "2019-07-09T13:47:04.279+0000"
-                - dest: "pod2"
-                  dataType: "latency"
-                  src: "pod1"
-                  timestamp: "2019-07-09T13:47:04.379+0000"
-        404:
-          description: "Not found"
-        500:
-          description: "Internal server error"
-  /metrics/{dataType}/{dest}:
-    get:
-      tags:
-      - "metrics"
-      description: "Used to get a list of all metrics for a specific message type\
-        \ and destination pod combination"
-      operationId: "metricsGetByDataTypeByDest"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "dataType"
-        in: "path"
-        description: "Log Message Type"
-        required: true
-        type: "string"
-        x-exportParamName: "DataType"
       - name: "dest"
-        in: "path"
-        description: "Pod where the log message is taken from"
-        required: true
-        type: "string"
-        x-exportParamName: "Dest"
-      - name: "startTime"
         in: "query"
-        description: "Starting timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StartTime"
-        x-optionalDataType: "String"
-      - name: "stopTime"
-        in: "query"
-        description: "Ending timestamp of time range"
-        required: false
-        type: "string"
-        x-exportParamName: "StopTime"
-        x-optionalDataType: "String"
-      responses:
-        200:
-          description: "Successful response to a query regarding metrics based on\
-            \ search criteria"
-          schema:
-            $ref: "#/definitions/DataResponseList"
-          examples:
-            application/json:
-              dataResponseList:
-                dataResponse:
-                - dest: "pod1"
-                  dataType: "latency"
-                  src: "pod2"
-                  timestamp: "2019-07-09T13:47:04.279+0000"
-                - dest: "pod2"
-                  dataType: "latency"
-                  src: "pod1"
-                  timestamp: "2019-07-09T13:47:04.379+0000"
-        404:
-          description: "Not found"
-        500:
-          description: "Internal server error"
-  /metrics/{dataType}/{dest}/{src}:
-    get:
-      tags:
-      - "metrics"
-      description: "Used to get a list of all metrics for a specific message type,\
-        \ destination pd and source pod combination"
-      operationId: "metricsGetByTypeByDestBySrc"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "dest"
-        in: "path"
         description: "Pod where the log message is taken from"
-        required: true
+        required: false
         type: "string"
         x-exportParamName: "Dest"
       - name: "dataType"
-        in: "path"
+        in: "query"
         description: "Log Message Type"
-        required: true
+        required: false
         type: "string"
         x-exportParamName: "DataType"
       - name: "src"
-        in: "path"
+        in: "query"
         description: "Pod that originated the metrics logged in the message"
-        required: true
+        required: false
         type: "string"
         x-exportParamName: "Src"
       - name: "starTime"
@@ -214,11 +64,11 @@ paths:
           description: "Successful response to a query regarding metrics based on\
             \ search criteria"
           schema:
-            $ref: "#/definitions/DataResponseList"
+            $ref: "#/definitions/LogResponseList"
           examples:
             application/json:
-              dataResponseList:
-                dataResponse:
+              logResponseList:
+                logResponse:
                 - dest: "pod1"
                   dataType: "latency"
                   src: "pod2"
@@ -232,19 +82,7 @@ paths:
         500:
           description: "Internal server error"
 definitions:
-  Dest:
-    type: "string"
-    description: "Pod where the log message is taken from"
-    example: "node1 or XYZ"
-  DataType:
-    type: "string"
-    description: "Log message type/category"
-    example: "latency"
-  Src:
-    type: "string"
-    description: "Pod that originated the metrics logged in the message"
-    example: "node1 or XYZ"
-  DataResponse:
+  LogResponse:
     type: "object"
     required:
     - "dataType"
@@ -269,19 +107,19 @@ definitions:
         example: "2019-07-09T13:47:03.279Z"
         description: "System time at which the metric was logged"
       data:
-        $ref: "#/definitions/DataResponse_data"
-  DataResponseList:
+        $ref: "#/definitions/LogResponse_data"
+  LogResponseList:
     type: "object"
     properties:
-      dataResponse:
+      logResponse:
         type: "array"
         items:
-          $ref: "#/definitions/DataResponse"
+          $ref: "#/definitions/LogResponse"
   Inline_response_200:
     properties:
-      dataResponseList:
-        $ref: "#/definitions/DataResponseList"
-  DataResponse_data:
+      logResponseList:
+        $ref: "#/definitions/LogResponseList"
+  LogResponse_data:
     properties:
       rx:
         type: "integer"
@@ -313,24 +151,30 @@ definitions:
         example: "poa1"
         description: "Old poa affected by a mobility event"
 parameters:
-  Path.Dest:
+  Query.Dest:
     name: "dest"
-    in: "path"
+    in: "query"
     description: "Pod where the log message is taken from"
-    required: true
+    required: false
     type: "string"
-  Path.DataType:
+    x-exportParamName: "Dest"
+    x-optionalDataType: "String"
+  Query.DataType:
     name: "dataType"
-    in: "path"
+    in: "query"
     description: "Log message type/category"
-    required: true
+    required: false
     type: "string"
-  Path.Src:
+    x-exportParamName: "DataType"
+    x-optionalDataType: "String"
+  Query.Src:
     name: "src"
-    in: "path"
+    in: "query"
     description: "Pod that originated the metrics logged in the message"
-    required: true
+    required: false
     type: "string"
+    x-exportParamName: "Src"
+    x-optionalDataType: "String"
   Query.StartTime:
     name: "startTime"
     in: "query"

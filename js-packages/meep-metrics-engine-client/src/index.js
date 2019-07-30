@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -16,23 +16,23 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/DataResponse', 'model/DataResponseData', 'model/DataResponseList', 'model/DataType', 'model/Dest', 'model/InlineResponse200', 'model/Src', 'api/MetricsApi'], factory);
+    define(['ApiClient', 'model/InlineResponse200', 'model/LogResponse', 'model/LogResponseData', 'model/LogResponseList', 'api/MetricsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/DataResponse'), require('./model/DataResponseData'), require('./model/DataResponseList'), require('./model/DataType'), require('./model/Dest'), require('./model/InlineResponse200'), require('./model/Src'), require('./api/MetricsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/InlineResponse200'), require('./model/LogResponse'), require('./model/LogResponseData'), require('./model/LogResponseList'), require('./api/MetricsApi'));
   }
-}(function(ApiClient, DataResponse, DataResponseData, DataResponseList, DataType, Dest, InlineResponse200, Src, MetricsApi) {
+}(function(ApiClient, InlineResponse200, LogResponse, LogResponseData, LogResponseList, MetricsApi) {
   'use strict';
 
   /**
-   * This_is_Metrics_Engine_Services_API.<br>
+   * Copyright__c_2019_InterDigital_Communications_Inc__All_rights_reserved__The_information_provided_herein_is_the_proprietary_and_confidential_information_of_InterDigital_Communications_Inc_.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:
    * <pre>
-   * var MetricsEngineServiceApi = require('index'); // See note below*.
-   * var xxxSvc = new MetricsEngineServiceApi.XxxApi(); // Allocate the API class we're going to use.
-   * var yyyModel = new MetricsEngineServiceApi.Yyy(); // Construct a model instance.
+   * var MeepMetricsEngineServiceRestApi = require('index'); // See note below*.
+   * var xxxSvc = new MeepMetricsEngineServiceRestApi.XxxApi(); // Allocate the API class we're going to use.
+   * var yyyModel = new MeepMetricsEngineServiceRestApi.Yyy(); // Construct a model instance.
    * yyyModel.someProperty = 'someValue';
    * ...
    * var zzz = xxxSvc.doSomething(yyyModel); // Invoke the service.
@@ -44,8 +44,8 @@
    * <p>
    * A non-AMD browser application (discouraged) might do something like this:
    * <pre>
-   * var xxxSvc = new MetricsEngineServiceApi.XxxApi(); // Allocate the API class we're going to use.
-   * var yyy = new MetricsEngineServiceApi.Yyy(); // Construct a model instance.
+   * var xxxSvc = new MeepMetricsEngineServiceRestApi.XxxApi(); // Allocate the API class we're going to use.
+   * var yyy = new MeepMetricsEngineServiceRestApi.Yyy(); // Construct a model instance.
    * yyyModel.someProperty = 'someValue';
    * ...
    * var zzz = xxxSvc.doSomething(yyyModel); // Invoke the service.
@@ -62,40 +62,25 @@
      */
     ApiClient: ApiClient,
     /**
-     * The DataResponse model constructor.
-     * @property {module:model/DataResponse}
-     */
-    DataResponse: DataResponse,
-    /**
-     * The DataResponseData model constructor.
-     * @property {module:model/DataResponseData}
-     */
-    DataResponseData: DataResponseData,
-    /**
-     * The DataResponseList model constructor.
-     * @property {module:model/DataResponseList}
-     */
-    DataResponseList: DataResponseList,
-    /**
-     * The DataType model constructor.
-     * @property {module:model/DataType}
-     */
-    DataType: DataType,
-    /**
-     * The Dest model constructor.
-     * @property {module:model/Dest}
-     */
-    Dest: Dest,
-    /**
      * The InlineResponse200 model constructor.
      * @property {module:model/InlineResponse200}
      */
     InlineResponse200: InlineResponse200,
     /**
-     * The Src model constructor.
-     * @property {module:model/Src}
+     * The LogResponse model constructor.
+     * @property {module:model/LogResponse}
      */
-    Src: Src,
+    LogResponse: LogResponse,
+    /**
+     * The LogResponseData model constructor.
+     * @property {module:model/LogResponseData}
+     */
+    LogResponseData: LogResponseData,
+    /**
+     * The LogResponseList model constructor.
+     * @property {module:model/LogResponseList}
+     */
+    LogResponseList: LogResponseList,
     /**
      * The MetricsApi service constructor.
      * @property {module:api/MetricsApi}

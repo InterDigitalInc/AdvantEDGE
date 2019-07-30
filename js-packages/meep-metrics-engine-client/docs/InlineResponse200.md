@@ -1,8 +1,8 @@
-# MetricsEngineServiceApi.InlineResponse200
+# MeepMetricsEngineServiceRestApi.InlineResponse200
 
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**dataResponseList** | [**DataResponseList**](DataResponseList.md) |  | [optional] 
+**logResponseList** | [**LogResponseList**](LogResponseList.md) |  | [optional] 
 
 

@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,15 +22,15 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.MetricsEngineServiceApi);
+    factory(root.expect, root.MeepMetricsEngineServiceRestApi);
   }
-}(this, function(expect, MetricsEngineServiceApi) {
+}(this, function(expect, MeepMetricsEngineServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new MetricsEngineServiceApi.DataResponseData();
+    instance = new MeepMetricsEngineServiceRestApi.LogResponseData();
   });
 
   var getProperty = function(object, getter, property) {
@@ -49,52 +49,52 @@
       object[property] = value;
   }
 
-  describe('DataResponseData', function() {
-    it('should create an instance of DataResponseData', function() {
-      // uncomment below and update the code to test DataResponseData
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
-      //expect(instance).to.be.a(MetricsEngineServiceApi.DataResponseData);
+  describe('LogResponseData', function() {
+    it('should create an instance of LogResponseData', function() {
+      // uncomment below and update the code to test LogResponseData
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
+      //expect(instance).to.be.a(MeepMetricsEngineServiceRestApi.LogResponseData);
     });
 
     it('should have the property rx (base name: "rx")', function() {
       // uncomment below and update the code to test the property rx
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property rxBytes (base name: "rxBytes")', function() {
       // uncomment below and update the code to test the property rxBytes
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property throughput (base name: "throughput")', function() {
       // uncomment below and update the code to test the property throughput
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property packetLoss (base name: "packet-loss")', function() {
       // uncomment below and update the code to test the property packetLoss
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property latency (base name: "latency")', function() {
       // uncomment below and update the code to test the property latency
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property newPoa (base name: "newPoa")', function() {
       // uncomment below and update the code to test the property newPoa
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 
     it('should have the property oldPoa (base name: "oldPoa")', function() {
       // uncomment below and update the code to test the property oldPoa
-      //var instane = new MetricsEngineServiceApi.DataResponseData();
+      //var instane = new MeepMetricsEngineServiceRestApi.LogResponseData();
       //expect(instance).to.be();
     });
 

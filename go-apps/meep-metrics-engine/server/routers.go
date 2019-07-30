@@ -60,25 +60,4 @@ var routes = Routes{
 		"/v1/metrics",
 		MetricsGet,
 	},
-
-	Route{
-		"MetricsGetByMsgType",
-		strings.ToUpper("Get"),
-		"/v1/metrics/{msgType}",
-		MetricsGetByMsgType,
-	},
-
-	Route{
-		"MetricsGetByMsgTypeByDst",
-		strings.ToUpper("Get"),
-		"/v1/metrics/{msgType}/{dst}",
-		MetricsGetByMsgTypeByDst,
-	},
-
-	Route{
-		"MetricsGetByMsgTypeByDstBySrc",
-		strings.ToUpper("Get"),
-		"/v1/metrics/{msgType}/{dst}/{src}",
-		MetricsGetByMsgTypeByDstBySrc,
-	},
 }

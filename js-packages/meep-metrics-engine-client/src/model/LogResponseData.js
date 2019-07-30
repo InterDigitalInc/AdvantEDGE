@@ -1,6 +1,6 @@
 /**
- * Metrics Engine Service API
- * This is Metrics Engine Services API
+ * MEEP Metrics Engine Service REST API
+ * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -22,10 +22,10 @@
     module.exports = factory(require('../ApiClient'));
   } else {
     // Browser globals (root is window)
-    if (!root.MetricsEngineServiceApi) {
-      root.MetricsEngineServiceApi = {};
+    if (!root.MeepMetricsEngineServiceRestApi) {
+      root.MeepMetricsEngineServiceRestApi = {};
     }
-    root.MetricsEngineServiceApi.DataResponseData = factory(root.MetricsEngineServiceApi.ApiClient);
+    root.MeepMetricsEngineServiceRestApi.LogResponseData = factory(root.MeepMetricsEngineServiceRestApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -34,14 +34,14 @@
 
 
   /**
-   * The DataResponseData model module.
-   * @module model/DataResponseData
+   * The LogResponseData model module.
+   * @module model/LogResponseData
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>DataResponseData</code>.
-   * @alias module:model/DataResponseData
+   * Constructs a new <code>LogResponseData</code>.
+   * @alias module:model/LogResponseData
    * @class
    */
   var exports = function() {
@@ -57,11 +57,11 @@
   };
 
   /**
-   * Constructs a <code>DataResponseData</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>LogResponseData</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/DataResponseData} obj Optional instance to populate.
-   * @return {module:model/DataResponseData} The populated <code>DataResponseData</code> instance.
+   * @param {module:model/LogResponseData} obj Optional instance to populate.
+   * @return {module:model/LogResponseData} The populated <code>LogResponseData</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
