@@ -7,4 +7,4 @@
 
 FROM debian
 COPY ./meep-virt-engine /meep-virt-engine
-ENTRYPOINT /meep-virt-engine
+ENTRYPOINT ["/meep-virt-engine"]

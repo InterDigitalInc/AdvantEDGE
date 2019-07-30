@@ -15,12 +15,12 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-mon-engine")
 }
 
 func main() {
@@ -59,7 +59,7 @@ func main() {
 	count := 0
 	for {
 		if !run {
-			log.Info("Ran for", count, "seconds")
+			log.Info("Ran for ", count, " seconds")
 			break
 		}
 		time.Sleep(time.Second)

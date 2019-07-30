@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	ipt "github.com/coreos/go-iptables/iptables"
 	k8s_ct "k8s.io/kubernetes/pkg/util/conntrack"
@@ -113,7 +113,7 @@ func initMeepSidecar() error {
 	var err error
 
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-tc-sidecar")
 
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
@@ -438,6 +438,7 @@ func callPing() {
 			name := pod.name
 			dst := destination{
 				host:       pod.ipAddr,
+				hostName:   podName,
 				remote:     &ipaddr,
 				remoteName: name,
 				ifbNumber:  pod.IfbNumber,

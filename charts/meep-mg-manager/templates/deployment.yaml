@@ -47,6 +47,7 @@ spec:
             mountPath: /codecov
           {{- end}}
       {{- if .Values.affinity }}
+      terminationGracePeriodSeconds: 5
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}

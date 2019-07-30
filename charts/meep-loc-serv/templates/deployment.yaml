@@ -46,4 +46,4 @@ spec:
           - name: codecov-storage
             mountPath: /codecov
           {{- end}}
-              
+      terminationGracePeriodSeconds: 5

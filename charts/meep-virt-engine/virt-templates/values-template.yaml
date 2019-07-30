@@ -35,6 +35,8 @@ deployment:
         - {{.}}
       {{- end}}
 
+  terminationGracePeriodSeconds: 5
+
   template:
     namespace: default
     labels:

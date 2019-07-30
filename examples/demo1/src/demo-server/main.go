@@ -17,6 +17,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+        "os/signal"
+        "syscall"
+        "time"
 
 	locServClient "github.com/InterDigitalInc/AdvantEDGE/locservapi"
 
@@ -32,15 +35,40 @@ func init() {
 func main() {
         log.Printf("DemoSvc App API Server started")
 
-        router := sw.NewRouter()
+        run := true
 
-        methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
-        header := handlers.AllowedHeaders([]string{"content-type"})
+        go func() {
+                sigchan := make(chan os.Signal, 10)
+                signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+                <-sigchan
+                log.Printf("Program killed !")
+                // do last actions and wait for all write operations to end
+                run = false
+        }()
 
-	registerLocServ("ue2-ext")
-	registerLocServ("ue1")
+        go func() {
+        	router := sw.NewRouter()
 
-        http.ListenAndServe(":80", handlers.CORS(methods, header)(router))
+	        methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
+	        header := handlers.AllowedHeaders([]string{"content-type"})
+
+		registerLocServ("ue2-ext")
+		registerLocServ("ue1")
+
+		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
+
+		run = false
+       }()
+
+        count := 0
+        for {
+                if !run {
+                        log.Printf("Ran for %d seconds", count)
+                        break
+                }
+                time.Sleep(time.Second)
+                count++
+        }
 }
 
 func registerLocServ(ue string) {

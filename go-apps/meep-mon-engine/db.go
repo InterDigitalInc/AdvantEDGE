@@ -10,7 +10,7 @@
 package main
 
 import (
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/go-redis/redis"
 )

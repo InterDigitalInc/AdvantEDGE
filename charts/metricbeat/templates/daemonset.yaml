@@ -108,7 +108,7 @@ spec:
 {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 6 }}
 {{- end }}
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 5
       serviceAccountName: {{ template "metricbeat.serviceAccountName" . }}
       hostNetwork: true
       tolerations:

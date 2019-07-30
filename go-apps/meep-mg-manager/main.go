@@ -16,14 +16,14 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/log"
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/gorilla/handlers"
 )
 
 func init() {
-	log.MeepJSONLogInit()
+	log.MeepJSONLogInit("meep-mg-manager")
 }
 
 func main() {
@@ -64,7 +64,7 @@ func main() {
 	count := 0
 	for {
 		if !run {
-			log.Info("Ran for", count, "seconds")
+			log.Info("Ran for ", count, " seconds")
 			break
 		}
 		time.Sleep(time.Second)

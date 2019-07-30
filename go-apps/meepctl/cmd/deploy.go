@@ -202,6 +202,10 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-loc-serv.chart")
 	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
+	repo = "meep-metrics-engine"
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-metrics-engine.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	//---
 	repo = "meep-tc-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-tc-engine.chart")
 	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)

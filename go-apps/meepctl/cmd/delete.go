@@ -69,15 +69,24 @@ Valid groups:
 }
 
 func deleteCore(cobraCmd *cobra.Command) {
-	k8sDelete("meep-virt-engine", cobraCmd)
+
+	messages := make(chan string)
+
+	go k8sDelete("meep-virt-engine", cobraCmd, messages)
+	go k8sDelete("meep-webhook", cobraCmd, messages)
+	go k8sDelete("meep-mg-manager", cobraCmd, messages)
+	go k8sDelete("meep-tc-engine", cobraCmd, messages)
+	go k8sDelete("meep-mon-engine", cobraCmd, messages)
+	go k8sDelete("meep-loc-serv", cobraCmd, messages)
+	go k8sDelete("meep-metrics-engine", cobraCmd, messages)
+	go k8sDelete("meep-ctrl-engine", cobraCmd, messages)
 	deleteVirtEngine(cobraCmd)
-	k8sDelete("meep-webhook", cobraCmd)
-	k8sDelete("meep-mg-manager", cobraCmd)
-	k8sDelete("meep-tc-engine", cobraCmd)
-	k8sDelete("meep-mon-engine", cobraCmd)
-	k8sDelete("meep-loc-serv", cobraCmd)
-	k8sDelete("meep-ctrl-engine", cobraCmd)
 	deleteMeepUserAccount(cobraCmd)
+
+	for i := 0; i < 8; i++ {
+		fmt.Println(<-messages)
+	}
+
 }
 
 func deleteVirtEngine(cobraCmd *cobra.Command) {
@@ -131,19 +140,19 @@ func deleteDep(cobraCmd *cobra.Command) {
 	go k8sDeletePvc("data-meep-elasticsearch-master-0", cobraCmd, messages)
 	go k8sDeletePvc("data-meep-elasticsearch-master-1", cobraCmd, messages)
 
-	k8sDelete("meep-redis", cobraCmd)
-	k8sDelete("meep-kube-state-metrics", cobraCmd)
-	k8sDelete("meep-metricbeat", cobraCmd)
-	k8sDelete("meep-couchdb", cobraCmd)
-	k8sDelete("meep-kibana", cobraCmd)
-	k8sDelete("meep-filebeat", cobraCmd)
-	k8sDelete("meep-curator", cobraCmd)
-	k8sDelete("meep-elasticsearch", cobraCmd)
-	k8sDelete("meep-docker-registry", cobraCmd)
+	go k8sDelete("meep-redis", cobraCmd, messages)
+	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
+	go k8sDelete("meep-metricbeat", cobraCmd, messages)
+	go k8sDelete("meep-couchdb", cobraCmd, messages)
+	go k8sDelete("meep-kibana", cobraCmd, messages)
+	go k8sDelete("meep-filebeat", cobraCmd, messages)
+	go k8sDelete("meep-curator", cobraCmd, messages)
+	go k8sDelete("meep-elasticsearch", cobraCmd, messages)
+	go k8sDelete("meep-docker-registry", cobraCmd, messages)
 
 	// Wait for all pvc delete routines to complete
 	// NOTE: Must be checked after deleting elastic
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 12; i++ {
 		fmt.Println(<-messages)
 	}
 
@@ -171,7 +180,7 @@ func init() {
 	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func k8sDelete(component string, cobraCmd *cobra.Command) {
+func k8sDelete(component string, cobraCmd *cobra.Command, messages chan string) {
 	// If release exist
 	exist, _ := utils.IsHelmRelease(component, cobraCmd)
 	if exist {
@@ -180,6 +189,9 @@ func k8sDelete(component string, cobraCmd *cobra.Command) {
 		if err != nil {
 			fmt.Println("Helm delete failed with Error: ", err)
 		}
+		messages <- "Deleted " + component
+	} else {
+		messages <- "Missing " + component
 	}
 }
 

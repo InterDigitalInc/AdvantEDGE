@@ -186,6 +186,7 @@ spec:
               name: tls-cert
               readOnly: true
 {{- end }}
+      terminationGracePeriodSeconds: 5
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}

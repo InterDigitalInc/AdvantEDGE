@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 

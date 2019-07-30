@@ -14,7 +14,7 @@ import (
 	"reflect"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mg-manager/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/KromDaniel/rejonson"
 	"github.com/go-redis/redis"

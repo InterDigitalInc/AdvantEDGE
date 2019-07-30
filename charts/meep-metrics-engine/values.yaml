@@ -1,0 +1,26 @@
+# Default values for meep-metrics-engine
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+serviceAccount: meep-metrics-engine
+
+deployment:
+  replicas: 1
+  port: 80
+  protocol: TCP
+
+image:
+  repository: meep-metrics-engine
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  targetPort: 80
+  nodePort: 30008
+
+codecov:
+  enabled: false
+
+meepOrigin: core

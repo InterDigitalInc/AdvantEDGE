@@ -239,6 +239,7 @@ spec:
 
           subPath: {{ .Values.master.persistence.subPath }}
 
+      terminationGracePeriodSeconds: 5
   {{- if not .Values.master.persistence.enabled }}
 
       volumes:

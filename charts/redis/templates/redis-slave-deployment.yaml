@@ -208,5 +208,5 @@ spec:
         resources:
 
 {{ toYaml (.Values.slave.resources | default .Values.master.resources) | indent 10 }}
-
+      terminationGracePeriodSeconds: 5
 {{- end }}

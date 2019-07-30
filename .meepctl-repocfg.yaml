@@ -53,6 +53,14 @@ repo:
         - -mod=vendor
       codecov: true
       lint: true
+    meep-metrics-engine:
+      src: go-apps/meep-metrics-engine
+      bin: bin/meep-metrics-engine
+      chart: charts/meep-metrics-engine
+      build-flags:
+        - -mod=vendor
+      codecov: true
+      lint: true
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine

@@ -14,6 +14,7 @@ import (
 )
 
 var componentName string
+type Fields map[string]interface{}
 
 func MeepTextLogInit(name string) {
 	log.SetFormatter(&log.TextFormatter{})
@@ -61,6 +62,6 @@ func Fatal(args ...interface{}) {
 	}).Fatal(args...)
 }
 
-func WithFields(fields log.Fields) *log.Entry {
-	return log.WithFields(fields)
+func WithFields(fields Fields) *log.Entry {
+	return log.WithFields(log.Fields(fields))
 }

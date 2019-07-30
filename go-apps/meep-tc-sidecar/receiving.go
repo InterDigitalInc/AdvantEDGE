@@ -13,7 +13,7 @@ import (
 	"net"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
