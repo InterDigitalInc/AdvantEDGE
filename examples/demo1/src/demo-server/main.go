@@ -55,7 +55,6 @@ func main() {
 		registerLocServ("ue2-ext")
 		registerLocServ("ue1")
 
-	        http.ListenAndServe(":80", handlers.CORS(methods, header)(router))
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
 
 		run = false
