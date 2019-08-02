@@ -333,7 +333,11 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 		return
 	}
 
-	_, _ = client.NotificationsApi.TrackingNotification(ctx, subscriptionId, notification)
+	_, err = client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 }
 
 func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.ZoneStatusNotification) {
@@ -343,7 +347,11 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 		return
 	}
 
-	_, _ = client.NotificationsApi.ZoneStatusNotification(ctx, subscriptionId, notification)
+	_, err = client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {

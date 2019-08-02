@@ -13,7 +13,7 @@ deployment:
 image:
   repository: meep-metrics-engine
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: NodePort

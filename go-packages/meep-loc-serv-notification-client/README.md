@@ -17,12 +17,12 @@ Put the package under your project folder and add the following in import:
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://172.0.0.1:8081/location/v1/*
+All URIs are relative to *http://172.0.0.1:8081/location/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*NotificationsApi* | [**TrackingNotification**](docs/NotificationsApi.md#trackingnotification) | **Post** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
-*NotificationsApi* | [**ZoneStatusNotification**](docs/NotificationsApi.md#zonestatusnotification) | **Post** /zone_status_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
+*NotificationsApi* | [**PostTrackingNotification**](docs/NotificationsApi.md#posttrackingnotification) | **Post** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+*NotificationsApi* | [**PostZoneStatusNotification**](docs/NotificationsApi.md#postzonestatusnotification) | **Post** /zone_status_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
 
 
 ## Documentation For Models
