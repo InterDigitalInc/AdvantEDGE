@@ -18,10 +18,69 @@ import {
   lineGeneratorNodes
 } from './graph-utils';
 
-import {
-  getScenarioNodeChildren
-} from '../util/scenario-utils';
+const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
+  const pings = data;
+  let m = {};
+  _.each(pings, p => {
+    if (!m[p.src]) {
+      m[p.src] = {};
+    }
+ 
+    if (!m[p.src][p.dest]) {
+      m[p.src][p.dest] = {
+        pings: []
+      };
+    }
+ 
+    const o = m[p.src][p.dest];
+    o.pings.push(p);
+  });
 
+  const apps = Object.keys(m);
+
+  console.log('m: ', m);
+ 
+  const edgesFromSource = dataAccessor => src => {
+    const rowObject = m[src];
+    if (!rowObject) {
+      return [];
+    }
+    const destinations = Object.keys(m[src]);
+
+    const edgesFromDestinations = (dest) => {
+      // To debug
+      const dataFromPing = p => {
+        if (dataAccessor(p)) {
+          console.log('Bad value!');  
+        }
+        return dataAccessor(p);
+      };
+
+      if (!d3.mean(rowObject[dest].pings, dataAccessor)) {
+        console.log('Bad value!');
+      }
+      return  {
+        src: src,
+        dest: dest,
+        count: rowObject[dest].pings.length,
+        color: colorForApp[dest],
+        avgData: d3.mean(rowObject[dest].pings, dataAccessor)
+      };
+    };
+    return _.map(destinations, edgesFromDestinations);
+  };
+
+  const outwardEdgesIfSourceSelected = e => {
+    if (selectedSource) {
+      return e.src === selectedSource;
+    } else {
+      return false;
+    }
+  };
+  const edges = _.flatMap(apps.map(edgesFromSource(dataAccessor))).filter(outwardEdgesIfSourceSelected);
+
+  return edges; 
+};
 
 const positionAppsCircle = ({apps, width, height}) => {
   const cx = width/2.0;
@@ -36,86 +95,59 @@ const positionAppsCircle = ({apps, width, height}) => {
   });
 };
 
+const edgeLabelForDataType = type => {
+  switch(type) {
+  case 'latency':
+    return 'Latency: ';
+  case 'ingressPacketStats':
+    return 'Throughput: ';
+  default:
+    return '';
+  }
+};
+
+const unitsForDataType = type => {
+  switch(type) {
+  case 'latency':
+    return 'ms';
+  case 'ingressPacketStats':
+    return 'Kbps';
+  default:
+    return '';
+  }
+};
+
+
 const IDCAppsView = (
   {
     apps,
     colorRange,
     selectedSource,
-    pingBuckets,
+    data,
+    dataAccessor,
+    dataType,
     width,
     height,
-    onNodeClicked
+    onNodeClicked,
+    colorForApp
   }
 ) => {
   
   const [positioningNeeded, setPositioningNeeded] = useState(true);
 
-  
-
-  const colorForApp = apps.reduce((res, val, i) => {
-    // res[val.data.id] = colorRange[i];
-    return {...res, [val.data.id]: colorRange[i]};
-  }, {});
-
   //if (positioningNeeded) {
-    // copyAttributesRecursive(data)(this.root);
-    positionAppsCircle({apps: apps, height: height, width: width});
-    //setPositioningNeeded(false);
+  // copyAttributesRecursive(data)(this.root);
+  positionAppsCircle({apps: apps, height: height, width: width});
+  //setPositioningNeeded(false);
   //}
-
-  const pingBucket = _.last(pingBuckets);
-
-  if (!pingBucket) {
-    return null;
-  }
 
   const appsMap = {};
   _.each(apps, a => appsMap[a.data.id] = a);
 
-  const pings = pingBucket.pings;
-  let m = {};
-  _.each(pings, p => {
-    if (!m[p.src]) {
-      m[p.src] = {};
-    }
+  const edges = edgesFromData(data.filter(dataAccessor), dataAccessor, colorForApp, selectedSource);
 
-    if (!m[p.src][p.dest]) {
-      m[p.src][p.dest] = {
-        pings: []
-      };
-    }
-
-    const o = m[p.src][p.dest];
-    o.pings.push(p);
-  });
-
-  const edges = _.flatMap(apps
-    .map((d) => {
-      const rowObject = m[d.data.id];
-      if (!rowObject) {
-        return [];
-      }
-      const destinations = Object.keys(m[d.data.id]);
-      return _.map(destinations, (dest) => {
-        return  {
-          src: d.data.id,
-          dest: dest,
-          count: rowObject[dest].pings.length,
-          color: colorForApp[dest],
-          avgLatency: d3.mean(rowObject[dest].pings, d => d.delay)
-        };
-      });
-    }
-    )
-  ).filter(e => {
-    // return nbSelected ? appsMap[e.src].selected : true;
-    // console.log(`${appsMap[e.src].data.id}:`, appsMap[e.src]);
-    if (selectedSource) {
-      return e.src === selectedSource;
-    } else {
-      return false;
-    }
-  });
+  const edgeLabel = edgeLabelForDataType(dataType);
+  const edgeUnits = unitsForDataType(dataType);
 
   const lineDefs = 
     <defs>
@@ -148,7 +180,7 @@ const IDCAppsView = (
         xlinkHref={`#textPathDef${i}`}
         startOffset={'45%'}
       >
-        {`Avg lat: ${e.avgLatency.toFixed(2)} ms`}
+        {`${edgeLabel} ${e.avgData.toFixed(2)} ${edgeUnits}`}
           
       </textPath>
     </text>

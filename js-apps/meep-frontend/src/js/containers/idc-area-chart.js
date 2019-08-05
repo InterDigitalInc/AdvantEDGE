@@ -52,7 +52,7 @@ const IDCAreaChart = props => {
 
         const amplitude = colorRange.length * (props.max - props.min);
         // const yRange = [-0.5*amplitude, 0.5*amplitude];
-        const yRange = [0, 7];
+        const yRange = [0, 400];
         const timeRange = d3.extent(data, d => new Date(d.date));
         const x = d3.scaleTime().domain(timeRange).range([0, width]);
         const y = d3.scaleLinear().domain(yRange).range([height - 50, 0]);
@@ -64,7 +64,7 @@ const IDCAreaChart = props => {
           .tickSize(0.01);
         // const yAxisr = d3.axisLeft(y);
 
-        const keys = props.destinations;
+        const keys = props.sources;
         const stack = d3.stack().keys(keys);//.offset(d3.stackOffsetSilhouette);//.order(d3.stackOrderInsideOut);
 
         const area = d3.area()

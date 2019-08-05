@@ -185,3 +185,7 @@ export const PREFIX_TERM_LINK = 'Terminal Link';
 export const id = (label) => {
   return '#' + label;
 };
+
+// Metrics engine data types
+export const LATENCY_METRICS = 'latency';
+export const THROUGHPUT_METRICS = 'latency';

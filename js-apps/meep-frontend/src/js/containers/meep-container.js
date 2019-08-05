@@ -73,7 +73,7 @@ import {
 
 // MEEP Controller REST API JS client
 // var basepath = 'http://' + location.host + location.pathname + 'v1';
-var basepath = 'http://10.3.16.73:30000/v1';
+const basepath = 'http://10.3.16.73:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -95,6 +95,8 @@ class MeepContainer extends Component {
     this.props.changeCurrentPage(PAGE_CONFIGURE);
     this.startRefreshCycle();
   }
+
+ 
 
   startRefreshCycle() {
     this.startPodsPhasesPeriodicCheck();

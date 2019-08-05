@@ -2,12 +2,15 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
+import { Elevation } from '@rmwc/elevation';
 import { Graph } from 'react-d3-graph';
 import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import * as d3 from 'd3';
+import axios from 'axios';
 
-import IDCAreaChart from './idc-area-chart';
+// import IDCAreaChart from './idc-area-chart';
+import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 
@@ -18,23 +21,9 @@ import {
 
 import {
   execFakeChangeSelectedDestination,
-  execFakeAddPingBucket
+  execChangeSourceNodeSelected,
+  execAddMetricsEpoch
 } from '../state/exec';
-
-const newDataPoint = (date) => {
-  const newDate = date || new Date();
-  const secs = newDate.getSeconds();
-  const newDateString = newDate.toString();
-  return {
-    'date':newDate,
-    'AR':Math.abs(Math.random()*Math.sin(0.05*secs)),
-    'DJ':Math.abs(Math.random()*Math.cos(0.05*secs)),
-    'MS':Math.abs(Math.random()*Math.sin(0.5*secs)),
-    'RC':Math.abs(Math.random()*Math.cos(0.1*secs)),
-    'CG':Math.abs(Math.random()*Math.sin(0.2*secs)),
-    'RI':Math.abs(Math.random()*Math.sin(3.0*secs))
-  };
-};
 
 function colorArray(dataLength) {
   const colorScale = d3.interpolateInferno;
@@ -59,71 +48,50 @@ function colorArray(dataLength) {
   return colorArray;
 }
 
-// const dataStr = '[{"date":"01/08/13","AR":0.1,"DJ":0.35,"MS":0.21,"RC":0.1,"CG":0.1,"RI":0.1},{"date":"01/09/13","AR":0.15,"DJ":0.36,"MS":0.25,"RC":0.15,"CG":0.15,"RI":0.15},{"date":"01/10/13","AR":0.35,"DJ":0.37,"MS":0.27,"RC":0.35,"CG":0.35,"RI":0.35},{"date":"01/11/13","AR":0.38,"DJ":0.22,"MS":0.23,"RC":0.38,"CG":0.38,"RI":0.38},{"date":"01/12/13","AR":0.22,"DJ":0.24,"MS":0.24,"RC":0.22,"CG":0.22,"RI":0.22},{"date":"01/13/13","AR":0.16,"DJ":0.26,"MS":0.21,"RC":0.16,"CG":0.16,"RI":0.16},{"date":"01/14/13","AR":0.07,"DJ":0.34,"MS":0.35,"RC":0.07,"CG":0.07,"RI":0.07},{"date":"01/15/13","AR":0.02,"DJ":0.21,"MS":0.39,"RC":0.02,"CG":0.02,"RI":0.02},{"date":"01/16/13","AR":0.17,"DJ":0.18,"MS":0.4,"RC":0.17,"CG":0.17,"RI":0.17},{"date":"01/17/13","AR":0.33,"DJ":0.45,"MS":0.36,"RC":0.33,"CG":0.33,"RI":0.33},{"date":"01/18/13","AR":0.4,"DJ":0.32,"MS":0.33,"RC":0.4,"CG":0.4,"RI":0.4},{"date":"01/19/13","AR":0.32,"DJ":0.35,"MS":0.43,"RC":0.32,"CG":0.32,"RI":0.32},{"date":"01/20/13","AR":0.26,"DJ":0.3,"MS":0.4,"RC":0.26,"CG":0.26,"RI":0.26},{"date":"01/21/13","AR":0.35,"DJ":0.28,"MS":0.34,"RC":0.35,"CG":0.35,"RI":0.35},{"date":"01/22/13","AR":0.4,"DJ":0.27,"MS":0.28,"RC":0.4,"CG":0.4,"RI":0.4},{"date":"01/23/13","AR":0.32,"DJ":0.26,"MS":0.26,"RC":0.32,"CG":0.32,"RI":0.32},{"date":"01/24/13","AR":0.26,"DJ":0.15,"MS":0.37,"RC":0.26,"CG":0.26,"RI":0.26},{"date":"01/25/13","AR":0.22,"DJ":0.3,"MS":0.41,"RC":0.22,"CG":0.22,"RI":0.22},{"date":"01/26/13","AR":0.16,"DJ":0.35,"MS":0.46,"RC":0.16,"CG":0.16,"RI":0.16},{"date":"01/27/13","AR":0.22,"DJ":0.42,"MS":0.47,"RC":0.22,"CG":0.22,"RI":0.22},{"date":"01/28/13","AR":0.1,"DJ":0.42,"MS":0.41,"RC":0.1,"CG":0.1,"RI":0.1}]';
-// const theData = JSON.parse(dataStr);
+const metricsBasePath = 'http://10.3.16.73:30008/v1';
 
-
-// const timeParse = d3.timeParse('%m/%d/%y');
-// const startingTime = new Date();
-// theData.forEach(function(d, i) {
-//     const interval = 1000;
-//     d.date = new Date(startingTime.getTime() + i*interval);
-// });
-
-// const recentData = end => start => dataPoint => {
-//     const dataPointMilli  = dataPoint.date.getTime();
-//     return start.getTime() <= dataPointMilli && dataPointMilli <= end.getTime();
-// };
-
-const updateData = (data) => {
-
-  let newData;
-  if (!data.length) {
-    newData = [newDataPoint()];
-  } else {
-    newData = data.slice(1).concat([newDataPoint()]);
+const dataPointFromEpochDataPoints = destinations => sourceNodeId => dataAccessor => epochDataPoints => {
+  if (!epochDataPoints.length) {
+    return null;
   }
-
-  return newData;
-};
-
-const dataPointFromBucket = keys => b => {
   let dp = {
-    date: b.date
+    date: epochDataPoints[0].timestamp
   };
 
-  const accessor = p => p.delay;
-  const avgForKey = pings => acc => key => {
-    const pingsForKeyDestination = pings.filter(p => p.dest === key);
-    const avg = d3.mean(pingsForKeyDestination, acc);
+  const avgForDest = dataPoints => acc => dest => {
+    const hasSource = src => p => p.src === src;
+    const hasDestination = dest => p => p.dest === dest;
+    
+    const dataPointsForDestSource = dataPoints
+      .filter(hasSource(sourceNodeId))
+      .filter(hasDestination(dest));
+    const avg = d3.mean(dataPointsForDestSource, acc);
     return avg;
   };
   
-  keys.forEach(k => {
-    dp[k] = avgForKey(b.pings)(accessor)(k) || 0;
+  destinations.forEach(dest => {
+    dp[dest] = avgForDest(epochDataPoints)(dataAccessor)(dest) || 0;
   });
 
   return dp;
 };
 
-const pingBucketsToData = pingBuckets => nb => keys => {
-  const buckets = pingBuckets.slice(-nb);
-  const dataPoints = buckets.map(dataPointFromBucket(keys));
+const notNull = x => x;
+const epochsToDataPoints = epochs => nb => destinations => dataAccessor => sourceNodeId => {
+  const selectedEpochs = epochs.length ? epochs.slice(-nb) : [];
+  const dataPoints = selectedEpochs.map(dataPointFromEpochDataPoints(destinations)(sourceNodeId)(dataAccessor)).filter(notNull);
   return dataPoints;
 };
 
-const maxValue = pingBuckets => {
-  const max = d3.max(pingBuckets, b => {
-    return d3.max(b.pings, p => p.delay);
-  });
-  return max;
-};
-
-const minValue = pingBuckets => {
-  const min = d3.min(pingBuckets, b => {
-    return d3.min(b.pings, p => p.delay);
-  });
-  return min;
+const dataAccessorForType = dataType => {
+  switch (dataType) {
+  case 'latency':
+    return p => p.data.latency;
+  case 'ingressPacketStats':
+    return p => p.data.throughput;
+  default:
+    return dataAccessorForType('latency');
+  }
 };
 
 class DashboardContainer extends Component {
@@ -136,84 +104,25 @@ class DashboardContainer extends Component {
   }
 
   componentDidMount() {
-
-    // Initial data
-    // let theData = [];
-    // const initialNbPoints = 25;
-    // const now = new Date();
-    // for (let i=0; i< initialNbPoints; i++) {
-    //   theData.push(newDataPoint(new Date(now.getTime() + (i - initialNbPoints)*1000)));
-    // }
-
-    // this.setState({data: theData});
-    // const that = this;
-    // this.timer = setInterval(() => {
-    //   that.setState({
-    //     data: updateData(that.state.data)
-    //   });
-    // }, 1000);
-
-    this.bucketCount = 0;
-    this.dataTimer = setInterval(() => this.nextDataBucket(this.bucketCount), 1000);
-  }
-
-  componendDidUnmount() {
-    clearInterval(this.dataTimer);
-  }
-
-  nextDataBucket() {
-    this.apps = this.getRoot().descendants().filter(isApp);
-    const nbNewPings = this.apps.length*10;
-    const srcNodeIndex = () => {
-      return Math.floor((Math.random()*this.apps.length));
+    this.epochCount = 0;
+    const nextData = () => {
+      this.epochCount += 1;
+      this.fetchMetrics();
     };
-
-    const destNodeIndex = (srcIdx) => {
-      // const destIdx = (srcIdx + 1 + Math.ceil(Math.random()*2)*2) % apps.length;
-      const destIdx = (srcIdx + 1 + Math.ceil((Math.random()*this.apps.length - 1))) % this.apps.length;
-      // const index = Math.floor(Math.random()*destinations.length);
-      return destIdx;
-    };
-
-    const funcs = [x => 0.2*(1 + Math.sin(x-5)), x => 0.2*(1 + Math.cos(x)), x => 0.2 * (1 + Math.random() * Math.cos(x)*Math.sin(x-12))];
-
-    const newPing = (date, i, bucketCount) => {
-      const srcIdx = srcNodeIndex();
-      const destIdx = destNodeIndex(srcIdx);
-      const delay = Math.random() + 0.2;
-
-      const amplitude = 0.2*(destIdx % 3)*(destIdx%5) + 1;
-      const frequency = 0.3*(destIdx % 3)*(destIdx%5) + 1;
-      const phase = (destIdx % 5)*(destIdx%7);
-      const x = bucketCount % 25;
-      const func = funcs[destIdx % 3];
-      const ping = {
-        src: this.apps[srcIdx].data.id,
-        dest: this.apps[destIdx].data.id,
-        date: date,
-        delay: amplitude*func((x - phase)*frequency)
-      };
-
-      return ping;
-    };
-
-    let newPings = [];
-    const now = new Date();
-    for(let i=0; i < nbNewPings; i++) {
-      newPings.push(newPing(now, i, this.bucketCount));
-    }
-
-    const dataBucket = {
-      date: now,
-      pings: newPings
-    };
-
-    this.props.addPingBucket(dataBucket);
-    this.bucketCount += 1;
+    this.dataTimer = setInterval(nextData, 1000);
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    clearInterval(this.dataTimer);
+  }
+
+  fetchMetrics() {
+    return axios.get(`${metricsBasePath}/metrics?startTime=now-6s&stopTime=now`)
+      .then(res => {
+        this.props.addMetricsEpoch(res.data.dataResponse || []);
+      }).catch((e) => {
+        console.log('Error while fetching metrics', e);
+      });
   }
 
   getRoot() {
@@ -221,21 +130,29 @@ class DashboardContainer extends Component {
   }
 
   render() {
-
     const root = this.getRoot();
     const nodes = root.descendants();
    
-    const nbBuckets = this.props.nbBuckets || 25;
-    const max = maxValue(this.props.pingBuckets);
-    const min = minValue(this.props.pingBuckets);
-
     const apps = nodes.filter(isApp);
     const destinations = apps.map(a => a.data.id);
     const colorRange = colorArray(destinations.length);
-    const dataPoints = pingBucketsToData(this.props.pingBuckets)(nbBuckets)(destinations);
+    const nbEpochs = 25;
+
+    const selectedNodeId = this.props.sourceNodeSelected ? this.props.sourceNodeSelected.data.id : null;
+    const dataAccessor = dataAccessorForType(this.props.dataTypeSelected);
+    const dataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(destinations)(dataAccessor)(selectedNodeId);
 
     const showApps = this.props.showAppsView;
     const span = showApps ? 6 : 12;
+
+    const colorForApp = apps.reduce((res, val, i) => {
+      // res[val.data.id] = colorRange[i];
+      return {...res, [val.data.id]: colorRange[i]};
+    }, {});
+
+    const lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : [];
+    const isDataOfType = type => dataPoint => dataPoint.dataType === type;
+    const data = lastEpoch.filter(isDataOfType(this.props.dataTypeSelected));
 
     let graph = null;
 
@@ -243,12 +160,18 @@ class DashboardContainer extends Component {
       graph = (
         <IDCAppsView
           apps={apps}
-          pingBuckets={this.props.pingBuckets}
           colorRange={colorRange}
           width={700}
           height={600}
-
-          onNodeClicked={() => {}}
+          data={data}
+          dataAccessor={dataAccessor}
+          dataType={this.props.dataTypeSelected}
+          selectedSource={selectedNodeId}
+          colorForApp={colorForApp}
+          onNodeClicked={(e) => {
+            console.log('Node clicked is: ', e.node);
+            this.props.changeSourceNodeSelected(e.node);
+          }}
         />
       );
     } else {
@@ -260,20 +183,26 @@ class DashboardContainer extends Component {
 
     return (
       <Grid>
-        <GridCell span={span}>
-          {graph}
+        <GridCell span={span} style={{marginLeft: -10}}>
+          <Elevation z={4}>
+            {graph}
+          </Elevation>
         </GridCell>
 
-        {showApps ? (<GridCell span={6}>
-          <IDCAreaChart
-            data={dataPoints}
-            width={700} height={600}
-            destinations={destinations}
-            colorRange={colorRange}
-            onKeySelected={(dest) => this.props.changeSelectedDestination(dest)}
-            min={min}
-            max={max}
-          />
+        {showApps ? (<GridCell span={6}  style={{marginRight: -10}}>
+          <Elevation z={4}>
+            <IDCLineChart
+              data={dataPoints}
+              width={700} height={600}
+              destinations={destinations}
+              colorRange={colorRange}
+              sourceSelected={this.props.sourceNodeSelected}
+              // min={min}
+              // max={max}
+              colorForApp={colorForApp}
+            />
+          </Elevation>
+          
         </GridCell>) 
           : null}
       </Grid>
@@ -284,15 +213,18 @@ class DashboardContainer extends Component {
 
 const mapStateToProps = state => {
   return {
-    pingBuckets: state.exec.fakeData.pingBuckets,
-    displayedScenario: state.exec.displayedScenario
+    displayedScenario: state.exec.displayedScenario,
+    epochs: state.exec.metrics.epochs,
+    sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
+    dataTypeSelected: state.exec.metrics.dataTypeSelected
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
-    addPingBucket: (b) => dispatch(execFakeAddPingBucket(b))
+    changeSourceNodeSelected: (src) => dispatch(execChangeSourceNodeSelected(src)),
+    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch))
   };
 };
 

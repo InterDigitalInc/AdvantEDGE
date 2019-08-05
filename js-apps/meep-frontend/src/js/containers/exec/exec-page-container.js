@@ -266,14 +266,13 @@ class ExecPageContainer extends Component {
         {this.props.exec.state.scenario !== EXEC_STATE_IDLE &&
           <>
               <Grid style={{width: '100%'}}>
-                <GridInner>
                   <GridCell span={spanLeft}>
-                    <Elevation className="component-style" z={2}>
+                    {/* <Elevation className="component-style" z={2}> */}
                       <div style={{padding: 10}}>
                         {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
                         
                       </div>
-                    </Elevation>
+                    {/* </Elevation> */}
                   </GridCell>
                   <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
                     <Elevation className="component-style" z={2}>
@@ -285,7 +284,6 @@ class ExecPageContainer extends Component {
                       />
                     </Elevation>
                   </GridCell>
-                </GridInner>
               </Grid>
           </>
         }
