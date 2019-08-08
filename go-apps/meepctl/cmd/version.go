@@ -106,6 +106,7 @@ var corePodsNameMap = []string{
 	"meep-mon-engine",
 	"meep-redis",
 	"meep-tc-engine",
+	"meep-loc-serv",
 	"metricbeat",
 }
 

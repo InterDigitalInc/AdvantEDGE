@@ -50,10 +50,10 @@
   }
 
   describe('NotificationsApi', function() {
-    describe('rcvTrackingNotification', function() {
-      it('should call rcvTrackingNotification successfully', function(done) {
-        //uncomment below and update the code to test rcvTrackingNotification
-        //instance.rcvTrackingNotification(function(error) {
+    describe('postTrackingNotification', function() {
+      it('should call postTrackingNotification successfully', function(done) {
+        //uncomment below and update the code to test postTrackingNotification
+        //instance.postTrackingNotification(function(error) {
         //  if (error) throw error;
         //expect().to.be();
         //});

@@ -32,7 +32,7 @@ Zonal or User location tracking subscription notification
 @param subscriptionId Identity of a notification subscription (user or zonal)
 @param notification Zonal or User Tracking Notification
 @return */
-func (a *NotificationsApiService) TrackingNotification(ctx context.Context, subscriptionId string, notification TrackingNotification) (*http.Response, error) {
+func (a *NotificationsApiService) PostTrackingNotification(ctx context.Context, subscriptionId string, notification TrackingNotification) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -93,7 +93,7 @@ Zone status tracking subscription notification
 @param subscriptionId Identity of a notification subscription (user or zonal)
 @param notification Zone Status Notification
 @return */
-func (a *NotificationsApiService) ZoneStatusNotification(ctx context.Context, subscriptionId string, notification ZoneStatusNotification) (*http.Response, error) {
+func (a *NotificationsApiService) PostZoneStatusNotification(ctx context.Context, subscriptionId string, notification ZoneStatusNotification) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}

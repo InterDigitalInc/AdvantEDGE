@@ -4,12 +4,12 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**rcvTrackingNotification**](NotificationsApi.md#rcvTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+[**postTrackingNotification**](NotificationsApi.md#postTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 
 
-<a name="rcvTrackingNotification"></a>
-# **rcvTrackingNotification**
-> rcvTrackingNotification(subscriptionId, notification)
+<a name="postTrackingNotification"></a>
+# **postTrackingNotification**
+> postTrackingNotification(subscriptionId, notification)
 
 This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 
@@ -33,7 +33,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.rcvTrackingNotification(subscriptionId, notification, callback);
+apiInstance.postTrackingNotification(subscriptionId, notification, callback);
 ```
 
 ### Parameters

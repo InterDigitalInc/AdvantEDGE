@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func RcvTrackingNotification(w http.ResponseWriter, r *http.Request) {
+func PostTrackingNotification(w http.ResponseWriter, r *http.Request) {
 	localDBUpdateTrackedUes(w, r)
 
 }

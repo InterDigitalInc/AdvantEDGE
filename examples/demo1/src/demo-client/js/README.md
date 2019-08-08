@@ -115,7 +115,7 @@ All URIs are relative to *http://127.0.0.1:8086/v1*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *MeepDemoAppApi.EdgeAppInfoApi* | [**getEdgeInfo**](docs/EdgeAppInfoApi.md#getEdgeInfo) | **GET** /edge-app | Retrieve edge add info
-*MeepDemoAppApi.NotificationsApi* | [**rcvTrackingNotification**](docs/NotificationsApi.md#rcvTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+*MeepDemoAppApi.NotificationsApi* | [**postTrackingNotification**](docs/NotificationsApi.md#postTrackingNotification) | **POST** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 *MeepDemoAppApi.StateTransferApi* | [**handleEvent**](docs/StateTransferApi.md#handleEvent) | **POST** /mg/event | Send event notification to registered Mobility Group Application
 *MeepDemoAppApi.UELocationApi* | [**getUeLocation**](docs/UELocationApi.md#getUeLocation) | **GET** /location/{ueId} | Retrieves the UE location values
 *MeepDemoAppApi.UEStateApi* | [**createUeState**](docs/UEStateApi.md#createUeState) | **POST** /ue/{ueId} | Registers the UE and starts a counter

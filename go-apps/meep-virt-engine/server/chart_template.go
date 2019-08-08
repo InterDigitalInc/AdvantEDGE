@@ -193,7 +193,7 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 							deploymentTemplate.Enabled = "true"
 							deploymentTemplate.ContainerName = proc.Name
 							deploymentTemplate.ContainerImageRepository = proc.Image
-							deploymentTemplate.ContainerImagePullPolicy = "IfNotPresent"
+							deploymentTemplate.ContainerImagePullPolicy = "Always"
 							setEnv(deploymentTemplate, proc.Environment)
 							setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
 							addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)

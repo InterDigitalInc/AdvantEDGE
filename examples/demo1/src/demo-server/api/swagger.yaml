@@ -194,7 +194,7 @@ paths:
         \ a callback notification towards an ME application with a zonal or user tracking\
         \ subscription"
       description: "Zonal or User location tracking subscription notification"
-      operationId: "RcvTrackingNotification"
+      operationId: "PostTrackingNotification"
       parameters:
       - name: "subscriptionId"
         in: "path"

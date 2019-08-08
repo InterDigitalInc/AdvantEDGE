@@ -48,8 +48,8 @@
 
 
     /**
-     * Callback function to receive the result of the rcvTrackingNotification operation.
-     * @callback module:api/NotificationsApi~rcvTrackingNotificationCallback
+     * Callback function to receive the result of the postTrackingNotification operation.
+     * @callback module:api/NotificationsApi~postTrackingNotificationCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -60,19 +60,19 @@
      * Zonal or User location tracking subscription notification
      * @param {String} subscriptionId Identity of a notification subscription (user or zonal)
      * @param {module:model/TrackingNotification} notification Zonal or User Tracking Notification
-     * @param {module:api/NotificationsApi~rcvTrackingNotificationCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/NotificationsApi~postTrackingNotificationCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.rcvTrackingNotification = function(subscriptionId, notification, callback) {
+    this.postTrackingNotification = function(subscriptionId, notification, callback) {
       var postBody = notification;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling rcvTrackingNotification");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling postTrackingNotification");
       }
 
       // verify the required parameter 'notification' is set
       if (notification === undefined || notification === null) {
-        throw new Error("Missing the required parameter 'notification' when calling rcvTrackingNotification");
+        throw new Error("Missing the required parameter 'notification' when calling postTrackingNotification");
       }
 
 
