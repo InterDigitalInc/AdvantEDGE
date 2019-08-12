@@ -158,6 +158,30 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property appLatency (base name: "appLatency")', function() {
+      // uncomment below and update the code to test the property appLatency
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property appLatencyVariation (base name: "appLatencyVariation")', function() {
+      // uncomment below and update the code to test the property appLatencyVariation
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property appThroughput (base name: "appThroughput")', function() {
+      // uncomment below and update the code to test the property appThroughput
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property appPacketLoss (base name: "appPacketLoss")', function() {
+      // uncomment below and update the code to test the property appPacketLoss
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
   });
 
 }));

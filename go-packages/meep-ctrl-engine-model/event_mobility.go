@@ -9,12 +9,12 @@
 
 package model
 
-// UE Mobility Event object
-type EventUeMobility struct {
+// Mobility Event object
+type EventMobility struct {
 
-	// UE identifier
-	Ue string `json:"ue,omitempty"`
+	// Source element identifier
+	Src string `json:"src,omitempty"`
 
-	// Destination identifier
+	// Destination element identifier
 	Dest string `json:"dest,omitempty"`
 }

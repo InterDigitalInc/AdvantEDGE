@@ -89,6 +89,8 @@ import {
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
   PREFIX_TERM_LINK,
+  PREFIX_LINK,
+  PREFIX_APP,
 
   // Cypress test data
   CFG_ELEM_TYPE,
@@ -569,9 +571,26 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         prefixes= {[PREFIX_TERM_LINK]}
       />
     );
+  case ELEMENT_TYPE_UE:
+  case ELEMENT_TYPE_DC:
+  case ELEMENT_TYPE_EDGE:
+  case ELEMENT_TYPE_FOG:
+    return (
+      <NCGroups
+        onUpdate={onUpdate}
+        element={element}
+        prefixes= {[PREFIX_LINK]}
+      />
+    );
   case ELEMENT_TYPE_UE_APP:
     return (
       <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes= {[PREFIX_APP]}
+        />
+        
         <Checkbox
           checked={isExternal}
           onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}
@@ -636,6 +655,12 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
   case ELEMENT_TYPE_MECSVC:
     return (
       <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes= {[PREFIX_APP]}
+        />
+
         <Checkbox
           checked={isExternal}
           onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}
@@ -703,6 +728,12 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
   case ELEMENT_TYPE_EDGE_APP:
     return (
       <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes= {[PREFIX_APP]}
+        />
+
         <Checkbox
           checked={isExternal}
           onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}

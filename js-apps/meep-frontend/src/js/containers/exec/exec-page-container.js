@@ -45,7 +45,7 @@ import {
   IDC_DIALOG_SAVE_SCENARIO,
 
   // Event types
-  UE_MOBILITY_EVENT,
+  MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
   PAGE_EXECUTE
 } from '../../state/ui';
@@ -71,7 +71,7 @@ class ExecPageContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.changeCurrentEvent(UE_MOBILITY_EVENT);
+    this.props.changeCurrentEvent(MOBILITY_EVENT);
   }
 
   /**
@@ -281,7 +281,7 @@ class ExecPageContainer extends Component {
                   <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
                     <Elevation className="component-style" z={2}>
                       <EventCreationPane
-                        eventTypes={[UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
+                        eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
                         api={this.props.api}
                         onSuccess={() => {this.props.refreshScenario();}}
                         onClose={() => this.onQuitEventCreationMode()}

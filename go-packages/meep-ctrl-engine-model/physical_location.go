@@ -33,4 +33,16 @@ type PhysicalLocation struct {
 	UserMeta map[string]string `json:"userMeta,omitempty"`
 
 	Processes []Process `json:"processes,omitempty"`
+
+	// Latency in ms between the physical location and the network (wired interface, air interface)
+	LinkLatency int32 `json:"linkLatency,omitempty"`
+
+	// Latency variation in ms between the physical location and the network (wired interface, air interface)
+	LinkLatencyVariation int32 `json:"linkLatencyVariation,omitempty"`
+
+	// The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+	LinkThroughput int32 `json:"linkThroughput,omitempty"`
+
+	// Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
+	LinkPacketLoss float64 `json:"linkPacketLoss,omitempty"`
 }

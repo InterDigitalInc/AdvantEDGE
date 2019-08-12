@@ -59,4 +59,16 @@ type Process struct {
 
 	// Key/Value Pair Map (string, string)
 	UserMeta map[string]string `json:"userMeta,omitempty"`
+
+	// Latency in ms caused by the application
+	AppLatency int32 `json:"appLatency,omitempty"`
+
+	// Latency variation in ms caused by the application
+	AppLatencyVariation int32 `json:"appLatencyVariation,omitempty"`
+
+	// The limit of the traffic supported by the application
+	AppThroughput int32 `json:"appThroughput,omitempty"`
+
+	// Packet lost (in terms of percentage) caused by the application
+	AppPacketLoss float64 `json:"appPacketLoss,omitempty"`
 }

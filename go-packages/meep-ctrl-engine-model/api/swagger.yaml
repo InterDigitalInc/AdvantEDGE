@@ -142,13 +142,13 @@ definitions:
         description: Event type
         enum:
           - NETWORK-CHARACTERISTICS-UPDATE
-          - UE-MOBILITY
+          - MOBILITY
           - POAS-IN-RANGE
           - OTHER
       eventNetworkCharacteristicsUpdate:
         $ref: '#/definitions/EventNetworkCharacteristicsUpdate'
-      eventUeMobility:
-        $ref: '#/definitions/EventUeMobility'
+      eventMobility:
+        $ref: '#/definitions/EventMobility'
       eventPoasInRange:
         $ref: '#/definitions/EventPoasInRange'
       eventOther:
@@ -156,10 +156,10 @@ definitions:
     description: Event object
     example:
       name: name
-      type: UE-MOBILITY
-      eventUeMobility:
-        ue: ue
-        dest: dest
+      type: MOBILITY
+      eventMobility:
+        src: ue1
+        dest: poa2
   EventList:
     type: object
     properties:
@@ -185,6 +185,13 @@ definitions:
           - ZONE-INTER-EDGE
           - ZONE-INTER-FOG
           - ZONE-EDGE-FOG
+          - EDGE
+          - FOG
+          - UE
+          - DISTANT-CLOUD
+          - UE-APP
+          - EDGE-APP
+          - CLOUD-APP
       latency:
         type: integer
         description: Latency in ms
@@ -217,19 +224,19 @@ definitions:
       poasInRange:
         - poa1
         - poa2
-  EventUeMobility:
+  EventMobility:
     type: object
     properties:
-      ue:
+      src:
         type: string
-        description: UE identifier
+        description: Source element identifier
       dest:
         type: string
-        description: Destination identifier
-    description: UE Mobility Event object
+        description: Destination element identifier
+    description: Mobility Event object
     example:
-      ue: ue
-      dest: dest
+      src: ue1
+      dest: poa2
   EventOther:
     type: object
     properties:
@@ -366,6 +373,19 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Process'
+      linkLatency:
+        type: integer
+        description: Latency in ms between the physical location and the network (wired interface, air interface)
+      linkLatencyVariation:
+        type: integer
+        description: Latency variation in ms between the physical location and the network (wired interface, air interface)
+      linkThroughput:
+        type: integer
+        description: The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+      linkPacketLoss:
+        type: number
+        format: double
+        description: Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
     description: Physical location object
     example: {}
   PodStatus:
@@ -511,6 +531,19 @@ definitions:
         description: Key/Value Pair Map (string, string)
         additionalProperties:
           type: string
+      appLatency:
+        type: integer
+        description: Latency in ms caused by the application
+      appLatencyVariation:
+        type: integer
+        description: Latency variation in ms caused by the application
+      appThroughput:
+        type: integer
+        description: The limit of the traffic supported by the application
+      appPacketLoss:
+        type: number
+        format: double
+        description: Packet lost (in terms of percentage) caused by the application
     description: Application or service object
     example: {}
   Release:

@@ -23,11 +23,15 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
-import { uiExecChangeCurrentEvent, UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT } from '../../state/ui';
+import { uiExecChangeCurrentEvent, MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT } from '../../state/ui';
 import {
   execChangeSelectedScenarioElement,
   execUEs,
-  execPOAs
+  execPOAs,
+  execMobTypes,
+  execEdges,
+  execFogs,
+  execZones
 } from '../../state/exec';
 
 import {
@@ -58,7 +62,7 @@ const EventTypeSelect = (props) => {
 
 const EventCreationFields = (props) => {
   switch (props.currentEvent) {
-  case UE_MOBILITY_EVENT:
+  case MOBILITY_EVENT:
     return (
       <MobilityEventPane
         element={props.element}
@@ -69,6 +73,10 @@ const EventCreationFields = (props) => {
         currentEvent={props.currentEvent}
         UEs={props.UEs}
         POAs={props.POAs}
+        EDGEs={props.EDGEs}
+        FOGs={props.FOGs}
+	ZONEs={props.ZONEs}
+        MobTypes={props.MobTypes}
       />
     );
   case NETWORK_CHARACTERISTICS_EVENT:
@@ -124,6 +132,10 @@ class EventCreationPane extends Component {
           onClose={this.props.onClose}
           UEs={this.props.UEs}
           POAs={this.props.POAs}
+          EDGEs={this.props.EDGEs}
+          FOGs={this.props.FOGs}
+	  ZONEs={this.props.ZONEs}
+          MobTypes={this.props.MobTypes}
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
@@ -151,6 +163,10 @@ const mapStateToProps = state => {
     page: state.ui.page,
     UEs: execUEs(state),
     POAs: execPOAs(state),
+    EDGEs: execEdges(state),
+    FOGs: execFogs(state),
+    ZONEs: execZones(state),
+    MobTypes: execMobTypes(state),
     table: state.exec.table,
     networkElements: state.exec.table.entries
   };

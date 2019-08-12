@@ -60,10 +60,18 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
   FIELD_LINK_THROUGPUT,
   FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   createElem,
   getElemFieldVal,
@@ -109,6 +117,14 @@ import {
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
   DEFAULT_THROUGHPUT_TERMINAL_LINK,
   DEFAULT_PACKET_LOSS_TERMINAL_LINK,
+  DEFAULT_LATENCY_LINK,
+  DEFAULT_LATENCY_JITTER_LINK,
+  DEFAULT_THROUGHPUT_LINK,
+  DEFAULT_PACKET_LOSS_LINK,
+  DEFAULT_LATENCY_APP,
+  DEFAULT_LATENCY_JITTER_APP,
+  DEFAULT_THROUGHPUT_APP,
+  DEFAULT_PACKET_LOSS_APP,
   // DEFAULT_LATENCY_DC,
 
   DOMAIN_TYPE_STR,
@@ -396,17 +412,20 @@ export function updateElementInScenario(scenario, element) {
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name === name) {
-          nl.terminalLinkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
-          nl.terminalLinkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
-          nl.terminalLinkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
-          nl.terminalLinkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+          nl.terminalLinkLatency = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY);
+          nl.terminalLinkLatencyVariation = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR);
+          nl.terminalLinkThroughput = getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT);
+          nl.terminalLinkPacketLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
           return;
         }
 
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
           if (pl.name === name) {
-            pl.isExternal = isExternal;
+            pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
+            pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
+            pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
+            pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
             return;
           }
 
@@ -489,7 +508,6 @@ export function createProcess(name, type, element) {
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
-
   var process = {
     id: name,
     name: name,
@@ -504,7 +522,11 @@ export function createProcess(name, type, element) {
     commandExe: null,
     serviceConfig: null,
     gpuConfig: null,
-    externalConfig: null
+    externalConfig: null,
+    appLatency: parseInt(DEFAULT_LATENCY_APP),
+    appLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_APP),
+    appThroughput: parseInt(DEFAULT_THROUGHPUT_APP),
+    appPacketLoss: parseInt(DEFAULT_PACKET_LOSS_APP)
   };
 
   if (isExternal) {
@@ -538,6 +560,11 @@ export function createProcess(name, type, element) {
       count: gpuCount
     };
   }
+
+  process.appLatency = getElemFieldVal(element, FIELD_APP_LATENCY);
+  process.appLatencyVariation = getElemFieldVal(element, FIELD_APP_LATENCY_VAR);
+  process.appThroughput = getElemFieldVal(element, FIELD_APP_THROUGPUT);
+  process.appPacketLoss = getElemFieldVal(element, FIELD_APP_PKT_LOSS);
 
   return process;
 }
@@ -650,10 +677,10 @@ export function createNL(name, element) {
     id: name,
     name: name,
     type: NL_TYPE_STR,
-    terminalLinkLatency: getElemFieldVal(element, FIELD_LINK_LATENCY),
-    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
-    terminalLinkThroughput: getElemFieldVal(element, FIELD_LINK_THROUGPUT),
-    terminalLinkPacketLoss: getElemFieldVal(element, FIELD_LINK_PKT_LOSS),
+    terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+    terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
+    terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
     physicalLocations: []
   };
   return nl;
@@ -670,6 +697,7 @@ export function createDefaultNL(zoneName) {
     terminalLinkThroughput: parseInt(DEFAULT_THROUGHPUT_TERMINAL_LINK),
     terminalLinkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_TERMINAL_LINK),
     physicalLocations: []
+
   };
   return nl;
 }
@@ -680,8 +708,17 @@ export function createPL(name, type, element) {
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
+    linkLatency: parseInt(DEFAULT_LATENCY_LINK),
+    linkLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_LINK),
+    linkThroughput: parseInt(DEFAULT_THROUGHPUT_LINK),
+    linkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_LINK),
     processes: []
   };
+  pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
+  pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
+  pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
+  pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+
   return pl;
 }
 
@@ -785,10 +822,10 @@ export function getElementFromScenario(scenario, elementName) {
           setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
           setElemFieldVal(elem, FIELD_PARENT, (domain.type === PUBLIC_DOMAIN_TYPE_STR) ?
             scenario.name : (zone.type === COMMON_ZONE_TYPE_STR) ? domain.name : zone.name);
-          setElemFieldVal(elem, FIELD_LINK_LATENCY, nl.terminalLinkLatency || 0);
-          setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, nl.terminalLinkLatencyVariation || 0);
-          setElemFieldVal(elem, FIELD_LINK_THROUGPUT, nl.terminalLinkThroughput || 0);
-          setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, nl.terminalLinkPacketLoss || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, nl.terminalLinkLatency || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR, nl.terminalLinkLatencyVariation || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT, nl.terminalLinkThroughput || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, nl.terminalLinkPacketLoss || 0);
           return elem;
         }
 
@@ -817,7 +854,11 @@ export function getElementFromScenario(scenario, elementName) {
             setElemFieldVal(elem, FIELD_PARENT,
               (domain.type === PUBLIC_DOMAIN_TYPE_STR) ? scenario.name :
                 (zone.type === COMMON_ZONE_TYPE_STR) ? domain.name :
-                  (nl.type === DEFAULT_NL_TYPE_STR) ? zone.name : nl.name);
+                  (nl.type === DEFAULT_NL_TYPE_STR) ? zone.name : nl.name); 
+            setElemFieldVal(elem, FIELD_LINK_LATENCY, pl.linkLatency || 0);
+            setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, pl.linkLatencyVariation || 0);
+            setElemFieldVal(elem, FIELD_LINK_THROUGPUT, pl.linkThroughput || DEFAULT_THROUGHPUT_LINK);
+            setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.linkPacketLoss || 0);
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
             return elem;
           }

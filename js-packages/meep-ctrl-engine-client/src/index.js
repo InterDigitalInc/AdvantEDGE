@@ -87,6 +87,11 @@
      */
     EventList: EventList,
     /**
+     * The EventMobility model constructor.
+     * @property {module:model/EventMobility}
+     */
+    EventMobility: EventMobility,
+    /**
      * The EventNetworkCharacteristicsUpdate model constructor.
      * @property {module:model/EventNetworkCharacteristicsUpdate}
      */
@@ -101,11 +106,6 @@
      * @property {module:model/EventPoasInRange}
      */
     EventPoasInRange: EventPoasInRange,
-    /**
-     * The EventUeMobility model constructor.
-     * @property {module:model/EventUeMobility}
-     */
-    EventUeMobility: EventUeMobility,
     /**
      * The ExternalConfig model constructor.
      * @property {module:model/ExternalConfig}

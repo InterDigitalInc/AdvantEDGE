@@ -40,11 +40,27 @@ const execUEs = createSelector([execTableElements], elems => {
   return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'UE');
 });
 
+const execMobTypes = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'));
+});
+
+const execEdges = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE');
+});
+
+const execFogs = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'FOG');
+});
+
+const execZones = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'ZONE');
+});
+
 const execPOAs = createSelector([execTableElements], elems => {
   return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'POA');
 });
 
-export { execUEs, execPOAs };
+export { execUEs, execPOAs, execMobTypes, execEdges, execFogs, execZones };
 
 const execReducer = combineReducers({
   type: typeReducer,

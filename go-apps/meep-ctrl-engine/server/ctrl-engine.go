@@ -771,6 +771,31 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 					break
 
 				}
+				// Parse Physical Locations
+				for plIndex, pl := range nl.PhysicalLocations {
+					if (elementType == "DISTANT CLOUD" || elementType == "EDGE" || elementType == "FOG" || elementType == "UE") && elementName == pl.Name {
+						netloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex]
+						netloc.LinkLatency = netChar.Latency
+						netloc.LinkLatencyVariation = netChar.LatencyVariation
+						netloc.LinkThroughput = netChar.Throughput
+						netloc.LinkPacketLoss = netChar.PacketLoss
+						elementFound = true
+						break
+					}
+					// Parse Processes
+					for procIndex, proc := range pl.Processes {
+						if (elementType == "CLOUD APPLICATION" || elementType == "EDGE APPLICATION" || elementType == "UE APPLICATION") && elementName == proc.Name {
+							netloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex].Processes[procIndex]
+							netloc.AppLatency = netChar.Latency
+							netloc.AppLatencyVariation = netChar.LatencyVariation
+							netloc.AppThroughput = netChar.Throughput
+							netloc.AppPacketLoss = netChar.PacketLoss
+							elementFound = true
+							break
+						}
+					}
+				}
+
 			}
 		}
 	}
@@ -795,7 +820,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 	return "", -1
 }
 
-func sendEventUeMobility(event Event) (string, int) {
+func sendEventMobility(event Event) (string, int) {
 
 	// Retrieve active scenario
 	var scenario Scenario
@@ -805,16 +830,16 @@ func sendEventUeMobility(event Event) (string, int) {
 	}
 
 	// Retrieve UE name and destination PoA name
-	ueName := event.EventUeMobility.Ue
-	poaName := event.EventUeMobility.Dest
+	plName := event.EventMobility.Src
+	destName := event.EventMobility.Dest
 
 	var oldNL *NetworkLocation
 	var newNL *NetworkLocation
-	var ue *PhysicalLocation
-	var ueIndex int
+	var pl *PhysicalLocation
+	var plIndex int
 
-	// Find UE & destination PoA
-	log.Debug("Searching for UE and destination PoA in active scenario")
+	// Find PL & destination element
+	log.Debug("Searching for PL ", plName, " and destination in active scenario")
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
 
@@ -825,33 +850,40 @@ func sendEventUeMobility(event Event) (string, int) {
 				nl := &zone.NetworkLocations[k]
 
 				// Destination PoA
-				if nl.Name == poaName {
+				if nl.Name == destName {
+					newNL = nl
+				}
+				//all edges are under a "default" network location element
+				if zone.Name == destName && nl.Type_ == "DEFAULT" {
 					newNL = nl
 				}
 
 				for l := range nl.PhysicalLocations {
-					pl := &nl.PhysicalLocations[l]
+					currentPl := &nl.PhysicalLocations[l]
 
 					// UE to move
-					if pl.Type_ == "UE" && pl.Name == ueName {
-						oldNL = nl
-						ue = pl
-						ueIndex = l
+					if currentPl.Name == plName {
+						if currentPl.Type_ == "UE" || currentPl.Type_ == "FOG" || currentPl.Type_ == "EDGE" {
+							oldNL = nl
+							pl = currentPl
+							plIndex = l
+						}
+
 					}
 				}
 			}
 		}
 	}
 
-	// Update UE location if necessary
-	if ue != nil && oldNL != nil && newNL != nil && oldNL != newNL {
-		log.Debug("Found UE and destination PoA. Updating UE location.")
+	// Update PL location if necessary
+	if pl != nil && oldNL != nil && newNL != nil && oldNL != newNL {
+		log.Debug("Found PL and its destination. Updating PL location.")
 
-		// Add UE to new location
-		newNL.PhysicalLocations = append(newNL.PhysicalLocations, *ue)
+		// Add PL to new location
+		newNL.PhysicalLocations = append(newNL.PhysicalLocations, *pl)
 
 		// Remove UE from old location
-		oldNL.PhysicalLocations[ueIndex] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
+		oldNL.PhysicalLocations[plIndex] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
 		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
 
 		// Store updated active scenario in DB
@@ -867,6 +899,15 @@ func sendEventUeMobility(event Event) (string, int) {
 			"meep.log.newPoa":    newNL.Name,
 			"meep.log.src":       ue.Name,
 			"meep.log.dest":      ue.Name,
+		}).Info("Measurements log")
+
+		log.WithFields(log.Fields{
+			"meep.log.component": "ctrl-engine",
+			"meep.log.msgType":   "mobilityEvent",
+			"meep.log.oldPoa":    oldNL.Name,
+			"meep.log.newPoa":    newNL.Name,
+			"meep.log.src":       plName,
+			"meep.log.dest":      plName,
 		}).Info("Measurements log")
 
 		// TODO in Execution Engine:
@@ -991,8 +1032,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	var httpStatus int
 	var error string
 	switch eventType {
-	case "UE-MOBILITY":
-		error, httpStatus = sendEventUeMobility(event)
+	case "MOBILITY":
+		error, httpStatus = sendEventMobility(event)
 	case "NETWORK-CHARACTERISTICS-UPDATE":
 		error, httpStatus = sendEventNetworkCharacteristics(event)
 	case "POAS-IN-RANGE":

@@ -44,10 +44,18 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
   FIELD_LINK_THROUGPUT,
   FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   getElemFieldVal,
   getElemFieldErr
@@ -65,7 +73,9 @@ import {
   PREFIX_INT_EDGE,
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
-  PREFIX_TERM_LINK
+  PREFIX_TERM_LINK,
+  PREFIX_LINK,
+  PREFIX_APP
 
 } from '../../meep-constants';
 
@@ -198,10 +208,22 @@ const NCGroup = ({prefix, onUpdate, element}) => {
     packetLossFieldName = FIELD_EDGE_FOG_PKT_LOSS;
     break;
   case PREFIX_TERM_LINK:
+    latencyFieldName = FIELD_TERM_LINK_LATENCY;
+    latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
+    throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+    packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
+    break;
+  case PREFIX_LINK:
     latencyFieldName = FIELD_LINK_LATENCY;
     latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
     throughputFieldName = FIELD_LINK_THROUGPUT;
     packetLossFieldName = FIELD_LINK_PKT_LOSS;
+    break;
+  case PREFIX_APP:
+    latencyFieldName = FIELD_APP_LATENCY;
+    latencyVarFieldName = FIELD_APP_LATENCY_VAR;
+    throughputFieldName = FIELD_APP_THROUGPUT;
+    packetLossFieldName = FIELD_APP_PKT_LOSS;
     break;
   default:
     return null;
