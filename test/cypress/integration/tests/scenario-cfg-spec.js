@@ -59,10 +59,10 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
-  FIELD_LINK_LATENCY,
-  FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
-  FIELD_LINK_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -497,10 +497,10 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
-      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), linkLatency);
-      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), linkLatencyVar);
-      assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
-      assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), linkThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), linkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), linkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), linkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), linkThroughput);
     });
   }
 

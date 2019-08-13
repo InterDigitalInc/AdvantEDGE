@@ -58,10 +58,10 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
-  FIELD_LINK_LATENCY,
-  FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
-  FIELD_LINK_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -203,17 +203,17 @@ describe('Scenario Execution', function() {
   }
 
   // Create a Mobility event
-  function createMobilityEvent(ue, dest) {
-    cy.log('Moving ' + ue + ' --> ' + dest);
+  function createMobilityEvent(elem, dest) {
+    cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
-    select(meep.EXEC_EVT_TYPE, states.UE_MOBILITY_EVENT);
-    select(meep.EXEC_EVT_MOB_TARGET, ue);
+    select(meep.EXEC_EVT_TYPE, states.MOBILITY_EVENT);
+    select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
     click(meep.MEEP_BTN_APPLY);
 
     // Validate event
     cy.wait(1000);
-    validateMobilityEvent(ue, dest);
+    validateMobilityEvent(elem, dest);
   }
 
   // Create a Network Characteristic event
@@ -249,9 +249,9 @@ describe('Scenario Execution', function() {
   }
 
   // Validate that new UE parent matches destination
-  function validateMobilityEvent(ue, dest) {
+  function validateMobilityEvent(elem, dest) {
     cy.window().then((win) => {
-      var entry = getEntry(win.meepStore.getState().exec.table.entries, ue);
+      var entry = getEntry(win.meepStore.getState().exec.table.entries, elem);
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), dest);
     });
@@ -295,10 +295,10 @@ describe('Scenario Execution', function() {
         assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_THROUGPUT), tp);
         break;
       case 'POA':
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), tp);
+        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
+        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
+        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
+        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
         break;
       default:
         assert.isOk(false, 'Unsupported element type');
