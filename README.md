@@ -1,4 +1,4 @@
-![AdvantEDGE-logo](./docs/images/AdvantEDGE-logo_Blue-01.png)
+![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/images/AdvantEDGE-logo_Blue-01.png)
 
 _Complete AdvantEDGE documentation is now available in the [AdvantEDGE Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki)_
 
