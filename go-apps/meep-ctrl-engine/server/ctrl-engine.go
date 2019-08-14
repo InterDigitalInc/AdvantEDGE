@@ -971,7 +971,7 @@ func sendEventMobility(event Event) (string, int) {
 		//    - Inform monitoring engine?
 
 	} else {
-		err := "Failed to find UE or destination PoA"
+		err := "Failed to find target element or destination location"
 		return err, http.StatusNotFound
 	}
 	return "", -1
