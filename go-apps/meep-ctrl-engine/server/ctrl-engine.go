@@ -829,17 +829,25 @@ func sendEventMobility(event Event) (string, int) {
 		return err.Error(), http.StatusNotFound
 	}
 
-	// Retrieve UE name and destination PoA name
-	plName := event.EventMobility.Src
+	// Retrieve target name (src) and destination parent name
+	srcName := event.EventMobility.Src
 	destName := event.EventMobility.Dest
 
 	var oldNL *NetworkLocation
+	var oldPL *PhysicalLocation
 	var newNL *NetworkLocation
+	var newPL *PhysicalLocation
 	var pl *PhysicalLocation
-	var plIndex int
+	var pr *Process
+	var index int
+
+	oldLocName := ""
+	newLocName := ""
+	isProcess := false
+	isMoveable := true
 
 	// Find PL & destination element
-	log.Debug("Searching for PL ", plName, " and destination in active scenario")
+	log.Debug("Searching for ", srcName, " and destination in active scenario")
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
 
@@ -861,31 +869,79 @@ func sendEventMobility(event Event) (string, int) {
 				for l := range nl.PhysicalLocations {
 					currentPl := &nl.PhysicalLocations[l]
 
+					// Destination Physical location
+					if currentPl.Name == destName {
+						newPL = currentPl
+					}
+
 					// UE to move
-					if currentPl.Name == plName {
+					if currentPl.Name == srcName {
 						if currentPl.Type_ == "UE" || currentPl.Type_ == "FOG" || currentPl.Type_ == "EDGE" {
 							oldNL = nl
 							pl = currentPl
-							plIndex = l
+							index = l
 						}
 
 					}
+					for p := range currentPl.Processes {
+						currentP := &currentPl.Processes[p]
+
+						// APP to move
+						if currentP.Name == srcName {
+							if currentP.Type_ == "EDGE-APP" {
+								//exception, we do not move if we are part of a mobility group
+								if currentP.ServiceConfig != nil {
+									if currentP.ServiceConfig.MeSvcName != "" {
+										//this app shouldn't be allowed to move
+										isMoveable = false
+										break
+									}
+								}
+								oldPL = currentPl
+								pr = currentP
+								index = p
+								isProcess = true
+							}
+						}
+
+					}
+
 				}
 			}
 		}
 	}
 
+	if !isMoveable {
+		//edge app cannot be moved
+		log.Debug("Edge App cannot be moved, nothing should be done")
+		err := "Edge App is part of a mobility group, it can't be moved"
+		return err, http.StatusForbidden
+	}
+
 	// Update PL location if necessary
-	if pl != nil && oldNL != nil && newNL != nil && oldNL != newNL {
-		log.Debug("Found PL and its destination. Updating PL location.")
+	if (pl != nil && oldNL != nil && newNL != nil && oldNL != newNL) ||
+		(pr != nil && oldPL != nil && newPL != nil && oldPL != newPL) {
+		log.Debug("Found src location and its destination. Updating location.")
 
-		// Add PL to new location
-		newNL.PhysicalLocations = append(newNL.PhysicalLocations, *pl)
+		if isProcess {
+			// Add Process to new location
+			newPL.Processes = append(newPL.Processes, *pr)
+			// Remove Process from old location
+			oldPL.Processes[index] = oldPL.Processes[len(oldPL.Processes)-1]
+			oldPL.Processes = oldPL.Processes[:len(oldPL.Processes)-1]
 
-		// Remove UE from old location
-		oldNL.PhysicalLocations[plIndex] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
-		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+			oldLocName = oldPL.Name
+			newLocName = newPL.Name
+		} else {
+			// Add PL to new location
+			newNL.PhysicalLocations = append(newNL.PhysicalLocations, *pl)
+			// Remove UE from old location
+			oldNL.PhysicalLocations[index] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
+			oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
 
+			oldLocName = oldNL.Name
+			newLocName = newNL.Name
+		}
 		// Store updated active scenario in DB
 		rev, err := setScenario(db, activeScenarioName, scenario)
 		if err != nil {
@@ -904,10 +960,10 @@ func sendEventMobility(event Event) (string, int) {
 		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
 			"meep.log.msgType":   "mobilityEvent",
-			"meep.log.oldPoa":    oldNL.Name,
-			"meep.log.newPoa":    newNL.Name,
-			"meep.log.src":       plName,
-			"meep.log.dest":      plName,
+			"meep.log.oldLoc":    oldLocName,
+			"meep.log.newLoc":    newLocName,
+			"meep.log.src":       srcName,
+			"meep.log.dest":      srcName,
 		}).Info("Measurements log")
 
 		// TODO in Execution Engine:
