@@ -30,7 +30,9 @@ import {
   execPOAs,
   execMobTypes,
   execEdges,
+  execEdgeApps,
   execFogs,
+  execFogEdges,
   execZones
 } from '../../state/exec';
 
@@ -77,6 +79,8 @@ const EventCreationFields = (props) => {
         FOGs={props.FOGs}
 	ZONEs={props.ZONEs}
         MobTypes={props.MobTypes}
+        FogEdges={props.FogEdges}
+        EdgeApps={props.EdgeApps}
       />
     );
   case NETWORK_CHARACTERISTICS_EVENT:
@@ -136,6 +140,8 @@ class EventCreationPane extends Component {
           FOGs={this.props.FOGs}
 	  ZONEs={this.props.ZONEs}
           MobTypes={this.props.MobTypes}
+          EdgeApps={this.props.EdgeApps}
+          FogEdges={this.props.FogEdges}
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
@@ -167,6 +173,8 @@ const mapStateToProps = state => {
     FOGs: execFogs(state),
     ZONEs: execZones(state),
     MobTypes: execMobTypes(state),
+    EdgeApps: execEdgeApps(state),
+    FogEdges: execFogEdges(state),
     table: state.exec.table,
     networkElements: state.exec.table.entries
   };

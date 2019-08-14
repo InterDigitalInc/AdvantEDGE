@@ -25,7 +25,12 @@ import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
 import { execApiResultsReducer } from './api-results';
-import { getElemFieldVal, FIELD_TYPE } from '../../util/elem-utils';
+import {
+  getElemFieldVal,
+  FIELD_GROUP,
+  FIELD_TYPE
+} from '../../util/elem-utils';
+
 
 export * from './type-reducer';
 export * from './state-reducer';
@@ -41,7 +46,15 @@ const execUEs = createSelector([execTableElements], elems => {
 });
 
 const execMobTypes = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'));
+  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' || (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' && getElemFieldVal(elem, FIELD_GROUP) === "")));
+});
+
+const execFogEdges = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'));
+});
+
+const execEdgeApps = createSelector([execTableElements], elems => {
+  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION');
 });
 
 const execEdges = createSelector([execTableElements], elems => {
@@ -60,7 +73,7 @@ const execPOAs = createSelector([execTableElements], elems => {
   return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'POA');
 });
 
-export { execUEs, execPOAs, execMobTypes, execEdges, execFogs, execZones };
+export { execUEs, execPOAs, execMobTypes, execEdges, execFogs, execZones, execEdgeApps, execFogEdges };
 
 const execReducer = combineReducers({
   type: typeReducer,

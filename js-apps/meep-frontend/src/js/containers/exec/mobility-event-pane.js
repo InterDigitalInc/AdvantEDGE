@@ -95,6 +95,7 @@ class MobilityEventPane extends Component {
     }
 
 //    let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
+    //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
     var target = this.values.eventTarget;
     var found = this.props.UEs.find(function(element) {
         return element.label == target;
@@ -116,6 +117,13 @@ class MobilityEventPane extends Component {
                 });
             if (found !== undefined) {
                 populateDestination = this.props.POAs;
+            } else {
+                found = this.props.EdgeApps.find(function(element) {
+                    return element.label == target;
+                });
+                if (found !== undefined) {
+                    populateDestination = this.props.FogEdges;
+                }
             }
         }
     }
