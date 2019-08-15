@@ -63,6 +63,14 @@ import {
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
   FIELD_TERM_LINK_PKT_LOSS,
+  FIELD_LINK_LATENCY,
+  FIELD_LINK_LATENCY_VAR,
+  FIELD_LINK_THROUGPUT,
+  FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -391,9 +399,23 @@ describe('Scenario Configuration', function() {
   // EDGE
   // ==============================
 
+  //valid for every physical locations in the other test cases too
+  let linkLatency = '2';
+  let linkLatencyVar = '3';
+  let linkPktLoss = '4';
+  let linkThroughput = '5';
+
   function addEdge(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_EDGE);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_LINK));
+    type(meep.CFG_ELEM_LATENCY, linkLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, linkThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -407,12 +429,22 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_EDGE);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), linkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), linkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), linkThroughput);
     });
   }
 
   // ==============================
   // EDGE APP
   // ==============================
+
+  //valid for every app in the other test cases too
+  let appLatency = '2';
+  let appLatencyVar = '4';
+  let appPktLoss = '5';
+  let appThroughput = '6';
 
   let edgeAppImg = 'nginx';
   let edgeAppPort = '1234';
@@ -428,6 +460,14 @@ describe('Scenario Configuration', function() {
   function addEdgeApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_EDGE_APP);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_APP));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_APP));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_APP));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_APP));
+    type(meep.CFG_ELEM_LATENCY, appLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, appLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, appPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, appThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     type(meep.CFG_ELEM_IMG, edgeAppImg);
@@ -461,6 +501,11 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), edgeAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), edgeAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), edgeAppArgs);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY), appLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
     });
   }
 
@@ -468,10 +513,10 @@ describe('Scenario Configuration', function() {
   // POA
   // ==============================
     
-  let linkLatency = '2';
-  let linkLatencyVar = '3';
-  let linkPktLoss = '4';
-  let linkThroughput = '5';
+  let termLinkLatency = '2';
+  let termLinkLatencyVar = '3';
+  let termLinkPktLoss = '4';
+  let termLinkThroughput = '5';
 
   function addPoa(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -480,12 +525,12 @@ describe('Scenario Configuration', function() {
     verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, termLinkThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
-    type(meep.CFG_ELEM_LATENCY, linkLatency);
-    type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
-    type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
-    type(meep.CFG_ELEM_THROUGHPUT, linkThroughput);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -497,10 +542,10 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
-      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), linkLatency);
-      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), linkLatencyVar);
-      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), linkPktLoss);
-      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), linkThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), termLinkThroughput);
     });
   }
 
@@ -511,6 +556,14 @@ describe('Scenario Configuration', function() {
   function addFog(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_FOG);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_LINK));
+    type(meep.CFG_ELEM_LATENCY, linkLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, linkThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -524,6 +577,10 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_FOG);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), linkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), linkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), linkThroughput);
     });
   }
 
@@ -545,6 +602,14 @@ describe('Scenario Configuration', function() {
   function addFogApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_EDGE_APP);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_APP));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_APP));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_APP));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_APP));
+    type(meep.CFG_ELEM_LATENCY, appLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, appLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, appPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, appThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     type(meep.CFG_ELEM_IMG, fogAppImg);
@@ -578,6 +643,11 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), fogAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), fogAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), fogAppArgs);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY), appLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
     });
   }
 
@@ -588,6 +658,14 @@ describe('Scenario Configuration', function() {
   function addUe(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_UE);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_LINK));
+    type(meep.CFG_ELEM_LATENCY, linkLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, linkThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -601,6 +679,11 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_UE);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), linkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), linkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), linkThroughput);
     });
   }
 
@@ -619,6 +702,14 @@ describe('Scenario Configuration', function() {
   function addUeApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_UE_APP);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_APP));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_APP));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_APP));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_APP));
+    type(meep.CFG_ELEM_LATENCY, appLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, appLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, appPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, appThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     type(meep.CFG_ELEM_IMG, ueAppImg);
@@ -644,6 +735,11 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), ueAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), ueAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), ueAppArgs);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY), appLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
     });
   }
 
@@ -675,6 +771,14 @@ describe('Scenario Configuration', function() {
   function addCloud(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_DC);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_LINK));
+    type(meep.CFG_ELEM_LATENCY, linkLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, linkThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -688,6 +792,10 @@ describe('Scenario Configuration', function() {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_DC);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), linkLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), linkLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), linkThroughput);
     });
   }
 
@@ -708,6 +816,14 @@ describe('Scenario Configuration', function() {
   function addCloudApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_CLOUD_APP);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_APP));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_APP));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_APP));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_APP));
+    type(meep.CFG_ELEM_LATENCY, appLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, appLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, appPktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT, appThroughput);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     type(meep.CFG_ELEM_IMG, cloudAppImg);
@@ -739,6 +855,11 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), cloudAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), cloudAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), cloudAppArgs);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY), appLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
     });
   }
 

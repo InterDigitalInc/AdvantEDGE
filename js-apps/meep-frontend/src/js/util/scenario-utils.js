@@ -884,6 +884,11 @@ export function getElementFromScenario(scenario, elementName) {
               }
               setElemFieldVal(elem, FIELD_PARENT, pl.name);
 
+              setElemFieldVal(elem, FIELD_APP_LATENCY, process.appLatency || 0);
+              setElemFieldVal(elem, FIELD_APP_LATENCY_VAR, process.appLatencyVariation || 0);
+              setElemFieldVal(elem, FIELD_APP_THROUGPUT, process.appThroughput || DEFAULT_THROUGHPUT_APP);
+              setElemFieldVal(elem, FIELD_APP_PKT_LOSS, process.appPacketLoss || 0);
+
               if (process.userChartLocation) {
                 setElemFieldVal(elem, FIELD_CHART_ENABLED, true);
                 setElemFieldVal(elem, FIELD_CHART_LOC, process.userChartLocation || '');
