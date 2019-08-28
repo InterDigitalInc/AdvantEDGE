@@ -188,4 +188,5 @@ export const id = (label) => {
 
 // Metrics engine data types
 export const LATENCY_METRICS = 'latency';
-export const THROUGHPUT_METRICS = 'latency';
+export const THROUGHPUT_METRICS = 'ingressPacketStats';
+export const MOBILITY_EVENT = 'mobilityEvent';

@@ -20,6 +20,8 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import meepReducer from './state/meep-reducer';
 import { execDisplayedScenarioMiddleware } from './middlewares/exec-displayed-scenario-middleware';
+import { fixMetricsValuesMiddleware } from './middlewares/fix-metrics-values-middleware';
+
 
 // To uncomment when save state is fixed
 import {
@@ -152,7 +154,7 @@ let meepState = loadedState ? loadedState : createState(meep);
 //   console.log('state: ', store.getState());
 // };
 
-const meepStore = createStore(meepReducer, meepState, applyMiddleware(thunk, execDisplayedScenarioMiddleware));
+const meepStore = createStore(meepReducer, meepState, applyMiddleware(thunk, execDisplayedScenarioMiddleware, fixMetricsValuesMiddleware));
 window.meepStore = meepStore;
 
 // TODO: fix circularity in store

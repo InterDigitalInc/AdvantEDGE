@@ -15,7 +15,7 @@ const initialState = {
   sourceNodeSelected: ''
 };
 
-const EXEC_ADD_METRICS_EPOCH = 'EXEC_ADD_METRICS_EPOCH';
+export const EXEC_ADD_METRICS_EPOCH = 'EXEC_ADD_METRICS_EPOCH';
 function execAddMetricsEpoch(epoch) {
   return {
     type: EXEC_ADD_METRICS_EPOCH,
@@ -23,7 +23,7 @@ function execAddMetricsEpoch(epoch) {
   };
 }
 
-const EXEC_CHANGE_SOURCE_NODE_SELECTED = 'EXEC_CHANGE_SOURCE_NODE_SELECTED';
+export const EXEC_CHANGE_SOURCE_NODE_SELECTED = 'EXEC_CHANGE_SOURCE_NODE_SELECTED';
 function execChangeSourceNodeSelected(node) {
   return {
     type: EXEC_CHANGE_SOURCE_NODE_SELECTED,
@@ -31,7 +31,7 @@ function execChangeSourceNodeSelected(node) {
   };
 }
 
-const EXEC_CHANGE_DATA_TYPE_SELECTED = 'EXEC_CHANGE_DATA_TYPE_SELECTED';
+export const EXEC_CHANGE_DATA_TYPE_SELECTED = 'EXEC_CHANGE_DATA_TYPE_SELECTED';
 function execChangeDataTypeSelected(node) {
   return {
     type: EXEC_CHANGE_DATA_TYPE_SELECTED,

@@ -16,6 +16,7 @@ import * as d3 from 'd3';
 import uuid from 'uuid';
 import { uiChangeCurrentDialog } from '../state/ui';
 import { execFakeChangeSelectedDestination } from '../state/exec';
+import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
 
 const notNull = x => x;
 const IDCLineChart = props => {
@@ -30,6 +31,11 @@ const IDCLineChart = props => {
       const width = props.width - margin.left - margin.right;
       const height = props.height - margin.top - margin.bottom;
 
+      const min = props.min;
+      const max = props.max;
+
+      const maxOfYScale = Math.ceil(max/100.0) * 100.0;
+
       let mainGroup = d3.select(d3Container.current);
       if (mainGroup.select('g').size() === 0) {
         mainGroup = mainGroup.append('g')
@@ -39,7 +45,7 @@ const IDCLineChart = props => {
       }
       
       const chart = (data) => {
-        const destinations = props.sourceSelected ? props.destinations.slice(-props.destinations.length) : [];
+        const destinations = props.selectedSource ? props.destinations.slice(-props.destinations.length) : [];
         const colorRange = destinations.map(s => props.colorForApp[s]);
 
         const yRange = [0, 200];
@@ -55,7 +61,8 @@ const IDCLineChart = props => {
         // const yAxisr = d3.axisLeft(y);
 
         const dataLinePointFromDataPoint = key => point => {
-          if (!point[key]) {
+          if (point[key] === undefined) {
+            console.log('point[key] is undefined, for key ' + key + ' and point ', point);
             return null;
           }
           return {
@@ -64,13 +71,18 @@ const IDCLineChart = props => {
           };
         };
         const dataLineFromData = key => {
-          const line = data.map(dataLinePointFromDataPoint(key)).filter(notNull);
+          const line = data.map(dataLinePointFromDataPoint(key)).filter(notNull).filter(p => p.value);
           line.key = key;
           return line;
         };
 
         
         const dataLines = destinations.map(dataLineFromData);
+
+        if (dataLines.length < 5) {
+          console.log('Too few dataLines: ', dataLines.length);
+        }
+
         const valueLine = d3.line()
           .x(function(d) { return margin.left + x(new Date(d.date)); })
           .y(function(d) { return y(d.value) + margin.top;  })
@@ -81,15 +93,57 @@ const IDCLineChart = props => {
           .attr('d', valueLine)
           .style('stroke', (d, i) => z(i))
           .style('fill', 'none')
-          .style('stroke-width', 3)
-          .style('margin-left', 35)
-          .style('margin-top', 20);
-              
+          .style('stroke-width', 3);
+
+        // if (mainGroup.selectAll('.line').size() > 0) {
+        //   const linesMarginLeft = mainGroup.selectAll('.line').attr('margin-left');
+        //   console.log('linesMarginLeft: ', linesMarginLeft);
+        // }
+
+        // Mobility events
+        // const mobilityEventLine = d => `M${x(new Date(d.timestamp)) + margin.left},${y(yRange[0]) + margin.top} L${x(new Date(d.timestamp)) + margin.left},${y(yRange[1]) + margin.top}`;
+        const mobilityEventLine = d => `M${x(new Date(d.timestamp)) + margin.left},${y(yRange[1]) + margin.top} L${x(new Date(d.timestamp)) + margin.left},${y(yRange[0]) + margin.top}`;
+        mainGroup.selectAll('.mobilityEventLine')
+          .data(props.mobilityEvents)
+          .join('path')
+          .attr('class', 'mobilityEventLine')
+          .attr('d', mobilityEventLine)
+          .attr('id', d => d.timestamp)
+          .style('stroke', 'gray')
+          .style('stroke-width', 1)
+          .style('fill', 'none');
+          
+        mainGroup.selectAll('.mobilityEventLineText')
+          .data(props.mobilityEvents)
+          .join('text')
+          .attr('class', 'mobilityEventLineText')
+          .style('stroke','gray')
+          .style('stroke-width', 1)
+          .style('fill','gray');
+          // .attr('x', d => x(new Date(d.timestamp)) + margin.left)
+          // .attr('dy',50 + margin.top)
+            
+      
+        mainGroup.selectAll('.mobilityEventLineTextPath').remove();
+        mainGroup.selectAll('.mobilityEventLineText')
+          .data(props.mobilityEvents)
+          .append('textPath')
+          .attr('class', 'mobilityEventLineTextPath')
+          .attr('xlink:href', d => `#${d.timestamp}`)
+          .attr('stroke','gray')
+          .attr('fill','gray')
+          .text(d => `Mobility Event:  ${d.src} to ${d.dest}`)
+          .attr('transform', 'rotate(-180)');
+          
+
+        
         const xAxisGroup = mainGroup.selectAll('.xaxis');
         if (xAxisGroup.size() === 0) {
           mainGroup.append('g')
             .attr('class', 'xaxis')
             .attr('transform', 'translate(0,' + height + ')').call(xAxis);
+        } else {
+          xAxisGroup.attr('transform', 'translate(0,' + height + ')').call(xAxis);
         }
 
         mainGroup.selectAll('.xaxis').call(xAxis);
@@ -101,28 +155,72 @@ const IDCLineChart = props => {
             .attr('transform', 'translate(' + width + ', 0)')
             .style('z-index', '18')
             .call(yAxis);
+        } else {
+          yAxisGroup.attr('transform', 'translate(' + width + ', 0)');
         }
 
         // text label for the y axis
+        const labelForType = type => {
+          switch (type) {
+          case LATENCY_METRICS:
+            return 'Latency (ms)';
+          case THROUGHPUT_METRICS:
+            return 'Throughput (kbs)';
+          default:
+            return '';
+          }
+        };
+
+        const yAxisLabel = labelForType(props.dataType);
         if (!mainGroup.selectAll('.yLabel').size()) {
           mainGroup.append('text')
+            .attr('class', 'yLabel')
             .attr('transform', 'rotate(-90)')
             .attr('y', 0 - margin.left + 10)
             .attr('x', 0 - (height / 2))
             .attr('dy', '1em')
-            .attr('class', 'yLabel')
             .style('text-anchor', 'middle')
-            .text('Latency (ms)');
+            .text(yAxisLabel);
+        } else {
+          mainGroup.selectAll('.yLabel')
+            .text(yAxisLabel);
+        }
+
+        // Chart title
+        const chartTitleForType = type => {
+          switch (type) {
+          case LATENCY_METRICS:
+            return 'Latency Chart';
+          case THROUGHPUT_METRICS:
+            return 'Throughput Chart';
+          default:
+            return '';
+          }
+        };
+
+        const chartTitle = chartTitleForType(props.dataType);
+        if (!mainGroup.selectAll('.chartTitle').size()) {
+          mainGroup.append('text')
+            .attr('class', 'chartTitle')
+            .attr('y', 0 + margin.top + 10)
+            .attr('x', width / 2)
+            // .attr('dy', '1em')
+            .style('text-anchor', 'middle')
+            .text(chartTitle);
+        } else {
+          mainGroup.selectAll('.chartTitle')
+            .text(chartTitle);
         }
        
-
         const yAxisGroup0 = mainGroup.selectAll('.yaxis0');
         if (yAxisGroup0.size() === 0) {
           mainGroup.append('g')
             .attr('class', 'yaxis0')
-            .attr('transform', 'translate(0 , 0)')
+            .attr('transform', 'translate(0, 0)')
             .style('z-index', '18')
             .call(yAxis);
+        } else {
+          yAxisGroup0.attr('transform', 'translate(0, 0)').style('z-index', '18')
         }
       };
         

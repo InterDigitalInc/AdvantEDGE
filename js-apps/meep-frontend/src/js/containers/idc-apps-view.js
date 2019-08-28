@@ -37,8 +37,6 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
   });
 
   const apps = Object.keys(m);
-
-  console.log('m: ', m);
  
   const edgesFromSource = dataAccessor => src => {
     const rowObject = m[src];
@@ -74,7 +72,7 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
     if (selectedSource) {
       return e.src === selectedSource;
     } else {
-      return false;
+      return true;
     }
   };
   const edges = _.flatMap(apps.map(edgesFromSource(dataAccessor))).filter(outwardEdgesIfSourceSelected);
@@ -117,7 +115,6 @@ const unitsForDataType = type => {
   }
 };
 
-
 const IDCAppsView = (
   {
     apps,
@@ -129,7 +126,8 @@ const IDCAppsView = (
     width,
     height,
     onNodeClicked,
-    colorForApp
+    colorForApp,
+    displayEdgeLabels
   }
 ) => {
   
@@ -180,8 +178,7 @@ const IDCAppsView = (
         xlinkHref={`#textPathDef${i}`}
         startOffset={'45%'}
       >
-        {`${edgeLabel} ${e.avgData.toFixed(2)} ${edgeUnits}`}
-          
+        {displayEdgeLabels ? `${edgeLabel} ${e.avgData.toFixed(2)} ${edgeUnits}` : null}
       </textPath>
     </text>
   );

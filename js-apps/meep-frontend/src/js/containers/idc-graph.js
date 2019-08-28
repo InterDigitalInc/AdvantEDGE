@@ -13,10 +13,13 @@ import { Graph } from 'react-d3-graph';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
 
+import IDCNode from './idc-node.js';
+
 import {
   plusGenerator,
   minusGenerator,
   lineGeneratorNodes,
+  lineGeneratorReverse,
   visitNodes,
   blue
 } from './graph-utils';
@@ -240,7 +243,7 @@ class IDCGraph extends Component {
             <path
               key={'path' + i}
               id={'textPathDef' + i}
-              d={lineGeneratorReverse(d)}
+              d={lineGeneratorNodes(d.parent)(d)}
               style={{fill: 'none', 'strokeWidth': 2}}
               stroke={'#aaa'}
               className='line'
@@ -268,7 +271,8 @@ class IDCGraph extends Component {
             xlinkHref={`#textPathDef${i}`}
             startOffset={'20%'}
           >
-            {`${Math.ceil(Math.random()*25)}ms`}
+            {/* {`${Math.ceil(Math.random()*25)}ms`} */}
+            {''}
           </textPath>
         </text>
       );

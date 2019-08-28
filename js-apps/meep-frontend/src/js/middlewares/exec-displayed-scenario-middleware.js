@@ -5,6 +5,7 @@ import {
   EXEC_CHANGE_DISPLAYED_SCENARIO,
   typeReducer
 } from '../state/exec';
+
 import {
   TYPE_SCENARIO,
   TYPE_DOMAIN,
