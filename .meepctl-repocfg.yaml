@@ -1,5 +1,5 @@
 #AdvantEDGE
-version: 1.1.0
+version: 1.1.1
 repo:
   name: AdvantEDGE
   core:
@@ -91,17 +91,13 @@ repo:
       kibana:
         chart: charts/kibana
       filebeat:
-        chart: stable/filebeat
-        version: "1.0.2"
-        values: charts/filebeat/values.yaml
+        chart: charts/filebeat
       metricbeat:
         chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
     redis:
-      chart: stable/redis
-      version: "4.0.1"
-      values: charts/redis/values.yaml
+      chart: charts/redis
     k8s:
       kube-state-metrics:
         chart: charts/kube-state-metrics

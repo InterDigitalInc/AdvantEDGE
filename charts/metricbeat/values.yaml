@@ -108,6 +108,13 @@ deployment:
           hosts: ["meep-kube-state-metrics:8080"]
           add_metadata: true
           in_cluster: true
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
 
 # List of beat plugins
 plugins: []

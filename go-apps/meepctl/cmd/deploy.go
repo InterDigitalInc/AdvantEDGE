@@ -264,9 +264,8 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	// Value file is modified, use the tmp/ version
 	repo = "meep-filebeat"
-	chart = utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
-	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.filebeat.version"))
-	flags = utils.HelmFlags(flags, "--values", workdir+"tmp/filebeat-values.yaml")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-couchdb"
@@ -275,9 +274,8 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-redis"
-	chart = utils.RepoCfg.GetString("repo.dep.redis.chart")
-	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.redis.version"))
-	flags = utils.HelmFlags(flags, "--values", gitdir+utils.RepoCfg.GetString("repo.dep.redis.values"))
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.redis.chart")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"
@@ -287,7 +285,7 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	repo = "meep-metricbeat"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
-	flags = utils.HelmFlags(nil, "--set", "image.pullPolicy=IfNotPresent")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 

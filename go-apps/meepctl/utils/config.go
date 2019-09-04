@@ -23,7 +23,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion string = "1.1.0"
+const configVersion string = "1.1.1"
 
 const defaultNotSet string = "not set"
 const defaultIP string = ""

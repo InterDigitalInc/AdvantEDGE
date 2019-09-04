@@ -78,3 +78,8 @@ spec:
       - name: modules
         secret:
           secretName: {{ template "metricbeat.fullname" . }}-deployment-modules
+{{- if .Values.deployment.affinity }}
+      affinity:
+{{ toYaml .Values.deployment.affinity | indent 8 }}
+{{- end }}
+

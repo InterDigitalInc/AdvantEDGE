@@ -1,8 +1,0 @@
-To install publicly available latest REDIS for MEEP (using the MEEP related values.yaml):
-
-helm install --name meep-redis -f values.yaml stable/redis
-
-To install our local version of REDIS for MEEP (sunig the MEEP related values.yaml):
-
-helm install --name meep-redis ~/mec/sw/meep/controller/charts/redis
-

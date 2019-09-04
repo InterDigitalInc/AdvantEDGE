@@ -3,37 +3,32 @@
 ##
 image:
   registry: docker.io
-
-  # repository: bitnami/redis
-  # ## Bitnami Redis image tag
-  # ## ref: https://github.com/bitnami/bitnami-docker-redis#supported-tags-and-respective-dockerfile-links
-  # ##
-  # tag: 4.0.11-debian-9
-  # ## Specify a imagePullPolicy
-  # ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-  # ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-  # ##
-  # pullPolicy: Always
-  # ## Optionally specify an array of imagePullSecrets.
-  # ## Secrets must be manually created in the namespace.
-  # ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  # ##
-  # # pullSecrets:
-  # #   - myRegistrKeySecretName
-
-  repository: redislabs/rejson
-  tag: 1.0.4
+  repository: bitnami/redis
+  ## Bitnami Redis image tag
+  ## ref: https://github.com/bitnami/bitnami-docker-redis#supported-tags-and-respective-dockerfile-links
+  ##
+  tag: 4.0.11-debian-9
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
   pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ##
+  # pullSecrets:
+  #   - myRegistrKeySecretName
 
 ## Cluster settings
 cluster:
   enabled: true
-  slaveCount: 1
+  slaveCount: 3
 
 networkPolicy:
   ## Specifies whether a NetworkPolicy should be created
   ##
-  enabled: false
+  enabled: true
 
   ## The Policy model to apply. When set to false, only pods with the correct
   ## client label will have network access to the port Redis is listening
@@ -46,8 +41,8 @@ serviceAccount:
   ## Specifies whether a ServiceAccount should be created
   ##
   create: false
-  # The name of the ServiceAccount to use.
-  # If not set and create is true, a name is generated using the fullname template
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
   name:
 
 rbac:
@@ -69,7 +64,7 @@ rbac:
     rules: []
 
 ## Use password authentication
-usePassword: false
+usePassword: true
 ## Redis password (both master and slave)
 ## Defaults to a random 10-character alphanumeric string if not set and usePassword is true
 ## ref: https://github.com/bitnami/bitnami-docker-redis#setting-the-server-password-on-first-run
@@ -77,13 +72,6 @@ usePassword: false
 password:
 ## Use existing secret (ignores previous password)
 # existingSecret:
-
-## Persist data to a persistent volume
-persistence: {}
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim:
 
 ##
 ## Redis Master parameters
@@ -112,8 +100,7 @@ master:
   ## Can be used to disable Redis commands for security reasons.
   ## ref: https://github.com/bitnami/bitnami-docker-redis#disabling-redis-commands
   ##
-  # disableCommands: "FLUSHDB,FLUSHALL"
-  disableCommands: ""
+  disableCommands: "FLUSHDB,FLUSHALL"
 
   ## Redis Master additional pod labels and annotations
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
@@ -126,10 +113,6 @@ master:
   #   requests:
   #     memory: 256Mi
   #     cpu: 100m
-  ## Use an alternate scheduler, e.g. "stork".
-  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
-  ##
-  # schedulerName:
 
   ## Configure extra options for Redis Master liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
@@ -157,26 +140,17 @@ master:
   # tolerations: []
   ## Redis Master pod/node affinity/anti-affinity
   ##
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: node-role.kubernetes.io/master
-            operator: Exists
+  affinity: {}
 
   ## Redis Master Service properties
   service:
     ##  Redis Master Service type
-    # type: ClusterIP
-    type: NodePort
-    port: 6379
+    type: ClusterIP
 
     ## Specify the nodePort value for the LoadBalancer and NodePort service types.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     ##
     # nodePort:
-    nodePort: 30379
 
     ## Provide any additional annotations which may be required. This can be used to
     ## set the LoadBalancer service type to internal only.
@@ -186,7 +160,6 @@ master:
     loadBalancerIP:
 
   ## Redis Master Pod Security Context
-  ##
   securityContext:
     enabled: true
     fsGroup: 1001
@@ -196,15 +169,15 @@ master:
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##
   persistence:
-    # enabled: true
-    enabled: false
+    enabled: true
 
     ## The path the volume will be mounted at, useful when using different
     ## Redis images.
     path: /bitnami/redis/data
-    ## The subdirectory of the volume to mount to, useful in dev environments
-    ## and one PV for multiple services.
+
+    ## The subdirectory of the volume to mount to, useful in dev environments and one PV for multiple services.
     subPath: ""
+
     ## redis data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
@@ -216,12 +189,11 @@ master:
     accessModes:
     - ReadWriteOnce
     size: 8Gi
-    
 
   ## Update strategy, can be set to RollingUpdate or onDelete by default.
   ## https://kubernetes.io/docs/tutorials/stateful-application/basic-stateful-set/#updating-statefulsets
   statefulset:
-    updateStrategy: RollingUpdate
+    updateStrategy: OnDelete
     ## Partition update strategy
     ## https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#partitions
     # rollingUpdatePartition:
@@ -234,7 +206,7 @@ master:
 slave:
   ## Slave Service properties
   service:
-    ##  Redis Slave Service type
+    ## Redis Slave Service type
     type: ClusterIP
     ## Specify the nodePort value for the LoadBalancer and NodePort service types.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
@@ -248,6 +220,8 @@ slave:
     annotations: {}
     loadBalancerIP:
 
+  ## Redis slave optional overrides
+
   ## Redis port
   # port: 6379
   ## Redis command arguments
@@ -259,13 +233,7 @@ slave:
 
   ## Redis Slave pod/node affinity/anti-affinity
   ##
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: node-role.kubernetes.io/master
-            operator: Exists
+  affinity: {}
 
   ## Configure extra options for Redis Slave liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
@@ -295,11 +263,6 @@ slave:
   # nodeSelector: {"beta.kubernetes.io/arch": "amd64"}
   # tolerations: []
 
-  ## Use an alternate scheduler, e.g. "stork".
-  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
-  ##
-  # schedulerName:
-
   ## Redis slave pod Annotation and Labels
   # podLabels: {}
   # podAnnotations: {}
@@ -313,7 +276,7 @@ slave:
 ## Prometheus Exporter / Metrics
 ##
 metrics:
-  enabled: false
+  enabled: true
 
   image:
     registry: docker.io
@@ -358,5 +321,3 @@ metrics:
 ##
 configmap: |-
 #  Redis configuration file
-
-meepOrigin: core
