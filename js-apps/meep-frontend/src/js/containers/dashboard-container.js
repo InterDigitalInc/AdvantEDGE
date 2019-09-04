@@ -412,6 +412,12 @@ class DashboardContainer extends Component {
       }
     };
 
+    // Determine last 25 epochs
+    // Determine startTime of first epoch and endTime of last epoch
+    // Create map of arrays of points, one array per source, indexed by source id
+    // Pass that map to the views
+    // Have each view consume that map
+
     const view1DataType = dataTypeForView(this.state.view1Name);
     const view1Accessor = dataAccessorForType(view1DataType);
     const view1DataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(appIds)(view1Accessor)(selectedSource);
