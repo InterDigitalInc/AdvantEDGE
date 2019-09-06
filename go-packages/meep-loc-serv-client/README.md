@@ -17,7 +17,7 @@ Put the package under your project folder and add the following in import:
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://127.0.0.1:8081/exampleAPI/location/v1*
+All URIs are relative to *http://127.0.0.1:8081/etsi-013/location/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
