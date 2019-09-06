@@ -103,6 +103,8 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 
 	// Local storage strucutre
 	cmd := exec.Command("mkdir", "-p", workdir)
+	cmd.Args = append(cmd.Args, workdir+"certs")
+
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + workdir + "]")
@@ -147,6 +149,7 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, workdir+"es-master-1")
 	cmd.Args = append(cmd.Args, workdir+"kibana")
 	cmd.Args = append(cmd.Args, workdir+"docker-registry")
+	cmd.Args = append(cmd.Args, workdir+"certs")
 
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
