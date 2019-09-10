@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import moment from 'moment';
 import * as d3 from 'd3';
 import axios from 'axios';
 
@@ -24,9 +25,8 @@ import {
 } from '../util/scenario-utils';
 
 import {
-  dataAccessorForType,
-  dataSetterForType,
-  isDataPointOfType
+  isDataPointOfType,
+  valueOfPoint
 } from '../util/metrics';
 
 import {
@@ -68,41 +68,50 @@ function colorArray(dataLength) {
 
 const metricsBasePath = 'http://10.3.16.73:30008/v1';
 
-const dataPointFromEpochDataPoints = destinations => sourceNodeId => dataAccessor => epochDataPoints => {
-  if (!epochDataPoints.length) {
-    return null;
-  }
-  let dp = {
-    date: epochDataPoints[0].timestamp
-  };
+// const dataPointFromEpochDataPoints = destinations => sourceNodeId => dataAccessor => epochDataPoints => {
+//   if (!epochDataPoints.length) {
+//     return null;
+//   }
+//   let dp = {
+//     date: epochDataPoints[0].timestamp
+//   };
 
-  const avgForDest = dataPoints => acc => dest => {
-    const hasSource = src => p => p.src === src;
-    const hasDestination = dest => p => p.dest === dest;
+//   const avgForDest = dataPoints => acc => dest => {
+//     const hasSource = src => p => p.src === src;
+//     const hasDestination = dest => p => p.dest === dest;
     
-    const dataPointsForDestSource = dataPoints
-      .filter(hasSource(sourceNodeId))
-      .filter(hasDestination(dest));
-    const avg = d3.mean(dataPointsForDestSource, acc);
-    return avg;
-  };
+//     const dataPointsForDestSource = dataPoints
+//       .filter(hasSource(sourceNodeId))
+//       .filter(hasDestination(dest));
+//     const avg = d3.mean(dataPointsForDestSource, acc);
+//     return avg;
+//   };
   
-  destinations.forEach(dest => {
-    dp[dest] = avgForDest(epochDataPoints)(dataAccessor)(dest) || 0;
-  });
+//   destinations.forEach(dest => {
+//     dp[dest] = avgForDest(epochDataPoints)(dataAccessor)(dest) || 0;
+//   });
 
-  return dp;
-};
+//   return dp;
+// };
 
 const notNull = x => x;
-const epochsToDataPoints = epochs => nb => destinations => dataAccessor => sourceNodeId => {
-  const selectedEpochs = epochs.length ? epochs.slice(-nb) : [];
 
-  if (selectedEpochs.length === 0) {
-    console.log('epoch length is 0');
-  }
-  const dataPoints = selectedEpochs.map(dataPointFromEpochDataPoints(destinations)(sourceNodeId)(dataAccessor)).filter(notNull);
-  return dataPoints;
+const buildSeriesFromEpoch = (series, epoch) => {
+  epoch.data.forEach(p => {
+    if (! series[p.dest]) {
+      series[p.dest] = [];
+    }
+    series[p.dest].push(p);
+  });
+
+  return series;
+};
+
+const epochsToSeries = (epochs) => {
+  let series = epochs.reduce((s, current) => {
+    return buildSeriesFromEpoch(s, current);
+  }, {});
+  return series;
 };
 
 const ConfigurationView = (props) => {
@@ -181,6 +190,8 @@ const ViewForName = (
     min,
     max,
     data,
+    series,
+    startTime,
     mobilityEvents,
     dataPoints,
     dataAccessor,
@@ -210,6 +221,8 @@ const ViewForName = (
         width={width}
         height={600}
         data={data}
+        series={series}
+        startTime={startTime}
         dataAccessor={dataAccessor}
         dataType={dataType}
         selectedSource={selectedSource}
@@ -225,6 +238,8 @@ const ViewForName = (
     return (
       <IDCLineChart
         data={dataPoints}
+        series={series}
+        startTime={startTime}
         mobilityEvents={mobilityEvents}
         width={width} height={600}
         destinations={appIds}
@@ -242,6 +257,8 @@ const ViewForName = (
     return (
       <IDCLineChart
         data={dataPoints}
+        series={series}
+        startTime={startTime}
         mobilityEvents={mobilityEvents}
         width={width} height={600}
         destinations={appIds}
@@ -314,6 +331,30 @@ const DashboardConfiguration = (props) => {
   );
 };
 
+const filterSeries = keys => filter => series => {
+  let newSeries = {};
+  keys.forEach(key => {
+    if (series[key]) {
+      newSeries[key] = removeDuplicatePoints(series[key].filter(filter));
+    }
+  });
+
+  return newSeries;
+};
+
+const removeDuplicatePoints = sequence => {
+  let timestampsMap = {};
+  let newSequence = [];
+  sequence.forEach(p => {
+    if (!timestampsMap[p.timestamp]) {
+      timestampsMap[p.timestamp] = true;
+      newSequence.push(p);
+    }
+  });
+
+  return newSequence;
+};
+
 class DashboardContainer extends Component {
   constructor(props) {
     super(props);
@@ -342,9 +383,18 @@ class DashboardContainer extends Component {
   }
 
   fetchMetrics() {
-    return axios.get(`${metricsBasePath}/metrics?startTime=now-6s&stopTime=now`)
+    const startTime = moment().add(-7, 'seconds').format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
+    const stopTime = moment().add(-6, 'seconds').format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
+    // const now = moment().format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
+    return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
       .then(res => {
-        this.props.addMetricsEpoch(res.data.dataResponse || []);
+
+        let epoch = {
+          data: res.data.logResponse || [], //.sort((a, b) => new Date(a).getTime() - new Date(b).getTime() || []),
+          startTime: startTime
+        };
+  
+        this.props.addMetricsEpoch(epoch);
       }).catch((e) => {
         console.log('Error while fetching metrics', e);
       });
@@ -389,16 +439,6 @@ class DashboardContainer extends Component {
       return {...res, [val.data.id]: colorRange[i]};
     }, {});
 
-    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : [];
-    const hasValue = p => {
-      const accessor = dataAccessorForType(p.dataType);
-      if (! accessor(p)) {
-        console.log(`No value for src ${p.src} and dest ${p.dest}`);
-      }
-      return accessor(p);
-    };
-    lastEpoch = lastEpoch.filter(hasValue);
-
     const isDataOfType = type => dataPoint => dataPoint.dataType === type;
     
     const dataTypeForView = view => {
@@ -412,40 +452,48 @@ class DashboardContainer extends Component {
       }
     };
 
-    // Determine last 25 epochs
+    // Determine first and last epochs
+    const firstEpoch = this.props.epochs.length ? this.props.epochs[0] : {
+      data: [],
+      startTime: null
+    };
+    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : {
+      data: [],
+      startTime: null
+    };
+ 
     // Determine startTime of first epoch and endTime of last epoch
-    // Create map of arrays of points, one array per source, indexed by source id
-    // Pass that map to the views
-    // Have each view consume that map
+    const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
+    const endTime = lastEpoch.data.length ? new Date(new Date(lastEpoch.startTime).getTime() + 1000).toString() : null;
+    const series = epochsToSeries(this.props.epochs, selectedSource);
 
+    const withTypeAndSource = type => source => point => {
+      return point.dataType === type && point.src === source;
+    };
+
+    // For view 1
     const view1DataType = dataTypeForView(this.state.view1Name);
-    const view1Accessor = dataAccessorForType(view1DataType);
-    const view1DataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(appIds)(view1Accessor)(selectedSource);
-    const data1 = lastEpoch.filter(isDataOfType(view1DataType));
-    const max1 = d3.max(data1, view1Accessor);
-    const min1 = d3.min(data1, view1Accessor);
+    const series1 =  filterSeries(appIds)(withTypeAndSource(view1DataType)(selectedSource))(series);
+    const lastEpochData1 = lastEpoch.data.filter(isDataOfType(view1DataType));
+    // const max1 = d3.max(data1, p => p.value);
+    // const min1 = d3.min(data1, p => p.value);
 
+    // For view2
     const view2DataType = dataTypeForView(this.state.view2Name);
-    const view2Accessor = dataAccessorForType(view2DataType);
-    const view2DataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(appIds)(view2Accessor)(selectedSource);
-    const data2 = lastEpoch.filter(isDataOfType(view2DataType));
+    const series2 =  filterSeries(appIds)(withTypeAndSource(view2DataType)(selectedSource))(series);
+    const lastEpochData2 = lastEpoch.data.filter(isDataOfType(view2DataType));
 
-    const extractPointsOfType = type => epoch => epoch.filter(isDataPointOfType(type));
+    // Mobility events
+    const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
     const extractMobilityEvents = extractPointsOfType(MOBILITY_EVENT);
     const mobilityEvents = this.props.epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
       console.log('Some mobility events ...');
     }
-    data2.forEach((d) => {
-      const dd = view1Accessor(d);
-      if (!dd) {
-        console.log(`Null data: ${dd}. `);
-      }
-    });
-
-    const max2 = d3.max(data2, view2Accessor);
-    const min2 = d3.min(data2, view2Accessor);
+    
+    // const max2 = d3.max(data2, view2Accessor);
+    // const min2 = d3.min(data2, view2Accessor);
     
     const width = 700;
     const height = 600;
@@ -475,12 +523,14 @@ class DashboardContainer extends Component {
         colorRange={colorRange}
         width={width1}
         height={height}
-        data={data1}
+        data={lastEpochData1}
+        series={series1}
+        startTime={startTime}
+        endTime={endTime}
         mobilityEvents={mobilityEvents}
-        min={min1}
-        max={max1}
-        dataPoints={view1DataPoints}
-        dataAccessor={view1Accessor}
+        // min={min1}
+        // max={max1}
+        // dataAccessor={view1Accessor}
         dataType={view1DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
@@ -496,12 +546,14 @@ class DashboardContainer extends Component {
         colorRange={colorRange}
         width={width2}
         height={height}
-        data={data2}
+        data={lastEpochData2}
+        series={series2}
+        startTime={startTime}
+        endTime={endTime}
         mobilityEvents={mobilityEvents}
-        min={min2}
-        max={max2}
-        dataPoints={view2DataPoints}
-        dataAccessor={view2Accessor}
+        // min={min2}
+        // max={max2}
+        // dataAccessor={view2Accessor}
         dataType={view2DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}

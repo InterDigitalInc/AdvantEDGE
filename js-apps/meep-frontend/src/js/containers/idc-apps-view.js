@@ -18,7 +18,7 @@ import {
   lineGeneratorNodes
 } from './graph-utils';
 
-const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
+const edgesFromData = (data, colorForApp, selectedSource) => {
   const pings = data;
   let m = {};
   _.each(pings, p => {
@@ -38,7 +38,7 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
 
   const apps = Object.keys(m);
  
-  const edgesFromSource = dataAccessor => src => {
+  const edgesFromSource = src => {
     const rowObject = m[src];
     if (!rowObject) {
       return [];
@@ -48,13 +48,13 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
     const edgesFromDestinations = (dest) => {
       // To debug
       const dataFromPing = p => {
-        if (dataAccessor(p)) {
+        if (p.value) {
           console.log('Bad value!');  
         }
-        return dataAccessor(p);
+        return p.value;
       };
 
-      if (!d3.mean(rowObject[dest].pings, dataAccessor)) {
+      if (!d3.mean(rowObject[dest].pings, p => p.value)) {
         console.log('Bad value!');
       }
       return  {
@@ -62,7 +62,7 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
         dest: dest,
         count: rowObject[dest].pings.length,
         color: colorForApp[dest],
-        avgData: d3.mean(rowObject[dest].pings, dataAccessor)
+        avgData: d3.mean(rowObject[dest].pings, p => p.value)
       };
     };
     return _.map(destinations, edgesFromDestinations);
@@ -75,10 +75,73 @@ const edgesFromData = (data, dataAccessor, colorForApp, selectedSource) => {
       return true;
     }
   };
-  const edges = _.flatMap(apps.map(edgesFromSource(dataAccessor))).filter(outwardEdgesIfSourceSelected);
+  const edges = _.flatMap(apps.map(edgesFromSource)).filter(outwardEdgesIfSourceSelected);
 
   return edges; 
 };
+
+const edgesFromSeries = (series, colorForApp, selectedSource) => {
+  const pings = data;
+  let m = {};
+  _.each(pings, p => {
+    if (!m[p.src]) {
+      m[p.src] = {};
+    }
+ 
+    if (!m[p.src][p.dest]) {
+      m[p.src][p.dest] = {
+        pings: []
+      };
+    }
+ 
+    const o = m[p.src][p.dest];
+    o.pings.push(p);
+  });
+
+  const apps = Object.keys(m);
+ 
+  const edgesFromSource = src => {
+    const rowObject = m[src];
+    if (!rowObject) {
+      return [];
+    }
+    const destinations = Object.keys(m[src]);
+
+    const edgesFromDestinations = (dest) => {
+      // To debug
+      const dataFromPing = p => {
+        if (p.value) {
+          console.log('Bad value!');  
+        }
+        return p.value;
+      };
+
+      if (!d3.mean(rowObject[dest].pings, p => p.value)) {
+        console.log('Bad value!');
+      }
+      return  {
+        src: src,
+        dest: dest,
+        count: rowObject[dest].pings.length,
+        color: colorForApp[dest],
+        avgData: d3.mean(rowObject[dest].pings, p => p.value)
+      };
+    };
+    return _.map(destinations, edgesFromDestinations);
+  };
+
+  const outwardEdgesIfSourceSelected = e => {
+    if (selectedSource) {
+      return e.src === selectedSource;
+    } else {
+      return true;
+    }
+  };
+  const edges = _.flatMap(apps.map(edgesFromSource)).filter(outwardEdgesIfSourceSelected);
+
+  return edges; 
+};
+
 
 const positionAppsCircle = ({apps, width, height}) => {
   const cx = width/2.0;
@@ -121,7 +184,7 @@ const IDCAppsView = (
     colorRange,
     selectedSource,
     data,
-    dataAccessor,
+    series,
     dataType,
     width,
     height,
@@ -142,7 +205,7 @@ const IDCAppsView = (
   const appsMap = {};
   _.each(apps, a => appsMap[a.data.id] = a);
 
-  const edges = edgesFromData(data.filter(dataAccessor), dataAccessor, colorForApp, selectedSource);
+  const edges = edgesFromData(data.filter(p => p.value),  colorForApp, selectedSource);
 
   const edgeLabel = edgeLabelForDataType(dataType);
   const edgeUnits = unitsForDataType(dataType);
