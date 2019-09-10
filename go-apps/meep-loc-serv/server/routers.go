@@ -17,9 +17,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// exampleAPI coming from the spec
-const basepath = "/etsi-013"
-
 type Route struct {
 	Name        string
 	Method      string
@@ -53,154 +50,154 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		basepath + "/location/v1/",
+		"/etsi-013/location/v1/",
 		Index,
 	},
 
 	Route{
 		"UserTrackingSubDelById",
 		strings.ToUpper("Delete"),
-		basepath + "/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubDelById,
 	},
 
 	Route{
 		"UserTrackingSubGet",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/userTracking",
+		"/etsi-013/location/v1/subscriptions/userTracking",
 		UserTrackingSubGet,
 	},
 
 	Route{
 		"UserTrackingSubGetById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubGetById,
 	},
 
 	Route{
 		"UserTrackingSubPost",
 		strings.ToUpper("Post"),
-		basepath + "/location/v1/subscriptions/userTracking",
+		"/etsi-013/location/v1/subscriptions/userTracking",
 		UserTrackingSubPost,
 	},
 
 	Route{
 		"UserTrackingSubPutById",
 		strings.ToUpper("Put"),
-		basepath + "/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubPutById,
 	},
 
 	Route{
 		"ZonalTrafficSubDelById",
 		strings.ToUpper("Delete"),
-		basepath + "/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubDelById,
 	},
 
 	Route{
 		"ZonalTrafficSubGet",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/zonalTraffic",
+		"/etsi-013/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubGet,
 	},
 
 	Route{
 		"ZonalTrafficSubGetById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubGetById,
 	},
 
 	Route{
 		"ZonalTrafficSubPost",
 		strings.ToUpper("Post"),
-		basepath + "/location/v1/subscriptions/zonalTraffic",
+		"/etsi-013/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubPost,
 	},
 
 	Route{
 		"ZonalTrafficSubPutById",
 		strings.ToUpper("Put"),
-		basepath + "/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubPutById,
 	},
 
 	Route{
 		"ZoneStatusDelById",
 		strings.ToUpper("Delete"),
-		basepath + "/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusDelById,
 	},
 
 	Route{
 		"ZoneStatusGet",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/zonalStatus",
+		"/etsi-013/location/v1/subscriptions/zonalStatus",
 		ZoneStatusGet,
 	},
 
 	Route{
 		"ZoneStatusGetById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusGetById,
 	},
 
 	Route{
 		"ZoneStatusPost",
 		strings.ToUpper("Post"),
-		basepath + "/location/v1/subscriptions/zonalStatus",
+		"/etsi-013/location/v1/subscriptions/zonalStatus",
 		ZoneStatusPost,
 	},
 
 	Route{
 		"ZoneStatusPutById",
 		strings.ToUpper("Put"),
-		basepath + "/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusPutById,
 	},
 
 	Route{
 		"UsersGet",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/users",
+		"/etsi-013/location/v1/users",
 		UsersGet,
 	},
 
 	Route{
 		"UsersGetById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/users/{userId}",
+		"/etsi-013/location/v1/users/{userId}",
 		UsersGetById,
 	},
 
 	Route{
 		"ZonesByIdGetAps",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/zones/{zoneId}/accessPoints",
+		"/etsi-013/location/v1/zones/{zoneId}/accessPoints",
 		ZonesByIdGetAps,
 	},
 
 	Route{
 		"ZonesByIdGetApsById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
+		"/etsi-013/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
 		ZonesByIdGetApsById,
 	},
 
 	Route{
 		"ZonesGet",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/zones",
+		"/etsi-013/location/v1/zones",
 		ZonesGet,
 	},
 
 	Route{
 		"ZonesGetById",
 		strings.ToUpper("Get"),
-		basepath + "/location/v1/zones/{zoneId}",
+		"/etsi-013/location/v1/zones/{zoneId}",
 		ZonesGetById,
 	},
 }
