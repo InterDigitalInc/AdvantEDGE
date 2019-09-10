@@ -12,6 +12,9 @@ import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import IDCVis from '../idc-vis';
+import IDCGraph from '../idc-graph';
+import IDCAreaChart from '../idc-area-chart';
+import DashboardContainer from '../dashboard-container';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
@@ -39,7 +42,8 @@ import {
   // Event types
   UE_MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE
+  PAGE_EXECUTE,
+  PAGE_EXPERIMENTAL_EXECUTE
 } from '../../state/ui';
 
 import {
@@ -175,9 +179,9 @@ class ExecPageContainer extends Component {
 
   showApps(show) {
     this.props.changeShowApps(show);
-    _.defer(() => {
-      this.props.execVis.network.setData(this.props.execVisData);
-    });
+    // _.defer(() => {
+    //   this.props.execVis.network.setData(this.props.execVisData);
+    // });
   }
 
   renderDialogs() {
@@ -213,7 +217,7 @@ class ExecPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE && this.props.page !== PAGE_EXPERIMENTAL_EXECUTE) {
       return null;
     }
 
@@ -262,13 +266,13 @@ class ExecPageContainer extends Component {
         {this.props.exec.state.scenario !== EXEC_STATE_IDLE &&
           <>
               <Grid style={{width: '100%'}}>
-                <GridInner>
                   <GridCell span={spanLeft}>
-                    <Elevation className="component-style" z={2}>
+                    {/* <Elevation className="component-style" z={2}> */}
                       <div style={{padding: 10}}>
-                        <IDCVis type={TYPE_EXEC}/>
+                        {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
+                        
                       </div>
-                    </Elevation>
+                    {/* </Elevation> */}
                   </GridCell>
                   <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
                     <Elevation className="component-style" z={2}>
@@ -280,7 +284,6 @@ class ExecPageContainer extends Component {
                       />
                     </Elevation>
                   </GridCell>
-                </GridInner>
               </Grid>
           </>
         }

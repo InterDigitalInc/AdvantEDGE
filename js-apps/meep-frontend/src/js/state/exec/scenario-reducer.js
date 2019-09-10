@@ -9,7 +9,7 @@
 import { updateObject } from '../../util/object-util';
 
 // EXEC_CHANGE_SCENARIO
-const EXEC_CHANGE_SCENARIO = 'EXEC_CHANGE_SCENARIO';
+export const EXEC_CHANGE_SCENARIO = 'EXEC_CHANGE_SCENARIO';
 function execChangeScenario(scenario) {
   return {
     type: EXEC_CHANGE_SCENARIO,

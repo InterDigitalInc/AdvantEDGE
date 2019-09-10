@@ -13,6 +13,7 @@ export const TYPE_EXEC = 'EXEC';
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
+export const MEEP_TAB_EXP_EXEC = 'meep-tab-exp-exec';
 export const MEEP_TAB_MON = 'meep-tab-mon';
 export const MEEP_TAB_SET = 'meep-tab-set';
 export const MEEP_LBL_SCENARIO_NAME = 'meep-lbl-scenario-name';
@@ -184,3 +185,8 @@ export const PREFIX_TERM_LINK = 'Terminal Link';
 export const id = (label) => {
   return '#' + label;
 };
+
+// Metrics engine data types
+export const LATENCY_METRICS = 'latency';
+export const THROUGHPUT_METRICS = 'ingressPacketStats';
+export const MOBILITY_EVENT = 'mobilityEvent';

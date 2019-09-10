@@ -12,7 +12,7 @@ import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 
 import {
   firstLetterUpper
-} from '../../util/stringManipulation';
+} from '../../util/string-manipulation';
 
 import {
   // Field Names

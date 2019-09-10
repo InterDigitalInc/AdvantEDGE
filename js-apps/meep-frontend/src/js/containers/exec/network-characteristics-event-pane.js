@@ -19,7 +19,7 @@ import {
   camelCasePrefix,
   firstLetterUpper
 
-} from '../../util/stringManipulation';
+} from '../../util/string-manipulation';
 
 import {
   EXEC_EVT_NC_TYPE,
