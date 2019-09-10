@@ -85,20 +85,21 @@ func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name
 	return localVarHttpResponse, err
 }
 
-/* ScenarioExecutionApiService Retrieve list of active external client service mappings
+/* ScenarioExecutionApiService Retrieve list of active external node service mappings
 
 * @param ctx context.Context for authentication, logging, tracing, etc.
 @param optional (nil or map[string]interface{}) with one or more of:
-    @param "client" (string) Unique client identifier
+    @param "node" (string) Unique node identifier
+    @param "type_" (string) Exposed service type (ingress or egress)
     @param "service" (string) Exposed service name
-@return []ClientServiceMap*/
-func (a *ScenarioExecutionApiService) GetActiveClientServiceMaps(ctx context.Context, localVarOptionals map[string]interface{}) ([]ClientServiceMap, *http.Response, error) {
+@return []NodeServiceMaps*/
+func (a *ScenarioExecutionApiService) GetActiveNodeServiceMaps(ctx context.Context, localVarOptionals map[string]interface{}) ([]NodeServiceMaps, *http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Get")
 		localVarPostBody   interface{}
 		localVarFileName   string
 		localVarFileBytes  []byte
-		successPayload     []ClientServiceMap
+		successPayload     []NodeServiceMaps
 	)
 
 	// create path and map variables
@@ -108,15 +109,21 @@ func (a *ScenarioExecutionApiService) GetActiveClientServiceMaps(ctx context.Con
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if err := typeCheckParameter(localVarOptionals["client"], "string", "client"); err != nil {
+	if err := typeCheckParameter(localVarOptionals["node"], "string", "node"); err != nil {
+		return successPayload, nil, err
+	}
+	if err := typeCheckParameter(localVarOptionals["type_"], "string", "type_"); err != nil {
 		return successPayload, nil, err
 	}
 	if err := typeCheckParameter(localVarOptionals["service"], "string", "service"); err != nil {
 		return successPayload, nil, err
 	}
 
-	if localVarTempParam, localVarOk := localVarOptionals["client"].(string); localVarOk {
-		localVarQueryParams.Add("client", parameterToString(localVarTempParam, ""))
+	if localVarTempParam, localVarOk := localVarOptionals["node"].(string); localVarOk {
+		localVarQueryParams.Add("node", parameterToString(localVarTempParam, ""))
+	}
+	if localVarTempParam, localVarOk := localVarOptionals["type_"].(string); localVarOk {
+		localVarQueryParams.Add("type", parameterToString(localVarTempParam, ""))
 	}
 	if localVarTempParam, localVarOk := localVarOptionals["service"].(string); localVarOk {
 		localVarQueryParams.Add("service", parameterToString(localVarTempParam, ""))

@@ -38,11 +38,21 @@ import {
   isRowSelected
 } from '../../util/table-utils';
 
-const ServiceMapsRow = (props) => {
+const IngressServiceMapRow = (props) => {
   return (
     <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
       <GridCell span={12}>
-        <span> {props.entry.name}: {props.entry.externalPort} </span>
+        <span> I: {props.entry.name}: {props.entry.externalPort} </span>
+      </GridCell>
+    </Grid>
+  );
+};
+
+const EgressServiceMapRow = (props) => {
+  return (
+    <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
+      <GridCell span={12}>
+        <span> E: {props.entry.name}: {props.entry.meSvcName},{props.entry.ip},{props.entry.port},{props.entry.protocol}</span>
       </GridCell>
     </Grid>
   );
@@ -189,8 +199,11 @@ class ExecTable extends Component {
                               {n.logicalState}
                             </TableCell>
                             <TableCell>
-                              { n.serviceMaps ? _.map(n.serviceMaps, (sm) => {
-                                return (<ServiceMapsRow entry={sm} key={sm.externalPort}/>);
+                              { n.ingressServiceMap ? _.map(n.ingressServiceMap, (sm) => {
+                                return (<IngressServiceMapRow entry={sm} key={sm.externalPort}/>);
+                              }) : ''}
+                              { n.egressServiceMap ? _.map(n.egressServiceMap, (sm) => {
+                                return (<EgressServiceMapRow entry={sm} key={sm.name}/>);
                               }) : ''}
                             </TableCell>
                           </TableRow>

@@ -72,8 +72,8 @@ export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
 export const CFG_ELEM_LATENCY_VAR = 'cfg-elem-latency-var';
 export const CFG_ELEM_PKT_LOSS = 'cfg-elem-pkt-loss';
 export const CFG_ELEM_THROUGHPUT = 'cfg-elem-throughput';
-export const CFG_ELEM_ING_SVC_MAP = 'cfg-elem-ing-svc-map';
-
+export const CFG_ELEM_INGRESS_SVC_MAP = 'cfg-elem-ingress-svc-map';
+export const CFG_ELEM_EGRESS_SVC_MAP = 'cfg-elem-egress-svc-map';
 
 // Execution page states
 export const EXEC_STATE_IDLE = 'IDLE';

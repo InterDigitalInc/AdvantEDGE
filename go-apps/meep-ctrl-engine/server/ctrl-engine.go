@@ -43,7 +43,7 @@ const NB_CORE_PODS = 10 //although virt-engine is not a pod yet... it is conside
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
 
-var clientServiceMapList []ClientServiceMap
+var nodeServiceMapsList []NodeServiceMaps
 
 func getCorePodsList() map[string]bool {
 
@@ -243,29 +243,31 @@ func removeAllScenarios(db *kivik.DB) error {
 	return nil
 }
 
-func populateClientServiceMap(activeScenario *Scenario) {
+func populateNodeServiceMaps(activeScenario *Scenario) {
 
-	// Clear client service mapping if there is no active scenario
+	// Clear node service mapping if there is no active scenario
 	if activeScenario == nil {
-		clientServiceMapList = nil
+		nodeServiceMapsList = nil
 		return
 	}
 
-	// Parse through scenario and fill external client service mappings
+	// Parse through scenario and fill external node service mappings
 	for _, domain := range activeScenario.Deployment.Domains {
 		for _, zone := range domain.Zones {
 			for _, nl := range zone.NetworkLocations {
 				for _, pl := range nl.PhysicalLocations {
 					for _, proc := range pl.Processes {
 						if proc.IsExternal {
-							// Create new client service map
-							var clientServiceMap ClientServiceMap
-							clientServiceMap.Client = proc.Name
-							clientServiceMap.ServiceMap = append(clientServiceMap.ServiceMap,
+							// Create new node service map
+							var nodeServiceMaps NodeServiceMaps
+							nodeServiceMaps.Node = proc.Name
+							nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap,
 								proc.ExternalConfig.IngressServiceMap...)
+							nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap,
+								proc.ExternalConfig.EgressServiceMap...)
 
 							// Add new map to list
-							clientServiceMapList = append(clientServiceMapList, clientServiceMap)
+							nodeServiceMapsList = append(nodeServiceMapsList, nodeServiceMaps)
 						}
 					}
 				}
@@ -504,7 +506,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Populate active external client service map
-	populateClientServiceMap(&activeScenario)
+	populateNodeServiceMaps(&activeScenario)
 
 	// Set active scenario in DB
 	_, err = addScenario(db, activeScenarioName, activeScenario)
@@ -562,64 +564,65 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
-// ceGetActiveClientServiceMaps retrieves the deployed scenario external client service mappings
-// NOTE: query parameters 'client' and 'service' may be specified to filter results
-func ceGetActiveClientServiceMaps(w http.ResponseWriter, r *http.Request) {
-	//log.Debug("ceGetActiveClientServiceMaps")
-	var filteredList *[]ClientServiceMap
+// ceGetActiveNodeServiceMaps retrieves the deployed scenario external node service mappings
+// NOTE: query parameters 'node', 'type' and 'service' may be specified to filter results
+func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
+	//log.Debug("ceGetActiveNodeServiceMaps")
+	var filteredList *[]NodeServiceMaps
 
-	// Retrieve client ID & service name from query parameters
+	// Retrieve node ID & service name from query parameters
 	query := r.URL.Query()
-	client := query.Get("client")
+	node := query.Get("node")
+	direction := query.Get("type")
 	service := query.Get("service")
 
-	// Filter only requested service mappings from client service map list
-	if client == "" && service == "" {
-		// Any client & service
-		filteredList = &clientServiceMapList
+	// Filter only requested service mappings from node service map list
+	if node == "" && direction == "" && service == "" {
+		// Any node & service
+		filteredList = &nodeServiceMapsList
 	} else {
-		filteredList = new([]ClientServiceMap)
-		if service == "" {
-			// Any service for requested client
-			for _, clientServiceMap := range clientServiceMapList {
-				if clientServiceMap.Client == client {
-					*filteredList = append(*filteredList, clientServiceMap)
+		filteredList = new([]NodeServiceMaps)
+
+		// Loop through full list and filter out unrequested results
+		for _, nodeServiceMaps := range nodeServiceMapsList {
+			var svcMap NodeServiceMaps
+
+			// Filter based on node name
+			if node != "" && nodeServiceMaps.Node != node {
+				continue
+			}
+
+			// Append element directly if no direction or service filter
+			if direction == "" && service == "" {
+				*filteredList = append(*filteredList, nodeServiceMaps)
+				continue
+			}
+
+			// Loop through Ingress maps
+			for _, ingressServiceMap := range nodeServiceMaps.IngressServiceMap {
+				if direction != "" && direction != "ingress" {
 					break
 				}
-			}
-		} else if client == "" {
-			// Any client for requested service
-			for _, clientServiceMap := range clientServiceMapList {
-				var svcMap ClientServiceMap
-				svcMap.Client = clientServiceMap.Client
-				for _, serviceMap := range clientServiceMap.ServiceMap {
-					if serviceMap.Name == service {
-						svcMap.ServiceMap = append(svcMap.ServiceMap, serviceMap)
-						break
-					}
+				if service != "" && ingressServiceMap.Name != service {
+					continue
 				}
-
-				// Only append if at least one match found
-				if len(svcMap.ServiceMap) > 0 {
-					*filteredList = append(*filteredList, svcMap)
-				}
+				svcMap.IngressServiceMap = append(svcMap.IngressServiceMap, ingressServiceMap)
 			}
-		} else {
-			// Requested client and service
-			for _, clientServiceMap := range clientServiceMapList {
-				if clientServiceMap.Client == client {
-					for _, serviceMap := range clientServiceMap.ServiceMap {
-						if serviceMap.Name == service {
-							var svcMap ClientServiceMap
-							svcMap.Client = clientServiceMap.Client
-							svcMap.ServiceMap = append(svcMap.ServiceMap, serviceMap)
 
-							*filteredList = append(*filteredList, svcMap)
-							break
-						}
-					}
+			// Loop through Egress maps
+			for _, egressServiceMap := range nodeServiceMaps.EgressServiceMap {
+				if direction != "" && direction != "egress" {
 					break
 				}
+				if service != "" && (egressServiceMap.Name != service && egressServiceMap.MeSvcName != service) {
+					continue
+				}
+				svcMap.EgressServiceMap = append(svcMap.EgressServiceMap, egressServiceMap)
+			}
+
+			// Add node only if it has at least 1 service mapping
+			if len(svcMap.IngressServiceMap) > 0 || len(svcMap.EgressServiceMap) > 0 {
+				*filteredList = append(*filteredList, svcMap)
 			}
 		}
 	}
@@ -643,7 +646,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceTerminateScenario")
 
 	// Clear active external client service map
-	populateClientServiceMap(nil)
+	populateNodeServiceMaps(nil)
 
 	// Retrieve active scenario from DB
 	var scenario Scenario

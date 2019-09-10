@@ -57,7 +57,7 @@ import {
   FIELD_TYPE,
   FIELD_PARENT,
   FIELD_NAME,
-  FIELD_SVC_MAP,
+  FIELD_INGRESS_SVC_MAP,
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
@@ -74,7 +74,7 @@ const notNull = x => x;
 const extractPort = svcMapEntry => Number(firstElementIfPresent(svcMapEntry.split(':')));
 
 const externalPorts = elem => {
-  return getElemFieldVal(elem, FIELD_SVC_MAP)
+  return getElemFieldVal(elem, FIELD_INGRESS_SVC_MAP)
     .split(',')
     .map(extractPort)
     .filter(notNull)

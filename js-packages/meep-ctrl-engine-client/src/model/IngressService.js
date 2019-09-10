@@ -25,7 +25,7 @@
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.ServiceMap = factory(root.MeepControllerRestApi.ApiClient);
+    root.MeepControllerRestApi.IngressService = factory(root.MeepControllerRestApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -34,15 +34,15 @@
 
 
   /**
-   * The ServiceMap model module.
-   * @module model/ServiceMap
+   * The IngressService model module.
+   * @module model/IngressService
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>ServiceMap</code>.
-   * Mapping of exposed ports to internal or external services
-   * @alias module:model/ServiceMap
+   * Constructs a new <code>IngressService</code>.
+   * Internal service exposed externally via specific port
+   * @alias module:model/IngressService
    * @class
    */
   var exports = function() {
@@ -52,15 +52,14 @@
 
 
 
-
   };
 
   /**
-   * Constructs a <code>ServiceMap</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>IngressService</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/ServiceMap} obj Optional instance to populate.
-   * @return {module:model/ServiceMap} The populated <code>ServiceMap</code> instance.
+   * @param {module:model/IngressService} obj Optional instance to populate.
+   * @return {module:model/IngressService} The populated <code>IngressService</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
@@ -68,9 +67,6 @@
 
       if (data.hasOwnProperty('name')) {
         obj['name'] = ApiClient.convertToType(data['name'], 'String');
-      }
-      if (data.hasOwnProperty('ip')) {
-        obj['ip'] = ApiClient.convertToType(data['ip'], 'String');
       }
       if (data.hasOwnProperty('port')) {
         obj['port'] = ApiClient.convertToType(data['port'], 'Number');
@@ -86,27 +82,22 @@
   }
 
   /**
-   * Service name
+   * Service name (unique or multi-edge)
    * @member {String} name
    */
   exports.prototype['name'] = undefined;
   /**
-   * Service IP address for external service only (egress)   <li>N/A for internal services 
-   * @member {String} ip
-   */
-  exports.prototype['ip'] = undefined;
-  /**
-   * Service port number
+   * Internal service port number
    * @member {Number} port
    */
   exports.prototype['port'] = undefined;
   /**
-   * Port used to expose internal service only (ingress)   <li>Must be unique port in range (30000 - 32767)   <li>N/A for external services 
+   * Externally-exposed unique service port in range (30000 - 32767)
    * @member {Number} externalPort
    */
   exports.prototype['externalPort'] = undefined;
   /**
-   * Protocol that the application is using (TCP or UDP)
+   * Service protocol (TCP or UDP)
    * @member {String} protocol
    */
   exports.prototype['protocol'] = undefined;

@@ -70,16 +70,23 @@ type ServicePortTemplate struct {
 type ExternalTemplate struct {
 	Enabled           string
 	Selector          []string
-	IngressServiceMap []ServiceMapTemplate
-	EgressServiceMap  []ServiceMapTemplate
+	IngressServiceMap []IngressServiceTemplate
+	EgressServiceMap  []EgressServiceTemplate
 }
 
-type ServiceMapTemplate struct {
+type IngressServiceTemplate struct {
 	Name     string
-	IP       string
 	Port     string
 	NodePort string
 	Protocol string
+}
+
+type EgressServiceTemplate struct {
+	Name      string
+	MeSvcName string
+	IP        string
+	Port      string
+	Protocol  string
 }
 
 // helm values.yaml template
@@ -256,24 +263,25 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 
 								// Add ingress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
-									var ingressSvcMapTemplate ServiceMapTemplate
-									ingressSvcMapTemplate.NodePort = strconv.Itoa(int(serviceMap.ExternalPort))
-									ingressSvcMapTemplate.Port = strconv.Itoa(int(serviceMap.Port))
-									ingressSvcMapTemplate.Protocol = serviceMap.Protocol
-									ingressSvcMapTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcMapTemplate.NodePort
+									var ingressSvcTemplate IngressServiceTemplate
+									ingressSvcTemplate.NodePort = strconv.Itoa(int(serviceMap.ExternalPort))
+									ingressSvcTemplate.Port = strconv.Itoa(int(serviceMap.Port))
+									ingressSvcTemplate.Protocol = serviceMap.Protocol
+									ingressSvcTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcTemplate.NodePort
 
-									externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcMapTemplate)
+									externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcTemplate)
 								}
 
 								// Add egress Service Maps, if any
 								for _, serviceMap := range proc.ExternalConfig.EgressServiceMap {
-									var egressSvcMapTemplate ServiceMapTemplate
-									egressSvcMapTemplate.Name = serviceMap.Name
-									egressSvcMapTemplate.IP = serviceMap.Ip
-									egressSvcMapTemplate.Port = strconv.Itoa(int(serviceMap.Port))
-									egressSvcMapTemplate.Protocol = serviceMap.Protocol
+									var egressSvcTemplate EgressServiceTemplate
+									egressSvcTemplate.Name = serviceMap.Name
+									egressSvcTemplate.MeSvcName = serviceMap.MeSvcName
+									egressSvcTemplate.IP = serviceMap.Ip
+									egressSvcTemplate.Port = strconv.Itoa(int(serviceMap.Port))
+									egressSvcTemplate.Protocol = serviceMap.Protocol
 
-									externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcMapTemplate)
+									externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcTemplate)
 								}
 							}
 

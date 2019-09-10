@@ -9,21 +9,21 @@
 
 package client
 
-// Mapping of exposed ports to internal or external services
-type ServiceMap struct {
+// External service exposed internally via specific port
+type EgressService struct {
 
 	// Service name
 	Name string `json:"name,omitempty"`
 
-	// Service IP address for external service only (egress)   <li>N/A for internal services
+	// Multi-Edge service name, if any
+	MeSvcName string `json:"meSvcName,omitempty"`
+
+	// External node IP address
 	Ip string `json:"ip,omitempty"`
 
 	// Service port number
 	Port int32 `json:"port,omitempty"`
 
-	// Port used to expose internal service only (ingress)   <li>Must be unique port in range (30000 - 32767)   <li>N/A for external services
-	ExternalPort int32 `json:"externalPort,omitempty"`
-
-	// Protocol that the application is using (TCP or UDP)
+	// Service protocol (TCP or UDP)
 	Protocol string `json:"protocol,omitempty"`
 }

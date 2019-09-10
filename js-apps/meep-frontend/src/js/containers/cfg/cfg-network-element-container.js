@@ -101,7 +101,8 @@ import {
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
   CFG_ELEM_CHART_ALT_VAL,
-  CFG_ELEM_ING_SVC_MAP,
+  CFG_ELEM_INGRESS_SVC_MAP,
+  CFG_ELEM_EGRESS_SVC_MAP,
 
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM
@@ -258,7 +259,7 @@ const validateEntries = validator => entries => {
     .join(', \n');
 };
 
-const validateServiceMappingEntry = (entry) => {
+const validateIngressServiceMappingEntry = (entry) => {
   if (entry === '') {return null;}
 
   const args = entry.split(':');
@@ -269,6 +270,21 @@ const validateServiceMappingEntry = (entry) => {
     validateFullName(args[1]),
     validatePort(args[2]),
     validateProtocol(args[3])
+  ].filter(notNull);
+};
+
+const validateEgressServiceMappingEntry = (entry) => {
+  if (entry === '') {return null;}
+
+  const args = entry.split(':');
+  if (args.length !== 5) {return ` ${'Svc Name:ME Svc Name:IP:Port:Protocol[,Svc Name:ME Svc Name:IP:Port:Protocol]'}`;}
+
+  return [
+    validateFullName(args[0]),
+    validateFullName(args[1]),
+    // validateIP(args[2]), <-- TODO
+    validatePort(args[3]),
+    validateProtocol(args[4])
   ].filter(notNull);
 };
 
@@ -296,7 +312,8 @@ const validateChartGroupEntry = (entry) => {
     .join(',');
 };
 
-const validateIngressServiceMapping = (entries) => validateEntries(validateServiceMappingEntry)(entries);
+const validateIngressServiceMapping = (entries) => validateEntries(validateIngressServiceMappingEntry)(entries);
+const validateEgressServiceMapping = (entries) => validateEntries(validateEgressServiceMappingEntry)(entries);
 const validateEnvironMentVariables = (entries) => validateEntries(validateEnvironmentVariableEntry)(entries);
  
 const validateCommandArguments = () => null;
@@ -568,14 +585,24 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
     );
   case ELEMENT_TYPE_EXT_UE_APP:
     return (
-      <CfgTextField
-        onUpdate={onUpdate}
-        element={element}
-        label="IngressServiceMapping"
-        validate={validateIngressServiceMapping}
-        fieldName="ingressServiceMap"
-        cydata={CFG_ELEM_ING_SVC_MAP}
-      />
+      <>
+        <CfgTextField
+          onUpdate={onUpdate}
+          element={element}
+          label="IngressServiceMapping"
+          validate={validateIngressServiceMapping}
+          fieldName="ingressServiceMap"
+          cydata={CFG_ELEM_INGRESS_SVC_MAP}
+        />
+        <CfgTextField
+          onUpdate={onUpdate}
+          element={element}
+          label="EgressServiceMapping"
+          validate={validateEgressServiceMapping}
+          fieldName="egressServiceMap"
+          cydata={CFG_ELEM_EGRESS_SVC_MAP}
+        />
+      </>
     );
   case ELEMENT_TYPE_CLOUD_APP:
   case ELEMENT_TYPE_MECSVC:

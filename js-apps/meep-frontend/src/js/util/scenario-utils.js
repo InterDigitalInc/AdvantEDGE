@@ -21,7 +21,8 @@ import {
   FIELD_GROUP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  FIELD_SVC_MAP,
+  FIELD_INGRESS_SVC_MAP,
+  FIELD_EGRESS_SVC_MAP,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -552,7 +553,8 @@ export function createExternalProcess(name, type, element) {
     commandExe: null,
     serviceConfig: null,
     externalConfig: {
-      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_SVC_MAP))
+      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)),
+      egressServiceMap: getEgressServiceMapArray(getElemFieldVal(element, FIELD_EGRESS_SVC_MAP))
     }
   };
 
@@ -589,12 +591,49 @@ export function getIngressServiceMapArray(ingressServiceMapStr) {
         externalPort: parseInt(svcMap[0]),
         name: svcMap[1],
         port: parseInt(svcMap[2]),
-        protocol: svcMap[3].toUpperCase(),
-        ip: null
+        protocol: svcMap[3].toUpperCase()
       });
     }
   }
   return ingressServiceMapArray;
+}
+
+export function getEgressServiceMapStr(egressServiceMapArray) {
+  var egressServiceMapStr = '';
+
+  // Loop through service map array
+  for (var i = 0; i < egressServiceMapArray.length; i++) {
+    var svcMap = egressServiceMapArray[i];
+    egressServiceMapStr += ((i === 0) ? '' : ',') +
+      svcMap.name + ':' + ((svcMap.meSvcName) ? svcMap.meSvcName : '') + ':' + svcMap.ip + ':' + svcMap.port + ':' + svcMap.protocol;
+  }
+  return egressServiceMapStr;
+}
+
+export function getEgressServiceMapArray(egressServiceMapStr) {
+  var egressServiceMapArray = [];
+
+  // Add service map entries, if any
+  if (egressServiceMapStr) {
+    var scpMapList = egressServiceMapStr.split(',');
+    // Loop through service map list
+    for (var i = 0; i < scpMapList.length; i++) {
+      var svcMap = (scpMapList[i]).split(':');
+      if (svcMap.length !== 5) {
+        continue;
+      }
+
+      // Add service map to egressServiceMap Array
+      egressServiceMapArray.push({
+        name: svcMap[0],
+        meSvcName: svcMap[1],
+        ip: svcMap[2],
+        port: parseInt(svcMap[3]),
+        protocol: svcMap[4].toUpperCase()
+      });
+    }
+  }
+  return egressServiceMapArray;
 }
 
 export function createDomain(name, element) {
@@ -848,8 +887,13 @@ export function getElementFromScenario(scenario, elementName) {
                 }
               }
 
-              if (process.externalConfig && process.externalConfig.ingressServiceMap) {
-                setElemFieldVal(elem, FIELD_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+              if (process.externalConfig) {
+                if (process.externalConfig.ingressServiceMap) {
+                  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+                }
+                if (process.externalConfig.egressServiceMap) {
+                  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP, getEgressServiceMapStr(process.externalConfig.egressServiceMap));
+                }
               }
               return elem;
             }

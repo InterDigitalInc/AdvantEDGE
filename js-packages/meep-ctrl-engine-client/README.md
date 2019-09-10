@@ -124,7 +124,7 @@ Class | Method | HTTP request | Description
 *MeepControllerRestApi.ScenarioConfigurationApi* | [**getScenarioList**](docs/ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Retrieve list of scenarios in MEEP store
 *MeepControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update scenario in MEEP store
 *MeepControllerRestApi.ScenarioExecutionApi* | [**activateScenario**](docs/ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Activate (deploy) scenario
-*MeepControllerRestApi.ScenarioExecutionApi* | [**getActiveClientServiceMaps**](docs/ScenarioExecutionApi.md#getActiveClientServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external client service mappings
+*MeepControllerRestApi.ScenarioExecutionApi* | [**getActiveNodeServiceMaps**](docs/ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external node service mappings
 *MeepControllerRestApi.ScenarioExecutionApi* | [**getActiveScenario**](docs/ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Retrieve active (deployed) scenario
 *MeepControllerRestApi.ScenarioExecutionApi* | [**getEventList**](docs/ScenarioExecutionApi.md#getEventList) | **GET** /events | Retrieve list of supported event types for active (deployed) scenario
 *MeepControllerRestApi.ScenarioExecutionApi* | [**sendEvent**](docs/ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send event to active (deployed) scenario
@@ -133,9 +133,9 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
- - [MeepControllerRestApi.ClientServiceMap](docs/ClientServiceMap.md)
  - [MeepControllerRestApi.Deployment](docs/Deployment.md)
  - [MeepControllerRestApi.Domain](docs/Domain.md)
+ - [MeepControllerRestApi.EgressService](docs/EgressService.md)
  - [MeepControllerRestApi.Event](docs/Event.md)
  - [MeepControllerRestApi.EventList](docs/EventList.md)
  - [MeepControllerRestApi.EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
@@ -144,7 +144,9 @@ Class | Method | HTTP request | Description
  - [MeepControllerRestApi.EventUeMobility](docs/EventUeMobility.md)
  - [MeepControllerRestApi.ExternalConfig](docs/ExternalConfig.md)
  - [MeepControllerRestApi.GpuConfig](docs/GpuConfig.md)
+ - [MeepControllerRestApi.IngressService](docs/IngressService.md)
  - [MeepControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
+ - [MeepControllerRestApi.NodeServiceMaps](docs/NodeServiceMaps.md)
  - [MeepControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)
  - [MeepControllerRestApi.PodStatus](docs/PodStatus.md)
  - [MeepControllerRestApi.PodsStatus](docs/PodsStatus.md)
@@ -153,7 +155,6 @@ Class | Method | HTTP request | Description
  - [MeepControllerRestApi.ScenarioConfig](docs/ScenarioConfig.md)
  - [MeepControllerRestApi.ScenarioList](docs/ScenarioList.md)
  - [MeepControllerRestApi.ServiceConfig](docs/ServiceConfig.md)
- - [MeepControllerRestApi.ServiceMap](docs/ServiceMap.md)
  - [MeepControllerRestApi.ServicePort](docs/ServicePort.md)
  - [MeepControllerRestApi.Settings](docs/Settings.md)
  - [MeepControllerRestApi.Zone](docs/Zone.md)
