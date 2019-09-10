@@ -128,70 +128,45 @@
    */
   exports.ElementTypeEnum = {
     /**
-     * value: "OPERATOR"
+     * value: "INTER-DOMAIN"
      * @const
      */
-    "OPERATOR": "OPERATOR",
+    "INTER-DOMAIN": "INTER-DOMAIN",
     /**
-     * value: "POA"
+     * value: "INTER-ZONE"
      * @const
      */
-    "POA": "POA",
+    "INTER-ZONE": "INTER-ZONE",
     /**
-     * value: "SCENARIO"
+     * value: "INTER-EDGE"
      * @const
      */
-    "SCENARIO": "SCENARIO",
+    "INTER-EDGE": "INTER-EDGE",
     /**
-     * value: "ZONE-INTER-EDGE"
+     * value: "INTER-FOG"
      * @const
      */
-    "ZONE-INTER-EDGE": "ZONE-INTER-EDGE",
+    "INTER-FOG": "INTER-FOG",
     /**
-     * value: "ZONE-INTER-FOG"
+     * value: "EDGE-FOG"
      * @const
      */
-    "ZONE-INTER-FOG": "ZONE-INTER-FOG",
+    "EDGE-FOG": "EDGE-FOG",
     /**
-     * value: "ZONE-EDGE-FOG"
+     * value: "TERMINAL-LINK"
      * @const
      */
-    "ZONE-EDGE-FOG": "ZONE-EDGE-FOG",
+    "TERMINAL-LINK": "TERMINAL-LINK",
     /**
-     * value: "EDGE"
+     * value: "LINK"
      * @const
      */
-    "EDGE": "EDGE",
+    "LINK": "LINK",
     /**
-     * value: "FOG"
+     * value: "APP"
      * @const
      */
-    "FOG": "FOG",
-    /**
-     * value: "UE"
-     * @const
-     */
-    "UE": "UE",
-    /**
-     * value: "DISTANT-CLOUD"
-     * @const
-     */
-    "DISTANT-CLOUD": "DISTANT-CLOUD",
-    /**
-     * value: "UE-APP"
-     * @const
-     */
-    "UE-APP": "UE-APP",
-    /**
-     * value: "EDGE-APP"
-     * @const
-     */
-    "EDGE-APP": "EDGE-APP",
-    /**
-     * value: "CLOUD-APP"
-     * @const
-     */
-    "CLOUD-APP": "CLOUD-APP"  };
+    "APP": "APP"  };
 
 
   return exports;

@@ -46,7 +46,7 @@ const execUEs = createSelector([execTableElements], elems => {
 });
 
 const execMobTypes = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' || (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' && getElemFieldVal(elem, FIELD_GROUP) === "")));
+  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' || (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' && getElemFieldVal(elem, FIELD_GROUP) === '')));
 });
 
 const execFogEdges = createSelector([execTableElements], elems => {

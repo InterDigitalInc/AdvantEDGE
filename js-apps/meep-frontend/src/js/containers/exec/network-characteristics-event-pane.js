@@ -36,16 +36,16 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
-  ELEMENT_TYPE_ZONE,
+  //ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_DC,
-  ELEMENT_TYPE_CN,
+  //ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
   ELEMENT_TYPE_UE,
-  ELEMENT_TYPE_MECSVC,
+  //ELEMENT_TYPE_MECSVC,
   ELEMENT_TYPE_UE_APP,
-  ELEMENT_TYPE_EXT_UE_APP,
+  //ELEMENT_TYPE_EXT_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
@@ -302,10 +302,10 @@ class NetworkCharacteristicsEventPane extends Component {
         if (type === 'DOMAIN' || type === 'OPERATOR') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
         }
-	if (elemType === 'ZONE') {
- 	  return this.state.currentElementType.startsWith(elemType);
-	}
-	return this.state.currentElementType === elemType;
+        if (elemType === 'ZONE') {
+          return this.state.currentElementType.startsWith(elemType);
+        }
+        return this.state.currentElementType === elemType;
       })
       .map((e) => {
         return getElemFieldVal(e, FIELD_NAME);

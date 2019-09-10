@@ -56,8 +56,8 @@
       //expect(instance).to.be.a(MeepControllerRestApi.EventMobility);
     });
 
-    it('should have the property src (base name: "src")', function() {
-      // uncomment below and update the code to test the property src
+    it('should have the property elementName (base name: "elementName")', function() {
+      // uncomment below and update the code to test the property elementName
       //var instane = new MeepControllerRestApi.EventMobility();
       //expect(instance).to.be();
     });

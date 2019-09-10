@@ -50,7 +50,7 @@ class MobilityEventPane extends Component {
       'name': 'name',
       'type': this.props.currentEvent,
       'eventMobility': {
-        'src': this.values.eventTarget,
+        'elementName': this.values.eventTarget,
         'dest': this.values.eventDestination
       }
     };
@@ -66,66 +66,66 @@ class MobilityEventPane extends Component {
   render() {
 
     //check with list the target belongs to
-    if (this.values.eventTarget === undefined || this.values.eventTarget === "") {
+    if (this.values.eventTarget === undefined || this.values.eventTarget === '') {
       return (
-      <div>
-        <Grid style={styles.field}>
-          <GridCell span="8">
-            <Select
-              style={styles.select}
-              label="Target"
-              outlined
-              options={_.map(this.props.MobTypes, elem => getElemFieldVal(elem, FIELD_NAME))}
-              onChange={(event)=>{this.values['eventTarget'] = event.target.value;}}
-              data-cy={EXEC_EVT_MOB_TARGET}
-            />
-          </GridCell>
-          <GridCell span="4">
-          </GridCell>
-        </Grid>
+        <div>
+          <Grid style={styles.field}>
+            <GridCell span="8">
+              <Select
+                style={styles.select}
+                label="Target"
+                outlined
+                options={_.map(this.props.MobTypes, elem => getElemFieldVal(elem, FIELD_NAME))}
+                onChange={(event)=>{this.values['eventTarget'] = event.target.value;}}
+                data-cy={EXEC_EVT_MOB_TARGET}
+              />
+            </GridCell>
+            <GridCell span="4">
+            </GridCell>
+          </Grid>
 
-        <CancelApplyPair
-          cancelText="Close"
-          applyText="Submit"
-          onCancel={this.props.onClose}
-          onApply={(e) => this.triggerEvent(e)}
-        />
-      </div>
+          <CancelApplyPair
+            cancelText="Close"
+            applyText="Submit"
+            onCancel={this.props.onClose}
+            onApply={(e) => this.triggerEvent(e)}
+          />
+        </div>
       );
     }
 
-//    let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
+    //let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
     //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
     var target = this.values.eventTarget;
     var found = this.props.UEs.find(function(element) {
-        return element.label == target;
+      return element.label === target;
     });
 
     var populateDestination;
     if (found !== undefined) {
-        populateDestination = this.props.POAs;
+      populateDestination = this.props.POAs;
     } else {
-        found = this.props.EDGEs.find(function(element) {
-            return element.label == target;
-            });
+      found = this.props.EDGEs.find(function(element) {
+        return element.label === target;
+      });
 
+      if (found !== undefined) {
+        populateDestination = this.props.ZONEs;
+      } else {
+        found = this.props.FOGs.find(function(element) {
+          return element.label === target;
+        });
         if (found !== undefined) {
-            populateDestination = this.props.ZONEs;
+          populateDestination = this.props.POAs;
         } else {
-            found = this.props.FOGs.find(function(element) {
-                return element.label == target;
-                });
-            if (found !== undefined) {
-                populateDestination = this.props.POAs;
-            } else {
-                found = this.props.EdgeApps.find(function(element) {
-                    return element.label == target;
-                });
-                if (found !== undefined) {
-                    populateDestination = this.props.FogEdges;
-                }
-            }
+          found = this.props.EdgeApps.find(function(element) {
+            return element.label === target;
+          });
+          if (found !== undefined) {
+            populateDestination = this.props.FogEdges;
+          }
         }
+      }
     }
     return (
       <div>

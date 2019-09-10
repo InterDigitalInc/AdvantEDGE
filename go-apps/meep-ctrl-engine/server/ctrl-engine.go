@@ -733,7 +733,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 		for zIndex, z := range d.Zones {
 			if elementFound {
 				break
-			} else if elementType == "ZONE-INTER-EDGE" && elementName == z.Name {
+			} else if elementType == "INTER-EDGE" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterEdgeLatency = netChar.Latency
 				zone.InterEdgeLatencyVariation = netChar.LatencyVariation
@@ -741,7 +741,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				zone.InterEdgePacketLoss = netChar.PacketLoss
 				elementFound = true
 				break
-			} else if elementType == "ZONE-INTER-FOG" && elementName == z.Name {
+			} else if elementType == "INTER-FOG" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterFogLatency = netChar.Latency
 				zone.InterFogLatencyVariation = netChar.LatencyVariation
@@ -749,7 +749,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				zone.InterFogPacketLoss = netChar.PacketLoss
 				elementFound = true
 				break
-			} else if elementType == "ZONE-EDGE-FOG" && elementName == z.Name {
+			} else if elementType == "EDGE-FOG" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.EdgeFogLatency = netChar.Latency
 				zone.EdgeFogLatencyVariation = netChar.LatencyVariation
@@ -774,22 +774,22 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				// Parse Physical Locations
 				for plIndex, pl := range nl.PhysicalLocations {
 					if (elementType == "DISTANT CLOUD" || elementType == "EDGE" || elementType == "FOG" || elementType == "UE") && elementName == pl.Name {
-						netloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex]
-						netloc.LinkLatency = netChar.Latency
-						netloc.LinkLatencyVariation = netChar.LatencyVariation
-						netloc.LinkThroughput = netChar.Throughput
-						netloc.LinkPacketLoss = netChar.PacketLoss
+						phyloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex]
+						phyloc.LinkLatency = netChar.Latency
+						phyloc.LinkLatencyVariation = netChar.LatencyVariation
+						phyloc.LinkThroughput = netChar.Throughput
+						phyloc.LinkPacketLoss = netChar.PacketLoss
 						elementFound = true
 						break
 					}
 					// Parse Processes
 					for procIndex, proc := range pl.Processes {
 						if (elementType == "CLOUD APPLICATION" || elementType == "EDGE APPLICATION" || elementType == "UE APPLICATION") && elementName == proc.Name {
-							netloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex].Processes[procIndex]
-							netloc.AppLatency = netChar.Latency
-							netloc.AppLatencyVariation = netChar.LatencyVariation
-							netloc.AppThroughput = netChar.Throughput
-							netloc.AppPacketLoss = netChar.PacketLoss
+							procloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex].Processes[procIndex]
+							procloc.AppLatency = netChar.Latency
+							procloc.AppLatencyVariation = netChar.LatencyVariation
+							procloc.AppThroughput = netChar.Throughput
+							procloc.AppPacketLoss = netChar.PacketLoss
 							elementFound = true
 							break
 						}
@@ -830,7 +830,7 @@ func sendEventMobility(event Event) (string, int) {
 	}
 
 	// Retrieve target name (src) and destination parent name
-	srcName := event.EventMobility.Src
+	elemName := event.EventMobility.ElementName
 	destName := event.EventMobility.Dest
 
 	var oldNL *NetworkLocation
@@ -847,7 +847,7 @@ func sendEventMobility(event Event) (string, int) {
 	isMoveable := true
 
 	// Find PL & destination element
-	log.Debug("Searching for ", srcName, " and destination in active scenario")
+	log.Debug("Searching for ", elemName, " and destination in active scenario")
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
 
@@ -875,7 +875,7 @@ func sendEventMobility(event Event) (string, int) {
 					}
 
 					// UE to move
-					if currentPl.Name == srcName {
+					if currentPl.Name == elemName {
 						if currentPl.Type_ == "UE" || currentPl.Type_ == "FOG" || currentPl.Type_ == "EDGE" {
 							oldNL = nl
 							pl = currentPl
@@ -887,7 +887,7 @@ func sendEventMobility(event Event) (string, int) {
 						currentP := &currentPl.Processes[p]
 
 						// APP to move
-						if currentP.Name == srcName {
+						if currentP.Name == elemName {
 							if currentP.Type_ == "EDGE-APP" {
 								//exception, we do not move if we are part of a mobility group
 								if currentP.ServiceConfig != nil {
@@ -962,8 +962,8 @@ func sendEventMobility(event Event) (string, int) {
 			"meep.log.msgType":   "mobilityEvent",
 			"meep.log.oldLoc":    oldLocName,
 			"meep.log.newLoc":    newLocName,
-			"meep.log.src":       srcName,
-			"meep.log.dest":      srcName,
+			"meep.log.src":       elemName,
+			"meep.log.dest":      elemName,
 		}).Info("Measurements log")
 
 		// TODO in Execution Engine:

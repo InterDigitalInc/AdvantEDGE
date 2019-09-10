@@ -12,8 +12,8 @@ package model
 // Mobility Event object
 type EventMobility struct {
 
-	// Source element identifier
-	Src string `json:"src,omitempty"`
+	// Name of the network element to be updated
+	ElementName string `json:"elementName,omitempty"`
 
 	// Destination element identifier
 	Dest string `json:"dest,omitempty"`

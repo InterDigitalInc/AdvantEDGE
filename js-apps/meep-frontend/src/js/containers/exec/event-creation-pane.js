@@ -77,7 +77,7 @@ const EventCreationFields = (props) => {
         POAs={props.POAs}
         EDGEs={props.EDGEs}
         FOGs={props.FOGs}
-	ZONEs={props.ZONEs}
+        ZONEs={props.ZONEs}
         MobTypes={props.MobTypes}
         FogEdges={props.FogEdges}
         EdgeApps={props.EdgeApps}
@@ -138,7 +138,7 @@ class EventCreationPane extends Component {
           POAs={this.props.POAs}
           EDGEs={this.props.EDGEs}
           FOGs={this.props.FOGs}
-	  ZONEs={this.props.ZONEs}
+          ZONEs={this.props.ZONEs}
           MobTypes={this.props.MobTypes}
           EdgeApps={this.props.EdgeApps}
           FogEdges={this.props.FogEdges}

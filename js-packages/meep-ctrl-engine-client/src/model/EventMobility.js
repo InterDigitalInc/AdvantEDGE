@@ -63,8 +63,8 @@
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('src')) {
-        obj['src'] = ApiClient.convertToType(data['src'], 'String');
+      if (data.hasOwnProperty('elementName')) {
+        obj['elementName'] = ApiClient.convertToType(data['elementName'], 'String');
       }
       if (data.hasOwnProperty('dest')) {
         obj['dest'] = ApiClient.convertToType(data['dest'], 'String');
@@ -74,10 +74,10 @@
   }
 
   /**
-   * Source element identifier
-   * @member {String} src
+   * Name of the network element to be updated
+   * @member {String} elementName
    */
-  exports.prototype['src'] = undefined;
+  exports.prototype['elementName'] = undefined;
   /**
    * Destination element identifier
    * @member {String} dest

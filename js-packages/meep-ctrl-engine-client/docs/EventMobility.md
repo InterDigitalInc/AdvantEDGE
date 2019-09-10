@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**src** | **String** | Source element identifier | [optional] 
+**elementName** | **String** | Name of the network element to be updated | [optional] 
 **dest** | **String** | Destination element identifier | [optional] 
 
 
