@@ -262,24 +262,33 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 								addExtSelector(externalTemplate, "meepAppId: "+proc.Id)
 
 								// Add ingress Service Maps, if any
-								for _, serviceMap := range proc.ExternalConfig.IngressServiceMap {
+								for _, svcMap := range proc.ExternalConfig.IngressServiceMap {
 									var ingressSvcTemplate IngressServiceTemplate
-									ingressSvcTemplate.NodePort = strconv.Itoa(int(serviceMap.ExternalPort))
-									ingressSvcTemplate.Port = strconv.Itoa(int(serviceMap.Port))
-									ingressSvcTemplate.Protocol = serviceMap.Protocol
+									ingressSvcTemplate.NodePort = strconv.Itoa(int(svcMap.ExternalPort))
+									ingressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
+									ingressSvcTemplate.Protocol = svcMap.Protocol
 									ingressSvcTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcTemplate.NodePort
 
 									externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcTemplate)
 								}
 
 								// Add egress Service Maps, if any
-								for _, serviceMap := range proc.ExternalConfig.EgressServiceMap {
+								for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
 									var egressSvcTemplate EgressServiceTemplate
-									egressSvcTemplate.Name = serviceMap.Name
-									egressSvcTemplate.MeSvcName = serviceMap.MeSvcName
-									egressSvcTemplate.IP = serviceMap.Ip
-									egressSvcTemplate.Port = strconv.Itoa(int(serviceMap.Port))
-									egressSvcTemplate.Protocol = serviceMap.Protocol
+									egressSvcTemplate.Name = svcMap.Name
+									egressSvcTemplate.IP = svcMap.Ip
+									egressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
+									egressSvcTemplate.Protocol = svcMap.Protocol
+
+									// Create and store ME Service template only with first occurrence.
+									// If it already exists then add the matching pod label but don't create the service again.
+									meSvcName := svcMap.MeSvcName
+									if meSvcName != "" {
+										if _, found := serviceMap[meSvcName]; !found {
+											serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+											egressSvcTemplate.MeSvcName = meSvcName
+										}
+									}
 
 									externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcTemplate)
 								}

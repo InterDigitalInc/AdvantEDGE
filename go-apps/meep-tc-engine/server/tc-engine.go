@@ -1017,7 +1017,7 @@ func applyMgSvcMapping() {
 
 	keys := map[string]bool{}
 
-	// For each pod, add MG Service LB rules & exposed services rules
+	// For each pod, add MG, ingress & egress Service LB rules
 	for _, podInfo := range podInfoMap {
 
 		// MG Service LB rules
