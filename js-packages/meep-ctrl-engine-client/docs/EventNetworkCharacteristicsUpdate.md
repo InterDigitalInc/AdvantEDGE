@@ -15,21 +15,31 @@ Name | Type | Description | Notes
 ## Enum: ElementTypeEnum
 
 
-* `INTER-DOMAIN` (value: `"INTER-DOMAIN"`)
+* `OPERATOR` (value: `"OPERATOR"`)
 
-* `INTER-ZONE` (value: `"INTER-ZONE"`)
+* `POA` (value: `"POA"`)
 
-* `INTER-EDGE` (value: `"INTER-EDGE"`)
+* `SCENARIO` (value: `"SCENARIO"`)
 
-* `INTER-FOG` (value: `"INTER-FOG"`)
+* `ZONE-INTER-EDGE` (value: `"ZONE-INTER-EDGE"`)
 
-* `EDGE-FOG` (value: `"EDGE-FOG"`)
+* `ZONE-INTER-FOG` (value: `"ZONE-INTER-FOG"`)
 
-* `TERMINAL-LINK` (value: `"TERMINAL-LINK"`)
+* `ZONE-EDGE-FOG` (value: `"ZONE-EDGE-FOG"`)
 
-* `LINK` (value: `"LINK"`)
+* `EDGE` (value: `"EDGE"`)
 
-* `APP` (value: `"APP"`)
+* `FOG` (value: `"FOG"`)
+
+* `UE` (value: `"UE"`)
+
+* `DISTANT-CLOUD` (value: `"DISTANT-CLOUD"`)
+
+* `UE-APP` (value: `"UE-APP"`)
+
+* `EDGE-APP` (value: `"EDGE-APP"`)
+
+* `CLOUD-APP` (value: `"CLOUD-APP"`)
 
 
 

@@ -733,7 +733,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 		for zIndex, z := range d.Zones {
 			if elementFound {
 				break
-			} else if elementType == "INTER-EDGE" && elementName == z.Name {
+			} else if elementType == "ZONE-INTER-EDGE" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterEdgeLatency = netChar.Latency
 				zone.InterEdgeLatencyVariation = netChar.LatencyVariation
@@ -741,7 +741,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				zone.InterEdgePacketLoss = netChar.PacketLoss
 				elementFound = true
 				break
-			} else if elementType == "INTER-FOG" && elementName == z.Name {
+			} else if elementType == "ZONE-INTER-FOG" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.InterFogLatency = netChar.Latency
 				zone.InterFogLatencyVariation = netChar.LatencyVariation
@@ -749,7 +749,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 				zone.InterFogPacketLoss = netChar.PacketLoss
 				elementFound = true
 				break
-			} else if elementType == "EDGE-FOG" && elementName == z.Name {
+			} else if elementType == "ZONE-EDGE-FOG" && elementName == z.Name {
 				zone := &scenario.Deployment.Domains[dIndex].Zones[zIndex]
 				zone.EdgeFogLatency = netChar.Latency
 				zone.EdgeFogLatencyVariation = netChar.LatencyVariation
@@ -948,14 +948,6 @@ func sendEventMobility(event Event) (string, int) {
 			return err.Error(), http.StatusNotFound
 		}
 		log.Debug("Active scenario updated with rev: ", rev)
-		log.WithFields(log.Fields{
-			"meep.log.component": "ctrl-engine",
-			"meep.log.msgType":   "mobilityEvent",
-			"meep.log.oldPoa":    oldNL.Name,
-			"meep.log.newPoa":    newNL.Name,
-			"meep.log.src":       ue.Name,
-			"meep.log.dest":      ue.Name,
-		}).Info("Measurements log")
 
 		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
