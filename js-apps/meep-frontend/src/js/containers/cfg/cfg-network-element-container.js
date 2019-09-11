@@ -68,7 +68,6 @@ import {
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_MECSVC,
   ELEMENT_TYPE_UE_APP,
-  ELEMENT_TYPE_EXT_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
@@ -97,6 +96,7 @@ import {
   CFG_ELEM_GPU_TYPE,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
+  CFG_ELEM_EXTERNAL_CHECK,
   CFG_ELEM_CHART_CHECK,
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
@@ -468,6 +468,29 @@ const NCGroups = ({prefixes, onUpdate, element}) => {
   });
 };
 
+const ExternalFields = ({element, onUpdate}) => {
+  return (
+    <>
+      <CfgTextField
+        onUpdate={onUpdate}
+        element={element}
+        label="IngressServiceMapping"
+        validate={validateIngressServiceMapping}
+        fieldName="ingressServiceMap"
+        cydata={CFG_ELEM_INGRESS_SVC_MAP}
+      />
+      <CfgTextField
+        onUpdate={onUpdate}
+        element={element}
+        label="EgressServiceMapping"
+        validate={validateEgressServiceMapping}
+        fieldName="egressServiceMap"
+        cydata={CFG_ELEM_EGRESS_SVC_MAP}
+      />
+    </>
+  );
+};
+
 const UserChartFields = ({element, onUpdate}) => {
   return (
     <>
@@ -502,6 +525,7 @@ const UserChartFields = ({element, onUpdate}) => {
 // Display element-specific form fields
 const TypeRelatedFormFields = ({onUpdate, element}) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
+  var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
 
   switch (type) {
@@ -539,178 +563,209 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
     );
   case ELEMENT_TYPE_UE_APP:
     return (
-            <>
-                <Checkbox
-                  checked={chartEnabled}
-                  onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
-                  data-cy={CFG_ELEM_CHART_CHECK}
-                >
-                    User-Defined Chart
-                </Checkbox>
-                {chartEnabled ?
-                  <UserChartFields 
-                    onUpdate={onUpdate}
-                    element={element}
-                  />
-                  :
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Container Image Name"
-                          validate={validatePath}
-                          fieldName={FIELD_IMAGE}
-                          cydata={CFG_ELEM_IMG}
-                        />
-                        <GpuGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Environment variables"
-                          validate={validateEnvironMentVariables}
-                          fieldName={FIELD_ENV_VAR}
-                          cydata={CFG_ELEM_ENV}
-                        />
-                        <CommandGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                    </>
-                }
-                
-            </>
-    );
-  case ELEMENT_TYPE_EXT_UE_APP:
-    return (
       <>
-        <CfgTextField
-          onUpdate={onUpdate}
-          element={element}
-          label="IngressServiceMapping"
-          validate={validateIngressServiceMapping}
-          fieldName="ingressServiceMap"
-          cydata={CFG_ELEM_INGRESS_SVC_MAP}
-        />
-        <CfgTextField
-          onUpdate={onUpdate}
-          element={element}
-          label="EgressServiceMapping"
-          validate={validateEgressServiceMapping}
-          fieldName="egressServiceMap"
-          cydata={CFG_ELEM_EGRESS_SVC_MAP}
-        />
+        <Checkbox
+          checked={isExternal}
+          onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}
+          data-cy={CFG_ELEM_EXTERNAL_CHECK}
+        >
+          External App
+        </Checkbox>
+
+        {isExternal ? 
+          <ExternalFields 
+            onUpdate={onUpdate}
+            element={element}
+          />
+          :
+          <>
+            <Checkbox
+              checked={chartEnabled}
+              onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
+              data-cy={CFG_ELEM_CHART_CHECK}
+            >
+              User-Defined Chart
+            </Checkbox>
+
+            {chartEnabled ?
+              <UserChartFields 
+                onUpdate={onUpdate}
+                element={element}
+              />
+              :
+              <>
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Container Image Name"
+                  validate={validatePath}
+                  fieldName={FIELD_IMAGE}
+                  cydata={CFG_ELEM_IMG}
+                />
+                <GpuGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Environment variables"
+                  validate={validateEnvironMentVariables}
+                  fieldName={FIELD_ENV_VAR}
+                  cydata={CFG_ELEM_ENV}
+                />
+                <CommandGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+              </>
+            }
+          </>
+        }
       </>
     );
   case ELEMENT_TYPE_CLOUD_APP:
   case ELEMENT_TYPE_MECSVC:
     return (
-            <>
-                <Checkbox
-                  checked={chartEnabled}
-                  onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
-                  data-cy={CFG_ELEM_CHART_CHECK}
-                >
-                    User-Defined Chart
-                </Checkbox>
-                {chartEnabled ?
-                  <UserChartFields 
-                    onUpdate={onUpdate}
-                    element={element}
-                  />
-                  :
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Container Image Name"
-                          validate={validatePath}
-                          fieldName={FIELD_IMAGE}
-                          cydata={CFG_ELEM_IMG}
-                        />
-                        <PortProtocolGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                        <GpuGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Environment variables"
-                          validate={validateEnvironMentVariables}
-                          fieldName={FIELD_ENV_VAR}
-                          cydata={CFG_ELEM_ENV}
-                        />
-                        <CommandGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                    </>
-                }
-                
-            </>
+      <>
+        <Checkbox
+          checked={isExternal}
+          onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}
+          data-cy={CFG_ELEM_EXTERNAL_CHECK}
+        >
+          External App
+        </Checkbox>
+
+        {isExternal ? 
+          <ExternalFields 
+            onUpdate={onUpdate}
+            element={element}
+          />
+          :
+          <>
+            <Checkbox
+              checked={chartEnabled}
+              onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
+              data-cy={CFG_ELEM_CHART_CHECK}
+            >
+              User-Defined Chart
+            </Checkbox>
+
+            {chartEnabled ?
+              <UserChartFields 
+                onUpdate={onUpdate}
+                element={element}
+              />
+              :
+              <>
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Container Image Name"
+                  validate={validatePath}
+                  fieldName={FIELD_IMAGE}
+                  cydata={CFG_ELEM_IMG}
+                />
+                <PortProtocolGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+                <GpuGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Environment variables"
+                  validate={validateEnvironMentVariables}
+                  fieldName={FIELD_ENV_VAR}
+                  cydata={CFG_ELEM_ENV}
+                />
+                <CommandGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+              </>
+            }
+          </>
+        }
+      </>
     );
   case ELEMENT_TYPE_EDGE_APP:
     return (
-            <>
-                <Checkbox
-                  checked={chartEnabled}
-                  onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
-                  data-cy={CFG_ELEM_CHART_CHECK}
-                >
-                    User-Defined Chart
-                </Checkbox>
-                {chartEnabled ?
-                  <UserChartFields 
-                    onUpdate={onUpdate}
-                    element={element}
-                  />
-                  :
-                    <>
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Container Image Name"
-                          validate={validatePath}
-                          fieldName={FIELD_IMAGE}
-                          cydata={CFG_ELEM_IMG}
-                        />
-                        <PortProtocolGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Group Service Name"
-                          validate={validateName}
-                          fieldName={FIELD_GROUP}
-                          cydata={CFG_ELEM_GROUP}
-                        />
-                        <GpuGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                        <CfgTextField
-                          onUpdate={onUpdate}
-                          element={element}
-                          label="Environment variables"
-                          validate={validateEnvironMentVariables}
-                          fieldName={FIELD_ENV_VAR}
-                          cydata={CFG_ELEM_ENV}
-                        />
-                        <CommandGroup
-                          onUpdate={onUpdate}
-                          element={element}
-                        />
-                    </>
-                }
-            </>
+      <>
+        <Checkbox
+          checked={isExternal}
+          onChange={(e) => onUpdate(FIELD_IS_EXTERNAL, e.target.checked, null)}
+          data-cy={CFG_ELEM_EXTERNAL_CHECK}
+        >
+          External App
+        </Checkbox>
+
+        {isExternal ? 
+          <ExternalFields 
+            onUpdate={onUpdate}
+            element={element}
+          />
+          :
+          <>
+            <Checkbox
+              checked={chartEnabled}
+              onChange={(e) => onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)}
+              data-cy={CFG_ELEM_CHART_CHECK}
+            >
+              User-Defined Chart
+            </Checkbox>
+
+            {chartEnabled ?
+              <UserChartFields 
+                onUpdate={onUpdate}
+                element={element}
+              />
+              :
+              <>
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Container Image Name"
+                  validate={validatePath}
+                  fieldName={FIELD_IMAGE}
+                  cydata={CFG_ELEM_IMG}
+                />
+                <PortProtocolGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Group Service Name"
+                  validate={validateName}
+                  fieldName={FIELD_GROUP}
+                  cydata={CFG_ELEM_GROUP}
+                />
+                <GpuGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Environment variables"
+                  validate={validateEnvironMentVariables}
+                  fieldName={FIELD_ENV_VAR}
+                  cydata={CFG_ELEM_ENV}
+                />
+                <CommandGroup
+                  onUpdate={onUpdate}
+                  element={element}
+                />
+              </>
+            }
+          </>
+        }
+      </>
     );
         
   default:
@@ -750,11 +805,10 @@ const elementTypes = [
   {
     label: 'Process',
     options: [
+      ELEMENT_TYPE_UE_APP,
       // ELEMENT_TYPE_MECSVC,
       ELEMENT_TYPE_EDGE_APP,
-      ELEMENT_TYPE_CLOUD_APP,
-      ELEMENT_TYPE_EXT_UE_APP,
-      ELEMENT_TYPE_UE_APP
+      ELEMENT_TYPE_CLOUD_APP
     ]
   }
 ];
@@ -770,7 +824,6 @@ parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA];
 parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
-parentTypes[ELEMENT_TYPE_EXT_UE_APP] = [ELEMENT_TYPE_UE];
 parentTypes[ELEMENT_TYPE_MECSVC] = [ELEMENT_TYPE_FOG, ELEMENT_TYPE_EDGE, ELEMENT_TYPE_CN];
 parentTypes[ELEMENT_TYPE_EDGE_APP] = [ELEMENT_TYPE_FOG, ELEMENT_TYPE_EDGE];
 parentTypes[ELEMENT_TYPE_CLOUD_APP] = [ELEMENT_TYPE_DC];
@@ -895,7 +948,6 @@ export class CfgNetworkElementContainer extends Component {
 
     setElemFieldVal(elem, FIELD_TYPE, elementType);
     setElemFieldVal(elem, FIELD_PARENT, null);
-    setElemFieldVal(elem, FIELD_IS_EXTERNAL, (elementType === ELEMENT_TYPE_EXT_UE_APP) ? true : false);
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementType));
 

@@ -13,7 +13,6 @@ import * as vis from 'vis';
 
 import {
   ELEMENT_TYPE_UE_APP,
-  ELEMENT_TYPE_EXT_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP
 } from '../../meep-constants';
@@ -56,7 +55,6 @@ const showAppsSelector = state => state.ui.execShowApps;
 const execVisFilteredData = createSelector([dataSelector, tableSelector, showAppsSelector], (data, table, showApps) => {
   var appTypes = [
     ELEMENT_TYPE_UE_APP,
-    ELEMENT_TYPE_EXT_UE_APP,
     ELEMENT_TYPE_EDGE_APP,
     ELEMENT_TYPE_CLOUD_APP
   ];
