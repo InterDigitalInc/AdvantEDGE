@@ -63,4 +63,4 @@ So just open an issue in the repo to provide user feedback, report bugs or reque
 
 ## Licensing
 
-Currently licensed under the *AdvantEDGE Limited Evaluation and Use License Agreement*
+Currently licensed under the [Apache 2.0 License](./LICENSE.md)
