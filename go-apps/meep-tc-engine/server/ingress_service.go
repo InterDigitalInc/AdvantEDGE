@@ -9,21 +9,18 @@
 
 package server
 
-// Mapping of exposed ports to internal or external services
-type ServiceMap struct {
+// Internal service exposed externally via specific port
+type IngressService struct {
 
-	// Service name
+	// Service name (unique or multi-edge)
 	Name string `json:"name,omitempty"`
 
-	// Service IP address for external service only (egress)   <li>N/A for internal services
-	Ip string `json:"ip,omitempty"`
-
-	// Service port number
+	// Internal service port number
 	Port int32 `json:"port,omitempty"`
 
-	// Port used to expose internal service only (ingress)   <li>Must be unique port in range (30000 - 32767)   <li>N/A for external services
+	// Externally-exposed unique service port in range (30000 - 32767)
 	ExternalPort int32 `json:"externalPort,omitempty"`
 
-	// Protocol that the application is using (TCP or UDP)
+	// Service protocol (TCP or UDP)
 	Protocol string `json:"protocol,omitempty"`
 }

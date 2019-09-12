@@ -5,7 +5,7 @@ All URIs are relative to *http://localhost/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**activateScenario**](ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Activate (deploy) scenario
-[**getActiveClientServiceMaps**](ScenarioExecutionApi.md#getActiveClientServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external client service mappings
+[**getActiveNodeServiceMaps**](ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external node service mappings
 [**getActiveScenario**](ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Retrieve active (deployed) scenario
 [**getEventList**](ScenarioExecutionApi.md#getEventList) | **GET** /events | Retrieve list of supported event types for active (deployed) scenario
 [**sendEvent**](ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send event to active (deployed) scenario
@@ -58,11 +58,11 @@ No authorization required
  - **Content-Type**: Not defined
  - **Accept**: application/json
 
-<a name="getActiveClientServiceMaps"></a>
-# **getActiveClientServiceMaps**
-> [ClientServiceMap] getActiveClientServiceMaps(opts)
+<a name="getActiveNodeServiceMaps"></a>
+# **getActiveNodeServiceMaps**
+> [NodeServiceMaps] getActiveNodeServiceMaps(opts)
 
-Retrieve list of active external client service mappings
+Retrieve list of active external node service mappings
 
 
 
@@ -73,7 +73,8 @@ var MeepControllerRestApi = require('meep_controller_rest_api');
 var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
 
 var opts = { 
-  'client': "client_example", // String | Unique client identifier
+  'node': "node_example", // String | Unique node identifier
+  'type': "type_example", // String | Exposed service type (ingress or egress)
   'service': "service_example" // String | Exposed service name
 };
 
@@ -84,19 +85,20 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getActiveClientServiceMaps(opts, callback);
+apiInstance.getActiveNodeServiceMaps(opts, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **client** | **String**| Unique client identifier | [optional] 
+ **node** | **String**| Unique node identifier | [optional] 
+ **type** | **String**| Exposed service type (ingress or egress) | [optional] 
  **service** | **String**| Exposed service name | [optional] 
 
 ### Return type
 
-[**[ClientServiceMap]**](ClientServiceMap.md)
+[**[NodeServiceMaps]**](NodeServiceMaps.md)
 
 ### Authorization
 

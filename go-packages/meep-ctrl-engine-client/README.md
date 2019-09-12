@@ -31,7 +31,7 @@ Class | Method | HTTP request | Description
 *ScenarioConfigurationApi* | [**GetScenarioList**](docs/ScenarioConfigurationApi.md#getscenariolist) | **Get** /scenarios | Retrieve list of scenarios in MEEP store
 *ScenarioConfigurationApi* | [**SetScenario**](docs/ScenarioConfigurationApi.md#setscenario) | **Put** /scenarios/{name} | Update scenario in MEEP store
 *ScenarioExecutionApi* | [**ActivateScenario**](docs/ScenarioExecutionApi.md#activatescenario) | **Post** /active/{name} | Activate (deploy) scenario
-*ScenarioExecutionApi* | [**GetActiveClientServiceMaps**](docs/ScenarioExecutionApi.md#getactiveclientservicemaps) | **Get** /active/serviceMaps | Retrieve list of active external client service mappings
+*ScenarioExecutionApi* | [**GetActiveNodeServiceMaps**](docs/ScenarioExecutionApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Retrieve list of active external node service mappings
 *ScenarioExecutionApi* | [**GetActiveScenario**](docs/ScenarioExecutionApi.md#getactivescenario) | **Get** /active | Retrieve active (deployed) scenario
 *ScenarioExecutionApi* | [**GetEventList**](docs/ScenarioExecutionApi.md#geteventlist) | **Get** /events | Retrieve list of supported event types for active (deployed) scenario
 *ScenarioExecutionApi* | [**SendEvent**](docs/ScenarioExecutionApi.md#sendevent) | **Post** /events/{type} | Send event to active (deployed) scenario
@@ -40,9 +40,9 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [ClientServiceMap](docs/ClientServiceMap.md)
  - [Deployment](docs/Deployment.md)
  - [Domain](docs/Domain.md)
+ - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)
  - [EventList](docs/EventList.md)
  - [EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
@@ -51,7 +51,9 @@ Class | Method | HTTP request | Description
  - [EventUeMobility](docs/EventUeMobility.md)
  - [ExternalConfig](docs/ExternalConfig.md)
  - [GpuConfig](docs/GpuConfig.md)
+ - [IngressService](docs/IngressService.md)
  - [NetworkLocation](docs/NetworkLocation.md)
+ - [NodeServiceMaps](docs/NodeServiceMaps.md)
  - [PhysicalLocation](docs/PhysicalLocation.md)
  - [PodStatus](docs/PodStatus.md)
  - [PodsStatus](docs/PodsStatus.md)
@@ -60,7 +62,6 @@ Class | Method | HTTP request | Description
  - [ScenarioConfig](docs/ScenarioConfig.md)
  - [ScenarioList](docs/ScenarioList.md)
  - [ServiceConfig](docs/ServiceConfig.md)
- - [ServiceMap](docs/ServiceMap.md)
  - [ServicePort](docs/ServicePort.md)
  - [Settings](docs/Settings.md)
  - [Zone](docs/Zone.md)

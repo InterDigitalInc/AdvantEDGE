@@ -11,7 +11,7 @@ package server
 
 // External Process configuration. NOTE: Only valid if 'isExternal' is set.
 type ExternalConfig struct {
-	IngressServiceMap []ServiceMap `json:"ingressServiceMap,omitempty"`
+	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
 
-	EgressServiceMap []ServiceMap `json:"egressServiceMap,omitempty"`
+	EgressServiceMap []EgressService `json:"egressServiceMap,omitempty"`
 }

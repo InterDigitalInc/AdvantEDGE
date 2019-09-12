@@ -68,13 +68,17 @@ const podsWithServiceMaps = createSelector([serviceMapsSelector, scenarioPodsPha
     // If has info, add it
     var newSpp = null;
     _.each(sms, (sm) => {
-      if (spp.name === sm.client) {
+      if (spp.name === sm.node) {
         if (!newSpp) {
           newSpp = updateObject({}, spp);
-          newSpp.serviceMaps = [];
+          newSpp.ingressServiceMap = [];
+          newSpp.egressServiceMap = [];
         }
-        _.each(sm.serviceMap, (entry) => {
-          newSpp.serviceMaps.push(entry);
+        _.each(sm.ingressServiceMap, (entry) => {
+          newSpp.ingressServiceMap.push(entry);
+        });
+        _.each(sm.egressServiceMap, (entry) => {
+          newSpp.egressServiceMap.push(entry);
         });
       }
     });

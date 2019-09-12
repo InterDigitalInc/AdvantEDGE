@@ -88,6 +88,20 @@ spec:
   - port: {{.port}}
     targetPort: {{.targetPort}}
     protocol: {{.protocol}}
+{{if .mesvcname}}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{.mesvcname}}
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{.port}}
+    targetPort: {{.targetPort}}
+    protocol: {{.protocol}}
+{{end}}
 {{- end}}
 {{- end}}
 

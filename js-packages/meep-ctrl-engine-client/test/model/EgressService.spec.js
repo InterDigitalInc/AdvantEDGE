@@ -30,7 +30,7 @@
   var instance;
 
   beforeEach(function() {
-    instance = new MeepControllerRestApi.ClientServiceMap();
+    instance = new MeepControllerRestApi.EgressService();
   });
 
   var getProperty = function(object, getter, property) {
@@ -49,22 +49,40 @@
       object[property] = value;
   }
 
-  describe('ClientServiceMap', function() {
-    it('should create an instance of ClientServiceMap', function() {
-      // uncomment below and update the code to test ClientServiceMap
-      //var instane = new MeepControllerRestApi.ClientServiceMap();
-      //expect(instance).to.be.a(MeepControllerRestApi.ClientServiceMap);
+  describe('EgressService', function() {
+    it('should create an instance of EgressService', function() {
+      // uncomment below and update the code to test EgressService
+      //var instane = new MeepControllerRestApi.EgressService();
+      //expect(instance).to.be.a(MeepControllerRestApi.EgressService);
     });
 
-    it('should have the property client (base name: "client")', function() {
-      // uncomment below and update the code to test the property client
-      //var instane = new MeepControllerRestApi.ClientServiceMap();
+    it('should have the property name (base name: "name")', function() {
+      // uncomment below and update the code to test the property name
+      //var instane = new MeepControllerRestApi.EgressService();
       //expect(instance).to.be();
     });
 
-    it('should have the property serviceMap (base name: "serviceMap")', function() {
-      // uncomment below and update the code to test the property serviceMap
-      //var instane = new MeepControllerRestApi.ClientServiceMap();
+    it('should have the property meSvcName (base name: "meSvcName")', function() {
+      // uncomment below and update the code to test the property meSvcName
+      //var instane = new MeepControllerRestApi.EgressService();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property ip (base name: "ip")', function() {
+      // uncomment below and update the code to test the property ip
+      //var instane = new MeepControllerRestApi.EgressService();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property port (base name: "port")', function() {
+      // uncomment below and update the code to test the property port
+      //var instane = new MeepControllerRestApi.EgressService();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property protocol (base name: "protocol")', function() {
+      // uncomment below and update the code to test the property protocol
+      //var instane = new MeepControllerRestApi.EgressService();
       //expect(instance).to.be();
     });
 

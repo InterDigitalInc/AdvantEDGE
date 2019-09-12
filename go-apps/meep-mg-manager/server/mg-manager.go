@@ -275,6 +275,13 @@ func parseScenario(scenario ceModel.Scenario) {
 							userChartGroup := strings.Split(proc.UserChartGroup, ":")
 							addServiceInfo(userChartGroup[0], userChartGroup[1], proc.Name)
 						}
+
+						// Store information from external config
+						if proc.ExternalConfig != nil {
+							for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
+								addServiceInfo(svcMap.Name, svcMap.MeSvcName, proc.Name)
+							}
+						}
 					}
 				}
 			}

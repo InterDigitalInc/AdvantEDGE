@@ -60,10 +60,10 @@
         done();
       });
     });
-    describe('getActiveClientServiceMaps', function() {
-      it('should call getActiveClientServiceMaps successfully', function(done) {
-        //uncomment below and update the code to test getActiveClientServiceMaps
-        //instance.getActiveClientServiceMaps(function(error) {
+    describe('getActiveNodeServiceMaps', function() {
+      it('should call getActiveNodeServiceMaps successfully', function(done) {
+        //uncomment below and update the code to test getActiveNodeServiceMaps
+        //instance.getActiveNodeServiceMaps(function(error) {
         //  if (error) throw error;
         //expect().to.be();
         //});

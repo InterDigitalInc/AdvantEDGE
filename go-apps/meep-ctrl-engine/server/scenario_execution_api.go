@@ -17,12 +17,12 @@ func ActivateScenario(w http.ResponseWriter, r *http.Request) {
 	ceActivateScenario(w, r)
 }
 
-func GetActiveScenario(w http.ResponseWriter, r *http.Request) {
-	ceGetActiveScenario(w, r)
+func GetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveNodeServiceMaps(w, r)
 }
 
-func GetActiveClientServiceMaps(w http.ResponseWriter, r *http.Request) {
-	ceGetActiveClientServiceMaps(w, r)
+func GetActiveScenario(w http.ResponseWriter, r *http.Request) {
+	ceGetActiveScenario(w, r)
 }
 
 func GetEventList(w http.ResponseWriter, r *http.Request) {

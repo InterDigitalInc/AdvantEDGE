@@ -25,7 +25,7 @@
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.ExternalConfig = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.EgressService, root.MeepControllerRestApi.IngressService);
+    root.MeepControllerRestApi.NodeServiceMaps = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.EgressService, root.MeepControllerRestApi.IngressService);
   }
 }(this, function(ApiClient, EgressService, IngressService) {
   'use strict';
@@ -34,15 +34,15 @@
 
 
   /**
-   * The ExternalConfig model module.
-   * @module model/ExternalConfig
+   * The NodeServiceMaps model module.
+   * @module model/NodeServiceMaps
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>ExternalConfig</code>.
-   * External Process configuration. NOTE: Only valid if &#39;isExternal&#39; is set.
-   * @alias module:model/ExternalConfig
+   * Constructs a new <code>NodeServiceMaps</code>.
+   * Node-specific mapping of exposed internal &amp; external services
+   * @alias module:model/NodeServiceMaps
    * @class
    */
   var exports = function() {
@@ -50,19 +50,23 @@
 
 
 
+
   };
 
   /**
-   * Constructs a <code>ExternalConfig</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>NodeServiceMaps</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/ExternalConfig} obj Optional instance to populate.
-   * @return {module:model/ExternalConfig} The populated <code>ExternalConfig</code> instance.
+   * @param {module:model/NodeServiceMaps} obj Optional instance to populate.
+   * @return {module:model/NodeServiceMaps} The populated <code>NodeServiceMaps</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
+      if (data.hasOwnProperty('node')) {
+        obj['node'] = ApiClient.convertToType(data['node'], 'String');
+      }
       if (data.hasOwnProperty('ingressServiceMap')) {
         obj['ingressServiceMap'] = ApiClient.convertToType(data['ingressServiceMap'], [IngressService]);
       }
@@ -73,6 +77,11 @@
     return obj;
   }
 
+  /**
+   * Unique external node identifier
+   * @member {String} node
+   */
+  exports.prototype['node'] = undefined;
   /**
    * @member {Array.<module:model/IngressService>} ingressServiceMap
    */

@@ -64,6 +64,7 @@ export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
 export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
+export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
@@ -72,8 +73,8 @@ export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
 export const CFG_ELEM_LATENCY_VAR = 'cfg-elem-latency-var';
 export const CFG_ELEM_PKT_LOSS = 'cfg-elem-pkt-loss';
 export const CFG_ELEM_THROUGHPUT = 'cfg-elem-throughput';
-export const CFG_ELEM_ING_SVC_MAP = 'cfg-elem-ing-svc-map';
-
+export const CFG_ELEM_INGRESS_SVC_MAP = 'cfg-elem-ingress-svc-map';
+export const CFG_ELEM_EGRESS_SVC_MAP = 'cfg-elem-egress-svc-map';
 
 // Execution page states
 export const EXEC_STATE_IDLE = 'IDLE';
@@ -122,7 +123,6 @@ export const ELEMENT_TYPE_FOG = 'FOG';
 export const ELEMENT_TYPE_UE = 'UE';
 export const ELEMENT_TYPE_MECSVC = 'MEC SERVICE';
 export const ELEMENT_TYPE_UE_APP = 'UE APPLICATION';
-export const ELEMENT_TYPE_EXT_UE_APP = 'EXT UE APPLICATION';
 export const ELEMENT_TYPE_EDGE_APP = 'EDGE APPLICATION';
 export const ELEMENT_TYPE_CLOUD_APP = 'CLOUD APPLICATION';
 

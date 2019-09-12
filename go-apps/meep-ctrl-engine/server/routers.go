@@ -129,10 +129,10 @@ var routes = Routes{
 	},
 
 	Route{
-		"GetActiveClientServiceMaps",
+		"GetActiveNodeServiceMaps",
 		strings.ToUpper("Get"),
 		"/v1/active/serviceMaps",
-		GetActiveClientServiceMaps,
+		GetActiveNodeServiceMaps,
 	},
 
 	Route{

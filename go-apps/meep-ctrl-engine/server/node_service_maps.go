@@ -9,11 +9,13 @@
 
 package server
 
-// Client-specific list of mappings of exposed port to internal service
-type ClientServiceMap struct {
+// Node-specific mapping of exposed internal & external services
+type NodeServiceMaps struct {
 
-	// Unique external client identifier
-	Client string `json:"client,omitempty"`
+	// Unique external node identifier
+	Node string `json:"node,omitempty"`
 
-	ServiceMap []ServiceMap `json:"serviceMap,omitempty"`
+	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
+
+	EgressServiceMap []EgressService `json:"egressServiceMap,omitempty"`
 }
