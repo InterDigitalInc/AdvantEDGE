@@ -586,6 +586,7 @@ func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
 		// Loop through full list and filter out unrequested results
 		for _, nodeServiceMaps := range nodeServiceMapsList {
 			var svcMap NodeServiceMaps
+			svcMap.Node = nodeServiceMaps.Node
 
 			// Filter based on node name
 			if node != "" && nodeServiceMaps.Node != node {
