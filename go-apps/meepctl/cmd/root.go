@@ -27,7 +27,7 @@ var rootCmd = &cobra.Command{
 	Use:   "meepctl",
 	Short: "meepctl - CLI application to control the AdvantEDGE platform",
 	Long: `CLI application to control the AdvantEDGE platform
-Find more information [here](https://kopsvas19p.interdigital.com/wbu-tep/AdvantEDGE/blob/develop/docs/meepctl/meepctl.md)`,
+Find more information [here](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/meepctl/meepctl.md)`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
