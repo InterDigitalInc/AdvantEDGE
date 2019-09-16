@@ -1,23 +1,23 @@
-import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component, useState }  from 'react';
+import React, { Component }  from 'react';
 
-import { Grid, GridCell, GridInner } from '@rmwc/grid';
+import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import { Graph } from 'react-d3-graph';
-import ReactDOM from 'react-dom';
+// import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 import moment from 'moment';
 import * as d3 from 'd3';
 import axios from 'axios';
 
-// import IDCAreaChart from './idc-area-chart';
 import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
+
+import {
+  idlog
+} from '../util/functional';
 
 import {
   getScenarioNodeChildren,
@@ -25,8 +25,7 @@ import {
 } from '../util/scenario-utils';
 
 import {
-  isDataPointOfType,
-  valueOfPoint
+  isDataPointOfType
 } from '../util/metrics';
 
 import {
@@ -42,14 +41,14 @@ import {
 } from '../meep-constants';
 
 const VIEW_NAME_NONE = 'none';
+const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
 function colorArray(dataLength) {
   const colorScale = d3.interpolateInferno;
+  // Other possible color scales:
   // const colorScale = d3.interpolateMagma;
   // const colorScale = d3.interpolateCool;
   // const colorScale = d3.interpolateWarm;
-  // const colorScale = d3.interpolateCubehelixDefault;
-  // interpolateViridis
   // const colorScale = d3.interpolateCubehelixDefault;
   
   let colorArray = [];
@@ -67,34 +66,6 @@ function colorArray(dataLength) {
 }
 
 const metricsBasePath = 'http://10.3.16.73:30008/v1';
-
-// const dataPointFromEpochDataPoints = destinations => sourceNodeId => dataAccessor => epochDataPoints => {
-//   if (!epochDataPoints.length) {
-//     return null;
-//   }
-//   let dp = {
-//     date: epochDataPoints[0].timestamp
-//   };
-
-//   const avgForDest = dataPoints => acc => dest => {
-//     const hasSource = src => p => p.src === src;
-//     const hasDestination = dest => p => p.dest === dest;
-    
-//     const dataPointsForDestSource = dataPoints
-//       .filter(hasSource(sourceNodeId))
-//       .filter(hasDestination(dest));
-//     const avg = d3.mean(dataPointsForDestSource, acc);
-//     return avg;
-//   };
-  
-//   destinations.forEach(dest => {
-//     dp[dest] = avgForDest(epochDataPoints)(dataAccessor)(dest) || 0;
-//   });
-
-//   return dp;
-// };
-
-const notNull = x => x;
 
 const buildSeriesFromEpoch = (series, epoch) => {
   epoch.data.forEach(p => {
@@ -125,7 +96,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeView1(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.view1}
         />
       </GridCell>
@@ -137,7 +107,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeView2(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.view1}
         />
       </GridCell>
@@ -149,7 +118,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeSourceNodeSelected(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''}
         />
       </GridCell>
@@ -167,7 +135,6 @@ const ConfigurationView = (props) => {
   );
 };
 
-const DATA_CONFIGURATION = 'DATA_CONFIGURATION';
 const MAIN_CONFIGURATION = 'MAIN_CONFIGURATION';
 
 const buttonStyles = {
@@ -186,7 +153,6 @@ const ViewForName = (
     apps,
     colorRange,
     width,
-    height,
     min,
     max,
     data,
@@ -228,7 +194,6 @@ const ViewForName = (
         selectedSource={selectedSource}
         colorForApp={colorForApp}
         onNodeClicked={(e) => {
-          console.log('Node clicked is: ', e.node);
           changeSourceNodeSelected(e.node);
         }}
         displayEdgeLabels={displayEdgeLabels}
@@ -246,8 +211,6 @@ const ViewForName = (
         colorRange={colorRange}
         selectedSource={selectedSource}
         dataType={dataType}
-        // Specify units
-        // Specify label
         min={min}
         max={max}
         colorForApp={colorForApp}
@@ -265,8 +228,6 @@ const ViewForName = (
         colorRange={colorRange}
         selectedSource={selectedSource}
         dataType={dataType}
-        // Specify units
-        // Specify label
         min={min}
         max={max}
         colorForApp={colorForApp}
@@ -314,9 +275,10 @@ const DashboardConfiguration = (props) => {
     )
     : null;
 
-  const backgroundColor = 'ffffff'; // props.configurationType ? '#e4e4e4' : 'ffffff';
   return (
-    <div style={{border: '1px solid #e4e4e4', padding: 10, marginBottom: 10, backgroundColor: backgroundColor}}>
+    <Elevation z={2}
+      style={{padding: 10, marginBottom: 10}}
+    >
       <Grid>
         <GridCell span={10}>
         </GridCell>
@@ -325,9 +287,9 @@ const DashboardConfiguration = (props) => {
           {buttonClose}
         </GridCell>
       </Grid>
-
       {configurationView}
-    </div>
+    </Elevation>
+     
   );
 };
 
@@ -383,20 +345,19 @@ class DashboardContainer extends Component {
   }
 
   fetchMetrics() {
-    const startTime = moment().add(-7, 'seconds').format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
-    const stopTime = moment().add(-6, 'seconds').format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
-    // const now = moment().format(moment.HTML5_FMT.DATETIME_LOCAL_MS);
+    const startTime = moment().utc().add(-7, 'seconds').format(TIME_FORMAT);
+    const stopTime = moment().utc().add(-6, 'seconds').format(TIME_FORMAT);
     return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
       .then(res => {
 
         let epoch = {
-          data: res.data.logResponse || [], //.sort((a, b) => new Date(a).getTime() - new Date(b).getTime() || []),
+          data: res.data.logResponse || [],
           startTime: startTime
         };
   
         this.props.addMetricsEpoch(epoch);
       }).catch((e) => {
-        console.log('Error while fetching metrics', e);
+        idlog('Error while fetching metrics')(e);
       });
   }
 
@@ -428,12 +389,8 @@ class DashboardContainer extends Component {
     const appIds = apps.map(a => a.data.id);
     const appMap = apps.reduce((acc, app) => {acc[app.data.id] = app; return acc;}, {});
     const colorRange = colorArray(appIds.length);
-    const nbEpochs = 25;
 
     const selectedSource = this.props.sourceNodeSelected ? this.props.sourceNodeSelected.data.id : null;
- 
-    const showApps = this.props.showAppsView;
-    const span = showApps ? 6 : 12;
 
     const colorForApp = apps.reduce((res, val, i) => {
       return {...res, [val.data.id]: colorRange[i]};
@@ -464,7 +421,7 @@ class DashboardContainer extends Component {
  
     // Determine startTime of first epoch and endTime of last epoch
     const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
-    const endTime = lastEpoch.data.length ? new Date(new Date(lastEpoch.startTime).getTime() + 1000).toString() : null;
+    const endTime = lastEpoch.data.length ? moment(lastEpoch.startTime).add(1, 'seconds').format(TIME_FORMAT) : null;
     const series = epochsToSeries(this.props.epochs, selectedSource);
 
     const withTypeAndSource = type => source => point => {
@@ -475,8 +432,6 @@ class DashboardContainer extends Component {
     const view1DataType = dataTypeForView(this.state.view1Name);
     const series1 =  filterSeries(appIds)(withTypeAndSource(view1DataType)(selectedSource))(series);
     const lastEpochData1 = lastEpoch.data.filter(isDataOfType(view1DataType));
-    // const max1 = d3.max(data1, p => p.value);
-    // const min1 = d3.min(data1, p => p.value);
 
     // For view2
     const view2DataType = dataTypeForView(this.state.view2Name);
@@ -489,31 +444,25 @@ class DashboardContainer extends Component {
     const mobilityEvents = this.props.epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
-      console.log('Some mobility events ...');
+      // console.log('Some mobility events ...');
     }
+  
     
-    // const max2 = d3.max(data2, view2Accessor);
-    // const min2 = d3.min(data2, view2Accessor);
-    
-    const width = 700;
     const height = 600;
 
     let span1 = 6;
     let width1 = 700;
-    let span2 = 6;
     let width2 = 700;
 
     if (this.state.view1Name === VIEW_NAME_NONE) {
       span1 = 0;
       width1 = 0;
-      span2 = 12;
-      width2 = 1200;
+      width2 = 1400;
     }
 
     if (this.state.view2Name === VIEW_NAME_NONE) {
       span1 = 12;
-      width1 = 1200;
-      span2 = 0;
+      width1 = 1400;
       width2 = 0;
     }
 
@@ -528,9 +477,6 @@ class DashboardContainer extends Component {
         startTime={startTime}
         endTime={endTime}
         mobilityEvents={mobilityEvents}
-        // min={min1}
-        // max={max1}
-        // dataAccessor={view1Accessor}
         dataType={view1DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
@@ -551,9 +497,6 @@ class DashboardContainer extends Component {
         startTime={startTime}
         endTime={endTime}
         mobilityEvents={mobilityEvents}
-        // min={min2}
-        // max={max2}
-        // dataAccessor={view2Accessor}
         dataType={view2DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
@@ -566,9 +509,7 @@ class DashboardContainer extends Component {
 
     return (
       <>
-      <Elevation z={4}
-        style={{padding: 10}}
-      >
+      
         <DashboardConfiguration
           configurationType={this.state.configurationType}
           displayConfiguration={
@@ -587,15 +528,23 @@ class DashboardContainer extends Component {
         />
         
         <Grid>
-          <GridCell span={span1} style={{marginLeft: -10}}>
-            {view1}
+          
+          <GridCell span={span1} style={{paddingRight: 10}}>
+            <Elevation z={2}
+              style={{padding: 10}}
+            >
+              {view1}
+            </Elevation>
           </GridCell>
-
-          <GridCell span={span2} style={{marginLeft: -10}}>
-            {view2}
+          
+          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}>
+            <Elevation z={2}
+              style={{padding: 10}}
+            >
+              {view2}
+            </Elevation>
           </GridCell>
         </Grid>
-      </Elevation>
       
       </>
     );

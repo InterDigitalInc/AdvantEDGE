@@ -7,9 +7,8 @@
  * information of InterDigital Communications, Inc.
  */
 import _ from 'lodash';
-import { connect } from 'react-redux';
-import React, { useState }  from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react';
+// import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
 
 import IDCNode from './idc-node.js';
@@ -46,17 +45,6 @@ const edgesFromData = (data, colorForApp, selectedSource) => {
     const destinations = Object.keys(m[src]);
 
     const edgesFromDestinations = (dest) => {
-      // To debug
-      const dataFromPing = p => {
-        if (p.value) {
-          console.log('Bad value!');  
-        }
-        return p.value;
-      };
-
-      if (!d3.mean(rowObject[dest].pings, p => p.value)) {
-        console.log('Bad value!');
-      }
       return  {
         src: src,
         dest: dest,
@@ -79,69 +67,6 @@ const edgesFromData = (data, colorForApp, selectedSource) => {
 
   return edges; 
 };
-
-const edgesFromSeries = (series, colorForApp, selectedSource) => {
-  const pings = data;
-  let m = {};
-  _.each(pings, p => {
-    if (!m[p.src]) {
-      m[p.src] = {};
-    }
- 
-    if (!m[p.src][p.dest]) {
-      m[p.src][p.dest] = {
-        pings: []
-      };
-    }
- 
-    const o = m[p.src][p.dest];
-    o.pings.push(p);
-  });
-
-  const apps = Object.keys(m);
- 
-  const edgesFromSource = src => {
-    const rowObject = m[src];
-    if (!rowObject) {
-      return [];
-    }
-    const destinations = Object.keys(m[src]);
-
-    const edgesFromDestinations = (dest) => {
-      // To debug
-      const dataFromPing = p => {
-        if (p.value) {
-          console.log('Bad value!');  
-        }
-        return p.value;
-      };
-
-      if (!d3.mean(rowObject[dest].pings, p => p.value)) {
-        console.log('Bad value!');
-      }
-      return  {
-        src: src,
-        dest: dest,
-        count: rowObject[dest].pings.length,
-        color: colorForApp[dest],
-        avgData: d3.mean(rowObject[dest].pings, p => p.value)
-      };
-    };
-    return _.map(destinations, edgesFromDestinations);
-  };
-
-  const outwardEdgesIfSourceSelected = e => {
-    if (selectedSource) {
-      return e.src === selectedSource;
-    } else {
-      return true;
-    }
-  };
-  const edges = _.flatMap(apps.map(edgesFromSource)).filter(outwardEdgesIfSourceSelected);
-
-  return edges; 
-};
-
 
 const positionAppsCircle = ({apps, width, height}) => {
   const cx = width/2.0;
@@ -184,7 +109,6 @@ const IDCAppsView = (
     colorRange,
     selectedSource,
     data,
-    series,
     dataType,
     width,
     height,
@@ -193,14 +117,8 @@ const IDCAppsView = (
     displayEdgeLabels
   }
 ) => {
-  
-  const [positioningNeeded, setPositioningNeeded] = useState(true);
 
-  //if (positioningNeeded) {
-  // copyAttributesRecursive(data)(this.root);
   positionAppsCircle({apps: apps, height: height, width: width});
-  //setPositioningNeeded(false);
-  //}
 
   const appsMap = {};
   _.each(apps, a => appsMap[a.data.id] = a);
@@ -241,7 +159,7 @@ const IDCAppsView = (
         xlinkHref={`#textPathDef${i}`}
         startOffset={'45%'}
       >
-        {displayEdgeLabels ? `${edgeLabel} ${e.avgData.toFixed(2)} ${edgeUnits}` : null}
+        {displayEdgeLabels ? `${edgeLabel} ${e.avgData.toFixed(0)} ${edgeUnits}` : null}
       </textPath>
     </text>
   );

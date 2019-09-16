@@ -7,19 +7,8 @@
  * information of InterDigital Communications, Inc.
  */
 
-import _ from 'lodash';
-import { connect } from 'react-redux';
 import React, { useRef, useEffect }  from 'react';
-import ReactDOM from 'react-dom';
-import moment from 'moment';
 import * as d3 from 'd3';
-import uuid from 'uuid';
-import { uiChangeCurrentDialog } from '../state/ui';
-import { execFakeChangeSelectedDestination } from '../state/exec';
-
-let colorRange = [];
-
-
 
 const IDCAreaChart = props => {
   const d3Container = useRef(null);
@@ -47,11 +36,6 @@ const IDCAreaChart = props => {
         const colorRange = props.colorRange;
         const strokecolor = colorRange[0];
 
-        // Scale functions
-        // console.log(`min: ${props.min} max: ${props.max}`);
-
-        const amplitude = colorRange.length * (props.max - props.min);
-        // const yRange = [-0.5*amplitude, 0.5*amplitude];
         const yRange = [0, 400];
         const timeRange = d3.extent(data, d => new Date(d.date));
         const x = d3.scaleTime().domain(timeRange).range([0, width]);
@@ -65,7 +49,7 @@ const IDCAreaChart = props => {
         // const yAxisr = d3.axisLeft(y);
 
         const keys = props.sources;
-        const stack = d3.stack().keys(keys);//.offset(d3.stackOffsetSilhouette);//.order(d3.stackOrderInsideOut);
+        const stack = d3.stack().keys(keys);
 
         const area = d3.area()
           .x( (d, i) => x(data[i].date))
@@ -147,23 +131,22 @@ const IDCAreaChart = props => {
               .attr('stroke-width', '0.5px');
 
             d3.select(node).classed('selected', !selected);
-            const newSelectedValue = d3.select(node).classed('selected');
             const newSelection = keys[i];
             onKeySelected(newSelection);
           });
-          // .on('mousemove', function(d) {
-          //   let mousex = d3.mouse(this);
-          //   mousex = mousex[0];
-          //   const time = x.invert(mousex);
-          //   const millisecs = time.getTime();
-          //   //   invertedx = invertedx.getMonth() + invertedx.getDate();
-          //   //   var selected = (d.values);
-          //   let index = 0;
-          //   for (; index < data.length; index++) {
-          //     if (data[index].date.getTime() >= millisecs) {
-          //       break;
-          //     }
-          //   }
+        // .on('mousemove', function(d) {
+        //   let mousex = d3.mouse(this);
+        //   mousex = mousex[0];
+        //   const time = x.invert(mousex);
+        //   const millisecs = time.getTime();
+        //   //   invertedx = invertedx.getMonth() + invertedx.getDate();
+        //   //   var selected = (d.values);
+        //   let index = 0;
+        //   for (; index < data.length; index++) {
+        //     if (data[index].date.getTime() >= millisecs) {
+        //       break;
+        //     }
+        //   }
           
         // const value = d[index][1] - d[index][0];
           

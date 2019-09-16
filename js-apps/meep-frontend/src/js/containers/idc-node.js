@@ -7,13 +7,7 @@
  * information of InterDigital Communications, Inc.
  */
 import _ from 'lodash';
-import { connect } from 'react-redux';
-import React, { Component, useState }  from 'react';
-import { Grid, GridCell, GridInner } from '@rmwc/grid';
-import { Graph } from 'react-d3-graph';
-import ReactDOM from 'react-dom';
-import { Button } from '@rmwc/button';
-import * as d3 from 'd3';
+import React, { Component }  from 'react';
 
 import {
   plusGenerator,
@@ -88,7 +82,7 @@ export default class IDCNode extends Component {
   render() {
     const d = this.props.d;
 
-    const fill = this.highlighted ? 'red' : '#69b3a2';
+    const fill = this.highlighted ? '#69b3a2' : '#69b3a2';
     const radius = this.highlighted ? 14 : 12;
     const size=30;
 
@@ -96,7 +90,7 @@ export default class IDCNode extends Component {
       transform={translate(d)}
     >
       <Plus width={10} height={10} d={d} updateParent={this.props.updateParent}/>
-      <image xlinkHref={`../img/${d.data.iconName}`} height={size} width={size} x={-size/2} y={-size/2} /*filter={d.selected ? 'url(#filter)' : '' }*/
+      <circle xlinkHref={`../img/${d.data.iconName}`} height={size} width={size} cx={-size/2 + 10} cy={-size/2 + 10} /*filter={d.selected ? 'url(#filter)' : '' }*/
         r={radius}
         style={{fill: fill}}
         stroke={'black'}
@@ -142,9 +136,8 @@ export default class IDCNode extends Component {
         
           this.props.updateParent();
         }}
-        onClick={(e) => {
+        onClick={() => {
           d.selected = !d.selected;
-          console.log('',d);
           // this.props.updateParent();
           this.props.onClick({node: d});
         }}

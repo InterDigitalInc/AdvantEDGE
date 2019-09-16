@@ -12,8 +12,6 @@ import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import IDCVis from '../idc-vis';
-import IDCGraph from '../idc-graph';
-import IDCAreaChart from '../idc-area-chart';
 import DashboardContainer from '../dashboard-container';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
@@ -266,24 +264,24 @@ class ExecPageContainer extends Component {
         {this.props.exec.state.scenario !== EXEC_STATE_IDLE &&
           <>
               <Grid style={{width: '100%'}}>
-                  <GridCell span={spanLeft}>
-                    {/* <Elevation className="component-style" z={2}> */}
-                      <div style={{padding: 10}}>
-                        {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
+                <GridCell span={spanLeft}>
+                  {/* <Elevation className="component-style" z={2}> */}
+                  <div>
+                    {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
                         
-                      </div>
-                    {/* </Elevation> */}
-                  </GridCell>
-                  <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
-                    <Elevation className="component-style" z={2}>
-                      <EventCreationPane
-                        eventTypes={[UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
-                        api={this.props.api}
-                        onSuccess={() => {this.props.refreshScenario();}}
-                        onClose={() => this.onQuitEventCreationMode()}
-                      />
-                    </Elevation>
-                  </GridCell>
+                  </div>
+                  {/* </Elevation> */}
+                </GridCell>
+                <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
+                  <Elevation className="component-style" z={2}>
+                    <EventCreationPane
+                      eventTypes={[UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
+                      api={this.props.api}
+                      onSuccess={() => {this.props.refreshScenario();}}
+                      onClose={() => this.onQuitEventCreationMode()}
+                    />
+                  </Elevation>
+                </GridCell>
               </Grid>
           </>
         }

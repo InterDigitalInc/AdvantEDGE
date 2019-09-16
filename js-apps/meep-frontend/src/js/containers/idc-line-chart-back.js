@@ -8,14 +8,8 @@
  */
 
 import _ from 'lodash';
-import { connect } from 'react-redux';
 import React, { useRef, useEffect }  from 'react';
-import ReactDOM from 'react-dom';
-import moment from 'moment';
 import * as d3 from 'd3';
-import uuid from 'uuid';
-import { uiChangeCurrentDialog } from '../state/ui';
-import { execFakeChangeSelectedDestination } from '../state/exec';
 import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
 
 const notNull = x => x;
@@ -30,11 +24,6 @@ const IDCLineChartBack = props => {
       const margin = {top: 20, right: 40, bottom: 30, left: 60};
       const width = props.width - margin.left - margin.right;
       const height = props.height - margin.top - margin.bottom;
-
-      const min = props.min;
-      const max = props.max;
-
-      const maxOfYScale = Math.ceil(max/100.0) * 100.0;
 
       let mainGroup = d3.select(d3Container.current);
       if (mainGroup.select('g').size() === 0) {
@@ -75,9 +64,7 @@ const IDCLineChartBack = props => {
         //   };
         // };
         const dataLineFromSeries = series => key => {
-          if (!series[key].filter) {
-            console.log('Check');
-          }
+          
           const line = series[key].filter(notNull).filter(p => p.value);
           // .sort((a, b) => {
           //   return x(new Date(a.timestamp)) - x(new Date(b.timestamp));
@@ -93,10 +80,6 @@ const IDCLineChartBack = props => {
 
         // TODO: remove
         dataLines = dataLines.length ? [dataLines[0]] : [];
-
-        if (dataLines.length < 5) {
-          console.log('Too few dataLines: ', dataLines.length);
-        }
 
         const valueLine = d3.line()
           .x(function(d) {
@@ -140,8 +123,8 @@ const IDCLineChartBack = props => {
           .style('stroke','gray')
           .style('stroke-width', 1)
           .style('fill','gray');
-          // .attr('x', d => x(new Date(d.timestamp)) + margin.left)
-          // .attr('dy',50 + margin.top)
+        // .attr('x', d => x(new Date(d.timestamp)) + margin.left)
+        // .attr('dy',50 + margin.top)
             
       
         mainGroup.selectAll('.mobilityEventLineTextPath').remove();
@@ -206,31 +189,7 @@ const IDCLineChartBack = props => {
             .text(yAxisLabel);
         }
 
-        // Chart title
-        const chartTitleForType = type => {
-          switch (type) {
-          case LATENCY_METRICS:
-            return 'Latency Chart';
-          case THROUGHPUT_METRICS:
-            return 'Throughput Chart';
-          default:
-            return '';
-          }
-        };
 
-        const chartTitle = chartTitleForType(props.dataType);
-        if (!mainGroup.selectAll('.chartTitle').size()) {
-          mainGroup.append('text')
-            .attr('class', 'chartTitle')
-            .attr('y', 0 + margin.top + 10)
-            .attr('x', width / 2)
-            // .attr('dy', '1em')
-            .style('text-anchor', 'middle')
-            .text(chartTitle);
-        } else {
-          mainGroup.selectAll('.chartTitle')
-            .text(chartTitle);
-        }
        
         const yAxisGroup0 = mainGroup.selectAll('.yaxis0');
         if (yAxisGroup0.size() === 0) {
@@ -240,7 +199,7 @@ const IDCLineChartBack = props => {
             .style('z-index', '18')
             .call(yAxis);
         } else {
-          yAxisGroup0.attr('transform', 'translate(0, 0)').style('z-index', '18')
+          yAxisGroup0.attr('transform', 'translate(0, 0)').style('z-index', '18');
         }
       };
         

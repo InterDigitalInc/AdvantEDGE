@@ -7,15 +7,12 @@
  * information of InterDigital Communications, Inc.
  */
 
-import _ from 'lodash';
-
 export const pipe = (...fns) => val => fns.reduce((acc, f) => f(acc), val);
 export const filter = fn => array => array.filter(fn);
 
-export const log = label => val => {
+export const idlog = label => val => {
   /*eslint-disable */
   console.log(`${label}: `, val);
   /*eslint-enable */
   return val;
 };
-
