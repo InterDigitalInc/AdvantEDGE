@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package redisdb
@@ -53,8 +60,8 @@ func (rc *Connector) connectDB(addr string, table int) error {
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     rc.addr,
-		Password: "", // no password set
-		DB:       table,  // 0 is default DB
+		Password: "",    // no password set
+		DB:       table, // 0 is default DB
 	})
 	rc.client = rejonson.ExtendClient(redisClient)
 
@@ -73,136 +80,136 @@ func (rc *Connector) connectDB(addr string, table int) error {
 // DBFlush - Empty DB
 func (rc *Connector) DBFlush(module string) error {
 	var cursor uint64
- 	var err error
- 	log.Debug("DBFlush module: ", module)
+	var err error
+	log.Debug("DBFlush module: ", module)
 
- 	// Find all module keys
- 	// Process in chunks of 50 matching entries to optimize processing speed & memory
- 	keyMatchStr := module + ":*"
- 	for {
- 		var keys []string
- 		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
- 		if err != nil {
- 			log.Debug("ERROR: ", err)
- 			break
- 		}
+	// Find all module keys
+	// Process in chunks of 50 matching entries to optimize processing speed & memory
+	keyMatchStr := module + ":*"
+	for {
+		var keys []string
+		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
+		if err != nil {
+			log.Debug("ERROR: ", err)
+			break
+		}
 
- 		// Delete all matching entries
- 		if len(keys) > 0 {
- 			_, err = rc.client.Del(keys...).Result()
- 			if err != nil {
- 				log.Debug("Failed to retrieve entry fields")
- 				break
- 			}
- 		}
+		// Delete all matching entries
+		if len(keys) > 0 {
+			_, err = rc.client.Del(keys...).Result()
+			if err != nil {
+				log.Debug("Failed to retrieve entry fields")
+				break
+			}
+		}
 
- 		// Stop searching if cursor is back at beginning
- 		if cursor == 0 {
- 			break
- 		}
- 	}
+		// Stop searching if cursor is back at beginning
+		if cursor == 0 {
+			break
+		}
+	}
 
- 	return nil
+	return nil
 }
 
 // // DBForEachEntry - Search for matching keys and run handler for each entry
 func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
- 	var cursor uint64
- 	var err error
+	var cursor uint64
+	var err error
 
- 	// Process in chunks of 50 matching entries to optimize processing speed & memory
- 	for {
- 		var keys []string
- 		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
- 		if err != nil {
- 			log.Debug("ERROR: ", err)
- 			break
- 		}
+	// Process in chunks of 50 matching entries to optimize processing speed & memory
+	for {
+		var keys []string
+		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
+		if err != nil {
+			log.Debug("ERROR: ", err)
+			break
+		}
 
- 		if len(keys) > 0 {
- 			for i := 0; i < len(keys); i++ {
- 				fields, err := rc.client.HGetAll(keys[i]).Result()
- 				if err != nil || fields == nil {
- 					log.Debug("Failed to retrieve entry fields")
- 					break
- 				}
+		if len(keys) > 0 {
+			for i := 0; i < len(keys); i++ {
+				fields, err := rc.client.HGetAll(keys[i]).Result()
+				if err != nil || fields == nil {
+					log.Debug("Failed to retrieve entry fields")
+					break
+				}
 
- 				// Invoke handler to process entry
- 				err = entryHandler(keys[i], fields, userData)
- 				if err != nil {
- 					return err
- 				}
- 			}
- 		}
+				// Invoke handler to process entry
+				err = entryHandler(keys[i], fields, userData)
+				if err != nil {
+					return err
+				}
+			}
+		}
 
- 		// Stop searching if cursor is back at beginning
- 		if cursor == 0 {
- 			break
- 		}
- 	}
- 	return nil
+		// Stop searching if cursor is back at beginning
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
 }
 
 func (rc *Connector) ForEachJSONEntry(keyMatchStr string, param1 string, param2 string, entryHandler func(string, string, string, string, interface{}) error, userData interface{}) error {
-        var cursor uint64
-        var err error
+	var cursor uint64
+	var err error
 
-        // Process in chunks of 50 matching entries to optimize processing speed & memory
-        for {
-                var keys []string
-                keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
-                if err != nil {
-                        log.Debug("ERROR: ", err)
-                        break
-                }
-                if len(keys) > 0 {
-                        for i := 0; i < len(keys); i++ {
-                                jsonInfo, err := rc.client.JsonGet(keys[i], ".").Result()
-                                if err != nil || jsonInfo == "" {
-                                        log.Debug("Failed to retrieve entry fields")
-                                        break
-                                }
+	// Process in chunks of 50 matching entries to optimize processing speed & memory
+	for {
+		var keys []string
+		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
+		if err != nil {
+			log.Debug("ERROR: ", err)
+			break
+		}
+		if len(keys) > 0 {
+			for i := 0; i < len(keys); i++ {
+				jsonInfo, err := rc.client.JsonGet(keys[i], ".").Result()
+				if err != nil || jsonInfo == "" {
+					log.Debug("Failed to retrieve entry fields")
+					break
+				}
 
-                                // Invoke handler to process entry
-                                err = entryHandler(keys[i], jsonInfo, param1, param2, userData)
-                                if err != nil {
-                                        return err
-                                }
-                        }
-                }
+				// Invoke handler to process entry
+				err = entryHandler(keys[i], jsonInfo, param1, param2, userData)
+				if err != nil {
+					return err
+				}
+			}
+		}
 
-                // Stop searching if cursor is back at beginning
-                if cursor == 0 {
-                        break
-                }
-        }
-        return nil
+		// Stop searching if cursor is back at beginning
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
 }
 
 // SetEntry - Update existing entry or create new entry if it does not exist
 func (rc *Connector) SetEntry(key string, fields map[string]interface{}) error {
-        if !rc.connected {
-                return errors.New("Redis Connector is disconnected (SetEntry)")
-        }
- 	// Update existing entry or create new entry if it does not exist
- 	_, err := rc.client.HMSet(key, fields).Result()
- 	if err != nil {
- 		return err
- 	}
- 	return nil
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (SetEntry)")
+	}
+	// Update existing entry or create new entry if it does not exist
+	_, err := rc.client.HMSet(key, fields).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DelEntry - delete an existing entry from DB
 func (rc *Connector) DelEntry(key string) error {
-        if !rc.connected {
-                return errors.New("Redis Connector is disconnected (DelEntry)")
-        }
-        // Update existing entry or create new entry if it does not exist
-        _, err := rc.client.Del(key).Result()
-        if err != nil {
-                return err
-        }
-        return nil
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (DelEntry)")
+	}
+	// Update existing entry or create new entry if it does not exist
+	_, err := rc.client.Del(key).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // JSONGetEntry - Retrieve entry from DB
@@ -220,43 +227,43 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 
 func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string, entryHandler func(string, string, string, string, interface{}) error, dataList interface{}) error {
 	if !rc.connected {
-                return errors.New("Redis Connector is disconnected (JSONGetList)")
-        }
+		return errors.New("Redis Connector is disconnected (JSONGetList)")
+	}
 
-        keyName := elementPath + "*"
-        err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
-        if err != nil {
-                log.Error(err.Error())
-                return err
-        }
-        return nil
+	keyName := elementPath + "*"
+	err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
 }
 
 // JSONSetEntry - update existing entry from DB or create a new one if it doesnt't exist
 func (rc *Connector) JSONSetEntry(key string, path string, json string) error {
-        if !rc.connected {
-                return errors.New("Redis Connector is disconnected (JSONSetEntry)")
-        }
-        // Update existing entry or create new entry if it does not exist
-        _, err := rc.client.JsonSet(key, path, json).Result()
-        if err != nil {
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (JSONSetEntry)")
+	}
+	// Update existing entry or create new entry if it does not exist
+	_, err := rc.client.JsonSet(key, path, json).Result()
+	if err != nil {
 		log.Error(err.Error())
-                return err
-        }
-        return nil
+		return err
+	}
+	return nil
 }
 
 // JSONDelEntry - delete an existing entry from DB
 func (rc *Connector) JSONDelEntry(key string, path string) error {
-        if !rc.connected {
-                return errors.New("Redis Connector is disconnected (JSONDelEntry)")
-        }
-        // Update existing entry or create new entry if it does not exist
-        _, err := rc.client.JsonDel(key, path).Result()
-        if err != nil {
-                return err
-        }
-        return nil
+	if !rc.connected {
+		return errors.New("Redis Connector is disconnected (JSONDelEntry)")
+	}
+	// Update existing entry or create new entry if it does not exist
+	_, err := rc.client.JsonDel(key, path).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Subscribe - Register as a listener for provided channels
