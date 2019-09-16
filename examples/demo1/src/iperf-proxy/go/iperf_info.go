@@ -9,24 +9,15 @@
 
 package server
 
-import (
-	"log"
-	"net/http"
-	"time"
-)
+// Iperf info for transit iperf server basic information object
+type IperfInfo struct {
 
-func Logger(inner http.Handler, name string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+	// Ue Name / UeId generating the traffic
+	Name string `json:"name,omitempty"`
 
-		inner.ServeHTTP(w, r)
+	// Selected Traffic App
+	App string `json:"app,omitempty"`
 
-		log.Printf(
-			"%s %s %s %s",
-			r.Method,
-			r.RequestURI,
-			name,
-			time.Since(start),
-		)
-	})
+	// Throughput of Traffic App (in Mbps)
+	Throughput string `json:"throughput,omitempty"`
 }
