@@ -89,6 +89,7 @@ spec:
           timeoutSeconds: 5
         resources:
 {{ toYaml .Values.resources | indent 12 }}
+      terminationGracePeriodSeconds: 5
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
@@ -97,4 +98,7 @@ spec:
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
 {{- end }}
-
+{{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}

@@ -1,8 +1,8 @@
 {
   "name": "meep_controller_rest_api",
   "version": "1.0.0",
-  "description": "Copyright__c_2019_InterDigital_Communications_Inc__All_rights_reserved__The_information_provided_herein_is_the_proprietary_and_confidential_information_of_InterDigital_Communications_Inc_",
-  "license": "Unlicense",
+  "description": "Copyright__c_2019__InterDigital_Communications_IncLicensed_under_the_Apache_License_Version_2_0__the_License_you_may_not_use_this_file_except_in_compliance_with_the_License__You_may_obtain_a_copy_of_the_License_at____httpwww_apache_orglicensesLICENSE_2_0Unless_required_by_applicable_law_or_agreed_to_in_writing_software_distributed_under_the_License_is_distributed_on_an_AS_IS_BASIS_WITHOUT_WARRANTIES_OR_CONDITIONS_OF_ANY_KIND_either_express_or_implied__See_the_License_for_the_specific_language_governing_permissions_and_limitations_under_the_License_",
+  "license": "Apache 2.0",
   "main": "src/index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --recursive"

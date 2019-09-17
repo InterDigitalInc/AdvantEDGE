@@ -10,7 +10,7 @@ info:
     name: "ETSI Forge copyright notice"
     url: "https://forge.etsi.org/etsi-forge-copyright-notice.txt"
 host: "127.0.0.1:8081"
-basePath: "/exampleAPI/location/v1"
+basePath: "/etsi-013/location/v1"
 tags:
 - name: "zones"
 - name: "users"
@@ -46,13 +46,13 @@ paths:
                   numberOfAccessPoints: "3"
                   numberOfUnserviceableAccessPoints: "1"
                   numberOfUsers: "10"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01"
+                  resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01"
                 - zoneId: "zone02"
                   numberOfAccessPoints: "12"
                   numberOfUnserviceableAccessPoints: "0"
                   numberOfUsers: "36"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone02"
-                resourceURL: "http://example.com/exampleAPI/location/v1/zones"
+                  resourceURL: "http://example.com/etsi-013/location/v1/zones/zone02"
+                resourceURL: "http://example.com/etsi-013/location/v1/zones"
   /zones/{zoneId}:
     get:
       tags:
@@ -80,7 +80,7 @@ paths:
                 numberOfAccessPoints: "3"
                 numberOfUnserviceableAccessPoints: "1"
                 numberOfUsers: "10"
-                resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01"
+                resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01"
   /zones/{zoneId}/accessPoints:
     get:
       tags:
@@ -126,7 +126,7 @@ paths:
                   operationStatus: "Serviceable"
                   numberOfUsers: "5"
                   interestRealm: "LA"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap001"
+                  resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints/ap001"
                 - accessPointId: "001010000000000000000000000000010"
                   locationInfo:
                     latitude: "91.123"
@@ -137,7 +137,7 @@ paths:
                   operationStatus: "Unserviceable"
                   numberOfUsers: "0"
                   interestRealm: "DC"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap002"
+                  resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints/ap002"
                 - accessPointId: "001010000000000000000000000000011"
                   locationInfo:
                     latitude: "93.123"
@@ -148,8 +148,8 @@ paths:
                   operationStatus: "Serviceable"
                   numberOfUsers: "5"
                   interestRealm: "NJ"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints/ap003"
-                resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone01/accessPoints"
+                  resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints/ap003"
+                resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints"
   /zones/{zoneId}/accessPoints/{accessPointId}:
     get:
       tags:
@@ -191,7 +191,7 @@ paths:
                 operationStatus: "Serviceable"
                 numberOfUsers: "5"
                 interestRealm: "LA"
-                resourceURL: "http://example.com/exampleAPI/location/v1/zones/zone001/accessPoints/ap001"
+                resourceURL: "http://example.com/etsi-013/location/v1/zones/zone001/accessPoints/ap001"
   /users:
     get:
       tags:
@@ -228,24 +228,24 @@ paths:
                 - address: "acr:192.0.2.1"
                   accessPointId: "001010000000000000000000000000001"
                   zoneId: "zone01"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.1"
+                  resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.1"
                 - address: "acr:192.0.2.2"
                   accessPointId: "001010000000000000000000000000001"
                   zoneId: "zone01"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.2"
+                  resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.2"
                 - address: "acr:192.0.2.3"
                   accessPointId: "001010000000000000000000000000010"
                   zoneId: "zone01"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.3"
+                  resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.3"
                 - address: "acr:192.0.2.4"
                   accessPointId: "001010000000000000000000000000001"
                   zoneId: "zone02"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.4"
+                  resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.4"
                 - address: "acr:192.0.2.5"
                   accessPointId: "001010000000000000000000000000010"
                   zoneId: "zone02"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.5"
-                resourceURL: "http://example.com/exampleAPI/location/v1/users"
+                  resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.5"
+                resourceURL: "http://example.com/etsi-013/location/v1/users"
   /users/{userId}:
     get:
       tags:
@@ -273,7 +273,7 @@ paths:
                 address: "acr:192.0.2.1"
                 accessPointId: "001010000000000000000000000000001"
                 zoneId: "zone01"
-                resourceURL: "http://example.com/exampleAPI/location/v1/users/acr%3A192.0.2.1"
+                resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.1"
                 locationInfo:
                   latitude: "90.123"
                   longitude: "80.123"
@@ -300,20 +300,20 @@ paths:
               notificationSubscriptionList:
                 zonalTrafficSubscription:
                 - clientCorrelator: "0123"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/subscription123"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123456"
                   zoneId: "zone01"
                   interestRealm: "LA"
                   userEventCriteria: "Transferring"
                 - clientCorrelator: "0124"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription124"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/subscription124"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123457"
                   zoneId: "zone02"
                   interestRealm: "LA"
                   userEventCriteria: "Transferring"
-                resourceURL: "http://example.com/exampleAPI/location/v1/zonalTraffic"
+                resourceURL: "http://example.com/etsi-013/location/v1/zonalTraffic"
     post:
       tags:
       - "subscriptions"
@@ -339,7 +339,7 @@ paths:
             application/json:
               zonalTrafficSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -370,7 +370,7 @@ paths:
             application/json:
               zonalTrafficSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -407,7 +407,7 @@ paths:
             application/json:
               zonalTrafficSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -451,18 +451,18 @@ paths:
               notificationSubscriptionList:
                 userTrackingSubscription:
                 - clientCorrelator: "0123"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123456"
                   address: "acr:192.0.2.1"
                   userEventCriteria: "Transferring"
                 - clientCorrelator: "0124"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription124"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription124"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123456"
                   address: "acr:192.0.2.2"
                   userEventCriteria: "Transferring"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking"
     post:
       tags:
       - "subscriptions"
@@ -488,7 +488,7 @@ paths:
             application/json:
               userTrackingSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
@@ -518,7 +518,7 @@ paths:
             application/json:
               userTrackingSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
@@ -554,7 +554,7 @@ paths:
             application/json:
               userTrackingSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
@@ -597,20 +597,20 @@ paths:
               notificationSubscriptionList:
                 zoneStatusSubscription:
                 - clientCorrelator: "0123"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus/subscription123"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123456"
                   zoneId: "zone01"
                   numberOfUsersZoneThreshold: "500"
                   operationStatus: "Serviceable"
                 - clientCorrelator: "0124"
-                  resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription124"
+                  resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus/subscription124"
                   callbackReference:
                     notifyURL: "http://clientApp.example.com/location_notifications/123457"
                   zoneId: "zone02"
                   numberOfUsersAPThreshold: "50"
                   operationStatus: "Serviceable"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus"
     post:
       tags:
       - "subscriptions"
@@ -636,7 +636,7 @@ paths:
             application/json:
               zoneStatusSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -667,7 +667,7 @@ paths:
             application/json:
               zoneStatusSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -704,7 +704,7 @@ paths:
             application/json:
               zoneStatusSubscription:
                 clientCorrelator: "0123"
-                resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/zoneStatus/subscription123"
+                resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus/subscription123"
                 callbackReference:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 zoneId: "zone01"
@@ -769,7 +769,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing access point information."
   AccessPointList:
@@ -790,7 +790,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing list of access points."
   ConnectionType:
@@ -891,7 +891,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
       locationInfo:
         $ref: "#/definitions/LocationInfo"
@@ -917,7 +917,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing list of users."
   UserTrackingSubscription:
@@ -950,12 +950,12 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing user tracking subscription."
     example:
       address: "acr:192.0.2.1"
-      resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+      resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
       callbackReference:
         notifyURL: "http://clientApp.example.com/location_notifications/123456"
       clientCorrelator: "0123"
@@ -1005,7 +1005,7 @@ definitions:
         description: "Indicates the time of day for zonal presence notification."
       link:
         type: "array"
-        example: "rel=\"ZonalTrafficSubscription\" href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalTraffic/sub123\"\
+        example: "rel=\"ZonalTrafficSubscription\" href=\"http://example.com/etsi-013/location/v1/subscriptions/zonalTraffic/sub123\"\
           /"
         description: "Link to other resources that are in relationship with this notification.\
           \ The server SHOULD include a link to the related subscription. No other\
@@ -1064,12 +1064,12 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing zonal traffic subscription"
     example:
       duration: "0"
-      resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+      resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
       callbackReference:
         notifyURL: "http://clientApp.example.com/location_notifications/123456"
       clientCorrelator: "0123"
@@ -1109,7 +1109,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "A type containing zone information."
   ZoneList:
@@ -1125,7 +1125,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
     description: "Collection of the zone information list."
   ZoneStatusNotification:
@@ -1173,7 +1173,7 @@ definitions:
         description: "Indicates the time of day for zonal presence notification."
       link:
         type: "array"
-        example: "rel=\"ZonalStatusSubscription\" href=\"http://example.com/exampleAPI/location/v1/subscriptions/zonalStatus/sub123\""
+        example: "rel=\"ZonalStatusSubscription\" href=\"http://example.com/etsi-013/location/v1/subscriptions/zonalStatus/sub123\""
         description: "Link to other resources that are in relationship with this notification.\
           \ The server SHOULD include a link to the related subscription. No other\
           \ links are required or suggested by this specification."
@@ -1196,7 +1196,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
       callbackReference:
         $ref: "#/definitions/UserTrackingSubscription_callbackReference"
@@ -1227,7 +1227,7 @@ definitions:
       operationStatus:
       - "Serviceable"
       - "Serviceable"
-      resourceURL: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+      resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
       numberOfUsersAPThreshold: "20"
       callbackReference:
         notifyURL: "http://clientApp.example.com/location_notifications/123456"
@@ -1243,7 +1243,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
   inline_response_200:
     properties:
@@ -1258,7 +1258,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
   inline_response_200_1:
     properties:
@@ -1273,7 +1273,7 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://example.com/exampleAPI/location/v1/subscriptions/userTracking/subscription123"
+        example: "http://example.com/etsi-013/location/v1/subscriptions/userTracking/subscription123"
         description: "Self referring URL."
   inline_response_200_2:
     properties:

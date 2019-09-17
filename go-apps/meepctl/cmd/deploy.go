@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package cmd
@@ -103,6 +110,8 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 
 	// Local storage strucutre
 	cmd := exec.Command("mkdir", "-p", workdir)
+	cmd.Args = append(cmd.Args, workdir+"certs")
+
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + workdir + "]")
@@ -147,6 +156,7 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, workdir+"es-master-1")
 	cmd.Args = append(cmd.Args, workdir+"kibana")
 	cmd.Args = append(cmd.Args, workdir+"docker-registry")
+	cmd.Args = append(cmd.Args, workdir+"certs")
 
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
@@ -200,6 +210,10 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-loc-serv"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-loc-serv.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	//---
+	repo = "meep-metrics-engine"
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-metrics-engine.chart")
 	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
 	repo = "meep-tc-engine"
@@ -260,9 +274,8 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	// Value file is modified, use the tmp/ version
 	repo = "meep-filebeat"
-	chart = utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
-	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.elastic.filebeat.version"))
-	flags = utils.HelmFlags(flags, "--values", workdir+"tmp/filebeat-values.yaml")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-couchdb"
@@ -271,9 +284,8 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-redis"
-	chart = utils.RepoCfg.GetString("repo.dep.redis.chart")
-	flags = utils.HelmFlags(nil, "--version", utils.RepoCfg.GetString("repo.dep.redis.version"))
-	flags = utils.HelmFlags(flags, "--values", gitdir+utils.RepoCfg.GetString("repo.dep.redis.values"))
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.redis.chart")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"
@@ -283,7 +295,7 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	repo = "meep-metricbeat"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
-	flags = utils.HelmFlags(nil, "--set", "image.pullPolicy=IfNotPresent")
+	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 

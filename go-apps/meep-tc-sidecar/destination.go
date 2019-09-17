@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package main
 
 import (
@@ -16,9 +24,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-sidecar/log"
-
-	logrus "github.com/sirupsen/logrus"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 type history struct {
@@ -35,6 +41,7 @@ type historyRx struct {
 
 type destination struct {
 	host       string
+	hostName   string
 	remote     *net.IPAddr
 	remoteName string
 	ifbNumber  string
@@ -128,11 +135,13 @@ func (u *destination) compute() (st stat) {
 
 	// avg is only of last 50 measurements as only the last 50 durations are kept
 	// log.Info("Measurements log for ", u.remote, " : ", st.last, ", avg: ", st.mean)
-	log.WithFields(logrus.Fields{
-		"meep.component":              "sidecar",
-		"meep.sidecar.latency-latest": st.last / 1000000,
-		"meep.sidecar.latency-avg":    st.mean / 1000000,
-		"meep.sidecar.latency-dest":   u.remoteName,
+	log.WithFields(log.Fields{
+		"meep.log.component":      "sidecar",
+		"meep.log.msgType":        "latency",
+		"meep.log.latency-latest": st.last / 1000000,
+		"meep.log.latency-avg":    st.mean / 1000000,
+		"meep.log.src":            u.hostName,
+		"meep.log.dest":           u.remoteName,
 	}).Info("Measurements log")
 
 	return
@@ -211,15 +220,17 @@ func (u *destination) processRxTx() {
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes
 
-	log.WithFields(logrus.Fields{
-		"meep.component":             "sidecar",
-		"meep.sidecar.pod-dest":      u.remoteName,
-		"meep.sidecar.rx":            rcvedPkts,
-		"meep.sidecar.rxd":           droppedPkts,
-		"meep.sidecar.rxBytes":       rcvedBytes,
-		"meep.sidecar.throughput":    throughput / 1000000, //converting bps to mbps for graph display
-		"meep.sidecar.throughputStr": throughputStr,
-		"meep.sidecar.packet-loss":   pktDroppedRateStr,
+	log.WithFields(log.Fields{
+		"meep.log.component":     "sidecar",
+		"meep.log.msgType":       "ingressPacketStats",
+		"meep.log.src":           u.hostName,
+		"meep.log.dest":          u.remoteName,
+		"meep.log.rx":            rcvedPkts,
+		"meep.log.rxd":           droppedPkts,
+		"meep.log.rxBytes":       rcvedBytes,
+		"meep.log.throughput":    throughput / 1000000, //converting bps to mbps for graph display
+		"meep.log.throughputStr": throughputStr,
+		"meep.log.packet-loss":   pktDroppedRateStr,
 	}).Info("Measurements log")
 
 }

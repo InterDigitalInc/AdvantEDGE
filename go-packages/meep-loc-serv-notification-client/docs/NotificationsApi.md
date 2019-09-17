@@ -1,15 +1,15 @@
 # \NotificationsApi
 
-All URIs are relative to *http://172.0.0.1:8081/location/v1/*
+All URIs are relative to *http://172.0.0.1:8081/location/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**TrackingNotification**](NotificationsApi.md#TrackingNotification) | **Post** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
-[**ZoneStatusNotification**](NotificationsApi.md#ZoneStatusNotification) | **Post** /zone_status_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
+[**PostTrackingNotification**](NotificationsApi.md#PostTrackingNotification) | **Post** /location_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
+[**PostZoneStatusNotification**](NotificationsApi.md#PostZoneStatusNotification) | **Post** /zone_status_notifications/{subscriptionId} | This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
 
 
-# **TrackingNotification**
-> TrackingNotification(ctx, subscriptionId, notification)
+# **PostTrackingNotification**
+> PostTrackingNotification(ctx, subscriptionId, notification)
 This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zonal or user tracking subscription
 
 Zonal or User location tracking subscription notification
@@ -37,8 +37,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **ZoneStatusNotification**
-> ZoneStatusNotification(ctx, subscriptionId, notification)
+# **PostZoneStatusNotification**
+> PostZoneStatusNotification(ctx, subscriptionId, notification)
 This operation is used by the AdvantEDGE Location Service to issue a callback notification towards an ME application with a zone status tracking subscription
 
 Zone status tracking subscription notification

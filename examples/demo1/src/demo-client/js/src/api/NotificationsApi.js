@@ -1,6 +1,6 @@
 /**
  * MEEP Demo App API
- * This is the MEEP Demo App API
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 0.0.1
  *
@@ -48,8 +48,8 @@
 
 
     /**
-     * Callback function to receive the result of the rcvTrackingNotification operation.
-     * @callback module:api/NotificationsApi~rcvTrackingNotificationCallback
+     * Callback function to receive the result of the postTrackingNotification operation.
+     * @callback module:api/NotificationsApi~postTrackingNotificationCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -60,19 +60,19 @@
      * Zonal or User location tracking subscription notification
      * @param {String} subscriptionId Identity of a notification subscription (user or zonal)
      * @param {module:model/TrackingNotification} notification Zonal or User Tracking Notification
-     * @param {module:api/NotificationsApi~rcvTrackingNotificationCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/NotificationsApi~postTrackingNotificationCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.rcvTrackingNotification = function(subscriptionId, notification, callback) {
+    this.postTrackingNotification = function(subscriptionId, notification, callback) {
       var postBody = notification;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling rcvTrackingNotification");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling postTrackingNotification");
       }
 
       // verify the required parameter 'notification' is set
       if (notification === undefined || notification === null) {
-        throw new Error("Missing the required parameter 'notification' when calling rcvTrackingNotification");
+        throw new Error("Missing the required parameter 'notification' when calling postTrackingNotification");
       }
 
 

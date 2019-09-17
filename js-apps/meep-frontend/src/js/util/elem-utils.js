@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
@@ -42,7 +50,8 @@ export const FIELD_IMAGE = 'image';
 export const FIELD_PORT = 'port';
 export const FIELD_PROTOCOL = 'protocol';
 export const FIELD_GROUP = 'group';
-export const FIELD_SVC_MAP = 'ingressServiceMap';
+export const FIELD_INGRESS_SVC_MAP = 'ingressServiceMap';
+export const FIELD_EGRESS_SVC_MAP = 'egressServiceMap';
 export const FIELD_GPU_COUNT = 'gpuCount';
 export const FIELD_GPU_TYPE = 'gpuType';
 export const FIELD_ENV_VAR = 'envVar';
@@ -104,7 +113,8 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_PORT,                   '');
   setElemFieldVal(elem, FIELD_PROTOCOL,               '');
   setElemFieldVal(elem, FIELD_GROUP,                  '');
-  setElemFieldVal(elem, FIELD_SVC_MAP,                '');
+  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP,        '');
+  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP,         '');
   setElemFieldVal(elem, FIELD_GPU_COUNT,              '');
   setElemFieldVal(elem, FIELD_GPU_TYPE,               '');
   setElemFieldVal(elem, FIELD_ENV_VAR,                '');

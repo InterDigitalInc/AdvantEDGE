@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -16,18 +16,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ServiceMap'], factory);
+    define(['ApiClient', 'model/EgressService', 'model/IngressService'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./ServiceMap'));
+    module.exports = factory(require('../ApiClient'), require('./EgressService'), require('./IngressService'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.ExternalConfig = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.ServiceMap);
+    root.MeepControllerRestApi.ExternalConfig = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.EgressService, root.MeepControllerRestApi.IngressService);
   }
-}(this, function(ApiClient, ServiceMap) {
+}(this, function(ApiClient, EgressService, IngressService) {
   'use strict';
 
 
@@ -64,21 +64,21 @@
       obj = obj || new exports();
 
       if (data.hasOwnProperty('ingressServiceMap')) {
-        obj['ingressServiceMap'] = ApiClient.convertToType(data['ingressServiceMap'], [ServiceMap]);
+        obj['ingressServiceMap'] = ApiClient.convertToType(data['ingressServiceMap'], [IngressService]);
       }
       if (data.hasOwnProperty('egressServiceMap')) {
-        obj['egressServiceMap'] = ApiClient.convertToType(data['egressServiceMap'], [ServiceMap]);
+        obj['egressServiceMap'] = ApiClient.convertToType(data['egressServiceMap'], [EgressService]);
       }
     }
     return obj;
   }
 
   /**
-   * @member {Array.<module:model/ServiceMap>} ingressServiceMap
+   * @member {Array.<module:model/IngressService>} ingressServiceMap
    */
   exports.prototype['ingressServiceMap'] = undefined;
   /**
-   * @member {Array.<module:model/ServiceMap>} egressServiceMap
+   * @member {Array.<module:model/EgressService>} egressServiceMap
    */
   exports.prototype['egressServiceMap'] = undefined;
 

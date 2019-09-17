@@ -15,7 +15,7 @@ spec:
     storage: 4Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: "<WORKDIR>/es-master-0"
   storageClassName: meep-pv-es-master
@@ -30,7 +30,7 @@ spec:
     storage: 4Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: "<WORKDIR>/es-master-1"
   storageClassName: meep-pv-es-master
@@ -53,7 +53,7 @@ spec:
     storage: 30Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: "<WORKDIR>/es-data"
   storageClassName: meep-pv-es-data

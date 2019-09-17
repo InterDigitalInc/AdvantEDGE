@@ -84,22 +84,7 @@ spec:
             mountPath: /opt/couchdb/etc/default.d
           - name: database-storage
             mountPath: /opt/couchdb/data
-        - name: couchdb-statefulset-assembler
-          image: "{{ .Values.helperImage.repository }}:{{ .Values.helperImage.tag }}"
-          imagePullPolicy: {{ .Values.helperImage.pullPolicy }}
-{{- if not .Values.allowAdminParty }}
-          env:
-            - name: COUCHDB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "couchdb.fullname" . }}
-                  key: adminUsername
-            - name: COUCHDB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "couchdb.fullname" . }}
-                  key: adminPassword
-{{- end }}
+      terminationGracePeriodSeconds: 5
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}

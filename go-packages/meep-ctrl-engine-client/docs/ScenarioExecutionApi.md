@@ -5,7 +5,7 @@ All URIs are relative to *http://localhost/v1*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**ActivateScenario**](ScenarioExecutionApi.md#ActivateScenario) | **Post** /active/{name} | Activate (deploy) scenario
-[**GetActiveClientServiceMaps**](ScenarioExecutionApi.md#GetActiveClientServiceMaps) | **Get** /active/serviceMaps | Retrieve list of active external client service mappings
+[**GetActiveNodeServiceMaps**](ScenarioExecutionApi.md#GetActiveNodeServiceMaps) | **Get** /active/serviceMaps | Retrieve list of active external node service mappings
 [**GetActiveScenario**](ScenarioExecutionApi.md#GetActiveScenario) | **Get** /active | Retrieve active (deployed) scenario
 [**GetEventList**](ScenarioExecutionApi.md#GetEventList) | **Get** /events | Retrieve list of supported event types for active (deployed) scenario
 [**SendEvent**](ScenarioExecutionApi.md#SendEvent) | **Post** /events/{type} | Send event to active (deployed) scenario
@@ -40,9 +40,9 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **GetActiveClientServiceMaps**
-> []ClientServiceMap GetActiveClientServiceMaps(ctx, optional)
-Retrieve list of active external client service mappings
+# **GetActiveNodeServiceMaps**
+> []NodeServiceMaps GetActiveNodeServiceMaps(ctx, optional)
+Retrieve list of active external node service mappings
 
 
 
@@ -58,12 +58,13 @@ Optional parameters are passed through a map[string]interface{}.
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **client** | **string**| Unique client identifier | 
+ **node** | **string**| Unique node identifier | 
+ **type_** | **string**| Exposed service type (ingress or egress) | 
  **service** | **string**| Exposed service name | 
 
 ### Return type
 
-[**[]ClientServiceMap**](ClientServiceMap.md)
+[**[]NodeServiceMaps**](NodeServiceMaps.md)
 
 ### Authorization
 

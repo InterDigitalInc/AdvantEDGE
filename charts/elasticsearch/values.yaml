@@ -42,7 +42,12 @@ client:
 #    example: client-svc-foo
   heapSize: "512m"
   antiAffinity: "soft"
-  nodeAffinity: {}
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
   nodeSelector: {}
   tolerations: []
   resources:

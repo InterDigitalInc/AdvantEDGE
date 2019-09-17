@@ -13,7 +13,7 @@ deployment:
 image:
   repository: meep-loc-serv
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: NodePort

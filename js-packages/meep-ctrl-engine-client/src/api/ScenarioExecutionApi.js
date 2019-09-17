@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -16,18 +16,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ClientServiceMap', 'model/Event', 'model/EventList', 'model/Scenario'], factory);
+    define(['ApiClient', 'model/Event', 'model/EventList', 'model/NodeServiceMaps', 'model/Scenario'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/ClientServiceMap'), require('../model/Event'), require('../model/EventList'), require('../model/Scenario'));
+    module.exports = factory(require('../ApiClient'), require('../model/Event'), require('../model/EventList'), require('../model/NodeServiceMaps'), require('../model/Scenario'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.ScenarioExecutionApi = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.ClientServiceMap, root.MeepControllerRestApi.Event, root.MeepControllerRestApi.EventList, root.MeepControllerRestApi.Scenario);
+    root.MeepControllerRestApi.ScenarioExecutionApi = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.Event, root.MeepControllerRestApi.EventList, root.MeepControllerRestApi.NodeServiceMaps, root.MeepControllerRestApi.Scenario);
   }
-}(this, function(ApiClient, ClientServiceMap, Event, EventList, Scenario) {
+}(this, function(ApiClient, Event, EventList, NodeServiceMaps, Scenario) {
   'use strict';
 
   /**
@@ -95,23 +95,24 @@
     }
 
     /**
-     * Callback function to receive the result of the getActiveClientServiceMaps operation.
-     * @callback module:api/ScenarioExecutionApi~getActiveClientServiceMapsCallback
+     * Callback function to receive the result of the getActiveNodeServiceMaps operation.
+     * @callback module:api/ScenarioExecutionApi~getActiveNodeServiceMapsCallback
      * @param {String} error Error message, if any.
-     * @param {Array.<module:model/ClientServiceMap>} data The data returned by the service call.
+     * @param {Array.<module:model/NodeServiceMaps>} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Retrieve list of active external client service mappings
+     * Retrieve list of active external node service mappings
      * 
      * @param {Object} opts Optional parameters
-     * @param {String} opts.client Unique client identifier
+     * @param {String} opts.node Unique node identifier
+     * @param {String} opts.type Exposed service type (ingress or egress)
      * @param {String} opts.service Exposed service name
-     * @param {module:api/ScenarioExecutionApi~getActiveClientServiceMapsCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link Array.<module:model/ClientServiceMap>}
+     * @param {module:api/ScenarioExecutionApi~getActiveNodeServiceMapsCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link Array.<module:model/NodeServiceMaps>}
      */
-    this.getActiveClientServiceMaps = function(opts, callback) {
+    this.getActiveNodeServiceMaps = function(opts, callback) {
       opts = opts || {};
       var postBody = null;
 
@@ -119,7 +120,8 @@
       var pathParams = {
       };
       var queryParams = {
-        'client': opts['client'],
+        'node': opts['node'],
+        'type': opts['type'],
         'service': opts['service'],
       };
       var collectionQueryParams = {
@@ -132,7 +134,7 @@
       var authNames = [];
       var contentTypes = [];
       var accepts = ['application/json'];
-      var returnType = [ClientServiceMap];
+      var returnType = [NodeServiceMaps];
 
       return this.apiClient.callApi(
         '/active/serviceMaps', 'GET',

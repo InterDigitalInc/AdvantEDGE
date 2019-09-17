@@ -6,7 +6,7 @@ namespace: default
 
 deployment:
   image:
-    name: gophernet/iperf-server
+    name: meep-docker-registry:30001/iperf-server
     pullpolicy: IfNotPresent
 
 service:

@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import _ from 'lodash';
 import * as vis from 'vis';
 import { updateObject } from './object-util';
@@ -21,7 +29,8 @@ import {
   FIELD_GROUP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  FIELD_SVC_MAP,
+  FIELD_INGRESS_SVC_MAP,
+  FIELD_EGRESS_SVC_MAP,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -73,7 +82,6 @@ import {
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_MECSVC,
   ELEMENT_TYPE_UE_APP,
-  ELEMENT_TYPE_EXT_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
@@ -276,11 +284,6 @@ export function addElementToScenario(scenario, element) {
     break;
   }
 
-  case ELEMENT_TYPE_EXT_UE_APP: {
-    scenarioElement = createExternalProcess(name, UE_APP_TYPE_STR, element);
-    break;
-  }
-
   case ELEMENT_TYPE_EDGE_APP: {
     scenarioElement = createProcess(name, EDGE_APP_TYPE_STR, element);
     break;
@@ -410,11 +413,7 @@ export function updateElementInScenario(scenario, element) {
           for (var m in pl.processes) {
             var process = pl.processes[m];
             if (process.name === name) {
-              if (isExternal) {
-                pl.processes[m] = createExternalProcess(process.name, process.type, element);
-              } else {
-                pl.processes[m] = createProcess(process.name, process.type, element);
-              }
+              pl.processes[m] = createProcess(process.name, process.type, element);
               return;
             }
           }
@@ -487,6 +486,7 @@ export function createNewScenario(name) {
 }
 
 export function createProcess(name, type, element) {
+  var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
 
@@ -494,7 +494,7 @@ export function createProcess(name, type, element) {
     id: name,
     name: name,
     type: type,
-    isExternal: false,
+    isExternal: isExternal,
     userChartLocation: null,
     userChartAlternateValues: null,
     userChartGroup: null,
@@ -507,7 +507,12 @@ export function createProcess(name, type, element) {
     externalConfig: null
   };
 
-  if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
+  if (isExternal) {
+    process.externalConfig = {
+      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)),
+      egressServiceMap: getEgressServiceMapArray(getElemFieldVal(element, FIELD_EGRESS_SVC_MAP))
+    };
+  } else if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
     process.userChartLocation = getElemFieldVal(element, FIELD_CHART_LOC);
     process.userChartAlternateValues =  getElemFieldVal(element, FIELD_CHART_VAL);
     process.userChartGroup = getElemFieldVal(element, FIELD_CHART_GROUP);
@@ -533,28 +538,6 @@ export function createProcess(name, type, element) {
       count: gpuCount
     };
   }
-
-  return process;
-}
-
-export function createExternalProcess(name, type, element) {
-  var process = {
-    id: name,
-    name: name,
-    type: type,
-    isExternal: true,
-    userChartLocation: null,
-    userChartAlternateValues: null,
-    userChartGroup: null,
-    image: null,
-    environment: null,
-    commandArguments: null,
-    commandExe: null,
-    serviceConfig: null,
-    externalConfig: {
-      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_SVC_MAP))
-    }
-  };
 
   return process;
 }
@@ -589,12 +572,49 @@ export function getIngressServiceMapArray(ingressServiceMapStr) {
         externalPort: parseInt(svcMap[0]),
         name: svcMap[1],
         port: parseInt(svcMap[2]),
-        protocol: svcMap[3].toUpperCase(),
-        ip: null
+        protocol: svcMap[3].toUpperCase()
       });
     }
   }
   return ingressServiceMapArray;
+}
+
+export function getEgressServiceMapStr(egressServiceMapArray) {
+  var egressServiceMapStr = '';
+
+  // Loop through service map array
+  for (var i = 0; i < egressServiceMapArray.length; i++) {
+    var svcMap = egressServiceMapArray[i];
+    egressServiceMapStr += ((i === 0) ? '' : ',') +
+      svcMap.name + ':' + ((svcMap.meSvcName) ? svcMap.meSvcName : '') + ':' + svcMap.ip + ':' + svcMap.port + ':' + svcMap.protocol;
+  }
+  return egressServiceMapStr;
+}
+
+export function getEgressServiceMapArray(egressServiceMapStr) {
+  var egressServiceMapArray = [];
+
+  // Add service map entries, if any
+  if (egressServiceMapStr) {
+    var scpMapList = egressServiceMapStr.split(',');
+    // Loop through service map list
+    for (var i = 0; i < scpMapList.length; i++) {
+      var svcMap = (scpMapList[i]).split(':');
+      if (svcMap.length !== 5) {
+        continue;
+      }
+
+      // Add service map to egressServiceMap Array
+      egressServiceMapArray.push({
+        name: svcMap[0],
+        meSvcName: svcMap[1],
+        ip: svcMap[2],
+        port: parseInt(svcMap[3]),
+        protocol: svcMap[4].toUpperCase()
+      });
+    }
+  }
+  return egressServiceMapArray;
 }
 
 export function createDomain(name, element) {
@@ -810,7 +830,7 @@ export function getElementFromScenario(scenario, elementName) {
                 setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_MECSVC);
                 break;
               case UE_APP_TYPE_STR:
-                setElemFieldVal(elem, FIELD_TYPE, (process.isExternal) ? ELEMENT_TYPE_EXT_UE_APP : ELEMENT_TYPE_UE_APP);
+                setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_UE_APP);
                 break;
               case EDGE_APP_TYPE_STR:
                 setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_EDGE_APP);
@@ -848,8 +868,13 @@ export function getElementFromScenario(scenario, elementName) {
                 }
               }
 
-              if (process.externalConfig && process.externalConfig.ingressServiceMap) {
-                setElemFieldVal(elem, FIELD_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+              if (process.externalConfig) {
+                if (process.externalConfig.ingressServiceMap) {
+                  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+                }
+                if (process.externalConfig.egressServiceMap) {
+                  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP, getEgressServiceMapStr(process.externalConfig.egressServiceMap));
+                }
               }
               return elem;
             }

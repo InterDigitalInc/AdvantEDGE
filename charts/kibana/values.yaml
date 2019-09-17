@@ -152,7 +152,7 @@ dashboardImport:
 plugins:
   # set to true to enable plugins installation
   # true to enable persistent volume claim
-  enabled: true
+  enabled: false
   # set to true to remove all kibana plugins before installation
   reset: false
   # Use <plugin_name,version,url> to add/upgrade plugin
@@ -163,7 +163,7 @@ plugins:
 
 persistentVolumeClaim:
   # set to true to use pvc
-  enabled: true
+  enabled: false
   # set to true to use you own pvc
   existingClaim: false
   annotations: {}
@@ -181,7 +181,7 @@ persistentVolumeClaim:
   storageClass: "meep-pv-kibana"
 
 persistentVolume:
-  enabled: true
+  enabled: false
   location: "" 
 
 # default security context

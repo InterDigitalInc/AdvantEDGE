@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ingressServiceMap** | [**[ServiceMap]**](ServiceMap.md) |  | [optional] 
-**egressServiceMap** | [**[ServiceMap]**](ServiceMap.md) |  | [optional] 
+**ingressServiceMap** | [**[IngressService]**](IngressService.md) |  | [optional] 
+**egressServiceMap** | [**[EgressService]**](EgressService.md) |  | [optional] 
 
 
