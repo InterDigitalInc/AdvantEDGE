@@ -158,7 +158,7 @@ definitions:
       name: name
       type: MOBILITY
       eventMobility:
-        src: ue1
+        elementName: ue1
         dest: poa2
   EventList:
     type: object
@@ -168,7 +168,7 @@ definitions:
         items:
           $ref: '#/definitions/Event'
     description: Event list object
-    example:
+    example: {}
   EventNetworkCharacteristicsUpdate:
     type: object
     properties:
@@ -179,19 +179,19 @@ definitions:
         type: string
         description: Type of the network element to be updated
         enum:
-          - "OPERATOR"
-          - "POA"
-          - "SCENARIO"
-          - "ZONE-INTER-EDGE"
-          - "ZONE-INTER-FOG"
-          - "ZONE-EDGE-FOG"
-          - "EDGE"
-          - "FOG"
-          - "UE"
-          - "DISTANT-CLOUD"
-          - "UE-APP"
-          - "EDGE-APP"
-          - "CLOUD-APP"
+          - OPERATOR
+          - POA
+          - SCENARIO
+          - ZONE-INTER-EDGE
+          - ZONE-INTER-FOG
+          - ZONE-EDGE-FOG
+          - EDGE
+          - FOG
+          - UE
+          - DISTANT-CLOUD
+          - UE-APP
+          - EDGE-APP
+          - CLOUD-APP
       latency:
         type: integer
         description: Latency in ms
@@ -235,7 +235,7 @@ definitions:
         description: Destination element identifier
     description: Mobility Event object
     example:
-      src: ue1
+      elementName: ue1
       dest: poa2
   EventOther:
     type: object

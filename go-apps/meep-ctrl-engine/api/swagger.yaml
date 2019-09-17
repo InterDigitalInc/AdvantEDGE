@@ -873,7 +873,7 @@ definitions:
         items:
           $ref: "#/definitions/Event"
     description: "Event list object"
-    example: "null"
+    example: {}
   Event:
     type: "object"
     properties:
@@ -901,7 +901,7 @@ definitions:
       name: "name"
       type: "MOBILITY"
       eventMobility:
-        src: "ue1"
+        elementName: "ue1"
         dest: "poa2"
   EventNetworkCharacteristicsUpdate:
     type: "object"
@@ -952,7 +952,7 @@ definitions:
         description: "Destination element identifier"
     description: "Mobility Event object"
     example:
-      src: "ue1"
+      elementName: "ue1"
       dest: "poa2"
   EventPoasInRange:
     type: "object"

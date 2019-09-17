@@ -370,7 +370,6 @@ export function addElementToScenario(scenario, element) {
 export function updateElementInScenario(scenario, element) {
 
   var name = getElemFieldVal(element, FIELD_NAME);
-  var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
 
   // Find element in scenario
   if (scenario.name === name) {
