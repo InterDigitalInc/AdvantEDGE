@@ -1,4 +1,4 @@
-![AdvantEDGE-logo](./docs/images/AdvantEDGE-logo_Blue-01.png)
+![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/images/AdvantEDGE-logo_Blue-01.png)
 
 _Complete AdvantEDGE documentation is now available in the [AdvantEDGE Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki)_
 
@@ -22,7 +22,7 @@ AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kube
 - [x] **Edge Application Developers**
 - [x] **Edge Network and Service Designers**
 - [x] **Edge Researchers**
-- [x] **Technologists that are simply interestied learning how the Edge works**
+- [x] **Technologists that are simply interested learning how the Edge works**
 
 ## Concepts
 
@@ -63,4 +63,14 @@ So just open an issue in the repo to provide user feedback, report bugs or reque
 
 ## Licensing
 
-Currently licensed under the *AdvantEDGE Limited Evaluation and Use License Agreement*
+Currently licensed under the [Apache 2.0 License](./LICENSE.md)
+
+## How to Contribute
+
+We welcome feedback and improvement suggestions. Please open a Git issue in the repo to report bugs or request enhancements.
+
+At this time, we are not ready to accept pull requests. However, we plan to do so in the future.
+
+In the meantime, if you have interest in becoming an AdvantEDGE contributor, we would like to hear from you.
+
+We can be reached at <AdvantEDGE@InterDigital.com>
