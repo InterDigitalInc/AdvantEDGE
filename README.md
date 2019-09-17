@@ -37,4 +37,4 @@ We can be reached at <AdvantEDGE@InterDigital.com>
 
 ## Licensing
 
-AdvantEDGE is licensed under under the [Apache License, Version 2.0](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE.md)
+AdvantEDGE is licensed under under the [Apache License, Version 2.0](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE)
