@@ -2,21 +2,8 @@ import _ from 'lodash';
 
 import {
   EXEC_CHANGE_SCENARIO,
-  EXEC_CHANGE_DISPLAYED_SCENARIO,
-  typeReducer
+  EXEC_CHANGE_DISPLAYED_SCENARIO
 } from '../state/exec';
-
-import {
-  TYPE_SCENARIO,
-  TYPE_DOMAIN,
-  TYPE_ZONE,
-  TYPE_NET_LOC,
-  TYPE_PHY_LOC,
-  TYPE_PROCESS 
-} from '../meep-constants';
-import { getScenarioSpecificImage } from '../util/scenario-utils';
-
-const softwareIcon = 'software-icon.svg';
 
 const computeDisplayedScenario = scenario => {
   // TODO: replaced with real computed scenario
@@ -25,41 +12,6 @@ const computeDisplayedScenario = scenario => {
 
   visitNodes(setImage)(root);
   return root;
-};
-
-const getChildrenInfo = node => {
-  if (node.domains) {
-    return {
-      fieldName: 'domains',
-      type: 'DOMAIN'
-    };
-  }
-  if (node.zones) {
-    return {
-      fieldName: 'zones',
-      type: 'ZONE'
-    };
-  }
-  if (node.networkLocations) {
-    return {
-      fieldName: 'networkLocations',
-      type: 'EDGE'
-    };
-  }
-  if (node.physicalLocations) {
-    return {
-      fieldName: 'physicalLocations',
-      type: 'EDGE'
-    };
-  }
-  if (node.processes) {
-    return {
-      fieldName: 'processes',
-      type: node.processes[0].type
-    };
-  }
-
-  return null;
 };
 
 const getChildrenFieldName = node => {
@@ -81,16 +33,6 @@ const getChildrenFieldName = node => {
   }
 
   return fieldName;
-};
-
-const getChildrenType = node => {
-  let fieldName = getChildrenFieldName(node);
-
-  if (fieldName && node[fieldName].length) {
-    return node[fieldName][0].type;
-  }
-
-  return '';
 };
 
 const getImageForType = type => {

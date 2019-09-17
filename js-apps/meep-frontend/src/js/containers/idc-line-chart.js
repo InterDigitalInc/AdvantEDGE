@@ -8,248 +8,209 @@
  */
 
 import _ from 'lodash';
-import { connect } from 'react-redux';
-import React, { useRef, useEffect }  from 'react';
-import ReactDOM from 'react-dom';
-import moment from 'moment';
 import * as d3 from 'd3';
-import uuid from 'uuid';
-import { uiChangeCurrentDialog } from '../state/ui';
-import { execFakeChangeSelectedDestination } from '../state/exec';
+import React from 'react';
+import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
 import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
+
+// const Axis = props => {
+//   const axisRef = axis => {
+//     axis && props.axisCreator(select(axis));
+//   };
+
+//   return <g className={props.className} ref={axisRef} />;
+// };
 
 const notNull = x => x;
 const IDCLineChart = props => {
-  const d3Container = useRef(null);
 
-  /* The useEffect Hook is for running side effects outside of React,
-       for instance inserting elements into the DOM using D3 */
-  useEffect(
-    () => {
-      
-      const margin = {top: 20, right: 40, bottom: 30, left: 60};
-      const width = props.width - margin.left - margin.right;
-      const height = props.height - margin.top - margin.bottom;
+  const margin = {top: 20, right: 40, bottom: 30, left: 60};
+  const width = props.width; // - margin.left - margin.right;
+  const height = props.height; // - margin.top - margin.bottom;
 
-      const min = props.min;
-      const max = props.max;
+  const maxForKey = series => key => d3.max(series[key], p => p.value);
+  const maxes = Object.keys(props.series).map(maxForKey(props.series));
+  const max = d3.max(maxes);
+  const maxOfYScale = Math.ceil(max/50.0) * 50.0;
+  const yRange = [0, maxOfYScale];
 
-      const maxOfYScale = Math.ceil(max/100.0) * 100.0;
+  const destinations = props.selectedSource ? props.destinations.slice(-props.destinations.length) : [];
+  const colorRange = destinations.map(s => props.colorForApp[s]);
 
-      let mainGroup = d3.select(d3Container.current);
-      if (mainGroup.select('g').size() === 0) {
-        mainGroup = mainGroup.append('g')
-          .attr('width', props.width + margin.left + margin.right)
-          .attr('height', props.height + margin.top + margin.bottom)
-          .attr('transform', `translate(${margin.left}, ${margin.top})`);
-      }
-      
-      const chart = (data) => {
-        const destinations = props.selectedSource ? props.destinations.slice(-props.destinations.length) : [];
-        const colorRange = destinations.map(s => props.colorForApp[s]);
+  const flattenSeries = series => {
+    return _.flatMap(Object.values(series));
+  };
+  const timeRange = d3.extent(flattenSeries(props.series), d => new Date(d.timestamp));
+  const x = d3.scaleTime().domain(timeRange).range([0, width]);
+  const y = d3.scaleLinear().domain(yRange).range([height - 45, 0]);
+  const z = d3.scaleOrdinal().range(colorRange);
 
-        const yRange = [0, 200];
-        const timeRange = d3.extent(data, d => new Date(d.date));
-        const x = d3.scaleTime().domain(timeRange).range([0, width]);
-        const y = d3.scaleLinear().domain(yRange).range([height - 50, 0]);
-        const z = d3.scaleOrdinal().range(colorRange);
-      
-        // Axes
-        const xAxis = d3.axisBottom(x); //.ticks(d3.timeSeconds);
-        const yAxis = d3.axisLeft(y).scale(y)
-          .tickSize(0.01);
-        // const yAxisr = d3.axisLeft(y);
+  // Compute data lines
+  const dataLineFromSeries = series => key => {
+    let line;
+    
+    if (series[key]) {
+      line = series[key].filter(notNull).filter(p => p.value)
+        .sort((a, b) => {
+          return x(new Date(a.timestamp)) - x(new Date(b.timestamp));
+        });
+    } else {
+      line = [];
+    }
+    
+    //TODO: add point at props.startTime and props.endTime
+    
+    line.key = key;
+    return line;
+  };
+  let dataLines = destinations.map(dataLineFromSeries(props.series));
 
-        const dataLinePointFromDataPoint = key => point => {
-          if (point[key] === undefined) {
-            console.log('point[key] is undefined, for key ' + key + ' and point ', point);
-            return null;
-          }
-          return {
-            date: point.date,
-            value: point[key]
-          };
-        };
-        const dataLineFromData = key => {
-          const line = data.map(dataLinePointFromDataPoint(key)).filter(notNull).filter(p => p.value);
-          line.key = key;
-          return line;
-        };
+  // dataLines = dataLines.length ? [dataLines[0]] : [];
 
-        
-        const dataLines = destinations.map(dataLineFromData);
+  const valueLine = d3.line()
+    .x(function(d) {
+      return margin.left + x(new Date(d.timestamp));
+    })
+    .y(function(d) {
+      return y(d.value) + margin.top;
+    })
+    .curve(d3.curveMonotoneX);
 
-        if (dataLines.length < 5) {
-          console.log('Too few dataLines: ', dataLines.length);
-        }
+  const lines = dataLines.map((dl, i) => {
+    return (
+      <path
+        className='line'
+        key={`linechart${i}`}
+        d={valueLine(dl)}
+        style={{fill: 'none', 'strokeWidth': 3, 'stroke': z(i)}}
+      />
+    );
+  });
 
-        const valueLine = d3.line()
-          .x(function(d) { return margin.left + x(new Date(d.date)); })
-          .y(function(d) { return y(d.value) + margin.top;  })
-          .curve(d3.curveMonotoneX);
-        mainGroup.selectAll('.line')
-          .data(dataLines)
-          .join('path').attr('class', 'line')
-          .attr('d', valueLine)
-          .style('stroke', (d, i) => z(i))
-          .style('fill', 'none')
-          .style('stroke-width', 3);
+  // Chart title
+  const chartTitleForType = type => {
+    switch (type) {
+    case LATENCY_METRICS:
+      return 'Latency Chart';
+    case THROUGHPUT_METRICS:
+      return 'Throughput Chart';
+    default:
+      return '';
+    }
+  };
+  
+  const chartTitle = chartTitleForType(props.dataType);
 
-        // if (mainGroup.selectAll('.line').size() > 0) {
-        //   const linesMarginLeft = mainGroup.selectAll('.line').attr('margin-left');
-        //   console.log('linesMarginLeft: ', linesMarginLeft);
-        // }
 
-        // Mobility events
-        // const mobilityEventLine = d => `M${x(new Date(d.timestamp)) + margin.left},${y(yRange[0]) + margin.top} L${x(new Date(d.timestamp)) + margin.left},${y(yRange[1]) + margin.top}`;
-        const mobilityEventLine = d => `M${x(new Date(d.timestamp)) + margin.left},${y(yRange[1]) + margin.top} L${x(new Date(d.timestamp)) + margin.left},${y(yRange[0]) + margin.top}`;
-        mainGroup.selectAll('.mobilityEventLine')
-          .data(props.mobilityEvents)
-          .join('path')
-          .attr('class', 'mobilityEventLine')
-          .attr('d', mobilityEventLine)
-          .attr('id', d => d.timestamp)
-          .style('stroke', 'gray')
-          .style('stroke-width', 1)
-          .style('fill', 'none');
-          
-        mainGroup.selectAll('.mobilityEventLineText')
-          .data(props.mobilityEvents)
-          .join('text')
-          .attr('class', 'mobilityEventLineText')
-          .style('stroke','gray')
-          .style('stroke-width', 1)
-          .style('fill','gray');
-          // .attr('x', d => x(new Date(d.timestamp)) + margin.left)
-          // .attr('dy',50 + margin.top)
-            
-      
-        mainGroup.selectAll('.mobilityEventLineTextPath').remove();
-        mainGroup.selectAll('.mobilityEventLineText')
-          .data(props.mobilityEvents)
-          .append('textPath')
-          .attr('class', 'mobilityEventLineTextPath')
-          .attr('xlink:href', d => `#${d.timestamp}`)
-          .attr('stroke','gray')
-          .attr('fill','gray')
-          .text(d => `Mobility Event:  ${d.src} to ${d.dest}`)
-          .attr('transform', 'rotate(-180)');
-          
+  const axisWidthOffset = 12;
+  const meX = d => x(new Date(d.timestamp)) + axisWidthOffset;
 
-        
-        const xAxisGroup = mainGroup.selectAll('.xaxis');
-        if (xAxisGroup.size() === 0) {
-          mainGroup.append('g')
-            .attr('class', 'xaxis')
-            .attr('transform', 'translate(0,' + height + ')').call(xAxis);
-        } else {
-          xAxisGroup.attr('transform', 'translate(0,' + height + ')').call(xAxis);
-        }
+  const mobilityEventLine = me => `M${meX(me) + margin.left},${y(yRange[1]) + margin.top} L${meX(me) + margin.left},${y(yRange[0]) + margin.top}`;
+  const mobilityEventText = me => `ME from ${me.src} to ${me.dest}`;
 
-        mainGroup.selectAll('.xaxis').call(xAxis);
-         
-        const yAxisGroup = mainGroup.selectAll('.yaxis');
-        if (yAxisGroup.size() === 0) {
-          mainGroup.append('g')
-            .attr('class', 'yaxis')
-            .attr('transform', 'translate(' + width + ', 0)')
-            .style('z-index', '18')
-            .call(yAxis);
-        } else {
-          yAxisGroup.attr('transform', 'translate(' + width + ', 0)');
-        }
+  const mobilityEventLines = props.mobilityEvents.map(me => {
+    return (
+      <path
+        className='mobilityEventLine'
+        d={mobilityEventLine(me)}
+        id={me.timestamp}
+        key={me.timestamp}
+        style={{stroke: 'gray', strokeWidth: 1, fill: 'none', textAnchor: 'middle'}}
+      />
+    );
+  });
 
-        // text label for the y axis
-        const labelForType = type => {
-          switch (type) {
-          case LATENCY_METRICS:
-            return 'Latency (ms)';
-          case THROUGHPUT_METRICS:
-            return 'Throughput (kbs)';
-          default:
-            return '';
-          }
-        };
+  const mobilityEventTextPathDefs = 
+  <defs>
+    {
+      props.mobilityEvents.map((me, i) => {
+        return <path
+          key={'mobilityEventLinePathDef' + i}
+          id={'mobilityEventLinePathDef' + i}
+          d={mobilityEventLine(me)}
+          className='mobilityEventLinePathDef'
+        />;
+      })
+    }
+  </defs>;
 
-        const yAxisLabel = labelForType(props.dataType);
-        if (!mainGroup.selectAll('.yLabel').size()) {
-          mainGroup.append('text')
-            .attr('class', 'yLabel')
-            .attr('transform', 'rotate(-90)')
-            .attr('y', 0 - margin.left + 10)
-            .attr('x', 0 - (height / 2))
-            .attr('dy', '1em')
-            .style('text-anchor', 'middle')
-            .text(yAxisLabel);
-        } else {
-          mainGroup.selectAll('.yLabel')
-            .text(yAxisLabel);
-        }
-
-        // Chart title
-        const chartTitleForType = type => {
-          switch (type) {
-          case LATENCY_METRICS:
-            return 'Latency Chart';
-          case THROUGHPUT_METRICS:
-            return 'Throughput Chart';
-          default:
-            return '';
-          }
-        };
-
-        const chartTitle = chartTitleForType(props.dataType);
-        if (!mainGroup.selectAll('.chartTitle').size()) {
-          mainGroup.append('text')
-            .attr('class', 'chartTitle')
-            .attr('y', 0 + margin.top + 10)
-            .attr('x', width / 2)
-            // .attr('dy', '1em')
-            .style('text-anchor', 'middle')
-            .text(chartTitle);
-        } else {
-          mainGroup.selectAll('.chartTitle')
-            .text(chartTitle);
-        }
-       
-        const yAxisGroup0 = mainGroup.selectAll('.yaxis0');
-        if (yAxisGroup0.size() === 0) {
-          mainGroup.append('g')
-            .attr('class', 'yaxis0')
-            .attr('transform', 'translate(0, 0)')
-            .style('z-index', '18')
-            .call(yAxis);
-        } else {
-          yAxisGroup0.attr('transform', 'translate(0, 0)').style('z-index', '18')
-        }
-      };
-        
-      chart(props.data);
-    },
-
-    /*
-            useEffect has a dependency array (below). It's a list of dependency
-            variables for this useEffect block. The block will run after mount
-            and whenever any of these variables change. We still have to check
-            if the variables are valid, but we do not have to compare old props
-            to next props to decide whether to rerender.
-        */
-    [props.data, d3Container.current]);
-
-  return (
-    <div className='chart'>
-      <svg
-        //viewBox='0 -20 200 33'
-        ref={d3Container}
-        className='d3-component'
-        height={props.height}
-        width={props.width}
+  const mobilityEventTexts = props.mobilityEvents.map((me, i) => {
+    return(
+      <text
+        key={'mobilityEventLinePath' + i}
+        style={{stroke: 'gray', strokeWidth: 1, fill: 'none'}}
       >
-      
-      </svg>
+        <textPath
+          xlinkHref={'mobilityEventLinePathDef' + i}
+          startOffset={'45%'}
+        >
+          {mobilityEventText(me)}
+        </textPath>
+      </text>
+    );
+  
+  });
 
-    </div>
-  );  
+  // text label for the y axis
+  const labelForType = type => {
+    switch (type) {
+    case LATENCY_METRICS:
+      return 'Latency (ms)';
+    case THROUGHPUT_METRICS:
+      return 'Throughput (kbs)';
+    default:
+      return '';
+    }
+  };
+  
+  const yAxisLabel = labelForType(props.dataType);
+  
+  return (
+    <svg
+      height={height}
+      width={width}
+    >
+      <>
+      <g
+        transform={`translate(${margin.left}, ${margin.top})`}
+      >
+        <Axis {...axisPropsFromTickScale(y, 10)} style={{orient: LEFT}}/>
+      </g>
+
+      <g
+        transform={`translate(${margin.left}, ${height - margin.top})`}
+      >
+        <Axis {...axisPropsFromTickScale(x, 10)} style={{orient: BOTTOM}}/>
+      </g>
+
+      <text
+        className='chartTitle'
+        y={0 + margin.top + 10}
+        x={width / 2}
+        style={{textAnchor: 'middle'}}
+      >
+        {chartTitle}
+      </text>
+
+      <text
+        className='yLabel'
+        transform='rotate(-90)'
+        y={0}
+        x={0 - (height / 2)}
+        dy='1em'
+        style={{textAnchor: 'middle'}}
+      >
+        {yAxisLabel}
+      </text>
+      
+      {lines}
+      {mobilityEventLines}
+      {mobilityEventTexts}
+      {mobilityEventTextPathDefs}
+      </>
+    </svg>
+  );
+  
 };
 
 export default IDCLineChart;

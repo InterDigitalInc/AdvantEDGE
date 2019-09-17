@@ -3,7 +3,7 @@ import { LATENCY_METRICS, THROUGHPUT_METRICS, MOBILITY_EVENT } from '../meep-con
 export const dataAccessorForType = dataType => {
   switch (dataType) {
   case LATENCY_METRICS:
-    return p => p.data.latency;
+    return p => p.data.latency || 0.5;
   case THROUGHPUT_METRICS:
     return p => p.data.throughput;
   case MOBILITY_EVENT:
@@ -27,3 +27,5 @@ export const dataSetterForType = dataType => {
 };
 
 export const isDataPointOfType = type => p => p.dataType === type;
+
+export const valueOfPoint = p => dataAccessorForType(p.dataType)(p);

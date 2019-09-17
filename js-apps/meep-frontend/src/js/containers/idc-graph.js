@@ -9,17 +9,12 @@
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
-import { Graph } from 'react-d3-graph';
-import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
 
 import IDCNode from './idc-node.js';
 
 import {
-  plusGenerator,
-  minusGenerator,
   lineGeneratorNodes,
-  lineGeneratorReverse,
   visitNodes,
   blue
 } from './graph-utils';
@@ -40,7 +35,7 @@ import { cfgChangeTable, cfgChangeVis, cfgElemEdit } from '../state/cfg';
 
 import {
   FIELD_NAME,
-  getElemFieldVal,
+  getElemFieldVal
   
 } from '../util/elem-utils';
 
@@ -99,14 +94,6 @@ const createEdgesToChildren = array => node => {
 
 const nodeVisible = n => !n.hidden;
 
-
-
-
-
-const IDCHierarchy = (props) => {
-
-};
-
 class IDCGraph extends Component {
 
   constructor(props) {
@@ -136,7 +123,6 @@ class IDCGraph extends Component {
     const newPing = (date, i, bucketCount) => {
       const srcIdx = srcNodeIndex();
       const destIdx = destNodeIndex(srcIdx);
-      const delay = Math.random() + 0.2;
 
       const amplitude = 0.2*(destIdx % 3)*(destIdx%5) + 1;
       const frequency = 0.3*(destIdx % 3)*(destIdx%5) + 1;
@@ -430,7 +416,7 @@ class IDCGraph extends Component {
           xlinkHref={`#textPathDef${i}`}
           startOffset={'45%'}
         >
-          {`Avg lat: ${e.avgLatency.toFixed(2)} ms`}
+          {`Avg lat: ${e.avgLatency.toFixed(0)} ms`}
           
         </textPath>
       </text>

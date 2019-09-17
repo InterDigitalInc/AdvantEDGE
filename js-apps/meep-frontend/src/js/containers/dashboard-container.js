@@ -1,22 +1,23 @@
-import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component, useState }  from 'react';
+import React, { Component }  from 'react';
 
-import { Grid, GridCell, GridInner } from '@rmwc/grid';
+import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import { Graph } from 'react-d3-graph';
-import ReactDOM from 'react-dom';
+// import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import moment from 'moment';
 import * as d3 from 'd3';
 import axios from 'axios';
 
-// import IDCAreaChart from './idc-area-chart';
 import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
+
+import {
+  idlog
+} from '../util/functional';
 
 import {
   getScenarioNodeChildren,
@@ -24,8 +25,6 @@ import {
 } from '../util/scenario-utils';
 
 import {
-  dataAccessorForType,
-  dataSetterForType,
   isDataPointOfType
 } from '../util/metrics';
 
@@ -42,14 +41,14 @@ import {
 } from '../meep-constants';
 
 const VIEW_NAME_NONE = 'none';
+const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
 function colorArray(dataLength) {
   const colorScale = d3.interpolateInferno;
+  // Other possible color scales:
   // const colorScale = d3.interpolateMagma;
   // const colorScale = d3.interpolateCool;
   // const colorScale = d3.interpolateWarm;
-  // const colorScale = d3.interpolateCubehelixDefault;
-  // interpolateViridis
   // const colorScale = d3.interpolateCubehelixDefault;
   
   let colorArray = [];
@@ -68,41 +67,22 @@ function colorArray(dataLength) {
 
 const metricsBasePath = 'http://10.3.16.73:30008/v1';
 
-const dataPointFromEpochDataPoints = destinations => sourceNodeId => dataAccessor => epochDataPoints => {
-  if (!epochDataPoints.length) {
-    return null;
-  }
-  let dp = {
-    date: epochDataPoints[0].timestamp
-  };
-
-  const avgForDest = dataPoints => acc => dest => {
-    const hasSource = src => p => p.src === src;
-    const hasDestination = dest => p => p.dest === dest;
-    
-    const dataPointsForDestSource = dataPoints
-      .filter(hasSource(sourceNodeId))
-      .filter(hasDestination(dest));
-    const avg = d3.mean(dataPointsForDestSource, acc);
-    return avg;
-  };
-  
-  destinations.forEach(dest => {
-    dp[dest] = avgForDest(epochDataPoints)(dataAccessor)(dest) || 0;
+const buildSeriesFromEpoch = (series, epoch) => {
+  epoch.data.forEach(p => {
+    if (! series[p.dest]) {
+      series[p.dest] = [];
+    }
+    series[p.dest].push(p);
   });
 
-  return dp;
+  return series;
 };
 
-const notNull = x => x;
-const epochsToDataPoints = epochs => nb => destinations => dataAccessor => sourceNodeId => {
-  const selectedEpochs = epochs.length ? epochs.slice(-nb) : [];
-
-  if (selectedEpochs.length === 0) {
-    console.log('epoch length is 0');
-  }
-  const dataPoints = selectedEpochs.map(dataPointFromEpochDataPoints(destinations)(sourceNodeId)(dataAccessor)).filter(notNull);
-  return dataPoints;
+const epochsToSeries = (epochs) => {
+  let series = epochs.reduce((s, current) => {
+    return buildSeriesFromEpoch(s, current);
+  }, {});
+  return series;
 };
 
 const ConfigurationView = (props) => {
@@ -116,7 +96,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeView1(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.view1}
         />
       </GridCell>
@@ -128,7 +107,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeView2(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.view1}
         />
       </GridCell>
@@ -140,7 +118,6 @@ const ConfigurationView = (props) => {
           onChange={(e) => {
             props.changeSourceNodeSelected(e.target.value);
           }}
-          // disabled={props.disabled}
           value={props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''}
         />
       </GridCell>
@@ -158,7 +135,6 @@ const ConfigurationView = (props) => {
   );
 };
 
-const DATA_CONFIGURATION = 'DATA_CONFIGURATION';
 const MAIN_CONFIGURATION = 'MAIN_CONFIGURATION';
 
 const buttonStyles = {
@@ -177,10 +153,11 @@ const ViewForName = (
     apps,
     colorRange,
     width,
-    height,
     min,
     max,
     data,
+    series,
+    startTime,
     mobilityEvents,
     dataPoints,
     dataAccessor,
@@ -210,12 +187,13 @@ const ViewForName = (
         width={width}
         height={600}
         data={data}
+        series={series}
+        startTime={startTime}
         dataAccessor={dataAccessor}
         dataType={dataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
         onNodeClicked={(e) => {
-          console.log('Node clicked is: ', e.node);
           changeSourceNodeSelected(e.node);
         }}
         displayEdgeLabels={displayEdgeLabels}
@@ -225,14 +203,14 @@ const ViewForName = (
     return (
       <IDCLineChart
         data={dataPoints}
+        series={series}
+        startTime={startTime}
         mobilityEvents={mobilityEvents}
         width={width} height={600}
         destinations={appIds}
         colorRange={colorRange}
         selectedSource={selectedSource}
         dataType={dataType}
-        // Specify units
-        // Specify label
         min={min}
         max={max}
         colorForApp={colorForApp}
@@ -242,14 +220,14 @@ const ViewForName = (
     return (
       <IDCLineChart
         data={dataPoints}
+        series={series}
+        startTime={startTime}
         mobilityEvents={mobilityEvents}
         width={width} height={600}
         destinations={appIds}
         colorRange={colorRange}
         selectedSource={selectedSource}
         dataType={dataType}
-        // Specify units
-        // Specify label
         min={min}
         max={max}
         colorForApp={colorForApp}
@@ -297,9 +275,10 @@ const DashboardConfiguration = (props) => {
     )
     : null;
 
-  const backgroundColor = 'ffffff'; // props.configurationType ? '#e4e4e4' : 'ffffff';
   return (
-    <div style={{border: '1px solid #e4e4e4', padding: 10, marginBottom: 10, backgroundColor: backgroundColor}}>
+    <Elevation z={2}
+      style={{padding: 10, marginBottom: 10}}
+    >
       <Grid>
         <GridCell span={10}>
         </GridCell>
@@ -308,10 +287,34 @@ const DashboardConfiguration = (props) => {
           {buttonClose}
         </GridCell>
       </Grid>
-
       {configurationView}
-    </div>
+    </Elevation>
+     
   );
+};
+
+const filterSeries = keys => filter => series => {
+  let newSeries = {};
+  keys.forEach(key => {
+    if (series[key]) {
+      newSeries[key] = removeDuplicatePoints(series[key].filter(filter));
+    }
+  });
+
+  return newSeries;
+};
+
+const removeDuplicatePoints = sequence => {
+  let timestampsMap = {};
+  let newSequence = [];
+  sequence.forEach(p => {
+    if (!timestampsMap[p.timestamp]) {
+      timestampsMap[p.timestamp] = true;
+      newSequence.push(p);
+    }
+  });
+
+  return newSequence;
 };
 
 class DashboardContainer extends Component {
@@ -342,11 +345,19 @@ class DashboardContainer extends Component {
   }
 
   fetchMetrics() {
-    return axios.get(`${metricsBasePath}/metrics?startTime=now-6s&stopTime=now`)
+    const startTime = moment().utc().add(-7, 'seconds').format(TIME_FORMAT);
+    const stopTime = moment().utc().add(-6, 'seconds').format(TIME_FORMAT);
+    return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
       .then(res => {
-        this.props.addMetricsEpoch(res.data.dataResponse || []);
+
+        let epoch = {
+          data: res.data.logResponse || [],
+          startTime: startTime
+        };
+  
+        this.props.addMetricsEpoch(epoch);
       }).catch((e) => {
-        console.log('Error while fetching metrics', e);
+        idlog('Error while fetching metrics')(e);
       });
   }
 
@@ -378,26 +389,12 @@ class DashboardContainer extends Component {
     const appIds = apps.map(a => a.data.id);
     const appMap = apps.reduce((acc, app) => {acc[app.data.id] = app; return acc;}, {});
     const colorRange = colorArray(appIds.length);
-    const nbEpochs = 25;
 
     const selectedSource = this.props.sourceNodeSelected ? this.props.sourceNodeSelected.data.id : null;
- 
-    const showApps = this.props.showAppsView;
-    const span = showApps ? 6 : 12;
 
     const colorForApp = apps.reduce((res, val, i) => {
       return {...res, [val.data.id]: colorRange[i]};
     }, {});
-
-    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : [];
-    const hasValue = p => {
-      const accessor = dataAccessorForType(p.dataType);
-      if (! accessor(p)) {
-        console.log(`No value for src ${p.src} and dest ${p.dest}`);
-      }
-      return accessor(p);
-    };
-    lastEpoch = lastEpoch.filter(hasValue);
 
     const isDataOfType = type => dataPoint => dataPoint.dataType === type;
     
@@ -412,60 +409,60 @@ class DashboardContainer extends Component {
       }
     };
 
-    // Determine last 25 epochs
+    // Determine first and last epochs
+    const firstEpoch = this.props.epochs.length ? this.props.epochs[0] : {
+      data: [],
+      startTime: null
+    };
+    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : {
+      data: [],
+      startTime: null
+    };
+ 
     // Determine startTime of first epoch and endTime of last epoch
-    // Create map of arrays of points, one array per source, indexed by source id
-    // Pass that map to the views
-    // Have each view consume that map
+    const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
+    const endTime = lastEpoch.data.length ? moment(lastEpoch.startTime).add(1, 'seconds').format(TIME_FORMAT) : null;
+    const series = epochsToSeries(this.props.epochs, selectedSource);
 
+    const withTypeAndSource = type => source => point => {
+      return point.dataType === type && point.src === source;
+    };
+
+    // For view 1
     const view1DataType = dataTypeForView(this.state.view1Name);
-    const view1Accessor = dataAccessorForType(view1DataType);
-    const view1DataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(appIds)(view1Accessor)(selectedSource);
-    const data1 = lastEpoch.filter(isDataOfType(view1DataType));
-    const max1 = d3.max(data1, view1Accessor);
-    const min1 = d3.min(data1, view1Accessor);
+    const series1 =  filterSeries(appIds)(withTypeAndSource(view1DataType)(selectedSource))(series);
+    const lastEpochData1 = lastEpoch.data.filter(isDataOfType(view1DataType));
 
+    // For view2
     const view2DataType = dataTypeForView(this.state.view2Name);
-    const view2Accessor = dataAccessorForType(view2DataType);
-    const view2DataPoints = epochsToDataPoints(this.props.epochs)(nbEpochs)(appIds)(view2Accessor)(selectedSource);
-    const data2 = lastEpoch.filter(isDataOfType(view2DataType));
+    const series2 =  filterSeries(appIds)(withTypeAndSource(view2DataType)(selectedSource))(series);
+    const lastEpochData2 = lastEpoch.data.filter(isDataOfType(view2DataType));
 
-    const extractPointsOfType = type => epoch => epoch.filter(isDataPointOfType(type));
+    // Mobility events
+    const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
     const extractMobilityEvents = extractPointsOfType(MOBILITY_EVENT);
     const mobilityEvents = this.props.epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
-      console.log('Some mobility events ...');
+      // console.log('Some mobility events ...');
     }
-    data2.forEach((d) => {
-      const dd = view1Accessor(d);
-      if (!dd) {
-        console.log(`Null data: ${dd}. `);
-      }
-    });
-
-    const max2 = d3.max(data2, view2Accessor);
-    const min2 = d3.min(data2, view2Accessor);
+  
     
-    const width = 700;
     const height = 600;
 
     let span1 = 6;
     let width1 = 700;
-    let span2 = 6;
     let width2 = 700;
 
     if (this.state.view1Name === VIEW_NAME_NONE) {
       span1 = 0;
       width1 = 0;
-      span2 = 12;
-      width2 = 1200;
+      width2 = 1400;
     }
 
     if (this.state.view2Name === VIEW_NAME_NONE) {
       span1 = 12;
-      width1 = 1200;
-      span2 = 0;
+      width1 = 1400;
       width2 = 0;
     }
 
@@ -475,12 +472,11 @@ class DashboardContainer extends Component {
         colorRange={colorRange}
         width={width1}
         height={height}
-        data={data1}
+        data={lastEpochData1}
+        series={series1}
+        startTime={startTime}
+        endTime={endTime}
         mobilityEvents={mobilityEvents}
-        min={min1}
-        max={max1}
-        dataPoints={view1DataPoints}
-        dataAccessor={view1Accessor}
         dataType={view1DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
@@ -496,12 +492,11 @@ class DashboardContainer extends Component {
         colorRange={colorRange}
         width={width2}
         height={height}
-        data={data2}
+        data={lastEpochData2}
+        series={series2}
+        startTime={startTime}
+        endTime={endTime}
         mobilityEvents={mobilityEvents}
-        min={min2}
-        max={max2}
-        dataPoints={view2DataPoints}
-        dataAccessor={view2Accessor}
         dataType={view2DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
@@ -514,9 +509,7 @@ class DashboardContainer extends Component {
 
     return (
       <>
-      <Elevation z={4}
-        style={{padding: 10}}
-      >
+      
         <DashboardConfiguration
           configurationType={this.state.configurationType}
           displayConfiguration={
@@ -535,15 +528,23 @@ class DashboardContainer extends Component {
         />
         
         <Grid>
-          <GridCell span={span1} style={{marginLeft: -10}}>
-            {view1}
+          
+          <GridCell span={span1} style={{paddingRight: 10}}>
+            <Elevation z={2}
+              style={{padding: 10}}
+            >
+              {view1}
+            </Elevation>
           </GridCell>
-
-          <GridCell span={span2} style={{marginLeft: -10}}>
-            {view2}
+          
+          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}>
+            <Elevation z={2}
+              style={{padding: 10}}
+            >
+              {view2}
+            </Elevation>
           </GridCell>
         </Grid>
-      </Elevation>
       
       </>
     );

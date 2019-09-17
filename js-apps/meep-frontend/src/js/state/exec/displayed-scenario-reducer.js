@@ -6,8 +6,6 @@
  * The information provided herein is the proprietary and confidential
  * information of InterDigital Communications, Inc.
  */
-import { updateObject } from '../../util/object-util';
-
 // EXEC_CHANGE_SCENARIO
 export const EXEC_CHANGE_DISPLAYED_SCENARIO = 'EXEC_CHANGE_DISPLAYED_SCENARIO';
 function execChangeDisplayedScenario(scenario) {
