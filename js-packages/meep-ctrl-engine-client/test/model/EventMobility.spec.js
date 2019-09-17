@@ -30,7 +30,7 @@
   var instance;
 
   beforeEach(function() {
-    instance = new MeepControllerRestApi.EventUeMobility();
+    instance = new MeepControllerRestApi.EventMobility();
   });
 
   var getProperty = function(object, getter, property) {
@@ -49,22 +49,22 @@
       object[property] = value;
   }
 
-  describe('EventUeMobility', function() {
-    it('should create an instance of EventUeMobility', function() {
-      // uncomment below and update the code to test EventUeMobility
-      //var instane = new MeepControllerRestApi.EventUeMobility();
-      //expect(instance).to.be.a(MeepControllerRestApi.EventUeMobility);
+  describe('EventMobility', function() {
+    it('should create an instance of EventMobility', function() {
+      // uncomment below and update the code to test EventMobility
+      //var instane = new MeepControllerRestApi.EventMobility();
+      //expect(instance).to.be.a(MeepControllerRestApi.EventMobility);
     });
 
-    it('should have the property ue (base name: "ue")', function() {
-      // uncomment below and update the code to test the property ue
-      //var instane = new MeepControllerRestApi.EventUeMobility();
+    it('should have the property elementName (base name: "elementName")', function() {
+      // uncomment below and update the code to test the property elementName
+      //var instane = new MeepControllerRestApi.EventMobility();
       //expect(instance).to.be();
     });
 
     it('should have the property dest (base name: "dest")', function() {
       // uncomment below and update the code to test the property dest
-      //var instane = new MeepControllerRestApi.EventUeMobility();
+      //var instane = new MeepControllerRestApi.EventMobility();
       //expect(instance).to.be();
     });
 

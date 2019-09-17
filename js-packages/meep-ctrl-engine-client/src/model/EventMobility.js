@@ -25,7 +25,7 @@
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.EventUeMobility = factory(root.MeepControllerRestApi.ApiClient);
+    root.MeepControllerRestApi.EventMobility = factory(root.MeepControllerRestApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -34,15 +34,15 @@
 
 
   /**
-   * The EventUeMobility model module.
-   * @module model/EventUeMobility
+   * The EventMobility model module.
+   * @module model/EventMobility
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>EventUeMobility</code>.
-   * UE Mobility Event object
-   * @alias module:model/EventUeMobility
+   * Constructs a new <code>EventMobility</code>.
+   * Mobility Event object
+   * @alias module:model/EventMobility
    * @class
    */
   var exports = function() {
@@ -53,18 +53,18 @@
   };
 
   /**
-   * Constructs a <code>EventUeMobility</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>EventMobility</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/EventUeMobility} obj Optional instance to populate.
-   * @return {module:model/EventUeMobility} The populated <code>EventUeMobility</code> instance.
+   * @param {module:model/EventMobility} obj Optional instance to populate.
+   * @return {module:model/EventMobility} The populated <code>EventMobility</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('ue')) {
-        obj['ue'] = ApiClient.convertToType(data['ue'], 'String');
+      if (data.hasOwnProperty('elementName')) {
+        obj['elementName'] = ApiClient.convertToType(data['elementName'], 'String');
       }
       if (data.hasOwnProperty('dest')) {
         obj['dest'] = ApiClient.convertToType(data['dest'], 'String');
@@ -74,12 +74,12 @@
   }
 
   /**
-   * UE identifier
-   * @member {String} ue
+   * Name of the network element to be updated
+   * @member {String} elementName
    */
-  exports.prototype['ue'] = undefined;
+  exports.prototype['elementName'] = undefined;
   /**
-   * Destination identifier
+   * Destination element identifier
    * @member {String} dest
    */
   exports.prototype['dest'] = undefined;

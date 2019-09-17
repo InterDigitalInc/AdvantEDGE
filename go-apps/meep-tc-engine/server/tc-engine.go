@@ -59,8 +59,10 @@ const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const MAX_THROUGHPUT = 9999999999 //easy value to spot in the array
 const COMMON_CORRELATION = 50
-const COMMON_PACKET_LOSS = 10   // 1000 -> 10.00%
-const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
+const COMMON_PACKET_LOSS = 10        // 1000 -> 10.00%
+const THROUGHPUT_UNIT = 1000000      //convert from Mbps to bps
+const DEFAULT_THROUGHPUT_LINK = 1000 //1000 mbps)
+const DEFAULT_THROUGHPUT_APP = 1000  //1000mbps)
 //index in array
 const LATENCY = 0
 const LATENCY_VARIATION = 1
@@ -96,6 +98,8 @@ type NetElem struct {
 	InterZone        NetChar
 	InterEdge        NetChar
 	InterFog         NetChar
+	Link             NetChar
+	App              NetChar
 	Index            int
 	FilterInfoList   []FilterInfo
 	Ip               string
@@ -169,6 +173,7 @@ var elementEdgeArray []NetElem
 var elementFogArray []NetElem
 var elementUEArray []NetElem
 var curNetCharList []NetElem
+var netElemMap = map[string]*NetElem{}
 
 var indexToNetElemMap map[int]NetElem
 var netElemNameToIndexMap = map[string]int{}
@@ -181,6 +186,8 @@ var scenarioName string
 // Service IP map
 var podIPMap = map[string]string{}
 var svcIPMap = map[string]string{}
+
+var nextUniqueNumberMap = map[string]int{}
 
 // Flag & Counters used to indicate when TC Engine is ready to
 var tcEngineState = stateIdle
@@ -277,6 +284,12 @@ func processActiveScenarioUpdate() {
 		// Update Network Characteristic matrix table
 		refreshNetCharTable()
 
+		//debug for the tables
+		printNetCharTable(LATENCY)
+		printNetCharTable(LATENCY_VARIATION)
+		printNetCharTable(THROUGHPUT)
+		printNetCharTable(PACKET_LOSS)
+
 		// Apply network characteristic rules
 		applyNetCharRules()
 
@@ -347,14 +360,41 @@ func addSvc(name string) {
 	}
 }
 
-// Initialize Pod informatin for matching entry
-func initPodInfo(name string, ip string) {
-	for i := range curNetCharList {
-		if name == curNetCharList[i].Name {
-			curNetCharList[i].Ip = ip
-			curNetCharList[i].NextUniqueNumber = 1
-			break
+func convertDebugInfoToStr(debugInfo int) string {
+
+	value := ""
+	switch debugInfo {
+	case LATENCY:
+		value = "LATENCY"
+	case LATENCY_VARIATION:
+		value = "LATENCY VARIATION"
+	case THROUGHPUT:
+		value = "THROUGHPUT"
+	case PACKET_LOSS:
+		value = "PACKET_LOSS"
+	default:
+	}
+	return value
+}
+
+func printNetCharTable(debugInfo int) {
+	//explicit initialisation
+	index := len(netCharTable)
+
+	log.Info("***** " + convertDebugInfoToStr(debugInfo) + "*****")
+	line := ""
+	for _, element := range curNetCharList {
+		line = line + element.Name + " "
+	}
+
+	log.Info(line)
+
+	for i := 0; i < index; i++ {
+		line = curNetCharList[i].Name + ": "
+		for j := 0; j < index; j++ {
+			line = line + strconv.Itoa(netCharTable[i][j][debugInfo]) + " "
 		}
+		log.Info(line)
 	}
 }
 
@@ -367,6 +407,8 @@ func stopScenario() {
 	elementUEArray = nil
 
 	curNetCharList = nil
+
+	netElemMap = map[string]*NetElem{}
 	indexToNetElemMap = nil
 	netElemNameToIndexMap = nil
 	netCharTable = nil
@@ -401,7 +443,13 @@ func validateLatencyVariation(value int) int {
 
 func parseScenario(scenario ceModel.Scenario) {
 	log.Debug("parseScenario")
+	//resets variables
+	elementDistantCloudArray = nil
+	elementEdgeArray = nil
+	elementFogArray = nil
+	elementUEArray = nil
 
+	curNetCharList = nil
 	// Store scenario Name
 	scenarioName = scenario.Name
 
@@ -469,18 +517,40 @@ func parseScenario(scenario ceModel.Scenario) {
 				// Parse Physical locations
 				for _, pl := range nl.PhysicalLocations {
 
+					linkLatency := int(pl.LinkLatency)
+					linkLatencyVariation := int(pl.LinkLatencyVariation)
+					linkLatencyVariation = validateLatencyVariation(linkLatencyVariation)
+					linkLatencyCorrelation := COMMON_CORRELATION
+					//linkThroughput := DEFAULT_THROUGHPUT_LINK
+					linkThroughput := int(pl.LinkThroughput)
+					linkThroughput = THROUGHPUT_UNIT * linkThroughput
+					// Packet loss (float) converted to hundredth & truncated
+					linkPacketLoss := int(100 * pl.LinkPacketLoss)
+
 					// Parse Processes
 					for _, proc := range pl.Processes {
 						addPod(proc.Name)
 
 						// Retrieve existing element or create new net element if none found
-						element := getElement(proc.Name)
+						element := netElemMap[proc.Name]
 						if element == nil {
 							element = new(NetElem)
 							element.ScenarioName = scenario.Name
 							element.Name = proc.Name
-							element.NextUniqueNumber = 1
+							element.NextUniqueNumber = nextUniqueNumberMap[proc.Name]
+							element.Ip = podIPMap[proc.Name]
+
 						}
+
+						appLatency := int(proc.AppLatency)
+						appLatencyVariation := int(proc.AppLatencyVariation)
+						appLatencyVariation = validateLatencyVariation(appLatencyVariation)
+						appLatencyCorrelation := COMMON_CORRELATION
+						//appThroughput := DEFAULT_THROUGHPUT_APP
+						appThroughput := int(proc.AppThroughput)
+						appThroughput = THROUGHPUT_UNIT * appThroughput
+						// Packet loss (float) converted to hundredth & truncated
+						appPacketLoss := int(100 * proc.AppPacketLoss)
 
 						// Update element information based on current location characteristics
 						element.DomainName = domain.Name
@@ -492,6 +562,8 @@ func parseScenario(scenario ceModel.Scenario) {
 						populateNetChar(&element.InterEdge, interEdgeLatency, interEdgeLatencyVariation, interEdgeLatencyCorrelation, interEdgeThroughput, interEdgePacketLoss)
 						populateNetChar(&element.InterFog, interFogLatency, interFogLatencyVariation, interFogLatencyCorrelation, interFogThroughput, interFogPacketLoss)
 						populateNetChar(&element.EdgeFog, edgeFogLatency, edgeFogLatencyVariation, edgeFogLatencyCorrelation, edgeFogThroughput, edgeFogPacketLoss)
+						populateNetChar(&element.Link, linkLatency, linkLatencyVariation, linkLatencyCorrelation, linkThroughput, linkPacketLoss)
+						populateNetChar(&element.App, appLatency, appLatencyVariation, appLatencyCorrelation, appThroughput, appPacketLoss)
 
 						switch pl.Type_ {
 						case "EDGE":
@@ -577,7 +649,7 @@ func parseScenario(scenario ceModel.Scenario) {
 					// Retrieve existing element or create new net element if none found
 					// Create a dummy virtual parent for table calculation purpose
 					name := "dummy-fog-" + nl.Name //this is unique within the zone
-					element := getElement(name)
+					element := netElemMap[name]
 					if element == nil {
 						element = new(NetElem)
 						element.ScenarioName = scenario.Name
@@ -611,7 +683,7 @@ func parseScenario(scenario ceModel.Scenario) {
 				// Retrieve existing element or create new net element if none found
 				// Create a dummy virtual parent for table calculation purpose
 				name := "dummy-edge-" + zone.Name //this is unique within the zone
-				element := getElement(name)
+				element := netElemMap[name]
 				if element == nil {
 					element = new(NetElem)
 					element.ScenarioName = scenario.Name
@@ -648,6 +720,7 @@ func parseScenario(scenario ceModel.Scenario) {
 		curNetCharList = append(curNetCharList, elementFogArray...)
 		curNetCharList = append(curNetCharList, elementUEArray...)
 	}
+
 }
 
 // Create & store new service & MG service information
@@ -694,31 +767,36 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 	svcInfoMap[svcInfo.Name] = svcInfo
 }
 
+/*
 func getElement(name string) *NetElem {
 	// Make sure net char list exists
-	if curNetCharList == nil {
+	if netElemList == nil {
 		return nil
 	}
 
 	// Return element reference if found
-	for index, elem := range curNetCharList {
+	for index, elem := range netElemList {
 		if elem.Name == name {
-			return &curNetCharList[index]
+			return &netElemList[index]
 		}
 	}
 	return nil
 }
-
+*/
 func addElementToList(element *NetElem) {
 	switch element.Type {
 	case "FOG":
 		elementFogArray = append(elementFogArray, *element)
+		netElemMap[element.Name] = element
 	case "EDGE":
 		elementEdgeArray = append(elementEdgeArray, *element)
+		netElemMap[element.Name] = element
 	case "UE":
 		elementUEArray = append(elementUEArray, *element)
+		netElemMap[element.Name] = element
 	case "DC":
 		elementDistantCloudArray = append(elementDistantCloudArray, *element)
+		netElemMap[element.Name] = element
 	default:
 	}
 }
@@ -771,7 +849,6 @@ func refreshNetCharTable() {
 			case "DC":
 				//dst can only be DC
 				duplicateValueBasedOnSource(&srcElement.InterDomain, i, j)
-
 			case "EDGE":
 				if dstElement.Type == "EDGE" {
 					if srcElement.DomainName != dstElement.DomainName {
@@ -786,7 +863,6 @@ func refreshNetCharTable() {
 				} else {
 					duplicateValueBasedOnSource(&srcElement.InterDomain, i, j)
 				}
-
 			case "FOG":
 				if dstElement.Type == "FOG" {
 					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
@@ -794,17 +870,69 @@ func refreshNetCharTable() {
 					} else {
 						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.EdgeFog, i, j)
 					}
-				} else {
-					updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.EdgeFog, i, j)
+				} else { //dst element is EDGE or CLOUD, so it goes directly to edge
+					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
+						duplicateValueBasedOnSource(&srcElement.EdgeFog, i, j)
+					} else {
+						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.EdgeFog, i, j)
+					}
 				}
-
 			case "UE":
-				updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.Poa, i, j)
-
+				if dstElement.Type == "FOG" {
+					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
+						duplicateValueBasedOnSource(&srcElement.Poa, i, j)
+					} else {
+						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.Poa, i, j)
+					}
+				} else {
+					updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.Poa, i, j)
+				}
 			default:
 			}
 		}
 	}
+	//second pass to add the individual values
+	//first update every row
+	for i := 1; i < arraySize; i++ {
+		srcElement := indexToNetElemMap[i]
+
+		//add the values on the whole row then column
+		for j := 0; j < i; j++ {
+			updateValueBasedOnSource(&srcElement.Link, i, j)
+			updateValueBasedOnSource(&srcElement.App, i, j)
+		}
+	}
+	//then update every column
+	for j := 0; j < arraySize; j++ {
+		dstElement := indexToNetElemMap[j]
+
+		//add the values on the whole row then column
+		for i := j + 1; i < arraySize; i++ {
+			updateValueBasedOnSource(&dstElement.Link, i, j)
+			updateValueBasedOnSource(&dstElement.App, i, j)
+		}
+	}
+}
+
+func updateValueBasedOnSource(nc *NetChar, i int, j int) {
+	if nc == nil {
+		return
+	}
+	netCharTable[i][j][LATENCY] += nc.Latency
+	netCharTable[j][i][LATENCY] = netCharTable[i][j][LATENCY]
+	netCharTable[i][j][LATENCY_VARIATION] += nc.LatencyVariation
+	netCharTable[j][i][LATENCY_VARIATION] = netCharTable[i][j][LATENCY_VARIATION]
+
+	if nc.Throughput < netCharTable[i][j][THROUGHPUT] {
+		netCharTable[i][j][THROUGHPUT] = nc.Throughput
+	} //else no change
+	netCharTable[j][i][THROUGHPUT] = netCharTable[i][j][THROUGHPUT]
+
+	valuef := float64(netCharTable[i][j][PACKET_LOSS]) / float64(10000) // 100.00 % == 1, 10.00% == 0.1 ... etc)
+	valuef = float64(10000-nc.PacketLoss) * valuef
+	netCharTable[i][j][PACKET_LOSS] = nc.PacketLoss + int(valuef)
+	netCharTable[j][i][PACKET_LOSS] = netCharTable[i][j][PACKET_LOSS]
+
 }
 
 func duplicateValueBasedOnSource(nc *NetChar, i int, j int) {
@@ -861,14 +989,14 @@ func applyNetCharRules() {
 
 	// Loop through
 	for j, dstElement := range indexToNetElemMap {
-
+		dstElementPtr := netElemMap[dstElement.Name]
 		// Ignore dummy
 		if strings.Contains(dstElement.Name, "dummy") {
 			continue
 		}
 
 		for i, srcElement := range indexToNetElemMap {
-
+			srcElementPtr := netElemMap[srcElement.Name]
 			if i == j {
 				continue
 			}
@@ -878,14 +1006,14 @@ func applyNetCharRules() {
 			}
 
 			var filterInfo FilterInfo
-			filterInfo.PodName = dstElement.Name
-			filterInfo.SrcIp = srcElement.Ip
-			filterInfo.SrcSvcIp = svcIPMap[srcElement.Name]
-			filterInfo.SrcName = srcElement.Name
+			filterInfo.PodName = dstElementPtr.Name
+			filterInfo.SrcIp = srcElementPtr.Ip
+			filterInfo.SrcSvcIp = svcIPMap[srcElementPtr.Name]
+			filterInfo.SrcName = srcElementPtr.Name
 			filterInfo.SrcNetmask = "0"
 			filterInfo.SrcPort = 0
 			filterInfo.DstPort = 0
-			filterInfo.UniqueNumber = dstElement.NextUniqueNumber
+			filterInfo.UniqueNumber = dstElementPtr.NextUniqueNumber
 			value := netCharTable[i][j][LATENCY]
 			valueVar := netCharTable[i][j][LATENCY_VARIATION]
 			filterInfo.Latency = value
@@ -897,12 +1025,12 @@ func applyNetCharRules() {
 			filterInfo.DataRate = value
 			needUpdate := false
 			needCreate := false
-			if dstElement.FilterInfoList == nil {
-				dstElement.FilterInfoList = append(dstElement.FilterInfoList, filterInfo)
+			if dstElementPtr.FilterInfoList == nil {
+				dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
 				needCreate = true
 			} else { //check to see if it exists
 				index := 0
-				for indx, storedFilterInfo := range dstElement.FilterInfoList {
+				for indx, storedFilterInfo := range dstElementPtr.FilterInfoList {
 					if storedFilterInfo.SrcName == filterInfo.SrcName {
 						//it has to be unique so check the other values
 						needCreate = false
@@ -934,10 +1062,10 @@ func applyNetCharRules() {
 					}
 				}
 				if needCreate {
-					dstElement.FilterInfoList = append(dstElement.FilterInfoList, filterInfo)
+					dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
 				} else {
 					if needUpdate {
-						list := dstElement.FilterInfoList
+						list := dstElementPtr.FilterInfoList
 						_ = deleteFilterRule(&list[index])
 						list[index] = filterInfo //swap
 					}
@@ -946,15 +1074,15 @@ func applyNetCharRules() {
 
 			if needCreate {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
-				dstElement.NextUniqueNumber += 2
+				dstElementPtr.NextUniqueNumber += 2
 				_ = updateFilterRule(&filterInfo)
 			} else {
 				if needUpdate {
 					_ = updateFilterRule(&filterInfo)
 				}
 			}
-			indexToNetElemMap[j] = dstElement
-			curNetCharList[j] = dstElement
+			indexToNetElemMap[j] = *dstElementPtr
+			curNetCharList[j] = *dstElementPtr
 		}
 	}
 }
@@ -1179,10 +1307,14 @@ func getPlatformInfo() {
 					if ip, found := podIPMap[podName]; found && ip == "" && podIP != "" {
 						log.Debug("Setting podName: ", podName, " to IP: ", podIP)
 						podIPMap[podName] = podIP
+						nextUniqueNumberMap[podName] = 1
+						//set the element if it has already been created by the scenario parsing
+						element := netElemMap[podName]
+						if element != nil {
+							element.Ip = podIP
+							element.NextUniqueNumber = 1
+						}
 						podCount++
-
-						// Initialize Pod IP
-						initPodInfo(podName, podIP)
 					}
 				}
 			}

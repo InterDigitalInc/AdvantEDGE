@@ -20,7 +20,7 @@ type Event struct {
 
 	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
 
-	EventUeMobility *EventUeMobility `json:"eventUeMobility,omitempty"`
+	EventMobility *EventMobility `json:"eventMobility,omitempty"`
 
 	EventPoasInRange *EventPoasInRange `json:"eventPoasInRange,omitempty"`
 

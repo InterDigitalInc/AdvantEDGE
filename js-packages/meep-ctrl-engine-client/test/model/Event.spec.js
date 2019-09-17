@@ -74,8 +74,8 @@
       //expect(instance).to.be();
     });
 
-    it('should have the property eventUeMobility (base name: "eventUeMobility")', function() {
-      // uncomment below and update the code to test the property eventUeMobility
+    it('should have the property eventMobility (base name: "eventMobility")', function() {
+      // uncomment below and update the code to test the property eventMobility
       //var instane = new MeepControllerRestApi.Event();
       //expect(instance).to.be();
     });

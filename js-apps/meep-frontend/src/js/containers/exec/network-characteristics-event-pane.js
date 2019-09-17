@@ -33,13 +33,31 @@ import {
   EXEC_EVT_NC_TYPE,
   EXEC_EVT_NC_NAME,
 
+  // Network element types
+  ELEMENT_TYPE_SCENARIO,
+  ELEMENT_TYPE_OPERATOR,
+  //ELEMENT_TYPE_ZONE,
+  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_DC,
+  //ELEMENT_TYPE_CN,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_UE,
+  //ELEMENT_TYPE_MECSVC,
+  ELEMENT_TYPE_UE_APP,
+  //ELEMENT_TYPE_EXT_UE_APP,
+  ELEMENT_TYPE_EDGE_APP,
+  ELEMENT_TYPE_CLOUD_APP,
+
   // NC Group Prefixes
   PREFIX_INT_DOM,
   PREFIX_INT_ZONE,
   PREFIX_INT_EDGE,
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
-  PREFIX_TERM_LINK
+  PREFIX_TERM_LINK,
+  PREFIX_LINK,
+  PREFIX_APP
 
 } from '../../meep-constants';
 
@@ -67,17 +85,25 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
   FIELD_LINK_THROUGPUT,
   FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   getElemFieldVal,
   setElemFieldVal,
   setElemFieldErr
 } from '../../util/elem-utils';
 
-const ncApplicableTypes = ['SCENARIO', 'DOMAIN', 'ZONE-INTER-EDGE', 'ZONE-INTER-FOG', 'ZONE-EDGE-FOG', 'POA'];
+const ncApplicableTypes = [ELEMENT_TYPE_SCENARIO, ELEMENT_TYPE_OPERATOR, 'ZONE-INTER-EDGE', 'ZONE-INTER-FOG', 'ZONE-EDGE-FOG', ELEMENT_TYPE_POA, ELEMENT_TYPE_DC, ELEMENT_TYPE_EDGE, ELEMENT_TYPE_FOG, ELEMENT_TYPE_UE, ELEMENT_TYPE_UE_APP, ELEMENT_TYPE_EDGE_APP, ELEMENT_TYPE_CLOUD_APP];
 
 class NetworkCharacteristicsEventPane extends Component {
 
@@ -130,7 +156,10 @@ class NetworkCharacteristicsEventPane extends Component {
         if (type === 'DOMAIN' || type === 'OPERATOR') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
         }
-        return type.startsWith(elemType);
+        if (elemType === 'ZONE') {
+          return type.startsWith(elemType);
+        }
+        return type === elemType;
       })
       .value();
 
@@ -139,9 +168,9 @@ class NetworkCharacteristicsEventPane extends Component {
 
   currentPrefix() {
     switch(this.state.currentElementType) {
-    case 'SCENARIO':
+    case ELEMENT_TYPE_SCENARIO:
       return PREFIX_INT_DOM;
-    case 'DOMAIN':
+    case ELEMENT_TYPE_OPERATOR:
       return PREFIX_INT_ZONE;
     case 'ZONE-INTER-EDGE':
       return PREFIX_INT_EDGE;
@@ -149,8 +178,22 @@ class NetworkCharacteristicsEventPane extends Component {
       return PREFIX_INT_FOG;
     case 'ZONE-EDGE-FOG':
       return PREFIX_EDGE_FOG;
-    case 'POA':
+    case ELEMENT_TYPE_POA:
       return PREFIX_TERM_LINK;
+    case ELEMENT_TYPE_EDGE:
+      return PREFIX_LINK;
+    case ELEMENT_TYPE_FOG:
+      return PREFIX_LINK;
+    case ELEMENT_TYPE_DC:
+      return PREFIX_LINK;
+    case ELEMENT_TYPE_UE:
+      return PREFIX_LINK;
+    case ELEMENT_TYPE_UE_APP:
+      return PREFIX_APP;
+    case ELEMENT_TYPE_EDGE_APP:
+      return PREFIX_APP;
+    case ELEMENT_TYPE_CLOUD_APP:
+      return PREFIX_APP;
     default:
       return '';
     }
@@ -195,10 +238,22 @@ class NetworkCharacteristicsEventPane extends Component {
       packetLossFieldName = FIELD_EDGE_FOG_PKT_LOSS;
       break;
     case PREFIX_TERM_LINK:
+      latencyFieldName = FIELD_TERM_LINK_LATENCY;
+      latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
+      throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+      packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
+      break;
+    case PREFIX_LINK:
       latencyFieldName = FIELD_LINK_LATENCY;
       latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
       throughputFieldName = FIELD_LINK_THROUGPUT;
       packetLossFieldName = FIELD_LINK_PKT_LOSS;
+      break;
+    case PREFIX_APP:
+      latencyFieldName = FIELD_APP_LATENCY;
+      latencyVarFieldName = FIELD_APP_LATENCY_VAR;
+      throughputFieldName = FIELD_APP_THROUGPUT;
+      packetLossFieldName = FIELD_APP_PKT_LOSS;
       break;
     default:
       return null;
@@ -247,7 +302,10 @@ class NetworkCharacteristicsEventPane extends Component {
         if (type === 'DOMAIN' || type === 'OPERATOR') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
         }
-        return this.state.currentElementType.startsWith(elemType);
+        if (elemType === 'ZONE') {
+          return this.state.currentElementType.startsWith(elemType);
+        }
+        return this.state.currentElementType === elemType;
       })
       .map((e) => {
         return getElemFieldVal(e, FIELD_NAME);

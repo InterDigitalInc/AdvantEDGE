@@ -27,6 +27,20 @@ Name | Type | Description | Notes
 
 * `ZONE-EDGE-FOG` (value: `"ZONE-EDGE-FOG"`)
 
+* `EDGE` (value: `"EDGE"`)
+
+* `FOG` (value: `"FOG"`)
+
+* `UE` (value: `"UE"`)
+
+* `DISTANT-CLOUD` (value: `"DISTANT-CLOUD"`)
+
+* `UE-APP` (value: `"UE-APP"`)
+
+* `EDGE-APP` (value: `"EDGE-APP"`)
+
+* `CLOUD-APP` (value: `"CLOUD-APP"`)
+
 
 
 

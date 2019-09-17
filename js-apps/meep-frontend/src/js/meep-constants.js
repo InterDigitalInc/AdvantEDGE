@@ -159,6 +159,14 @@ export const DEFAULT_LATENCY_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
 export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 1;
+export const DEFAULT_LATENCY_LINK = 0;
+export const DEFAULT_LATENCY_JITTER_LINK = 0;
+export const DEFAULT_THROUGHPUT_LINK = 1000;
+export const DEFAULT_PACKET_LOSS_LINK = 0;
+export const DEFAULT_LATENCY_APP = 0;
+export const DEFAULT_LATENCY_JITTER_APP = 0;
+export const DEFAULT_THROUGHPUT_APP = 1000;
+export const DEFAULT_PACKET_LOSS_APP = 0;
 export const DEFAULT_LATENCY_DC = 0;
 
 // GPU Types
@@ -188,6 +196,8 @@ export const PREFIX_INT_EDGE = 'Inter-Edge';
 export const PREFIX_INT_FOG = 'Inter-Fog';
 export const PREFIX_EDGE_FOG = 'Edge-Fog';
 export const PREFIX_TERM_LINK = 'Terminal Link';
+export const PREFIX_LINK = 'Link';
+export const PREFIX_APP = 'Application';
 
 export const id = (label) => {
   return '#' + label;

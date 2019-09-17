@@ -39,7 +39,16 @@ import {
   DEFAULT_LATENCY_TERMINAL_LINK,
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
   DEFAULT_THROUGHPUT_TERMINAL_LINK,
-  DEFAULT_PACKET_LOSS_TERMINAL_LINK
+  DEFAULT_PACKET_LOSS_TERMINAL_LINK,
+  DEFAULT_LATENCY_LINK,
+  DEFAULT_LATENCY_JITTER_LINK,
+  DEFAULT_THROUGHPUT_LINK,
+  DEFAULT_PACKET_LOSS_LINK,
+  DEFAULT_LATENCY_APP,
+  DEFAULT_LATENCY_JITTER_APP,
+  DEFAULT_THROUGHPUT_APP,
+  DEFAULT_PACKET_LOSS_APP
+
 } from '../meep-constants';
 
 // Network Element Fields
@@ -83,10 +92,18 @@ export const FIELD_EDGE_FOG_LATENCY = 'edgeFogLatency';
 export const FIELD_EDGE_FOG_LATENCY_VAR = 'edgeFogLatencyVariation';
 export const FIELD_EDGE_FOG_THROUGPUT = 'edgeFogThroughput';
 export const FIELD_EDGE_FOG_PKT_LOSS = 'edgeFogPacketLoss';
-export const FIELD_LINK_LATENCY = 'terminalLinkLatency';
-export const FIELD_LINK_LATENCY_VAR = 'terminalLinkLatencyVariation';
-export const FIELD_LINK_THROUGPUT = 'terminalLinkThroughput';
-export const FIELD_LINK_PKT_LOSS = 'terminalLinkPacketLoss';
+export const FIELD_TERM_LINK_LATENCY = 'terminalLinkLatency';
+export const FIELD_TERM_LINK_LATENCY_VAR = 'terminalLinkLatencyVariation';
+export const FIELD_TERM_LINK_THROUGPUT = 'terminalLinkThroughput';
+export const FIELD_TERM_LINK_PKT_LOSS = 'terminalLinkPacketLoss';
+export const FIELD_LINK_LATENCY = 'linkLatency';
+export const FIELD_LINK_LATENCY_VAR = 'linkLatencyVariation';
+export const FIELD_LINK_THROUGPUT = 'linkThroughput';
+export const FIELD_LINK_PKT_LOSS = 'linkPacketLoss';
+export const FIELD_APP_LATENCY = 'appLatency';
+export const FIELD_APP_LATENCY_VAR = 'appLatencyVariation';
+export const FIELD_APP_THROUGPUT = 'appThroughput';
+export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 
 export const getElemFieldVal = (elem, field) => {
   return (elem[field]) ? elem[field].val : null;
@@ -146,10 +163,18 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY_VAR,   DEFAULT_LATENCY_JITTER_EDGE_FOG);
   setElemFieldVal(elem, FIELD_EDGE_FOG_THROUGPUT,     DEFAULT_THROUGHPUT_EDGE_FOG);
   setElemFieldVal(elem, FIELD_EDGE_FOG_PKT_LOSS,      DEFAULT_PACKET_LOSS_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY,           DEFAULT_LATENCY_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR,       DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_THROUGPUT,         DEFAULT_THROUGHPUT_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS,          DEFAULT_PACKET_LOSS_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY,      DEFAULT_LATENCY_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR,  DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT,    DEFAULT_THROUGHPUT_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS,     DEFAULT_PACKET_LOSS_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_LINK_LATENCY,           DEFAULT_LATENCY_LINK);
+  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR,       DEFAULT_LATENCY_JITTER_LINK);
+  setElemFieldVal(elem, FIELD_LINK_THROUGPUT,         DEFAULT_THROUGHPUT_LINK);
+  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS,          DEFAULT_PACKET_LOSS_LINK);
+  setElemFieldVal(elem, FIELD_APP_LATENCY,            DEFAULT_LATENCY_APP);
+  setElemFieldVal(elem, FIELD_APP_LATENCY_VAR,        DEFAULT_LATENCY_JITTER_APP);
+  setElemFieldVal(elem, FIELD_APP_THROUGPUT,          DEFAULT_THROUGHPUT_APP);
+  setElemFieldVal(elem, FIELD_APP_PKT_LOSS,           DEFAULT_PACKET_LOSS_APP);
 
   return elem;
 };

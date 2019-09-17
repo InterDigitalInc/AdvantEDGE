@@ -661,6 +661,23 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Process"
+      linkLatency:
+        type: "integer"
+        description: "Latency in ms between the physical location and the network\
+          \ (wired interface, air interface)"
+      linkLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms between the physical location and the\
+          \ network (wired interface, air interface)"
+      linkThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported between the physical location\
+          \ and the network (wired interface, air interface)"
+      linkPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) between the physical location\
+          \ and the network (wired interface, air interface)"
     description: "Physical location object"
     example: {}
   Process:
@@ -727,6 +744,19 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      appLatency:
+        type: "integer"
+        description: "Latency in ms caused by the application"
+      appLatencyVariation:
+        type: "integer"
+        description: "Latency variation in ms caused by the application"
+      appThroughput:
+        type: "integer"
+        description: "The limit of the traffic supported by the application"
+      appPacketLoss:
+        type: "number"
+        format: "double"
+        description: "Packet lost (in terms of percentage) caused by the application"
     description: "Application or service object"
     example: {}
   ServiceConfig:
@@ -843,7 +873,7 @@ definitions:
         items:
           $ref: "#/definitions/Event"
     description: "Event list object"
-    example: "null"
+    example: {}
   Event:
     type: "object"
     properties:
@@ -855,13 +885,13 @@ definitions:
         description: "Event type"
         enum:
         - "NETWORK-CHARACTERISTICS-UPDATE"
-        - "UE-MOBILITY"
+        - "MOBILITY"
         - "POAS-IN-RANGE"
         - "OTHER"
       eventNetworkCharacteristicsUpdate:
         $ref: "#/definitions/EventNetworkCharacteristicsUpdate"
-      eventUeMobility:
-        $ref: "#/definitions/EventUeMobility"
+      eventMobility:
+        $ref: "#/definitions/EventMobility"
       eventPoasInRange:
         $ref: "#/definitions/EventPoasInRange"
       eventOther:
@@ -869,10 +899,10 @@ definitions:
     description: "Event object"
     example:
       name: "name"
-      type: "UE-MOBILITY"
-      eventUeMobility:
-        ue: "ue"
-        dest: "dest"
+      type: "MOBILITY"
+      eventMobility:
+        elementName: "ue1"
+        dest: "poa2"
   EventNetworkCharacteristicsUpdate:
     type: "object"
     properties:
@@ -889,6 +919,13 @@ definitions:
         - "ZONE-INTER-EDGE"
         - "ZONE-INTER-FOG"
         - "ZONE-EDGE-FOG"
+        - "EDGE"
+        - "FOG"
+        - "UE"
+        - "DISTANT-CLOUD"
+        - "UE-APP"
+        - "EDGE-APP"
+        - "CLOUD-APP"
       latency:
         type: "integer"
         description: "Latency in ms"
@@ -904,19 +941,19 @@ definitions:
         description: "Packet loss percentage"
     description: "Network Characteristics update Event object"
     example: {}
-  EventUeMobility:
+  EventMobility:
     type: "object"
     properties:
-      ue:
+      elementName:
         type: "string"
-        description: "UE identifier"
+        description: "Name of the network element to be updated"
       dest:
         type: "string"
-        description: "Destination identifier"
-    description: "UE Mobility Event object"
+        description: "Destination element identifier"
+    description: "Mobility Event object"
     example:
-      ue: "ue"
-      dest: "dest"
+      elementName: "ue1"
+      dest: "poa2"
   EventPoasInRange:
     type: "object"
     properties:

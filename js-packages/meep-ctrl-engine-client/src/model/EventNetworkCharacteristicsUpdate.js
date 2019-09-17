@@ -156,7 +156,42 @@
      * value: "ZONE-EDGE-FOG"
      * @const
      */
-    "ZONE-EDGE-FOG": "ZONE-EDGE-FOG"  };
+    "ZONE-EDGE-FOG": "ZONE-EDGE-FOG",
+    /**
+     * value: "EDGE"
+     * @const
+     */
+    "EDGE": "EDGE",
+    /**
+     * value: "FOG"
+     * @const
+     */
+    "FOG": "FOG",
+    /**
+     * value: "UE"
+     * @const
+     */
+    "UE": "UE",
+    /**
+     * value: "DISTANT-CLOUD"
+     * @const
+     */
+    "DISTANT-CLOUD": "DISTANT-CLOUD",
+    /**
+     * value: "UE-APP"
+     * @const
+     */
+    "UE-APP": "UE-APP",
+    /**
+     * value: "EDGE-APP"
+     * @const
+     */
+    "EDGE-APP": "EDGE-APP",
+    /**
+     * value: "CLOUD-APP"
+     * @const
+     */
+    "CLOUD-APP": "CLOUD-APP"  };
 
 
   return exports;

@@ -771,6 +771,31 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 					break
 
 				}
+				// Parse Physical Locations
+				for plIndex, pl := range nl.PhysicalLocations {
+					if (elementType == "DISTANT CLOUD" || elementType == "EDGE" || elementType == "FOG" || elementType == "UE") && elementName == pl.Name {
+						phyloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex]
+						phyloc.LinkLatency = netChar.Latency
+						phyloc.LinkLatencyVariation = netChar.LatencyVariation
+						phyloc.LinkThroughput = netChar.Throughput
+						phyloc.LinkPacketLoss = netChar.PacketLoss
+						elementFound = true
+						break
+					}
+					// Parse Processes
+					for procIndex, proc := range pl.Processes {
+						if (elementType == "CLOUD APPLICATION" || elementType == "EDGE APPLICATION" || elementType == "UE APPLICATION") && elementName == proc.Name {
+							procloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex].Processes[procIndex]
+							procloc.AppLatency = netChar.Latency
+							procloc.AppLatencyVariation = netChar.LatencyVariation
+							procloc.AppThroughput = netChar.Throughput
+							procloc.AppPacketLoss = netChar.PacketLoss
+							elementFound = true
+							break
+						}
+					}
+				}
+
 			}
 		}
 	}
@@ -795,7 +820,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 	return "", -1
 }
 
-func sendEventUeMobility(event Event) (string, int) {
+func sendEventMobility(event Event) (string, int) {
 
 	// Retrieve active scenario
 	var scenario Scenario
@@ -804,17 +829,25 @@ func sendEventUeMobility(event Event) (string, int) {
 		return err.Error(), http.StatusNotFound
 	}
 
-	// Retrieve UE name and destination PoA name
-	ueName := event.EventUeMobility.Ue
-	poaName := event.EventUeMobility.Dest
+	// Retrieve target name (src) and destination parent name
+	elemName := event.EventMobility.ElementName
+	destName := event.EventMobility.Dest
 
 	var oldNL *NetworkLocation
+	var oldPL *PhysicalLocation
 	var newNL *NetworkLocation
-	var ue *PhysicalLocation
-	var ueIndex int
+	var newPL *PhysicalLocation
+	var pl *PhysicalLocation
+	var pr *Process
+	var index int
 
-	// Find UE & destination PoA
-	log.Debug("Searching for UE and destination PoA in active scenario")
+	oldLocName := ""
+	newLocName := ""
+	isProcess := false
+	isMoveable := true
+
+	// Find PL & destination element
+	log.Debug("Searching for ", elemName, " and destination in active scenario")
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
 
@@ -825,48 +858,104 @@ func sendEventUeMobility(event Event) (string, int) {
 				nl := &zone.NetworkLocations[k]
 
 				// Destination PoA
-				if nl.Name == poaName {
+				if nl.Name == destName {
+					newNL = nl
+				}
+				//all edges are under a "default" network location element
+				if zone.Name == destName && nl.Type_ == "DEFAULT" {
 					newNL = nl
 				}
 
 				for l := range nl.PhysicalLocations {
-					pl := &nl.PhysicalLocations[l]
+					currentPl := &nl.PhysicalLocations[l]
+
+					// Destination Physical location
+					if currentPl.Name == destName {
+						newPL = currentPl
+					}
 
 					// UE to move
-					if pl.Type_ == "UE" && pl.Name == ueName {
-						oldNL = nl
-						ue = pl
-						ueIndex = l
+					if currentPl.Name == elemName {
+						if currentPl.Type_ == "UE" || currentPl.Type_ == "FOG" || currentPl.Type_ == "EDGE" {
+							oldNL = nl
+							pl = currentPl
+							index = l
+						}
+
 					}
+					for p := range currentPl.Processes {
+						currentP := &currentPl.Processes[p]
+
+						// APP to move
+						if currentP.Name == elemName {
+							if currentP.Type_ == "EDGE-APP" {
+								//exception, we do not move if we are part of a mobility group
+								if currentP.ServiceConfig != nil {
+									if currentP.ServiceConfig.MeSvcName != "" {
+										//this app shouldn't be allowed to move
+										isMoveable = false
+										break
+									}
+								}
+								oldPL = currentPl
+								pr = currentP
+								index = p
+								isProcess = true
+							}
+						}
+
+					}
+
 				}
 			}
 		}
 	}
 
-	// Update UE location if necessary
-	if ue != nil && oldNL != nil && newNL != nil && oldNL != newNL {
-		log.Debug("Found UE and destination PoA. Updating UE location.")
+	if !isMoveable {
+		//edge app cannot be moved
+		log.Debug("Edge App cannot be moved, nothing should be done")
+		err := "Edge App is part of a mobility group, it can't be moved"
+		return err, http.StatusForbidden
+	}
 
-		// Add UE to new location
-		newNL.PhysicalLocations = append(newNL.PhysicalLocations, *ue)
+	// Update PL location if necessary
+	if (pl != nil && oldNL != nil && newNL != nil && oldNL != newNL) ||
+		(pr != nil && oldPL != nil && newPL != nil && oldPL != newPL) {
+		log.Debug("Found src location and its destination. Updating location.")
 
-		// Remove UE from old location
-		oldNL.PhysicalLocations[ueIndex] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
-		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+		if isProcess {
+			// Add Process to new location
+			newPL.Processes = append(newPL.Processes, *pr)
+			// Remove Process from old location
+			oldPL.Processes[index] = oldPL.Processes[len(oldPL.Processes)-1]
+			oldPL.Processes = oldPL.Processes[:len(oldPL.Processes)-1]
 
+			oldLocName = oldPL.Name
+			newLocName = newPL.Name
+		} else {
+			// Add PL to new location
+			newNL.PhysicalLocations = append(newNL.PhysicalLocations, *pl)
+			// Remove UE from old location
+			oldNL.PhysicalLocations[index] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
+			oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+
+			oldLocName = oldNL.Name
+			newLocName = newNL.Name
+		}
 		// Store updated active scenario in DB
 		rev, err := setScenario(db, activeScenarioName, scenario)
 		if err != nil {
 			return err.Error(), http.StatusNotFound
 		}
 		log.Debug("Active scenario updated with rev: ", rev)
+
 		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
 			"meep.log.msgType":   "mobilityEvent",
-			"meep.log.oldPoa":    oldNL.Name,
-			"meep.log.newPoa":    newNL.Name,
-			"meep.log.src":       ue.Name,
-			"meep.log.dest":      ue.Name,
+			"meep.log.oldLoc":    oldLocName,
+			"meep.log.newLoc":    newLocName,
+			"meep.log.src":       elemName,
+			"meep.log.dest":      elemName,
 		}).Info("Measurements log")
 
 		// TODO in Execution Engine:
@@ -874,7 +963,7 @@ func sendEventUeMobility(event Event) (string, int) {
 		//    - Inform monitoring engine?
 
 	} else {
-		err := "Failed to find UE or destination PoA"
+		err := "Failed to find target element or destination location"
 		return err, http.StatusNotFound
 	}
 	return "", -1
@@ -991,8 +1080,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	var httpStatus int
 	var error string
 	switch eventType {
-	case "UE-MOBILITY":
-		error, httpStatus = sendEventUeMobility(event)
+	case "MOBILITY":
+		error, httpStatus = sendEventMobility(event)
 	case "NETWORK-CHARACTERISTICS-UPDATE":
 		error, httpStatus = sendEventNetworkCharacteristics(event)
 	case "POAS-IN-RANGE":

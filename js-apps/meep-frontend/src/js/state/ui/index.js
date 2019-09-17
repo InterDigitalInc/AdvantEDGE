@@ -21,7 +21,7 @@ export const PAGE_EXECUTE = 'page-execute-link';
 export const PAGE_MONITOR = 'page-monitor-link';
 export const PAGE_SETTINGS = 'page-settings-link';
 
-const UE_MOBILITY_EVENT = 'UE-MOBILITY';
+const MOBILITY_EVENT = 'MOBILITY';
 const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
 // Change the current page
@@ -114,7 +114,7 @@ const uiExecChangeShowApps = (show) => {
 
 export {
   // Event types
-  UE_MOBILITY_EVENT,
+  MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
 
   // Action types
@@ -147,7 +147,7 @@ const initialState = {
   mainDrawerOpen: true,
   eventCreationMode: false,
   execCurrentEvent: null,
-  currentEventType: UE_MOBILITY_EVENT,
+  currentEventType: MOBILITY_EVENT,
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,

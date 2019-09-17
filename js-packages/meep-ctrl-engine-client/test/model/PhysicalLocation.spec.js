@@ -104,6 +104,30 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property linkLatency (base name: "linkLatency")', function() {
+      // uncomment below and update the code to test the property linkLatency
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkLatencyVariation (base name: "linkLatencyVariation")', function() {
+      // uncomment below and update the code to test the property linkLatencyVariation
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkThroughput (base name: "linkThroughput")', function() {
+      // uncomment below and update the code to test the property linkThroughput
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkPacketLoss (base name: "linkPacketLoss")', function() {
+      // uncomment below and update the code to test the property linkPacketLoss
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
   });
 
 }));

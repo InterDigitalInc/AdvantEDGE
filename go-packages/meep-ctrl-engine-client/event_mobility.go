@@ -9,12 +9,12 @@
 
 package client
 
-// UE Mobility Event object
-type EventUeMobility struct {
+// Mobility Event object
+type EventMobility struct {
 
-	// UE identifier
-	Ue string `json:"ue,omitempty"`
+	// Name of the network element to be updated
+	ElementName string `json:"elementName,omitempty"`
 
-	// Destination identifier
+	// Destination element identifier
 	Dest string `json:"dest,omitempty"`
 }
