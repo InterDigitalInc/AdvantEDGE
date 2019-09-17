@@ -97,7 +97,7 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-const meepctlVersion = "1.1.1"
+const meepctlVersion = "1.2.0"
 const na = "NA"
 
 var corePodsNameMap = []string{
