@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import _ from 'lodash';
 import * as vis from 'vis';
 import { updateObject } from './object-util';
@@ -21,7 +29,8 @@ import {
   FIELD_GROUP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  FIELD_SVC_MAP,
+  FIELD_INGRESS_SVC_MAP,
+  FIELD_EGRESS_SVC_MAP,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -51,10 +60,18 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
   FIELD_LINK_THROUGPUT,
   FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   createElem,
   getElemFieldVal,
@@ -73,7 +90,6 @@ import {
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_MECSVC,
   ELEMENT_TYPE_UE_APP,
-  ELEMENT_TYPE_EXT_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
 
@@ -101,6 +117,14 @@ import {
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
   DEFAULT_THROUGHPUT_TERMINAL_LINK,
   DEFAULT_PACKET_LOSS_TERMINAL_LINK,
+  DEFAULT_LATENCY_LINK,
+  DEFAULT_LATENCY_JITTER_LINK,
+  DEFAULT_THROUGHPUT_LINK,
+  DEFAULT_PACKET_LOSS_LINK,
+  DEFAULT_LATENCY_APP,
+  DEFAULT_LATENCY_JITTER_APP,
+  DEFAULT_THROUGHPUT_APP,
+  DEFAULT_PACKET_LOSS_APP,
   // DEFAULT_LATENCY_DC,
 
   DOMAIN_TYPE_STR,
@@ -276,11 +300,6 @@ export function addElementToScenario(scenario, element) {
     break;
   }
 
-  case ELEMENT_TYPE_EXT_UE_APP: {
-    scenarioElement = createExternalProcess(name, UE_APP_TYPE_STR, element);
-    break;
-  }
-
   case ELEMENT_TYPE_EDGE_APP: {
     scenarioElement = createProcess(name, EDGE_APP_TYPE_STR, element);
     break;
@@ -351,7 +370,6 @@ export function addElementToScenario(scenario, element) {
 export function updateElementInScenario(scenario, element) {
 
   var name = getElemFieldVal(element, FIELD_NAME);
-  var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
 
   // Find element in scenario
   if (scenario.name === name) {
@@ -393,28 +411,27 @@ export function updateElementInScenario(scenario, element) {
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.name === name) {
-          nl.terminalLinkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
-          nl.terminalLinkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
-          nl.terminalLinkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
-          nl.terminalLinkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+          nl.terminalLinkLatency = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY);
+          nl.terminalLinkLatencyVariation = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR);
+          nl.terminalLinkThroughput = getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT);
+          nl.terminalLinkPacketLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
           return;
         }
 
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
           if (pl.name === name) {
-            pl.isExternal = isExternal;
+            pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
+            pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
+            pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
+            pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
             return;
           }
 
           for (var m in pl.processes) {
             var process = pl.processes[m];
             if (process.name === name) {
-              if (isExternal) {
-                pl.processes[m] = createExternalProcess(process.name, process.type, element);
-              } else {
-                pl.processes[m] = createProcess(process.name, process.type, element);
-              }
+              pl.processes[m] = createProcess(process.name, process.type, element);
               return;
             }
           }
@@ -487,14 +504,14 @@ export function createNewScenario(name) {
 }
 
 export function createProcess(name, type, element) {
+  var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
-
   var process = {
     id: name,
     name: name,
     type: type,
-    isExternal: false,
+    isExternal: isExternal,
     userChartLocation: null,
     userChartAlternateValues: null,
     userChartGroup: null,
@@ -504,10 +521,19 @@ export function createProcess(name, type, element) {
     commandExe: null,
     serviceConfig: null,
     gpuConfig: null,
-    externalConfig: null
+    externalConfig: null,
+    appLatency: parseInt(DEFAULT_LATENCY_APP),
+    appLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_APP),
+    appThroughput: parseInt(DEFAULT_THROUGHPUT_APP),
+    appPacketLoss: parseInt(DEFAULT_PACKET_LOSS_APP)
   };
 
-  if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
+  if (isExternal) {
+    process.externalConfig = {
+      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)),
+      egressServiceMap: getEgressServiceMapArray(getElemFieldVal(element, FIELD_EGRESS_SVC_MAP))
+    };
+  } else if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
     process.userChartLocation = getElemFieldVal(element, FIELD_CHART_LOC);
     process.userChartAlternateValues =  getElemFieldVal(element, FIELD_CHART_VAL);
     process.userChartGroup = getElemFieldVal(element, FIELD_CHART_GROUP);
@@ -534,27 +560,10 @@ export function createProcess(name, type, element) {
     };
   }
 
-  return process;
-}
-
-export function createExternalProcess(name, type, element) {
-  var process = {
-    id: name,
-    name: name,
-    type: type,
-    isExternal: true,
-    userChartLocation: null,
-    userChartAlternateValues: null,
-    userChartGroup: null,
-    image: null,
-    environment: null,
-    commandArguments: null,
-    commandExe: null,
-    serviceConfig: null,
-    externalConfig: {
-      ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_SVC_MAP))
-    }
-  };
+  process.appLatency = getElemFieldVal(element, FIELD_APP_LATENCY);
+  process.appLatencyVariation = getElemFieldVal(element, FIELD_APP_LATENCY_VAR);
+  process.appThroughput = getElemFieldVal(element, FIELD_APP_THROUGPUT);
+  process.appPacketLoss = getElemFieldVal(element, FIELD_APP_PKT_LOSS);
 
   return process;
 }
@@ -589,12 +598,49 @@ export function getIngressServiceMapArray(ingressServiceMapStr) {
         externalPort: parseInt(svcMap[0]),
         name: svcMap[1],
         port: parseInt(svcMap[2]),
-        protocol: svcMap[3].toUpperCase(),
-        ip: null
+        protocol: svcMap[3].toUpperCase()
       });
     }
   }
   return ingressServiceMapArray;
+}
+
+export function getEgressServiceMapStr(egressServiceMapArray) {
+  var egressServiceMapStr = '';
+
+  // Loop through service map array
+  for (var i = 0; i < egressServiceMapArray.length; i++) {
+    var svcMap = egressServiceMapArray[i];
+    egressServiceMapStr += ((i === 0) ? '' : ',') +
+      svcMap.name + ':' + ((svcMap.meSvcName) ? svcMap.meSvcName : '') + ':' + svcMap.ip + ':' + svcMap.port + ':' + svcMap.protocol;
+  }
+  return egressServiceMapStr;
+}
+
+export function getEgressServiceMapArray(egressServiceMapStr) {
+  var egressServiceMapArray = [];
+
+  // Add service map entries, if any
+  if (egressServiceMapStr) {
+    var scpMapList = egressServiceMapStr.split(',');
+    // Loop through service map list
+    for (var i = 0; i < scpMapList.length; i++) {
+      var svcMap = (scpMapList[i]).split(':');
+      if (svcMap.length !== 5) {
+        continue;
+      }
+
+      // Add service map to egressServiceMap Array
+      egressServiceMapArray.push({
+        name: svcMap[0],
+        meSvcName: svcMap[1],
+        ip: svcMap[2],
+        port: parseInt(svcMap[3]),
+        protocol: svcMap[4].toUpperCase()
+      });
+    }
+  }
+  return egressServiceMapArray;
 }
 
 export function createDomain(name, element) {
@@ -630,10 +676,10 @@ export function createNL(name, element) {
     id: name,
     name: name,
     type: NL_TYPE_STR,
-    terminalLinkLatency: getElemFieldVal(element, FIELD_LINK_LATENCY),
-    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
-    terminalLinkThroughput: getElemFieldVal(element, FIELD_LINK_THROUGPUT),
-    terminalLinkPacketLoss: getElemFieldVal(element, FIELD_LINK_PKT_LOSS),
+    terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+    terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
+    terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
     physicalLocations: []
   };
   return nl;
@@ -650,6 +696,7 @@ export function createDefaultNL(zoneName) {
     terminalLinkThroughput: parseInt(DEFAULT_THROUGHPUT_TERMINAL_LINK),
     terminalLinkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_TERMINAL_LINK),
     physicalLocations: []
+
   };
   return nl;
 }
@@ -660,8 +707,17 @@ export function createPL(name, type, element) {
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
+    linkLatency: parseInt(DEFAULT_LATENCY_LINK),
+    linkLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_LINK),
+    linkThroughput: parseInt(DEFAULT_THROUGHPUT_LINK),
+    linkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_LINK),
     processes: []
   };
+  pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
+  pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
+  pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
+  pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+
   return pl;
 }
 
@@ -765,10 +821,10 @@ export function getElementFromScenario(scenario, elementName) {
           setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
           setElemFieldVal(elem, FIELD_PARENT, (domain.type === PUBLIC_DOMAIN_TYPE_STR) ?
             scenario.name : (zone.type === COMMON_ZONE_TYPE_STR) ? domain.name : zone.name);
-          setElemFieldVal(elem, FIELD_LINK_LATENCY, nl.terminalLinkLatency || 0);
-          setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, nl.terminalLinkLatencyVariation || 0);
-          setElemFieldVal(elem, FIELD_LINK_THROUGPUT, nl.terminalLinkThroughput || 0);
-          setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, nl.terminalLinkPacketLoss || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, nl.terminalLinkLatency || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR, nl.terminalLinkLatencyVariation || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT, nl.terminalLinkThroughput || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, nl.terminalLinkPacketLoss || 0);
           return elem;
         }
 
@@ -797,7 +853,11 @@ export function getElementFromScenario(scenario, elementName) {
             setElemFieldVal(elem, FIELD_PARENT,
               (domain.type === PUBLIC_DOMAIN_TYPE_STR) ? scenario.name :
                 (zone.type === COMMON_ZONE_TYPE_STR) ? domain.name :
-                  (nl.type === DEFAULT_NL_TYPE_STR) ? zone.name : nl.name);
+                  (nl.type === DEFAULT_NL_TYPE_STR) ? zone.name : nl.name); 
+            setElemFieldVal(elem, FIELD_LINK_LATENCY, pl.linkLatency || 0);
+            setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, pl.linkLatencyVariation || 0);
+            setElemFieldVal(elem, FIELD_LINK_THROUGPUT, pl.linkThroughput || DEFAULT_THROUGHPUT_LINK);
+            setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.linkPacketLoss || 0);
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
             return elem;
           }
@@ -810,7 +870,7 @@ export function getElementFromScenario(scenario, elementName) {
                 setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_MECSVC);
                 break;
               case UE_APP_TYPE_STR:
-                setElemFieldVal(elem, FIELD_TYPE, (process.isExternal) ? ELEMENT_TYPE_EXT_UE_APP : ELEMENT_TYPE_UE_APP);
+                setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_UE_APP);
                 break;
               case EDGE_APP_TYPE_STR:
                 setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_EDGE_APP);
@@ -822,6 +882,11 @@ export function getElementFromScenario(scenario, elementName) {
                 break;
               }
               setElemFieldVal(elem, FIELD_PARENT, pl.name);
+
+              setElemFieldVal(elem, FIELD_APP_LATENCY, process.appLatency || 0);
+              setElemFieldVal(elem, FIELD_APP_LATENCY_VAR, process.appLatencyVariation || 0);
+              setElemFieldVal(elem, FIELD_APP_THROUGPUT, process.appThroughput || DEFAULT_THROUGHPUT_APP);
+              setElemFieldVal(elem, FIELD_APP_PKT_LOSS, process.appPacketLoss || 0);
 
               if (process.userChartLocation) {
                 setElemFieldVal(elem, FIELD_CHART_ENABLED, true);
@@ -848,8 +913,13 @@ export function getElementFromScenario(scenario, elementName) {
                 }
               }
 
-              if (process.externalConfig && process.externalConfig.ingressServiceMap) {
-                setElemFieldVal(elem, FIELD_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+              if (process.externalConfig) {
+                if (process.externalConfig.ingressServiceMap) {
+                  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP, getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
+                }
+                if (process.externalConfig.egressServiceMap) {
+                  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP, getEgressServiceMapStr(process.externalConfig.egressServiceMap));
+                }
               }
               return elem;
             }

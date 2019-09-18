@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
@@ -38,7 +46,7 @@ import {
   IDC_DIALOG_SAVE_SCENARIO,
 
   // Event types
-  UE_MOBILITY_EVENT,
+  MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
   PAGE_EXECUTE,
   PAGE_EXPERIMENTAL_EXECUTE
@@ -65,7 +73,7 @@ class ExecPageContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.changeCurrentEvent(UE_MOBILITY_EVENT);
+    this.props.changeCurrentEvent(MOBILITY_EVENT);
   }
 
   /**
@@ -275,7 +283,7 @@ class ExecPageContainer extends Component {
                 <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
                   <Elevation className="component-style" z={2}>
                     <EventCreationPane
-                      eventTypes={[UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
+                      eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
                       api={this.props.api}
                       onSuccess={() => {this.props.refreshScenario();}}
                       onClose={() => this.onQuitEventCreationMode()}

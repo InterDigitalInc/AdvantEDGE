@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 // MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
@@ -65,6 +73,7 @@ export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
 export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
+export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
@@ -73,8 +82,8 @@ export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
 export const CFG_ELEM_LATENCY_VAR = 'cfg-elem-latency-var';
 export const CFG_ELEM_PKT_LOSS = 'cfg-elem-pkt-loss';
 export const CFG_ELEM_THROUGHPUT = 'cfg-elem-throughput';
-export const CFG_ELEM_ING_SVC_MAP = 'cfg-elem-ing-svc-map';
-
+export const CFG_ELEM_INGRESS_SVC_MAP = 'cfg-elem-ingress-svc-map';
+export const CFG_ELEM_EGRESS_SVC_MAP = 'cfg-elem-egress-svc-map';
 
 // Execution page states
 export const EXEC_STATE_IDLE = 'IDLE';
@@ -123,7 +132,6 @@ export const ELEMENT_TYPE_FOG = 'FOG';
 export const ELEMENT_TYPE_UE = 'UE';
 export const ELEMENT_TYPE_MECSVC = 'MEC SERVICE';
 export const ELEMENT_TYPE_UE_APP = 'UE APPLICATION';
-export const ELEMENT_TYPE_EXT_UE_APP = 'EXT UE APPLICATION';
 export const ELEMENT_TYPE_EDGE_APP = 'EDGE APPLICATION';
 export const ELEMENT_TYPE_CLOUD_APP = 'CLOUD APPLICATION';
 
@@ -152,6 +160,14 @@ export const DEFAULT_LATENCY_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
 export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 1;
+export const DEFAULT_LATENCY_LINK = 0;
+export const DEFAULT_LATENCY_JITTER_LINK = 0;
+export const DEFAULT_THROUGHPUT_LINK = 1000;
+export const DEFAULT_PACKET_LOSS_LINK = 0;
+export const DEFAULT_LATENCY_APP = 0;
+export const DEFAULT_LATENCY_JITTER_APP = 0;
+export const DEFAULT_THROUGHPUT_APP = 1000;
+export const DEFAULT_PACKET_LOSS_APP = 0;
 export const DEFAULT_LATENCY_DC = 0;
 
 // GPU Types
@@ -181,6 +197,8 @@ export const PREFIX_INT_EDGE = 'Inter-Edge';
 export const PREFIX_INT_FOG = 'Inter-Fog';
 export const PREFIX_EDGE_FOG = 'Edge-Fog';
 export const PREFIX_TERM_LINK = 'Terminal Link';
+export const PREFIX_LINK = 'Link';
+export const PREFIX_APP = 'Application';
 
 export const id = (label) => {
   return '#' + label;

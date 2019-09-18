@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -100,6 +100,30 @@
 
     it('should have the property processes (base name: "processes")', function() {
       // uncomment below and update the code to test the property processes
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkLatency (base name: "linkLatency")', function() {
+      // uncomment below and update the code to test the property linkLatency
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkLatencyVariation (base name: "linkLatencyVariation")', function() {
+      // uncomment below and update the code to test the property linkLatencyVariation
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkThroughput (base name: "linkThroughput")', function() {
+      // uncomment below and update the code to test the property linkThroughput
+      //var instane = new MeepControllerRestApi.PhysicalLocation();
+      //expect(instance).to.be();
+    });
+
+    it('should have the property linkPacketLoss (base name: "linkPacketLoss")', function() {
+      // uncomment below and update the code to test the property linkPacketLoss
       //var instane = new MeepControllerRestApi.PhysicalLocation();
       //expect(instance).to.be();
     });

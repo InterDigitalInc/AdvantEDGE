@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import React from 'react';
 import { Grid, GridCell  } from '@rmwc/grid';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
@@ -36,10 +44,18 @@ import {
   FIELD_EDGE_FOG_LATENCY_VAR,
   FIELD_EDGE_FOG_THROUGPUT,
   FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
   FIELD_LINK_THROUGPUT,
   FIELD_LINK_PKT_LOSS,
+  FIELD_APP_LATENCY,
+  FIELD_APP_LATENCY_VAR,
+  FIELD_APP_THROUGPUT,
+  FIELD_APP_PKT_LOSS,
 
   getElemFieldVal,
   getElemFieldErr
@@ -57,7 +73,9 @@ import {
   PREFIX_INT_EDGE,
   PREFIX_INT_FOG,
   PREFIX_EDGE_FOG,
-  PREFIX_TERM_LINK
+  PREFIX_TERM_LINK,
+  PREFIX_LINK,
+  PREFIX_APP
 
 } from '../../meep-constants';
 
@@ -190,10 +208,22 @@ const NCGroup = ({prefix, onUpdate, element}) => {
     packetLossFieldName = FIELD_EDGE_FOG_PKT_LOSS;
     break;
   case PREFIX_TERM_LINK:
+    latencyFieldName = FIELD_TERM_LINK_LATENCY;
+    latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
+    throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+    packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
+    break;
+  case PREFIX_LINK:
     latencyFieldName = FIELD_LINK_LATENCY;
     latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
     throughputFieldName = FIELD_LINK_THROUGPUT;
     packetLossFieldName = FIELD_LINK_PKT_LOSS;
+    break;
+  case PREFIX_APP:
+    latencyFieldName = FIELD_APP_LATENCY;
+    latencyVarFieldName = FIELD_APP_LATENCY_VAR;
+    throughputFieldName = FIELD_APP_THROUGPUT;
+    packetLossFieldName = FIELD_APP_PKT_LOSS;
     break;
   default:
     return null;

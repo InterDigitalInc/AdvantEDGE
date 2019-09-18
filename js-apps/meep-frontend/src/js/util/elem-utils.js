@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
@@ -31,7 +39,16 @@ import {
   DEFAULT_LATENCY_TERMINAL_LINK,
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
   DEFAULT_THROUGHPUT_TERMINAL_LINK,
-  DEFAULT_PACKET_LOSS_TERMINAL_LINK
+  DEFAULT_PACKET_LOSS_TERMINAL_LINK,
+  DEFAULT_LATENCY_LINK,
+  DEFAULT_LATENCY_JITTER_LINK,
+  DEFAULT_THROUGHPUT_LINK,
+  DEFAULT_PACKET_LOSS_LINK,
+  DEFAULT_LATENCY_APP,
+  DEFAULT_LATENCY_JITTER_APP,
+  DEFAULT_THROUGHPUT_APP,
+  DEFAULT_PACKET_LOSS_APP
+
 } from '../meep-constants';
 
 // Network Element Fields
@@ -42,7 +59,8 @@ export const FIELD_IMAGE = 'image';
 export const FIELD_PORT = 'port';
 export const FIELD_PROTOCOL = 'protocol';
 export const FIELD_GROUP = 'group';
-export const FIELD_SVC_MAP = 'ingressServiceMap';
+export const FIELD_INGRESS_SVC_MAP = 'ingressServiceMap';
+export const FIELD_EGRESS_SVC_MAP = 'egressServiceMap';
 export const FIELD_GPU_COUNT = 'gpuCount';
 export const FIELD_GPU_TYPE = 'gpuType';
 export const FIELD_ENV_VAR = 'envVar';
@@ -74,10 +92,18 @@ export const FIELD_EDGE_FOG_LATENCY = 'edgeFogLatency';
 export const FIELD_EDGE_FOG_LATENCY_VAR = 'edgeFogLatencyVariation';
 export const FIELD_EDGE_FOG_THROUGPUT = 'edgeFogThroughput';
 export const FIELD_EDGE_FOG_PKT_LOSS = 'edgeFogPacketLoss';
-export const FIELD_LINK_LATENCY = 'terminalLinkLatency';
-export const FIELD_LINK_LATENCY_VAR = 'terminalLinkLatencyVariation';
-export const FIELD_LINK_THROUGPUT = 'terminalLinkThroughput';
-export const FIELD_LINK_PKT_LOSS = 'terminalLinkPacketLoss';
+export const FIELD_TERM_LINK_LATENCY = 'terminalLinkLatency';
+export const FIELD_TERM_LINK_LATENCY_VAR = 'terminalLinkLatencyVariation';
+export const FIELD_TERM_LINK_THROUGPUT = 'terminalLinkThroughput';
+export const FIELD_TERM_LINK_PKT_LOSS = 'terminalLinkPacketLoss';
+export const FIELD_LINK_LATENCY = 'linkLatency';
+export const FIELD_LINK_LATENCY_VAR = 'linkLatencyVariation';
+export const FIELD_LINK_THROUGPUT = 'linkThroughput';
+export const FIELD_LINK_PKT_LOSS = 'linkPacketLoss';
+export const FIELD_APP_LATENCY = 'appLatency';
+export const FIELD_APP_LATENCY_VAR = 'appLatencyVariation';
+export const FIELD_APP_THROUGPUT = 'appThroughput';
+export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 
 export const getElemFieldVal = (elem, field) => {
   return (elem[field]) ? elem[field].val : null;
@@ -104,7 +130,8 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_PORT,                   '');
   setElemFieldVal(elem, FIELD_PROTOCOL,               '');
   setElemFieldVal(elem, FIELD_GROUP,                  '');
-  setElemFieldVal(elem, FIELD_SVC_MAP,                '');
+  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP,        '');
+  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP,         '');
   setElemFieldVal(elem, FIELD_GPU_COUNT,              '');
   setElemFieldVal(elem, FIELD_GPU_TYPE,               '');
   setElemFieldVal(elem, FIELD_ENV_VAR,                '');
@@ -136,10 +163,18 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY_VAR,   DEFAULT_LATENCY_JITTER_EDGE_FOG);
   setElemFieldVal(elem, FIELD_EDGE_FOG_THROUGPUT,     DEFAULT_THROUGHPUT_EDGE_FOG);
   setElemFieldVal(elem, FIELD_EDGE_FOG_PKT_LOSS,      DEFAULT_PACKET_LOSS_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY,           DEFAULT_LATENCY_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR,       DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_THROUGPUT,         DEFAULT_THROUGHPUT_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS,          DEFAULT_PACKET_LOSS_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY,      DEFAULT_LATENCY_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR,  DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT,    DEFAULT_THROUGHPUT_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS,     DEFAULT_PACKET_LOSS_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_LINK_LATENCY,           DEFAULT_LATENCY_LINK);
+  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR,       DEFAULT_LATENCY_JITTER_LINK);
+  setElemFieldVal(elem, FIELD_LINK_THROUGPUT,         DEFAULT_THROUGHPUT_LINK);
+  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS,          DEFAULT_PACKET_LOSS_LINK);
+  setElemFieldVal(elem, FIELD_APP_LATENCY,            DEFAULT_LATENCY_APP);
+  setElemFieldVal(elem, FIELD_APP_LATENCY_VAR,        DEFAULT_LATENCY_JITTER_APP);
+  setElemFieldVal(elem, FIELD_APP_THROUGPUT,          DEFAULT_THROUGHPUT_APP);
+  setElemFieldVal(elem, FIELD_APP_PKT_LOSS,           DEFAULT_PACKET_LOSS_APP);
 
   return elem;
 };

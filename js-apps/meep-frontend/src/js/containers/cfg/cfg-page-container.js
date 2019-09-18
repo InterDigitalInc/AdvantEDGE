@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
@@ -57,7 +65,7 @@ import {
   FIELD_TYPE,
   FIELD_PARENT,
   FIELD_NAME,
-  FIELD_SVC_MAP,
+  FIELD_INGRESS_SVC_MAP,
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
@@ -74,7 +82,7 @@ const notNull = x => x;
 const extractPort = svcMapEntry => Number(firstElementIfPresent(svcMapEntry.split(':')));
 
 const externalPorts = elem => {
-  return getElemFieldVal(elem, FIELD_SVC_MAP)
+  return getElemFieldVal(elem, FIELD_INGRESS_SVC_MAP)
     .split(',')
     .map(extractPort)
     .filter(notNull)

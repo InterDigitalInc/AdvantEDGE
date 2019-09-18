@@ -103,8 +103,9 @@ external:
     {{- end}}
   egressservicemap:
     {{- range .External.EgressServiceMap}}
-    - ip: {{.IP}}
-      name: {{.Name}}
+    - name: {{.Name}}
+      mesvcname: {{.MeSvcName}}
+      ip: {{.IP}}
       port: {{.Port}}
       targetPort: {{.Port}}
       protocol: {{.Protocol}}

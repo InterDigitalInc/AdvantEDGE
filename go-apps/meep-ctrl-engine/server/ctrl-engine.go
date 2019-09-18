@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package server
@@ -43,7 +50,7 @@ const NB_CORE_PODS = 10 //although virt-engine is not a pod yet... it is conside
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
 
-var clientServiceMapList []ClientServiceMap
+var nodeServiceMapsList []NodeServiceMaps
 
 func getCorePodsList() map[string]bool {
 
@@ -243,29 +250,31 @@ func removeAllScenarios(db *kivik.DB) error {
 	return nil
 }
 
-func populateClientServiceMap(activeScenario *Scenario) {
+func populateNodeServiceMaps(activeScenario *Scenario) {
 
-	// Clear client service mapping if there is no active scenario
+	// Clear node service mapping if there is no active scenario
 	if activeScenario == nil {
-		clientServiceMapList = nil
+		nodeServiceMapsList = nil
 		return
 	}
 
-	// Parse through scenario and fill external client service mappings
+	// Parse through scenario and fill external node service mappings
 	for _, domain := range activeScenario.Deployment.Domains {
 		for _, zone := range domain.Zones {
 			for _, nl := range zone.NetworkLocations {
 				for _, pl := range nl.PhysicalLocations {
 					for _, proc := range pl.Processes {
 						if proc.IsExternal {
-							// Create new client service map
-							var clientServiceMap ClientServiceMap
-							clientServiceMap.Client = proc.Name
-							clientServiceMap.ServiceMap = append(clientServiceMap.ServiceMap,
+							// Create new node service map
+							var nodeServiceMaps NodeServiceMaps
+							nodeServiceMaps.Node = proc.Name
+							nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap,
 								proc.ExternalConfig.IngressServiceMap...)
+							nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap,
+								proc.ExternalConfig.EgressServiceMap...)
 
 							// Add new map to list
-							clientServiceMapList = append(clientServiceMapList, clientServiceMap)
+							nodeServiceMapsList = append(nodeServiceMapsList, nodeServiceMaps)
 						}
 					}
 				}
@@ -504,7 +513,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Populate active external client service map
-	populateClientServiceMap(&activeScenario)
+	populateNodeServiceMaps(&activeScenario)
 
 	// Set active scenario in DB
 	_, err = addScenario(db, activeScenarioName, activeScenario)
@@ -562,64 +571,66 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
-// ceGetActiveClientServiceMaps retrieves the deployed scenario external client service mappings
-// NOTE: query parameters 'client' and 'service' may be specified to filter results
-func ceGetActiveClientServiceMaps(w http.ResponseWriter, r *http.Request) {
-	//log.Debug("ceGetActiveClientServiceMaps")
-	var filteredList *[]ClientServiceMap
+// ceGetActiveNodeServiceMaps retrieves the deployed scenario external node service mappings
+// NOTE: query parameters 'node', 'type' and 'service' may be specified to filter results
+func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
+	//log.Debug("ceGetActiveNodeServiceMaps")
+	var filteredList *[]NodeServiceMaps
 
-	// Retrieve client ID & service name from query parameters
+	// Retrieve node ID & service name from query parameters
 	query := r.URL.Query()
-	client := query.Get("client")
+	node := query.Get("node")
+	direction := query.Get("type")
 	service := query.Get("service")
 
-	// Filter only requested service mappings from client service map list
-	if client == "" && service == "" {
-		// Any client & service
-		filteredList = &clientServiceMapList
+	// Filter only requested service mappings from node service map list
+	if node == "" && direction == "" && service == "" {
+		// Any node & service
+		filteredList = &nodeServiceMapsList
 	} else {
-		filteredList = new([]ClientServiceMap)
-		if service == "" {
-			// Any service for requested client
-			for _, clientServiceMap := range clientServiceMapList {
-				if clientServiceMap.Client == client {
-					*filteredList = append(*filteredList, clientServiceMap)
+		filteredList = new([]NodeServiceMaps)
+
+		// Loop through full list and filter out unrequested results
+		for _, nodeServiceMaps := range nodeServiceMapsList {
+			var svcMap NodeServiceMaps
+			svcMap.Node = nodeServiceMaps.Node
+
+			// Filter based on node name
+			if node != "" && nodeServiceMaps.Node != node {
+				continue
+			}
+
+			// Append element directly if no direction or service filter
+			if direction == "" && service == "" {
+				*filteredList = append(*filteredList, nodeServiceMaps)
+				continue
+			}
+
+			// Loop through Ingress maps
+			for _, ingressServiceMap := range nodeServiceMaps.IngressServiceMap {
+				if direction != "" && direction != "ingress" {
 					break
 				}
-			}
-		} else if client == "" {
-			// Any client for requested service
-			for _, clientServiceMap := range clientServiceMapList {
-				var svcMap ClientServiceMap
-				svcMap.Client = clientServiceMap.Client
-				for _, serviceMap := range clientServiceMap.ServiceMap {
-					if serviceMap.Name == service {
-						svcMap.ServiceMap = append(svcMap.ServiceMap, serviceMap)
-						break
-					}
+				if service != "" && ingressServiceMap.Name != service {
+					continue
 				}
-
-				// Only append if at least one match found
-				if len(svcMap.ServiceMap) > 0 {
-					*filteredList = append(*filteredList, svcMap)
-				}
+				svcMap.IngressServiceMap = append(svcMap.IngressServiceMap, ingressServiceMap)
 			}
-		} else {
-			// Requested client and service
-			for _, clientServiceMap := range clientServiceMapList {
-				if clientServiceMap.Client == client {
-					for _, serviceMap := range clientServiceMap.ServiceMap {
-						if serviceMap.Name == service {
-							var svcMap ClientServiceMap
-							svcMap.Client = clientServiceMap.Client
-							svcMap.ServiceMap = append(svcMap.ServiceMap, serviceMap)
 
-							*filteredList = append(*filteredList, svcMap)
-							break
-						}
-					}
+			// Loop through Egress maps
+			for _, egressServiceMap := range nodeServiceMaps.EgressServiceMap {
+				if direction != "" && direction != "egress" {
 					break
 				}
+				if service != "" && (egressServiceMap.Name != service && egressServiceMap.MeSvcName != service) {
+					continue
+				}
+				svcMap.EgressServiceMap = append(svcMap.EgressServiceMap, egressServiceMap)
+			}
+
+			// Add node only if it has at least 1 service mapping
+			if len(svcMap.IngressServiceMap) > 0 || len(svcMap.EgressServiceMap) > 0 {
+				*filteredList = append(*filteredList, svcMap)
 			}
 		}
 	}
@@ -643,7 +654,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceTerminateScenario")
 
 	// Clear active external client service map
-	populateClientServiceMap(nil)
+	populateNodeServiceMaps(nil)
 
 	// Retrieve active scenario from DB
 	var scenario Scenario
@@ -760,6 +771,31 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 					break
 
 				}
+				// Parse Physical Locations
+				for plIndex, pl := range nl.PhysicalLocations {
+					if (elementType == "DISTANT CLOUD" || elementType == "EDGE" || elementType == "FOG" || elementType == "UE") && elementName == pl.Name {
+						phyloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex]
+						phyloc.LinkLatency = netChar.Latency
+						phyloc.LinkLatencyVariation = netChar.LatencyVariation
+						phyloc.LinkThroughput = netChar.Throughput
+						phyloc.LinkPacketLoss = netChar.PacketLoss
+						elementFound = true
+						break
+					}
+					// Parse Processes
+					for procIndex, proc := range pl.Processes {
+						if (elementType == "CLOUD APPLICATION" || elementType == "EDGE APPLICATION" || elementType == "UE APPLICATION") && elementName == proc.Name {
+							procloc := &scenario.Deployment.Domains[dIndex].Zones[zIndex].NetworkLocations[nlIndex].PhysicalLocations[plIndex].Processes[procIndex]
+							procloc.AppLatency = netChar.Latency
+							procloc.AppLatencyVariation = netChar.LatencyVariation
+							procloc.AppThroughput = netChar.Throughput
+							procloc.AppPacketLoss = netChar.PacketLoss
+							elementFound = true
+							break
+						}
+					}
+				}
+
 			}
 		}
 	}
@@ -784,7 +820,7 @@ func sendEventNetworkCharacteristics(event Event) (string, int) {
 	return "", -1
 }
 
-func sendEventUeMobility(event Event) (string, int) {
+func sendEventMobility(event Event) (string, int) {
 
 	// Retrieve active scenario
 	var scenario Scenario
@@ -793,17 +829,25 @@ func sendEventUeMobility(event Event) (string, int) {
 		return err.Error(), http.StatusNotFound
 	}
 
-	// Retrieve UE name and destination PoA name
-	ueName := event.EventUeMobility.Ue
-	poaName := event.EventUeMobility.Dest
+	// Retrieve target name (src) and destination parent name
+	elemName := event.EventMobility.ElementName
+	destName := event.EventMobility.Dest
 
 	var oldNL *NetworkLocation
+	var oldPL *PhysicalLocation
 	var newNL *NetworkLocation
-	var ue *PhysicalLocation
-	var ueIndex int
+	var newPL *PhysicalLocation
+	var pl *PhysicalLocation
+	var pr *Process
+	var index int
 
-	// Find UE & destination PoA
-	log.Debug("Searching for UE and destination PoA in active scenario")
+	oldLocName := ""
+	newLocName := ""
+	isProcess := false
+	isMoveable := true
+
+	// Find PL & destination element
+	log.Debug("Searching for ", elemName, " and destination in active scenario")
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
 
@@ -814,48 +858,104 @@ func sendEventUeMobility(event Event) (string, int) {
 				nl := &zone.NetworkLocations[k]
 
 				// Destination PoA
-				if nl.Name == poaName {
+				if nl.Name == destName {
+					newNL = nl
+				}
+				//all edges are under a "default" network location element
+				if zone.Name == destName && nl.Type_ == "DEFAULT" {
 					newNL = nl
 				}
 
 				for l := range nl.PhysicalLocations {
-					pl := &nl.PhysicalLocations[l]
+					currentPl := &nl.PhysicalLocations[l]
+
+					// Destination Physical location
+					if currentPl.Name == destName {
+						newPL = currentPl
+					}
 
 					// UE to move
-					if pl.Type_ == "UE" && pl.Name == ueName {
-						oldNL = nl
-						ue = pl
-						ueIndex = l
+					if currentPl.Name == elemName {
+						if currentPl.Type_ == "UE" || currentPl.Type_ == "FOG" || currentPl.Type_ == "EDGE" {
+							oldNL = nl
+							pl = currentPl
+							index = l
+						}
+
 					}
+					for p := range currentPl.Processes {
+						currentP := &currentPl.Processes[p]
+
+						// APP to move
+						if currentP.Name == elemName {
+							if currentP.Type_ == "EDGE-APP" {
+								//exception, we do not move if we are part of a mobility group
+								if currentP.ServiceConfig != nil {
+									if currentP.ServiceConfig.MeSvcName != "" {
+										//this app shouldn't be allowed to move
+										isMoveable = false
+										break
+									}
+								}
+								oldPL = currentPl
+								pr = currentP
+								index = p
+								isProcess = true
+							}
+						}
+
+					}
+
 				}
 			}
 		}
 	}
 
-	// Update UE location if necessary
-	if ue != nil && oldNL != nil && newNL != nil && oldNL != newNL {
-		log.Debug("Found UE and destination PoA. Updating UE location.")
+	if !isMoveable {
+		//edge app cannot be moved
+		log.Debug("Edge App cannot be moved, nothing should be done")
+		err := "Edge App is part of a mobility group, it can't be moved"
+		return err, http.StatusForbidden
+	}
 
-		// Add UE to new location
-		newNL.PhysicalLocations = append(newNL.PhysicalLocations, *ue)
+	// Update PL location if necessary
+	if (pl != nil && oldNL != nil && newNL != nil && oldNL != newNL) ||
+		(pr != nil && oldPL != nil && newPL != nil && oldPL != newPL) {
+		log.Debug("Found src location and its destination. Updating location.")
 
-		// Remove UE from old location
-		oldNL.PhysicalLocations[ueIndex] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
-		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+		if isProcess {
+			// Add Process to new location
+			newPL.Processes = append(newPL.Processes, *pr)
+			// Remove Process from old location
+			oldPL.Processes[index] = oldPL.Processes[len(oldPL.Processes)-1]
+			oldPL.Processes = oldPL.Processes[:len(oldPL.Processes)-1]
 
+			oldLocName = oldPL.Name
+			newLocName = newPL.Name
+		} else {
+			// Add PL to new location
+			newNL.PhysicalLocations = append(newNL.PhysicalLocations, *pl)
+			// Remove UE from old location
+			oldNL.PhysicalLocations[index] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
+			oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+
+			oldLocName = oldNL.Name
+			newLocName = newNL.Name
+		}
 		// Store updated active scenario in DB
 		rev, err := setScenario(db, activeScenarioName, scenario)
 		if err != nil {
 			return err.Error(), http.StatusNotFound
 		}
 		log.Debug("Active scenario updated with rev: ", rev)
+
 		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
 			"meep.log.msgType":   "mobilityEvent",
-			"meep.log.oldPoa":    oldNL.Name,
-			"meep.log.newPoa":    newNL.Name,
-			"meep.log.src":       ue.Name,
-			"meep.log.dest":      ue.Name,
+			"meep.log.oldLoc":    oldLocName,
+			"meep.log.newLoc":    newLocName,
+			"meep.log.src":       elemName,
+			"meep.log.dest":      elemName,
 		}).Info("Measurements log")
 
 		// TODO in Execution Engine:
@@ -863,7 +963,7 @@ func sendEventUeMobility(event Event) (string, int) {
 		//    - Inform monitoring engine?
 
 	} else {
-		err := "Failed to find UE or destination PoA"
+		err := "Failed to find target element or destination location"
 		return err, http.StatusNotFound
 	}
 	return "", -1
@@ -980,8 +1080,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	var httpStatus int
 	var error string
 	switch eventType {
-	case "UE-MOBILITY":
-		error, httpStatus = sendEventUeMobility(event)
+	case "MOBILITY":
+		error, httpStatus = sendEventMobility(event)
 	case "NETWORK-CHARACTERISTICS-UPDATE":
 		error, httpStatus = sendEventNetworkCharacteristics(event)
 	case "POAS-IN-RANGE":

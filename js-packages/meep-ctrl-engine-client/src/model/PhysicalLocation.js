@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -56,6 +56,10 @@
 
 
 
+
+
+
+
   };
 
   /**
@@ -92,6 +96,18 @@
       }
       if (data.hasOwnProperty('processes')) {
         obj['processes'] = ApiClient.convertToType(data['processes'], [Process]);
+      }
+      if (data.hasOwnProperty('linkLatency')) {
+        obj['linkLatency'] = ApiClient.convertToType(data['linkLatency'], 'Number');
+      }
+      if (data.hasOwnProperty('linkLatencyVariation')) {
+        obj['linkLatencyVariation'] = ApiClient.convertToType(data['linkLatencyVariation'], 'Number');
+      }
+      if (data.hasOwnProperty('linkThroughput')) {
+        obj['linkThroughput'] = ApiClient.convertToType(data['linkThroughput'], 'Number');
+      }
+      if (data.hasOwnProperty('linkPacketLoss')) {
+        obj['linkPacketLoss'] = ApiClient.convertToType(data['linkPacketLoss'], 'Number');
       }
     }
     return obj;
@@ -135,6 +151,26 @@
    * @member {Array.<module:model/Process>} processes
    */
   exports.prototype['processes'] = undefined;
+  /**
+   * Latency in ms between the physical location and the network (wired interface, air interface)
+   * @member {Number} linkLatency
+   */
+  exports.prototype['linkLatency'] = undefined;
+  /**
+   * Latency variation in ms between the physical location and the network (wired interface, air interface)
+   * @member {Number} linkLatencyVariation
+   */
+  exports.prototype['linkLatencyVariation'] = undefined;
+  /**
+   * The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+   * @member {Number} linkThroughput
+   */
+  exports.prototype['linkThroughput'] = undefined;
+  /**
+   * Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
+   * @member {Number} linkPacketLoss
+   */
+  exports.prototype['linkPacketLoss'] = undefined;
 
 
   /**

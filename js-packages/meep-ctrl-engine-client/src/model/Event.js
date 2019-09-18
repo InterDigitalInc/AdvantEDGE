@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -16,18 +16,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/EventUeMobility'], factory);
+    define(['ApiClient', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./EventNetworkCharacteristicsUpdate'), require('./EventOther'), require('./EventPoasInRange'), require('./EventUeMobility'));
+    module.exports = factory(require('../ApiClient'), require('./EventMobility'), require('./EventNetworkCharacteristicsUpdate'), require('./EventOther'), require('./EventPoasInRange'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.Event = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.EventNetworkCharacteristicsUpdate, root.MeepControllerRestApi.EventOther, root.MeepControllerRestApi.EventPoasInRange, root.MeepControllerRestApi.EventUeMobility);
+    root.MeepControllerRestApi.Event = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.EventMobility, root.MeepControllerRestApi.EventNetworkCharacteristicsUpdate, root.MeepControllerRestApi.EventOther, root.MeepControllerRestApi.EventPoasInRange);
   }
-}(this, function(ApiClient, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, EventUeMobility) {
+}(this, function(ApiClient, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange) {
   'use strict';
 
 
@@ -76,8 +76,8 @@
       if (data.hasOwnProperty('eventNetworkCharacteristicsUpdate')) {
         obj['eventNetworkCharacteristicsUpdate'] = EventNetworkCharacteristicsUpdate.constructFromObject(data['eventNetworkCharacteristicsUpdate']);
       }
-      if (data.hasOwnProperty('eventUeMobility')) {
-        obj['eventUeMobility'] = EventUeMobility.constructFromObject(data['eventUeMobility']);
+      if (data.hasOwnProperty('eventMobility')) {
+        obj['eventMobility'] = EventMobility.constructFromObject(data['eventMobility']);
       }
       if (data.hasOwnProperty('eventPoasInRange')) {
         obj['eventPoasInRange'] = EventPoasInRange.constructFromObject(data['eventPoasInRange']);
@@ -104,9 +104,9 @@
    */
   exports.prototype['eventNetworkCharacteristicsUpdate'] = undefined;
   /**
-   * @member {module:model/EventUeMobility} eventUeMobility
+   * @member {module:model/EventMobility} eventMobility
    */
-  exports.prototype['eventUeMobility'] = undefined;
+  exports.prototype['eventMobility'] = undefined;
   /**
    * @member {module:model/EventPoasInRange} eventPoasInRange
    */
@@ -129,10 +129,10 @@
      */
     "NETWORK-CHARACTERISTICS-UPDATE": "NETWORK-CHARACTERISTICS-UPDATE",
     /**
-     * value: "UE-MOBILITY"
+     * value: "MOBILITY"
      * @const
      */
-    "UE-MOBILITY": "UE-MOBILITY",
+    "MOBILITY": "MOBILITY",
     /**
      * value: "POAS-IN-RANGE"
      * @const

@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Table from '@material-ui/core/Table';
@@ -38,11 +46,21 @@ import {
   isRowSelected
 } from '../../util/table-utils';
 
-const ServiceMapsRow = (props) => {
+const IngressServiceMapRow = (props) => {
   return (
     <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
       <GridCell span={12}>
-        <span> {props.entry.name}: {props.entry.externalPort} </span>
+        <span> I: {props.entry.name}: {props.entry.externalPort} </span>
+      </GridCell>
+    </Grid>
+  );
+};
+
+const EgressServiceMapRow = (props) => {
+  return (
+    <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
+      <GridCell span={12}>
+        <span> E: {props.entry.name}: {props.entry.meSvcName},{props.entry.ip},{props.entry.port},{props.entry.protocol}</span>
       </GridCell>
     </Grid>
   );
@@ -189,8 +207,11 @@ class ExecTable extends Component {
                               {n.logicalState}
                             </TableCell>
                             <TableCell>
-                              { n.serviceMaps ? _.map(n.serviceMaps, (sm) => {
-                                return (<ServiceMapsRow entry={sm} key={sm.externalPort}/>);
+                              { n.ingressServiceMap ? _.map(n.ingressServiceMap, (sm) => {
+                                return (<IngressServiceMapRow entry={sm} key={sm.externalPort}/>);
+                              }) : ''}
+                              { n.egressServiceMap ? _.map(n.egressServiceMap, (sm) => {
+                                return (<EgressServiceMapRow entry={sm} key={sm.name}/>);
                               }) : ''}
                             </TableCell>
                           </TableRow>

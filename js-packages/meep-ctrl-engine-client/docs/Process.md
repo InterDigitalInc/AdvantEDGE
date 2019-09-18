@@ -20,6 +20,10 @@ Name | Type | Description | Notes
 **userChartGroup** | **String** | Chart supplemental information related to the group (service) | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**appLatency** | **Number** | Latency in ms caused by the application | [optional] 
+**appLatencyVariation** | **Number** | Latency variation in ms caused by the application | [optional] 
+**appThroughput** | **Number** | The limit of the traffic supported by the application | [optional] 
+**appPacketLoss** | **Number** | Packet lost (in terms of percentage) caused by the application | [optional] 
 
 
 <a name="TypeEnum"></a>

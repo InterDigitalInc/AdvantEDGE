@@ -1,6 +1,6 @@
 /**
  * MEEP Controller REST API
- * Copyright (c) 2019 InterDigital Communications, Inc. All rights reserved. The information provided herein is the proprietary and confidential information of InterDigital Communications, Inc. 
+ * Copyright (c) 2019  InterDigital Communications, Inc Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at      http://www.apache.org/licenses/LICENSE-2.0  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License. 
  *
  * OpenAPI spec version: 1.0.0
  *
@@ -47,6 +47,10 @@
    */
   var exports = function() {
     var _this = this;
+
+
+
+
 
 
 
@@ -128,6 +132,18 @@
       }
       if (data.hasOwnProperty('userMeta')) {
         obj['userMeta'] = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
+      }
+      if (data.hasOwnProperty('appLatency')) {
+        obj['appLatency'] = ApiClient.convertToType(data['appLatency'], 'Number');
+      }
+      if (data.hasOwnProperty('appLatencyVariation')) {
+        obj['appLatencyVariation'] = ApiClient.convertToType(data['appLatencyVariation'], 'Number');
+      }
+      if (data.hasOwnProperty('appThroughput')) {
+        obj['appThroughput'] = ApiClient.convertToType(data['appThroughput'], 'Number');
+      }
+      if (data.hasOwnProperty('appPacketLoss')) {
+        obj['appPacketLoss'] = ApiClient.convertToType(data['appPacketLoss'], 'Number');
       }
     }
     return obj;
@@ -215,6 +231,26 @@
    * @member {Object.<String, String>} userMeta
    */
   exports.prototype['userMeta'] = undefined;
+  /**
+   * Latency in ms caused by the application
+   * @member {Number} appLatency
+   */
+  exports.prototype['appLatency'] = undefined;
+  /**
+   * Latency variation in ms caused by the application
+   * @member {Number} appLatencyVariation
+   */
+  exports.prototype['appLatencyVariation'] = undefined;
+  /**
+   * The limit of the traffic supported by the application
+   * @member {Number} appThroughput
+   */
+  exports.prototype['appThroughput'] = undefined;
+  /**
+   * Packet lost (in terms of percentage) caused by the application
+   * @member {Number} appPacketLoss
+   */
+  exports.prototype['appPacketLoss'] = undefined;
 
 
   /**

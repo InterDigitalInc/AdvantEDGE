@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package main
 
 import (
@@ -29,20 +37,31 @@ const moduleTcEngine string = "tc-engine"
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
-const typeExpSvc string = "EXP-SVC"
+const typeIngressSvc string = "INGRESS-SVC"
+const typeEgressSvc string = "EGRESS-SVC"
 
 const channelTcNet string = moduleTcEngine + "-" + typeNet
 const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const meepPrefix string = "MEEP-"
-const exposedPrefix string = "EXP-"
-const mePrefix string = "ME-"
 const svcPrefix string = "SVC-"
-const meSvcChain string = meepPrefix + mePrefix + "SERVICES"
-const expSvcChain string = meepPrefix + exposedPrefix + "SERVICES"
+const mePrefix string = meepPrefix + "ME-"
+const ingressPrefix string = meepPrefix + "INGRESS-"
+const egressPrefix string = meepPrefix + "EGRESS-"
+const meSvcChain string = mePrefix + "SERVICES"
+const ingressSvcChain string = ingressPrefix + "SERVICES"
+const egressSvcChain string = egressPrefix + "SERVICES"
 const maxChainLen int = 25
 const capLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const dbMaxRetryCount = 5
+
+const fieldSvcType string = "svc-type"
+const fieldSvcName string = "svc-name"
+const fieldSvcIp string = "svc-ip"
+const fieldSvcProtocol string = "svc-protocol"
+const fieldSvcPort string = "svc-port"
+const fieldLbSvcIp string = "lb-svc-ip"
+const fieldLbSvcPort string = "lb-svc-port"
 
 type podShortElement struct {
 	name      string
@@ -223,7 +242,7 @@ func refreshLbRules() {
 	// Create MAP of currently installed MEEP iptables chains
 	chainMap := make(map[string]bool)
 	for _, chain := range chains {
-		if strings.Contains(chain, "MEEP-") {
+		if strings.Contains(chain, meepPrefix) {
 			chainMap[chain] = true
 		}
 	}
@@ -248,17 +267,29 @@ func refreshLbRules() {
 	}
 	delete(chainMap, meSvcChain)
 
-	// MEEP-EXP-SERVICES
-	_, exists = chainMap[expSvcChain]
+	// MEEP-INGRESS-SERVICES
+	_, exists = chainMap[ingressSvcChain]
 	if !exists {
-		log.Debug("Creating MEEP chain MEEP-EXP-SERVICES")
-		err = ipTbl.NewChain("nat", expSvcChain)
+		log.Debug("Creating MEEP chain MEEP-INGRESS-SERVICES")
+		err = ipTbl.NewChain("nat", ingressSvcChain)
 		if err != nil {
 			log.Error("Failed to create chain. Error: ", err)
 			return
 		}
 	}
-	delete(chainMap, expSvcChain)
+	delete(chainMap, ingressSvcChain)
+
+	// MEEP-EGRESS-SERVICES
+	_, exists = chainMap[egressSvcChain]
+	if !exists {
+		log.Debug("Creating MEEP chain MEEP-EGRESS-SERVICES")
+		err = ipTbl.NewChain("nat", egressSvcChain)
+		if err != nil {
+			log.Error("Failed to create chain. Error: ", err)
+			return
+		}
+	}
+	delete(chainMap, egressSvcChain)
 
 	// Reapply top-level routing rules if not present
 	err = ipTbl.AppendUnique("nat", "OUTPUT", "-j", meSvcChain)
@@ -266,9 +297,14 @@ func refreshLbRules() {
 		log.Error("Failed to set rule [-A OUTPUT -j "+meSvcChain+"]. Error: ", err)
 		return
 	}
-	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", expSvcChain)
+	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", ingressSvcChain)
 	if err != nil {
-		log.Error("Failed to set rule [-A PREROUTING -j "+expSvcChain+"]. Error: ", err)
+		log.Error("Failed to set rule [-A PREROUTING -j "+ingressSvcChain+"]. Error: ", err)
+		return
+	}
+	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", egressSvcChain)
+	if err != nil {
+		log.Error("Failed to set rule [-A PREROUTING -j "+egressSvcChain+"]. Error: ", err)
 		return
 	}
 
@@ -286,8 +322,10 @@ func refreshLbRules() {
 		// Remove reference to chain
 		var parentChain string
 
-		if strings.Contains(chain, exposedPrefix) {
-			parentChain = expSvcChain
+		if strings.Contains(chain, ingressPrefix) {
+			parentChain = ingressSvcChain
+		} else if strings.Contains(chain, egressPrefix) {
+			parentChain = egressSvcChain
 		} else {
 			parentChain = meSvcChain
 		}
@@ -338,21 +376,24 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 	chainMap := userData.(*map[string]bool)
 
 	// Set parent chain and service chain prefix based on service exposure and type
-	switch fields["svc-type"] {
-	case typeExpSvc:
-		parentChain = expSvcChain
-		servicePrefix = meepPrefix + exposedPrefix + svcPrefix
+	switch fields[fieldSvcType] {
+	case typeIngressSvc:
+		parentChain = ingressSvcChain
+		servicePrefix = ingressPrefix + svcPrefix
+	case typeEgressSvc:
+		parentChain = egressSvcChain
+		servicePrefix = egressPrefix + svcPrefix
 	case typeMeSvc:
 		parentChain = meSvcChain
-		servicePrefix = meepPrefix + mePrefix + svcPrefix
+		servicePrefix = mePrefix + svcPrefix
 	default:
-		log.Error("Unsupported service type: ", fields["svc-type"])
+		log.Error("Unsupported service type: ", fields[fieldSvcType])
 		return errors.New("Unsupported service type")
 	}
 
-	service = servicePrefix + strings.ToUpper(fields["svc-name"]) + "-" + fields["svc-port"]
-	args = append(args, "-p", fields["svc-protocol"], "-d", fields["svc-ip"], "--dport", fields["svc-port"],
-		"-j", "DNAT", "--to-destination", fields["lb-svc-ip"]+":"+fields["lb-svc-port"],
+	service = servicePrefix + strings.ToUpper(fields[fieldSvcName]) + "-" + fields[fieldSvcPort]
+	args = append(args, "-p", fields[fieldSvcProtocol], "-d", fields[fieldSvcIp], "--dport", fields[fieldSvcPort],
+		"-j", "DNAT", "--to-destination", fields[fieldLbSvcIp]+":"+fields[fieldLbSvcPort],
 		"-m", "comment", "--comment", service)
 
 	// Retrieve service chain name if service exists
