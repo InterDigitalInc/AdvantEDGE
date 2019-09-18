@@ -29,6 +29,14 @@ import {
   getElemFieldVal,
   FIELD_NAME
 } from '../../util/elem-utils';
+import { NC_TABLE_LAYOUT,  NC_LINE_LAYOUT} from '../../components/helper-components/nc-group';
+
+const LineLayout = (props) => {
+  return (<div>
+    
+
+  </div>);
+};
 
 class MobilityEventPane extends Component {
 
@@ -157,13 +165,31 @@ class MobilityEventPane extends Component {
           <GridCell span="4">
           </GridCell>
         </Grid>
+        <CancelApplyPairComponent />
+        </>
+      );
+      break;
 
-        <CancelApplyPair
-          cancelText="Close"
-          applyText="Submit"
-          onCancel={this.props.onClose}
-          onApply={(e) => this.triggerEvent(e)}
-        />
+    case NC_LINE_LAYOUT:
+      Layout = (
+        <>
+        <Grid style={styles.field}>
+          <GridCell span="6">
+            <TargetSelectComponent />
+          </GridCell>
+          <GridCell span="6">
+            <DestinationSelectComponent />
+          </GridCell>
+        </Grid>
+        <CancelApplyPairComponent />
+        </>
+      );
+      break;
+    }
+
+    return (
+      <div>
+        {Layout}
       </div>
     );
   }

@@ -90,7 +90,7 @@ export default class IDCNode extends Component {
       transform={translate(d)}
     >
       <Plus width={10} height={10} d={d} updateParent={this.props.updateParent}/>
-      <circle xlinkHref={`../img/${d.data.iconName}`} height={size} width={size} cx={-size/2 + 10} cy={-size/2 + 10} /*filter={d.selected ? 'url(#filter)' : '' }*/
+      <circle xlinkHref={`../img/${d.data.iconName}`} height={size} width={size} cx={-size/2 + 15} cy={-size/2 + 15} /*filter={d.selected ? 'url(#filter)' : '' }*/
         r={radius}
         style={{fill: fill}}
         stroke={'black'}

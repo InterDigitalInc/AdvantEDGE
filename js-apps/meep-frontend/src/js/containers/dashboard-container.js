@@ -132,6 +132,7 @@ const ConfigurationView = (props) => {
       <GridCell span={5}>
       </GridCell>
     </Grid>
+    
   );
 };
 
