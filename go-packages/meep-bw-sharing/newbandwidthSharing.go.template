@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
+ *
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
+ */
+package bws
+
+import (
+
+        redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+        log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+        ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+
+)
+
+
+//default allocations
+func allocateBandwidthSharing() {
+	//default allocations
+}
+
+//updates attributes through DB
+func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
+
+        switch(fieldName) {
+	default:
+	}
+}
+
+//periodic function invoked
+func tickerFunction(rcCtrlEng *redis.Connector, logVerbose bool, updateFilter func(string, string, float64), applyFilter func()) {
+
+}
+
+//reseting previous allocations
+func cleanUp() {
+}
+
+//default init values if not configured
+func initDefaultConfigAttributes() {
+}
+
+//scenario parsing function
+func parseScenario(scenario ceModel.Scenario) {
+        log.Debug("parseScenario")
+}
+

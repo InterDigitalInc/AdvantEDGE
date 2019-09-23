@@ -1,19 +1,11 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
  */
-
 package main
 
 import (
@@ -27,6 +19,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
 	k8s_ct "k8s.io/kubernetes/pkg/util/conntrack"
@@ -37,31 +30,20 @@ const moduleTcEngine string = "tc-engine"
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
-const typeIngressSvc string = "INGRESS-SVC"
-const typeEgressSvc string = "EGRESS-SVC"
+const typeExpSvc string = "EXP-SVC"
 
 const channelTcNet string = moduleTcEngine + "-" + typeNet
 const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const meepPrefix string = "MEEP-"
+const exposedPrefix string = "EXP-"
+const mePrefix string = "ME-"
 const svcPrefix string = "SVC-"
-const mePrefix string = meepPrefix + "ME-"
-const ingressPrefix string = meepPrefix + "INGRESS-"
-const egressPrefix string = meepPrefix + "EGRESS-"
-const meSvcChain string = mePrefix + "SERVICES"
-const ingressSvcChain string = ingressPrefix + "SERVICES"
-const egressSvcChain string = egressPrefix + "SERVICES"
+const meSvcChain string = meepPrefix + mePrefix + "SERVICES"
+const expSvcChain string = meepPrefix + exposedPrefix + "SERVICES"
 const maxChainLen int = 25
 const capLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const dbMaxRetryCount = 5
-
-const fieldSvcType string = "svc-type"
-const fieldSvcName string = "svc-name"
-const fieldSvcIp string = "svc-ip"
-const fieldSvcProtocol string = "svc-protocol"
-const fieldSvcPort string = "svc-port"
-const fieldLbSvcIp string = "lb-svc-ip"
-const fieldLbSvcPort string = "lb-svc-port"
 
 type podShortElement struct {
 	name      string
@@ -74,6 +56,7 @@ var sem = make(chan int, 1)
 var opts = struct {
 	timeout         time.Duration
 	interval        time.Duration
+	trafficInterval time.Duration
 	payloadSize     uint
 	statBufferSize  uint
 	bind4           string
@@ -83,6 +66,7 @@ var opts = struct {
 }{
 	timeout:         100000 * time.Millisecond,
 	interval:        1000 * time.Millisecond,
+	trafficInterval: 100 * time.Millisecond,
 	bind4:           "0.0.0.0",
 	bind6:           "::",
 	payloadSize:     56,
@@ -91,7 +75,7 @@ var opts = struct {
 }
 
 var pinger *Pinger
-var podName string
+var PodName string //used as a global var
 var ipTbl *ipt.IPTables
 
 var letters = []rune(capLetters)
@@ -106,6 +90,12 @@ var firstTimePass = true
 var currentTransactionId = 0
 var dbTransactionId = 0
 var lastTransactionIdApplied = 0
+
+const redisAddr string = "meep-redis-master:6379"
+
+var rc *redis.Connector
+
+const DEFAULT_SIDECAR_DB = 0
 
 // Run - MEEP Sidecar execution
 func main() {
@@ -140,12 +130,12 @@ func initMeepSidecar() error {
 	// Initialize global variables
 
 	// Retrieve Environment variables
-	podName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
-	if podName == "" {
+	PodName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
+	if PodName == "" {
 		log.Error("MEEP_POD_NAME not set. Exiting.")
 		return errors.New("MEEP_POD_NAME not set")
 	}
-	log.Info("MEEP_POD_NAME: ", podName)
+	log.Info("MEEP_POD_NAME: ", PodName)
 
 	// Create IPtables client
 	ipTbl, err = ipt.New()
@@ -156,6 +146,22 @@ func initMeepSidecar() error {
 	log.Info("Successfully created new IPTables client")
 
 	// Connect to Redis DB
+	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
+	if err != nil {
+		log.Error("Failed connection to Redis DB.  Error: ", err)
+		return err
+	}
+	log.Info("Connected to redis DB")
+	/*
+	   // Subscribe to Pub-Sub events for MEEP Controller
+	   // NOTE: Current implementation is RedisDB Pub-Sub
+	   err = rc.Subscribe(channelTcNet, channelTcLb)
+	   if err != nil {
+	           log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+	           return err
+	   }
+	*/
+
 	for retry := 0; retry <= dbMaxRetryCount; retry++ {
 		err = DBConnect()
 		if err != nil {
@@ -176,6 +182,7 @@ func initMeepSidecar() error {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
+
 	log.Info("Successfully subscribed to Pub/Sub events")
 
 	return nil
@@ -242,7 +249,7 @@ func refreshLbRules() {
 	// Create MAP of currently installed MEEP iptables chains
 	chainMap := make(map[string]bool)
 	for _, chain := range chains {
-		if strings.Contains(chain, meepPrefix) {
+		if strings.Contains(chain, "MEEP-") {
 			chainMap[chain] = true
 		}
 	}
@@ -267,29 +274,17 @@ func refreshLbRules() {
 	}
 	delete(chainMap, meSvcChain)
 
-	// MEEP-INGRESS-SERVICES
-	_, exists = chainMap[ingressSvcChain]
+	// MEEP-EXP-SERVICES
+	_, exists = chainMap[expSvcChain]
 	if !exists {
-		log.Debug("Creating MEEP chain MEEP-INGRESS-SERVICES")
-		err = ipTbl.NewChain("nat", ingressSvcChain)
+		log.Debug("Creating MEEP chain MEEP-EXP-SERVICES")
+		err = ipTbl.NewChain("nat", expSvcChain)
 		if err != nil {
 			log.Error("Failed to create chain. Error: ", err)
 			return
 		}
 	}
-	delete(chainMap, ingressSvcChain)
-
-	// MEEP-EGRESS-SERVICES
-	_, exists = chainMap[egressSvcChain]
-	if !exists {
-		log.Debug("Creating MEEP chain MEEP-EGRESS-SERVICES")
-		err = ipTbl.NewChain("nat", egressSvcChain)
-		if err != nil {
-			log.Error("Failed to create chain. Error: ", err)
-			return
-		}
-	}
-	delete(chainMap, egressSvcChain)
+	delete(chainMap, expSvcChain)
 
 	// Reapply top-level routing rules if not present
 	err = ipTbl.AppendUnique("nat", "OUTPUT", "-j", meSvcChain)
@@ -297,20 +292,15 @@ func refreshLbRules() {
 		log.Error("Failed to set rule [-A OUTPUT -j "+meSvcChain+"]. Error: ", err)
 		return
 	}
-	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", ingressSvcChain)
+	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", expSvcChain)
 	if err != nil {
-		log.Error("Failed to set rule [-A PREROUTING -j "+ingressSvcChain+"]. Error: ", err)
-		return
-	}
-	err = ipTbl.AppendUnique("nat", "PREROUTING", "-j", egressSvcChain)
-	if err != nil {
-		log.Error("Failed to set rule [-A PREROUTING -j "+egressSvcChain+"]. Error: ", err)
+		log.Error("Failed to set rule [-A PREROUTING -j "+expSvcChain+"]. Error: ", err)
 		return
 	}
 
 	// Apply pod-specific LB rules stored in DB
 	flushRequired = false
-	keyName := moduleTcEngine + ":" + typeLb + ":" + podName + ":*"
+	keyName := moduleTcEngine + ":" + typeLb + ":" + PodName + ":*"
 	err = DBForEachEntry(keyName, refreshLbRulesHandler, &chainMap)
 	if err != nil {
 		log.Error("Failed to search and process pod-specific MEEP LB rules. Error: ", err)
@@ -322,10 +312,8 @@ func refreshLbRules() {
 		// Remove reference to chain
 		var parentChain string
 
-		if strings.Contains(chain, ingressPrefix) {
-			parentChain = ingressSvcChain
-		} else if strings.Contains(chain, egressPrefix) {
-			parentChain = egressSvcChain
+		if strings.Contains(chain, exposedPrefix) {
+			parentChain = expSvcChain
 		} else {
 			parentChain = meSvcChain
 		}
@@ -376,24 +364,21 @@ func refreshLbRulesHandler(key string, fields map[string]string, userData interf
 	chainMap := userData.(*map[string]bool)
 
 	// Set parent chain and service chain prefix based on service exposure and type
-	switch fields[fieldSvcType] {
-	case typeIngressSvc:
-		parentChain = ingressSvcChain
-		servicePrefix = ingressPrefix + svcPrefix
-	case typeEgressSvc:
-		parentChain = egressSvcChain
-		servicePrefix = egressPrefix + svcPrefix
+	switch fields["svc-type"] {
+	case typeExpSvc:
+		parentChain = expSvcChain
+		servicePrefix = meepPrefix + exposedPrefix + svcPrefix
 	case typeMeSvc:
 		parentChain = meSvcChain
-		servicePrefix = mePrefix + svcPrefix
+		servicePrefix = meepPrefix + mePrefix + svcPrefix
 	default:
-		log.Error("Unsupported service type: ", fields[fieldSvcType])
+		log.Error("Unsupported service type: ", fields["svc-type"])
 		return errors.New("Unsupported service type")
 	}
 
-	service = servicePrefix + strings.ToUpper(fields[fieldSvcName]) + "-" + fields[fieldSvcPort]
-	args = append(args, "-p", fields[fieldSvcProtocol], "-d", fields[fieldSvcIp], "--dport", fields[fieldSvcPort],
-		"-j", "DNAT", "--to-destination", fields[fieldLbSvcIp]+":"+fields[fieldLbSvcPort],
+	service = servicePrefix + strings.ToUpper(fields["svc-name"]) + "-" + fields["svc-port"]
+	args = append(args, "-p", fields["svc-protocol"], "-d", fields["svc-ip"], "--dport", fields["svc-port"],
+		"-j", "DNAT", "--to-destination", fields["lb-svc-ip"]+":"+fields["lb-svc-port"],
 		"-m", "comment", "--comment", service)
 
 	// Retrieve service chain name if service exists
@@ -479,7 +464,6 @@ func callPing() {
 			name := pod.name
 			dst := destination{
 				host:       pod.ipAddr,
-				hostName:   podName,
 				remote:     &ipaddr,
 				remoteName: name,
 				ifbNumber:  pod.IfbNumber,
@@ -515,7 +499,7 @@ func workLatency() {
 				u.ping(pinger)
 			}(u, i)
 			go func(u *destination, i int) {
-				u.compute()
+				u.compute(rc)
 			}(u, i)
 		}
 
@@ -532,18 +516,18 @@ func workRxTxPackets() {
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
 			go func(u *destination, i int) {
-				u.processRxTx()
+				u.processRxTx(rc)
 			}(u, i)
 		}
 		<-sem
 
-		time.Sleep(opts.interval)
+		time.Sleep(opts.trafficInterval)
 	}
 }
 
 func createPing() ([]podShortElement, error) {
 	var podsToPing []podShortElement
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter*"
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
 	err := DBForEachEntry(keyName, createPingHandler, &podsToPing)
 	if err != nil {
 		return nil, err
@@ -579,7 +563,7 @@ func getDbStateHandler(key string, fields map[string]string, userData interface{
 }
 
 func createIfbs() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape*"
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
 	err := DBForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
@@ -589,8 +573,8 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-	// Update the rule
-	_, exists := filters[ifbNumber]
+
+	_, exists := ifbs[ifbNumber]
 
 	if !exists {
 		_ = cmdCreateIfb(fields)
@@ -599,7 +583,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 	} else {
 		if lastTransactionIdApplied < currentTransactionId {
 			_ = cmdSetIfb(fields)
-			log.Info("Transactions processed on the TC-Engine quicker than they can be processed: current ", currentTransactionId, " and last applied ", lastTransactionIdApplied)
+			log.Info("Transactions processed: current ", currentTransactionId, " and last applied ", lastTransactionIdApplied)
 		} else {
 			log.Info("Transactions processed on the TC-Engine already applied ", currentTransactionId, " vs last applied ", lastTransactionIdApplied)
 		}
@@ -620,14 +604,14 @@ func flushFilters() {
 	// }
 	// return nil
 
-	for _, ifbNumber := range filters {
-		_ = cmdDeleteFilter(ifbNumber)
+	for _, filterNumber := range filters {
+		_ = cmdDeleteFilter(filterNumber)
 	}
 	filters = map[string]string{}
 }
 */
 func createFilters() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter*"
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
 	err := DBForEachEntry(keyName, createFiltersHandler, nil)
 	if err != nil {
 		return err
@@ -636,36 +620,41 @@ func createFilters() error {
 }
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
-	ifbNumber := fields["ifb_uniqueId"]
+	filterNumber := fields["filter_uniqueId"]
 
-	_, exists := filters[ifbNumber]
+	_, exists := filters[filterNumber]
 
 	if !exists {
 
 		ipSrc := fields["srcIp"]
 		ipSvcSrc := fields["srcSvcIp"]
-		srcName := fields["srcName"]
+		//		srcName := fields["srcName"]
+		ifbNumber := fields["ifb_uniqueId"]
 
-		err := cmdCreateFilter(ifbNumber, ipSrc)
+		err := cmdCreateFilter(filterNumber, ifbNumber, ipSrc)
 		if err == nil {
 
 			if ipSvcSrc != "" {
-				err = cmdCreateFilter(ifbNumber, ipSvcSrc)
+				err = cmdCreateFilter(filterNumber, ifbNumber, ipSvcSrc)
 			}
 		}
 		if err == nil {
 
-			filters[ifbNumber] = ifbNumber
-
+			filters[filterNumber] = filterNumber
+			/* SIMON no need for taht anymore.... ifb never changing, just updated with same index
 			// Loop through dests to update them
 			for _, u := range opts.dests {
 				if u.remoteName == srcName {
 					sem <- 1
-					u.ifbNumber = ifbNumber
+					u.ifbNumber = fields["ifb_uniqueId"]
+					u.historyRx.rcvedBytes = 0 //reseting the received bytes for a new interface for throughput calculation purpose
+					//time is not reseted, first throughput result should not be taken into account and should be 0,
+					// to prevent rebalancing of shared BW
 					<-sem
 					break
 				}
 			}
+			*/
 		}
 	}
 
@@ -673,12 +662,12 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 }
 
 func deleteUnusedFilters() {
-	for index, ifbNumber := range filters {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
+	for index, filterNumber := range filters {
+		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter:" + filterNumber
 		if !DBEntryExists(keyName) {
-			log.Debug("filter removed: ", ifbNumber)
+			log.Debug("filter removed: ", filterNumber)
 			// Remove old filter
-			_ = cmdDeleteFilter(ifbNumber)
+			_ = cmdDeleteFilter(filterNumber)
 			delete(filters, index)
 		}
 	}
@@ -686,7 +675,7 @@ func deleteUnusedFilters() {
 
 func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape:" + ifbNumber
+		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape:" + ifbNumber
 		if !DBEntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb
@@ -802,9 +791,9 @@ func cmdDeleteIfb(ifbNumber string) error {
 // 	return nil
 // }
 
-func cmdDeleteFilter(ifbNumber string) error {
-	//tc filter del dev eth0 parent ffff: pref $ifbNumber
-	str := "tc filter del dev eth0 parent ffff: pref " + ifbNumber
+func cmdDeleteFilter(filterNumber string) error {
+	//tc filter del dev eth0 parent ffff: pref $filterNumber
+	str := "tc filter del dev eth0 parent ffff: pref " + filterNumber
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -831,14 +820,14 @@ func initializeOnFirstPass() error {
 	return nil
 }
 
-func cmdCreateFilter(ifbNumber string, ipSrc string) error {
+func cmdCreateFilter(filterNumber string, ifbNumber string, ipSrc string) error {
 
-	//"tc filter add dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
-	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + ifbNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	//"tc filter add dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + filterNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 
 	//fonction must be a replace... a replace Adds if not there or replace if existing
-	//"tc filter replace dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
-	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + ifbNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + filterNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("Error: ", err)

@@ -1,19 +1,11 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2019
+ * InterDigital Communications, Inc.
+ * All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * The information provided herein is the proprietary and confidential
+ * information of InterDigital Communications, Inc.
  */
-
 package main
 
 import (
@@ -25,6 +17,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
 type history struct {
@@ -59,6 +52,8 @@ type stat struct {
 	stddev  time.Duration
 }
 
+const moduleMetrics string = "metrics"
+
 func (u *destination) ping(pinger *Pinger) {
 	rtt, err := pinger.Ping(u.remote, opts.timeout)
 	if err != nil {
@@ -79,7 +74,7 @@ func (u *destination) addResult(rtt time.Duration, err error) {
 	s.mtx.Unlock()
 }
 
-func (u *destination) compute() (st stat) {
+func (u *destination) compute(rc *redis.Connector) (st stat) {
 	s := u.history
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
@@ -147,7 +142,9 @@ func (u *destination) compute() (st stat) {
 	return
 }
 
-func (u *destination) processRxTx() {
+var elasticPacing int
+
+func (u *destination) processRxTx(rc *redis.Connector) {
 
 	str := "tc -s qdisc show dev ifb" + u.ifbNumber
 	out, err := cmdExec(str)
@@ -190,12 +187,15 @@ func (u *destination) processRxTx() {
 	previousRcvedBytes := u.historyRx.rcvedBytes
 
 	var throughput float64
+	var diffInMs int
 	if previousRcvedBytes != 0 {
 
 		previousTime := u.historyRx.time
 
 		diff := currentTime.Sub(previousTime)
-		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diff.Seconds()
+		diffInSeconds := diff.Seconds()
+		diffInMs = int(diffInSeconds * 1000)
+		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diffInSeconds
 	}
 
 	var throughputStr, throughputVal string
@@ -220,17 +220,39 @@ func (u *destination) processRxTx() {
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes
 
-	log.WithFields(log.Fields{
-		"meep.log.component":     "sidecar",
-		"meep.log.msgType":       "ingressPacketStats",
-		"meep.log.src":           u.remoteName,
-		"meep.log.dest":          u.hostName,
-		"meep.log.rx":            rcvedPkts,
-		"meep.log.rxd":           droppedPkts,
-		"meep.log.rxBytes":       rcvedBytes,
-		"meep.log.throughput":    throughput / 1000000, //converting bps to mbps for graph display
-		"meep.log.throughputStr": throughputStr,
-		"meep.log.packet-loss":   pktDroppedRateStr,
-	}).Info("Measurements log")
+	var stats = make(map[string]interface{})
+	stats["uniqueName"] = PodName
+	stats["trafficFrom"] = u.remoteName
+	stats["totalReceivedPkts"] = rcvedPkts
+	stats["totalDroppedPkts"] = droppedPkts
+	stats["droppedPktRate"] = pktDroppedRateStr
+	stats["totalReceivedBytes"] = rcvedBytes
+	stats["receivedBytesDuringInterval"] = rcvedBytes - previousRcvedBytes
+	stats["intervalInMs"] = diffInMs
+	stats["throughput"] = throughputVal
 
+	var throughputStats = make(map[string]interface{})
+	throughputStats[u.remoteName] = throughputVal
+
+	//store as an individual dataset but also as an aggregate for throughput only (for now)
+	_ = rc.SetEntry(moduleMetrics+":"+PodName+":"+u.remoteName, stats)
+	//throughput stats will be appended if the entry didn't exist or replaced if it does
+	_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
+
+	//pacing the logs in ES
+	elasticPacing++
+	if elasticPacing%10 == 0 {
+		log.WithFields(log.Fields{
+			"meep.log.component":     "sidecar",
+			"meep.log.msgType":       "ingressPacketStats",
+			"meep.log.src":           u.remoteName,
+			"meep.log.dest":          u.hostName,
+			"meep.log.rx":            rcvedPkts,
+			"meep.log.rxd":           droppedPkts,
+			"meep.log.rxBytes":       rcvedBytes,
+			"meep.log.throughput":    throughput / 1000000, //converting bps to mbps for graph display
+			"meep.log.throughputStr": throughputStr,
+			"meep.log.packet-loss":   pktDroppedRateStr,
+		}).Info("Measurements log")
+	}
 }
