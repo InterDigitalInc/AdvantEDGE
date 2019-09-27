@@ -24,6 +24,7 @@ Name | Type | Description | Notes
 **AppLatencyVariation** | **int32** | Latency variation in ms caused by the application | [optional] [default to null]
 **AppThroughput** | **int32** | The limit of the traffic supported by the application | [optional] [default to null]
 **AppPacketLoss** | **float64** | Packet lost (in terms of percentage) caused by the application | [optional] [default to null]
+**PlacementId** | **string** | Identifier used for process placement in AdvantEDGE cluster | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

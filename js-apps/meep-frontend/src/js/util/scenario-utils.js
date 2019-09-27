@@ -29,6 +29,7 @@ import {
   FIELD_GROUP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
+  FIELD_PLACEMENT_ID,
   FIELD_INGRESS_SVC_MAP,
   FIELD_EGRESS_SVC_MAP,
   FIELD_ENV_VAR,
@@ -525,7 +526,8 @@ export function createProcess(name, type, element) {
     appLatency: parseInt(DEFAULT_LATENCY_APP),
     appLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_APP),
     appThroughput: parseInt(DEFAULT_THROUGHPUT_APP),
-    appPacketLoss: parseInt(DEFAULT_PACKET_LOSS_APP)
+    appPacketLoss: parseInt(DEFAULT_PACKET_LOSS_APP),
+    placementId: null
   };
 
   if (isExternal) {
@@ -533,6 +535,7 @@ export function createProcess(name, type, element) {
       ingressServiceMap: getIngressServiceMapArray(getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)),
       egressServiceMap: getEgressServiceMapArray(getElemFieldVal(element, FIELD_EGRESS_SVC_MAP))
     };
+    process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   } else if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
     process.userChartLocation = getElemFieldVal(element, FIELD_CHART_LOC);
     process.userChartAlternateValues =  getElemFieldVal(element, FIELD_CHART_VAL);
@@ -558,6 +561,7 @@ export function createProcess(name, type, element) {
       type: (getElemFieldVal(element, FIELD_GPU_TYPE) === '') ? null : getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
       count: gpuCount
     };
+    process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   }
 
   process.appLatency = getElemFieldVal(element, FIELD_APP_LATENCY);
@@ -899,7 +903,8 @@ export function getElementFromScenario(scenario, elementName) {
                 setElemFieldVal(elem, FIELD_CMD, process.commandExe || '');
                 setElemFieldVal(elem, FIELD_CMD_ARGS, process.commandArguments || '');
                 setElemFieldVal(elem, FIELD_IS_EXTERNAL, process.isExternal || false);
-
+                setElemFieldVal(elem, FIELD_PLACEMENT_ID, process.placementId || '');
+                
                 if (process.serviceConfig) {
                   setElemFieldVal(elem, FIELD_PORT, process.serviceConfig.ports[0].port || '');
                   setElemFieldVal(elem, FIELD_PROTOCOL, process.serviceConfig.ports[0].protocol || '');
@@ -920,6 +925,7 @@ export function getElementFromScenario(scenario, elementName) {
                 if (process.externalConfig.egressServiceMap) {
                   setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP, getEgressServiceMapStr(process.externalConfig.egressServiceMap));
                 }
+                setElemFieldVal(elem, FIELD_PLACEMENT_ID, process.placementId || '');
               }
               return elem;
             }

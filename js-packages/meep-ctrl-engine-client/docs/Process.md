@@ -24,6 +24,7 @@ Name | Type | Description | Notes
 **appLatencyVariation** | **Number** | Latency variation in ms caused by the application | [optional] 
 **appThroughput** | **Number** | The limit of the traffic supported by the application | [optional] 
 **appPacketLoss** | **Number** | Packet lost (in terms of percentage) caused by the application | [optional] 
+**placementId** | **String** | Identifier used for process placement in AdvantEDGE cluster | [optional] 
 
 
 <a name="TypeEnum"></a>

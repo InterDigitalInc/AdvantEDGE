@@ -70,6 +70,7 @@ export const CFG_ELEM_EXT_PORT = 'cfg-elem-ext-port';
 export const CFG_ELEM_PROT = 'cfg-elem-prot';
 export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
 export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
+export const CFG_ELEM_PLACEMENT_ID = 'cfg-elem-placement-id';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
