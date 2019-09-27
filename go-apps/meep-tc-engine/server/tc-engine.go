@@ -1,11 +1,19 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package server
 
 import (
@@ -19,6 +27,7 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -33,6 +42,18 @@ const moduleMetrics string = "metrics"
 const typeActive string = "active"
 const typeNet string = "net"
 const typeLb string = "lb"
+const typeMeSvc string = "ME-SVC"
+const typeIngressSvc string = "INGRESS-SVC"
+const typeEgressSvc string = "EGRESS-SVC"
+
+const fieldSvcType string = "svc-type"
+const fieldSvcName string = "svc-name"
+const fieldSvcIp string = "svc-ip"
+const fieldSvcProtocol string = "svc-protocol"
+const fieldSvcPort string = "svc-port"
+const fieldLbSvcName string = "lb-svc-name"
+const fieldLbSvcIp string = "lb-svc-ip"
+const fieldLbSvcPort string = "lb-svc-port"
 
 const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
@@ -104,46 +125,51 @@ type FilterInfo struct {
 	DataRate           int
 }
 
-type portInfo struct {
-	port     int32
-	expPort  int32
-	protocol string
+type PortInfo struct {
+	Port     int32
+	ExpPort  int32
+	Protocol string
 }
 
-type serviceInfo struct {
-	name  string
-	node  string
-	ports map[int32]*portInfo
-	mgSvc *mgServiceInfo
+type ServiceInfo struct {
+	Name  string
+	Node  string
+	Ports map[int32]*PortInfo
+	MgSvc *MgServiceInfo
 }
 
-type mgServiceInfo struct {
-	name     string
-	services map[string]*serviceInfo
+type MgServiceInfo struct {
+	Name     string
+	Services map[string]*ServiceInfo
 }
 
-type expServiceMap struct {
-	nodePort int32
-	svcName  string
-	svcPort  int32
-	protocol string
+type IngressSvcMap struct {
+	NodePort int32
+	SvcName  string
+	SvcPort  int32
+	Protocol string
 }
 
-type podInfo struct {
-	name      string
-	mgSvcMap  map[string]*serviceInfo
-	expSvcMap map[int32]*expServiceMap
+type EgressSvcMap struct {
+	SvcName  string
+	SvcIp    string
+	SvcPort  int32
+	Protocol string
 }
 
-const typeMgSvc string = "ME-SVC"
-const typeExpSvc string = "EXP-SVC"
+type PodInfo struct {
+	Name              string
+	MgSvcMap          map[string]*ServiceInfo
+	IngressSvcMapList map[int32]*IngressSvcMap
+	EgressSvcMapList  map[string]*EgressSvcMap
+}
 
 // Scenario service mappings
-var svcInfoMap = map[string]*serviceInfo{}
-var mgSvcInfoMap = map[string]*mgServiceInfo{}
+var svcInfoMap = map[string]*ServiceInfo{}
+var mgSvcInfoMap = map[string]*MgServiceInfo{}
 
 // Pod Info mapping
-var podInfoMap = map[string]*podInfo{}
+var podInfoMap = map[string]*PodInfo{}
 
 var elementDistantCloudArray []NetElem
 var elementEdgeArray []NetElem
@@ -156,6 +182,8 @@ var indexToNetElemMap map[int]NetElem
 var netElemNameToIndexMap = map[string]int{}
 
 var netCharTable [][][]int
+
+var bwSharing *bws.BwSharing
 
 // Scenario Name
 var scenarioName string
@@ -174,30 +202,34 @@ var svcCountReq = 0
 var svcCount = 0
 var nextTransactionId = 1
 
-var bwSharing *bws.BwSharing
+const redisAddr string = "meep-redis-master:6379"
+
+var rc *redis.Connector
+
+const DEFAULT_TC_ENGINE_DB = 0
 
 // Init - TC Engine initialization
 func Init() (err error) {
 
 	// Connect to Redis DB
-	err = DBConnect()
+	rc, err = redis.NewConnector(redisAddr, DEFAULT_TC_ENGINE_DB)
 	if err != nil {
-		log.Error("Failed connection to Active DB. Error: ", err)
+		log.Error("Failed connection to Redis DB.  Error: ", err)
 		return err
 	}
-	log.Info("Connected to Active DB")
+	log.Info("Connected to redis DB")
 
 	// Subscribe to Pub-Sub events for MEEP Controller
 	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = Subscribe(channelCtrlActive, channelMgManagerLb)
+	err = rc.Subscribe(channelCtrlActive, channelMgManagerLb)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
 
 	// Flush any remaining TC Engine rules
-	DBFlush(moduleTcEngine)
-	DBFlush(moduleMetrics)
+	rc.DBFlush(moduleTcEngine)
+	rc.DBFlush(moduleMetrics)
 
 	bwSharing, err = bws.NewBwSharing("default", updateOneFilterRule, applyOneFilterRule)
 
@@ -219,7 +251,7 @@ func Init() (err error) {
 func Run() {
 
 	// Listen for subscribed events. Provide event handler method.
-	_ = Listen(eventHandler)
+	_ = rc.Listen(eventHandler)
 }
 
 func eventHandler(channel string, payload string) {
@@ -242,7 +274,7 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	// Retrieve active scenario from DB
-	jsonScenario, err := DBJsonGetEntry(moduleCtrlEngine+":"+typeActive, ".")
+	jsonScenario, err := rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
 	if err != nil {
 		log.Error(err.Error())
 		stopScenario()
@@ -288,7 +320,7 @@ func processActiveScenarioUpdate() {
 
 		// Publish update to TC Sidecars for enforcement
 		transactionIdStr := strconv.Itoa(nextTransactionId)
-		_ = Publish(channelTcNet, transactionIdStr)
+		_ = rc.Publish(channelTcNet, transactionIdStr)
 		nextTransactionId++
 	}
 }
@@ -301,7 +333,7 @@ func processMgSvcMapUpdate() {
 	}
 
 	// Retrieve active scenario from DB
-	jsonNetElemList, err := DBJsonGetEntry(moduleMgManager+":"+typeLb, ".")
+	jsonNetElemList, err := rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -325,7 +357,7 @@ func processMgSvcMapUpdate() {
 
 		// Set load balanced MG Service instance
 		for _, svcMap := range netElem.ServiceMaps {
-			podInfo.mgSvcMap[svcMap.MgSvcName] = svcInfoMap[svcMap.LbSvcName]
+			podInfo.MgSvcMap[svcMap.MgSvcName] = svcInfoMap[svcMap.LbSvcName]
 		}
 	}
 
@@ -333,7 +365,7 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Publish update to TC Sidecars for enforcement
-	_ = Publish(channelTcLb, "")
+	_ = rc.Publish(channelTcLb, "")
 }
 
 func addPod(name string) {
@@ -406,9 +438,9 @@ func stopScenario() {
 	podIPMap = map[string]string{}
 	svcIPMap = map[string]string{}
 
-	svcInfoMap = map[string]*serviceInfo{}
-	mgSvcInfoMap = map[string]*mgServiceInfo{}
-	podInfoMap = map[string]*podInfo{}
+	svcInfoMap = map[string]*ServiceInfo{}
+	mgSvcInfoMap = map[string]*MgServiceInfo{}
+	podInfoMap = map[string]*PodInfo{}
 
 	tcEngineState = stateIdle
 	podCountReq = 0
@@ -418,11 +450,11 @@ func stopScenario() {
 
 	scenarioName = ""
 
-	DBFlush(moduleTcEngine)
-	DBFlush(moduleMetrics)
+	rc.DBFlush(moduleTcEngine)
+	rc.DBFlush(moduleMetrics)
 
-	_ = Publish(channelTcNet, "delAll")
-	_ = Publish(channelTcLb, "delAll")
+	_ = rc.Publish(channelTcNet, "delAll")
+	_ = rc.Publish(channelTcLb, "delAll")
 }
 
 func validateLatencyVariation(value int) int {
@@ -513,8 +545,10 @@ func parseScenario(scenario ceModel.Scenario) {
 					linkLatencyVariation := int(pl.LinkLatencyVariation)
 					linkLatencyVariation = validateLatencyVariation(linkLatencyVariation)
 					linkLatencyCorrelation := COMMON_CORRELATION
-					//linkThroughput := DEFAULT_THROUGHPUT_LINK
 					linkThroughput := int(pl.LinkThroughput)
+					if linkThroughput == 0 {
+						linkThroughput = DEFAULT_THROUGHPUT_LINK
+					}
 					linkThroughput = THROUGHPUT_UNIT * linkThroughput
 					// Packet loss (float) converted to hundredth & truncated
 					linkPacketLoss := int(100 * pl.LinkPacketLoss)
@@ -538,8 +572,10 @@ func parseScenario(scenario ceModel.Scenario) {
 						appLatencyVariation := int(proc.AppLatencyVariation)
 						appLatencyVariation = validateLatencyVariation(appLatencyVariation)
 						appLatencyCorrelation := COMMON_CORRELATION
-						//appThroughput := DEFAULT_THROUGHPUT_APP
 						appThroughput := int(proc.AppThroughput)
+						if appThroughput == 0 {
+							appThroughput = DEFAULT_THROUGHPUT_APP
+						}
 						appThroughput = THROUGHPUT_UNIT * appThroughput
 						// Packet loss (float) converted to hundredth & truncated
 						appPacketLoss := int(100 * proc.AppPacketLoss)
@@ -574,10 +610,11 @@ func parseScenario(scenario ceModel.Scenario) {
 						}
 
 						// Create pod information entry and add to map
-						podInfo := new(podInfo)
-						podInfo.name = proc.Name
-						podInfo.mgSvcMap = make(map[string]*serviceInfo)
-						podInfo.expSvcMap = make(map[int32]*expServiceMap)
+						podInfo := new(PodInfo)
+						podInfo.Name = proc.Name
+						podInfo.MgSvcMap = make(map[string]*ServiceInfo)
+						podInfo.IngressSvcMapList = make(map[int32]*IngressSvcMap)
+						podInfo.EgressSvcMapList = make(map[string]*EgressSvcMap)
 						podInfoMap[proc.Name] = podInfo
 
 						// Store service information from service config
@@ -605,16 +642,32 @@ func parseScenario(scenario ceModel.Scenario) {
 
 						// Add pod-specific external service mapping, if any
 						if proc.IsExternal {
+							// Map external port to internal service for Ingress services
 							for _, service := range proc.ExternalConfig.IngressServiceMap {
-								serviceMap := new(expServiceMap)
-								serviceMap.nodePort = service.ExternalPort
-								serviceMap.svcName = service.Name
-								serviceMap.svcPort = service.Port
-								serviceMap.protocol = service.Protocol
-								podInfo.expSvcMap[serviceMap.nodePort] = serviceMap
+								ingressSvcMap := new(IngressSvcMap)
+								ingressSvcMap.NodePort = service.ExternalPort
+								ingressSvcMap.SvcName = service.Name
+								ingressSvcMap.SvcPort = service.Port
+								ingressSvcMap.Protocol = service.Protocol
+								podInfo.IngressSvcMapList[ingressSvcMap.NodePort] = ingressSvcMap
 							}
 
-							// TODO -- Add support for Egress Service Mapping
+							// Add External service mapping & service info for Egress services
+							for _, service := range proc.ExternalConfig.EgressServiceMap {
+								egressSvcMap := new(EgressSvcMap)
+								egressSvcMap.SvcName = service.Name
+								egressSvcMap.SvcIp = service.Ip
+								egressSvcMap.SvcPort = service.Port
+								egressSvcMap.Protocol = service.Protocol
+								podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
+
+								var servicePorts []ceModel.ServicePort
+								var servicePort ceModel.ServicePort
+								servicePort.Port = service.Port
+								servicePort.Protocol = service.Protocol
+								servicePorts = append(servicePorts, servicePort)
+								addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
+							}
 						}
 					}
 				}
@@ -704,18 +757,18 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 	addSvc(svcName)
 
 	// Create new service info
-	svcInfo := new(serviceInfo)
-	svcInfo.name = svcName
-	svcInfo.node = nodeName
-	svcInfo.ports = make(map[int32]*portInfo)
+	svcInfo := new(ServiceInfo)
+	svcInfo.Name = svcName
+	svcInfo.Node = nodeName
+	svcInfo.Ports = make(map[int32]*PortInfo)
 
 	// Add ports to service information
 	for _, port := range svcPorts {
-		portInfo := new(portInfo)
-		portInfo.port = port.Port
-		portInfo.expPort = port.ExternalPort
-		portInfo.protocol = port.Protocol
-		svcInfo.ports[portInfo.port] = portInfo
+		portInfo := new(PortInfo)
+		portInfo.Port = port.Port
+		portInfo.ExpPort = port.ExternalPort
+		portInfo.Protocol = port.Protocol
+		svcInfo.Ports[portInfo.Port] = portInfo
 	}
 
 	// Store MG Service info, if any
@@ -725,21 +778,21 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 		// Add MG service to MG service info map if it does not exist yet
 		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
 		if !found {
-			mgSvcInfo = new(mgServiceInfo)
-			mgSvcInfo.services = make(map[string]*serviceInfo)
-			mgSvcInfo.name = mgSvcName
-			mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+			mgSvcInfo = new(MgServiceInfo)
+			mgSvcInfo.Services = make(map[string]*ServiceInfo)
+			mgSvcInfo.Name = mgSvcName
+			mgSvcInfoMap[mgSvcInfo.Name] = mgSvcInfo
 		}
 
 		// Add service instance reference to MG service list
-		mgSvcInfo.services[svcInfo.name] = svcInfo
+		mgSvcInfo.Services[svcInfo.Name] = svcInfo
 
 		// Add MG Service reference to service instance
-		svcInfo.mgSvc = mgSvcInfo
+		svcInfo.MgSvc = mgSvcInfo
 	}
 
 	// Add service instance to service info map
-	svcInfoMap[svcInfo.name] = svcInfo
+	svcInfoMap[svcInfo.Name] = svcInfo
 }
 
 /*
@@ -956,7 +1009,7 @@ func updateDbState(transactionId int) {
 	dbState["transactionIdStored"] = transactionId
 
 	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
-	_ = DBSetEntry(keyName, dbState)
+	_ = rc.SetEntry(keyName, dbState)
 }
 
 func updateOneFilterRule(dstName string, srcName string, rate float64) {
@@ -995,7 +1048,7 @@ func applyOneFilterRule() {
 
 	// Publish update to TC Sidecars for enforcement
 	transactionIdStr := strconv.Itoa(nextTransactionId)
-	_ = Publish(channelTcNet, transactionIdStr)
+	_ = rc.Publish(channelTcNet, transactionIdStr)
 	nextTransactionId++
 }
 
@@ -1119,14 +1172,13 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 
 	// Delete filter rule
 	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumber
-	err := DBRemoveEntry(keyName)
+	err := rc.DelEntry(keyName)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//updating the filter rule implies creating a new ifb for network characteristics rules
 func updateFilterRule(filterInfo *FilterInfo) error {
 	var err error
 	var keyName string
@@ -1148,7 +1200,7 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = DBSetEntry(keyName, m_shape)
+	err = rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
@@ -1168,7 +1220,7 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_filter["filter_uniqueId"] = filterNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumberStr
-	err = DBSetEntry(keyName, m_filter)
+	err = rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
 	}
@@ -1196,7 +1248,7 @@ func updateNetCharRule(filterInfo *FilterInfo) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = DBSetEntry(keyName, m_shape)
+	err = rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
@@ -1210,75 +1262,98 @@ func applyMgSvcMapping() {
 
 	keys := map[string]bool{}
 
-	// For each pod, add MG Service LB rules & exposed services rules
+	// For each pod, add MG, ingress & egress Service LB rules
 	for _, podInfo := range podInfoMap {
 
 		// MG Service LB rules
-		for _, svcInfo := range podInfo.mgSvcMap {
+		for _, svcInfo := range podInfo.MgSvcMap {
 
 			// Add one rule per port
-			for _, portInfo := range svcInfo.ports {
+			for _, portInfo := range svcInfo.Ports {
 
 				// Populate rule fields
 				fields := make(map[string]interface{})
-				fields["svc-type"] = typeMgSvc
-				fields["svc-name"] = svcInfo.mgSvc.name
-				fields["svc-ip"] = svcIPMap[svcInfo.mgSvc.name]
-				fields["svc-protocol"] = portInfo.protocol
-				fields["svc-port"] = portInfo.port
-				fields["lb-svc-name"] = svcInfo.name
-				fields["lb-svc-ip"] = svcIPMap[svcInfo.name]
-				fields["lb-svc-port"] = portInfo.port
+				fields[fieldSvcType] = typeMeSvc
+				fields[fieldSvcName] = svcInfo.MgSvc.Name
+				fields[fieldSvcIp] = svcIPMap[svcInfo.MgSvc.Name]
+				fields[fieldSvcProtocol] = portInfo.Protocol
+				fields[fieldSvcPort] = portInfo.Port
+				fields[fieldLbSvcName] = svcInfo.Name
+				fields[fieldLbSvcIp] = svcIPMap[svcInfo.Name]
+				fields[fieldLbSvcPort] = portInfo.Port
 
 				// Make unique key
-				key := moduleTcEngine + ":" + typeLb + ":" + podInfo.name + ":" +
-					svcInfo.mgSvc.name + ":" + strconv.Itoa(int(portInfo.port))
+				key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+					svcInfo.MgSvc.Name + ":" + strconv.Itoa(int(portInfo.Port))
 				keys[key] = true
 
 				// Set rule information in DB
-				_ = DBSetEntry(key, fields)
+				_ = rc.SetEntry(key, fields)
 			}
 		}
 
-		// Exposed Service rules
-		for _, svcMap := range podInfo.expSvcMap {
+		// Ingress Service rules
+		for _, svcMap := range podInfo.IngressSvcMapList {
 
 			// Get Service info from exposed service name
 			// Check if MG Service first
-			var svcInfo *serviceInfo
+			var svcInfo *ServiceInfo
 			var found bool
-			if svcInfo, found = podInfo.mgSvcMap[svcMap.svcName]; !found {
+			if svcInfo, found = podInfo.MgSvcMap[svcMap.SvcName]; !found {
 				// If not found, must be unique service
-				if svcInfo, found = svcInfoMap[svcMap.svcName]; !found {
-					log.Warn("Failed to find service instance: ", svcMap.svcName)
+				if svcInfo, found = svcInfoMap[svcMap.SvcName]; !found {
+					log.Warn("Failed to find service instance: ", svcMap.SvcName)
 					continue
 				}
 			}
 
 			// Populate rule fields
 			fields := make(map[string]interface{})
-			fields["svc-type"] = typeExpSvc
-			fields["svc-name"] = svcMap.svcName
-			fields["svc-ip"] = "0.0.0.0/0"
-			fields["svc-protocol"] = svcMap.protocol
-			fields["svc-port"] = svcMap.nodePort
-			fields["lb-svc-name"] = svcInfo.name
-			fields["lb-svc-ip"] = svcIPMap[svcInfo.name]
-			fields["lb-svc-port"] = svcMap.svcPort
+			fields[fieldSvcType] = typeIngressSvc
+			fields[fieldSvcName] = svcMap.SvcName
+			fields[fieldSvcIp] = "0.0.0.0/0"
+			fields[fieldSvcProtocol] = svcMap.Protocol
+			fields[fieldSvcPort] = svcMap.NodePort
+			fields[fieldLbSvcName] = svcInfo.Name
+			fields[fieldLbSvcIp] = svcIPMap[svcInfo.Name]
+			fields[fieldLbSvcPort] = svcMap.SvcPort
 
 			// Make unique key
-			key := moduleTcEngine + ":" + typeLb + ":" + podInfo.name + ":" +
-				svcMap.svcName + ":" + strconv.Itoa(int(svcMap.nodePort))
+			key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.NodePort))
 			keys[key] = true
 
 			// Set rule information in DB
-			_ = DBSetEntry(key, fields)
+			_ = rc.SetEntry(key, fields)
+		}
+
+		// Egress Service rules
+		for _, svcMap := range podInfo.EgressSvcMapList {
+
+			// Populate rule fields
+			fields := make(map[string]interface{})
+			fields[fieldSvcType] = typeEgressSvc
+			fields[fieldSvcName] = svcMap.SvcName
+			fields[fieldSvcIp] = "0.0.0.0/0"
+			fields[fieldSvcProtocol] = svcMap.Protocol
+			fields[fieldSvcPort] = svcMap.SvcPort
+			fields[fieldLbSvcName] = svcMap.SvcName
+			fields[fieldLbSvcIp] = svcMap.SvcIp
+			fields[fieldLbSvcPort] = svcMap.SvcPort
+
+			// Make unique key
+			key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.SvcPort))
+			keys[key] = true
+
+			// Set rule information in DB
+			_ = rc.SetEntry(key, fields)
 		}
 	}
 
 	// Remove old DB entries
 	keyName := moduleTcEngine + ":" + typeLb + ":*"
-	err := DBForEachEntry(keyName, removeEntryHandler, &keys)
+	err := rc.ForEachEntry(keyName, removeEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)
 		return
@@ -1289,7 +1364,7 @@ func removeEntryHandler(key string, fields map[string]string, userData interface
 	keys := userData.(*map[string]bool)
 
 	if _, found := (*keys)[key]; !found {
-		_ = DBRemoveEntry(key)
+		_ = rc.DelEntry(key)
 	}
 	return nil
 }
@@ -1419,54 +1494,54 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 }
 
 // func printfNetChar(nc NetChar) {
-// 	log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
-// 	log.Debug("throughput : ", nc.Throughput)
-// 	log.Debug("packet loss: ", nc.PacketLoss)
+//      log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
+//      log.Debug("throughput : ", nc.Throughput)
+//      log.Debug("packet loss: ", nc.PacketLoss)
 // }
 //
 // func printfElement(element NetElem) {
-// 	log.Debug("element name : ", element.Name)
-// 	log.Debug("element index : ", element.Index)
-// 	log.Debug("element parent name : ", element.ParentName)
-// 	log.Debug("element zone name : ", element.ZoneName)
-// 	log.Debug("element domain name : ", element.DomainName)
-// 	log.Debug("element type : ", element.Type)
-// 	log.Debug("element scenario name : ", element.ScenarioName)
-// 	log.Debug("element poa: ")
-// 	printfNetChar(element.Poa)
-// 	log.Debug("element poa-edge: ")
-// 	printfNetChar(element.EdgeFog)
-// 	log.Debug("element inter-fog: ")
-// 	printfNetChar(element.InterFog)
-// 	log.Debug("element inter-edge: ")
-// 	printfNetChar(element.InterEdge)
-// 	log.Debug("element inter-zone: ")
-// 	printfNetChar(element.InterZone)
-// 	log.Debug("element inter-domain: ")
-// 	printfNetChar(element.InterDomain)
-// 	log.Debug("element filter size: ", len(element.FilterInfoList))
-// 	log.Debug("element ip: ", element.Ip)
-// 	log.Debug("element next unique nb: ", element.NextUniqueNumber)
+//      log.Debug("element name : ", element.Name)
+//      log.Debug("element index : ", element.Index)
+//      log.Debug("element parent name : ", element.ParentName)
+//      log.Debug("element zone name : ", element.ZoneName)
+//      log.Debug("element domain name : ", element.DomainName)
+//      log.Debug("element type : ", element.Type)
+//      log.Debug("element scenario name : ", element.ScenarioName)
+//      log.Debug("element poa: ")
+//      printfNetChar(element.Poa)
+//      log.Debug("element poa-edge: ")
+//      printfNetChar(element.EdgeFog)
+//      log.Debug("element inter-fog: ")
+//      printfNetChar(element.InterFog)
+//      log.Debug("element inter-edge: ")
+//      printfNetChar(element.InterEdge)
+//      log.Debug("element inter-zone: ")
+//      printfNetChar(element.InterZone)
+//      log.Debug("element inter-domain: ")
+//      printfNetChar(element.InterDomain)
+//      log.Debug("element filter size: ", len(element.FilterInfoList))
+//      log.Debug("element ip: ", element.Ip)
+//      log.Debug("element next unique nb: ", element.NextUniqueNumber)
 // }
 //
 // func printfFilterInfoList(filterInfoList []FilterInfo) {
-// 	for _, filterInfo := range filterInfoList {
-// 		printfFilterInfo(filterInfo)
-// 	}
+//      for _, filterInfo := range filterInfoList {
+//              printfFilterInfo(filterInfo)
+//      }
 // }
 //
 // func printfFilterInfo(filterInfo FilterInfo) {
-// 	log.Debug("***")
-// 	log.Debug("filterInfo PodName : ", filterInfo.PodName)
-// 	log.Debug("filterInfo srcIp : ", filterInfo.SrcIp)
-// 	log.Debug("filterInfo srcSvcIp : ", filterInfo.SrcSvcIp)
-// 	log.Debug("filterInfo srcName : ", filterInfo.SrcName)
-// 	log.Debug("filterInfo srcPort : ", filterInfo.SrcPort)
-// 	log.Debug("filterInfo dstPort : ", filterInfo.DstPort)
-// 	log.Debug("filterInfo uniqueNumber : ", filterInfo.UniqueNumber)
-// 	log.Debug("filterInfo latency : ", filterInfo.Latency)
-// 	log.Debug("filterInfo latencyVariation : ", filterInfo.LatencyVariation)
-// 	log.Debug("filterInfo latencyCorrelation : ", filterInfo.LatencyCorrelation)
-// 	log.Debug("filterInfo packetLoss : ", filterInfo.PacketLoss)
-// 	log.Debug("filterInfo dataRate : ", filterInfo.DataRate)
+//      log.Debug("***")
+//      log.Debug("filterInfo PodName : ", filterInfo.PodName)
+//      log.Debug("filterInfo srcIp : ", filterInfo.SrcIp)
+//      log.Debug("filterInfo srcSvcIp : ", filterInfo.SrcSvcIp)
+//      log.Debug("filterInfo srcName : ", filterInfo.SrcName)
+//      log.Debug("filterInfo srcPort : ", filterInfo.SrcPort)
+//      log.Debug("filterInfo dstPort : ", filterInfo.DstPort)
+//      log.Debug("filterInfo uniqueNumber : ", filterInfo.UniqueNumber)
+//      log.Debug("filterInfo latency : ", filterInfo.Latency)
+//      log.Debug("filterInfo latencyVariation : ", filterInfo.LatencyVariation)
+//      log.Debug("filterInfo latencyCorrelation : ", filterInfo.LatencyCorrelation)
+//      log.Debug("filterInfo packetLoss : ", filterInfo.PacketLoss)
+//      log.Debug("filterInfo dataRate : ", filterInfo.DataRate)
 // }

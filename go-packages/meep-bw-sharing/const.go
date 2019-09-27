@@ -11,6 +11,7 @@ package bws
 
 const MAX_THROUGHPUT = 9999999999
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
+const DEFAULT_THROUGHPUT_LINK = 1000.0
 const moduleMetrics string = "metrics"
 const moduleCtrlEngine string = "ctrl-engine"
 const bwSharingControls string = "bws-controls"

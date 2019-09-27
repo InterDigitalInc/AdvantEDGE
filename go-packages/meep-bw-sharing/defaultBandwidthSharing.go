@@ -20,13 +20,17 @@ import (
 
 )
 
+// DebugConfiguration -
 type DebugConfiguration struct {
-	EnableTier1 bool
-	EnableTier2 bool
-	EnableTier3 bool
-        EnableTier4 bool
+	EnableTier1  bool
+	EnableTier2  bool
+	EnableTier3  bool
+        EnableTier4  bool
+	IsPercentage bool
+
 }
 
+// SegmentConfiguration -
 type SegmentConfiguration struct {
 	MaxBwPerInactiveFlow      float64
 	MinActivityThreshold      float64
@@ -36,6 +40,7 @@ type SegmentConfiguration struct {
 	ActionUpperThreshold      float64
 }
 
+// BandwidthSharingSegment - 
 type BandwidthSharingSegment struct {
 	Name                  string
 	MaxThroughput         float64
@@ -45,6 +50,7 @@ type BandwidthSharingSegment struct {
 	Flows                 []*BandwidthSharingFlow
 }
 
+// BandwidthSharingFlow -
 type BandwidthSharingFlow struct {
 	Name                          string
 	SrcNetworkElement             string
@@ -64,11 +70,13 @@ type BandwidthSharingFlow struct {
 	Path                          *Path
 }
 
+// Path -
 type Path struct {
 	Name                          string
 	Segments                      []*BandwidthSharingSegment
 }
-	
+
+// NetElem -
 type NetElem struct {
         Name                string
 	Type                string
@@ -77,50 +85,59 @@ type NetElem struct {
         ZoneName            string
 	DomainName          string
 	MaxThroughput       float64
+	PhyLocMaxThroughput float64
 	PoaMaxThroughput    float64
 	ZoneMaxThroughput   float64
 	DomainMaxThroughput float64
 }
 
-// Scenario service mappings
+// flows and segments mappings
 var bandwidthSharingFlowMap map[string]*BandwidthSharingFlow
-//var readyToCalculate bool
 var segmentsMap map[string]*BandwidthSharingSegment
+
 var defaultConfigs SegmentConfiguration
 var defaultDebugConfigs DebugConfiguration 
-var testInteger int 
 var logVerbose bool
 
+// allocateBandwidthSharing - allocated structures
 func allocateBandwidthSharing() {
 	bandwidthSharingFlowMap = make(map[string]*BandwidthSharingFlow)
 	segmentsMap = make(map[string]*BandwidthSharingSegment)
-
-	//for testing/debugging while developping
-	//testInteger = 1
-	//assignDefaultConfigs()
 }
 
-
+// getBandwidthSharingFlow -
 func getBandwidthSharingFlow(key string) *BandwidthSharingFlow {
 
 	return bandwidthSharingFlowMap[key]
 }
 
+// getBandwidthSharingSegment -
 func getBandwidthSharingSegment(key string) *BandwidthSharingSegment {
 
         return segmentsMap[key]
 }
 
-func setSegmentConfiguration(toSegment *SegmentConfiguration, fromSegment *SegmentConfiguration) {
+// setSegmentConfiguration - set configuration attributes on a per segment basis (absolute or relative %)
+func setSegmentConfiguration(toSegment *SegmentConfiguration, fromSegment *SegmentConfiguration, isPercentage bool, maxThroughput float64) {
 
-	toSegment.MaxBwPerInactiveFlow = fromSegment.MaxBwPerInactiveFlow
-	toSegment.MinActivityThreshold = fromSegment.MinActivityThreshold 
-	toSegment.IncrementalStep = fromSegment.IncrementalStep
-	toSegment.InactivityIncrementalStep = fromSegment.InactivityIncrementalStep
-	toSegment.TolerationThreshold = fromSegment.TolerationThreshold 
-	toSegment.ActionUpperThreshold = fromSegment.ActionUpperThreshold
+	if isPercentage {
+		toSegment.MaxBwPerInactiveFlow = fromSegment.MaxBwPerInactiveFlow * maxThroughput / 100
+		toSegment.MinActivityThreshold = fromSegment.MinActivityThreshold * maxThroughput / 100 
+		toSegment.IncrementalStep = fromSegment.IncrementalStep * maxThroughput / 100
+		toSegment.InactivityIncrementalStep = fromSegment.InactivityIncrementalStep * maxThroughput / 100
+		toSegment.TolerationThreshold = fromSegment.TolerationThreshold * maxThroughput / 100 
+		toSegment.ActionUpperThreshold = fromSegment.ActionUpperThreshold * maxThroughput / 100
+	} else {
+	        toSegment.MaxBwPerInactiveFlow = fromSegment.MaxBwPerInactiveFlow
+	        toSegment.MinActivityThreshold = fromSegment.MinActivityThreshold
+	        toSegment.IncrementalStep = fromSegment.IncrementalStep
+	        toSegment.InactivityIncrementalStep = fromSegment.InactivityIncrementalStep
+	        toSegment.TolerationThreshold = fromSegment.TolerationThreshold
+	        toSegment.ActionUpperThreshold = fromSegment.ActionUpperThreshold
+	}
 }
 
+// resetBandwidthSharingFlowMaxPlannedThroughput -
 func resetBandwidthSharingFlowMaxPlannedThroughput(flow *BandwidthSharingFlow) {
 
 					
@@ -129,6 +146,7 @@ func resetBandwidthSharingFlowMaxPlannedThroughput(flow *BandwidthSharingFlow) {
 	flow.MaxPlannedUpperBound = MAX_THROUGHPUT
 }
 
+// updateDefaultConfigAttributes
 func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
         switch(fieldName) {
         case "maxBwPerInactiveFlow":
@@ -161,6 +179,12 @@ func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
                 if err == nil {
                         defaultConfigs.ActionUpperThreshold = value
                 }
+	case "isPercentage":
+                if "yes" == fieldValue {
+                        defaultDebugConfigs.IsPercentage = true
+                } else {
+                        defaultDebugConfigs.IsPercentage = false
+                }
         case "enableTier1":
                 if "yes" == fieldValue {
                         defaultDebugConfigs.EnableTier1 = true
@@ -183,7 +207,7 @@ func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
 	}
 }
 
-
+// getMetricsThroughputEntryHandler -
 func getMetricsThroughputEntryHandler(key string, fields map[string]string, userData interface{}) error {
 
 
@@ -200,13 +224,16 @@ func getMetricsThroughputEntryHandler(key string, fields map[string]string, user
         return nil
 }
 
+// populateBandwidthSharingFlow  - creation of a flow
 func populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElement *NetElem, maxBw float64) {
 	bwSharingInfo := bandwidthSharingFlowMap[flowName]
-	//maxBw is the min of the 2 ends
-	if srcElement.MaxThroughput < destElement.MaxThroughput {
-		maxBw = srcElement.MaxThroughput
-	} else {
-		maxBw = destElement.MaxThroughput
+	//maxBw is the min of the 2 ends if a max is not forced
+	if maxBw == 0 {
+		if srcElement.MaxThroughput < destElement.MaxThroughput {
+			maxBw = srcElement.MaxThroughput
+		} else {
+			maxBw = destElement.MaxThroughput
+		}
 	}
 
 	if bwSharingInfo == nil {
@@ -227,6 +254,7 @@ func populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElem
 	bwSharingInfo.Path = createPath(flowName, srcElement, destElement)
 }
 
+// createPath -
 func createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Path {
 
 	//Tier 1 -- check if they are in the same poa
@@ -234,8 +262,17 @@ func createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Pat
 	//Tier 3 -- check if they are in the same domain
 	//Tier 4 -- check if they are in different domains
 
-	//communication between UE-apps and EDGE-apps only
-	if !((srcElement.Type == "UE" && destElement.Type != "UE") || (srcElement.Type != "UE" && destElement.Type == "UE")) {
+	direction := ""
+	if srcElement.Type == "UE" && destElement.Type != "UE" {
+		direction = "uplink"
+	} else {
+		if srcElement.Type != "UE" && destElement.Type == "UE" {
+       			direction = "downlink"
+        	}
+	}
+
+        //communication between UE-apps and EDGE-apps only
+	if direction == "" {
 		return nil
 	}
 
@@ -247,26 +284,28 @@ func createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Pat
 				//Tier 1
 				if defaultDebugConfigs.EnableTier1 {
 					//2 possibilities
-					//segments for srcElement(app) -> 1A. UE-Node egress-> 2A. POA-TermLink ingress -> 3A. Fog-Node ingress -> dstElement(app)
-					//segments for srcElement(app) -> 1B. FogNode egress -> 2B. POA-TermLink egress -> 3B. UE-Node ingress -> dstElement(app)
+					//segments for srcElement(app) -> 1A. UE-Node uplink-> 2A. POA-TermLink uplink -> 3A. Fog-Node uplink -> dstElement(app)
+					//segments for srcElement(app) -> 1B. FogNode downlink -> 2B. POA-TermLink downlink -> 3B. UE-Node downlink -> dstElement(app)
 
 					//segment 1A or 1B
-				        segmentName := srcElement.PhyLocName + "-egress"
-					segment := createSegment(segmentName, flowName, srcElement.MaxThroughput, &defaultConfigs)
+				        segmentName := srcElement.PhyLocName + "-" + direction
+					segment := createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
 					path.Segments = append(path.Segments, segment)
 
 					//segment 2A or 2B
-					if srcElement.Type == "UE" {
+					segmentName = srcElement.PoaName + "-" + direction
+/*					if srcElement.Type == "UE" {
 						segmentName = srcElement.PoaName + "-ingress"
 					} else {
 						segmentName = srcElement.PoaName + "-egress"
 					}
-                                        segment = createSegment(segmentName, flowName, srcElement.PoaMaxThroughput, &defaultConfigs)
+*/
+                                        segment = createSegment(segmentName, flowName, srcElement.PoaMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
                                         path.Segments = append(path.Segments, segment)
 
 					//segment 3A or 3B
-                                        segmentName = destElement.PhyLocName + "-ingress"
-                                        segment = createSegment(segmentName, flowName, destElement.MaxThroughput, &defaultConfigs)
+                                        segmentName = destElement.PhyLocName + "-" + direction
+                                        segment = createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
                                         path.Segments = append(path.Segments, segment)
 				} 
 			} else {
@@ -290,13 +329,14 @@ func createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Pat
 	return path
 }
 
-func createSegment(segmentName string, flowName string, maxThroughput float64, config *SegmentConfiguration) (*BandwidthSharingSegment) {
+// createSegment -
+func createSegment(segmentName string, flowName string, maxThroughput float64, config *SegmentConfiguration, isPercentage bool) (*BandwidthSharingSegment) {
         segment := getBandwidthSharingSegment(segmentName)
         if segment == nil {
  	        segment = new(BandwidthSharingSegment)
                 segment.Name = segmentName
                 segmentsMap[segmentName] = segment
-		setSegmentConfiguration(&segment.Config, config)
+		setSegmentConfiguration(&segment.Config, config, isPercentage, maxThroughput)
 
         }
         segment.MaxThroughput = maxThroughput
@@ -307,6 +347,7 @@ func createSegment(segmentName string, flowName string, maxThroughput float64, c
 	return segment
 }
 
+// tickerFunction - function called periodically to get metrics, calculate bandwidth values per flow per segment  
 func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFilter func(string, string, float64), applyFilter func()) {
 
 	var start time.Time
@@ -352,34 +393,8 @@ func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFil
 	}
 }
 
+// reCalculateThroughputs -
 func reCalculateThroughputs(updateFilter func(string, string, float64), applyFilter func()) {
-	if testInteger != 0 {
-		switch testInteger {
-		case 1:
-		//	assignForTest()
-			res := assignForTestSegment()
-			if res {
-				testInteger+=10
-			}
-		case 2:
-			assignForTest2()
-			testInteger++
-		case 3:
-			assignForTest3()
-			testInteger++
-		case 4:
-			assignForTest4()
-			testInteger++
-		case 5:
-			assignForTest5()
-			testInteger++
-		case 6:
-			assignForTest6()
-			testInteger++
-
-		default:
-		}
-	}
 
 	//reset every planned throughput values for every flow since they will start to populate those
 	resetAllBandwidthSharingFlowMaxPlannedThroughput()
@@ -407,12 +422,14 @@ func reCalculateThroughputs(updateFilter func(string, string, float64), applyFil
 	updateAllBandwidthSharingFlow(updateFilter, applyFilter)
 }
 
+// resetAllBandwidthSharingFlowMaxPlannedThroughput -
 func resetAllBandwidthSharingFlowMaxPlannedThroughput() {
         for _, flow := range bandwidthSharingFlowMap {
                 resetBandwidthSharingFlowMaxPlannedThroughput(flow)
         }
 }
 
+// updateAllBandwidthSharingFlow -
 func updateAllBandwidthSharingFlow(updateFilter func(string, string, float64), applyFilter func()) {
 
 	for _, flow := range bandwidthSharingFlowMap {
@@ -429,6 +446,7 @@ func updateAllBandwidthSharingFlow(updateFilter func(string, string, float64), a
 	}
 }
 
+// recalculateSegment -
 func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*BandwidthSharingFlow, unusedBw float64) {
 
 	nbEvaluatedFlowsLeft := len(flowsToEvaluate)
@@ -447,6 +465,9 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 					flow.PlannedLowerBound = 0
 				} else {
 					flow.PlannedThroughput = flow.CurrentThroughput + segment.Config.IncrementalStep
+					if flow.PlannedThroughput > flow.MaximumThroughput {
+						flow.PlannedThroughput = flow.MaximumThroughput
+					}
 					flow.PlannedUpperBound = flow.PlannedThroughput - segment.Config.ActionUpperThreshold
 					flow.PlannedLowerBound = flow.PlannedUpperBound - segment.Config.TolerationThreshold
 					//lower bound cannot be less than min threshold
@@ -464,30 +485,31 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 		var extra float64
 
 		if nbEvaluatedFlowsLeft > 0 {
-			if nbEvaluatedFlowsLeft >= 1 {
-				extra = (unusedBw - float64(nbEvaluatedFlowsLeft)*segment.MaxFairShareBwPerFlow) / float64(nbEvaluatedFlowsLeft)
-			} else {
-				extra = 0
-			}
 
 			//category 2 flows
 			for _, flow := range flowsToEvaluate {
 
 				if flow.PlannedThroughput == segment.MaxFairShareBwPerFlow {
-//					if flow.CurrentThroughput < (segment.MaxFairShareBwPerFlow + extra) {
 					if flow.CurrentThroughput < segment.MaxFairShareBwPerFlow {
 					
 						nbEvaluatedFlowsLeft--
 						if nbEvaluatedFlowsLeft == 0 { //allocate everything of what is left
 							flow.PlannedThroughput = unusedBw
-							flow.PlannedUpperBound = unusedBw
-							flow.PlannedLowerBound = unusedBw - segment.Config.TolerationThreshold
+							if flow.PlannedThroughput > flow.MaximumThroughput {
+								flow.PlannedThroughput = flow.MaximumThroughput
+							}
+							flow.PlannedUpperBound = flow.PlannedThroughput
+							flow.PlannedLowerBound = flow.PlannedThroughput - segment.Config.TolerationThreshold
 							//lower bound cannot be less than min threshold
 							if flow.PlannedLowerBound < segment.Config.MinActivityThreshold {
 								flow.PlannedLowerBound = segment.Config.MinActivityThreshold
 							}
 						} else {
 							flow.PlannedThroughput = flow.CurrentThroughput + segment.Config.IncrementalStep
+                                                        if flow.PlannedThroughput > flow.MaximumThroughput {
+                                                                flow.PlannedThroughput = flow.MaximumThroughput
+                                                        }
+
 							flow.PlannedUpperBound = flow.PlannedThroughput - segment.Config.ActionUpperThreshold
 							flow.PlannedLowerBound = flow.PlannedUpperBound - segment.Config.TolerationThreshold
 							//lower bound cannot be less than min threshold
@@ -512,6 +534,10 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 				for _, flow := range flowsToEvaluate {
 					if flow.PlannedThroughput == segment.MaxFairShareBwPerFlow && flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow {
 						flow.PlannedThroughput = segment.MaxFairShareBwPerFlow + extra
+                                                if flow.PlannedThroughput > flow.MaximumThroughput {
+                                                        flow.PlannedThroughput = flow.MaximumThroughput
+                                                }
+
 						flow.PlannedUpperBound = flow.PlannedThroughput - segment.Config.ActionUpperThreshold
 						flow.PlannedLowerBound = flow.PlannedUpperBound - segment.Config.TolerationThreshold
 						unusedBw -= flow.PlannedThroughput
@@ -521,12 +547,16 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 		}
 	}
 	//we allocate all the bw to active users and very low values to inactive ones if there is any residual
-	//using a minimum value that is close but not exactly 0, since we use float operations and approximation may not lead to a perfect 0{
+	//using a minimum value that is close but not exactly 0, since we use float operations and approximation may not lead to a perfect
 	if unusedBw >= 1 {
 
 		for _, flow := range flowsToEvaluate {
 			if flow.CurrentThroughput > segment.Config.MinActivityThreshold {
 				flow.PlannedThroughput = segment.MaxFairShareBwPerFlow
+				if flow.PlannedThroughput > flow.MaximumThroughput {
+                                	flow.PlannedThroughput = flow.MaximumThroughput
+                                }
+
 				flow.PlannedLowerBound = 0
 				flow.PlannedUpperBound = 0
 			}
@@ -546,86 +576,12 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 
 }
 
+// cleanUp -
 func cleanUp() {
 	//nothing allocated that should be cleared
 }
 
-func assignForTestSegment() bool {
-
-        var segment BandwidthSharingSegment
-        segment.Name = "S1"
-        segment.MaxThroughput = 200.0
-	nbFlow := 0
-	flow := bandwidthSharingFlowMap["ue1-iperf:zone1-fog1-iperf"]
-	if flow != nil {
-	        segment.Flows = append(segment.Flows, flow)
-		nbFlow++
-	}
-        flow = bandwidthSharingFlowMap["ue2-iperf:zone1-fog1-iperf"]
-        if flow != nil {
-        	segment.Flows = append(segment.Flows, flow)
-		nbFlow++
-	}
-        flow = bandwidthSharingFlowMap["ue3-iperf:zone1-fog1-iperf"]
-        if flow != nil {
-	        segment.Flows = append(segment.Flows, flow)
-		nbFlow++
-	}
-        flow = bandwidthSharingFlowMap["ue4-iperf:zone1-fog1-iperf"]
-        if flow != nil {
-	        segment.Flows = append(segment.Flows, flow)
-		nbFlow++
-	}
-	if nbFlow == 4 {
-	        assignDefaultSegmentConfigs(&segment)
-	        //allSegments = append(allSegments, &segment)
-		return true
-	}
-	return false
-}
-
-func assignForTest() {
-
-	var b1 BandwidthSharingFlow
-	b1.Name = "B1"
-	b1.MaximumThroughput = 100.0
-	b1.CurrentThroughput = 0.1
-	bandwidthSharingFlowMap[b1.Name] = &b1
-
-	var b2 BandwidthSharingFlow
-	b2.Name = "B2"
-	b2.MaximumThroughput = 100.0
-	b2.CurrentThroughput = 0.1
-	bandwidthSharingFlowMap[b2.Name] = &b2
-
-	var b3 BandwidthSharingFlow
-	b3.Name = "B3"
-	b3.MaximumThroughput = 100.0
-	b3.CurrentThroughput = 0.1
-	bandwidthSharingFlowMap[b3.Name] = &b3
-
-	var b4 BandwidthSharingFlow
-	b4.Name = "B4"
-	b4.MaximumThroughput = 100.0
-	b4.CurrentThroughput = 0.1
-	bandwidthSharingFlowMap[b4.Name] = &b4
-
-	var segment BandwidthSharingSegment
-	segment.Name = "S1"
-	segment.MaxThroughput = 100.0
-	segment.Flows = append(segment.Flows, &b1)
-	segment.Flows = append(segment.Flows, &b2)
-	segment.Flows = append(segment.Flows, &b3)
-	segment.Flows = append(segment.Flows, &b4)
-	assignDefaultSegmentConfigs(&segment)
-	//allSegments = append(allSegments, &segment)
-
-}
-
-func assignDefaultSegmentConfigs(segment *BandwidthSharingSegment) {
-        segment.Config = defaultConfigs
-}
-
+// initDefaultConfigAttributes -
 func initDefaultConfigAttributes() {
         defaultConfigs.MaxBwPerInactiveFlow = 2.0
         defaultConfigs.MinActivityThreshold = 0.3
@@ -635,54 +591,7 @@ func initDefaultConfigAttributes() {
         defaultConfigs.TolerationThreshold = 4.0
 }
 
-func updateForTest(flowName string, currentThroughput float64) {
-
-	bandwidthSharingFlowMap[flowName].CurrentThroughput = currentThroughput
-
-}
-
-func assignForTest2() {
-
-	updateForTest("B1", 2.0)
-}
-
-/*
-func assignForTest2() {
-
-	updateForTest("B1", 10.0)
-	updateForTest("B2", 20.0)
-	updateForTest("B3", 26.0)
-	updateForTest("B4", 50.0)
-}
-*/
-func assignForTest3() {
-
-	updateForTest("B1", 80.0)
-	updateForTest("B2", 2.0)
-	updateForTest("B3", 2.0)
-}
-
-func assignForTest4() {
-
-	updateForTest("B1", 80.0)
-	updateForTest("B2", 5.0)
-	updateForTest("B3", 5.0)
-}
-
-func assignForTest5() {
-
-	updateForTest("B1", 80.0)
-	updateForTest("B2", 8.0)
-	updateForTest("B3", 8.0)
-}
-
-func assignForTest6() {
-
-	updateForTest("B1", 78.0)
-	updateForTest("B2", 10.0)
-	updateForTest("B3", 7.2)
-}
-
+// updateMaxFairShareBwPerFlow -
 func updateMaxFairShareBwPerFlow(segment *BandwidthSharingSegment) {
 
 	nbActiveConnections := 0
@@ -698,6 +607,7 @@ func updateMaxFairShareBwPerFlow(segment *BandwidthSharingSegment) {
 	}
 }
 
+// needToReevaluate - determines which flows must be recalculated for bandwidth sharing within the segment
 func needToReevaluate(segment *BandwidthSharingSegment) (unusedBw float64, list []*BandwidthSharingFlow) {
 
 	unusedBw = segment.MaxThroughput
@@ -721,6 +631,7 @@ func needToReevaluate(segment *BandwidthSharingSegment) (unusedBw float64, list 
 	return unusedBw, list
 }
 
+// printBwFlowsNameFromList -
 func printBwFlowsNameFromList(list []*BandwidthSharingFlow) string {
 
 	str := ""
@@ -730,6 +641,7 @@ func printBwFlowsNameFromList(list []*BandwidthSharingFlow) string {
 	return str
 }
 
+// printBwFlows -
 func printBwFlows(segment *BandwidthSharingSegment) {
 
 	log.Info("Flows on segment ", segment.Name)
@@ -739,6 +651,7 @@ func printBwFlows(segment *BandwidthSharingSegment) {
 	}
 }
 
+// printBwFlow -
 func printBwFlow(flow *BandwidthSharingFlow) string {
 
 	s0 := fmt.Sprintf("%x", &flow)
@@ -763,6 +676,7 @@ func printBwFlow(flow *BandwidthSharingFlow) string {
 	return str
 }
 
+// printPath -
 func printPath(flow *BandwidthSharingFlow) string {
 	str := ""
 	first := true
@@ -781,8 +695,8 @@ func printPath(flow *BandwidthSharingFlow) string {
 
 }
 
+// parseScenario -
 func parseScenario(scenario ceModel.Scenario) {
-        log.Debug("parseScenario")
 
 	var netElemList []NetElem
 	//reinitialise structures
@@ -814,7 +728,17 @@ func parseScenario(scenario ceModel.Scenario) {
 							element.PoaName = nl.Name
 							element.PoaMaxThroughput = float64(nl.TerminalLinkThroughput)
 						}
-						element.MaxThroughput = 100.0
+						element.PhyLocMaxThroughput = float64(pl.LinkThroughput)
+						element.MaxThroughput = float64(proc.AppThroughput)
+
+						//to support scenarios without this info (compatibility with old scenarios)
+						if element.MaxThroughput == 0 {
+							element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
+						}
+                                                if element.PhyLocMaxThroughput == 0 {
+                                                        element.PhyLocMaxThroughput = DEFAULT_THROUGHPUT_LINK
+                                                }
+
                                 		netElemList = append(netElemList, *element)
 					}
 				}
@@ -823,7 +747,7 @@ func parseScenario(scenario ceModel.Scenario) {
         }
 
         //bandwidth sharing creation elements section
-        //all the dummy processes meant for calculation can be ignored, others must havd bandwidth flows created between each of them
+        //all the dummy processes meant for calculation can be ignored, others must have bandwidth flows created between each of them
         for _, elemSrc := range netElemList {
         	for _, elemDest := range netElemList {
                		if elemSrc.Name != elemDest.Name {

@@ -37,6 +37,7 @@ type BwSharing struct {
 	config ConfigurationAttributes
 }
 
+// ConfigurationAttributes -
 type ConfigurationAttributes struct {
 	Action                    string
 	RecalculationPeriod       int
@@ -80,10 +81,18 @@ func NewBwSharing(name string, updateFilterRule func(string, string, float64), a
 	bw.updateFilterCB = updateFilterRule
 	bw.applyFilterCB = applyFilterRule
 	//get values from the DB, or defaults
-	initDefaultConfigAttributes()
-	bw.UpdateControls()
+        bw.InitDefaultConfigAttributes()
 	return bw, nil
 }
+
+// InitDefaultConfigAttributes - Initialize some default variables used by the generic bws object
+func (bw *BwSharing) InitDefaultConfigAttributes() {
+
+	bw.config.RecalculationPeriod = defaultTickerPeriod
+	//initialize the default config attributes specific to the algorithm choosen
+	initDefaultConfigAttributes()
+}
+
 
 // Run - Listening event
 func (bw *BwSharing) Run() {
@@ -91,6 +100,7 @@ func (bw *BwSharing) Run() {
         _ = bw.rcCtrlEng.Listen(bw.eventHandler)
 }
 
+// eventHandler - Events received and processed by the registered channels
 func (bw *BwSharing) eventHandler(channel string, payload string) {
         // Handle Message according to Rx Channel
         switch channel {
@@ -103,6 +113,7 @@ func (bw *BwSharing) eventHandler(channel string, payload string) {
         }
 }
 
+// ParseScenarioUpdate - Parse the scenario and extract the information usefull to the bws algorithms by calling their specific implementations
 func (bw *BwSharing) ParseScenarioUpdate(scenario ceModel.Scenario) {
 	if bw.isStarted {
 	        // Parse scenario
@@ -114,20 +125,22 @@ func (bw *BwSharing) ParseScenarioUpdate(scenario ceModel.Scenario) {
 	}
 }
 
+// updateFilter - Updates the filters in the DB that will be pushed to the sidecars
 func (bw *BwSharing) updateFilter(dst string, src string, value float64) {
 	bw.updateFilterCB(dst, src, value)
 }
 
+// applyFilter - Send notifications to apply the filters stored in the DB for the sidecars
 func (bw *BwSharing) applyFilter() {
         bw.applyFilterCB()
 }
 
+// UpdateControls - Update all the different configurations attributes based on the content of the DB for dynamic updates 
 func (bw *BwSharing) UpdateControls() {
 
         var controls = make(map[string]interface{})
 
         keyName := bwSharingControls
-
 	err := bw.rcCtrlEng.ForEachEntry(keyName, bw.getControlsEntryHandler, controls)
         if err != nil {
                 log.Error("Failed to get entries: ", err)
@@ -135,11 +148,12 @@ func (bw *BwSharing) UpdateControls() {
         }
 }
 
+// getControlsEntryHandler - Update all the different configurations attributes based on the content of the DB for dynamic updates 
 func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]string, userData interface{}) (err error) {
 
 	actionName := ""
 	tickerPeriod := defaultTickerPeriod
-	log := false
+	logVerbose := false
 	enableTier1 := false
         enableTier2 := false
         enableTier3 := false
@@ -155,7 +169,7 @@ func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]strin
 			} 
 		case "logVerbose":
 			if "yes" == fieldValue {
-				log = true
+				logVerbose = true
 			}
 		default:
 			updateDefaultConfigAttributes(fieldName, fieldValue)
@@ -164,7 +178,7 @@ func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]strin
 
 	bw.config.Action = actionName
 	bw.config.RecalculationPeriod = tickerPeriod
-	bw.config.LogVerbose = log
+	bw.config.LogVerbose = logVerbose
 	bw.config.EnableTier1 = enableTier1
 	bw.config.EnableTier2 = enableTier2
 	bw.config.EnableTier3 = enableTier3
@@ -175,6 +189,7 @@ func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]strin
         return nil
 }
 
+// ApplyAction - Execute the action in the configuration parameters for controls on the bws object
 func (bw *BwSharing) ApplyAction() (err error) {
         switch(bw.config.Action) {
         case "start":

@@ -112,6 +112,12 @@ func (rc *Connector) DBFlush(module string) error {
 	return nil
 }
 
+// EntryExists - true if entry exists; false otherwise
+func (rc *Connector) EntryExists(key string) bool {
+        value := rc.client.Exists(key).Val()
+        return value != 0
+}
+
 // // DBForEachEntry - Search for matching keys and run handler for each entry
 func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
 	var cursor uint64
