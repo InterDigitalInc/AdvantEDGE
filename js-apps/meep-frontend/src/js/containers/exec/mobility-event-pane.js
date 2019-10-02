@@ -46,6 +46,39 @@ class MobilityEventPane extends Component {
     };
   }
 
+  shouldComponentUpdate(nextProps) {
+
+    /**
+     * element={props.element}
+        eventTypes={props.eventTypes}
+        api={props.api}
+        onSuccess={props.onSuccess}
+        onClose={props.onClose}
+        currentEvent={props.currentEvent}
+        UEs={props.UEs}
+        POAs={props.POAs}
+        EDGEs={props.EDGEs}
+        FOGs={props.FOGs}
+        ZONEs={props.ZONEs}
+        MobTypes={props.MobTypes}
+        FogEdges={props.FogEdges}
+        EdgeApps={props.EdgeApps}
+     */
+    return this.props.api !== nextProps.api
+      || this.props.element !== nextProps.element
+      || this.props.api !== nextProps.api
+      || this.props.currentEvent !== nextProps.currentEvent
+      || this.props.UEs !== nextProps.UEs
+      || this.props.POAs !== nextProps.POAs
+      || this.props.EDGEs !== nextProps.EDGEs
+      || this.props.FOGs !== nextProps.FOGs
+      || this.props.ZONEs !== nextProps.ZONEs
+      || this.props.MobTypes !== nextProps.MobTypes
+      || this.props.FogEdges !== nextProps.FogEdges
+      || this.props.EdgeApps !== nextProps.EdgeApps;
+      
+  }
+
   triggerEvent(e) {
     e.preventDefault();
     var meepEvent = {
@@ -101,7 +134,7 @@ class MobilityEventPane extends Component {
       }
     }
 
-    const TargetSelectComponent = (
+    const TargetSelectComponent = () => (
       <>
       <Select
         style={styles.select}
@@ -114,7 +147,7 @@ class MobilityEventPane extends Component {
       </>
     );
 
-    const DestinationSelectComponent = (
+    const DestinationSelectComponent = () => (
       <>
       <Select
         style= {styles.select}
@@ -127,7 +160,7 @@ class MobilityEventPane extends Component {
       </>
     );
 
-    const CancelApplyPairComponent = (
+    const CancelApplyPairComponent = () => (
       <>
       <CancelApplyPair
         cancelText="Close"
@@ -138,73 +171,29 @@ class MobilityEventPane extends Component {
       </>
     );
 
-    //check with list the target belongs to
-    if (this.values.eventTarget === undefined || this.values.eventTarget === '') {
-      return (
-        <div>
-          <Grid style={styles.field}>
-            <GridCell span="8">
-              
-            </GridCell>
-            <GridCell span="4">
-            </GridCell>
-          </Grid>
-
-          <CancelApplyPair
-            cancelText="Close"
-            applyText="Submit"
-            onCancel={this.props.onClose}
-            onApply={(e) => this.triggerEvent(e)}
-          />
-        </div>
-      );
-    }
-
-    let Layout = null;
-    switch (this.props.layout) {
-    case EVENT_CREATION_PANE_TABLE_LAYOUT:
-      Layout = (
-        <>
-        <Grid style={styles.field}>
-          <GridCell span="8">
-            <TargetSelectComponent />
-          </GridCell>
-          <GridCell span="4">
-          </GridCell>
-        </Grid>
-        <Grid style={styles.block}>
-          <GridCell span="8">
-            <DestinationSelectComponent />
-          </GridCell>
-          <GridCell span="4">
-          </GridCell>
-        </Grid>
-        <CancelApplyPairComponent />
-        </>
-      );
-      break;
-
-    case EVENT_CREATION_PANE_LINE_LAYOUT:
-      Layout = (
-        <>
-        <Grid style={styles.field}>
-          <GridCell span="6">
-            <TargetSelectComponent />
-          </GridCell>
-          <GridCell span="6">
-            <DestinationSelectComponent />
-          </GridCell>
-        </Grid>
-        <CancelApplyPairComponent />
-        </>
-      );
-      break;
-    }
+    let Layout = () => (
+      <>
+      <Grid style={styles.field}>
+        <GridCell span="8">
+          <TargetSelectComponent />
+        </GridCell>
+        <GridCell span="4">
+        </GridCell>
+      </Grid>
+      <Grid style={styles.block}>
+        <GridCell span="8">
+          <DestinationSelectComponent />
+        </GridCell>
+        <GridCell span="4">
+        </GridCell>
+      </Grid>
+      <CancelApplyPairComponent />
+      </>
+    );
   
-
     return (
       <div>
-        {Layout}
+        <Layout />
       </div>
     );
   }

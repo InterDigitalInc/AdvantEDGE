@@ -158,9 +158,6 @@ const validateThroughput = (val) => {
   return null;
 };
 
-export const NC_TABLE_LAYOUT = 'NC_TABLE_LAYOUT';
-export const NC_LINE_LAYOUT = 'NC_LINE_LAYOUT';
-
 const TableLayout = (props) => {
   return (
     <div>
@@ -206,19 +203,9 @@ const LineLayout = (props) => {
   );
 };
 
-const NCLayout = (props) => {
-  switch (props.layout) {
-  case NC_LINE_LAYOUT:
-    return (
-      <LineLayout {...props} />
-    );
-  case NC_TABLE_LAYOUT:
-    return (
-      <TableLayout {...props} />
-    );  
-  }
-};
-
+// const NCLayout = (props) => (
+//   <TableLayout {...props} />
+// );
 
 const NCGroup = ({prefix, onUpdate, element}) => {
   const formLabel = (valueName) => {
@@ -360,14 +347,13 @@ const NCGroup = ({prefix, onUpdate, element}) => {
   );
 
   return (
-    <NCLayout
-      layout={NC_TABLE_LAYOUT}
+    <TableLayout
       latencyComponent={latencyComponent}
       latencyVariationComponent={latencyVariationComponent}
       packetLossComponent={packetLossComponent}
       throughputComponent={throughputComponent}
     >
-    </NCLayout>
+    </TableLayout>
   );
 };
 

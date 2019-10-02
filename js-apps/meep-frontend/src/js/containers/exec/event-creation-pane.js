@@ -37,11 +37,6 @@ import {
 } from '../../state/exec';
 
 import {
-  NC_LINE_LAYOUT,
-  NC_TABLE_LAYOUT
-} from '../../components/helper-components/nc-group';
-
-import {
   PAGE_EXECUTE
 } from '../../state/ui';
 
@@ -72,7 +67,6 @@ const EventCreationFields = (props) => {
   case MOBILITY_EVENT:
     return (
       <MobilityEventPane
-        layout={NC_TABLE_LAYOUT}
         element={props.element}
         eventTypes={props.eventTypes}
         api={props.api}
