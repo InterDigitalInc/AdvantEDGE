@@ -46,7 +46,7 @@ class MobilityEventPane extends Component {
     };
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
 
     /**
      * element={props.element}
@@ -75,7 +75,8 @@ class MobilityEventPane extends Component {
       || this.props.ZONEs !== nextProps.ZONEs
       || this.props.MobTypes !== nextProps.MobTypes
       || this.props.FogEdges !== nextProps.FogEdges
-      || this.props.EdgeApps !== nextProps.EdgeApps;
+      || this.props.EdgeApps !== nextProps.EdgeApps
+      || this.state.eventTarget !== nextState.eventTarget;
       
   }
 
@@ -102,7 +103,7 @@ class MobilityEventPane extends Component {
 
     //let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
     //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
-    var target = this.values.eventTarget;
+    var target = this.state.eventTarget;
     var found = this.props.UEs.find(function(element) {
       return element.label === target;
     });
@@ -133,35 +134,41 @@ class MobilityEventPane extends Component {
         }
       }
     }
-
-    const TargetSelectComponent = () => (
-      <>
-      <Select
-        style={styles.select}
-        label="Target"
-        outlined
-        options={_.map(this.props.MobTypes, elem => getElemFieldVal(elem, FIELD_NAME))}
-        onChange={(event)=>{this.values['eventTarget'] = event.target.value;}}
-        data-cy={EXEC_EVT_MOB_TARGET}
-      />
-      </>
-    );
-
-    const DestinationSelectComponent = () => (
-      <>
-      <Select
-        style= {styles.select}
-        label="Destination"
-        outlined
-        options={_.map(populateDestination, elem => getElemFieldVal(elem, FIELD_NAME))}
-        onChange={(event)=>{this.values['eventDestination'] = event.target.value;}}
-        data-cy={EXEC_EVT_MOB_DEST}
-      />
-      </>
-    );
-
-    const CancelApplyPairComponent = () => (
-      <>
+  
+    return (
+      <div>
+        <>
+      <Grid style={styles.field}>
+        <GridCell span="8">
+          <Select
+            style={styles.select}
+            label="Target"
+            outlined
+            options={_.map(this.props.MobTypes, elem => getElemFieldVal(elem, FIELD_NAME))}
+            onChange={(event)=>{
+              this.values['eventTarget'] = event.target.value;
+              this.setState({eventTarget: event.target.value});
+            }}
+            data-cy={EXEC_EVT_MOB_TARGET}
+          />
+        </GridCell>
+        <GridCell span="4">
+        </GridCell>
+      </Grid>
+      <Grid style={styles.block}>
+        <GridCell span="8">
+          <Select
+            style= {styles.select}
+            label="Destination"
+            outlined
+            options={_.map(populateDestination, elem => getElemFieldVal(elem, FIELD_NAME))}
+            onChange={(event)=>{this.values['eventDestination'] = event.target.value; this.setState({eventDestination: event.target.value});}}
+            data-cy={EXEC_EVT_MOB_DEST}
+          />
+        </GridCell>
+        <GridCell span="4">
+        </GridCell>
+      </Grid>
       <CancelApplyPair
         cancelText="Close"
         applyText="Submit"
@@ -169,31 +176,6 @@ class MobilityEventPane extends Component {
         onApply={(e) => this.triggerEvent(e)}
       />
       </>
-    );
-
-    let Layout = () => (
-      <>
-      <Grid style={styles.field}>
-        <GridCell span="8">
-          <TargetSelectComponent />
-        </GridCell>
-        <GridCell span="4">
-        </GridCell>
-      </Grid>
-      <Grid style={styles.block}>
-        <GridCell span="8">
-          <DestinationSelectComponent />
-        </GridCell>
-        <GridCell span="4">
-        </GridCell>
-      </Grid>
-      <CancelApplyPairComponent />
-      </>
-    );
-  
-    return (
-      <div>
-        <Layout />
       </div>
     );
   }
