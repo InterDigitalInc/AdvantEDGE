@@ -185,9 +185,9 @@ class ExecPageContainer extends Component {
 
   showApps(show) {
     this.props.changeShowApps(show);
-    // _.defer(() => {
-    //   this.props.execVis.network.setData(this.props.execVisData);
-    // });
+    _.defer(() => {
+      this.props.execVis.network.setData(this.props.execVisData);
+    });
   }
 
   renderDialogs() {
