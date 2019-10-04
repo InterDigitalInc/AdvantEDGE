@@ -111,7 +111,7 @@ cd ~/AdvantEDGE/examples/demo1/
 
 #### Configure demo specific dashboards
 
-Follow the procedure described in [Scenario Monitoring](../../docs/use/monitoring.md#configure-dashboards). The demo specific dashboard that is loaded can also be found at `~/AdvantEDGE/examples/demo1/demo1-dashboards.json`
+Follow the procedure described in [Scenario Monitoring](https://github.com/InterDigitalInc/AdvantEDGE/wiki/scenario-monitoring#configure-monitoring). The demo specific dashboard that is loaded can also be found at `~/AdvantEDGE/examples/demo1/demo1-dashboards.json`
 
 #### Start iperf proxy
 
