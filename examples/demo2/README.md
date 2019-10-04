@@ -7,10 +7,10 @@ This scenario is the same as [demo1](../demo1/README.md) except that it uses _us
 - Running AdvantEDGE platform
 - Demo1 docker images
   - [Build demo1](../demo1/README.md)
-  - [Dockerized demo1](../demo1/README.md)
+  - [Dockerize demo1](../demo1/README.md)
 
 ## Using the scenario
 
-- [Import scenario in MEEP](../../docs/use/base-ops.md#import-demo1-scenario-in-advantedge)
+- [Import scenario in AdvantEDGE](https://github.com/InterDigitalInc/AdvantEDGE/wiki/basic-operation#import-demo1-scenario-in-advantedge)
 - Deploy scenario
   - Scenario behavior is identical to [demo1](../demo1/README.md)
