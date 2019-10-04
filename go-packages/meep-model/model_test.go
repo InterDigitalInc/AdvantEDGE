@@ -17,15 +17,19 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const modelRedisAddr string = "localhost:30379"
-const modelName string = "model-tester"
+const modelRedisTestTable = 9
+const modelName string = "test-model"
+const moduleName string = "test-module"
 const testScenario string = `
 {"_id":"demo1","_rev":"5-905df5009b54170401d47031711afff7","name":"demo1","deployment":{"interDomainLatency":50,"interDomainLatencyVariation":5,"interDomainThroughput":1000,"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","interZoneLatency":6,"interZoneLatencyVariation":2,"interZoneThroughput":1000000,"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]}}]}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","interZoneLatency":15,"interZoneLatencyVariation":3,"interZoneThroughput":1000,"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1}]},{"id":"zone1","name":"zone1","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":1000,"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash"}]},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]}}]}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","terminalLinkLatency":10,"terminalLinkLatencyVariation":2,"terminalLinkThroughput":50}]},{"id":"zone2","name":"zone2","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":20}]}]}]}}
 `
@@ -33,6 +37,9 @@ const testScenario string = `
 func TestNewModel(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
 
 	// Keep this one first...
 	fmt.Println("Invalid Redis DB address")
@@ -62,6 +69,9 @@ func TestNewModel(t *testing.T) {
 func TestGetSetModel(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
 
 	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
 	if err != nil {
@@ -110,11 +120,14 @@ func TestActivateDeactivate(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
 	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
 	if err != nil {
 		t.Errorf("Unable to create model")
 	}
-	fmt.Println("Set Model")
+	fmt.Println("Set model")
 	err = m.SetModel([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error setting model")
@@ -127,8 +140,8 @@ func TestActivateDeactivate(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error activating model")
 	}
-	fmt.Println("Update model")
-	err = m.Update([]byte(testScenario))
+	fmt.Println("Set model")
+	err = m.SetModel([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error updating model")
 	}
@@ -142,6 +155,9 @@ func TestActivateDeactivate(t *testing.T) {
 func TestMoveNode(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
 
 	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
 	if err != nil {
@@ -275,6 +291,9 @@ func TestFindUE(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
 	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
 	if err != nil {
 		t.Errorf("Unable to create model")
@@ -315,6 +334,9 @@ func TestFindUE(t *testing.T) {
 func TestUpdateNetChar(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
 
 	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
 	if err != nil {
@@ -611,4 +633,138 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Unsupported type should not fail")
 	}
 
+}
+
+func TestListenModel(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
+	fmt.Println("Create Publisher")
+	mPub, err := NewModel(modelRedisAddr, moduleName+"-Pub", modelName)
+	if err != nil {
+		t.Errorf("Unable to create model")
+	}
+
+	fmt.Println("Create Listener")
+	mLis, err := NewModel(modelRedisAddr, moduleName+"-Lis", "Active")
+	if err != nil {
+		t.Errorf("Unable to create model")
+	}
+
+	fmt.Println("Register listener (no handler)")
+	err = mLis.Listen(nil)
+	if err == nil {
+		t.Errorf("Should not allow registering without a handler")
+	}
+
+	fmt.Println("Register listener")
+	err = mLis.Listen(eventHandler)
+	if err != nil {
+		t.Errorf("Unable to listen for events")
+	}
+
+	var testCount = 0
+	eventCount = 0
+	fmt.Println("Activate")
+	testCount++
+	mPub.Activate()
+	time.Sleep(time.Second)
+	if eventCount != testCount {
+		t.Errorf("No event received for Activate")
+	}
+
+	fmt.Println("Set Model")
+	testCount++
+	err = mPub.SetModel([]byte(testScenario))
+	time.Sleep(time.Second)
+	if err != nil {
+		t.Errorf("Error setting model")
+	}
+	if eventCount != testCount {
+		t.Errorf("No event received for SetModel")
+	}
+	lis, _ := json.Marshal(*(mLis.GetModel()).Deployment)
+	pub, _ := json.Marshal(*mPub.GetModel().Deployment)
+	if string(lis) != string(pub) {
+		t.Errorf("Published model different than received one")
+	}
+
+	// MoveNode
+	fmt.Println("Move ue1")
+	testCount++
+	old, new, err := mPub.MoveNode("ue1", "zone2-poa1")
+	if err != nil {
+		t.Errorf("Error moving UE")
+	}
+	if old != "zone1-poa1" {
+		t.Errorf("Move Node - wrong origin Location " + old)
+	}
+	if new != "zone2-poa1" {
+		t.Errorf("Move Node - wrong destination Location " + new)
+	}
+	time.Sleep(time.Second)
+	if eventCount != testCount {
+		t.Errorf("No event received for MoveUE")
+	}
+	n := mLis.nodeMap.FindByName("ue1")
+	parent := n.parent.(*ceModel.NetworkLocation)
+	if parent.Name != "zone2-poa1" {
+		t.Errorf("Published model not as expected")
+	}
+
+	//UpdateNetChar
+	fmt.Println("Update net-char")
+	testCount++
+	var nc ceModel.EventNetworkCharacteristicsUpdate
+	nc.ElementName = "demo1"
+	nc.ElementType = "SCENARIO"
+	nc.Latency = 1
+	nc.LatencyVariation = 2
+	nc.Throughput = 3
+	nc.PacketLoss = 4
+	err = mPub.UpdateNetChar(&nc)
+	if err != nil {
+		t.Errorf("Update " + nc.ElementType + " failed")
+	}
+	time.Sleep(time.Second)
+	if eventCount != testCount {
+		t.Errorf("No event received for UpdateNetChar")
+	}
+	if mLis.scenario.Deployment.InterDomainLatency != 1 {
+		t.Errorf("Update " + nc.ElementType + " latency failed")
+	}
+	if mLis.scenario.Deployment.InterDomainLatencyVariation != 2 {
+		t.Errorf("Update " + nc.ElementType + " jitter failed")
+	}
+	if mLis.scenario.Deployment.InterDomainThroughput != 3 {
+		t.Errorf("Update " + nc.ElementType + " throughput failed")
+	}
+	if mLis.scenario.Deployment.InterDomainPacketLoss != 4 {
+		t.Errorf("Update " + nc.ElementType + " packet loss failed")
+	}
+
+	fmt.Println("Dectivate")
+	testCount++
+	mPub.Deactivate()
+	time.Sleep(time.Second)
+	if eventCount != testCount {
+		t.Errorf("No event received for Activate")
+	}
+	if mLis.GetModel().Deployment != nil {
+		t.Errorf("Deployment should be nil")
+	}
+}
+
+var eventChannel string
+var eventPayload string
+var eventCount int
+
+func eventHandler(channel string, payload string) {
+	eventChannel = channel
+	eventPayload = payload
+	eventCount++
+	fmt.Println("Event#", eventCount, " ch:", channel)
 }
