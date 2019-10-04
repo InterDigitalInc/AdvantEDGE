@@ -63,6 +63,7 @@ export const FIELD_INGRESS_SVC_MAP = 'ingressServiceMap';
 export const FIELD_EGRESS_SVC_MAP = 'egressServiceMap';
 export const FIELD_GPU_COUNT = 'gpuCount';
 export const FIELD_GPU_TYPE = 'gpuType';
+export const FIELD_PLACEMENT_ID = 'placementId';
 export const FIELD_ENV_VAR = 'envVar';
 export const FIELD_CMD = 'cmd';
 export const FIELD_CMD_ARGS = 'cmdArgs';
@@ -134,6 +135,7 @@ export const createElem = (name) => {
   setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP,         '');
   setElemFieldVal(elem, FIELD_GPU_COUNT,              '');
   setElemFieldVal(elem, FIELD_GPU_TYPE,               '');
+  setElemFieldVal(elem, FIELD_PLACEMENT_ID,           '');
   setElemFieldVal(elem, FIELD_ENV_VAR,                '');
   setElemFieldVal(elem, FIELD_CMD,                    '');
   setElemFieldVal(elem, FIELD_CMD_ARGS,               '');

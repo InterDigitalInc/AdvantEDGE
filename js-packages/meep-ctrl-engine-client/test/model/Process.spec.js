@@ -182,6 +182,12 @@
       //expect(instance).to.be();
     });
 
+    it('should have the property placementId (base name: "placementId")', function() {
+      // uncomment below and update the code to test the property placementId
+      //var instane = new MeepControllerRestApi.Process();
+      //expect(instance).to.be();
+    });
+
   });
 
 }));

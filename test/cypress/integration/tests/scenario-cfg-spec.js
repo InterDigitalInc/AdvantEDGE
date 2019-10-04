@@ -30,6 +30,7 @@ import {
   FIELD_SVC_MAP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
+  FIELD_PLACEMENT_ID,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -456,6 +457,7 @@ describe('Scenario Configuration', function() {
   let edgeAppEnv = 'ENV_VAR=my-env-var';
   let edgeAppCmd = '/bin/bash';
   let edgeAppArgs = '-c, export;';
+  let edgeAppPlacementId = 'node1';
 
   function addEdgeApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -480,6 +482,7 @@ describe('Scenario Configuration', function() {
     type(meep.CFG_ELEM_ENV, edgeAppEnv);
     type(meep.CFG_ELEM_CMD, edgeAppCmd);
     type(meep.CFG_ELEM_ARGS, edgeAppArgs);
+    type(meep.CFG_ELEM_PLACEMENT_ID, edgeAppPlacementId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -506,6 +509,7 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
       assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_PLACEMENT_ID), edgeAppPlacementId);
     });
   }
 
@@ -598,6 +602,7 @@ describe('Scenario Configuration', function() {
   let fogAppEnv = 'ENV_VAR=my-env-var';
   let fogAppCmd = '/bin/bash';
   let fogAppArgs = '-c, export;';
+  let fogAppPlacementId = 'node2';
 
   function addFogApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -622,6 +627,7 @@ describe('Scenario Configuration', function() {
     type(meep.CFG_ELEM_ENV, fogAppEnv);
     type(meep.CFG_ELEM_CMD, fogAppCmd);
     type(meep.CFG_ELEM_ARGS, fogAppArgs);
+    type(meep.CFG_ELEM_PLACEMENT_ID, fogAppPlacementId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -648,6 +654,7 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
       assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_PLACEMENT_ID), fogAppPlacementId);
     });
   }
 
@@ -697,6 +704,7 @@ describe('Scenario Configuration', function() {
   let ueAppEnv = 'ENV_VAR=my-env-var';
   let ueAppCmd = '/bin/bash';
   let ueAppArgs = '-c, export;';
+  let ueAppPlacementId = 'node3';
 
   // Add new ue app element
   function addUeApp(name, parent) {
@@ -718,6 +726,7 @@ describe('Scenario Configuration', function() {
     type(meep.CFG_ELEM_ENV, ueAppEnv);
     type(meep.CFG_ELEM_CMD, ueAppCmd);
     type(meep.CFG_ELEM_ARGS, ueAppArgs);
+    type(meep.CFG_ELEM_PLACEMENT_ID, ueAppPlacementId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -740,6 +749,7 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
       assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_PLACEMENT_ID), ueAppPlacementId);
     });
   }
 
@@ -812,6 +822,7 @@ describe('Scenario Configuration', function() {
   let cloudAppEnv = 'ENV_VAR=my-env-var';
   let cloudAppCmd = '/bin/bash';
   let cloudAppArgs = '-c, export;';
+  let cloudAppPlacementId = '';
 
   function addCloudApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -835,6 +846,7 @@ describe('Scenario Configuration', function() {
     type(meep.CFG_ELEM_ENV, cloudAppEnv);
     type(meep.CFG_ELEM_CMD, cloudAppCmd);
     type(meep.CFG_ELEM_ARGS, cloudAppArgs);
+    type(meep.CFG_ELEM_PLACEMENT_ID, cloudAppPlacementId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -860,6 +872,7 @@ describe('Scenario Configuration', function() {
       assert.equal(getElemFieldVal(entry, FIELD_APP_LATENCY_VAR), appLatencyVar);
       assert.equal(getElemFieldVal(entry, FIELD_APP_PKT_LOSS), appPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_APP_THROUGPUT), appThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_PLACEMENT_ID), cloudAppPlacementId);
     });
   }
 

@@ -71,4 +71,7 @@ type Process struct {
 
 	// Packet lost (in terms of percentage) caused by the application
 	AppPacketLoss float64 `json:"appPacketLoss,omitempty"`
+
+	// Identifier used for process placement in AdvantEDGE cluster
+	PlacementId string `json:"placementId,omitempty"`
 }
