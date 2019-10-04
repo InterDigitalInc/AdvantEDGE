@@ -223,8 +223,8 @@ func (u *destination) processRxTx() {
 	log.WithFields(log.Fields{
 		"meep.log.component":     "sidecar",
 		"meep.log.msgType":       "ingressPacketStats",
-		"meep.log.src":           u.hostName,
-		"meep.log.dest":          u.remoteName,
+		"meep.log.src":           u.remoteName,
+		"meep.log.dest":          u.hostName,
 		"meep.log.rx":            rcvedPkts,
 		"meep.log.rxd":           droppedPkts,
 		"meep.log.rxBytes":       rcvedBytes,
