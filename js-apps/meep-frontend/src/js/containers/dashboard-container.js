@@ -14,6 +14,7 @@ import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
+import ResizeableContainer from './resizeable-container';
 
 import {
   idlog
@@ -151,9 +152,9 @@ const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, HIERARCHY_VIEW, APPS_VIEW, LATENCY
 
 const ViewForName = (
   {
+    keyForSvg,
     apps,
     colorRange,
-    width,
     min,
     max,
     data,
@@ -175,64 +176,90 @@ const ViewForName = (
   switch(viewName) {
   case HIERARCHY_VIEW:
     return (
-      <IDCGraph 
-        width={width}
-        height={600}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {(width, height) => (
+          <IDCGraph 
+            keyForSvg={keyForSvg}
+            width={width}
+            height={height}
+          />)}
+      </ResizeableContainer>
     );
   case APPS_VIEW:
     return (
-      <IDCAppsView
-        apps={apps}
-        colorRange={colorRange}
-        width={width}
-        height={600}
-        data={data}
-        series={series}
-        startTime={startTime}
-        dataAccessor={dataAccessor}
-        dataType={dataType}
-        selectedSource={selectedSource}
-        colorForApp={colorForApp}
-        onNodeClicked={(e) => {
-          changeSourceNodeSelected(e.node);
-        }}
-        displayEdgeLabels={displayEdgeLabels}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {
+          (width, height) => (
+            <IDCAppsView
+              keyForSvg={keyForSvg}
+              apps={apps}
+              colorRange={colorRange}
+              width={width}
+              height={height}
+              data={data}
+              series={series}
+              startTime={startTime}
+              dataAccessor={dataAccessor}
+              dataType={dataType}
+              selectedSource={selectedSource}
+              colorForApp={colorForApp}
+              onNodeClicked={(e) => {
+                changeSourceNodeSelected(e.node);
+              }}
+              displayEdgeLabels={displayEdgeLabels}
+            />
+          )
+        }
+      </ResizeableContainer>
+      
     );
   case LATENCY_VIEW:
     return (
-      <IDCLineChart
-        data={dataPoints}
-        series={series}
-        startTime={startTime}
-        mobilityEvents={mobilityEvents}
-        width={width} height={600}
-        destinations={appIds}
-        colorRange={colorRange}
-        selectedSource={selectedSource}
-        dataType={dataType}
-        min={min}
-        max={max}
-        colorForApp={colorForApp}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {(width, height) => (
+          <IDCLineChart
+            keyForSvg={keyForSvg}
+            data={dataPoints}
+            series={series}
+            startTime={startTime}
+            mobilityEvents={mobilityEvents}
+            width={width} height={height}
+            destinations={appIds}
+            colorRange={colorRange}
+            selectedSource={selectedSource}
+            dataType={dataType}
+            min={min}
+            max={max}
+            colorForApp={colorForApp}
+          />
+        )
+        }
+      </ResizeableContainer>
+      
     );
   case THROUGHPUT_VIEW:
     return (
-      <IDCLineChart
-        data={dataPoints}
-        series={series}
-        startTime={startTime}
-        mobilityEvents={mobilityEvents}
-        width={width} height={600}
-        destinations={appIds}
-        colorRange={colorRange}
-        selectedSource={selectedSource}
-        dataType={dataType}
-        min={min}
-        max={max}
-        colorForApp={colorForApp}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {
+          (width, height) => (
+            <IDCLineChart
+              keyForSvg={keyForSvg}
+              data={dataPoints}
+              series={series}
+              startTime={startTime}
+              mobilityEvents={mobilityEvents}
+              width={width} height={height}
+              destinations={appIds}
+              colorRange={colorRange}
+              selectedSource={selectedSource}
+              dataType={dataType}
+              min={min}
+              max={max}
+              colorForApp={colorForApp}
+            />
+          )
+        }
+      </ResizeableContainer>
     );
   default:
     return null;
@@ -322,6 +349,8 @@ class DashboardContainer extends Component {
   constructor(props) {
     super(props);
 
+    this.keyForSvg = 0;
+
     this.state = {
       configurationType: null,
       view1Name: APPS_VIEW,
@@ -383,6 +412,7 @@ class DashboardContainer extends Component {
   }
 
   render() {
+    this.keyForSvg++;
     const root = this.getRoot();
     const nodes = root.descendants();
    
@@ -468,7 +498,9 @@ class DashboardContainer extends Component {
     }
 
     const view1 = (
+
       <ViewForName
+        keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
         width={width1}
@@ -489,6 +521,7 @@ class DashboardContainer extends Component {
 
     const view2 = (
       <ViewForName
+        keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
         width={width2}
@@ -529,8 +562,7 @@ class DashboardContainer extends Component {
         />
         
         <Grid>
-          
-          <GridCell span={span1} style={{paddingRight: 10}}>
+          <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
             <Elevation z={2}
               style={{padding: 10}}
             >
@@ -538,7 +570,7 @@ class DashboardContainer extends Component {
             </Elevation>
           </GridCell>
           
-          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}>
+          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}  className='chartContainer'>
             <Elevation z={2}
               style={{padding: 10}}
             >
@@ -557,7 +589,8 @@ const mapStateToProps = state => {
     displayedScenario: state.exec.displayedScenario,
     epochs: state.exec.metrics.epochs,
     sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
-    dataTypeSelected: state.exec.metrics.dataTypeSelected
+    dataTypeSelected: state.exec.metrics.dataTypeSelected,
+    eventCreationMode: state.exec.eventCreationMode
   };
 };
 

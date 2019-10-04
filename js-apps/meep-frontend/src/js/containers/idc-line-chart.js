@@ -22,10 +22,12 @@ import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
 // };
 
 const notNull = x => x;
-const IDCLineChart = props => {
+const IDCLineChart = (props) => {
+  const keyForSvg=props.keyForSvg;
+  let width = props.width;
 
   const margin = {top: 20, right: 40, bottom: 30, left: 60};
-  const width = props.width; // - margin.left - margin.right;
+  // const width = props.width; // - margin.left - margin.right;
   const height = props.height; // - margin.top - margin.bottom;
 
   const maxForKey = series => key => d3.max(series[key], p => p.value);
@@ -101,7 +103,6 @@ const IDCLineChart = props => {
   
   const chartTitle = chartTitleForType(props.dataType);
 
-
   const axisWidthOffset = 12;
   const meX = d => x(new Date(d.timestamp)) + axisWidthOffset;
 
@@ -167,8 +168,9 @@ const IDCLineChart = props => {
   
   return (
     <svg
+      key={keyForSvg}
       height={height}
-      width={width}
+      width={'100%'}
     >
       <>
       <g

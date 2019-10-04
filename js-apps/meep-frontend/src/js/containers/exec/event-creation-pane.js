@@ -23,7 +23,7 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
-import { uiExecChangeCurrentEvent, MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT } from '../../state/ui';
+import { uiExecChangeCurrentEvent, MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT, PAGE_EXPERIMENTAL_EXECUTE } from '../../state/ui';
 import {
   execChangeSelectedScenarioElement,
   execUEs,
@@ -116,7 +116,7 @@ class EventCreationPane extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) { return null; }
+    if (this.props.page !== PAGE_EXECUTE && this.props.page !== PAGE_EXPERIMENTAL_EXECUTE) { return null; }
 
     return (
       <div style={{padding: 10}}>

@@ -105,6 +105,7 @@ const unitsForDataType = type => {
 
 const IDCAppsView = (
   {
+    keyForSvg,
     apps,
     colorRange,
     selectedSource,
@@ -178,6 +179,7 @@ const IDCAppsView = (
          
   return (
     <svg
+      key={keyForSvg}
       height={height}
       width={width}
     >
