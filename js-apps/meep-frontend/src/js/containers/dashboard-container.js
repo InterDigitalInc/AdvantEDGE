@@ -498,22 +498,22 @@ class DashboardContainer extends Component {
     }
   
     
-    const height = 600;
+    // const height = 600;
 
-    let span1 = 6;
-    let width1 = 700;
-    let width2 = 700;
+    let span1 = 12;
+    let span2 = 12;
+    // let width1 = 700;
+    // let width2 = 700;
 
-    if (this.state.view1Name === VIEW_NAME_NONE) {
+    const view1Present = this.state.view1Name !== VIEW_NAME_NONE;
+    const view2Present = this.state.view2Name !== VIEW_NAME_NONE;
+
+    if (view1Present && view2Present) {
+      span1 = 6;
+      span2 = 6;
+    } else if (!view1Present && !view2Present) {
       span1 = 0;
-      width1 = 0;
-      width2 = 1400;
-    }
-
-    if (this.state.view2Name === VIEW_NAME_NONE) {
-      span1 = 12;
-      width1 = 1400;
-      width2 = 0;
+      span2 = 0;
     }
 
     const view1 = (
@@ -522,8 +522,8 @@ class DashboardContainer extends Component {
         keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
-        width={width1}
-        height={height}
+        // width={width1}
+        // height={height}
         data={lastEpochData1}
         series={series1}
         startTime={startTime}
@@ -543,8 +543,8 @@ class DashboardContainer extends Component {
         keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
-        width={width2}
-        height={height}
+        // width={width2}
+        // height={height}
         data={lastEpochData2}
         series={series2}
         startTime={startTime}
@@ -581,21 +581,27 @@ class DashboardContainer extends Component {
         />
         
         <Grid>
-          <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
-            <Elevation z={2}
-              style={{padding: 10}}
-            >
-              {view1}
-            </Elevation>
-          </GridCell>
+
+          {!view1Present ? null : (
+            <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
+              <Elevation z={2}
+                style={{padding: 10}}
+              >
+                {view1}
+              </Elevation>
+            </GridCell>
+          )}
           
-          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}  className='chartContainer'>
-            <Elevation z={2}
-              style={{padding: 10}}
-            >
-              {view2}
-            </Elevation>
-          </GridCell>
+          {!view2Present ? null : (
+            <GridCell span={span2} style={{marginLeft: -10, paddingLeft: 10}} className='chartContainer'>
+              <Elevation z={2}
+                style={{padding: 10}}
+              >
+                {view2}
+              </Elevation>
+            </GridCell>
+         
+          )}
         </Grid>
       
       </>
