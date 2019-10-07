@@ -14,6 +14,7 @@ import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
+import IDCVis from './idc-vis';
 import ResizeableContainer from './resizeable-container';
 
 import {
@@ -38,7 +39,8 @@ import {
 import {
   LATENCY_METRICS,
   THROUGHPUT_METRICS,
-  MOBILITY_EVENT
+  MOBILITY_EVENT,
+  TYPE_EXEC
 } from '../meep-constants';
 
 const VIEW_NAME_NONE = 'none';
@@ -147,8 +149,9 @@ const HIERARCHY_VIEW = 'HIERARCHY_VIEW';
 const APPS_VIEW = 'APPS_VIEW';
 const LATENCY_VIEW = 'LATENCY_VIEW';
 const THROUGHPUT_VIEW = 'THROUGHPUT_VIEW';
+const VIS_VIEW = 'VIS_VIEW';
 
-const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, HIERARCHY_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW];
+const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, VIS_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW, HIERARCHY_VIEW];
 
 const ViewForName = (
   {
@@ -259,6 +262,22 @@ const ViewForName = (
             />
           )
         }
+      </ResizeableContainer>
+    );
+  case VIS_VIEW:
+    return (
+      <ResizeableContainer>
+        {
+          (width, height) => (
+            <IDCVis 
+              type={TYPE_EXEC}
+              width={width}
+              height={height}
+              onEditElement={() => {}}
+            />
+          )
+        }
+        
       </ResizeableContainer>
     );
   default:
