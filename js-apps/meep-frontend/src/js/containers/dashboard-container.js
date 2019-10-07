@@ -113,7 +113,7 @@ const ConfigurationView = (props) => {
           value={props.view1}
         />
       </GridCell>
-      <GridCell span={2}>
+      <GridCell span={3}>
         <IDSelect
           label={'Select Source Node'}
           outlined
@@ -124,7 +124,7 @@ const ConfigurationView = (props) => {
           value={props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''}
         />
       </GridCell>
-      <GridCell span={1}>
+      <GridCell span={4}>
         <Checkbox
           checked={props.displayEdgeLabels}
           onChange={() => props.changeDisplayEdgeLabels(!props.displayEdgeLabels)}
@@ -132,7 +132,7 @@ const ConfigurationView = (props) => {
                     Show data on edges
         </Checkbox>
       </GridCell>
-      <GridCell span={5}>
+      <GridCell span={1}>
       </GridCell>
     </Grid>
     
