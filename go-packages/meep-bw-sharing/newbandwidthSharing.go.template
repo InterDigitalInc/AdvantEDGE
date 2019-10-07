@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) 2019  InterDigital Communications, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package bws
+
+import (
+
+        redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+        log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+        ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+
+)
+
+
+//default allocations
+func allocateBandwidthSharing() {
+	//default allocations
+}
+
+//updates attributes through DB
+func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
+
+        switch(fieldName) {
+	default:
+	}
+}
+
+//periodic function invoked
+func tickerFunction(rcCtrlEng *redis.Connector, logVerbose bool, updateFilter func(string, string, float64), applyFilter func()) {
+
+}
+
+//reseting previous allocations
+func cleanUp() {
+}
+
+//default init values if not configured
+func initDefaultConfigAttributes() {
+}
+
+//scenario parsing function
+func parseScenario(scenario ceModel.Scenario) {
+        log.Debug("parseScenario")
+}
+
