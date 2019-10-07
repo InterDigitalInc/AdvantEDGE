@@ -72,24 +72,26 @@ type podShortElement struct {
 var sem = make(chan int, 1)
 
 var opts = struct {
-	timeout         time.Duration
-	interval        time.Duration
-	trafficInterval time.Duration
-	payloadSize     uint
-	statBufferSize  uint
-	bind4           string
-	bind6           string
-	dests           []*destination
-	resolverTimeout time.Duration
+	timeout                time.Duration
+	interval               time.Duration
+	trafficInterval        time.Duration
+	trafficIntervalsPerLog uint
+	payloadSize            uint
+	statBufferSize         uint
+	bind4                  string
+	bind6                  string
+	dests                  []*destination
+	resolverTimeout        time.Duration
 }{
-	timeout:         100000 * time.Millisecond,
-	interval:        1000 * time.Millisecond,
-	trafficInterval: 100 * time.Millisecond,
-	bind4:           "0.0.0.0",
-	bind6:           "::",
-	payloadSize:     56,
-	statBufferSize:  50,
-	resolverTimeout: 15000 * time.Millisecond,
+	timeout:                100000 * time.Millisecond,
+	interval:               1000 * time.Millisecond,
+	trafficInterval:        100 * time.Millisecond,
+	trafficIntervalsPerLog: 10, //set to 10 to have one log per second, in order to lower the impact on Elastic Search
+	bind4:                  "0.0.0.0",
+	bind6:                  "::",
+	payloadSize:            56,
+	statBufferSize:         50,
+	resolverTimeout:        15000 * time.Millisecond,
 }
 
 var pinger *Pinger
@@ -610,25 +612,6 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 
 	return nil
 }
-
-/*
-func flushFilters() {
-
-        // NOTE: Flush does not work on kernel version 4.4
-        //       Workaround is to manually remove all installed filters
-
-        // err := cmdDeleteAllFilters()
-        // if err != nil {
-        //      return err
-        // }
-        // return nil
-
-        for _, filterNumber := range filters {
-                _ = cmdDeleteFilter(filterNumber)
-        }
-        filters = map[string]string{}
-}
-*/
 
 func createFilters() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"

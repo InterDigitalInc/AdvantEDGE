@@ -62,6 +62,8 @@ type stat struct {
 
 const moduleMetrics string = "metrics"
 
+var elasticLogPacing uint
+
 func (u *destination) ping(pinger *Pinger) {
 	rtt, err := pinger.Ping(u.remote, opts.timeout)
 	if err != nil {
@@ -150,8 +152,6 @@ func (u *destination) compute(rc *redis.Connector) (st stat) {
 	return
 }
 
-var elasticPacing int
-
 func (u *destination) processRxTx(rc *redis.Connector) {
 
 	str := "tc -s qdisc show dev ifb" + u.ifbNumber
@@ -207,20 +207,6 @@ func (u *destination) processRxTx(rc *redis.Connector) {
 	}
 
 	var throughputStr, throughputVal string
-	/*
-	   if throughput > 1000 {
-	           if throughput > 1000000 {
-	                   throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-	                   throughputStr = throughputVal + " Mbps"
-	           } else {
-	                   throughputVal = strconv.FormatFloat(throughput/1000, 'f', 3, 64)
-	                   throughputStr = throughputVal + " Kbps"
-	           }
-	   } else {
-	           throughputVal = strconv.FormatFloat(throughput, 'f', 3, 64)
-	           throughputStr = throughputVal + " bps"
-	   }
-	*/
 	//all the throughput in Mbps
 	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
 	throughputStr = throughputVal + " Mbps"
@@ -248,10 +234,8 @@ func (u *destination) processRxTx(rc *redis.Connector) {
 	_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
 
 	//pacing the logs in ES
-	//assuming the traffic interval is every 100ms, we don't need to log that often in ES
-	elasticPacing++
-
-	if elasticPacing%10 == 0 {
+	elasticLogPacing++
+	if elasticLogPacing%opts.trafficIntervalsPerLog == 0 {
 		log.WithFields(log.Fields{
 			"meep.log.component":     "sidecar",
 			"meep.log.msgType":       "ingressPacketStats",

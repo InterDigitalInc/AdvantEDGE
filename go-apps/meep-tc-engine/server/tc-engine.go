@@ -238,7 +238,7 @@ func Init() (err error) {
 		return err
 	}
 	bwSharing.UpdateControls()
-	_ = bwSharing.Start()
+	//	_ = bwSharing.Start()
 
 	// Initialize TC Engine with current active scenario & LB rules
 	processActiveScenarioUpdate()
@@ -1493,12 +1493,14 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
+// Used to print network characteristics belonging to a NetChar object -- uncomment to use -- for debug purpose
 // func printfNetChar(nc NetChar) {
 //      log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
 //      log.Debug("throughput : ", nc.Throughput)
 //      log.Debug("packet loss: ", nc.PacketLoss)
 // }
 //
+// Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
 // func printfElement(element NetElem) {
 //      log.Debug("element name : ", element.Name)
 //      log.Debug("element index : ", element.Index)
@@ -1524,12 +1526,14 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 //      log.Debug("element next unique nb: ", element.NextUniqueNumber)
 // }
 //
+// Used to print filtersInfo from a list -- uncomment to use -- for debug purpose
 // func printfFilterInfoList(filterInfoList []FilterInfo) {
 //      for _, filterInfo := range filterInfoList {
 //              printfFilterInfo(filterInfo)
 //      }
 // }
 //
+// Used to print all the filterInfo attributes belonging to a FilterInfo object -- uncomment to use -- for debug purpose
 // func printfFilterInfo(filterInfo FilterInfo) {
 //      log.Debug("***")
 //      log.Debug("filterInfo PodName : ", filterInfo.PodName)
