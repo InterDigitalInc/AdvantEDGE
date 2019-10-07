@@ -143,8 +143,8 @@ func (u *destination) compute(rc *redis.Connector) (st stat) {
 	log.WithFields(log.Fields{
 		"meep.log.component":      "sidecar",
 		"meep.log.msgType":        "latency",
-		"meep.log.latency-latest": st.last / 1000000,
-		"meep.log.latency-avg":    st.mean / 1000000,
+		"meep.log.latency-latest": int(math.Round(float64(st.last) / 1000000.0)),
+		"meep.log.latency-avg":    int(math.Round(float64(st.mean) / 1000000.0)),
 		"meep.log.src":            u.hostName,
 		"meep.log.dest":           u.remoteName,
 	}).Info("Measurements log")
