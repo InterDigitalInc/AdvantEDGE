@@ -112,9 +112,9 @@ func isKibanaReady(cobraCmd *cobra.Command) bool {
 }
 
 func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) error {
-	kibanaHost, _ := os.Hostname()
+	kibanaHost := viper.GetString("node.ip")
 	cmd := exec.Command("curl", "-vX", "POST", "http://"+kibanaHost+":32003/api/kibana/settings/defaultIndex", "-H", "Content-Type: application/json", "-H", "kbn-xsrf: true", "-d", "{\"value\": \""+indexId+"\"}")
-	out, err := cmd.CombinedOutput()
+	out, err := ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error sending a curl command")
 	} else {
