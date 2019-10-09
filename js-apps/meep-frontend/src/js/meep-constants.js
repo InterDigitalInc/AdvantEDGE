@@ -201,6 +201,10 @@ export const PREFIX_TERM_LINK = 'Terminal Link';
 export const PREFIX_LINK = 'Link';
 export const PREFIX_APP = 'Application';
 
+// Types of layout for components
+export const MEEP_COMPONENT_TABLE_LAYOUT = 'MEEP_COMPONENT_TABLE_LAYOUT';
+export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT = 'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
+
 export const id = (label) => {
   return '#' + label;
 };

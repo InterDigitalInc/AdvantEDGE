@@ -117,7 +117,10 @@ import {
   CFG_ELEM_EGRESS_SVC_MAP,
 
   CFG_BTN_NEW_ELEM,
-  CFG_BTN_DEL_ELEM
+  CFG_BTN_DEL_ELEM,
+
+  // Layout type
+  MEEP_COMPONENT_TABLE_LAYOUT
 } from '../../meep-constants';
 
 
@@ -475,6 +478,7 @@ const NCGroups = ({prefixes, onUpdate, element}) => {
         element={element}
         prefix={p}
         key={p}
+        layout={MEEP_COMPONENT_TABLE_LAYOUT}
       />
     );
   });

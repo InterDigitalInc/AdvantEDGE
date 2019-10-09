@@ -75,8 +75,11 @@ import {
   PREFIX_EDGE_FOG,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
-  PREFIX_APP
+  PREFIX_APP,
 
+  // NC Group Layouts
+  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
+  MEEP_COMPONENT_TABLE_LAYOUT
 } from '../../meep-constants';
 
 const MIN_LATENCY_VALUE = 0;
@@ -158,6 +161,8 @@ const validateThroughput = (val) => {
   return null;
 };
 
+
+
 const TableLayout = (props) => {
   return (
     <div>
@@ -165,6 +170,7 @@ const TableLayout = (props) => {
         <GridCell span="6">
           {props.latencyComponent}
         </GridCell>
+       
         <GridCell span="6">
           {props.latencyVariationComponent}
         </GridCell>
@@ -174,7 +180,40 @@ const TableLayout = (props) => {
         <GridCell span="6">
           {props.packetLossComponent}
         </GridCell>
+      
         <GridCell span="6">
+          {props.throughputComponent}
+        </GridCell>
+      </Grid>
+    </div>
+  );
+};
+
+const SingleColumnLayout = (props) => {
+  return (
+    <div>
+      <Grid>
+        <GridCell span="12">
+          {props.latencyComponent}
+        </GridCell>
+       
+      </Grid>
+
+      <Grid>
+        <GridCell span="12">
+          {props.latencyVariationComponent}
+        </GridCell>
+      </Grid>
+
+      <Grid style={{marginBottom: 10}}>
+        <GridCell span="12">
+          {props.packetLossComponent}
+        </GridCell>
+      </Grid>
+
+      <Grid style={{marginBottom: 10}}>
+        
+        <GridCell span="12">
           {props.throughputComponent}
         </GridCell>
       </Grid>
@@ -203,9 +242,22 @@ const LineLayout = (props) => {
   );
 };
 
-// const NCLayout = (props) => (
-//   <TableLayout {...props} />
-// );
+const NCLayout = (props) => {
+  switch(props.layout) {
+  case MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT:
+    return (
+      <SingleColumnLayout {...props} />
+    );
+  case MEEP_COMPONENT_TABLE_LAYOUT:
+    return (
+      <TableLayout {...props} />
+    );
+  default:
+    return (
+      <TableLayout {...props} />
+    );
+  }
+};
 
 const NCGroup = ({prefix, onUpdate, element}) => {
   const formLabel = (valueName) => {
@@ -347,13 +399,13 @@ const NCGroup = ({prefix, onUpdate, element}) => {
   );
 
   return (
-    <TableLayout
+    <NCLayout
       latencyComponent={latencyComponent}
       latencyVariationComponent={latencyVariationComponent}
       packetLossComponent={packetLossComponent}
       throughputComponent={throughputComponent}
     >
-    </TableLayout>
+    </NCLayout>
   );
 };
 

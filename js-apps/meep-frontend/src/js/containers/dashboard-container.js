@@ -6,6 +6,7 @@ import { Elevation } from '@rmwc/elevation';
 // import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
+import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
 import axios from 'axios';
@@ -16,6 +17,7 @@ import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
 import IDCVis from './idc-vis';
 import ResizeableContainer from './resizeable-container';
+
 
 import {
   idlog
@@ -33,7 +35,9 @@ import {
 import {
   execFakeChangeSelectedDestination,
   execChangeSourceNodeSelected,
-  execAddMetricsEpoch
+  execAddMetricsEpoch,
+  execChangeMetricsTimeIntervalDuration,
+  execClearMetricsEpochs
 } from '../state/exec';
 
 import {
@@ -88,8 +92,54 @@ const epochsToSeries = (epochs) => {
   return series;
 };
 
+const TimeIntervalConfig = (props) => {
+  let  PauseResumeButton = null;
+  if (props.metricsPollingStopped) {
+    PauseResumeButton = () => (
+      <Button outlined
+        onClick={() => props.startMetricsPolling()}
+      >
+        RESUME
+      </Button>
+    );
+  } else {
+    PauseResumeButton = () => (
+      <Button outlined
+        onClick={() => props.stopMetricsPolling()}
+      >
+        PAUSE
+      </Button>
+    );
+  }
+  return (
+    <div>
+      <Grid>
+        <GridCell span={3}>
+          <Slider
+            value={props.value}
+            onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
+            discrete
+            min={5}
+            max={60}
+            step={1}
+          />
+        </GridCell>
+        <GridCell span={1}>
+
+        </GridCell>
+        <GridCell span={8}>
+          <PauseResumeButton />
+        </GridCell>
+      </Grid>
+    </div>
+    
+    
+  );
+};
+
 const ConfigurationView = (props) => {
   return (
+    <>
     <Grid>
       <GridCell span={2}>
         <IDSelect
@@ -135,7 +185,13 @@ const ConfigurationView = (props) => {
       <GridCell span={1}>
       </GridCell>
     </Grid>
-    
+    <TimeIntervalConfig 
+      timeIntervalDurationChanged={(value) => {props.timeIntervalDurationChanged(value);}}
+      stopMetricsPolling={props.stopMetricsPolling}
+      startMetricsPolling={props.startMetricsPolling}
+      metricsPollingStopped={props.metricsPollingStopped}
+    />
+    </>
   );
 };
 
@@ -302,6 +358,10 @@ const DashboardConfiguration = (props) => {
         changeSourceNodeSelected={props.changeSourceNodeSelected}
         changeDisplayEdgeLabels={props.changeDisplayEdgeLabels}
         displayEdgeLabels={props.displayEdgeLabels}
+        timeIntervalDurationChanged={props.timeIntervalDurationChanged}
+        stopMetricsPolling={props.stopMetricsPolling}
+        startMetricsPolling={props.startMetricsPolling}
+        metricsPollingStopped={props.metricsPollingStopped}
       />
     );
   }
@@ -378,15 +438,13 @@ class DashboardContainer extends Component {
       nbSecondsToDisplay: 25,
       displayEdgeLabels: false
     };
+
+    this.epochs = [];
   }
 
   componentDidMount() {
-    this.epochCount = 0;
-    const nextData = () => {
-      this.epochCount += 1;
-      this.fetchMetrics();
-    };
-    this.dataTimer = setInterval(nextData, 1000);
+    clearInterval(this.dataTimer);
+    this.startMetricsPolling();
   }
 
   componentWillUnmount() {
@@ -430,7 +488,40 @@ class DashboardContainer extends Component {
     this.setState({displayEdgeLabels: val});
   }
 
+  changeMetricsTimeIntervalDuration(duration) {
+    this.props.changeMetricsTimeIntervalDuration(duration);
+  }
+
+  stopMetricsPolling() {
+    // clearInterval(this.dataTimer);
+    this.setState({metricsPollingStopped: true});
+  }
+  startMetricsPolling() {
+    // this.props.clearMetricsEpochs();
+    this.epochCount = 0;
+    const nextData = () => {
+      this.epochCount += 1;
+      this.fetchMetrics();
+    };
+
+    if (!this.dataTimer) {
+      this.dataTimer = setInterval(nextData, 1000);
+    }
+    
+    this.setState({metricsPollingStopped: false});
+  }
+
+
   render() {
+
+    let epochs = null;
+    if (!this.state.metricsPollingStopped) {
+      this.epochs = this.props.epochs.slice();
+      epochs = this.epochs;
+    } else {
+      epochs = this.epochs;
+    }
+
     this.keyForSvg++;
     const root = this.getRoot();
     const nodes = root.descendants();
@@ -460,11 +551,11 @@ class DashboardContainer extends Component {
     };
 
     // Determine first and last epochs
-    const firstEpoch = this.props.epochs.length ? this.props.epochs[0] : {
+    const firstEpoch = epochs.length ? epochs[0] : {
       data: [],
       startTime: null
     };
-    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : {
+    let lastEpoch = epochs.length ? epochs.slice(-1)[0] : {
       data: [],
       startTime: null
     };
@@ -472,7 +563,7 @@ class DashboardContainer extends Component {
     // Determine startTime of first epoch and endTime of last epoch
     const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
     const endTime = lastEpoch.data.length ? moment(lastEpoch.startTime).add(1, 'seconds').format(TIME_FORMAT) : null;
-    const series = epochsToSeries(this.props.epochs, selectedSource);
+    const series = epochsToSeries(epochs, selectedSource);
 
     const withTypeAndSource = type => source => point => {
       return point.dataType === type && point.src === source;
@@ -491,7 +582,7 @@ class DashboardContainer extends Component {
     // Mobility events
     const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
     const extractMobilityEvents = extractPointsOfType(MOBILITY_EVENT);
-    const mobilityEvents = this.props.epochs.flatMap(extractMobilityEvents);
+    const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
       // console.log('Some mobility events ...');
@@ -573,6 +664,10 @@ class DashboardContainer extends Component {
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
           changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
+          timeIntervalDurationChanged={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
+          stopMetricsPolling={() => this.stopMetricsPolling()}
+          startMetricsPolling={() => this.startMetricsPolling()}
+          metricsPollingStopped={this.state.metricsPollingStopped}
           dashboardViewsList={DASHBOARD_VIEWS_LIST}
           changeView1={(viewName) => this.changeView1(viewName)}
           changeView2={(viewName) => this.changeView2(viewName)}
@@ -615,7 +710,8 @@ const mapStateToProps = state => {
     epochs: state.exec.metrics.epochs,
     sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
     dataTypeSelected: state.exec.metrics.dataTypeSelected,
-    eventCreationMode: state.exec.eventCreationMode
+    eventCreationMode: state.exec.eventCreationMode,
+    metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration
   };
 };
 
@@ -623,7 +719,9 @@ const mapDispatchToProps = dispatch => {
   return {
     changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
     changeSourceNodeSelected: (src) => dispatch(execChangeSourceNodeSelected(src)),
-    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch))
+    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch)),
+    changeMetricsTimeIntervalDuration: (duration) => dispatch(execChangeMetricsTimeIntervalDuration(duration)),
+    clearMetricsEpochs: () => dispatch(execClearMetricsEpochs())
   };
 };
 
