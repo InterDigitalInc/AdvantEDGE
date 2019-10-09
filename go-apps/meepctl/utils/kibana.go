@@ -34,6 +34,8 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 	gitDir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir")
 
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+
 	start := time.Now()
 
 	//make sure kibana is up and ready to receive messages
@@ -72,7 +74,10 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 			//defaultIndex is reserved
 			if dashboard[0] == "defaultIndex" {
 				defaultIndex := strings.TrimSpace(dashboard[1])
-				_ = uploadDefaultIndex(defaultIndex, cobraCmd)
+				err := uploadDefaultIndex(defaultIndex, cobraCmd)
+				if verbose {
+					fmt.Println(err)
+				}
 			} else {
 				if len(dashboard) >= 2 {
 					dashboard_location := strings.TrimSpace(dashboard[1])
