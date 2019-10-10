@@ -34,8 +34,6 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 	gitDir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir")
 
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-
 	start := time.Now()
 
 	//make sure kibana is up and ready to receive messages
@@ -44,7 +42,7 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 	isKibanaUp := false
 	kibanaFailedAttempts := 0
 	for !isKibanaUp {
-		isKibanaUp = isKibanaReady(cobraCmd)
+		isKibanaUp = uploadDefaultIndex("DUMMY", cobraCmd)
 		if !isKibanaUp {
 			kibanaFailedAttempts++
 			if kibanaFailedAttempts > 3 {
@@ -74,10 +72,7 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 			//defaultIndex is reserved
 			if dashboard[0] == "defaultIndex" {
 				defaultIndex := strings.TrimSpace(dashboard[1])
-				err := uploadDefaultIndex(defaultIndex, cobraCmd)
-				if verbose {
-					fmt.Println(err)
-				}
+				_ = uploadDefaultIndex(defaultIndex, cobraCmd)
 			} else {
 				if len(dashboard) >= 2 {
 					dashboard_location := strings.TrimSpace(dashboard[1])
@@ -103,21 +98,14 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 
 }
 
-//sending a DUMMY value just to see if the service is up (conditions to be up are:
+//communicating with Kibana, return true if the following conditions are met:
 //- all elastic search(ES) pods are up
 //- kibana pod is up
 //- kibana connected successfully to ES
-func isKibanaReady(cobraCmd *cobra.Command) bool {
-	isReady := false
-	err := uploadDefaultIndex("DUMMY", cobraCmd)
-	if err == nil {
-		isReady = true
-	}
-	return isReady
-}
-
-func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) error {
+func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) bool {
 	kibanaHost := viper.GetString("node.ip")
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+
 	cmd := exec.Command("curl", "-vX", "POST", "http://"+kibanaHost+":32003/api/kibana/settings/defaultIndex", "-H", "Content-Type: application/json", "-H", "kbn-xsrf: true", "-d", "{\"value\": \""+indexId+"\"}")
 	out, err := ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
@@ -131,7 +119,14 @@ func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) error {
 		}
 	}
 
-	return err
+	if err != nil {
+		if verbose {
+			fmt.Println("Failed to upload a default index error: " + err.Error())
+		}
+		return false
+	} else {
+		return true
+	}
 }
 
 func uploadDashboardHttp(location string, cobraCmd *cobra.Command) {
