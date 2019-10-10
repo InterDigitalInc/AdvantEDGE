@@ -42,7 +42,7 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 	isKibanaUp := false
 	kibanaFailedAttempts := 0
 	for !isKibanaUp {
-		isKibanaUp = isKibanaReady(cobraCmd)
+		isKibanaUp = uploadDefaultIndex("DUMMY", cobraCmd)
 		if !isKibanaUp {
 			kibanaFailedAttempts++
 			if kibanaFailedAttempts > 3 {
@@ -98,23 +98,16 @@ func DeployKibanaDashboards(cobraCmd *cobra.Command) {
 
 }
 
-//sending a DUMMY value just to see if the service is up (conditions to be up are:
+//communicating with Kibana, return true if the following conditions are met:
 //- all elastic search(ES) pods are up
 //- kibana pod is up
 //- kibana connected successfully to ES
-func isKibanaReady(cobraCmd *cobra.Command) bool {
-	isReady := false
-	err := uploadDefaultIndex("DUMMY", cobraCmd)
-	if err == nil {
-		isReady = true
-	}
-	return isReady
-}
+func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) bool {
+	kibanaHost := viper.GetString("node.ip")
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
-func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) error {
-	kibanaHost, _ := os.Hostname()
 	cmd := exec.Command("curl", "-vX", "POST", "http://"+kibanaHost+":32003/api/kibana/settings/defaultIndex", "-H", "Content-Type: application/json", "-H", "kbn-xsrf: true", "-d", "{\"value\": \""+indexId+"\"}")
-	out, err := cmd.CombinedOutput()
+	out, err := ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error sending a curl command")
 	} else {
@@ -126,7 +119,14 @@ func uploadDefaultIndex(indexId string, cobraCmd *cobra.Command) error {
 		}
 	}
 
-	return err
+	if err != nil {
+		if verbose {
+			fmt.Println("Failed to upload a default index error: " + err.Error())
+		}
+		return false
+	} else {
+		return true
+	}
 }
 
 func uploadDashboardHttp(location string, cobraCmd *cobra.Command) {
