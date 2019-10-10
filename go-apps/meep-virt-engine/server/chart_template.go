@@ -53,6 +53,7 @@ type DeploymentTemplate struct {
 	GpuEnabled               string
 	GpuType                  string
 	GpuCount                 string
+	PlacementId              string
 }
 
 type ServiceTemplate struct {
@@ -212,6 +213,7 @@ func populateScenarioTemplate(scenario model.Scenario) ([]helm.Chart, error) {
 							setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
 							addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
 							addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+							deploymentTemplate.PlacementId = proc.PlacementId
 
 							// Enable Service template if present
 							if proc.ServiceConfig != nil {

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 // Set IDCC color theme
-$mdc-theme-primary: #379DD8;
-$mdc-theme-secondary: #FF9800;
+$mdc-theme-primary: #379dd8;
+$mdc-theme-secondary: #ff9800;
 $mdc-theme-background: #fff;
 
 // Set default margin to 0px
@@ -37,37 +37,37 @@ $mdc-layout-grid-default-gutter: (
 
 // Ensure layout covers the entire screen
 html {
-    height: 100%;
+  height: 100%;
 }
 select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    -ms-appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
 }
 
 // UI
 .ui-body {
-    display: flex;
-    flex-direction: row;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    height: 100%;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
 }
 .ui-content {
-    flex-direction: column;
-    flex-grow: 1;
-    height: 100%;
-    box-sizing: border-box;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+  box-sizing: border-box;
 }
 .ui-main {
-    padding: 16px;
+  padding: 16px;
 }
 
 // Navigation
 #idcc-toolbar {
-    @include mdc-top-app-bar-ink-color(#fff);
+  @include mdc-top-app-bar-ink-color(#fff);
 }
 // #idcc-logo {
 //     height: 40px;
@@ -76,55 +76,61 @@ select {
 //     padding-bottom: 4px;
 // }
 #idcc-title {
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size: 22px;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 22px;
 }
 #page-status {
-    display: none;
+  display: none;
 }
 #page-settings {
-    display: none;
+  display: none;
 }
 
 #refresh-interval-form-div {
-    display: inline-block;
-    vertical-align: middle;
-    padding-left: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  padding-left: 16px;
+}
+
+// Image
+.img-wrap {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+#demo-svc-app-pic {
+  height: 100%;
 }
 
 // IDCC Styles
 
 .idcc-button {
-    @include mdc-button-ink-color(#fff);
+  @include mdc-button-ink-color(#fff);
 }
 .idcc-margin-top {
-    margin-top: 10px;
+  margin-top: 10px;
 }
 .idcc-margin-left {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 .idcc-elevated-area {
-    margin-bottom: 10px;
-    padding: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
 }
 .idcc-fullwidth {
-    width: 100%;
+  width: 100%;
+}
+.idcc-fullheight {
+  height: 100%;
 }
 .idcc-width-40 {
-    width: 40px;
+  width: 40px;
 }
 .idcc-status-ok {
-    font-weight: bold;
-    color: #008000;
+  font-weight: bold;
+  color: #008000;
 }
 .idcc-status-ra {
-    font-weight: bold;
-    color: #FF8000;
-}
-
-
-// Map
-#map {
-    height: 60vh;
-    width: 100%;
+  font-weight: bold;
+  color: #ff8000;
 }

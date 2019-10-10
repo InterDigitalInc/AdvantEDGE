@@ -69,6 +69,7 @@
 
 
 
+
   };
 
   /**
@@ -144,6 +145,9 @@
       }
       if (data.hasOwnProperty('appPacketLoss')) {
         obj['appPacketLoss'] = ApiClient.convertToType(data['appPacketLoss'], 'Number');
+      }
+      if (data.hasOwnProperty('placementId')) {
+        obj['placementId'] = ApiClient.convertToType(data['placementId'], 'String');
       }
     }
     return obj;
@@ -251,6 +255,11 @@
    * @member {Number} appPacketLoss
    */
   exports.prototype['appPacketLoss'] = undefined;
+  /**
+   * Identifier used for process placement in AdvantEDGE cluster
+   * @member {String} placementId
+   */
+  exports.prototype['placementId'] = undefined;
 
 
   /**

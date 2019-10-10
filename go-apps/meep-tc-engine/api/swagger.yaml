@@ -480,6 +480,9 @@ definitions:
         type: "number"
         format: "double"
         description: "Packet lost (in terms of percentage) caused by the application"
+      placementId:
+        type: "string"
+        description: "Identifier used for process placement in AdvantEDGE cluster"
     description: "Application or service object"
     example: {}
   ServiceConfig:

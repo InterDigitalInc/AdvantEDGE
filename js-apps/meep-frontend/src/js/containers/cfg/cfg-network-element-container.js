@@ -40,6 +40,7 @@ import {
   FIELD_GROUP,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
+  FIELD_PLACEMENT_ID,
   FIELD_ENV_VAR,
   FIELD_CMD,
   FIELD_CMD_ARGS,
@@ -104,6 +105,7 @@ import {
   CFG_ELEM_PROT,
   CFG_ELEM_GPU_COUNT,
   CFG_ELEM_GPU_TYPE,
+  CFG_ELEM_PLACEMENT_ID,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_EXTERNAL_CHECK,
@@ -324,7 +326,7 @@ const validateChartGroupEntry = (entry) => {
 
 const validateIngressServiceMapping = (entries) => validateEntries(validateIngressServiceMappingEntry)(entries);
 const validateEgressServiceMapping = (entries) => validateEntries(validateEgressServiceMappingEntry)(entries);
-const validateEnvironMentVariables = (entries) => validateEntries(validateEnvironmentVariableEntry)(entries);
+const validateEnvironmentVariables = (entries) => validateEntries(validateEnvironmentVariableEntry)(entries);
  
 const validateCommandArguments = () => null;
 
@@ -600,10 +602,19 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         </Checkbox>
 
         {isExternal ? 
-          <ExternalFields 
-            onUpdate={onUpdate}
-            element={element}
-          />
+          <>
+            <ExternalFields 
+              onUpdate={onUpdate}
+              element={element}
+            />
+            <CfgTextField
+              onUpdate={onUpdate}
+              element={element}
+              label="Placement Identifier"
+              fieldName={FIELD_PLACEMENT_ID}
+              cydata={CFG_ELEM_PLACEMENT_ID}
+            />
+          </>
           :
           <>
             <Checkbox
@@ -637,13 +648,20 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                   onUpdate={onUpdate}
                   element={element}
                   label="Environment variables"
-                  validate={validateEnvironMentVariables}
+                  validate={validateEnvironmentVariables}
                   fieldName={FIELD_ENV_VAR}
                   cydata={CFG_ELEM_ENV}
                 />
                 <CommandGroup
                   onUpdate={onUpdate}
                   element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Placement Identifier"
+                  fieldName={FIELD_PLACEMENT_ID}
+                  cydata={CFG_ELEM_PLACEMENT_ID}
                 />
               </>
             }
@@ -670,10 +688,19 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         </Checkbox>
 
         {isExternal ? 
-          <ExternalFields 
-            onUpdate={onUpdate}
-            element={element}
-          />
+          <>
+            <ExternalFields 
+              onUpdate={onUpdate}
+              element={element}
+            />
+            <CfgTextField
+              onUpdate={onUpdate}
+              element={element}
+              label="Placement Identifier"
+              fieldName={FIELD_PLACEMENT_ID}
+              cydata={CFG_ELEM_PLACEMENT_ID}
+            />
+          </>
           :
           <>
             <Checkbox
@@ -711,13 +738,20 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                   onUpdate={onUpdate}
                   element={element}
                   label="Environment variables"
-                  validate={validateEnvironMentVariables}
+                  validate={validateEnvironmentVariables}
                   fieldName={FIELD_ENV_VAR}
                   cydata={CFG_ELEM_ENV}
                 />
                 <CommandGroup
                   onUpdate={onUpdate}
                   element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Placement Identifier"
+                  fieldName={FIELD_PLACEMENT_ID}
+                  cydata={CFG_ELEM_PLACEMENT_ID}
                 />
               </>
             }
@@ -743,10 +777,19 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
         </Checkbox>
 
         {isExternal ? 
-          <ExternalFields 
-            onUpdate={onUpdate}
-            element={element}
-          />
+          <>
+            <ExternalFields 
+              onUpdate={onUpdate}
+              element={element}
+            />
+            <CfgTextField
+              onUpdate={onUpdate}
+              element={element}
+              label="Placement Identifier"
+              fieldName={FIELD_PLACEMENT_ID}
+              cydata={CFG_ELEM_PLACEMENT_ID}
+            />
+          </>
           :
           <>
             <Checkbox
@@ -792,13 +835,20 @@ const TypeRelatedFormFields = ({onUpdate, element}) => {
                   onUpdate={onUpdate}
                   element={element}
                   label="Environment variables"
-                  validate={validateEnvironMentVariables}
+                  validate={validateEnvironmentVariables}
                   fieldName={FIELD_ENV_VAR}
                   cydata={CFG_ELEM_ENV}
                 />
                 <CommandGroup
                   onUpdate={onUpdate}
                   element={element}
+                />
+                <CfgTextField
+                  onUpdate={onUpdate}
+                  element={element}
+                  label="Placement Identifier"
+                  fieldName={FIELD_PLACEMENT_ID}
+                  cydata={CFG_ELEM_PLACEMENT_ID}
                 />
               </>
             }

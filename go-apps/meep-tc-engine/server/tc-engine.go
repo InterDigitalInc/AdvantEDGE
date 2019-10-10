@@ -23,9 +23,11 @@ import (
 	"strings"
 	"time"
 
+	bws "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-bw-sharing"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -35,6 +37,7 @@ import (
 const moduleTcEngine string = "tc-engine"
 const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
+const moduleMetrics string = "metrics"
 
 const typeActive string = "active"
 const typeNet string = "net"
@@ -180,6 +183,8 @@ var netElemNameToIndexMap = map[string]int{}
 
 var netCharTable [][][]int
 
+var bwSharing *bws.BwSharing
+
 // Scenario Name
 var scenarioName string
 
@@ -197,27 +202,43 @@ var svcCountReq = 0
 var svcCount = 0
 var nextTransactionId = 1
 
+const redisAddr string = "meep-redis-master:6379"
+
+var rc *redis.Connector
+
+const DEFAULT_TC_ENGINE_DB = 0
+
 // Init - TC Engine initialization
 func Init() (err error) {
 
 	// Connect to Redis DB
-	err = DBConnect()
+	rc, err = redis.NewConnector(redisAddr, DEFAULT_TC_ENGINE_DB)
 	if err != nil {
-		log.Error("Failed connection to Active DB. Error: ", err)
+		log.Error("Failed connection to Redis DB.  Error: ", err)
 		return err
 	}
-	log.Info("Connected to Active DB")
+	log.Info("Connected to redis DB")
 
 	// Subscribe to Pub-Sub events for MEEP Controller
 	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = Subscribe(channelCtrlActive, channelMgManagerLb)
+	err = rc.Subscribe(channelCtrlActive, channelMgManagerLb)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
 
 	// Flush any remaining TC Engine rules
-	DBFlush(moduleTcEngine)
+	rc.DBFlush(moduleTcEngine)
+	rc.DBFlush(moduleMetrics)
+
+	bwSharing, err = bws.NewBwSharing("default", updateOneFilterRule, applyOneFilterRule)
+
+	if err != nil {
+		log.Error("Failed to create a bwSharing object. Error: ", err)
+		return err
+	}
+	bwSharing.UpdateControls()
+	//	_ = bwSharing.Start()
 
 	// Initialize TC Engine with current active scenario & LB rules
 	processActiveScenarioUpdate()
@@ -230,7 +251,7 @@ func Init() (err error) {
 func Run() {
 
 	// Listen for subscribed events. Provide event handler method.
-	_ = Listen(eventHandler)
+	_ = rc.Listen(eventHandler)
 }
 
 func eventHandler(channel string, payload string) {
@@ -253,7 +274,7 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	// Retrieve active scenario from DB
-	jsonScenario, err := DBJsonGetEntry(moduleCtrlEngine+":"+typeActive, ".")
+	jsonScenario, err := rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
 	if err != nil {
 		log.Error(err.Error())
 		stopScenario()
@@ -270,6 +291,7 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Parse scenario
+	go bwSharing.ParseScenarioUpdate(scenario)
 	parseScenario(scenario)
 
 	switch tcEngineState {
@@ -298,7 +320,7 @@ func processActiveScenarioUpdate() {
 
 		// Publish update to TC Sidecars for enforcement
 		transactionIdStr := strconv.Itoa(nextTransactionId)
-		_ = Publish(channelTcNet, transactionIdStr)
+		_ = rc.Publish(channelTcNet, transactionIdStr)
 		nextTransactionId++
 	}
 }
@@ -311,7 +333,7 @@ func processMgSvcMapUpdate() {
 	}
 
 	// Retrieve active scenario from DB
-	jsonNetElemList, err := DBJsonGetEntry(moduleMgManager+":"+typeLb, ".")
+	jsonNetElemList, err := rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -343,7 +365,7 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Publish update to TC Sidecars for enforcement
-	_ = Publish(channelTcLb, "")
+	_ = rc.Publish(channelTcLb, "")
 }
 
 func addPod(name string) {
@@ -428,9 +450,11 @@ func stopScenario() {
 
 	scenarioName = ""
 
-	DBFlush(moduleTcEngine)
-	_ = Publish(channelTcNet, "delAll")
-	_ = Publish(channelTcLb, "delAll")
+	rc.DBFlush(moduleTcEngine)
+	rc.DBFlush(moduleMetrics)
+
+	_ = rc.Publish(channelTcNet, "delAll")
+	_ = rc.Publish(channelTcLb, "delAll")
 }
 
 func validateLatencyVariation(value int) int {
@@ -521,8 +545,10 @@ func parseScenario(scenario ceModel.Scenario) {
 					linkLatencyVariation := int(pl.LinkLatencyVariation)
 					linkLatencyVariation = validateLatencyVariation(linkLatencyVariation)
 					linkLatencyCorrelation := COMMON_CORRELATION
-					//linkThroughput := DEFAULT_THROUGHPUT_LINK
 					linkThroughput := int(pl.LinkThroughput)
+					if linkThroughput == 0 {
+						linkThroughput = DEFAULT_THROUGHPUT_LINK
+					}
 					linkThroughput = THROUGHPUT_UNIT * linkThroughput
 					// Packet loss (float) converted to hundredth & truncated
 					linkPacketLoss := int(100 * pl.LinkPacketLoss)
@@ -546,8 +572,10 @@ func parseScenario(scenario ceModel.Scenario) {
 						appLatencyVariation := int(proc.AppLatencyVariation)
 						appLatencyVariation = validateLatencyVariation(appLatencyVariation)
 						appLatencyCorrelation := COMMON_CORRELATION
-						//appThroughput := DEFAULT_THROUGHPUT_APP
 						appThroughput := int(proc.AppThroughput)
+						if appThroughput == 0 {
+							appThroughput = DEFAULT_THROUGHPUT_APP
+						}
 						appThroughput = THROUGHPUT_UNIT * appThroughput
 						// Packet loss (float) converted to hundredth & truncated
 						appPacketLoss := int(100 * proc.AppPacketLoss)
@@ -981,7 +1009,47 @@ func updateDbState(transactionId int) {
 	dbState["transactionIdStored"] = transactionId
 
 	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
-	_ = DBSetEntry(keyName, dbState)
+	_ = rc.SetEntry(keyName, dbState)
+}
+
+func updateOneFilterRule(dstName string, srcName string, rate float64) {
+	var filterInfo FilterInfo
+
+	for _, dstElement := range indexToNetElemMap {
+		if dstElement.Name == dstName {
+			for _, storedFilterInfo := range dstElement.FilterInfoList {
+				if storedFilterInfo.SrcName == srcName {
+					filterInfo.PodName = storedFilterInfo.PodName
+					//filterInfo.SrcIp = storedFilterInfo.SrcIp
+					//filterInfo.SrcSvcIp = storedFilterInfo.SrcSvcIp
+					//filterInfo.SrcName = storedFilterInfo.SrcName
+					//filterInfo.SrcNetmask = storedFilterInfo.SrcNetmask
+					//filterInfo.SrcPort = storedFilterInfo.SrcPort
+					//filterInfo.DstPort = storedFilterInfo.DstPort
+					filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
+					filterInfo.Latency = storedFilterInfo.Latency
+					filterInfo.LatencyVariation = storedFilterInfo.LatencyVariation
+					filterInfo.LatencyCorrelation = storedFilterInfo.LatencyCorrelation
+					filterInfo.PacketLoss = storedFilterInfo.PacketLoss
+
+					filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
+
+					_ = updateNetCharRule(&filterInfo)
+					break
+				}
+			}
+		}
+	}
+}
+
+func applyOneFilterRule() {
+	//Update the Db for state information (only transactionId for now)
+	updateDbState(nextTransactionId)
+
+	// Publish update to TC Sidecars for enforcement
+	transactionIdStr := strconv.Itoa(nextTransactionId)
+	_ = rc.Publish(channelTcNet, transactionIdStr)
+	nextTransactionId++
 }
 
 func applyNetCharRules() {
@@ -1023,7 +1091,8 @@ func applyNetCharRules() {
 			filterInfo.PacketLoss = value
 			value = netCharTable[i][j][THROUGHPUT]
 			filterInfo.DataRate = value
-			needUpdate := false
+			needUpdateFilter := false
+			needUpdateNetChar := false
 			needCreate := false
 			if dstElementPtr.FilterInfoList == nil {
 				dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
@@ -1038,15 +1107,20 @@ func applyNetCharRules() {
 							storedFilterInfo.SrcIp == filterInfo.SrcIp &&
 							storedFilterInfo.SrcSvcIp == filterInfo.SrcSvcIp &&
 							storedFilterInfo.SrcNetmask == filterInfo.SrcNetmask &&
-							storedFilterInfo.SrcPort == filterInfo.SrcPort &&
-							storedFilterInfo.Latency == filterInfo.Latency &&
-							storedFilterInfo.LatencyVariation == filterInfo.LatencyVariation &&
-							storedFilterInfo.LatencyCorrelation == filterInfo.LatencyCorrelation &&
-							storedFilterInfo.PacketLoss == filterInfo.PacketLoss &&
-							storedFilterInfo.DataRate == filterInfo.DataRate {
-							needUpdate = false
+							storedFilterInfo.SrcPort == filterInfo.SrcPort {
+
+							if storedFilterInfo.Latency != filterInfo.Latency ||
+								storedFilterInfo.LatencyVariation != filterInfo.LatencyVariation ||
+								storedFilterInfo.LatencyCorrelation != filterInfo.LatencyCorrelation ||
+								storedFilterInfo.PacketLoss != filterInfo.PacketLoss ||
+								storedFilterInfo.DataRate != filterInfo.DataRate {
+								needUpdateNetChar = true
+								//we don't want a new filter to be created, but we want a new set of network char. to be applied
+								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
+								index = indx
+							}
 						} else { //there is a difference... replace the old one
-							needUpdate = true //store the index
+							needUpdateFilter = true //store the index
 							//using a convention where one odd and even number reserved for the same rule (applied and updated one)nd using one after the other
 							if storedFilterInfo.UniqueNumber%2 == 0 {
 								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber - 1
@@ -1064,7 +1138,7 @@ func applyNetCharRules() {
 				if needCreate {
 					dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
 				} else {
-					if needUpdate {
+					if needUpdateFilter {
 						list := dstElementPtr.FilterInfoList
 						_ = deleteFilterRule(&list[index])
 						list[index] = filterInfo //swap
@@ -1077,8 +1151,12 @@ func applyNetCharRules() {
 				dstElementPtr.NextUniqueNumber += 2
 				_ = updateFilterRule(&filterInfo)
 			} else {
-				if needUpdate {
+				if needUpdateFilter {
 					_ = updateFilterRule(&filterInfo)
+				} else {
+					if needUpdateNetChar {
+						_ = updateNetCharRule(&filterInfo)
+					}
 				}
 			}
 			indexToNetElemMap[j] = *dstElementPtr
@@ -1090,18 +1168,11 @@ func applyNetCharRules() {
 func deleteFilterRule(filterInfo *FilterInfo) error {
 
 	// Retrieve unique IFB number for rules to delete
-	ifbNumber := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
-
-	// Delete shaping rule
-	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumber
-	err := DBRemoveEntry(keyName)
-	if err != nil {
-		return err
-	}
+	filterNumber := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
 
 	// Delete filter rule
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + ifbNumber
-	err = DBRemoveEntry(keyName)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumber
+	err := rc.DelEntry(keyName)
 	if err != nil {
 		return err
 	}
@@ -1111,7 +1182,13 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 func updateFilterRule(filterInfo *FilterInfo) error {
 	var err error
 	var keyName string
-	ifbNumber := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
+
+	ifbNumber := filterInfo.UniqueNumber
+	//ifbNumber is always the same for the shaping, but varies for the filter
+	if filterInfo.UniqueNumber%2 == 0 {
+		ifbNumber = filterInfo.UniqueNumber - 1
+	}
+	ifbNumberStr := strconv.FormatInt(int64(ifbNumber), 10)
 
 	// SHAPING
 	var m_shape = make(map[string]interface{})
@@ -1120,13 +1197,15 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
 	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
-	m_shape["ifb_uniqueId"] = ifbNumber
+	m_shape["ifb_uniqueId"] = ifbNumberStr
 
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumber
-	err = DBSetEntry(keyName, m_shape)
+	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
+	err = rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
+
+	filterNumberStr := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
 
 	// FILTER
 	var m_filter = make(map[string]interface{})
@@ -1137,13 +1216,43 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_filter["srcNetmask"] = filterInfo.SrcNetmask
 	m_filter["srcPort"] = strconv.FormatInt(int64(filterInfo.SrcPort), 10)
 	m_filter["dstPort"] = strconv.FormatInt(int64(filterInfo.DstPort), 10)
-	m_filter["ifb_uniqueId"] = ifbNumber
+	m_filter["ifb_uniqueId"] = ifbNumberStr
+	m_filter["filter_uniqueId"] = filterNumberStr
 
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + ifbNumber
-	err = DBSetEntry(keyName, m_filter)
+	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumberStr
+	err = rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func updateNetCharRule(filterInfo *FilterInfo) error {
+	var err error
+	var keyName string
+
+	ifbNumber := filterInfo.UniqueNumber
+	//ifbNumber is always the same for the shaping, but varies for the filter
+	if filterInfo.UniqueNumber%2 == 0 {
+		ifbNumber = filterInfo.UniqueNumber - 1
+	}
+	ifbNumberStr := strconv.FormatInt(int64(ifbNumber), 10)
+
+	// SHAPING
+	var m_shape = make(map[string]interface{})
+	m_shape["delay"] = strconv.FormatInt(int64(filterInfo.Latency), 10)
+	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
+	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
+	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
+	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	m_shape["ifb_uniqueId"] = ifbNumberStr
+
+	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
+	err = rc.SetEntry(keyName, m_shape)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -1179,7 +1288,7 @@ func applyMgSvcMapping() {
 				keys[key] = true
 
 				// Set rule information in DB
-				_ = DBSetEntry(key, fields)
+				_ = rc.SetEntry(key, fields)
 			}
 		}
 
@@ -1215,7 +1324,7 @@ func applyMgSvcMapping() {
 			keys[key] = true
 
 			// Set rule information in DB
-			_ = DBSetEntry(key, fields)
+			_ = rc.SetEntry(key, fields)
 		}
 
 		// Egress Service rules
@@ -1238,13 +1347,13 @@ func applyMgSvcMapping() {
 			keys[key] = true
 
 			// Set rule information in DB
-			_ = DBSetEntry(key, fields)
+			_ = rc.SetEntry(key, fields)
 		}
 	}
 
 	// Remove old DB entries
 	keyName := moduleTcEngine + ":" + typeLb + ":*"
-	err := DBForEachEntry(keyName, removeEntryHandler, &keys)
+	err := rc.ForEachEntry(keyName, removeEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)
 		return
@@ -1255,7 +1364,7 @@ func removeEntryHandler(key string, fields map[string]string, userData interface
 	keys := userData.(*map[string]bool)
 
 	if _, found := (*keys)[key]; !found {
-		_ = DBRemoveEntry(key)
+		_ = rc.DelEntry(key)
 	}
 	return nil
 }
@@ -1383,3 +1492,60 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 	}
 	return clientset, nil
 }
+
+// Used to print network characteristics belonging to a NetChar object -- uncomment to use -- for debug purpose
+// func printfNetChar(nc NetChar) {
+//      log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
+//      log.Debug("throughput : ", nc.Throughput)
+//      log.Debug("packet loss: ", nc.PacketLoss)
+// }
+//
+// Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
+// func printfElement(element NetElem) {
+//      log.Debug("element name : ", element.Name)
+//      log.Debug("element index : ", element.Index)
+//      log.Debug("element parent name : ", element.ParentName)
+//      log.Debug("element zone name : ", element.ZoneName)
+//      log.Debug("element domain name : ", element.DomainName)
+//      log.Debug("element type : ", element.Type)
+//      log.Debug("element scenario name : ", element.ScenarioName)
+//      log.Debug("element poa: ")
+//      printfNetChar(element.Poa)
+//      log.Debug("element poa-edge: ")
+//      printfNetChar(element.EdgeFog)
+//      log.Debug("element inter-fog: ")
+//      printfNetChar(element.InterFog)
+//      log.Debug("element inter-edge: ")
+//      printfNetChar(element.InterEdge)
+//      log.Debug("element inter-zone: ")
+//      printfNetChar(element.InterZone)
+//      log.Debug("element inter-domain: ")
+//      printfNetChar(element.InterDomain)
+//      log.Debug("element filter size: ", len(element.FilterInfoList))
+//      log.Debug("element ip: ", element.Ip)
+//      log.Debug("element next unique nb: ", element.NextUniqueNumber)
+// }
+//
+// Used to print filtersInfo from a list -- uncomment to use -- for debug purpose
+// func printfFilterInfoList(filterInfoList []FilterInfo) {
+//      for _, filterInfo := range filterInfoList {
+//              printfFilterInfo(filterInfo)
+//      }
+// }
+//
+// Used to print all the filterInfo attributes belonging to a FilterInfo object -- uncomment to use -- for debug purpose
+// func printfFilterInfo(filterInfo FilterInfo) {
+//      log.Debug("***")
+//      log.Debug("filterInfo PodName : ", filterInfo.PodName)
+//      log.Debug("filterInfo srcIp : ", filterInfo.SrcIp)
+//      log.Debug("filterInfo srcSvcIp : ", filterInfo.SrcSvcIp)
+//      log.Debug("filterInfo srcName : ", filterInfo.SrcName)
+//      log.Debug("filterInfo srcPort : ", filterInfo.SrcPort)
+//      log.Debug("filterInfo dstPort : ", filterInfo.DstPort)
+//      log.Debug("filterInfo uniqueNumber : ", filterInfo.UniqueNumber)
+//      log.Debug("filterInfo latency : ", filterInfo.Latency)
+//      log.Debug("filterInfo latencyVariation : ", filterInfo.LatencyVariation)
+//      log.Debug("filterInfo latencyCorrelation : ", filterInfo.LatencyCorrelation)
+//      log.Debug("filterInfo packetLoss : ", filterInfo.PacketLoss)
+//      log.Debug("filterInfo dataRate : ", filterInfo.DataRate)
+// }

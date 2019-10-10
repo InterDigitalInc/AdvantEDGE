@@ -55,9 +55,19 @@ deployment:
 
   nodeSelector: {}
   tolerations: []
-  affinity: {}
-
-
+  affinity: 
+  {{- if .Deployment.PlacementId}}
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - {{.Deployment.PlacementId}}
+  {{- else}}
+    {}
+  {{- end}}
 
 service:
   enabled: {{.Service.Enabled}}

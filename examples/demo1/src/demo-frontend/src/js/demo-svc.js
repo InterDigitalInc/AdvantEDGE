@@ -24,11 +24,6 @@ import * as $ from 'jquery';
 import 'material-design-icons';
 import * as mdc from 'material-components-web';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import classNames from 'classnames';
-import Toolbar from '@material-ui/core/Toolbar';
-
 // Import JS dependencies
 import * as demoSvcRestApiClient from '../../../demo-client/js/src/index.js';
 import * as iperfTransitRestApiClient from '../../../iperf-proxy-client/js/src/index.js';
@@ -45,25 +40,16 @@ import * as im6 from '../img/azone2-edge1-svc.jpg';
 const PAGE_STATUS = 'page-status-link';
 const PAGE_SETTINGS = 'page-settings-link';
 
-const STATUS_OK = 'No Conflict';
-const STATUS_RA = 'Active Resolution Advisory';
-
 const DEFAULT_REFRESH_INTERVAL_MS = 1000;
-
 
 // Variables
 var drawer;
 var refreshIntervalTextfield;
-var refreshInterval = DEFAULT_REFRESH_INTERVAL_MS;
 var refreshIntervalTimer;
-var mapLayerSelect;
-var mapLayers = [];
-var map;
 var targetedUeNameDialogTextfield;
 var targetedUeAppNameDialogTextfield1;
 var targetedUeAppNameDialogTextfield2;
 var iperfBwDialogTextfield;
-
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1/';
@@ -126,7 +112,6 @@ function showTrafficGenerator() {
     $('#start-demo-iperf-button').show();
     $('#stop-demo-iperf-button').show();
 }
-
 
 /**
  * Callback function to receive the result of the getUserInfo operation.
@@ -204,9 +189,9 @@ function initTrafficBwCb(error, data, response) {
     } else {
         console.log(data);
         if (data != null) {
-           iperfBwDialogTextfield.value = data.trafficBw;
+            iperfBwDialogTextfield.value = data.trafficBw;
         } else {
-           iperfBwDialogTextfield.value = "";
+            iperfBwDialogTextfield.value = "";
         }
     }
 }
@@ -220,6 +205,7 @@ function demoIperfOnButtonCb(error, data, response) {
         console.log("response successful");
     }
 }
+
 function demoIperfOffButtonCb(error, data, response) {
     console.log("Received iperf OFF response");
 
@@ -300,7 +286,6 @@ function initializeUI() {
     defaultUserInfo1("ue1", "zone1 / zone1-poa1")
     defaultUserInfo2("ue2-ext", "zone1 / zone1-poa1")
 
-
     iperfBwDialogTextfield = new mdc.textField.MDCTextField(document.querySelector('#iperf-bw-tf-div'));
     iperfBwDialogTextfield.valid = true;
 
@@ -318,23 +303,21 @@ function initializeUI() {
     $("#start-demo-iperf-button").on("click", function () {
         console.log("start-demo-iperf-button clicked");
 
-	var ueState = new demoSvcRestApiClient.UeState();
-	ueState['trafficBw'] = parseInt(iperfBwDialogTextfield.value);
-	//we don't care about reporting other values
-	ueStateApi.updateUeState(targetedUeNameDialogTextfield.value, ueState, genTrafficCb);
+        var ueState = new demoSvcRestApiClient.UeState();
+        ueState['trafficBw'] = parseInt(iperfBwDialogTextfield.value);
+        //we don't care about reporting other values
+        ueStateApi.updateUeState(targetedUeNameDialogTextfield.value, ueState, genTrafficCb);
 
-	var iperfInfo = new iperfTransitRestApiClient.IperfInfo();
+        var iperfInfo = new iperfTransitRestApiClient.IperfInfo();
+        iperfInfo['name'] = targetedUeNameDialogTextfield.value;
 
-	iperfInfo['name'] = targetedUeNameDialogTextfield.value;
+        if (portApp != "31111") {
+            iperfInfo.app = "31223"
+        } else {
+            iperfInfo.app = "31222"
+        }
 
-	if (portApp != "31111") {
-		iperfInfo.app = "31223"
-	} else {
-		iperfInfo.app = "31222"
-	}
-		
-	iperfInfo.throughput  = iperfBwDialogTextfield.value;
-
+        iperfInfo.throughput = iperfBwDialogTextfield.value;
         iperfInfoApi.handleIperfInfo(iperfInfo, demoIperfOnButtonCb);
     });
     // STOP TRAFFIC BUTTON
@@ -343,26 +326,22 @@ function initializeUI() {
 
         iperfBwDialogTextfield.value = ""
 
-	var ueState = new demoSvcRestApiClient.UeState();
+        var ueState = new demoSvcRestApiClient.UeState();
         ueState['trafficBw'] = 0;
-	ueStateApi.updateUeState(targetedUeNameDialogTextfield.value, ueState, genTrafficCb);
+        ueStateApi.updateUeState(targetedUeNameDialogTextfield.value, ueState, genTrafficCb);
 
-	var iperfInfo = new iperfTransitRestApiClient.IperfInfo();
-
+        var iperfInfo = new iperfTransitRestApiClient.IperfInfo();
         iperfInfo['name'] = targetedUeNameDialogTextfield.value;
 
         if (portApp != "31111") {
-                iperfInfo.app = "31223"
+            iperfInfo.app = "31223"
         } else {
-                iperfInfo.app = "31222"
+            iperfInfo.app = "31222"
         }
 
-        iperfInfo.throughput  = "0"
-
+        iperfInfo.throughput = "0"
         iperfInfoApi.handleIperfInfo(iperfInfo, demoIperfOffButtonCb);
     });
-
-
 
     // Set Status page
     setMainContent(PAGE_STATUS);
@@ -386,7 +365,6 @@ function setMainContent(targetId) {
 
         // Refresh form field values here to update UI
         refreshIntervalTextfield.value = refreshIntervalTextfield.value;
-        mapLayerSelect.value = mapLayerSelect.value;
     }
 }
 
@@ -406,30 +384,12 @@ function startAutomaticRefresh() {
     }
 }
 
-// Stop automatic visualization updates
-function stopAutomaticRefresh() {
-    console.log("Stopping automatic refresh");
-    clearInterval(refreshIntervalTimer);
-}
-
-// Update Map layer visualization
-function setMapLayer(style) {
-    console.log("Setting map style to: " + style);
-    for (var i = 0; i < mapLayers.length; ++i) {
-        if (mapLayers[i].type == 'TILE') {
-            mapLayers[i].setVisible(MAP_STYLES[i] === style);
-        }
-    }
-}
-
-
 // Initialize variables and listeners when document ready
 $(document).ready(function () {
 
     // Initialize variables
     drawer = new mdc.drawer.MDCPersistentDrawer(document.querySelector('#main-drawer'));
     refreshIntervalTextfield = new mdc.textField.MDCTextField(document.querySelector('#refresh-interval-tf-div'));
-    mapLayerSelect = new mdc.select.MDCSelect(document.querySelector('#map-layer-select-div'));
 
     // Register event listeners
     $('.idcc-toolbar-menu').on('click', function () {
@@ -451,10 +411,6 @@ $(document).ready(function () {
 
     $("#refresh-interval-tf").change(function () {
         startAutomaticRefresh();
-    });
-
-    $("#map-layer-select").change(function () {
-        setMapLayer(this.value);
     });
 
     // Initialize UI
