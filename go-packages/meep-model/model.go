@@ -19,6 +19,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"strings"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
@@ -80,8 +81,8 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	return m, nil
 }
 
-// SetModel - Initialize model from JSON string
-func (m *Model) SetModel(j []byte) (err error) {
+// SetScenario - Initialize model from JSON string
+func (m *Model) SetScenario(j []byte) (err error) {
 	err = json.Unmarshal(j, m.scenario)
 	if err != nil {
 		log.Error(err.Error())
@@ -98,9 +99,10 @@ func (m *Model) SetModel(j []byte) (err error) {
 	return nil
 }
 
-// GetModel - Get model pointer
-func (m *Model) GetModel() *ceModel.Scenario {
-	return m.scenario
+// GetScenario - Get Scenario JSON string
+func (m *Model) GetScenario() (j []byte, err error) {
+	j, err = json.Marshal(m.scenario)
+	return j, err
 }
 
 // Activate - Make scenario the active scenario
@@ -167,25 +169,6 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 	return nil
 }
 
-func (m *Model) internalListener(channel string, payload string) {
-	// An update was received - Update the object state and call the external Handler
-	// Retrieve active scenario from DB
-	j, err := m.rc.JSONGetEntry(activeScenarioKey, ".")
-	log.Debug("Scenario Event:", j)
-	if err != nil {
-		// Scenario was deleted
-		m.scenario = new(ceModel.Scenario)
-		m.nodeMap = NewNodeMap()
-		m.parseNodes()
-		m.updateSvcMap()
-	} else {
-		m.SetModel([]byte(j))
-	}
-
-	// external listener
-	m.listener(channel, payload)
-}
-
 // MoveNode - Move a specific UE in the scenario
 func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, newLocName string, err error) {
 	moveNode := m.nodeMap.FindByName(nodeName)
@@ -211,18 +194,6 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 		return "", "", err
 	}
 	return oldLocName, newLocName, nil
-}
-
-//FindUE - return a UE
-func (m *Model) FindUE(name string) (ue *ceModel.PhysicalLocation, err error) {
-	ueNode := m.nodeMap.FindByName(name)
-	// fmt.Printf("+++ ueNode: %+v\n", ueNode)
-	if ueNode == nil {
-		return nil, errors.New("Did not find ue " + name + " in scenario " + m.name)
-	}
-	ue = ueNode.object.(*ceModel.PhysicalLocation)
-	return ue, nil
-
 }
 
 // GetServiceMaps - Extracts the model service maps
@@ -309,8 +280,58 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		}
 	}
 	return nil
-
 }
+
+//GetScenarioName - Get the scenario name
+func (m *Model) GetScenarioName() string {
+	return m.scenario.Name
+}
+
+//GetNodeNames - Get the list of nodes of a certain type; "" or "ANY" returns all
+func (m *Model) GetNodeNames(typ string) []string {
+	var l int
+	var nm map[string]*Node
+	if typ == "" || typ == "ANY" {
+		nm = m.nodeMap.nameMap
+		l = len(nm)
+	} else {
+		nm = m.nodeMap.typeMap[typ]
+		l = len(nm)
+	}
+	list := make([]string, 0, l)
+	for k := range nm {
+		list = append(list, k)
+	}
+	return list
+}
+
+//GetNodeEdges - Get a map of node edges for the current scenario
+func (m *Model) GetEdges() (edgeMap map[string]string) {
+	edgeMap = make(map[string]string)
+	for k, node := range m.nodeMap.nameMap {
+		p := reflect.ValueOf(node.parent)
+		pName := reflect.Indirect(p).FieldByName("Name")
+		if pName.IsValid() {
+			edgeMap[k] = pName.String()
+			// fmt.Printf("%s (%T) \t\t %s(%T)\n", k, node.object, pName, node.parent)
+		}
+	}
+	return edgeMap
+}
+
+// GetNode - Get a node by its name
+// 		Returned value is of type interface{}
+//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
+func (m *Model) GetNode(name string) (node interface{}) {
+	node = nil
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		node = n.object
+	}
+	return node
+}
+
+//---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
 	if m.scenario.Deployment != nil {
@@ -498,4 +519,23 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	}
 
 	return oldPL.Name, newPL.Name, nil
+}
+
+func (m *Model) internalListener(channel string, payload string) {
+	// An update was received - Update the object state and call the external Handler
+	// Retrieve active scenario from DB
+	j, err := m.rc.JSONGetEntry(activeScenarioKey, ".")
+	log.Debug("Scenario Event:", j)
+	if err != nil {
+		// Scenario was deleted
+		m.scenario = new(ceModel.Scenario)
+		m.nodeMap = NewNodeMap()
+		m.parseNodes()
+		m.updateSvcMap()
+	} else {
+		m.SetScenario([]byte(j))
+	}
+
+	// external listener
+	m.listener(channel, payload)
 }

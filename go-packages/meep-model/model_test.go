@@ -17,7 +17,6 @@
 package model
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -66,7 +65,7 @@ func TestNewModel(t *testing.T) {
 	}
 }
 
-func TestGetSetModel(t *testing.T) {
+func TestGetSetScenario(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
@@ -85,22 +84,25 @@ func TestGetSetModel(t *testing.T) {
 	}
 
 	fmt.Println("Set Model")
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error setting model")
 	}
 	if m.scenario.Name != "demo1" {
-		t.Errorf("SetModel failed")
+		t.Errorf("SetScenario failed")
 	}
 
 	fmt.Println("Get Model")
-	s := m.GetModel()
+	s, err := m.GetScenario()
+	if err != nil {
+		t.Errorf("Error getting scenario")
+	}
 	if s == nil {
-		t.Errorf("Error getting model")
+		t.Errorf("Error getting scenario")
 	}
-	if s.Name != "demo1" {
-		t.Errorf("GetModel failed")
-	}
+	// if s.Name != "demo1" {
+	// 	t.Errorf("GetModel failed")
+	// }
 
 	fmt.Println("GetSvcMap - existing")
 	svcMap = m.GetServiceMaps()
@@ -110,9 +112,9 @@ func TestGetSetModel(t *testing.T) {
 
 	fmt.Println("Set Model - deleted scenario")
 	m.scenario = nil
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err == nil {
-		t.Errorf("SetModel should have failed (nil scenario)")
+		t.Errorf("SetScenario should have failed (nil scenario)")
 	}
 }
 
@@ -128,12 +130,12 @@ func TestActivateDeactivate(t *testing.T) {
 		t.Errorf("Unable to create model")
 	}
 	fmt.Println("Set model")
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error setting model")
 	}
 	if m.scenario.Name != "demo1" {
-		t.Errorf("SetModel failed")
+		t.Errorf("SetScenario failed")
 	}
 	fmt.Println("Activate model")
 	err = m.Activate()
@@ -141,7 +143,7 @@ func TestActivateDeactivate(t *testing.T) {
 		t.Errorf("Error activating model")
 	}
 	fmt.Println("Set model")
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error updating model")
 	}
@@ -164,12 +166,12 @@ func TestMoveNode(t *testing.T) {
 		t.Errorf("Unable to create model")
 	}
 	fmt.Println("Set Model")
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error setting model")
 	}
 	if m.scenario.Name != "demo1" {
-		t.Errorf("SetModel failed")
+		t.Errorf("SetScenario failed")
 	}
 	fmt.Println("Move ue1")
 	old, new, err := m.MoveNode("ue1", "zone2-poa1")
@@ -287,50 +289,6 @@ func TestMoveNode(t *testing.T) {
 
 }
 
-func TestFindUE(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	// Switch to a different table for testing
-	redisTable = modelRedisTestTable
-
-	m, err := NewModel(modelRedisAddr, "test-mod", modelName)
-	if err != nil {
-		t.Errorf("Unable to create model")
-	}
-	fmt.Println("Set Model")
-	err = m.SetModel([]byte(testScenario))
-	if err != nil {
-		t.Errorf("Error setting model")
-	}
-	if m.scenario.Name != "demo1" {
-		t.Errorf("SetModel failed")
-	}
-
-	fmt.Println("Find ue1")
-	ue, err := m.FindUE("ue1")
-	if err != nil {
-		t.Errorf("Error finding UE")
-	}
-	if ue.Name != "ue1" {
-		t.Errorf("Found wrong ue")
-	}
-	fmt.Println("Find ue2-ext")
-	ue, err = m.FindUE("ue2-ext")
-	if err != nil {
-		t.Errorf("Error finding UE")
-	}
-	if ue.Name != "ue2-ext" {
-		t.Errorf("Found wrong ue")
-	}
-	fmt.Println("Find Not-a-UE")
-	ue, err = m.FindUE("Not-a-UE")
-	if err == nil {
-		t.Errorf("Found inexisting UE")
-	}
-
-}
-
 func TestUpdateNetChar(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -343,12 +301,12 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Unable to create model")
 	}
 	fmt.Println("Set Model")
-	err = m.SetModel([]byte(testScenario))
+	err = m.SetScenario([]byte(testScenario))
 	if err != nil {
 		t.Errorf("Error setting model")
 	}
 	if m.scenario.Name != "demo1" {
-		t.Errorf("SetModel failed")
+		t.Errorf("SetScenario failed")
 	}
 
 	var nc ceModel.EventNetworkCharacteristicsUpdate
@@ -647,11 +605,17 @@ func TestListenModel(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to create model")
 	}
+	if mPub.GetScenarioName() != "" {
+		t.Errorf("Scenario name should be empty")
+	}
 
 	fmt.Println("Create Listener")
 	mLis, err := NewModel(modelRedisAddr, moduleName+"-Lis", "Active")
 	if err != nil {
 		t.Errorf("Unable to create model")
+	}
+	if mLis.GetScenarioName() != "" {
+		t.Errorf("Scenario name should be empty")
 	}
 
 	fmt.Println("Register listener (no handler)")
@@ -671,25 +635,31 @@ func TestListenModel(t *testing.T) {
 	fmt.Println("Activate")
 	testCount++
 	mPub.Activate()
-	time.Sleep(time.Second)
+	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for Activate")
 	}
 
 	fmt.Println("Set Model")
 	testCount++
-	err = mPub.SetModel([]byte(testScenario))
-	time.Sleep(time.Second)
+	err = mPub.SetScenario([]byte(testScenario))
+	time.Sleep(50 * time.Millisecond)
 	if err != nil {
 		t.Errorf("Error setting model")
 	}
 	if eventCount != testCount {
-		t.Errorf("No event received for SetModel")
+		t.Errorf("No event received for SetScenario")
 	}
-	lis, _ := json.Marshal(*(mLis.GetModel()).Deployment)
-	pub, _ := json.Marshal(*mPub.GetModel().Deployment)
+	lis, _ := mLis.GetScenario()
+	pub, _ := mPub.GetScenario()
 	if string(lis) != string(pub) {
 		t.Errorf("Published model different than received one")
+	}
+	if mPub.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
+	}
+	if mLis.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
 	}
 
 	// MoveNode
@@ -705,7 +675,7 @@ func TestListenModel(t *testing.T) {
 	if new != "zone2-poa1" {
 		t.Errorf("Move Node - wrong destination Location " + new)
 	}
-	time.Sleep(time.Second)
+	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for MoveUE")
 	}
@@ -729,7 +699,7 @@ func TestListenModel(t *testing.T) {
 	if err != nil {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
-	time.Sleep(time.Second)
+	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for UpdateNetChar")
 	}
@@ -749,13 +719,35 @@ func TestListenModel(t *testing.T) {
 	fmt.Println("Dectivate")
 	testCount++
 	mPub.Deactivate()
-	time.Sleep(time.Second)
+	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for Activate")
 	}
-	if mLis.GetModel().Deployment != nil {
+	lis, _ = mLis.GetScenario()
+	if string(lis) != "{}" {
 		t.Errorf("Deployment should be nil")
 	}
+	if mPub.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
+	}
+	if mLis.GetScenarioName() != "" {
+		t.Errorf("Scenario name should be empty")
+	}
+
+	fmt.Println("Re-Activate")
+	testCount++
+	mPub.Activate()
+	time.Sleep(50 * time.Millisecond)
+	if eventCount != testCount {
+		t.Errorf("No event received for Activate")
+	}
+	if mPub.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
+	}
+	if mLis.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
+	}
+
 }
 
 var eventChannel string
@@ -767,4 +759,94 @@ func eventHandler(channel string, payload string) {
 	eventPayload = payload
 	eventCount++
 	fmt.Println("Event#", eventCount, " ch:", channel)
+}
+
+func TestGetters(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Switch to a different table for testing
+	redisTable = modelRedisTestTable
+
+	fmt.Println("Create Model")
+	m, err := NewModel(modelRedisAddr, moduleName, modelName)
+	if err != nil {
+		t.Errorf("Unable to create model")
+	}
+
+	fmt.Println("Get Node Names (empty)")
+	l := m.GetNodeNames("")
+	if len(l) != 0 {
+		t.Errorf("Node name list should be empty")
+	}
+
+	fmt.Println("Set Model")
+	err = m.SetScenario([]byte(testScenario))
+	if err != nil {
+		t.Errorf("Error setting model")
+	}
+
+	fmt.Println("Get Node Names")
+	l = m.GetNodeNames("ANY")
+	if len(l) != 29 {
+		t.Errorf("Node name list should not be empty")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
+	fmt.Println("Get UE Node Names")
+	l = m.GetNodeNames("UE")
+	if len(l) != 2 {
+		t.Errorf("UE node name list should be 2")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
+	fmt.Println("Get POA Node Names")
+	l = m.GetNodeNames("POA")
+	if len(l) != 3 {
+		t.Errorf("POA node name list should be 3")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
+	fmt.Println("Get Zone Node Names")
+	l = m.GetNodeNames("ZONE")
+	if len(l) != 2 {
+		t.Errorf("Zone node name list should be 2")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
+	fmt.Println("Get invalid node")
+	n := m.GetNode("NOT-A-NODE")
+	if n != nil {
+		t.Errorf("Node should not exist")
+	}
+
+	fmt.Println("Get ue1 node")
+	n = m.GetNode("ue1")
+	if n == nil {
+		t.Errorf("Failed getting ue1 node")
+	}
+	pl, ok := n.(*ceModel.PhysicalLocation)
+	if !ok {
+		t.Errorf("ue1 has wrong type %T -- expected *model.PhysicalLocation", n)
+	}
+	if pl.Name != "ue1" {
+		t.Errorf("Could not find ue1")
+	}
+
+	fmt.Println("Get edges")
+	edges := m.GetEdges()
+	if len(edges) != 27 {
+		t.Errorf("Missing edges - expected 27")
+	}
+	if edges["ue1"] != "zone1-poa1" {
+		t.Errorf("UE1 edge - expected zone1-poa1 -- got %s", edges["ue1"])
+	}
+	if edges["zone1"] != "operator1" {
+		t.Errorf("Zone1 edge - expected operator1 -- got %s", edges["zone1"])
+	}
+
 }
