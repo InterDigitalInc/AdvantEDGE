@@ -22,9 +22,7 @@ import CancelApplyPair from '../../components/helper-components/cancel-apply-pai
 
 import {
   EXEC_EVT_MOB_TARGET,
-  EXEC_EVT_MOB_DEST,
-  EVENT_CREATION_PANE_TABLE_LAYOUT,
-  EVENT_CREATION_PANE_LINE_LAYOUT
+  EXEC_EVT_MOB_DEST
 } from '../../meep-constants';
 
 import {

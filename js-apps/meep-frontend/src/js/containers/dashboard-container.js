@@ -452,8 +452,9 @@ class DashboardContainer extends Component {
   }
 
   fetchMetrics() {
-    const startTime = moment().utc().add(-7, 'seconds').format(TIME_FORMAT);
-    const stopTime = moment().utc().add(-6, 'seconds').format(TIME_FORMAT);
+    const delta = -7;
+    const startTime = moment().utc().add(delta, 'seconds').format(TIME_FORMAT);
+    const stopTime = moment().utc().add(delta + 1, 'seconds').format(TIME_FORMAT);
     return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
       .then(res => {
 

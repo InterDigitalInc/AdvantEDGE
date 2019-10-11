@@ -221,27 +221,6 @@ const SingleColumnLayout = (props) => {
   );
 };
 
-const LineLayout = (props) => {
-  return (
-    <div>
-      <Grid>
-        <GridCell span="3">
-          {props.latencyComponent}
-        </GridCell>
-        <GridCell span="3">
-          {props.latencyVariationComponent}
-        </GridCell>
-        <GridCell span="3">
-          {props.packetLossComponent}
-        </GridCell>
-        <GridCell span="3">
-          {props.throughputComponent}
-        </GridCell>
-      </Grid>
-    </div>
-  );
-};
-
 const NCLayout = (props) => {
   switch(props.layout) {
   case MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT:

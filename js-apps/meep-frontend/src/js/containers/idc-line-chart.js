@@ -10,7 +10,7 @@
 import _ from 'lodash';
 import * as d3 from 'd3';
 import React from 'react';
-import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
+import {Axis, axisPropsFromTickScale, LEFT, BOTTOM, TOP} from 'react-d3-axis';
 import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
 
 // const Axis = props => {
@@ -25,6 +25,7 @@ const notNull = x => x;
 const IDCLineChart = (props) => {
   const keyForSvg=props.keyForSvg;
   let width = props.width;
+  let yClipping = 45;
 
   const margin = {top: 20, right: 40, bottom: 30, left: 60};
   // const width = props.width; // - margin.left - margin.right;
@@ -44,7 +45,7 @@ const IDCLineChart = (props) => {
   };
   const timeRange = d3.extent(flattenSeries(props.series), d => new Date(d.timestamp));
   const x = d3.scaleTime().domain(timeRange).range([0, width]);
-  const y = d3.scaleLinear().domain(yRange).range([height - 45, 0]);
+  const y = d3.scaleLinear().domain(yRange).range([height - yClipping, 0]);
   const z = d3.scaleOrdinal().range(colorRange);
 
   // Compute data lines
@@ -165,7 +166,7 @@ const IDCLineChart = (props) => {
   };
   
   const yAxisLabel = labelForType(props.dataType);
-  
+
   return (
     <svg
       key={keyForSvg}
@@ -176,18 +177,37 @@ const IDCLineChart = (props) => {
       <g
         transform={`translate(${margin.left}, ${margin.top})`}
       >
-        <Axis {...axisPropsFromTickScale(y, 10)} style={{orient: LEFT}}/>
+        <Axis 
+          {...axisPropsFromTickScale(y, 10)} 
+          style={{
+            orient: LEFT, tickSizeInner: -width,
+            strokeColor: '#BBBBBB'
+          }}/>
       </g>
 
       <g
         transform={`translate(${margin.left}, ${height - margin.top})`}
       >
-        <Axis {...axisPropsFromTickScale(x, 10)} style={{orient: BOTTOM}}/>
+        <Axis
+          {...axisPropsFromTickScale(x, 10)}
+          style={{
+            orient: BOTTOM,
+            tickSizeInner: -(height - yClipping),
+            strokeColor: '#BBBBBB'
+          }}/>
+
+        {/* <Axis
+          {...axisPropsFromTickScale(x, 10)}
+          style={{
+            orient: TOP,
+            tickSizeInner: -(height - 2*yClipping),
+            strokeColor: '#BBBBBB'
+          }}/> */}
       </g>
 
       <text
         className='chartTitle'
-        y={0 + margin.top + 10}
+        y={0 + margin.top -5 }
         x={width / 2}
         style={{textAnchor: 'middle'}}
       >
