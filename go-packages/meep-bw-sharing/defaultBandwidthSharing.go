@@ -103,16 +103,6 @@ type DefaultBwSharingAlgorithm struct {
 	DefaultDebugConfigs     DebugConfiguration
 }
 
-/*
-// flows and segments mappings
-var bandwidthSharingFlowMap map[string]*BandwidthSharingFlow
-var segmentsMap map[string]*BandwidthSharingSegment
-
-var defaultConfigs SegmentConfiguration
-var defaultDebugConfigs DebugConfiguration
-var logVerbose bool
-*/
-
 // allocateBandwidthSharing - allocated structures
 func (this *DefaultBwSharingAlgorithm) allocateBandwidthSharing() {
 	this.BandwidthSharingFlowMap = make(map[string]*BandwidthSharingFlow)
@@ -222,6 +212,27 @@ func (this *DefaultBwSharingAlgorithm) getMetricsThroughputEntryHandler(key stri
 		}
 	}
 	return nil
+}
+
+// createMetricsThroughputEntries -
+func (this *DefaultBwSharingAlgorithm) createMetricsThroughputEntries(srcElem string, dstElem string) {
+
+	var creationTime = make(map[string]interface{})
+	creationTime["creationTime"] = time.Now()
+
+	//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
+	_ = this.ParentBwSharing.rcCtrlEng.SetEntry(moduleMetrics+":"+dstElem+":"+srcElem, creationTime)
+	_ = this.ParentBwSharing.rcCtrlEng.SetEntry(moduleMetrics+":"+dstElem+":throughput", creationTime)
+}
+
+// deleteAllMetricsThroughputEntries -
+func (this *DefaultBwSharingAlgorithm) deleteAllMetricsThroughputEntries() {
+
+	for _, flow := range this.BandwidthSharingFlowMap {
+		//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
+		_ = this.ParentBwSharing.rcCtrlEng.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":" + flow.SrcNetworkElement)
+		_ = this.ParentBwSharing.rcCtrlEng.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":throughput")
+	}
 }
 
 // populateBandwidthSharingFlow  - creation of a flow
@@ -683,7 +694,8 @@ func (this *DefaultBwSharingAlgorithm) recalculateSegment(segment *BandwidthShar
 
 // deallocateBandwidthSharing -
 func (this *DefaultBwSharingAlgorithm) deallocateBandwidthSharing() {
-	//nothing allocated that should be cleared explicitly
+	this.BandwidthSharingFlowMap = nil
+	this.SegmentsMap = nil
 }
 
 // initDefaultConfigAttributes -
@@ -803,68 +815,78 @@ func printPath(path *Path) string {
 // parseScenario -
 func (this *DefaultBwSharingAlgorithm) parseScenario(scenario ceModel.Scenario) {
 	var netElemList []NetElem
-	//reinitialise structures
-	this.allocateBandwidthSharing()
 
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
+	if scenario.Name != "" {
+		//reinitialise structures
+		this.allocateBandwidthSharing()
 
-		// Parse Zones
-		for _, zone := range domain.Zones {
+		// Parse Domains
+		for _, domain := range scenario.Deployment.Domains {
 
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
+			// Parse Zones
+			for _, zone := range domain.Zones {
 
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
+				// Parse Network Locations
+				for _, nl := range zone.NetworkLocations {
 
-					// Parse Processes
-					for _, proc := range pl.Processes {
+					// Parse Physical locations
+					for _, pl := range nl.PhysicalLocations {
 
-						element := new(NetElem)
-						element.Name = proc.Name
-						element.Type = pl.Type_
-						// Update element information based on current location characteristics
-						element.PhyLocName = pl.Name
-						element.DomainName = domain.Name
-						element.ZoneName = zone.Name
-						if pl.Type_ == "UE" || pl.Type_ == "FOG" {
-							element.PoaName = nl.Name
-							element.PoaMaxThroughput = float64(nl.TerminalLinkThroughput)
+						// Parse Processes
+						for _, proc := range pl.Processes {
+
+							element := new(NetElem)
+							element.Name = proc.Name
+							element.Type = pl.Type_
+							// Update element information based on current location characteristics
+							element.PhyLocName = pl.Name
+							element.DomainName = domain.Name
+							element.ZoneName = zone.Name
+							if pl.Type_ == "UE" || pl.Type_ == "FOG" {
+								element.PoaName = nl.Name
+								element.PoaMaxThroughput = float64(nl.TerminalLinkThroughput)
+							}
+							element.PhyLocMaxThroughput = float64(pl.LinkThroughput)
+							element.MaxThroughput = float64(proc.AppThroughput)
+							element.IntraZoneMaxThroughput = float64(zone.EdgeFogThroughput)
+							element.InterZoneMaxThroughput = float64(domain.InterZoneThroughput)
+							element.InterDomainMaxThroughput = float64(scenario.Deployment.InterDomainThroughput)
+
+							//to support scenarios without this info (compatibility with old scenarios)
+							if element.MaxThroughput == 0 {
+								element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
+							}
+							if element.PhyLocMaxThroughput == 0 {
+								element.PhyLocMaxThroughput = DEFAULT_THROUGHPUT_LINK
+							}
+
+							netElemList = append(netElemList, *element)
 						}
-						element.PhyLocMaxThroughput = float64(pl.LinkThroughput)
-						element.MaxThroughput = float64(proc.AppThroughput)
-						element.IntraZoneMaxThroughput = float64(zone.EdgeFogThroughput)
-						element.InterZoneMaxThroughput = float64(domain.InterZoneThroughput)
-						element.InterDomainMaxThroughput = float64(scenario.Deployment.InterDomainThroughput)
-
-						//to support scenarios without this info (compatibility with old scenarios)
-						if element.MaxThroughput == 0 {
-							element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
-						}
-						if element.PhyLocMaxThroughput == 0 {
-							element.PhyLocMaxThroughput = DEFAULT_THROUGHPUT_LINK
-						}
-
-						netElemList = append(netElemList, *element)
 					}
 				}
 			}
 		}
-	}
 
-	//bandwidth sharing creation elements section
-	//all the dummy processes meant for calculation can be ignored, others must have bandwidth flows created between each of them
-	for _, elemSrc := range netElemList {
-		for _, elemDest := range netElemList {
-			if elemSrc.Name != elemDest.Name {
-				this.populateBandwidthSharingFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0)
+		//bandwidth sharing creation elements section
+		//all the dummy processes meant for calculation can be ignored, others must have bandwidth flows created between each of them
+		for _, elemSrc := range netElemList {
+			for _, elemDest := range netElemList {
+				if elemSrc.Name != elemDest.Name {
+					this.populateBandwidthSharingFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0)
+					//create entries in DB that will be populated by the sidecar
+					this.createMetricsThroughputEntries(elemSrc.Name, elemDest.Name)
+
+				}
 			}
 		}
+
+		if this.DefaultDebugConfigs.LogVerbose {
+			log.Info("Segments map: ", this.SegmentsMap)
+			log.Info("Flows map: ", this.BandwidthSharingFlowMap)
+		}
+	} else {
+		//metrics created while parsing a scenario needs to be cleared when parsing nil scenario (stop scenario)
+		this.deleteAllMetricsThroughputEntries()
 	}
 
-	if this.DefaultDebugConfigs.LogVerbose {
-		log.Info("Segments map: ", this.SegmentsMap)
-		log.Info("Flows map: ", this.BandwidthSharingFlowMap)
-	}
 }

@@ -1151,10 +1151,10 @@ func applyNetCharRules() {
 			if needCreate {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
 				dstElementPtr.NextUniqueNumber += 2
-				_ = updateFilterRule(&filterInfo)
+				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
 			} else {
 				if needUpdateFilter {
-					_ = updateFilterRule(&filterInfo)
+					_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
 				} else {
 					if needUpdateNetChar {
 						_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
@@ -1181,7 +1181,7 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 	return nil
 }
 
-func updateFilterRule(filterInfo *FilterInfo) error {
+func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	var err error
 	var keyName string
 
@@ -1198,7 +1198,9 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
-	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	if updateDataRate {
+		m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	}
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr

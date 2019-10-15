@@ -70,7 +70,6 @@ func NewBwSharing(name string, redisAddr string, updateFilterRule func(string, s
 		log.Error(err)
 		return nil, err
 	}
-	//	bw = new(BwSharing)
 	var bw BwSharing
 	bw.name = name
 	bw.isStarted = false
@@ -84,13 +83,7 @@ func NewBwSharing(name string, redisAddr string, updateFilterRule func(string, s
 	}
 	log.Info("Connected to redis DB")
 
-	//bw.bwAlgo = new(DefaultBwSharingAlgorithm)
-	//var algo BwSharingAlgorithm
-	//algo = &dd
-	algo := []BwSharingAlgorithm{&DefaultBwSharingAlgorithm{}}
-	//algo = &DefaultBwSharingAlgorithm{}
-	bw.bwAlgo = algo[0] //algoBwSharingAlgorithm
-	//&DefaultBwSharingAlgorithm{}
+	bw.bwAlgo = new(DefaultBwSharingAlgorithm)
 	// Subscribe to Pub-Sub events for MEEP Controller
 	// NOTE: Current implementation is RedisDB Pub-Sub
 	err = bw.rcCtrlEng.Subscribe(channelBwSharingControls, channelCtrlActive)
@@ -169,6 +162,8 @@ func (bw *BwSharing) ProcessActiveScenarioUpdate() {
 
 // StopScenario
 func (bw *BwSharing) StopScenario() {
+	var emptyScenario ceModel.Scenario
+	bw.bwAlgo.parseScenario(emptyScenario)
 }
 
 // updateFilter - Updates the filters in the DB that will be pushed to the sidecars
