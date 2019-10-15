@@ -609,6 +609,21 @@ func TestListenModel(t *testing.T) {
 		t.Errorf("Scenario name should be empty")
 	}
 
+	fmt.Println("Activate")
+	mPub.Activate()
+	time.Sleep(50 * time.Millisecond)
+
+	fmt.Println("Set Model")
+	err = mPub.SetScenario([]byte(testScenario))
+	time.Sleep(50 * time.Millisecond)
+	if err != nil {
+		t.Errorf("Error setting model")
+	}
+	if mPub.GetScenarioName() != "demo1" {
+		t.Errorf("Scenario name should be demo1")
+	}
+
+	// create listener after model has been published to test initialization
 	fmt.Println("Create Listener")
 	mLis, err := NewModel(modelRedisAddr, moduleName+"-Lis", "Active")
 	if err != nil {
@@ -624,28 +639,14 @@ func TestListenModel(t *testing.T) {
 		t.Errorf("Should not allow registering without a handler")
 	}
 
+	var testCount = 0
+	eventCount = 0
+
 	fmt.Println("Register listener")
+	testCount++
 	err = mLis.Listen(eventHandler)
 	if err != nil {
 		t.Errorf("Unable to listen for events")
-	}
-
-	var testCount = 0
-	eventCount = 0
-	fmt.Println("Activate")
-	testCount++
-	mPub.Activate()
-	time.Sleep(50 * time.Millisecond)
-	if eventCount != testCount {
-		t.Errorf("No event received for Activate")
-	}
-
-	fmt.Println("Set Model")
-	testCount++
-	err = mPub.SetScenario([]byte(testScenario))
-	time.Sleep(50 * time.Millisecond)
-	if err != nil {
-		t.Errorf("Error setting model")
 	}
 	if eventCount != testCount {
 		t.Errorf("No event received for SetScenario")
@@ -654,9 +655,6 @@ func TestListenModel(t *testing.T) {
 	pub, _ := mPub.GetScenario()
 	if string(lis) != string(pub) {
 		t.Errorf("Published model different than received one")
-	}
-	if mPub.GetScenarioName() != "demo1" {
-		t.Errorf("Scenario name should be demo1")
 	}
 	if mLis.GetScenarioName() != "demo1" {
 		t.Errorf("Scenario name should be demo1")

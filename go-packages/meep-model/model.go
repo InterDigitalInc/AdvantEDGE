@@ -19,6 +19,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -27,8 +28,13 @@ import (
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
-const activeScenarioEvents = "activeScenarioEvents"
-const activeScenarioKey = "activeScenarioKey"
+// const activeScenarioEvents = "activeScenarioEvents"
+const activeScenarioEvents = "ctrl-engine-active"
+
+// const activeScenarioKey = "activeScenarioKey"
+const activeScenarioKey = "ctrl-engine:active"
+
+const DbAddress = "meep-redis-master:6379"
 
 var redisTable = 0
 
@@ -38,7 +44,8 @@ type Model struct {
 	module        string
 	active        bool
 	subscribed    bool
-	activeChannel string
+	ActiveChannel string
+	activeKey     string
 	listener      func(string, string)
 	rc            *redis.Connector
 	scenario      *ceModel.Scenario
@@ -64,7 +71,8 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	m.module = module
 	m.active = false
 	m.subscribed = false
-	m.activeChannel = activeScenarioEvents
+	m.ActiveChannel = activeScenarioEvents
+	m.activeKey = activeScenarioKey
 	m.scenario = new(ceModel.Scenario)
 	m.nodeMap = NewNodeMap()
 	m.parseNodes()
@@ -77,7 +85,7 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 		log.Error(err)
 		return nil, err
 	}
-	log.Debug("Model created ", m.name)
+	log.Debug("[", m.module, "] Model created ", m.name)
 	return m, nil
 }
 
@@ -112,12 +120,12 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	err = m.rc.JSONSetEntry(activeScenarioKey, ".", string(jsonScenario))
+	err = m.rc.JSONSetEntry(m.activeKey, ".", string(jsonScenario))
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-	err = m.rc.Publish(m.activeChannel, "")
+	err = m.rc.Publish(m.ActiveChannel, "")
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -130,12 +138,12 @@ func (m *Model) Activate() (err error) {
 func (m *Model) Deactivate() (err error) {
 	if m.active == true {
 		m.active = false
-		err = m.rc.JSONDelEntry(activeScenarioKey, ".")
+		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
-		err = m.rc.Publish(m.activeChannel, "")
+		err = m.rc.Publish(m.ActiveChannel, "")
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -151,7 +159,7 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 	}
 	if !m.subscribed {
 		// Subscribe to Pub-Sub events for MEEP Controller
-		err = m.rc.Subscribe(m.activeChannel)
+		err = m.rc.Subscribe(m.ActiveChannel)
 		if err != nil {
 			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 			return err
@@ -165,6 +173,9 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 		go func() {
 			_ = m.rc.Listen(m.internalListener)
 		}()
+
+		// Generate first event to initialize
+		m.internalListener(m.ActiveChannel, "")
 	}
 	return nil
 }
@@ -284,7 +295,11 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 
 //GetScenarioName - Get the scenario name
 func (m *Model) GetScenarioName() string {
-	return m.scenario.Name
+	fmt.Printf("%+v", m)
+	if m.scenario != nil {
+		return m.scenario.Name
+	}
+	return ""
 }
 
 //GetNodeNames - Get the list of nodes of a certain type; "" or "ANY" returns all
@@ -395,7 +410,7 @@ func (m *Model) updateSvcMap() (err error) {
 
 func (m *Model) refresh() (err error) {
 	if m.active == true {
-		err = m.rc.JSONDelEntry(activeScenarioKey, ".")
+		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -405,12 +420,12 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-		err = m.rc.JSONSetEntry(activeScenarioKey, ".", string(jsonScenario))
+		err = m.rc.JSONSetEntry(m.activeKey, ".", string(jsonScenario))
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
-		err = m.rc.Publish(m.activeChannel, "")
+		err = m.rc.Publish(m.ActiveChannel, "")
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -524,9 +539,10 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 func (m *Model) internalListener(channel string, payload string) {
 	// An update was received - Update the object state and call the external Handler
 	// Retrieve active scenario from DB
-	j, err := m.rc.JSONGetEntry(activeScenarioKey, ".")
+	j, err := m.rc.JSONGetEntry(m.activeKey, ".")
 	log.Debug("Scenario Event:", j)
 	if err != nil {
+		log.Debug("Scenario was deleted, create a new one")
 		// Scenario was deleted
 		m.scenario = new(ceModel.Scenario)
 		m.nodeMap = NewNodeMap()
