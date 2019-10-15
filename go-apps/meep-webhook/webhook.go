@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/ghodss/yaml"
@@ -38,9 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-const moduleCtrlEngine string = "ctrl-engine"
-const typeActive string = "active"
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const meepOrigin = "scenario"
 
 // Active scenarion name
@@ -81,82 +77,19 @@ func init() {
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
 }
 
-func activeDBConnect() (err error) {
-	// Connect to Active DB
-	err = DBConnect()
-	if err != nil {
-		log.Error("Failed connection to Active DB. Error: ", err)
-		return err
-	}
-	log.Info("Connected to Active DB")
-
-	// Subscribe to Pub-Sub events for MEEP Controller
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = Subscribe(channelCtrlActive)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return
-	}
-	log.Info("Subscribed to Pub/Sub events")
-
-	// Initialize using current active scenario
-	processActiveScenarioUpdate()
-
-	return nil
-}
-
-func activeDBListen() {
-	// Listen for subscribed events. Provide event handler method.
-	_ = Listen(eventHandler)
-}
-
 func eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
 	switch channel {
-
 	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
-		processActiveScenarioUpdate()
+	// case channelCtrlActive:
+	case Model.ActiveChannel:
+		log.Debug("Event received on channel: ", Model.ActiveChannel)
+		// processActiveScenarioUpdate()
+		activeScenarioName = Model.GetScenarioName()
 
 	default:
 		log.Warn("Unsupported channel")
 	}
-}
-
-func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := DBJsonGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
-		clearScenario()
-		return
-	}
-
-	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
-	if err != nil {
-		log.Error(err.Error())
-		clearScenario()
-		return
-	}
-
-	// Parse scenario
-	parseScenario(scenario)
-}
-
-func clearScenario() {
-	log.Debug("clearScenario() -- Resetting all variables")
-	activeScenarioName = ""
-}
-
-func parseScenario(scenario ceModel.Scenario) {
-	log.Debug("parseScenario")
-
-	// Update active scenatio name
-	activeScenarioName = scenario.Name
-	log.Info("Active scenario name set to: ", activeScenarioName)
 }
 
 func loadConfig(configFile string) (*Config, error) {
