@@ -428,7 +428,7 @@ func (this *DefaultBwSharingAlgorithm) createPath(flowName string, srcElement *N
 		segment = this.createSegment(segmentName, flowName, destElement.InterDomainMaxThroughput)
 		path.Segments = append(path.Segments, segment)
 
-		//when going through interdomain, only to/from a cloud app is supported
+		//when going through interdomain, either from/to the cloud or another domain, if not cloud, already handled in other tiers sections
 		if destElement.Type == "CLOUD" {
 			segmentName = destElement.PhyLocName + "-" + direction
 			segment = this.createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput)
@@ -439,8 +439,8 @@ func (this *DefaultBwSharingAlgorithm) createPath(flowName string, srcElement *N
 				segmentName = srcElement.PhyLocName + "-" + direction
 				segment = this.createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput)
 				path.Segments = append(path.Segments, segment)
-			} else {
-				return nil
+				//} else { //communication between domains is not supported
+				//return nil
 			}
 		}
 	}

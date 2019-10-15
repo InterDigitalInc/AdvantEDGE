@@ -321,7 +321,7 @@ func TestPathCreation(t *testing.T) {
 	fmt.Println("Test UE1-FOG4 under diff DOMAIN")
 	setElem(&src, "SrcElem", "UE", "UE1", "POA1", "ZONE1", "DOMAIN1", 1, 2, 3, 4, 5, 6)
 	setElem(&dst, "DstElem", "FOG", "FOG4", "POA4", "ZONE4", "DOMAIN2", 11, 12, 13, 14, 15, 16)
-	expectedResult = ""
+	expectedResult = "Path: UE1-uplink...POA1-uplink...FOG4-downlink...ZONE1-POA1-uplink...ZONE4-POA4-downlink...ZONE1-uplink...ZONE4-downlink...DOMAIN1-uplink...DOMAIN2-downlink"
 	computedResult = printPath(bwAlgo.createPath("path", &src, &dst))
 	if expectedResult != computedResult {
 		t.Errorf("UE1-FOG4 under diff DOMAIN failed: " + computedResult)
