@@ -140,7 +140,7 @@ func uploadDashboardHttp(location string, cobraCmd *cobra.Command) {
 }
 
 func uploadDashboardFile(location string, cobraCmd *cobra.Command) {
-	kibanaHost, _ := os.Hostname()
+	kibanaHost := viper.GetString("node.ip")
 	//forcing the overwrite of already existing saved object with the same id
 	cmd := exec.Command("curl", "-vX", "POST", "http://"+kibanaHost+":32003/api/kibana/dashboards/import?force=true", "-H", "Content-Type: application/json", "-H", "kbn-xsrf: true", "-d", "@"+location)
 	_, _ = ExecuteCmd(cmd, cobraCmd)
