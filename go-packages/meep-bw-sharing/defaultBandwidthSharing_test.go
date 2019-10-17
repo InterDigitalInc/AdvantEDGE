@@ -53,7 +53,7 @@ func TestDefaultBandwidthSharingComplete(t *testing.T) {
 		bwSharing.bwAlgo.parseScenario(scenario)
 		//if active scenario in DB, can use ProcessActiveScenarioUpdate()
 		//bwSharing.ProcessActiveScenarioUpdate()
-		time.Sleep(10000 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 		var emptyScenario ceModel.Scenario
 		bwSharing.bwAlgo.parseScenario(emptyScenario)
 		bwSharing.Stop()

@@ -38,7 +38,6 @@ import (
 const moduleTcEngine string = "tc-engine"
 const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
-const moduleMetrics string = "metrics"
 
 const typeActive string = "active"
 const typeNet string = "net"
@@ -231,7 +230,6 @@ func Init() (err error) {
 
 	// Flush any remaining TC Engine rules
 	rc.DBFlush(moduleTcEngine)
-	rc.DBFlush(moduleMetrics)
 
 	bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
 
@@ -305,6 +303,7 @@ func processActiveScenarioUpdate() {
 
 	case stateReady:
 		// Update Network Characteristic matrix table
+		mutex.Lock()
 		refreshNetCharTable()
 
 		//debug for the tables
@@ -315,6 +314,7 @@ func processActiveScenarioUpdate() {
 
 		// Apply network characteristic rules
 		applyNetCharRules()
+		mutex.Unlock()
 
 		//Update the Db for state information (only transactionId for now)
 		updateDbState(nextTransactionId)
@@ -452,7 +452,6 @@ func stopScenario() {
 	scenarioName = ""
 
 	rc.DBFlush(moduleTcEngine)
-	rc.DBFlush(moduleMetrics)
 
 	_ = rc.Publish(channelTcNet, "delAll")
 	_ = rc.Publish(channelTcLb, "delAll")
@@ -1016,6 +1015,7 @@ func updateDbState(transactionId int) {
 func updateOneFilterRule(dstName string, srcName string, rate float64) {
 	var filterInfo FilterInfo
 
+	mutex.Lock()
 	for _, dstElement := range indexToNetElemMap {
 		if dstElement.Name == dstName {
 			for _, storedFilterInfo := range dstElement.FilterInfoList {
@@ -1041,6 +1041,7 @@ func updateOneFilterRule(dstName string, srcName string, rate float64) {
 			}
 		}
 	}
+	mutex.Unlock()
 }
 
 func applyOneFilterRule() {
@@ -1155,10 +1156,8 @@ func applyNetCharRules() {
 			} else {
 				if needUpdateFilter {
 					_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
-				} else {
-					if needUpdateNetChar {
-						_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
-					}
+				} else if needUpdateNetChar {
+					_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
 				}
 			}
 			indexToNetElemMap[j] = *dstElementPtr
@@ -1204,9 +1203,7 @@ func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	mutex.Lock()
 	err = rc.SetEntry(keyName, m_shape)
-	mutex.Unlock()
 	if err != nil {
 		return err
 	}
@@ -1256,9 +1253,7 @@ func updateNetCharRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	mutex.Lock()
 	err = rc.SetEntry(keyName, m_shape)
-	mutex.Unlock()
 	if err != nil {
 		return err
 	}

@@ -24,6 +24,7 @@ import (
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
 // DebugConfiguration -
@@ -96,21 +97,28 @@ type NetElem struct {
 
 // BwSharing -
 type DefaultBwSharingAlgorithm struct {
-	ParentBwSharing         *BwSharing
 	BandwidthSharingFlowMap map[string]*BandwidthSharingFlow
 	SegmentsMap             map[string]*BandwidthSharingSegment
 	DefaultConfigs          SegmentConfiguration
 	DefaultDebugConfigs     DebugConfiguration
+	updateFilterCB          func(string, string, float64)
+	applyFilterCB           func()
+	rc                      *redis.Connector
+}
+
+// init - initialise some constructor values
+func (this *DefaultBwSharingAlgorithm) init(redisConnector *redis.Connector, updateFilterRule func(string, string, float64), applyFilterRule func()) {
+
+	this.updateFilterCB = updateFilterRule
+	this.applyFilterCB = applyFilterRule
+	this.rc = redisConnector
+
 }
 
 // allocateBandwidthSharing - allocated structures
 func (this *DefaultBwSharingAlgorithm) allocateBandwidthSharing() {
 	this.BandwidthSharingFlowMap = make(map[string]*BandwidthSharingFlow)
 	this.SegmentsMap = make(map[string]*BandwidthSharingSegment)
-}
-
-func (this *DefaultBwSharingAlgorithm) setParentBwSharing(bwSharing *BwSharing) {
-	this.ParentBwSharing = bwSharing
 }
 
 // getBandwidthSharingFlow -
@@ -221,8 +229,8 @@ func (this *DefaultBwSharingAlgorithm) createMetricsThroughputEntries(srcElem st
 	creationTime["creationTime"] = time.Now()
 
 	//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-	_ = this.ParentBwSharing.rcCtrlEng.SetEntry(moduleMetrics+":"+dstElem+":"+srcElem, creationTime)
-	_ = this.ParentBwSharing.rcCtrlEng.SetEntry(moduleMetrics+":"+dstElem+":throughput", creationTime)
+	_ = this.rc.SetEntry(moduleMetrics+":"+dstElem+":"+srcElem, creationTime)
+	_ = this.rc.SetEntry(moduleMetrics+":"+dstElem+":throughput", creationTime)
 }
 
 // deleteAllMetricsThroughputEntries -
@@ -230,8 +238,8 @@ func (this *DefaultBwSharingAlgorithm) deleteAllMetricsThroughputEntries() {
 
 	for _, flow := range this.BandwidthSharingFlowMap {
 		//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-		_ = this.ParentBwSharing.rcCtrlEng.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":" + flow.SrcNetworkElement)
-		_ = this.ParentBwSharing.rcCtrlEng.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":throughput")
+		_ = this.rc.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":" + flow.SrcNetworkElement)
+		_ = this.rc.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":throughput")
 	}
 }
 
@@ -483,7 +491,7 @@ func (this *DefaultBwSharingAlgorithm) tickerFunction() {
 	}
 
 	keyName := moduleMetrics + ":*:throughput"
-	err := this.ParentBwSharing.rcCtrlEng.ForEachEntry(keyName, this.getMetricsThroughputEntryHandler, nil)
+	err := this.rc.ForEachEntry(keyName, this.getMetricsThroughputEntryHandler, nil)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
 		return
@@ -556,8 +564,8 @@ func (this *DefaultBwSharingAlgorithm) updateAllBandwidthSharingFlow() {
 			flow.AllocatedThroughput = flow.MaxPlannedThroughput
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
-			this.ParentBwSharing.updateFilter(flow.DstNetworkElement, flow.SrcNetworkElement, flow.AllocatedThroughput)
-			this.ParentBwSharing.applyFilter()
+			this.updateFilterCB(flow.DstNetworkElement, flow.SrcNetworkElement, flow.AllocatedThroughput)
+			this.applyFilterCB()
 		}
 	}
 }
@@ -706,6 +714,7 @@ func (this *DefaultBwSharingAlgorithm) initDefaultConfigAttributes() {
 	this.DefaultConfigs.InactivityIncrementalStep = 1.0
 	this.DefaultConfigs.ActionUpperThreshold = 1.0
 	this.DefaultConfigs.TolerationThreshold = 4.0
+	this.DefaultDebugConfigs.IsPercentage = true
 }
 
 // updateMaxFairShareBwPerFlow -

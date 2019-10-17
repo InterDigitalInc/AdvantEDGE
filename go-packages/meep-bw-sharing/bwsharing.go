@@ -32,27 +32,25 @@ var BW_SHARING_CONTROLS_DB = 0
 
 // BwAlgorithm
 type BwSharingAlgorithm interface {
+	init(*redis.Connector, func(string, string, float64), func())
 	initDefaultConfigAttributes()
 	parseScenario(ceModel.Scenario)
 	updateDefaultConfigAttributes(string, string)
 	tickerFunction()
 	deallocateBandwidthSharing()
 	allocateBandwidthSharing()
-	setParentBwSharing(*BwSharing)
 }
 
 // BwSharing -
 type BwSharing struct {
-	name           string
-	isStarted      bool
-	isReady        bool
-	ticker         *time.Ticker
-	rcCtrlEng      *redis.Connector
-	mutex          sync.Mutex
-	updateFilterCB func(string, string, float64)
-	applyFilterCB  func()
-	config         ConfigurationAttributes
-	bwAlgo         BwSharingAlgorithm
+	name      string
+	isStarted bool
+	isReady   bool
+	ticker    *time.Ticker
+	rcCtrlEng *redis.Connector
+	mutex     sync.Mutex
+	config ConfigurationAttributes
+	bwAlgo BwSharingAlgorithm
 }
 
 // ConfigurationAttributes -
@@ -92,13 +90,14 @@ func NewBwSharing(name string, redisAddr string, updateFilterRule func(string, s
 		return nil, err
 	}
 
+	//delete pre-existent metrics rule in the DB if any
+	bw.rcCtrlEng.DBFlush(moduleMetrics)
+
 	go bw.Run()
 
-	bw.updateFilterCB = updateFilterRule
-	bw.applyFilterCB = applyFilterRule
 	//get values from the DB, or defaults
 	bw.InitDefaultConfigAttributes()
-	bw.bwAlgo.setParentBwSharing(&bw)
+	bw.bwAlgo.init(bw.rcCtrlEng, updateFilterRule, applyFilterRule)
 	return &bw, nil
 }
 
@@ -139,6 +138,8 @@ func (bw *BwSharing) ProcessActiveScenarioUpdate() {
 	if err != nil {
 		log.Error(err.Error())
 		bw.StopScenario()
+		//flush existing metrics entrics in the DB
+		bw.rcCtrlEng.DBFlush(moduleMetrics)
 		return
 	}
 	// Unmarshal Active scenario
@@ -164,16 +165,6 @@ func (bw *BwSharing) ProcessActiveScenarioUpdate() {
 func (bw *BwSharing) StopScenario() {
 	var emptyScenario ceModel.Scenario
 	bw.bwAlgo.parseScenario(emptyScenario)
-}
-
-// updateFilter - Updates the filters in the DB that will be pushed to the sidecars
-func (bw *BwSharing) updateFilter(dst string, src string, value float64) {
-	bw.updateFilterCB(dst, src, value)
-}
-
-// applyFilter - Send notifications to apply the filters stored in the DB for the sidecars
-func (bw *BwSharing) applyFilter() {
-	bw.applyFilterCB()
 }
 
 // UpdateControls - Update all the different configurations attributes based on the content of the DB for dynamic updates
