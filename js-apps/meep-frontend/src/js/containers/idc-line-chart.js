@@ -1,18 +1,25 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import _ from 'lodash';
 import * as d3 from 'd3';
 import React from 'react';
-import {Axis, axisPropsFromTickScale, LEFT, BOTTOM, TOP} from 'react-d3-axis';
+import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
 import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
-
+import { blue } from './graph-utils';
 // const Axis = props => {
 //   const axisRef = axis => {
 //     axis && props.axisCreator(select(axis));
@@ -117,7 +124,7 @@ const IDCLineChart = (props) => {
         d={mobilityEventLine(me)}
         id={me.timestamp}
         key={me.timestamp}
-        style={{stroke: 'gray', strokeWidth: 1, fill: 'none', textAnchor: 'middle'}}
+        style={{stroke: blue, strokeWidth: 2, fill: 'none', textAnchor: 'middle'}}
       />
     );
   });
@@ -186,7 +193,7 @@ const IDCLineChart = (props) => {
       </g>
 
       <g
-        transform={`translate(${margin.left}, ${height - margin.top})`}
+        transform={`translate(${margin.left}, ${height - margin.top - 5})`}
       >
         <Axis
           {...axisPropsFromTickScale(x, 10)}
@@ -207,7 +214,7 @@ const IDCLineChart = (props) => {
 
       <text
         className='chartTitle'
-        y={0 + margin.top -5 }
+        y={0 + margin.top - 8 }
         x={width / 2}
         style={{textAnchor: 'middle'}}
       >
