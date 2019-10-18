@@ -6,6 +6,7 @@ import { Elevation } from '@rmwc/elevation';
 // import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
+import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
 import axios from 'axios';
@@ -14,6 +15,9 @@ import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
+import IDCVis from './idc-vis';
+import ResizeableContainer from './resizeable-container';
+
 
 import {
   idlog
@@ -31,13 +35,17 @@ import {
 import {
   execFakeChangeSelectedDestination,
   execChangeSourceNodeSelected,
-  execAddMetricsEpoch
+  execAddMetricsEpoch,
+  execChangeMetricsTimeIntervalDuration,
+  execClearMetricsEpochs
 } from '../state/exec';
 
 import {
   LATENCY_METRICS,
   THROUGHPUT_METRICS,
-  MOBILITY_EVENT
+  MOBILITY_EVENT,
+  TYPE_EXEC,
+  EXEC_STATE_IDLE
 } from '../meep-constants';
 
 const VIEW_NAME_NONE = 'none';
@@ -85,8 +93,54 @@ const epochsToSeries = (epochs) => {
   return series;
 };
 
+const TimeIntervalConfig = (props) => {
+  let  PauseResumeButton = null;
+  if (props.metricsPollingStopped) {
+    PauseResumeButton = () => (
+      <Button outlined
+        onClick={() => props.startMetricsPolling()}
+      >
+        RESUME
+      </Button>
+    );
+  } else {
+    PauseResumeButton = () => (
+      <Button outlined
+        onClick={() => props.stopMetricsPolling()}
+      >
+        PAUSE
+      </Button>
+    );
+  }
+  return (
+    <div>
+      <Grid>
+        <GridCell span={3}>
+          <Slider
+            value={props.value}
+            onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
+            discrete
+            min={5}
+            max={60}
+            step={1}
+          />
+        </GridCell>
+        <GridCell span={1}>
+
+        </GridCell>
+        <GridCell span={8}>
+          <PauseResumeButton />
+        </GridCell>
+      </Grid>
+    </div>
+    
+    
+  );
+};
+
 const ConfigurationView = (props) => {
   return (
+    <>
     <Grid>
       <GridCell span={2}>
         <IDSelect
@@ -110,7 +164,7 @@ const ConfigurationView = (props) => {
           value={props.view1}
         />
       </GridCell>
-      <GridCell span={2}>
+      <GridCell span={3}>
         <IDSelect
           label={'Select Source Node'}
           outlined
@@ -121,7 +175,7 @@ const ConfigurationView = (props) => {
           value={props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''}
         />
       </GridCell>
-      <GridCell span={1}>
+      <GridCell span={4}>
         <Checkbox
           checked={props.displayEdgeLabels}
           onChange={() => props.changeDisplayEdgeLabels(!props.displayEdgeLabels)}
@@ -129,9 +183,16 @@ const ConfigurationView = (props) => {
                     Show data on edges
         </Checkbox>
       </GridCell>
-      <GridCell span={5}>
+      <GridCell span={1}>
       </GridCell>
     </Grid>
+    <TimeIntervalConfig 
+      timeIntervalDurationChanged={(value) => {props.timeIntervalDurationChanged(value);}}
+      stopMetricsPolling={props.stopMetricsPolling}
+      startMetricsPolling={props.startMetricsPolling}
+      metricsPollingStopped={props.metricsPollingStopped}
+    />
+    </>
   );
 };
 
@@ -145,14 +206,15 @@ const HIERARCHY_VIEW = 'HIERARCHY_VIEW';
 const APPS_VIEW = 'APPS_VIEW';
 const LATENCY_VIEW = 'LATENCY_VIEW';
 const THROUGHPUT_VIEW = 'THROUGHPUT_VIEW';
+const VIS_VIEW = 'VIS_VIEW';
 
-const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, HIERARCHY_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW];
+const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, VIS_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW, HIERARCHY_VIEW];
 
 const ViewForName = (
   {
+    keyForSvg,
     apps,
     colorRange,
-    width,
     min,
     max,
     data,
@@ -174,64 +236,106 @@ const ViewForName = (
   switch(viewName) {
   case HIERARCHY_VIEW:
     return (
-      <IDCGraph 
-        width={width}
-        height={600}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {(width, height) => (
+          <IDCGraph 
+            keyForSvg={keyForSvg}
+            width={width}
+            height={height}
+          />)}
+      </ResizeableContainer>
     );
   case APPS_VIEW:
     return (
-      <IDCAppsView
-        apps={apps}
-        colorRange={colorRange}
-        width={width}
-        height={600}
-        data={data}
-        series={series}
-        startTime={startTime}
-        dataAccessor={dataAccessor}
-        dataType={dataType}
-        selectedSource={selectedSource}
-        colorForApp={colorForApp}
-        onNodeClicked={(e) => {
-          changeSourceNodeSelected(e.node);
-        }}
-        displayEdgeLabels={displayEdgeLabels}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {
+          (width, height) => (
+            <IDCAppsView
+              keyForSvg={keyForSvg}
+              apps={apps}
+              colorRange={colorRange}
+              width={width}
+              height={height}
+              data={data}
+              series={series}
+              startTime={startTime}
+              dataAccessor={dataAccessor}
+              dataType={dataType}
+              selectedSource={selectedSource}
+              colorForApp={colorForApp}
+              onNodeClicked={(e) => {
+                changeSourceNodeSelected(e.node);
+              }}
+              displayEdgeLabels={displayEdgeLabels}
+            />
+          )
+        }
+      </ResizeableContainer>
+      
     );
   case LATENCY_VIEW:
     return (
-      <IDCLineChart
-        data={dataPoints}
-        series={series}
-        startTime={startTime}
-        mobilityEvents={mobilityEvents}
-        width={width} height={600}
-        destinations={appIds}
-        colorRange={colorRange}
-        selectedSource={selectedSource}
-        dataType={dataType}
-        min={min}
-        max={max}
-        colorForApp={colorForApp}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {(width, height) => (
+          <IDCLineChart
+            keyForSvg={keyForSvg}
+            data={dataPoints}
+            series={series}
+            startTime={startTime}
+            mobilityEvents={mobilityEvents}
+            width={width} height={height}
+            destinations={appIds}
+            colorRange={colorRange}
+            selectedSource={selectedSource}
+            dataType={dataType}
+            min={min}
+            max={max}
+            colorForApp={colorForApp}
+          />
+        )
+        }
+      </ResizeableContainer>
+      
     );
   case THROUGHPUT_VIEW:
     return (
-      <IDCLineChart
-        data={dataPoints}
-        series={series}
-        startTime={startTime}
-        mobilityEvents={mobilityEvents}
-        width={width} height={600}
-        destinations={appIds}
-        colorRange={colorRange}
-        selectedSource={selectedSource}
-        dataType={dataType}
-        min={min}
-        max={max}
-        colorForApp={colorForApp}
-      />
+      <ResizeableContainer key={keyForSvg}>
+        {
+          (width, height) => (
+            <IDCLineChart
+              keyForSvg={keyForSvg}
+              data={dataPoints}
+              series={series}
+              startTime={startTime}
+              mobilityEvents={mobilityEvents}
+              width={width} height={height}
+              destinations={appIds}
+              colorRange={colorRange}
+              selectedSource={selectedSource}
+              dataType={dataType}
+              min={min}
+              max={max}
+              colorForApp={colorForApp}
+            />
+          )
+        }
+      </ResizeableContainer>
+    );
+  case VIS_VIEW:
+    return (
+      <ResizeableContainer>
+        {
+          (width, height) => (
+            <IDCVis 
+              type={TYPE_EXEC}
+              width={width}
+              height={height}
+              onEditElement={() => {}}
+            />
+          )
+        }
+        
+      </ResizeableContainer>
     );
   default:
     return null;
@@ -255,6 +359,10 @@ const DashboardConfiguration = (props) => {
         changeSourceNodeSelected={props.changeSourceNodeSelected}
         changeDisplayEdgeLabels={props.changeDisplayEdgeLabels}
         displayEdgeLabels={props.displayEdgeLabels}
+        timeIntervalDurationChanged={props.timeIntervalDurationChanged}
+        stopMetricsPolling={props.stopMetricsPolling}
+        startMetricsPolling={props.startMetricsPolling}
+        metricsPollingStopped={props.metricsPollingStopped}
       />
     );
   }
@@ -321,6 +429,8 @@ class DashboardContainer extends Component {
   constructor(props) {
     super(props);
 
+    this.keyForSvg = 0;
+
     this.state = {
       configurationType: null,
       view1Name: APPS_VIEW,
@@ -329,15 +439,13 @@ class DashboardContainer extends Component {
       nbSecondsToDisplay: 25,
       displayEdgeLabels: false
     };
+
+    this.epochs = [];
   }
 
   componentDidMount() {
-    this.epochCount = 0;
-    const nextData = () => {
-      this.epochCount += 1;
-      this.fetchMetrics();
-    };
-    this.dataTimer = setInterval(nextData, 1000);
+    clearInterval(this.dataTimer);
+    this.startMetricsPolling();
   }
 
   componentWillUnmount() {
@@ -345,8 +453,9 @@ class DashboardContainer extends Component {
   }
 
   fetchMetrics() {
-    const startTime = moment().utc().add(-7, 'seconds').format(TIME_FORMAT);
-    const stopTime = moment().utc().add(-6, 'seconds').format(TIME_FORMAT);
+    const delta = -7;
+    const startTime = moment().utc().add(delta, 'seconds').format(TIME_FORMAT);
+    const stopTime = moment().utc().add(delta + 1, 'seconds').format(TIME_FORMAT);
     return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
       .then(res => {
 
@@ -381,7 +490,45 @@ class DashboardContainer extends Component {
     this.setState({displayEdgeLabels: val});
   }
 
+  changeMetricsTimeIntervalDuration(duration) {
+    this.props.changeMetricsTimeIntervalDuration(duration);
+  }
+
+  stopMetricsPolling() {
+    // clearInterval(this.dataTimer);
+    this.setState({metricsPollingStopped: true});
+  }
+  startMetricsPolling() {
+    // this.props.clearMetricsEpochs();
+    this.epochCount = 0;
+    const nextData = () => {
+      this.epochCount += 1;
+      this.fetchMetrics();
+    };
+
+    if (!this.dataTimer) {
+      this.dataTimer = setInterval(nextData, 1000);
+    }
+    
+    this.setState({metricsPollingStopped: false});
+  }
+
+
   render() {
+
+    if (EXEC_STATE_IDLE === this.props.scenarioState) {
+      console.log('Scenario is idle');
+    }
+
+    let epochs = null;
+    if (!this.state.metricsPollingStopped) {
+      this.epochs = this.props.epochs.slice();
+      epochs = this.epochs;
+    } else {
+      epochs = this.epochs;
+    }
+
+    this.keyForSvg++;
     const root = this.getRoot();
     const nodes = root.descendants();
    
@@ -410,11 +557,11 @@ class DashboardContainer extends Component {
     };
 
     // Determine first and last epochs
-    const firstEpoch = this.props.epochs.length ? this.props.epochs[0] : {
+    const firstEpoch = epochs.length ? epochs[0] : {
       data: [],
       startTime: null
     };
-    let lastEpoch = this.props.epochs.length ? this.props.epochs.slice(-1)[0] : {
+    let lastEpoch = epochs.length ? epochs.slice(-1)[0] : {
       data: [],
       startTime: null
     };
@@ -422,7 +569,7 @@ class DashboardContainer extends Component {
     // Determine startTime of first epoch and endTime of last epoch
     const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
     const endTime = lastEpoch.data.length ? moment(lastEpoch.startTime).add(1, 'seconds').format(TIME_FORMAT) : null;
-    const series = epochsToSeries(this.props.epochs, selectedSource);
+    const series = epochsToSeries(epochs, selectedSource);
 
     const withTypeAndSource = type => source => point => {
       return point.dataType === type && point.src === source;
@@ -441,37 +588,39 @@ class DashboardContainer extends Component {
     // Mobility events
     const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
     const extractMobilityEvents = extractPointsOfType(MOBILITY_EVENT);
-    const mobilityEvents = this.props.epochs.flatMap(extractMobilityEvents);
+    const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
       // console.log('Some mobility events ...');
     }
   
     
-    const height = 600;
+    // const height = 600;
 
-    let span1 = 6;
-    let width1 = 700;
-    let width2 = 700;
+    let span1 = 12;
+    let span2 = 12;
+    // let width1 = 700;
+    // let width2 = 700;
 
-    if (this.state.view1Name === VIEW_NAME_NONE) {
+    const view1Present = this.state.view1Name !== VIEW_NAME_NONE;
+    const view2Present = this.state.view2Name !== VIEW_NAME_NONE;
+
+    if (view1Present && view2Present) {
+      span1 = 6;
+      span2 = 6;
+    } else if (!view1Present && !view2Present) {
       span1 = 0;
-      width1 = 0;
-      width2 = 1400;
-    }
-
-    if (this.state.view2Name === VIEW_NAME_NONE) {
-      span1 = 12;
-      width1 = 1400;
-      width2 = 0;
+      span2 = 0;
     }
 
     const view1 = (
+
       <ViewForName
+        keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
-        width={width1}
-        height={height}
+        // width={width1}
+        // height={height}
         data={lastEpochData1}
         series={series1}
         startTime={startTime}
@@ -488,10 +637,11 @@ class DashboardContainer extends Component {
 
     const view2 = (
       <ViewForName
+        keyForSvg={this.keyForSvg}
         apps={apps}
         colorRange={colorRange}
-        width={width2}
-        height={height}
+        // width={width2}
+        // height={height}
         data={lastEpochData2}
         series={series2}
         startTime={startTime}
@@ -520,6 +670,10 @@ class DashboardContainer extends Component {
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
           changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
+          timeIntervalDurationChanged={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
+          stopMetricsPolling={() => this.stopMetricsPolling()}
+          startMetricsPolling={() => this.startMetricsPolling()}
+          metricsPollingStopped={this.state.metricsPollingStopped}
           dashboardViewsList={DASHBOARD_VIEWS_LIST}
           changeView1={(viewName) => this.changeView1(viewName)}
           changeView2={(viewName) => this.changeView2(viewName)}
@@ -528,22 +682,27 @@ class DashboardContainer extends Component {
         />
         
         <Grid>
+
+          {!view1Present ? null : (
+            <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
+              <Elevation z={2}
+                style={{padding: 10}}
+              >
+                {view1}
+              </Elevation>
+            </GridCell>
+          )}
           
-          <GridCell span={span1} style={{paddingRight: 10}}>
-            <Elevation z={2}
-              style={{padding: 10}}
-            >
-              {view1}
-            </Elevation>
-          </GridCell>
-          
-          <GridCell span={span1} style={{marginLeft: -10, paddingLeft: 10}}>
-            <Elevation z={2}
-              style={{padding: 10}}
-            >
-              {view2}
-            </Elevation>
-          </GridCell>
+          {!view2Present ? null : (
+            <GridCell span={span2} style={{marginLeft: -10, paddingLeft: 10}} className='chartContainer'>
+              <Elevation z={2}
+                style={{padding: 10}}
+              >
+                {view2}
+              </Elevation>
+            </GridCell>
+         
+          )}
         </Grid>
       
       </>
@@ -556,7 +715,10 @@ const mapStateToProps = state => {
     displayedScenario: state.exec.displayedScenario,
     epochs: state.exec.metrics.epochs,
     sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
-    dataTypeSelected: state.exec.metrics.dataTypeSelected
+    dataTypeSelected: state.exec.metrics.dataTypeSelected,
+    eventCreationMode: state.exec.eventCreationMode,
+    metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration,
+    scenarioState: state.exec.state.scenario
   };
 };
 
@@ -564,7 +726,9 @@ const mapDispatchToProps = dispatch => {
   return {
     changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
     changeSourceNodeSelected: (src) => dispatch(execChangeSourceNodeSelected(src)),
-    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch))
+    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch)),
+    changeMetricsTimeIntervalDuration: (duration) => dispatch(execChangeMetricsTimeIntervalDuration(duration)),
+    clearMetricsEpochs: () => dispatch(execClearMetricsEpochs())
   };
 };
 

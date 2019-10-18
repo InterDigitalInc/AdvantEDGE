@@ -57,7 +57,10 @@ import {
   PREFIX_EDGE_FOG,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
-  PREFIX_APP
+  PREFIX_APP,
+
+  // Layout type
+  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT
 
 } from '../../meep-constants';
 
@@ -351,6 +354,7 @@ class NetworkCharacteristicsEventPane extends Component {
         </Grid>
 
         <NCGroup
+          layout={MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT}
           onUpdate={(name, val, err) => {this.onUpdateElement(name, val, err);}}
           parent={this}
           element={element}

@@ -12,6 +12,9 @@ import _ from 'lodash';
 export const blue = '#5DBCD2';
 
 export const lineGeneratorNodes = n1 => n2 => {
+  if (!n1 || !n2) {
+    return '';
+  }
   return `M${n1.X},${n1.Y} L${n2.X},${n2.Y}`;
 };
 
@@ -27,6 +30,9 @@ export const minusGenerator = () => {
 };
 
 export const curveGeneratorNodes = n1 => n2 => {
+  if (!n1 || !n2) {
+    return '';
+  }
   return `M${n1.X},${n1.Y} C${n1.X},${n2.Y + 150} ${n1.X},${n2.Y + 50} ${n2.X},${n2.Y}`;
 };
 

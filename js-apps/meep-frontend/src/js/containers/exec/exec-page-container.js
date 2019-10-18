@@ -48,8 +48,7 @@ import {
   // Event types
   MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE,
-  PAGE_EXPERIMENTAL_EXECUTE
+  PAGE_EXECUTE
 } from '../../state/ui';
 
 import {
@@ -60,8 +59,6 @@ import {
 } from '../../state/exec';
 
 import {
-  TYPE_EXEC,
-
   // States
   EXEC_STATE_IDLE
 } from '../../meep-constants';
@@ -185,9 +182,9 @@ class ExecPageContainer extends Component {
 
   showApps(show) {
     this.props.changeShowApps(show);
-    // _.defer(() => {
-    //   this.props.execVis.network.setData(this.props.execVisData);
-    // });
+    _.defer(() => {
+      this.props.execVis.network.setData(this.props.execVisData);
+    });
   }
 
   renderDialogs() {
@@ -223,7 +220,7 @@ class ExecPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE && this.props.page !== PAGE_EXPERIMENTAL_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE) {
       return null;
     }
 
@@ -231,8 +228,8 @@ class ExecPageContainer extends Component {
       ? this.props.execScenarioName
       : this.props.cfgScenarioName;
 
-    const spanLeft = this.props.eventCreationMode ? 8 : 12;
-    const spanRight = this.props.eventCreationMode ? 4 : 0;
+    const spanLeft = this.props.eventCreationMode ? 10 : 12;
+    const spanRight = this.props.eventCreationMode ? 2 : 0;
     return (
       <div style={{width: '100%'}}>
         {this.renderDialogs()}
@@ -275,8 +272,7 @@ class ExecPageContainer extends Component {
                 <GridCell span={spanLeft}>
                   {/* <Elevation className="component-style" z={2}> */}
                   <div>
-                    {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
-                        
+                    <DashboardContainer showAppsView={true}/>
                   </div>
                   {/* </Elevation> */}
                 </GridCell>

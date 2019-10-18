@@ -75,8 +75,11 @@ import {
   PREFIX_EDGE_FOG,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
-  PREFIX_APP
+  PREFIX_APP,
 
+  // NC Group Layouts
+  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
+  MEEP_COMPONENT_TABLE_LAYOUT
 } from '../../meep-constants';
 
 const MIN_LATENCY_VALUE = 0;
@@ -158,6 +161,83 @@ const validateThroughput = (val) => {
   return null;
 };
 
+
+
+const TableLayout = (props) => {
+  return (
+    <div>
+      <Grid>
+        <GridCell span="6">
+          {props.latencyComponent}
+        </GridCell>
+       
+        <GridCell span="6">
+          {props.latencyVariationComponent}
+        </GridCell>
+      </Grid>
+
+      <Grid style={{marginBottom: 10}}>
+        <GridCell span="6">
+          {props.packetLossComponent}
+        </GridCell>
+      
+        <GridCell span="6">
+          {props.throughputComponent}
+        </GridCell>
+      </Grid>
+    </div>
+  );
+};
+
+const SingleColumnLayout = (props) => {
+  return (
+    <div>
+      <Grid>
+        <GridCell span="12">
+          {props.latencyComponent}
+        </GridCell>
+       
+      </Grid>
+
+      <Grid>
+        <GridCell span="12">
+          {props.latencyVariationComponent}
+        </GridCell>
+      </Grid>
+
+      <Grid style={{marginBottom: 10}}>
+        <GridCell span="12">
+          {props.packetLossComponent}
+        </GridCell>
+      </Grid>
+
+      <Grid style={{marginBottom: 10}}>
+        
+        <GridCell span="12">
+          {props.throughputComponent}
+        </GridCell>
+      </Grid>
+    </div>
+  );
+};
+
+const NCLayout = (props) => {
+  switch(props.layout) {
+  case MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT:
+    return (
+      <SingleColumnLayout {...props} />
+    );
+  case MEEP_COMPONENT_TABLE_LAYOUT:
+    return (
+      <TableLayout {...props} />
+    );
+  default:
+    return (
+      <TableLayout {...props} />
+    );
+  }
+};
+
 const NCGroup = ({prefix, onUpdate, element}) => {
   const formLabel = (valueName) => {
     const space = prefix ? ' ' : '';
@@ -229,71 +309,82 @@ const NCGroup = ({prefix, onUpdate, element}) => {
     return null;
   }
 
+  const latencyComponent = (
+    <>
+     <TextField outlined style={{width: '100%'}}
+       label={formLabel('Latency') + ' (ms)'}
+       onChange={(e) => handleEvent(e, latencyFieldName, validateLatency)}
+       value={getElemFieldVal(element, latencyFieldName)}
+       invalid={getElemFieldErr(element, latencyFieldName) ? true : false}
+       data-cy={CFG_ELEM_LATENCY}
+     />
+    <TextFieldHelperText validationMsg={true}>
+      <span>
+        {getElemFieldErr(element, latencyFieldName)}
+      </span>
+    </TextFieldHelperText>
+    </>
+  );
+
+  const latencyVariationComponent = (
+    <>
+    <TextField outlined style={{width: '100%'}}
+      label={formLabel('Latency Variation') + ' (ms)'}
+      onChange={(e) => handleEvent(e, latencyVarFieldName, validateLatencyVariation)}
+      value={getElemFieldVal(element, latencyVarFieldName)}
+      invalid={getElemFieldErr(element, latencyVarFieldName) ? true : false}
+      data-cy={CFG_ELEM_LATENCY_VAR}
+    />
+    <TextFieldHelperText validationMsg={true}>
+      <span>
+        {getElemFieldErr(element, latencyVarFieldName)}
+      </span>
+    </TextFieldHelperText>
+    </>
+  );
+
+  const packetLossComponent = (
+    <>
+    <TextField outlined style={{width: '100%'}}
+      label={formLabel('Packet Loss') + ' (%)'}
+      onChange={(e) =>  handleEvent(e, packetLossFieldName, validatePacketLoss)}
+      value={getElemFieldVal(element, packetLossFieldName)}
+      invalid={getElemFieldErr(element, packetLossFieldName) ? true : false}
+      data-cy={CFG_ELEM_PKT_LOSS}
+    />
+    <TextFieldHelperText validationMsg={true}>
+      <span>
+        {getElemFieldErr(element, packetLossFieldName)}
+      </span>
+    </TextFieldHelperText>
+    </>
+  );
+
+  const throughputComponent = (
+    <>
+    <TextField outlined style={{width: '100%'}}
+      label={formLabel('Throughput') + ' Mbps'}
+      onChange={(e) =>  handleEvent(e, throughputFieldName, validateThroughput)}
+      value={getElemFieldVal(element, throughputFieldName)}
+      invalid={getElemFieldErr(element, throughputFieldName) ? true : false}
+      data-cy={CFG_ELEM_THROUGHPUT}
+    />
+    <TextFieldHelperText validationMsg={true}>
+      <span>
+        {getElemFieldErr(element, throughputFieldName)}
+      </span>
+    </TextFieldHelperText>
+    </>
+  );
+
   return (
-    <div>
-      <Grid>
-        <GridCell span="6">
-          <TextField outlined style={{width: '100%'}}
-            label={formLabel('Latency') + ' (ms)'}
-            onChange={(e) => handleEvent(e, latencyFieldName, validateLatency)}
-            value={getElemFieldVal(element, latencyFieldName)}
-            invalid={getElemFieldErr(element, latencyFieldName) ? true : false}
-            data-cy={CFG_ELEM_LATENCY}
-          />
-          <TextFieldHelperText validationMsg={true}>
-            <span>
-              {getElemFieldErr(element, latencyFieldName)}
-            </span>
-          </TextFieldHelperText>
-        </GridCell>
-        <GridCell span="6">
-          <TextField outlined style={{width: '100%'}}
-            label={formLabel('Latency Variation') + ' (ms)'}
-            onChange={(e) => handleEvent(e, latencyVarFieldName, validateLatencyVariation)}
-            value={getElemFieldVal(element, latencyVarFieldName)}
-            invalid={getElemFieldErr(element, latencyVarFieldName) ? true : false}
-            data-cy={CFG_ELEM_LATENCY_VAR}
-          />
-          <TextFieldHelperText validationMsg={true}>
-            <span>
-              {getElemFieldErr(element, latencyVarFieldName)}
-            </span>
-          </TextFieldHelperText>
-        </GridCell>
-      </Grid>
-
-      <Grid style={{marginBottom: 10}}>
-        <GridCell span="6">
-          <TextField outlined style={{width: '100%'}}
-            label={formLabel('Packet Loss') + ' (%)'}
-            onChange={(e) =>  handleEvent(e, packetLossFieldName, validatePacketLoss)}
-            value={getElemFieldVal(element, packetLossFieldName)}
-            invalid={getElemFieldErr(element, packetLossFieldName) ? true : false}
-            data-cy={CFG_ELEM_PKT_LOSS}
-          />
-          <TextFieldHelperText validationMsg={true}>
-            <span>
-              {getElemFieldErr(element, packetLossFieldName)}
-            </span>
-          </TextFieldHelperText>
-
-        </GridCell>
-        <GridCell span="6">
-          <TextField outlined style={{width: '100%'}}
-            label={formLabel('Throughput') + ' Mbps'}
-            onChange={(e) =>  handleEvent(e, throughputFieldName, validateThroughput)}
-            value={getElemFieldVal(element, throughputFieldName)}
-            invalid={getElemFieldErr(element, throughputFieldName) ? true : false}
-            data-cy={CFG_ELEM_THROUGHPUT}
-          />
-          <TextFieldHelperText validationMsg={true}>
-            <span>
-              {getElemFieldErr(element, throughputFieldName)}
-            </span>
-          </TextFieldHelperText>
-        </GridCell>
-      </Grid>
-    </div>
+    <NCLayout
+      latencyComponent={latencyComponent}
+      latencyVariationComponent={latencyVariationComponent}
+      packetLossComponent={packetLossComponent}
+      throughputComponent={throughputComponent}
+    >
+    </NCLayout>
   );
 };
 

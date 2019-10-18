@@ -12,7 +12,8 @@ const initialState = {
   epochs: [],
   // dataTypeSelected: 'ingressPacketStats',
   dataTypeSelected: 'latency',
-  sourceNodeSelected: ''
+  sourceNodeSelected: '',
+  timeIntervalDuration: 25
 };
 
 export const EXEC_ADD_METRICS_EPOCH = 'EXEC_ADD_METRICS_EPOCH';
@@ -39,14 +40,36 @@ function execChangeDataTypeSelected(node) {
   };
 }
 
-export { execAddMetricsEpoch, execChangeSourceNodeSelected, execChangeDataTypeSelected };
+export const EXEC_CHANGE_METRICS_TIME_INTERVAL_DURATION = 'EXEC_CHANGE_METRICS_TIME_INTERVAL_DURATION';
+function execChangeMetricsTimeIntervalDuration(duration) {
+  return {
+    type: EXEC_CHANGE_METRICS_TIME_INTERVAL_DURATION,
+    payload: duration
+  };
+}
 
-const NB_EPOCHS_TO_KEEP = 25;
+
+export const EXEC_CLEAR_METRICS_EPOCHS = 'EXEC_CLEAR_METRICS_EPOCHS';
+function execClearMetricsEpochs() {
+  return {
+    type: EXEC_CLEAR_METRICS_EPOCHS
+  };
+}
+
+export {
+  execAddMetricsEpoch,
+  execChangeSourceNodeSelected,
+  execChangeDataTypeSelected,
+  execChangeMetricsTimeIntervalDuration,
+  execClearMetricsEpochs
+};
+
+// const NB_EPOCHS_TO_KEEP = 25;
 export function metricsReducer(state = initialState, action) {
   const currentId = state.sourceNodeSelected ? state.sourceNodeSelected.data.id : null;
   switch (action.type) {
   case EXEC_ADD_METRICS_EPOCH:
-    return updateObject(state, {epochs: state.epochs.splice(-NB_EPOCHS_TO_KEEP).concat([action.payload])});
+    return updateObject(state, {epochs: state.epochs.splice(-state.timeIntervalDuration).concat([action.payload])});
   case EXEC_CHANGE_SOURCE_NODE_SELECTED:
     if (action.payload.data.id === currentId) {
       return updateObject(state, {sourceNodeSelected: null});
@@ -55,6 +78,10 @@ export function metricsReducer(state = initialState, action) {
     }
   case EXEC_CHANGE_DATA_TYPE_SELECTED:
     return updateObject(state, {dataTypeSelected: action.payload});
+  case EXEC_CHANGE_METRICS_TIME_INTERVAL_DURATION:
+    return updateObject(state, {timeIntervalDuration: action.payload});
+  case EXEC_CLEAR_METRICS_EPOCHS:
+    return updateObject(state, {epochs: []});
   default:
     return state;
   }
