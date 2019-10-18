@@ -16,7 +16,7 @@
 
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
-import { PAGE_CONFIGURE, PAGE_EXECUTE, PAGE_EXPERIMENTAL_EXECUTE, PAGE_MONITOR, PAGE_SETTINGS } from '../state/ui';
+import { PAGE_CONFIGURE, PAGE_EXECUTE, PAGE_MONITOR, PAGE_SETTINGS } from '../state/ui';
 
 import {
   MEEP_TAB_CFG,
@@ -69,10 +69,6 @@ class MeepDrawer extends Component {
               <ListItem data-cy={MEEP_TAB_EXEC} style={this.styleForPage(PAGE_EXECUTE)} onClick = {() => {this.handleItemClick(PAGE_EXECUTE);}}>
                 <Icon icon="forward" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
                 <span style={textStyles}>Execute</span>
-              </ListItem>
-              <ListItem data-cy={MEEP_TAB_EXP_EXEC} style={this.styleForPage(PAGE_EXECUTE)} onClick = {() => {this.handleItemClick(PAGE_EXPERIMENTAL_EXECUTE);}}>
-                <Icon icon="forward" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
-                <span style={textStyles}>Execute (Exp.)</span>
               </ListItem>
               <ListItem data-cy={MEEP_TAB_MON} style={this.styleForPage(PAGE_MONITOR)} onClick = {() => {this.handleItemClick(PAGE_MONITOR);}}>
                 <Icon icon="tv" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>

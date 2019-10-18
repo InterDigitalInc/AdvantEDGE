@@ -48,8 +48,7 @@ import {
   // Event types
   MOBILITY_EVENT,
   NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE,
-  PAGE_EXPERIMENTAL_EXECUTE
+  PAGE_EXECUTE
 } from '../../state/ui';
 
 import {
@@ -60,8 +59,6 @@ import {
 } from '../../state/exec';
 
 import {
-  TYPE_EXEC,
-
   // States
   EXEC_STATE_IDLE
 } from '../../meep-constants';
@@ -223,7 +220,7 @@ class ExecPageContainer extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE && this.props.page !== PAGE_EXPERIMENTAL_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE) {
       return null;
     }
 
@@ -275,8 +272,7 @@ class ExecPageContainer extends Component {
                 <GridCell span={spanLeft}>
                   {/* <Elevation className="component-style" z={2}> */}
                   <div>
-                    {this.props.experimental ? (<DashboardContainer showAppsView={true}/>) : (<IDCVis type={TYPE_EXEC} />)}
-                        
+                    <DashboardContainer showAppsView={true}/>
                   </div>
                   {/* </Elevation> */}
                 </GridCell>

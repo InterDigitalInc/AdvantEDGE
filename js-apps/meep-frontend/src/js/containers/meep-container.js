@@ -74,7 +74,6 @@ import {
 import {
   PAGE_CONFIGURE,
   PAGE_EXECUTE,
-  PAGE_EXPERIMENTAL_EXECUTE,
   PAGE_MONITOR,
   PAGE_SETTINGS
 } from '../state/ui';
@@ -338,19 +337,6 @@ class MeepContainer extends Component {
       return (
         <>
         <ExecPageContainer style={{width: '100%'}}
-          api={this.meepExecApi}
-          cfgApi={this.meepCfgApi}
-          refreshScenario={() => {this.refreshScenario();}}
-          deleteScenario={() => {this.deleteScenario(TYPE_EXEC);}}
-        />
-        </>
-      );
-
-    case PAGE_EXPERIMENTAL_EXECUTE:
-      return (
-        <>
-        <ExecPageContainer style={{width: '100%'}}
-          experimental={true}
           api={this.meepExecApi}
           cfgApi={this.meepCfgApi}
           refreshScenario={() => {this.refreshScenario();}}

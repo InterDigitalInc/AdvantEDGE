@@ -18,7 +18,6 @@ import { updateObject } from '../../util/object-util';
 
 export const PAGE_CONFIGURE = 'page-configure-link';
 export const PAGE_EXECUTE = 'page-execute-link';
-export const PAGE_EXPERIMENTAL_EXECUTE = 'page-experimental-execute-link';
 export const PAGE_MONITOR = 'page-monitor-link';
 export const PAGE_SETTINGS = 'page-settings-link';
 
