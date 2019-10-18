@@ -73,7 +73,8 @@ function colorArray(dataLength) {
   return colorArray;
 }
 
-const metricsBasePath = 'http://10.3.16.73:30008/v1';
+const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
+// const metricsBasePath = 'http://10.3.16.73:30008/v1';
 
 const buildSeriesFromEpoch = (series, epoch) => {
   epoch.data.forEach(p => {
@@ -517,7 +518,7 @@ class DashboardContainer extends Component {
   render() {
 
     if (EXEC_STATE_IDLE === this.props.scenarioState) {
-      console.log('Scenario is idle');
+      idlog('Scenario is idle')('');
     }
 
     let epochs = null;

@@ -19,7 +19,6 @@ import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import IDCVis from '../idc-vis';
 import DashboardContainer from '../dashboard-container';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
