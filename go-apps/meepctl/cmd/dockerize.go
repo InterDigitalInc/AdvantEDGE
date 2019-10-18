@@ -146,7 +146,9 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 
-	if err == nil {
+	if err != nil {
+		fmt.Println("Error dockerizing ", targetName)
+	} else {
 		// Obtain checksum of bin folder contents to add as a label in docker image
 		path := gitdir + "/" + target["bin"]
 		cmd := exec.Command("/bin/sh", "-c", "find "+path+" -type f | xargs sha256sum | sort | sha256sum")
@@ -169,8 +171,6 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 			cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, path)
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
-	} else {
-		fmt.Println("dockerizing could not be initiated: Error with the build for", targetName)
 	}
 	// cleanup data
 	if len(data) != 0 {
