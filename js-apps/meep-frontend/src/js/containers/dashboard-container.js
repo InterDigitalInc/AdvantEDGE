@@ -44,7 +44,8 @@ import {
   LATENCY_METRICS,
   THROUGHPUT_METRICS,
   MOBILITY_EVENT,
-  TYPE_EXEC
+  TYPE_EXEC,
+  EXEC_STATE_IDLE
 } from '../meep-constants';
 
 const VIEW_NAME_NONE = 'none';
@@ -515,6 +516,10 @@ class DashboardContainer extends Component {
 
   render() {
 
+    if (EXEC_STATE_IDLE === this.props.scenarioState) {
+      console.log('Scenario is idle');
+    }
+
     let epochs = null;
     if (!this.state.metricsPollingStopped) {
       this.epochs = this.props.epochs.slice();
@@ -712,7 +717,8 @@ const mapStateToProps = state => {
     sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
     dataTypeSelected: state.exec.metrics.dataTypeSelected,
     eventCreationMode: state.exec.eventCreationMode,
-    metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration
+    metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration,
+    scenarioState: state.exec.state.scenario
   };
 };
 
