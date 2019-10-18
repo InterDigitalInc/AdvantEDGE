@@ -3,28 +3,27 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
-	github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351
 	github.com/flimzy/diff v0.1.5 // indirect
 	github.com/flimzy/kivik v1.8.1
 	github.com/flimzy/testy v0.1.16 // indirect
 	github.com/go-kivik/couchdb v1.8.1
-	github.com/go-redis/redis v6.15.2+incompatible
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20190411002643-bd77b112433e // indirect
 	github.com/gorilla/handlers v1.4.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.7.3
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
-	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/pkg/errors v0.8.1 // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -36,8 +35,12 @@ require (
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
+
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
 
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 
 replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog => ../../go-packages/meep-watchdog
+
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model => ../../go-packages/meep-model

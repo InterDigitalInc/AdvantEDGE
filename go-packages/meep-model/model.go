@@ -42,7 +42,7 @@ var redisTable = 0
 type Model struct {
 	name          string
 	module        string
-	active        bool
+	Active        bool
 	subscribed    bool
 	ActiveChannel string
 	activeKey     string
@@ -69,7 +69,7 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	m = new(Model)
 	m.name = name
 	m.module = module
-	m.active = false
+	m.Active = false
 	m.subscribed = false
 	m.ActiveChannel = activeScenarioEvents
 	m.activeKey = activeScenarioKey
@@ -98,7 +98,7 @@ func (m *Model) SetScenario(j []byte) (err error) {
 	}
 	m.parseNodes()
 	m.updateSvcMap()
-	if m.active {
+	if m.Active {
 		err = m.refresh()
 		if err != nil {
 			return err
@@ -130,14 +130,14 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	m.active = true
+	m.Active = true
 	return nil
 }
 
 // Deactivate - Remove the active scenario
 func (m *Model) Deactivate() (err error) {
-	if m.active == true {
-		m.active = false
+	if m.Active == true {
+		m.Active = false
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
 			log.Error(err.Error())
@@ -208,8 +208,8 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 }
 
 // GetServiceMaps - Extracts the model service maps
-func (m *Model) GetServiceMaps() []ceModel.NodeServiceMaps {
-	return m.svcMap
+func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
+	return &m.svcMap
 }
 
 //UpdateNetChar - Update network characteristics for a node
@@ -409,7 +409,7 @@ func (m *Model) updateSvcMap() (err error) {
 }
 
 func (m *Model) refresh() (err error) {
-	if m.active == true {
+	if m.Active == true {
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
 			log.Error(err.Error())

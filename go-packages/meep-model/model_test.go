@@ -77,9 +77,9 @@ func TestGetSetScenario(t *testing.T) {
 		t.Errorf("Unable to create model")
 	}
 
-	fmt.Println("GetSvcMap - in-existing")
+	fmt.Println("GetSvcMap - error case")
 	svcMap := m.GetServiceMaps()
-	if svcMap != nil {
+	if len(*svcMap) != 0 {
 		t.Errorf("Service map unexpected")
 	}
 
