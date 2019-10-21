@@ -17,8 +17,8 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -51,8 +51,10 @@ const NB_CORE_PODS = 10 //although virt-engine is not a pod yet... it is conside
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
 var rc *redis.Connector
+var activeModel *mod.Model
 
-// var nodeServiceMapsList []NodeServiceMaps
+var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
+var redisDBAddr = "meep-redis-master:6379"
 
 func getCorePodsList() map[string]bool {
 
@@ -70,157 +72,6 @@ func getCorePodsList() map[string]bool {
 	}
 	return innerMap
 }
-
-// Establish DB connections
-func connectDb(dbName string) (*kivik.DB, error) {
-
-	// Connect to Couch DB
-	log.Debug("Establish new couchDB connection")
-	dbClient, err := kivik.New(context.TODO(), "couch", "http://meep-couchdb-svc-couchdb:5984/")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create Scenario DB if id does not exist
-	log.Debug("Check if scenario DB exists: " + dbName)
-	debExists, err := dbClient.DBExists(context.TODO(), dbName)
-	if err != nil {
-		return nil, err
-	}
-	if !debExists {
-		log.Debug("Create new DB: " + dbName)
-		err = dbClient.CreateDB(context.TODO(), dbName)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Open scenario DB
-	log.Debug("Open scenario DB: " + dbName)
-	db, err := dbClient.DB(context.TODO(), dbName)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
-
-// Get scenario from DB
-func getScenario(returnNilOnNotFound bool, db *kivik.DB, scenarioName string, scenario []byte) error {
-
-	// Get scenario from DB
-	log.Debug("Get scenario from DB: " + scenarioName)
-	row, err := db.Get(context.TODO(), scenarioName)
-	if err != nil {
-		//that's a call to the couch DB.. in order not to return nil, we override it
-		if returnNilOnNotFound {
-			if err.Error() == "Not Found: deleted" {
-				//specifically for the case where there is nothing.. so the scenario object will be empty
-				return nil
-			}
-		}
-		return err
-	}
-	// Decode JSON-encoded document
-	return row.ScanDoc(&scenario)
-}
-
-// Get scenario list from DB
-func getScenarioList(db *kivik.DB, scenarioList [][]byte) error {
-
-	// Retrieve all scenarios from DB
-	log.Debug("Get all scenarios from DB")
-	rows, err := db.AllDocs(context.TODO())
-	if err != nil {
-		return err
-	}
-
-	// Loop through scenarios and populate scenario list to return
-	log.Debug("Loop through scenarios")
-	for rows.Next() {
-		var scenario []byte
-		if rows.ID() != activeScenarioName {
-			err = getScenario(false, db, rows.ID(), scenario)
-			if err == nil {
-				// Append scenario to list
-				_ = append(scenarioList, scenario)
-			}
-		}
-	}
-
-	return nil
-}
-
-// Add scenario to DB
-func addScenario(db *kivik.DB, scenarioName string, scenario []byte) (string, error) {
-
-	// Add scenario to couch DB
-	log.Debug("Add new scenario to DB: " + scenarioName)
-	rev, err := db.Put(context.TODO(), scenarioName, scenario)
-	if err != nil {
-		return "", err
-	}
-
-	return rev, nil
-}
-
-// Update scenario in DB
-func setScenario(db *kivik.DB, scenarioName string, scenario []byte) (string, error) {
-
-	// Remove previous version
-	err := removeScenario(db, scenarioName)
-	if err != nil {
-		return "", err
-	}
-
-	// Add updated version
-	rev, err := addScenario(db, scenarioName, scenario)
-	if err != nil {
-		return "", err
-	}
-
-	return rev, nil
-}
-
-// Remove scenario from DB
-func removeScenario(db *kivik.DB, scenarioName string) error {
-
-	// Get latest Rev of stored scenario from couchDB
-	rev, err := db.Rev(context.TODO(), scenarioName)
-	if err != nil {
-		return err
-	}
-
-	// Remove scenario from couchDB
-	log.Debug("Remove scenario from DB: " + scenarioName)
-	_, err = db.Delete(context.TODO(), scenarioName, rev)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Remove all scenarios from DB
-func removeAllScenarios(db *kivik.DB) error {
-
-	// Retrieve all scenarios from DB
-	log.Debug("Get all scenarios from DB")
-	rows, err := db.AllDocs(context.TODO())
-	if err != nil {
-		return err
-	}
-
-	// Loop through scenarios and remove each one
-	log.Debug("Loop through scenarios")
-	for rows.Next() {
-		_ = removeScenario(db, rows.ID())
-	}
-
-	return nil
-}
-
-var activeModel *mod.Model
 
 // CtrlEngineInit Initializes the Controller Engine
 func CtrlEngineInit() (err error) {
@@ -241,14 +92,14 @@ func CtrlEngineInit() (err error) {
 	}
 
 	// Connect to Redis DB - This one used for Pod status
-	rc, err = redis.NewConnector("meep-redis-master:6379", 0)
+	rc, err = redis.NewConnector(redisDBAddr, 0)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
 
 	// Setup for virt-engine monitoring
-	virtWatchdog, err = watchdog.NewWatchdog("", "meep-virt-engine")
+	virtWatchdog, err = watchdog.NewWatchdog(redisDBAddr, "meep-virt-engine")
 	if err != nil {
 		log.Error("Failed to initialize virt-engine watchdog. Error: ", err)
 		return err
@@ -272,6 +123,12 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Scenario name: ", scenarioName)
 
 	// Retrieve scenario from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err.Error())
@@ -283,7 +140,7 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 	rev, err := addScenario(db, scenarioName, b)
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	log.Debug("Scenario added with rev: ", rev)
@@ -343,40 +200,53 @@ func ceGetScenario(w http.ResponseWriter, r *http.Request) {
 	// Validate scenario name
 	if scenarioName == "" {
 		log.Debug("Invalid scenario name")
-		http.Error(w, "Invalid scenario name", http.StatusBadRequest)
+		http.Error(w, "Invalid scenario name "+scenarioName, http.StatusBadRequest)
 		return
 	}
 
 	// Retrieve scenario from DB
 	var scenario []byte
-	err := getScenario(false, db, scenarioName, scenario)
+	scenario, err := getScenario(false, db, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	s, err := mod.JSONMarshallScenario(scenario)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, scenario)
+	fmt.Fprint(w, s)
 }
 
 func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceGetScenarioList")
 
 	// Retrieve scenario list from DB
-	var scenarioList [][]byte
-	err := getScenarioList(db, scenarioList)
+	scenarioList, err := getScenarioList(db)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
+	sl, err := mod.JSONMarshallScenarioList(scenarioList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, scenarioList)
+	fmt.Fprint(w, sl)
 }
 
 // Update stored scenario
@@ -389,6 +259,12 @@ func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Scenario name: ", scenarioName)
 
 	// Retrieve scenario from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Error(err.Error())
@@ -427,8 +303,8 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve scenario to activate from DB
-	var b []byte
-	err := getScenario(false, db, scenarioName, b)
+	var scenario []byte
+	scenario, err := getScenario(false, db, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -436,7 +312,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Activate scenario & publish
-	err = activeModel.SetScenario(b)
+	err = activeModel.SetScenario(scenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -458,19 +334,22 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("CEGetActiveScenario")
 
-	// Retrieve active scenario
-	var b []byte
-	err := getScenario(true, db, activeScenarioName, b)
+	if !activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
+
+	scenario, err := activeModel.GetScenario()
 	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, b)
+	fmt.Fprint(w, string(scenario))
 }
 
 // ceGetActiveNodeServiceMaps retrieves the deployed scenario external node service mappings
@@ -578,18 +457,14 @@ func ceGetEventList(w http.ResponseWriter, r *http.Request) {
 }
 
 func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
-
-	// Retrieve active scenario
-	var scenario []byte
-	err := getScenario(false, db, activeScenarioName, scenario)
-	if err != nil {
-		return err.Error(), http.StatusNotFound
+	if event.EventNetworkCharacteristicsUpdate == nil {
+		return "Malformed request: missing EventNetworkCharacteristicsUpdate", http.StatusBadRequest
 	}
 
 	// elementFound := false
 	netChar := event.EventNetworkCharacteristicsUpdate
 
-	err = activeModel.UpdateNetChar(netChar)
+	err := activeModel.UpdateNetChar(netChar)
 	if err != nil {
 		return err.Error(), http.StatusInternalServerError
 	}
@@ -597,14 +472,9 @@ func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
 }
 
 func sendEventMobility(event ceModel.Event) (string, int) {
-
-	// Retrieve active scenario
-	var scenario []byte
-	err := getScenario(false, db, activeScenarioName, scenario)
-	if err != nil {
-		return err.Error(), http.StatusNotFound
+	if event.EventMobility == nil {
+		return "Malformed request: missing EventMobility", http.StatusBadRequest
 	}
-
 	// Retrieve target name (src) and destination parent name
 	elemName := event.EventMobility.ElementName
 	destName := event.EventMobility.Dest
@@ -625,14 +495,11 @@ func sendEventMobility(event ceModel.Event) (string, int) {
 }
 
 func sendEventPoasInRange(event ceModel.Event) (string, int) {
-	var ue *ceModel.PhysicalLocation
-
-	// Retrieve active scenario
-	var scenario []byte
-	err := getScenario(false, db, activeScenarioName, scenario)
-	if err != nil {
-		return err.Error(), http.StatusNotFound
+	if event.EventPoasInRange == nil {
+		return "Malformed request: missing EventPoasInRange", http.StatusBadRequest
 	}
+
+	var ue *ceModel.PhysicalLocation
 
 	// Retrieve UE name
 	ueName := event.EventPoasInRange.Ue
@@ -649,11 +516,8 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 	}
 	ue, ok := n.(*ceModel.PhysicalLocation)
 	if !ok {
-		var errStr string
-		errStr = fmt.Sprintf(errStr, "Wrong node type %T -- expected PhysicalLocation")
-		return errStr, http.StatusPreconditionFailed
-	}
-	if ue.Type_ != "UE" {
+		ue = nil
+	} else if ue.Type_ != "UE" {
 		ue = nil
 	}
 
@@ -666,12 +530,9 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 			log.Debug("Updating POAs in range for UE: " + ue.Name)
 			ue.NetworkLocationsInRange = poasInRange
 
-			// Store updated active scenario in DB
-			rev, err := setScenario(db, activeScenarioName, scenario)
-			if err != nil {
-				return err.Error(), http.StatusNotFound
-			}
-			log.Debug("Active scenario updated with rev: ", rev)
+			activeModel.Activate()
+
+			log.Debug("Active scenario updated")
 		} else {
 			log.Debug("POA list unchanged. Ignoring.")
 		}
@@ -705,6 +566,12 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Event Type: ", eventType)
 
 	// Retrieve event from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	var event ceModel.Event
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&event)
