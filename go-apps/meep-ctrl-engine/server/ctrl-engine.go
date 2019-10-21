@@ -530,7 +530,11 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 			log.Debug("Updating POAs in range for UE: " + ue.Name)
 			ue.NetworkLocationsInRange = poasInRange
 
-			activeModel.Activate()
+			//Publish updated scenario
+			err := activeModel.Activate()
+			if err != nil {
+				return err.Error(), http.StatusInternalServerError
+			}
 
 			log.Debug("Active scenario updated")
 		} else {
