@@ -34,7 +34,7 @@ const activeScenarioEvents = "ctrl-engine-active"
 // const activeScenarioKey = "activeScenarioKey"
 const activeScenarioKey = "ctrl-engine:active"
 
-const DbAddress = "meep-redis-master:6379"
+var DbAddress = "meep-redis-master:6379"
 
 var redisTable = 0
 
@@ -87,6 +87,42 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	}
 	log.Debug("[", m.module, "] Model created ", m.name)
 	return m, nil
+}
+
+// JSONMarshallScenarioList - Convert ScenarioList to JSON string
+func JSONMarshallScenarioList(scenarioList [][]byte) (slStr string, err error) {
+	var sl ceModel.ScenarioList
+	for _, s := range scenarioList {
+		var scenario ceModel.Scenario
+		err = json.Unmarshal(s, &scenario)
+		if err != nil {
+			return "", err
+		}
+		sl.Scenarios = append(sl.Scenarios, scenario)
+	}
+
+	json, err := json.Marshal(sl)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
+// JSONMarshallScenario - Convert ScenarioList to JSON string
+func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
+	var s ceModel.Scenario
+	err = json.Unmarshal(scenario, &s)
+	if err != nil {
+		return "", err
+	}
+
+	json, err := json.Marshal(s)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
 }
 
 // SetScenario - Initialize model from JSON string
@@ -183,7 +219,7 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 // MoveNode - Move a specific UE in the scenario
 func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, newLocName string, err error) {
 	moveNode := m.nodeMap.FindByName(nodeName)
-	// fmt.Printf("+++ ueNode: %+v\n", ueNode)
+	// fmt.Printf("+++ ueNode: %+v\n", moveNode)
 	if moveNode == nil {
 		return "", "", errors.New("Mobility: " + nodeName + " not found")
 	}
@@ -477,6 +513,9 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 		oldNL.PhysicalLocations[idx] = oldNL.PhysicalLocations[len(oldNL.PhysicalLocations)-1]
 		//truncate
 		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
+
+		// refresh pointers
+		m.parseNodes()
 	}
 
 	return oldNL.Name, newNL.Name, nil
