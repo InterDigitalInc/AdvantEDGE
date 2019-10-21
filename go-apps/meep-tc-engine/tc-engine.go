@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package server
+package main
 
 import (
 	"encoding/json"
@@ -28,6 +28,7 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -77,6 +78,11 @@ const (
 	stateInitializing = 1
 	stateReady        = 2
 )
+
+const DEFAULT_NET_CHAR_DB = 0
+const DEFAULT_LB_RULES_DB = 0
+const DEFAULT_METRICS_DB = 0
+const redisAddr string = "meep-redis-master:6379"
 
 type NetChar struct {
 	Latency            int
@@ -164,6 +170,32 @@ type PodInfo struct {
 	EgressSvcMapList  map[string]*EgressSvcMap
 }
 
+type NetCharStore struct {
+	rc *redis.Connector
+}
+type LbRulesStore struct {
+	rc *redis.Connector
+}
+type MetricsStore struct {
+	rc *redis.Connector
+}
+
+type TcEngine struct {
+	scenarioModel *mod.Model
+	netCharStore  *NetCharStore
+	lbRulesStore  *LbRulesStore
+	metricsStore  *MetricsStore
+	bwSharing     *bws.BwSharing
+
+	// Flag & Counters used to indicate when TC Engine is ready to
+	tcEngineState     int
+	podCountReq       int
+	podCount          int
+	svcCountReq       int
+	svcCount          int
+	nextTransactionId int
+}
+
 // Scenario service mappings
 var svcInfoMap = map[string]*ServiceInfo{}
 var mgSvcInfoMap = map[string]*MgServiceInfo{}
@@ -183,8 +215,6 @@ var netElemNameToIndexMap = map[string]int{}
 
 var netCharTable [][][]int
 
-var bwSharing *bws.BwSharing
-
 // Scenario Name
 var scenarioName string
 
@@ -194,51 +224,74 @@ var svcIPMap = map[string]string{}
 
 var nextUniqueNumberMap = map[string]int{}
 
-// Flag & Counters used to indicate when TC Engine is ready to
-var tcEngineState = stateIdle
-var podCountReq = 0
-var podCount = 0
-var svcCountReq = 0
-var svcCount = 0
-var nextTransactionId = 1
-
-const redisAddr string = "meep-redis-master:6379"
-
-var rc *redis.Connector
 var mutex sync.Mutex
 
-const DEFAULT_TC_ENGINE_DB = 0
+var tce *TcEngine
 
 // Init - TC Engine initialization
 func Init() (err error) {
 
-	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisAddr, DEFAULT_TC_ENGINE_DB)
-	if err != nil {
-		log.Error("Failed connection to Redis DB.  Error: ", err)
-		return err
-	}
-	log.Info("Connected to redis DB")
+	// Create new TC Engine
+	tce = new(TcEngine)
+	tce.tcEngineState = stateIdle
+	tce.podCountReq = 0
+	tce.podCount = 0
+	tce.svcCountReq = 0
+	tce.svcCount = 0
+	tce.nextTransactionId = 1
 
-	// Subscribe to Pub-Sub events for MEEP Controller
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = rc.Subscribe(channelCtrlActive, channelMgManagerLb)
+	// Create new Scenario Model instance (NOTE: opens Active Scenario Store)
+	tce.scenarioModel, err = mod.NewModel(mod.DbAddress, "meep-tc-engine", "activeScenario")
 	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+
+	// Open Network Characteristics Store
+	tce.netCharStore = new(NetCharStore)
+	tce.netCharStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_NET_CHAR_DB)
+	if err != nil {
+		log.Error("Failed connection to Net Char Store Redis DB.  Error: ", err)
+		return err
+	}
+	log.Info("Connected to Net Char Store redis DB")
 
 	// Flush any remaining TC Engine rules
-	rc.DBFlush(moduleTcEngine)
+	tce.netCharStore.rc.DBFlush(moduleTcEngine)
 
 	bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
 
+	// Open Load Balancing Rules Store
+	tce.lbRulesStore = new(LbRulesStore)
+	tce.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
+	if err != nil {
+		log.Error("Failed connection to LB Rules Store Redis DB.  Error: ", err)
+		return err
+	}
+	log.Info("Connected to LB Rules Store redis DB")
+
+	// Open Metrics Store
+	tce.metricsStore = new(MetricsStore)
+	tce.metricsStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_METRICS_DB)
+	if err != nil {
+		log.Error("Failed connection to Metrics Store Redis DB.  Error: ", err)
+		return err
+	}
+	log.Info("Connected to Metrics Store redis DB")
+
+	// Flush existing values
+	tce.metricsStore.rc.DBFlush(moduleMetrics)
+
+	// Create new Bandwidth Sharing instance
+	tce.bwSharing, err = bws.NewBwSharing("default", updateOneFilterRule, applyOneFilterRule)
 	if err != nil {
 		log.Error("Failed to create a bwSharing object. Error: ", err)
 		return err
 	}
-	bwSharing.UpdateControls()
-	_ = bwSharing.Start()
+
+	// Configure & Start BW Sharing
+	tce.bwSharing.UpdateControls()
+	_ = tce.bwSharing.Start()
 
 	// Initialize TC Engine with current active scenario & LB rules
 	processActiveScenarioUpdate()
@@ -248,10 +301,26 @@ func Init() (err error) {
 }
 
 // Run - MEEP TC Engine execution
-func Run() {
+func Run() error {
 
-	// Listen for subscribed events. Provide event handler method.
-	_ = rc.Listen(eventHandler)
+	// Listen for model updates
+	err := tce.scenarioModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Unable to listen to model updates: ", err.Error())
+		return err
+	}
+
+	// Listen for LB Rules updates
+	go func() {
+		err = tce.lbRulesStore.rc.Subscribe(channelMgManagerLb)
+		if err != nil {
+			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+			return
+		}
+		_ = tce.lbRulesStore.rc.Listen(eventHandler)
+	}()
+
+	return nil
 }
 
 func eventHandler(channel string, payload string) {
@@ -274,26 +343,13 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	// Retrieve active scenario from DB
-	jsonScenario, err := rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
-		stopScenario()
-		return
-	}
 
 	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
-	if err != nil {
-		log.Error(err.Error())
-		stopScenario()
-		return
-	}
 
 	// Parse scenario
 	parseScenario(scenario)
 
-	switch tcEngineState {
+	switch tce.tcEngineState {
 	case stateIdle:
 		// Retrieve platform information: Pod ID & Service IP
 		getPlatformInfo()
@@ -317,24 +373,24 @@ func processActiveScenarioUpdate() {
 		mutex.Unlock()
 
 		//Update the Db for state information (only transactionId for now)
-		updateDbState(nextTransactionId)
+		updateDbState(tce.nextTransactionId)
 
 		// Publish update to TC Sidecars for enforcement
-		transactionIdStr := strconv.Itoa(nextTransactionId)
-		_ = rc.Publish(channelTcNet, transactionIdStr)
-		nextTransactionId++
+		transactionIdStr := strconv.Itoa(tce.nextTransactionId)
+		_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
+		tce.nextTransactionId++
 	}
 }
 
 func processMgSvcMapUpdate() {
 	// Ignore update if TC Engine is not ready
-	if tcEngineState != stateReady {
+	if tce.tcEngineState != stateReady {
 		log.Warn("Ignoring MG Svc Map update while TC Engine not in ready state")
 		return
 	}
 
 	// Retrieve active scenario from DB
-	jsonNetElemList, err := rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
+	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -366,20 +422,20 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Publish update to TC Sidecars for enforcement
-	_ = rc.Publish(channelTcLb, "")
+	_ = tce.netCharStore.rc.Publish(channelTcLb, "")
 }
 
 func addPod(name string) {
-	if _, found := podIPMap[name]; !found && tcEngineState != stateReady {
+	if _, found := podIPMap[name]; !found && tce.tcEngineState != stateReady {
 		podIPMap[name] = ""
-		podCountReq++
+		tce.podCountReq++
 	}
 }
 
 func addSvc(name string) {
-	if _, found := svcIPMap[name]; !found && tcEngineState != stateReady {
+	if _, found := svcIPMap[name]; !found && tce.tcEngineState != stateReady {
 		svcIPMap[name] = ""
-		svcCountReq++
+		tce.svcCountReq++
 	}
 }
 
@@ -443,22 +499,22 @@ func stopScenario() {
 	mgSvcInfoMap = map[string]*MgServiceInfo{}
 	podInfoMap = map[string]*PodInfo{}
 
-	tcEngineState = stateIdle
-	podCountReq = 0
-	podCount = 0
-	svcCountReq = 0
-	svcCount = 0
+	tce.tcEngineState = stateIdle
+	tce.podCountReq = 0
+	tce.podCount = 0
+	tce.svcCountReq = 0
+	tce.svcCount = 0
 
 	scenarioName = ""
 
-	rc.DBFlush(moduleTcEngine)
+	tce.netCharStore.rc.DBFlush(moduleTcEngine)
+	tce.metricsStore.rc.DBFlush(moduleMetrics)
 
-	_ = rc.Publish(channelTcNet, "delAll")
-	_ = rc.Publish(channelTcLb, "delAll")
+	_ = tce.netCharStore.rc.Publish(channelTcNet, "delAll")
+	_ = tce.netCharStore.rc.Publish(channelTcLb, "delAll")
 }
 
 func validateLatencyVariation(value int) int {
-
 	if value < 0 {
 		value = 0
 	}
@@ -795,22 +851,6 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 	svcInfoMap[svcInfo.Name] = svcInfo
 }
 
-/*
-func getElement(name string) *NetElem {
-	// Make sure net char list exists
-	if netElemList == nil {
-		return nil
-	}
-
-	// Return element reference if found
-	for index, elem := range netElemList {
-		if elem.Name == name {
-			return &netElemList[index]
-		}
-	}
-	return nil
-}
-*/
 func addElementToList(element *NetElem) {
 	switch element.Type {
 	case "FOG":
@@ -1009,7 +1049,7 @@ func updateDbState(transactionId int) {
 	dbState["transactionIdStored"] = transactionId
 
 	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
-	_ = rc.SetEntry(keyName, dbState)
+	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
 func updateOneFilterRule(dstName string, srcName string, rate float64) {
@@ -1021,18 +1061,11 @@ func updateOneFilterRule(dstName string, srcName string, rate float64) {
 			for _, storedFilterInfo := range dstElement.FilterInfoList {
 				if storedFilterInfo.SrcName == srcName {
 					filterInfo.PodName = storedFilterInfo.PodName
-					//filterInfo.SrcIp = storedFilterInfo.SrcIp
-					//filterInfo.SrcSvcIp = storedFilterInfo.SrcSvcIp
-					//filterInfo.SrcName = storedFilterInfo.SrcName
-					//filterInfo.SrcNetmask = storedFilterInfo.SrcNetmask
-					//filterInfo.SrcPort = storedFilterInfo.SrcPort
-					//filterInfo.DstPort = storedFilterInfo.DstPort
 					filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
 					filterInfo.Latency = storedFilterInfo.Latency
 					filterInfo.LatencyVariation = storedFilterInfo.LatencyVariation
 					filterInfo.LatencyCorrelation = storedFilterInfo.LatencyCorrelation
 					filterInfo.PacketLoss = storedFilterInfo.PacketLoss
-
 					filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
 
 					_ = updateNetCharRule(&filterInfo, true)
@@ -1046,12 +1079,12 @@ func updateOneFilterRule(dstName string, srcName string, rate float64) {
 
 func applyOneFilterRule() {
 	//Update the Db for state information (only transactionId for now)
-	updateDbState(nextTransactionId)
+	updateDbState(tce.nextTransactionId)
 
 	// Publish update to TC Sidecars for enforcement
-	transactionIdStr := strconv.Itoa(nextTransactionId)
-	_ = rc.Publish(channelTcNet, transactionIdStr)
-	nextTransactionId++
+	transactionIdStr := strconv.Itoa(tce.nextTransactionId)
+	_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
+	tce.nextTransactionId++
 }
 
 func applyNetCharRules() {
@@ -1156,12 +1189,10 @@ func applyNetCharRules() {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
 				dstElementPtr.NextUniqueNumber += 2
 				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
-			} else {
-				if needUpdateFilter {
-					_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
-				} else if needUpdateNetChar {
-					_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
-				}
+			} else if needUpdateFilter {
+				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
+			} else if needUpdateNetChar {
+				_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
 			}
 			indexToNetElemMap[j] = *dstElementPtr
 			curNetCharList[j] = *dstElementPtr
@@ -1176,7 +1207,7 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 
 	// Delete filter rule
 	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumber
-	err := rc.DelEntry(keyName)
+	err := tce.netCharStore.rc.DelEntry(keyName)
 	if err != nil {
 		return err
 	}
@@ -1206,7 +1237,7 @@ func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = rc.SetEntry(keyName, m_shape)
+	err = tce.netCharStore.rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
@@ -1226,7 +1257,7 @@ func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_filter["filter_uniqueId"] = filterNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumberStr
-	err = rc.SetEntry(keyName, m_filter)
+	err = tce.netCharStore.rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
 	}
@@ -1256,7 +1287,7 @@ func updateNetCharRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = rc.SetEntry(keyName, m_shape)
+	err = tce.netCharStore.rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
@@ -1296,7 +1327,7 @@ func applyMgSvcMapping() {
 				keys[key] = true
 
 				// Set rule information in DB
-				_ = rc.SetEntry(key, fields)
+				_ = tce.netCharStore.rc.SetEntry(key, fields)
 			}
 		}
 
@@ -1332,7 +1363,7 @@ func applyMgSvcMapping() {
 			keys[key] = true
 
 			// Set rule information in DB
-			_ = rc.SetEntry(key, fields)
+			_ = tce.netCharStore.rc.SetEntry(key, fields)
 		}
 
 		// Egress Service rules
@@ -1355,13 +1386,13 @@ func applyMgSvcMapping() {
 			keys[key] = true
 
 			// Set rule information in DB
-			_ = rc.SetEntry(key, fields)
+			_ = tce.netCharStore.rc.SetEntry(key, fields)
 		}
 	}
 
 	// Remove old DB entries
 	keyName := moduleTcEngine + ":" + typeLb + ":*"
-	err := rc.ForEachEntry(keyName, removeEntryHandler, &keys)
+	err := tce.netCharStore.rc.ForEachEntry(keyName, removeEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)
 		return
@@ -1372,7 +1403,7 @@ func removeEntryHandler(key string, fields map[string]string, userData interface
 	keys := userData.(*map[string]bool)
 
 	if _, found := (*keys)[key]; !found {
-		_ = rc.DelEntry(key)
+		_ = tce.netCharStore.rc.DelEntry(key)
 	}
 	return nil
 }
@@ -1382,7 +1413,7 @@ func getPlatformInfo() {
 
 	// Set TC Engine state to Initializing
 	log.Info("TC Engine scenario received. Moving to Initializing state.")
-	tcEngineState = stateInitializing
+	tce.tcEngineState = stateInitializing
 
 	// Start polling thread to retrieve platform information
 	// When all information retrieved, stop thread and move to ready state
@@ -1391,7 +1422,7 @@ func getPlatformInfo() {
 		for range ticker.C {
 
 			// Stop ticker if TC engine state is no longer initializing
-			if tcEngineState != stateInitializing {
+			if tce.tcEngineState != stateInitializing {
 				log.Warn("Ticker stopped due to TC Engine state no longer initializing")
 				ticker.Stop()
 				return
@@ -1405,8 +1436,8 @@ func getPlatformInfo() {
 			}
 
 			// Retrieve Pod Information if required
-			if podCount < podCountReq {
-				log.Debug("Checking for Pod IPs. podCountReq: ", podCountReq, " podCount:", podCount)
+			if tce.podCount < tce.podCountReq {
+				log.Debug("Checking for Pod IPs. podCountReq: ", tce.podCountReq, " podCount:", tce.podCount)
 				log.Info("update on the mappings(pod): ", podIPMap)
 				// Retrieve all pods from k8s api with scenario label
 				pods, err := clientset.CoreV1().Pods("").List(
@@ -1431,14 +1462,14 @@ func getPlatformInfo() {
 							element.Ip = podIP
 							element.NextUniqueNumber = 1
 						}
-						podCount++
+						tce.podCount++
 					}
 				}
 			}
 
 			// Retrieve Service Information if required
-			if svcCount < svcCountReq {
-				log.Debug("Checking for Service IPs. svcCountReq: ", svcCountReq, " svcCount:", svcCount)
+			if tce.svcCount < tce.svcCountReq {
+				log.Debug("Checking for Service IPs. svcCountReq: ", tce.svcCountReq, " svcCount:", tce.svcCount)
 				log.Info("update on the mappings(svc): ", svcIPMap)
 
 				// Retrieve all services from k8s api with scenario label
@@ -1457,16 +1488,16 @@ func getPlatformInfo() {
 					if ip, found := svcIPMap[svcName]; found && ip == "" && svcIP != "" {
 						log.Debug("Setting svcName: ", svcName, " to IP: ", svcIP)
 						svcIPMap[svcName] = svcIP
-						svcCount++
+						tce.svcCount++
 					}
 				}
 			}
 
 			// Stop thread if all platform information has been retrieved
-			if podCount == podCountReq && svcCount == svcCountReq {
-				if tcEngineState == stateInitializing {
+			if tce.podCount == tce.podCountReq && tce.svcCount == tce.svcCountReq {
+				if tce.tcEngineState == stateInitializing {
 					log.Info("TC Engine scenario data retrieved. Moving to Ready state.")
-					tcEngineState = stateReady
+					tce.tcEngineState = stateReady
 
 					// Refresh & apply network characteristics rules
 					processActiveScenarioUpdate()

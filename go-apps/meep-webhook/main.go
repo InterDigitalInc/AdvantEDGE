@@ -32,7 +32,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
 
-var Model *mod.Model
+var model *mod.Model
 
 func main() {
 	var parameters WhSvrParameters
@@ -42,14 +42,9 @@ func main() {
 
 	// Listen for model updates
 	var err error
-	Model, err = mod.NewModel(mod.DbAddress, "meep-webhook", "activeScenario")
+	model, err = mod.NewModel(mod.DbAddress, "meep-webhook", "activeScenario")
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
-		return
-	}
-	err = Model.Listen(eventHandler)
-	if err != nil {
-		log.Error("Unable to listen to model updates: ", err.Error())
 		return
 	}
 
@@ -86,8 +81,12 @@ func main() {
 	mux.HandleFunc("/mutate", whsvr.serve)
 	whsvr.server.Handler = mux
 
-	// Start DB listener in new routine
-	// go activeDBListen()
+	// Start active model listener
+	err = model.Listen(eventHandler)
+	if err != nil {
+		log.Error("Unable to listen to model updates: ", err.Error())
+		return
+	}
 
 	// Start webhook server in new routine
 	go func() {
