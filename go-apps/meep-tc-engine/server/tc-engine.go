@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	bws "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-bw-sharing"
@@ -37,7 +38,6 @@ import (
 const moduleTcEngine string = "tc-engine"
 const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
-const moduleMetrics string = "metrics"
 
 const typeActive string = "active"
 const typeNet string = "net"
@@ -205,6 +205,7 @@ var nextTransactionId = 1
 const redisAddr string = "meep-redis-master:6379"
 
 var rc *redis.Connector
+var mutex sync.Mutex
 
 const DEFAULT_TC_ENGINE_DB = 0
 
@@ -229,16 +230,15 @@ func Init() (err error) {
 
 	// Flush any remaining TC Engine rules
 	rc.DBFlush(moduleTcEngine)
-	rc.DBFlush(moduleMetrics)
 
-	bwSharing, err = bws.NewBwSharing("default", updateOneFilterRule, applyOneFilterRule)
+	bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
 
 	if err != nil {
 		log.Error("Failed to create a bwSharing object. Error: ", err)
 		return err
 	}
 	bwSharing.UpdateControls()
-	//	_ = bwSharing.Start()
+	_ = bwSharing.Start()
 
 	// Initialize TC Engine with current active scenario & LB rules
 	processActiveScenarioUpdate()
@@ -291,7 +291,6 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Parse scenario
-	go bwSharing.ParseScenarioUpdate(scenario)
 	parseScenario(scenario)
 
 	switch tcEngineState {
@@ -304,6 +303,7 @@ func processActiveScenarioUpdate() {
 
 	case stateReady:
 		// Update Network Characteristic matrix table
+		mutex.Lock()
 		refreshNetCharTable()
 
 		//debug for the tables
@@ -314,6 +314,7 @@ func processActiveScenarioUpdate() {
 
 		// Apply network characteristic rules
 		applyNetCharRules()
+		mutex.Unlock()
 
 		//Update the Db for state information (only transactionId for now)
 		updateDbState(nextTransactionId)
@@ -451,7 +452,6 @@ func stopScenario() {
 	scenarioName = ""
 
 	rc.DBFlush(moduleTcEngine)
-	rc.DBFlush(moduleMetrics)
 
 	_ = rc.Publish(channelTcNet, "delAll")
 	_ = rc.Publish(channelTcLb, "delAll")
@@ -1015,6 +1015,7 @@ func updateDbState(transactionId int) {
 func updateOneFilterRule(dstName string, srcName string, rate float64) {
 	var filterInfo FilterInfo
 
+	mutex.Lock()
 	for _, dstElement := range indexToNetElemMap {
 		if dstElement.Name == dstName {
 			for _, storedFilterInfo := range dstElement.FilterInfoList {
@@ -1034,12 +1035,13 @@ func updateOneFilterRule(dstName string, srcName string, rate float64) {
 
 					filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
 
-					_ = updateNetCharRule(&filterInfo)
+					_ = updateNetCharRule(&filterInfo, true)
 					break
 				}
 			}
 		}
 	}
+	mutex.Unlock()
 }
 
 func applyOneFilterRule() {
@@ -1089,6 +1091,7 @@ func applyNetCharRules() {
 			filterInfo.LatencyCorrelation = COMMON_CORRELATION
 			value = netCharTable[i][j][PACKET_LOSS]
 			filterInfo.PacketLoss = value
+			//throughput is always updated to make sure a value will be set in the DB is bwSharing is not active at the time of setting the value in the DB
 			value = netCharTable[i][j][THROUGHPUT]
 			filterInfo.DataRate = value
 			needUpdateFilter := false
@@ -1149,14 +1152,12 @@ func applyNetCharRules() {
 			if needCreate {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
 				dstElementPtr.NextUniqueNumber += 2
-				_ = updateFilterRule(&filterInfo)
+				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
 			} else {
 				if needUpdateFilter {
-					_ = updateFilterRule(&filterInfo)
-				} else {
-					if needUpdateNetChar {
-						_ = updateNetCharRule(&filterInfo)
-					}
+					_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
+				} else if needUpdateNetChar {
+					_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
 				}
 			}
 			indexToNetElemMap[j] = *dstElementPtr
@@ -1179,7 +1180,7 @@ func deleteFilterRule(filterInfo *FilterInfo) error {
 	return nil
 }
 
-func updateFilterRule(filterInfo *FilterInfo) error {
+func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	var err error
 	var keyName string
 
@@ -1196,7 +1197,9 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
-	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	if updateDataRate {
+		m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	}
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
@@ -1227,7 +1230,7 @@ func updateFilterRule(filterInfo *FilterInfo) error {
 	return nil
 }
 
-func updateNetCharRule(filterInfo *FilterInfo) error {
+func updateNetCharRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	var err error
 	var keyName string
 
@@ -1244,7 +1247,9 @@ func updateNetCharRule(filterInfo *FilterInfo) error {
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
-	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	if updateDataRate {
+		m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	}
 	m_shape["ifb_uniqueId"] = ifbNumberStr
 
 	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr

@@ -228,10 +228,15 @@ func (u *destination) processRxTx(rc *redis.Connector) {
 	var throughputStats = make(map[string]interface{})
 	throughputStats[u.remoteName] = throughputVal
 
-	//store as an individual dataset but also as an aggregate for throughput only (for now)
-	_ = rc.SetEntry(moduleMetrics+":"+PodName+":"+u.remoteName, stats)
-	//throughput stats will be appended if the entry didn't exist or replaced if it does
-	_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
+	//store statistics but only if the entry exists
+	key := moduleMetrics + ":" + PodName + ":" + u.remoteName
+	if rc.EntryExists(key) {
+		_ = rc.SetEntry(key, stats)
+	}
+	key = moduleMetrics + ":" + PodName + ":throughput"
+	if rc.EntryExists(key) {
+		_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
+	}
 
 	//pacing the logs in ES
 	elasticLogPacing++

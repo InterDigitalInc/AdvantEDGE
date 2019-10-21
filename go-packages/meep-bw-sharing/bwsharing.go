@@ -17,6 +17,7 @@
 package bws
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"sync"
@@ -27,21 +28,29 @@ import (
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
-const redisAddr string = "meep-redis-master:6379"
-
 var BW_SHARING_CONTROLS_DB = 0
+
+// BwAlgorithm
+type BwSharingAlgorithm interface {
+	init(*redis.Connector, func(string, string, float64), func())
+	initDefaultConfigAttributes()
+	parseScenario(ceModel.Scenario)
+	updateDefaultConfigAttributes(string, string)
+	tickerFunction()
+	deallocateBandwidthSharing()
+	allocateBandwidthSharing()
+}
 
 // BwSharing -
 type BwSharing struct {
-	name           string
-	isStarted      bool
-	isReady        bool
-	ticker         *time.Ticker
-	rcCtrlEng      *redis.Connector
-	mutex          sync.Mutex
-	updateFilterCB func(string, string, float64)
-	applyFilterCB  func()
-	config         ConfigurationAttributes
+	name      string
+	isStarted bool
+	isReady   bool
+	ticker    *time.Ticker
+	rcCtrlEng *redis.Connector
+	mutex     sync.Mutex
+	config ConfigurationAttributes
+	bwAlgo BwSharingAlgorithm
 }
 
 // ConfigurationAttributes -
@@ -49,20 +58,17 @@ type ConfigurationAttributes struct {
 	Action              string
 	RecalculationPeriod int
 	LogVerbose          bool
-	EnableTier1         bool
-	EnableTier2         bool
-	EnableTier3         bool
 }
 
 // NewBwSharing - Create, Initialize and connect
-func NewBwSharing(name string, updateFilterRule func(string, string, float64), applyFilterRule func()) (bw *BwSharing, err error) {
+func NewBwSharing(name string, redisAddr string, updateFilterRule func(string, string, float64), applyFilterRule func()) (*BwSharing, error) {
+	var err error
 	if name == "" {
 		err = errors.New("Missing bwSharing name")
 		log.Error(err)
 		return nil, err
 	}
-
-	bw = new(BwSharing)
+	var bw BwSharing
 	bw.name = name
 	bw.isStarted = false
 	bw.isReady = false
@@ -75,21 +81,24 @@ func NewBwSharing(name string, updateFilterRule func(string, string, float64), a
 	}
 	log.Info("Connected to redis DB")
 
+	bw.bwAlgo = new(DefaultBwSharingAlgorithm)
 	// Subscribe to Pub-Sub events for MEEP Controller
 	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = bw.rcCtrlEng.Subscribe(channelBwSharingControls)
+	err = bw.rcCtrlEng.Subscribe(channelBwSharingControls, channelCtrlActive)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events on channelBwSharingControls. Error: ", err)
 		return nil, err
 	}
 
+	//delete pre-existent metrics rule in the DB if any
+	bw.rcCtrlEng.DBFlush(moduleMetrics)
+
 	go bw.Run()
 
-	bw.updateFilterCB = updateFilterRule
-	bw.applyFilterCB = applyFilterRule
 	//get values from the DB, or defaults
 	bw.InitDefaultConfigAttributes()
-	return bw, nil
+	bw.bwAlgo.init(bw.rcCtrlEng, updateFilterRule, applyFilterRule)
+	return &bw, nil
 }
 
 // InitDefaultConfigAttributes - Initialize some default variables used by the generic bws object
@@ -97,7 +106,7 @@ func (bw *BwSharing) InitDefaultConfigAttributes() {
 
 	bw.config.RecalculationPeriod = defaultTickerPeriod
 	//initialize the default config attributes specific to the algorithm choosen
-	initDefaultConfigAttributes()
+	bw.bwAlgo.initDefaultConfigAttributes()
 }
 
 // Run - Listening event
@@ -114,31 +123,48 @@ func (bw *BwSharing) eventHandler(channel string, payload string) {
 	case channelBwSharingControls:
 		log.Debug("Event received on channel: ", channelBwSharingControls)
 		bw.UpdateControls()
+	case channelCtrlActive:
+		log.Debug("Event received on channel: ", channelCtrlActive)
+		bw.ProcessActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")
 	}
 }
 
-// ParseScenarioUpdate - Parse the scenario and extract the information usefull to the bws algorithms by calling their specific implementations
-func (bw *BwSharing) ParseScenarioUpdate(scenario ceModel.Scenario) {
+// ProcessActiveScenarioUpdate
+func (bw *BwSharing) ProcessActiveScenarioUpdate() {
+	// Retrieve active scenario from DB
+	jsonScenario, err := bw.rcCtrlEng.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
+	if err != nil {
+		log.Error(err.Error())
+		bw.StopScenario()
+		//flush existing metrics entrics in the DB
+		bw.rcCtrlEng.DBFlush(moduleMetrics)
+		return
+	}
+	// Unmarshal Active scenario
+	var scenario ceModel.Scenario
+	err = json.Unmarshal([]byte(jsonScenario), &scenario)
+	if err != nil {
+		log.Error(err.Error())
+		bw.StopScenario()
+		return
+	}
+
+	// Parse scenario
 	if bw.isStarted {
-		// Parse scenario
 		bw.mutex.Lock()
 		bw.isReady = false
-		parseScenario(scenario)
+		bw.bwAlgo.parseScenario(scenario)
 		bw.isReady = true
 		bw.mutex.Unlock()
 	}
 }
 
-// updateFilter - Updates the filters in the DB that will be pushed to the sidecars
-func (bw *BwSharing) updateFilter(dst string, src string, value float64) {
-	bw.updateFilterCB(dst, src, value)
-}
-
-// applyFilter - Send notifications to apply the filters stored in the DB for the sidecars
-func (bw *BwSharing) applyFilter() {
-	bw.applyFilterCB()
+// StopScenario
+func (bw *BwSharing) StopScenario() {
+	var emptyScenario ceModel.Scenario
+	bw.bwAlgo.parseScenario(emptyScenario)
 }
 
 // UpdateControls - Update all the different configurations attributes based on the content of the DB for dynamic updates
@@ -160,9 +186,6 @@ func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]strin
 	actionName := ""
 	tickerPeriod := defaultTickerPeriod
 	logVerbose := false
-	enableTier1 := false
-	enableTier2 := false
-	enableTier3 := false
 
 	for fieldName, fieldValue := range fields {
 		switch fieldName {
@@ -178,16 +201,13 @@ func (bw *BwSharing) getControlsEntryHandler(key string, fields map[string]strin
 				logVerbose = true
 			}
 		default:
-			updateDefaultConfigAttributes(fieldName, fieldValue)
 		}
+		bw.bwAlgo.updateDefaultConfigAttributes(fieldName, fieldValue)
 	}
 
 	bw.config.Action = actionName
 	bw.config.RecalculationPeriod = tickerPeriod
 	bw.config.LogVerbose = logVerbose
-	bw.config.EnableTier1 = enableTier1
-	bw.config.EnableTier2 = enableTier2
-	bw.config.EnableTier3 = enableTier3
 
 	//for debug
 	bw.ApplyAction()
@@ -212,14 +232,18 @@ func (bw *BwSharing) ApplyAction() (err error) {
 	return nil
 }
 
+// IsRunning()
+func (bw *BwSharing) IsRunning() bool {
+	return bw.isStarted
+}
+
 // Start - starts bwSharing distribution calculations
 func (bw *BwSharing) Start() (err error) {
 	bw.isStarted = true
 	bw.isReady = true
 	bw.ticker = time.NewTicker(time.Duration(bw.config.RecalculationPeriod) * time.Millisecond)
 
-	allocateBandwidthSharing()
-	//bw.ParseScenarioUpdate()
+	bw.bwAlgo.allocateBandwidthSharing()
 	go func() {
 		for range bw.ticker.C {
 
@@ -227,7 +251,7 @@ func (bw *BwSharing) Start() (err error) {
 			if bw.isReady {
 				bw.mutex.Lock()
 				bw.isReady = false
-				tickerFunction(bw.rcCtrlEng, bw.config.LogVerbose, bw.updateFilterCB, bw.applyFilterCB)
+				bw.bwAlgo.tickerFunction()
 				bw.isReady = true
 				bw.mutex.Unlock()
 			}
@@ -244,6 +268,6 @@ func (bw *BwSharing) Stop() {
 		log.Debug("BwSharing computation stopped ", bw.name)
 		bw.isStarted = false
 		bw.isReady = false
-		cleanUp()
+		bw.bwAlgo.deallocateBandwidthSharing()
 	}
 }

@@ -29,11 +29,8 @@ import (
 
 // DebugConfiguration -
 type DebugConfiguration struct {
-	EnableTier1  bool
-	EnableTier2  bool
-	EnableTier3  bool
-	EnableTier4  bool
 	IsPercentage bool
+	LogVerbose   bool
 }
 
 // SegmentConfiguration -
@@ -84,49 +81,60 @@ type Path struct {
 
 // NetElem -
 type NetElem struct {
-	Name                string
-	Type                string
-	PhyLocName          string
-	PoaName             string
-	ZoneName            string
-	DomainName          string
-	MaxThroughput       float64
-	PhyLocMaxThroughput float64
-	PoaMaxThroughput    float64
-	ZoneMaxThroughput   float64
-	DomainMaxThroughput float64
+	Name                     string
+	Type                     string
+	PhyLocName               string
+	PoaName                  string
+	ZoneName                 string
+	DomainName               string
+	MaxThroughput            float64
+	PhyLocMaxThroughput      float64
+	PoaMaxThroughput         float64
+	IntraZoneMaxThroughput   float64
+	InterZoneMaxThroughput   float64
+	InterDomainMaxThroughput float64
 }
 
-// flows and segments mappings
-var bandwidthSharingFlowMap map[string]*BandwidthSharingFlow
-var segmentsMap map[string]*BandwidthSharingSegment
+// BwSharing -
+type DefaultBwSharingAlgorithm struct {
+	BandwidthSharingFlowMap map[string]*BandwidthSharingFlow
+	SegmentsMap             map[string]*BandwidthSharingSegment
+	DefaultConfigs          SegmentConfiguration
+	DefaultDebugConfigs     DebugConfiguration
+	updateFilterCB          func(string, string, float64)
+	applyFilterCB           func()
+	rc                      *redis.Connector
+}
 
-var defaultConfigs SegmentConfiguration
-var defaultDebugConfigs DebugConfiguration
-var logVerbose bool
+// init - initialise some constructor values
+func (this *DefaultBwSharingAlgorithm) init(redisConnector *redis.Connector, updateFilterRule func(string, string, float64), applyFilterRule func()) {
+
+	this.updateFilterCB = updateFilterRule
+	this.applyFilterCB = applyFilterRule
+	this.rc = redisConnector
+
+}
 
 // allocateBandwidthSharing - allocated structures
-func allocateBandwidthSharing() {
-	bandwidthSharingFlowMap = make(map[string]*BandwidthSharingFlow)
-	segmentsMap = make(map[string]*BandwidthSharingSegment)
+func (this *DefaultBwSharingAlgorithm) allocateBandwidthSharing() {
+	this.BandwidthSharingFlowMap = make(map[string]*BandwidthSharingFlow)
+	this.SegmentsMap = make(map[string]*BandwidthSharingSegment)
 }
 
 // getBandwidthSharingFlow -
-func getBandwidthSharingFlow(key string) *BandwidthSharingFlow {
-
-	return bandwidthSharingFlowMap[key]
+func (this *DefaultBwSharingAlgorithm) getBandwidthSharingFlow(key string) *BandwidthSharingFlow {
+	return this.BandwidthSharingFlowMap[key]
 }
 
 // getBandwidthSharingSegment -
-func getBandwidthSharingSegment(key string) *BandwidthSharingSegment {
-
-	return segmentsMap[key]
+func (this *DefaultBwSharingAlgorithm) getBandwidthSharingSegment(key string) *BandwidthSharingSegment {
+	return this.SegmentsMap[key]
 }
 
 // setSegmentConfiguration - set configuration attributes on a per segment basis (absolute or relative %)
-func setSegmentConfiguration(toSegment *SegmentConfiguration, fromSegment *SegmentConfiguration, isPercentage bool, maxThroughput float64) {
+func (this *DefaultBwSharingAlgorithm) setSegmentConfiguration(toSegment *SegmentConfiguration, fromSegment *SegmentConfiguration, maxThroughput float64) {
 
-	if isPercentage {
+	if this.DefaultDebugConfigs.IsPercentage {
 		toSegment.MaxBwPerInactiveFlow = fromSegment.MaxBwPerInactiveFlow * maxThroughput / 100
 		toSegment.MinActivityThreshold = fromSegment.MinActivityThreshold * maxThroughput / 100
 		toSegment.IncrementalStep = fromSegment.IncrementalStep * maxThroughput / 100
@@ -144,7 +152,7 @@ func setSegmentConfiguration(toSegment *SegmentConfiguration, fromSegment *Segme
 }
 
 // resetBandwidthSharingFlowMaxPlannedThroughput -
-func resetBandwidthSharingFlowMaxPlannedThroughput(flow *BandwidthSharingFlow) {
+func (this *DefaultBwSharingAlgorithm) resetBandwidthSharingFlowMaxPlannedThroughput(flow *BandwidthSharingFlow) {
 
 	flow.MaxPlannedThroughput = MAX_THROUGHPUT
 	flow.MaxPlannedLowerBound = MAX_THROUGHPUT
@@ -152,74 +160,60 @@ func resetBandwidthSharingFlowMaxPlannedThroughput(flow *BandwidthSharingFlow) {
 }
 
 // updateDefaultConfigAttributes
-func updateDefaultConfigAttributes(fieldName string, fieldValue string) {
+func (this *DefaultBwSharingAlgorithm) updateDefaultConfigAttributes(fieldName string, fieldValue string) {
 	switch fieldName {
 	case "maxBwPerInactiveFlow":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.MaxBwPerInactiveFlow = value
+			this.DefaultConfigs.MaxBwPerInactiveFlow = value
 		}
 	case "minActivityThreshold":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.MinActivityThreshold = value
+			this.DefaultConfigs.MinActivityThreshold = value
 		}
 	case "incrementalStep":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.IncrementalStep = value
+			this.DefaultConfigs.IncrementalStep = value
 		}
 	case "inactivityIncrementalStep":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.InactivityIncrementalStep = value
+			this.DefaultConfigs.InactivityIncrementalStep = value
 		}
 	case "tolerationThreshold":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.TolerationThreshold = value
+			this.DefaultConfigs.TolerationThreshold = value
 		}
 	case "actionUpperThreshold":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
-			defaultConfigs.ActionUpperThreshold = value
+			this.DefaultConfigs.ActionUpperThreshold = value
 		}
 	case "isPercentage":
 		if "yes" == fieldValue {
-			defaultDebugConfigs.IsPercentage = true
+			this.DefaultDebugConfigs.IsPercentage = true
 		} else {
-			defaultDebugConfigs.IsPercentage = false
+			this.DefaultDebugConfigs.IsPercentage = false
 		}
-	case "enableTier1":
+	case "logVerbose":
 		if "yes" == fieldValue {
-			defaultDebugConfigs.EnableTier1 = true
-		} else {
-			defaultDebugConfigs.EnableTier1 = false
-		}
-	case "enableTier2":
-		if "yes" == fieldValue {
-			defaultDebugConfigs.EnableTier2 = true
-		} else {
-			defaultDebugConfigs.EnableTier2 = false
-		}
-	case "enableTier3":
-		if "yes" == fieldValue {
-			defaultDebugConfigs.EnableTier3 = true
-		} else {
-			defaultDebugConfigs.EnableTier3 = false
+			this.DefaultDebugConfigs.LogVerbose = true
 		}
 	default:
 	}
 }
 
 // getMetricsThroughputEntryHandler -
-func getMetricsThroughputEntryHandler(key string, fields map[string]string, userData interface{}) error {
+func (this *DefaultBwSharingAlgorithm) getMetricsThroughputEntryHandler(key string, fields map[string]string, userData interface{}) error {
 
 	subKey := strings.Split(key, ":")
 
 	for trafficFrom, throughput := range fields {
 
-		bwInfo := getBandwidthSharingFlow(trafficFrom + ":" + subKey[1])
+		bwInfo := this.getBandwidthSharingFlow(trafficFrom + ":" + subKey[1])
 		if bwInfo != nil {
 			value, _ := strconv.ParseFloat(throughput, 64)
 			bwInfo.CurrentThroughput = value
@@ -228,9 +222,30 @@ func getMetricsThroughputEntryHandler(key string, fields map[string]string, user
 	return nil
 }
 
+// createMetricsThroughputEntries -
+func (this *DefaultBwSharingAlgorithm) createMetricsThroughputEntries(srcElem string, dstElem string) {
+
+	var creationTime = make(map[string]interface{})
+	creationTime["creationTime"] = time.Now()
+
+	//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
+	_ = this.rc.SetEntry(moduleMetrics+":"+dstElem+":"+srcElem, creationTime)
+	_ = this.rc.SetEntry(moduleMetrics+":"+dstElem+":throughput", creationTime)
+}
+
+// deleteAllMetricsThroughputEntries -
+func (this *DefaultBwSharingAlgorithm) deleteAllMetricsThroughputEntries() {
+
+	for _, flow := range this.BandwidthSharingFlowMap {
+		//entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
+		_ = this.rc.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":" + flow.SrcNetworkElement)
+		_ = this.rc.DelEntry(moduleMetrics + ":" + flow.DstNetworkElement + ":throughput")
+	}
+}
+
 // populateBandwidthSharingFlow  - creation of a flow
-func populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElement *NetElem, maxBw float64) {
-	bwSharingInfo := bandwidthSharingFlowMap[flowName]
+func (this *DefaultBwSharingAlgorithm) populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElement *NetElem, maxBw float64) {
+	bwSharingInfo := this.BandwidthSharingFlowMap[flowName]
 	//maxBw is the min of the 2 ends if a max is not forced
 	if maxBw == 0 {
 		if srcElement.MaxThroughput < destElement.MaxThroughput {
@@ -246,7 +261,7 @@ func populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElem
 		bwSharingInfo.SrcNetworkElement = srcElement.Name
 		bwSharingInfo.DstNetworkElement = destElement.Name
 		bwSharingInfo.MaximumThroughput = maxBw
-		bandwidthSharingFlowMap[flowName] = bwSharingInfo
+		this.BandwidthSharingFlowMap[flowName] = bwSharingInfo
 	} else {
 		if bwSharingInfo.Name == flowName && bwSharingInfo.SrcNetworkElement == srcElement.Name && bwSharingInfo.DstNetworkElement == destElement.Name {
 			bwSharingInfo.MaximumThroughput = maxBw
@@ -255,96 +270,204 @@ func populateBandwidthSharingFlow(flowName string, srcElement *NetElem, destElem
 		}
 	}
 	//recreate the path it is part of (the segments might differ from previous ones)
-	bwSharingInfo.Path = createPath(flowName, srcElement, destElement)
+	bwSharingInfo.Path = this.createPath(flowName, srcElement, destElement)
 }
 
 // createPath -
-func createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Path {
+func (this *DefaultBwSharingAlgorithm) createPath(flowName string, srcElement *NetElem, destElement *NetElem) *Path {
 
 	//Tier 1 -- check if they are in the same poa
-	//Tier 2 -- check if they are in the same zone
-	//Tier 3 -- check if they are in the same domain
+	//Tier 2 -- check if they are in the same zone, but different poa
+	//Tier 3 -- check if they are in the same domain, but different zone
 	//Tier 4 -- check if they are in different domains
 
 	direction := ""
-	if srcElement.Type == "UE" && destElement.Type != "UE" {
-		direction = "uplink"
-	} else {
-		if srcElement.Type != "UE" && destElement.Type == "UE" {
-			direction = "downlink"
-		}
-	}
-
-	//communication between UE-apps and EDGE-apps only
-	if direction == "" {
-		return nil
-	}
+	segmentName := ""
+	var segment *BandwidthSharingSegment
 
 	path := new(Path)
 	path.Name = flowName
-	if srcElement.DomainName == destElement.DomainName {
-		if srcElement.ZoneName == destElement.ZoneName {
-			if srcElement.PoaName == destElement.PoaName && srcElement.PoaName != "" {
-				//Tier 1
-				if defaultDebugConfigs.EnableTier1 {
-					//2 possibilities
-					//segments for srcElement(app) -> 1A. UE-Node uplink-> 2A. POA-TermLink uplink -> 3A. Fog-Node uplink -> dstElement(app)
-					//segments for srcElement(app) -> 1B. FogNode downlink -> 2B. POA-TermLink downlink -> 3B. UE-Node downlink -> dstElement(app)
 
-					//segment 1A or 1B
-					segmentName := srcElement.PhyLocName + "-" + direction
-					segment := createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
-					path.Segments = append(path.Segments, segment)
+	//Tier 1
+	if srcElement.PoaName != "" {
+		//segments from element to POA
+		//2 possibilities
+		//UE->POA
+		//segments for srcElement(app) -> 1A. UE-Node uplink-> 2A. POA-TermLink uplink
+		//FOG-POA
+		//segments for srcElement(app) -> 1B. FogNode uplink
+		direction = "uplink"
+		//segment 1A or 1B
+		segmentName = srcElement.PhyLocName + "-" + direction
+		segment = this.createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput)
+		path.Segments = append(path.Segments, segment)
 
-					//segment 2A or 2B
-					segmentName = srcElement.PoaName + "-" + direction
-					/*					if srcElement.Type == "UE" {
-											segmentName = srcElement.PoaName + "-ingress"
-										} else {
-											segmentName = srcElement.PoaName + "-egress"
-										}
-					*/
-					segment = createSegment(segmentName, flowName, srcElement.PoaMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
-					path.Segments = append(path.Segments, segment)
-
-					//segment 3A or 3B
-					segmentName = destElement.PhyLocName + "-" + direction
-					segment = createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput, &defaultConfigs, defaultDebugConfigs.IsPercentage)
-					path.Segments = append(path.Segments, segment)
-				}
-			} else {
-				//Tier 2
-				if defaultDebugConfigs.EnableTier2 {
-
-				}
-			}
-		} else {
-			//Tier 3
-			if defaultDebugConfigs.EnableTier3 {
-
-			}
-		}
-	} else {
-		//Tier 4
-		if defaultDebugConfigs.EnableTier4 {
-
+		if srcElement.Type == "UE" {
+			//segment 2A
+			segmentName = srcElement.PoaName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, srcElement.PoaMaxThroughput)
+			path.Segments = append(path.Segments, segment)
 		}
 	}
+
+	if destElement.PoaName != "" {
+		//segments from POA to element
+		//2 possibilities
+		//POA->FOG
+		//3A. Fog-Node downlink -> dstElement(app)
+		//POA-UE
+		//2B. POA-TermLink downlink -> 3B. UE-Node downlink -> dstElement(app)
+
+		direction = "downlink"
+		if destElement.Type == "UE" {
+			//segment 2B
+			segmentName = destElement.PoaName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, destElement.PoaMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		}
+
+		//segment 3A or 3B
+		segmentName = destElement.PhyLocName + "-" + direction
+		segment = this.createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput)
+		path.Segments = append(path.Segments, segment)
+	}
+	//	}
+
+	//Tier 2
+	//if same zone, different POA, OR no POA at all (Edge-Edge)
+	if (srcElement.PoaName != destElement.PoaName) || (srcElement.PoaName == "" && destElement.PoaName == "") {
+		//segments to intraZone backbone
+		//2 possibilities
+		//EDGE->IntraZoneBackbone
+		//srcElement(app) -> 1A. Edge-Node uplink -> 2A. IntraZone uplink
+		//POA->IntraZoneBackbone
+		//2B. IntraZone uplink
+		direction = "uplink"
+		if srcElement.Type == "EDGE" {
+			//segment 1A
+			segmentName = srcElement.PhyLocName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+
+			//segment 2A
+			segmentName = srcElement.ZoneName + "-" + srcElement.PhyLocName + "-" + direction
+		} else {
+			//segment 2B
+			segmentName = srcElement.ZoneName + "-" + srcElement.PoaName + "-" + direction
+		}
+		if srcElement.ZoneName != "" {
+			segment = this.createSegment(segmentName, flowName, srcElement.IntraZoneMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		}
+
+		//segments from intraZone backbone
+		//2 possibilities
+		//IntraZoneBackbone->EDGE
+		//3A. IntraZone downlink -> 4A. Edge-Node downlink -> srcElement(app)
+		//IntraZoneBackbone->POA
+		//3B. IntraZone downlink
+		direction = "downlink"
+		if destElement.Type == "EDGE" {
+			//segment 4A
+			segmentName = destElement.PhyLocName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+
+			//segment 3A
+			segmentName = destElement.ZoneName + "-" + destElement.PhyLocName + "-" + direction
+		} else {
+			//segment 3B
+			segmentName = destElement.ZoneName + "-" + destElement.PoaName + "-" + direction
+		}
+		if destElement.ZoneName != "" {
+			segment = this.createSegment(segmentName, flowName, destElement.IntraZoneMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		}
+		//	}
+	}
+
+	//Tier 3
+	if srcElement.ZoneName != destElement.ZoneName {
+		//segments to interZone backbone
+		//1 possibility
+		//Zone->InterZoneBackbone
+		//1A. Zone uplink -> InterZone backbone (if zone exist)
+		direction = "uplink"
+		//segment 1A
+		if srcElement.ZoneName != "" {
+			segmentName = srcElement.ZoneName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, srcElement.InterZoneMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		}
+
+		//segments from interZone backbone
+		//1 possibility
+		//InterZoneBackbone->Zone
+		//2A. InterZone backbone -> Zone downlink (if zone exist)
+		direction = "downlink"
+		//segment 2A
+		if destElement.ZoneName != "" {
+			segmentName = destElement.ZoneName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, destElement.InterZoneMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		}
+	}
+	//        }
+
+	//Tier 4
+	if srcElement.DomainName != destElement.DomainName {
+		//segments to interDomain backbone
+		//1 possibility
+		//InterZoneBackbone->InterDomainBackbone
+		//1A. InterZone backbone -> Domain backbone
+		direction = "uplink"
+		//segment 1A
+		segmentName = srcElement.DomainName + "-" + direction
+		segment = this.createSegment(segmentName, flowName, srcElement.InterDomainMaxThroughput)
+		path.Segments = append(path.Segments, segment)
+
+		//segments from interDomain backbone
+		//1 possibility
+		//InterDomainBackbone->InterZoneBackbone
+		//2A. Domain backbone -> InterZone backbone
+		direction = "downlink"
+		//segment 2A
+		segmentName = destElement.DomainName + "-" + direction
+		segment = this.createSegment(segmentName, flowName, destElement.InterDomainMaxThroughput)
+		path.Segments = append(path.Segments, segment)
+
+		//when going through interdomain, either from/to the cloud or another domain, if not cloud, already handled in other tiers sections
+		if destElement.Type == "CLOUD" {
+			segmentName = destElement.PhyLocName + "-" + direction
+			segment = this.createSegment(segmentName, flowName, destElement.PhyLocMaxThroughput)
+			path.Segments = append(path.Segments, segment)
+		} else {
+			if srcElement.Type == "CLOUD" {
+				direction = "uplink"
+				segmentName = srcElement.PhyLocName + "-" + direction
+				segment = this.createSegment(segmentName, flowName, srcElement.PhyLocMaxThroughput)
+				path.Segments = append(path.Segments, segment)
+				//} else { //communication between domains is not supported
+				//return nil
+			}
+		}
+	}
+
 	return path
 }
 
 // createSegment -
-func createSegment(segmentName string, flowName string, maxThroughput float64, config *SegmentConfiguration, isPercentage bool) *BandwidthSharingSegment {
-	segment := getBandwidthSharingSegment(segmentName)
+func (this *DefaultBwSharingAlgorithm) createSegment(segmentName string, flowName string, maxThroughput float64) *BandwidthSharingSegment {
+	segment := this.getBandwidthSharingSegment(segmentName)
 	if segment == nil {
 		segment = new(BandwidthSharingSegment)
 		segment.Name = segmentName
-		segmentsMap[segmentName] = segment
-		setSegmentConfiguration(&segment.Config, config, isPercentage, maxThroughput)
+		this.SegmentsMap[segmentName] = segment
+		this.setSegmentConfiguration(&segment.Config, &this.DefaultConfigs, maxThroughput)
 
 	}
 	segment.MaxThroughput = maxThroughput
-	flow := getBandwidthSharingFlow(flowName)
+	flow := this.getBandwidthSharingFlow(flowName)
 	if flow != nil {
 		segment.Flows = append(segment.Flows, flow)
 	}
@@ -352,13 +475,11 @@ func createSegment(segmentName string, flowName string, maxThroughput float64, c
 }
 
 // tickerFunction - function called periodically to get metrics, calculate bandwidth values per flow per segment
-func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFilter func(string, string, float64), applyFilter func()) {
-
+//func (this DefaultBwSharingAlgorithm) tickerFunction(bw *BwSharing, algo *DefaultBwSharingAlgorithm) {
+func (this *DefaultBwSharingAlgorithm) tickerFunction() {
 	var start time.Time
 	var elapsed time.Duration
-	logVerbose = globalLogVerbose
-
-	if logVerbose {
+	if this.DefaultDebugConfigs.LogVerbose {
 		start = time.Now()
 		log.Info("******************************************************************************************")
 		elapsed = time.Since(start)
@@ -370,13 +491,13 @@ func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFil
 	}
 
 	keyName := moduleMetrics + ":*:throughput"
-	err := rcCtrlEng.ForEachEntry(keyName, getMetricsThroughputEntryHandler, nil)
+	err := this.rc.ForEachEntry(keyName, this.getMetricsThroughputEntryHandler, nil)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
 		return
 	}
 
-	if logVerbose {
+	if this.DefaultDebugConfigs.LogVerbose {
 		elapsed = time.Since(start) - elapsed
 		log.WithFields(log.Fields{
 			"meep.log.component": "meep-bw-sharing",
@@ -385,9 +506,9 @@ func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFil
 		}).Info("Measurements log")
 	}
 
-	reCalculateThroughputs(updateFilter, applyFilter)
+	this.reCalculateThroughputs()
 
-	if logVerbose {
+	if this.DefaultDebugConfigs.LogVerbose {
 		elapsed = time.Since(start) - elapsed
 		log.WithFields(log.Fields{
 			"meep.log.component": "meep-bw-sharing",
@@ -398,60 +519,59 @@ func tickerFunction(rcCtrlEng *redis.Connector, globalLogVerbose bool, updateFil
 }
 
 // reCalculateThroughputs -
-func reCalculateThroughputs(updateFilter func(string, string, float64), applyFilter func()) {
+func (this *DefaultBwSharingAlgorithm) reCalculateThroughputs() {
 
 	//reset every planned throughput values for every flow since they will start to populate those
-	resetAllBandwidthSharingFlowMaxPlannedThroughput()
+	this.resetAllBandwidthSharingFlowMaxPlannedThroughput()
 
 	//all segments determined by the scenario
-	for _, segment := range segmentsMap {
-		updateMaxFairShareBwPerFlow(segment)
+	for _, segment := range this.SegmentsMap {
+		this.updateMaxFairShareBwPerFlow(segment)
 
-		unusedBw, list := needToReevaluate(segment)
+		unusedBw, list := this.needToReevaluate(segment)
 
 		if list != nil {
-			if logVerbose {
+			if this.DefaultDebugConfigs.LogVerbose {
 				log.Info("Segment ", segment.Name, " reevaluation result - BW unused: ", unusedBw, "***flows to evaluate***: ", printBwFlowsNameFromList(list))
 			}
 
-			recalculateSegment(segment, list, unusedBw)
+			this.recalculateSegment(segment, list, unusedBw)
 
-			if logVerbose {
+			if this.DefaultDebugConfigs.LogVerbose {
 				printBwFlows(segment)
 			}
 		}
 	}
 
 	//apply to all flows
-	updateAllBandwidthSharingFlow(updateFilter, applyFilter)
+	this.updateAllBandwidthSharingFlow()
 }
 
 // resetAllBandwidthSharingFlowMaxPlannedThroughput -
-func resetAllBandwidthSharingFlowMaxPlannedThroughput() {
-	for _, flow := range bandwidthSharingFlowMap {
-		resetBandwidthSharingFlowMaxPlannedThroughput(flow)
+func (this *DefaultBwSharingAlgorithm) resetAllBandwidthSharingFlowMaxPlannedThroughput() {
+	for _, flow := range this.BandwidthSharingFlowMap {
+		this.resetBandwidthSharingFlowMaxPlannedThroughput(flow)
 	}
 }
 
 // updateAllBandwidthSharingFlow -
-func updateAllBandwidthSharingFlow(updateFilter func(string, string, float64), applyFilter func()) {
+func (this *DefaultBwSharingAlgorithm) updateAllBandwidthSharingFlow() {
 
-	for _, flow := range bandwidthSharingFlowMap {
+	for _, flow := range this.BandwidthSharingFlowMap {
 
-		//flow := bandwidthSharingFlowMap[key]
 		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
 			log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput)
 			flow.AllocatedThroughput = flow.MaxPlannedThroughput
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
-			updateFilter(flow.DstNetworkElement, flow.SrcNetworkElement, flow.AllocatedThroughput)
-			applyFilter()
+			this.updateFilterCB(flow.DstNetworkElement, flow.SrcNetworkElement, flow.AllocatedThroughput)
+			this.applyFilterCB()
 		}
 	}
 }
 
 // recalculateSegment -
-func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*BandwidthSharingFlow, unusedBw float64) {
+func (this *DefaultBwSharingAlgorithm) recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*BandwidthSharingFlow, unusedBw float64) {
 
 	nbEvaluatedFlowsLeft := len(flowsToEvaluate)
 
@@ -580,23 +700,25 @@ func recalculateSegment(segment *BandwidthSharingSegment, flowsToEvaluate []*Ban
 
 }
 
-// cleanUp -
-func cleanUp() {
-	//nothing allocated that should be cleared
+// deallocateBandwidthSharing -
+func (this *DefaultBwSharingAlgorithm) deallocateBandwidthSharing() {
+	this.BandwidthSharingFlowMap = nil
+	this.SegmentsMap = nil
 }
 
 // initDefaultConfigAttributes -
-func initDefaultConfigAttributes() {
-	defaultConfigs.MaxBwPerInactiveFlow = 2.0
-	defaultConfigs.MinActivityThreshold = 0.3
-	defaultConfigs.IncrementalStep = 3.0
-	defaultConfigs.InactivityIncrementalStep = 1.0
-	defaultConfigs.ActionUpperThreshold = 1.0
-	defaultConfigs.TolerationThreshold = 4.0
+func (this *DefaultBwSharingAlgorithm) initDefaultConfigAttributes() {
+	this.DefaultConfigs.MaxBwPerInactiveFlow = 2.0
+	this.DefaultConfigs.MinActivityThreshold = 0.3
+	this.DefaultConfigs.IncrementalStep = 3.0
+	this.DefaultConfigs.InactivityIncrementalStep = 1.0
+	this.DefaultConfigs.ActionUpperThreshold = 1.0
+	this.DefaultConfigs.TolerationThreshold = 4.0
+	this.DefaultDebugConfigs.IsPercentage = true
 }
 
 // updateMaxFairShareBwPerFlow -
-func updateMaxFairShareBwPerFlow(segment *BandwidthSharingSegment) {
+func (this *DefaultBwSharingAlgorithm) updateMaxFairShareBwPerFlow(segment *BandwidthSharingSegment) {
 
 	nbActiveConnections := 0
 	for _, flow := range segment.Flows {
@@ -612,7 +734,7 @@ func updateMaxFairShareBwPerFlow(segment *BandwidthSharingSegment) {
 }
 
 // needToReevaluate - determines which flows must be recalculated for bandwidth sharing within the segment
-func needToReevaluate(segment *BandwidthSharingSegment) (unusedBw float64, list []*BandwidthSharingFlow) {
+func (this *DefaultBwSharingAlgorithm) needToReevaluate(segment *BandwidthSharingSegment) (unusedBw float64, list []*BandwidthSharingFlow) {
 
 	unusedBw = segment.MaxThroughput
 
@@ -675,18 +797,18 @@ func printBwFlow(flow *BandwidthSharingFlow) string {
 
 	str := s1 + ": " + "Current: " + s6 + " - Max: " + s2 + " - Allocated: " + s3a + "[" + s4a + "-" + s5a + "]" + " - MaxPlanned: " + s3m + "[" + s4m + "-" + s5m + "]" + " - Planned: " + s3p + "[" + s4p + "-" + s5p + "] "
 
-	str += printPath(flow)
+	str += printPath(flow.Path)
 
 	return str
 }
 
 // printPath -
-func printPath(flow *BandwidthSharingFlow) string {
+func printPath(path *Path) string {
 	str := ""
 	first := true
-	if flow.Path != nil {
+	if path != nil {
 		str = "Path: "
-		for _, segment := range flow.Path.Segments {
+		for _, segment := range path.Segments {
 			if first {
 				str += segment.Name
 				first = false
@@ -700,68 +822,80 @@ func printPath(flow *BandwidthSharingFlow) string {
 }
 
 // parseScenario -
-func parseScenario(scenario ceModel.Scenario) {
-
+func (this *DefaultBwSharingAlgorithm) parseScenario(scenario ceModel.Scenario) {
 	var netElemList []NetElem
-	//reinitialise structures
-	allocateBandwidthSharing()
 
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
+	if scenario.Name != "" {
+		//reinitialise structures
+		this.allocateBandwidthSharing()
 
-		// Parse Zones
-		for _, zone := range domain.Zones {
+		// Parse Domains
+		for _, domain := range scenario.Deployment.Domains {
 
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
+			// Parse Zones
+			for _, zone := range domain.Zones {
 
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
+				// Parse Network Locations
+				for _, nl := range zone.NetworkLocations {
 
-					// Parse Processes
-					for _, proc := range pl.Processes {
+					// Parse Physical locations
+					for _, pl := range nl.PhysicalLocations {
 
-						element := new(NetElem)
-						element.Name = proc.Name
-						element.Type = pl.Type_
-						// Update element information based on current location characteristics
-						element.PhyLocName = pl.Name
-						element.DomainName = domain.Name
-						element.ZoneName = zone.Name
-						if pl.Type_ == "UE" || pl.Type_ == "FOG" {
-							element.PoaName = nl.Name
-							element.PoaMaxThroughput = float64(nl.TerminalLinkThroughput)
+						// Parse Processes
+						for _, proc := range pl.Processes {
+
+							element := new(NetElem)
+							element.Name = proc.Name
+							element.Type = pl.Type_
+							// Update element information based on current location characteristics
+							element.PhyLocName = pl.Name
+							element.DomainName = domain.Name
+							element.ZoneName = zone.Name
+							if pl.Type_ == "UE" || pl.Type_ == "FOG" {
+								element.PoaName = nl.Name
+								element.PoaMaxThroughput = float64(nl.TerminalLinkThroughput)
+							}
+							element.PhyLocMaxThroughput = float64(pl.LinkThroughput)
+							element.MaxThroughput = float64(proc.AppThroughput)
+							element.IntraZoneMaxThroughput = float64(zone.EdgeFogThroughput)
+							element.InterZoneMaxThroughput = float64(domain.InterZoneThroughput)
+							element.InterDomainMaxThroughput = float64(scenario.Deployment.InterDomainThroughput)
+
+							//to support scenarios without this info (compatibility with old scenarios)
+							if element.MaxThroughput == 0 {
+								element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
+							}
+							if element.PhyLocMaxThroughput == 0 {
+								element.PhyLocMaxThroughput = DEFAULT_THROUGHPUT_LINK
+							}
+
+							netElemList = append(netElemList, *element)
 						}
-						element.PhyLocMaxThroughput = float64(pl.LinkThroughput)
-						element.MaxThroughput = float64(proc.AppThroughput)
-
-						//to support scenarios without this info (compatibility with old scenarios)
-						if element.MaxThroughput == 0 {
-							element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
-						}
-						if element.PhyLocMaxThroughput == 0 {
-							element.PhyLocMaxThroughput = DEFAULT_THROUGHPUT_LINK
-						}
-
-						netElemList = append(netElemList, *element)
 					}
 				}
 			}
 		}
-	}
 
-	//bandwidth sharing creation elements section
-	//all the dummy processes meant for calculation can be ignored, others must have bandwidth flows created between each of them
-	for _, elemSrc := range netElemList {
-		for _, elemDest := range netElemList {
-			if elemSrc.Name != elemDest.Name {
-				populateBandwidthSharingFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0)
+		//bandwidth sharing creation elements section
+		//all the dummy processes meant for calculation can be ignored, others must have bandwidth flows created between each of them
+		for _, elemSrc := range netElemList {
+			for _, elemDest := range netElemList {
+				if elemSrc.Name != elemDest.Name {
+					this.populateBandwidthSharingFlow(elemSrc.Name+":"+elemDest.Name, &elemSrc, &elemDest, 0)
+					//create entries in DB that will be populated by the sidecar
+					this.createMetricsThroughputEntries(elemSrc.Name, elemDest.Name)
+
+				}
 			}
 		}
+
+		if this.DefaultDebugConfigs.LogVerbose {
+			log.Info("Segments map: ", this.SegmentsMap)
+			log.Info("Flows map: ", this.BandwidthSharingFlowMap)
+		}
+	} else {
+		//metrics created while parsing a scenario needs to be cleared when parsing nil scenario (stop scenario)
+		this.deleteAllMetricsThroughputEntries()
 	}
 
-	if logVerbose {
-		log.Info("Segments map: ", segmentsMap)
-		log.Info("Flows map: ", bandwidthSharingFlowMap)
-	}
 }
