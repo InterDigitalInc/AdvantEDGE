@@ -28,7 +28,6 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
-	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,7 +62,8 @@ const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const MAX_THROUGHPUT = 9999999999 //easy value to spot in the array
 const COMMON_CORRELATION = 50
-const COMMON_PACKET_LOSS = 10        // 1000 -> 10.00%
+
+// const COMMON_PACKET_LOSS = 10        // 1000 -> 10.00%
 const THROUGHPUT_UNIT = 1000000      //convert from Mbps to bps
 const DEFAULT_THROUGHPUT_LINK = 1000 //1000 mbps)
 const DEFAULT_THROUGHPUT_APP = 1000  //1000mbps)
@@ -79,9 +79,9 @@ const (
 	stateReady        = 2
 )
 
+const DEFAULT_SCENARIO_DB = 0
 const DEFAULT_NET_CHAR_DB = 0
 const DEFAULT_LB_RULES_DB = 0
-const DEFAULT_METRICS_DB = 0
 const redisAddr string = "meep-redis-master:6379"
 
 type NetChar struct {
@@ -170,21 +170,20 @@ type PodInfo struct {
 	EgressSvcMapList  map[string]*EgressSvcMap
 }
 
+type ScenarioStore struct {
+	rc *redis.Connector
+}
 type NetCharStore struct {
 	rc *redis.Connector
 }
 type LbRulesStore struct {
 	rc *redis.Connector
 }
-type MetricsStore struct {
-	rc *redis.Connector
-}
 
 type TcEngine struct {
-	scenarioModel *mod.Model
+	scenarioStore *ScenarioStore
 	netCharStore  *NetCharStore
 	lbRulesStore  *LbRulesStore
-	metricsStore  *MetricsStore
 	bwSharing     *bws.BwSharing
 
 	// Flag & Counters used to indicate when TC Engine is ready to
@@ -240,12 +239,14 @@ func Init() (err error) {
 	tce.svcCount = 0
 	tce.nextTransactionId = 1
 
-	// Create new Scenario Model instance (NOTE: opens Active Scenario Store)
-	tce.scenarioModel, err = mod.NewModel(mod.DbAddress, "meep-tc-engine", "activeScenario")
+	// Open Scenario Store
+	tce.scenarioStore = new(ScenarioStore)
+	tce.scenarioStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_SCENARIO_DB)
 	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
+		log.Error("Failed connection to Scenario Store Redis DB.  Error: ", err)
 		return err
 	}
+	log.Info("Connected to Scenario Store redis DB")
 
 	// Open Network Characteristics Store
 	tce.netCharStore = new(NetCharStore)
@@ -259,8 +260,6 @@ func Init() (err error) {
 	// Flush any remaining TC Engine rules
 	tce.netCharStore.rc.DBFlush(moduleTcEngine)
 
-	bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
-
 	// Open Load Balancing Rules Store
 	tce.lbRulesStore = new(LbRulesStore)
 	tce.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
@@ -270,20 +269,8 @@ func Init() (err error) {
 	}
 	log.Info("Connected to LB Rules Store redis DB")
 
-	// Open Metrics Store
-	tce.metricsStore = new(MetricsStore)
-	tce.metricsStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_METRICS_DB)
-	if err != nil {
-		log.Error("Failed connection to Metrics Store Redis DB.  Error: ", err)
-		return err
-	}
-	log.Info("Connected to Metrics Store redis DB")
-
-	// Flush existing values
-	tce.metricsStore.rc.DBFlush(moduleMetrics)
-
 	// Create new Bandwidth Sharing instance
-	tce.bwSharing, err = bws.NewBwSharing("default", updateOneFilterRule, applyOneFilterRule)
+	tce.bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
 	if err != nil {
 		log.Error("Failed to create a bwSharing object. Error: ", err)
 		return err
@@ -291,7 +278,11 @@ func Init() (err error) {
 
 	// Configure & Start BW Sharing
 	tce.bwSharing.UpdateControls()
-	_ = tce.bwSharing.Start()
+	err = tce.bwSharing.Start()
+	if err != nil {
+		log.Error("Failed to start BW Sharing. Error: ", err)
+		return err
+	}
 
 	// Initialize TC Engine with current active scenario & LB rules
 	processActiveScenarioUpdate()
@@ -303,16 +294,19 @@ func Init() (err error) {
 // Run - MEEP TC Engine execution
 func Run() error {
 
-	// Listen for model updates
-	err := tce.scenarioModel.Listen(eventHandler)
-	if err != nil {
-		log.Error("Unable to listen to model updates: ", err.Error())
-		return err
-	}
+	// Listen for Active Scenario updates
+	go func() {
+		err := tce.scenarioStore.rc.Subscribe(channelCtrlActive)
+		if err != nil {
+			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+			return
+		}
+		_ = tce.scenarioStore.rc.Listen(eventHandler)
+	}()
 
 	// Listen for LB Rules updates
 	go func() {
-		err = tce.lbRulesStore.rc.Subscribe(channelMgManagerLb)
+		err := tce.lbRulesStore.rc.Subscribe(channelMgManagerLb)
 		if err != nil {
 			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 			return
@@ -324,6 +318,8 @@ func Run() error {
 }
 
 func eventHandler(channel string, payload string) {
+	mutex.Lock()
+
 	// Handle Message according to Rx Channel
 	switch channel {
 
@@ -339,12 +335,27 @@ func eventHandler(channel string, payload string) {
 	default:
 		log.Warn("Unsupported channel")
 	}
+
+	mutex.Unlock()
 }
 
 func processActiveScenarioUpdate() {
 	// Retrieve active scenario from DB
+	jsonScenario, err := tce.scenarioStore.rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
+	if err != nil {
+		log.Error(err.Error())
+		stopScenario()
+		return
+	}
 
 	// Unmarshal Active scenario
+	var scenario ceModel.Scenario
+	err = json.Unmarshal([]byte(jsonScenario), &scenario)
+	if err != nil {
+		log.Error(err.Error())
+		stopScenario()
+		return
+	}
 
 	// Parse scenario
 	parseScenario(scenario)
@@ -359,7 +370,6 @@ func processActiveScenarioUpdate() {
 
 	case stateReady:
 		// Update Network Characteristic matrix table
-		mutex.Lock()
 		refreshNetCharTable()
 
 		//debug for the tables
@@ -370,7 +380,6 @@ func processActiveScenarioUpdate() {
 
 		// Apply network characteristic rules
 		applyNetCharRules()
-		mutex.Unlock()
 
 		//Update the Db for state information (only transactionId for now)
 		updateDbState(tce.nextTransactionId)
@@ -508,7 +517,6 @@ func stopScenario() {
 	scenarioName = ""
 
 	tce.netCharStore.rc.DBFlush(moduleTcEngine)
-	tce.metricsStore.rc.DBFlush(moduleMetrics)
 
 	_ = tce.netCharStore.rc.Publish(channelTcNet, "delAll")
 	_ = tce.netCharStore.rc.Publish(channelTcLb, "delAll")
@@ -1078,6 +1086,8 @@ func updateOneFilterRule(dstName string, srcName string, rate float64) {
 }
 
 func applyOneFilterRule() {
+	mutex.Lock()
+
 	//Update the Db for state information (only transactionId for now)
 	updateDbState(tce.nextTransactionId)
 
@@ -1085,6 +1095,8 @@ func applyOneFilterRule() {
 	transactionIdStr := strconv.Itoa(tce.nextTransactionId)
 	_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
 	tce.nextTransactionId++
+
+	mutex.Unlock()
 }
 
 func applyNetCharRules() {
@@ -1188,11 +1200,11 @@ func applyNetCharRules() {
 			if needCreate {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
 				dstElementPtr.NextUniqueNumber += 2
-				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
+				_ = updateFilterRule(&filterInfo, !tce.bwSharing.IsRunning())
 			} else if needUpdateFilter {
-				_ = updateFilterRule(&filterInfo, !bwSharing.IsRunning())
+				_ = updateFilterRule(&filterInfo, !tce.bwSharing.IsRunning())
 			} else if needUpdateNetChar {
-				_ = updateNetCharRule(&filterInfo, !bwSharing.IsRunning())
+				_ = updateNetCharRule(&filterInfo, !tce.bwSharing.IsRunning())
 			}
 			indexToNetElemMap[j] = *dstElementPtr
 			curNetCharList[j] = *dstElementPtr
@@ -1499,11 +1511,15 @@ func getPlatformInfo() {
 					log.Info("TC Engine scenario data retrieved. Moving to Ready state.")
 					tce.tcEngineState = stateReady
 
+					mutex.Lock()
+
 					// Refresh & apply network characteristics rules
 					processActiveScenarioUpdate()
 
 					// Refresh & apply LB rules
 					processMgSvcMapUpdate()
+
+					mutex.Unlock()
 				} else {
 					log.Warn("TC Engine thread completed while not in Initializing state")
 				}

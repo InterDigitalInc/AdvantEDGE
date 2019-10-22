@@ -27,6 +27,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const dbMaxRetryCount = 2
+
 // Connector - Implements a Redis connector
 type Connector struct {
 	addr          string
@@ -41,11 +43,20 @@ type Connector struct {
 // NewConnector - Creates and initialize a Redis connector
 func NewConnector(addr string, table int) (rc *Connector, err error) {
 	rc = new(Connector)
-	err = rc.connectDB(addr, table)
+
+	// Connect to Redis DB
+	for retry := 0; !rc.connected && retry <= dbMaxRetryCount; retry++ {
+		err = rc.connectDB(addr, table)
+		if err != nil {
+			log.Warn("Failed to connect to DB. Retrying... Error: ", err)
+			continue
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
 
+	log.Info("Successfully connected to DB")
 	return rc, nil
 }
 
