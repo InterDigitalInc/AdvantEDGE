@@ -557,6 +557,7 @@ func (this *DefaultBwSharingAlgorithm) resetAllBandwidthSharingFlowMaxPlannedThr
 // updateAllBandwidthSharingFlow -
 func (this *DefaultBwSharingAlgorithm) updateAllBandwidthSharingFlow() {
 
+	changed := false
 	for _, flow := range this.BandwidthSharingFlowMap {
 
 		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
@@ -565,8 +566,11 @@ func (this *DefaultBwSharingAlgorithm) updateAllBandwidthSharingFlow() {
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
 			this.updateFilterCB(flow.DstNetworkElement, flow.SrcNetworkElement, flow.AllocatedThroughput)
-			this.applyFilterCB()
+			changed = true
 		}
+	}
+	if changed {
+		this.applyFilterCB()
 	}
 }
 

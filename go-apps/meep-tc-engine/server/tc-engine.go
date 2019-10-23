@@ -1145,6 +1145,9 @@ func applyNetCharRules() {
 						list := dstElementPtr.FilterInfoList
 						_ = deleteFilterRule(&list[index])
 						list[index] = filterInfo //swap
+					} else if needUpdateNetChar {
+						list := dstElementPtr.FilterInfoList
+						list[index] = filterInfo //replace only
 					}
 				}
 			}
