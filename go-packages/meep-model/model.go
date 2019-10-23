@@ -412,6 +412,7 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 //---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
+	m.nodeMap = NewNodeMap()
 	if m.scenario.Deployment != nil {
 		if m.scenario.Deployment != nil {
 			// Parse through scenario and fill external node service mappings

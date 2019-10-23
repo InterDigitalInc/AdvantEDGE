@@ -455,6 +455,15 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+
+	// Use new model instance
+	activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
