@@ -83,17 +83,15 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate(event string) {
-	if event == "TERMINATE" {
+	if event == mod.EventTerminate {
 		terminateScenario(activeScenarioName)
 		activeScenarioName = ""
-	} else if event == "ACTIVATE" {
+	} else if event == mod.EventActivate {
 		// Cache name for later deletion
 		activeScenarioName = activeModel.GetScenarioName()
 		activateScenario()
-	} else if event == "UPDATE" {
-		log.Debug("Reveived UPDATE event - do nothing")
 	} else {
-		log.Warn("Reveived unknown event: " + event)
+		log.Debug("Reveived event: ", event, " - Do nothing")
 	}
 }
 

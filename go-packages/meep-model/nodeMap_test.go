@@ -51,7 +51,10 @@ func TestNodeMapDomains(t *testing.T) {
 	////fmt.Printf("  Scenario has %d domains\n", len(scenario.Deployment.Domains))
 	for i := range scenario.Deployment.Domains {
 		domain := &scenario.Deployment.Domains[i]
-		nm.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, scenario.Deployment))
+		context := make(map[string]string)
+		context["pl"] = "phyLoc"
+		context["nl"] = "netLoc"
+		nm.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, scenario.Deployment, context))
 		////fmt.Printf("  domain%d: object @ %p\n%+v\n", i, &scenario.Deployment.Domains[i], domain)
 		////fmt.Printf("  domain%d: child @ %p\n%+v\n", i, &domain.Zones, domain.Zones)
 		////fmt.Printf("  domain%d: parent @ %p\n%+v\n", i, scenario.Deployment, *scenario.Deployment)
@@ -100,6 +103,11 @@ func TestNodeMapDomains(t *testing.T) {
 	if scenario.Deployment.InterDomainLatency != 500 {
 		t.Errorf("Failed changing Deployment InterDomainLatency")
 	}
+	// Verify Node context
+	context := n.context.(map[string]string)
+	if context["pl"] != "phyLoc" || context["nl"] != "netLoc" {
+		t.Errorf("Failed to set context entries")
+	}
 }
 
 func TestNodeMapZone(t *testing.T) {
@@ -129,7 +137,10 @@ func TestNodeMapZone(t *testing.T) {
 	//fmt.Printf("  scenario.Deployment.Domains[1] has %d zones\n", len(scenario.Deployment.Domains[1].Zones))
 	for i := range domain.Zones {
 		zone := &domain.Zones[i]
-		nm.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain))
+		context := make(map[string]string)
+		context["pl"] = "phyLoc"
+		context["nl"] = "netLoc"
+		nm.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, context))
 		//fmt.Printf("  zone%d: object @ %p\n%+v\n", i, zone, *zone)
 		//fmt.Printf("  zone%d: child @ %p\n%+v\n", i, &zone.NetworkLocations, zone.NetworkLocations)
 		//fmt.Printf("  zone%d: parent @ %p\n%+v\n", i, domain, *domain)
@@ -168,6 +179,11 @@ func TestNodeMapZone(t *testing.T) {
 	if domain.Id != testID {
 		t.Errorf("Failed changing Deployment InterDomainLatency")
 	}
+	// Verify Node context
+	context := n.context.(map[string]string)
+	if context["pl"] != "phyLoc" || context["nl"] != "netLoc" {
+		t.Errorf("Failed to set context entries")
+	}
 }
 
 func TestNodeMapNetworkLocation(t *testing.T) {
@@ -197,7 +213,10 @@ func TestNodeMapNetworkLocation(t *testing.T) {
 	//fmt.Printf("  scenario.Deployment.Domains[1].Zones[1] has %d NL\n", len(zone.NetworkLocations))
 	for i := range zone.NetworkLocations {
 		nl := &zone.NetworkLocations[i]
-		nm.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone))
+		context := make(map[string]string)
+		context["pl"] = "phyLoc"
+		context["nl"] = "netLoc"
+		nm.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, nl, *nl)
 		//fmt.Printf("  nl%d: child @ %p\n%+v\n", i, &nl.PhysicalLocations, nl.PhysicalLocations)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, zone, *zone)
@@ -236,6 +255,11 @@ func TestNodeMapNetworkLocation(t *testing.T) {
 	if zone.Id != testID {
 		t.Errorf("Failed changing Zone id")
 	}
+	// Verify Node context
+	context := n.context.(map[string]string)
+	if context["pl"] != "phyLoc" || context["nl"] != "netLoc" {
+		t.Errorf("Failed to set context entries")
+	}
 }
 
 func TestNodeMapPhysicalLocation(t *testing.T) {
@@ -265,7 +289,10 @@ func TestNodeMapPhysicalLocation(t *testing.T) {
 	//fmt.Printf("  scenario.Deployment.Domains[1].Zones[1].NetworkLocations[1] has %d PL\n", len(nl.PhysicalLocations))
 	for i := range nl.PhysicalLocations {
 		pl := &nl.PhysicalLocations[i]
-		nm.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl))
+		context := make(map[string]string)
+		context["pl"] = "phyLoc"
+		context["nl"] = "netLoc"
+		nm.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, pl, *pl)
 		//fmt.Printf("  nl%d: child @ %p\n%+v\n", i, &pl.Processes, pl.Processes)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, nl, *nl)
@@ -304,6 +331,11 @@ func TestNodeMapPhysicalLocation(t *testing.T) {
 	if nl.Id != testID {
 		t.Errorf("Failed changing NL id")
 	}
+	// Verify Node context
+	context := n.context.(map[string]string)
+	if context["pl"] != "phyLoc" || context["nl"] != "netLoc" {
+		t.Errorf("Failed to set context entries")
+	}
 }
 
 func TestNodeMapProcess(t *testing.T) {
@@ -333,7 +365,10 @@ func TestNodeMapProcess(t *testing.T) {
 	//fmt.Printf("  scenario.Deployment.Domains[1].Zones[1].NetworkLocations[1].PhysicalLocation[0] has %d processes\n", len(pl.Processes))
 	for i := range pl.Processes {
 		proc := &pl.Processes[i]
-		nm.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl))
+		context := make(map[string]string)
+		context["pl"] = "phyLoc"
+		context["nl"] = "netLoc"
+		nm.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, context))
 		//fmt.Printf("  nl%d: object @ %p\n%+v\n", i, proc, *proc)
 		//fmt.Printf("  nl%d: child @ nil\n%+v\n", i, nil)
 		//fmt.Printf("  nl%d: parent @ %p\n%+v\n", i, pl, *pl)
@@ -364,5 +399,10 @@ func TestNodeMapProcess(t *testing.T) {
 	parentPtr.Id = testID
 	if pl.Id != testID {
 		t.Errorf("Failed changing PL id")
+	}
+	// Verify Node context
+	context := n.context.(map[string]string)
+	if context["pl"] != "phyLoc" || context["nl"] != "netLoc" {
+		t.Errorf("Failed to set context entries")
 	}
 }

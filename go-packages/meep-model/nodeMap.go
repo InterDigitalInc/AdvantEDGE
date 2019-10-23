@@ -23,6 +23,7 @@ type Node struct {
 	object   interface{}
 	child    interface{}
 	parent   interface{}
+	context  interface{}
 }
 
 // NodeMap - Model node map
@@ -40,13 +41,14 @@ func NewNodeMap() (nm *NodeMap) {
 }
 
 // NewNode - allocate a Node
-func NewNode(name string, nodeType string, object interface{}, child interface{}, parent interface{}) (n *Node) {
+func NewNode(name string, nodeType string, object interface{}, child interface{}, parent interface{}, context interface{}) (n *Node) {
 	n = new(Node)
 	n.name = name
 	n.nodeType = nodeType
 	n.object = object
 	n.child = child
 	n.parent = parent
+	n.context = context
 	return n
 }
 

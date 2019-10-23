@@ -19,7 +19,6 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -29,14 +28,27 @@ import (
 )
 
 // const activeScenarioEvents = "activeScenarioEvents"
-const activeScenarioEvents = "ctrl-engine-active"
+const ActiveScenarioEvents = "ctrl-engine-active"
 
 // const activeScenarioKey = "activeScenarioKey"
 const activeScenarioKey = "ctrl-engine:active"
 
-var DbAddress = "meep-redis-master:6379"
+// Context keys for model type 1
+const (
+	PhyLoc string = "PhyLoc"
+	NetLoc string = "NetLoc"
+	Zone   string = "Zone"
+	Domain string = "Domain"
+)
 
-var redisTable = 0
+// Event types (basic)
+const (
+	EventActivate  = "ACTIVATE"
+	EventTerminate = "TERMINATE"
+	EventUpdate    = "UPDATE"
+)
+
+type NodeContext map[string]string
 
 // Model - Implements a Meep Model
 type Model struct {
@@ -52,6 +64,9 @@ type Model struct {
 	svcMap        []ceModel.NodeServiceMaps
 	nodeMap       *NodeMap
 }
+
+var DbAddress = "meep-redis-master:6379"
+var redisTable = 0
 
 // NewModel - Create a model object
 func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
@@ -71,7 +86,7 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	m.module = module
 	m.Active = false
 	m.subscribed = false
-	m.ActiveChannel = activeScenarioEvents
+	m.ActiveChannel = ActiveScenarioEvents
 	m.activeKey = activeScenarioKey
 	m.scenario = new(ceModel.Scenario)
 	m.nodeMap = NewNodeMap()
@@ -161,7 +176,7 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	err = m.rc.Publish(m.ActiveChannel, "")
+	err = m.rc.Publish(m.ActiveChannel, EventActivate)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -179,7 +194,7 @@ func (m *Model) Deactivate() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-		err = m.rc.Publish(m.ActiveChannel, "")
+		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -331,7 +346,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 
 //GetScenarioName - Get the scenario name
 func (m *Model) GetScenarioName() string {
-	fmt.Printf("%+v", m)
+	// fmt.Printf("%+v", m)
 	if m.scenario != nil {
 		return m.scenario.Name
 	}
@@ -356,7 +371,7 @@ func (m *Model) GetNodeNames(typ string) []string {
 	return list
 }
 
-//GetNodeEdges - Get a map of node edges for the current scenario
+//GetEdges - Get a map of node edges for the current scenario
 func (m *Model) GetEdges() (edgeMap map[string]string) {
 	edgeMap = make(map[string]string)
 	for k, node := range m.nodeMap.nameMap {
@@ -382,6 +397,18 @@ func (m *Model) GetNode(name string) (node interface{}) {
 	return node
 }
 
+// GetNodeContext - Get a node context
+// 		Returned value is of type interface{}
+//    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
+func (m *Model) GetNodeContext(name string) (ctx interface{}) {
+	ctx = nil
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		ctx = n.context
+	}
+	return ctx
+}
+
 //---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
@@ -390,19 +417,38 @@ func (m *Model) parseNodes() (err error) {
 			// Parse through scenario and fill external node service mappings
 			for iDomain := range m.scenario.Deployment.Domains {
 				domain := &m.scenario.Deployment.Domains[iDomain]
-				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment))
+				ctx := make(NodeContext)
+				ctx[Domain] = domain.Name
+				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
 				for iZone := range domain.Zones {
 					zone := &domain.Zones[iZone]
-					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain))
+					ctx := make(NodeContext)
+					ctx[Domain] = domain.Name
+					ctx[Zone] = zone.Name
+					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
-						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone))
+						ctx := make(NodeContext)
+						ctx[Domain] = domain.Name
+						ctx[Zone] = zone.Name
+						ctx[NetLoc] = nl.Name
+						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
 						for iPL := range nl.PhysicalLocations {
 							pl := &nl.PhysicalLocations[iPL]
-							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl))
+							ctx := make(NodeContext)
+							ctx[Domain] = domain.Name
+							ctx[Zone] = zone.Name
+							ctx[NetLoc] = nl.Name
+							ctx[PhyLoc] = pl.Name
+							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, ctx))
 							for iProc := range pl.Processes {
 								proc := &pl.Processes[iProc]
-								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl))
+								ctx := make(NodeContext)
+								ctx[Domain] = domain.Name
+								ctx[Zone] = zone.Name
+								ctx[NetLoc] = nl.Name
+								ctx[PhyLoc] = pl.Name
+								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, ctx))
 							}
 						}
 					}
@@ -417,6 +463,7 @@ func (m *Model) updateSvcMap() (err error) {
 	if m.scenario.Deployment == nil {
 		m.svcMap = nil
 	} else {
+		m.svcMap = make([]ceModel.NodeServiceMaps, 0)
 		// Parse through scenario and fill external node service mappings
 		for _, domain := range m.scenario.Deployment.Domains {
 			for _, zone := range domain.Zones {
@@ -461,7 +508,7 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-		err = m.rc.Publish(m.ActiveChannel, "")
+		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -581,7 +628,7 @@ func (m *Model) internalListener(channel string, payload string) {
 	j, err := m.rc.JSONGetEntry(m.activeKey, ".")
 	log.Debug("Scenario Event:", j)
 	if err != nil {
-		log.Debug("Scenario was deleted, create a new one")
+		log.Debug("Scenario was deleted")
 		// Scenario was deleted
 		m.scenario = new(ceModel.Scenario)
 		m.nodeMap = NewNodeMap()
