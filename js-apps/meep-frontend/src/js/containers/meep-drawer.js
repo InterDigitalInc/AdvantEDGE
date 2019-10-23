@@ -16,13 +16,16 @@
 
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
-import { PAGE_CONFIGURE, PAGE_EXECUTE, PAGE_MONITOR, PAGE_SETTINGS } from '../state/ui';
 
 import {
   MEEP_TAB_CFG,
   MEEP_TAB_EXEC,
   MEEP_TAB_MON,
-  MEEP_TAB_SET
+  MEEP_TAB_SET,
+  PAGE_CONFIGURE,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS
 } from '../meep-constants';
 
 import { uiChangeCurrentPage } from '../state/ui';

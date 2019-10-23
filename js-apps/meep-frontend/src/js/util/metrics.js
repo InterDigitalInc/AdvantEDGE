@@ -1,28 +1,32 @@
-import { LATENCY_METRICS, THROUGHPUT_METRICS, MOBILITY_EVENT } from '../meep-constants';
+import {
+  ME_LATENCY_METRICS,
+  ME_THROUGHPUT_METRICS,
+  ME_MOBILITY_EVENT
+} from '../meep-constants';
 
 export const dataAccessorForType = dataType => {
   switch (dataType) {
-  case LATENCY_METRICS:
+  case ME_LATENCY_METRICS:
     return p => p.data.latency || 0.5;
-  case THROUGHPUT_METRICS:
+  case ME_THROUGHPUT_METRICS:
     return p => p.data.throughput;
-  case MOBILITY_EVENT:
+  case ME_MOBILITY_EVENT:
     return p => p;
   default:
-    return dataAccessorForType(LATENCY_METRICS);
+    return dataAccessorForType(ME_LATENCY_METRICS);
   }
 };
 
 export const dataSetterForType = dataType => {
   switch (dataType) {
-  case LATENCY_METRICS:
+  case ME_LATENCY_METRICS:
     return val => p => p.data.latency = val;
-  case THROUGHPUT_METRICS:
+  case ME_THROUGHPUT_METRICS:
     return val => p => p.data.throughput = val;
-  case MOBILITY_EVENT:
+  case ME_MOBILITY_EVENT:
     return () => p => p;
   default:
-    return dataSetterForType(LATENCY_METRICS);
+    return dataSetterForType(ME_LATENCY_METRICS);
   }
 };
 

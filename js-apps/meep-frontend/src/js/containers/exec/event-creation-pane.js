@@ -23,7 +23,15 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
-import { uiExecChangeCurrentEvent, MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT } from '../../state/ui';
+import {
+  uiExecChangeCurrentEvent
+} from '../../state/ui';
+
+import {
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT
+} from '../../meep-constants';
+
 import {
   execChangeSelectedScenarioElement,
   execUEs,
@@ -37,11 +45,8 @@ import {
 } from '../../state/exec';
 
 import {
+  EXEC_EVT_TYPE,
   PAGE_EXECUTE
-} from '../../state/ui';
-
-import {
-  EXEC_EVT_TYPE
 } from '../../meep-constants';
 
 const EventTypeSelect = (props) => {

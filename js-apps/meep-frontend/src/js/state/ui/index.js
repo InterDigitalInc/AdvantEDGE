@@ -16,13 +16,20 @@
 
 import { updateObject } from '../../util/object-util';
 
-export const PAGE_CONFIGURE = 'page-configure-link';
-export const PAGE_EXECUTE = 'page-execute-link';
-export const PAGE_MONITOR = 'page-monitor-link';
-export const PAGE_SETTINGS = 'page-settings-link';
+import { 
+  createMeepState
+} from '../../util/meep-utils';
 
-const MOBILITY_EVENT = 'MOBILITY';
-const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+// export const PAGE_CONFIGURE = 'page-configure-link';
+// export const PAGE_EXECUTE = 'page-execute-link';
+// export const PAGE_MONITOR = 'page-monitor-link';
+// export const PAGE_SETTINGS = 'page-settings-link';
+
+import {
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT
+} from '../../meep-constants';
+
 
 // Change the current page
 const CHANGE_CURRENT_PAGE = 'CHANGE_CURRENT_PAGE';
@@ -112,6 +119,32 @@ const uiExecChangeShowApps = (show) => {
   };
 };
 
+
+
+const UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG = 'UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG';
+const uiExecChangeShowDashboardConfig = (show) => {
+  return {
+    type: UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
+    payload: show
+  };
+};
+
+const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
+const uiExecChangeDashboardView1 = (name) => {
+  return {
+    type: UI_EXEC_CHANGE_DASHBOARD_VIEW1,
+    payload: name
+  };
+};
+
+const UI_EXEC_CHANGE_DASHBOARD_VIEW2 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW2';
+const uiExecChangeDashboardView2 = (name) => {
+  return {
+    type: UI_EXEC_CHANGE_DASHBOARD_VIEW2,
+    payload: name
+  };
+};
+
 export {
   // Event types
   MOBILITY_EVENT,
@@ -139,21 +172,34 @@ export {
   uiChangeCurrentDialog,
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
-  uiExecChangeShowApps
+  uiExecChangeShowApps,
+
+  // Dashboard
+  UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
+  UI_EXEC_CHANGE_DASHBOARD_VIEW1,
+  UI_EXEC_CHANGE_DASHBOARD_VIEW2,
+  uiExecChangeShowDashboardConfig,
+  uiExecChangeDashboardView1,
+  uiExecChangeDashboardView2
 };
 
-const initialState = {
-  page: PAGE_CONFIGURE,
-  mainDrawerOpen: true,
-  eventCreationMode: false,
-  execCurrentEvent: null,
-  currentEventType: MOBILITY_EVENT,
-  devMode: false,
-  currentDialog: '',
-  automaticRefresh: false,
-  refreshInterval: 1000,
-  execShowApps: false
-};
+const initialState = {}; //createMeepState();
+
+// {
+//   page: PAGE_CONFIGURE,
+//   mainDrawerOpen: true,
+//   eventCreationMode: false,
+//   execCurrentEvent: null,
+//   currentEventType: MOBILITY_EVENT,
+//   devMode: false,
+//   currentDialog: '',
+//   automaticRefresh: false,
+//   refreshInterval: 1000,
+//   execShowApps: false,
+//   showDashboardConfig: false,
+//   dashboardView1: VIS_VIEW,
+//   dashboardView2: VIEW_NAME_NONE
+// };
 
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
@@ -175,6 +221,12 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, {refreshInterval: action.payload});
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, {execShowApps: action.payload});
+  case UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG:
+    return updateObject(state, {showDashboardConfig: action.payload});
+  case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
+    return updateObject(state, {dashboardView1: action.payload});
+  case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
+    return updateObject(state, {dashboardView2: action.payload});
   default:
     return state;
   }
