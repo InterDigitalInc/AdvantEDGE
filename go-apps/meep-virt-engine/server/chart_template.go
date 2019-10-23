@@ -117,12 +117,12 @@ var serviceMap map[string]string
 
 // Deploy - Generate charts & deploy
 func Deploy(model *mod.Model) error {
-	//var charts []helm.Chart
 	charts, err := generateCharts(model)
 	if err != nil {
 		log.Debug("Error creating scenario templates: ", err)
 		return err
 	}
+	log.Debug("Created ", len(charts), " charts")
 
 	err = deployCharts(charts)
 	if err != nil {
@@ -136,8 +136,9 @@ func Deploy(model *mod.Model) error {
 func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 	serviceMap = map[string]string{}
 
-	procNames := model.GetNodeNames("PROCESS")
-
+	procNames := model.GetNodeNames("CLOUD-APP")
+	procNames = append(procNames, model.GetNodeNames("EDGE-APP")...)
+	procNames = append(procNames, model.GetNodeNames("UE-APP")...)
 	for _, name := range procNames {
 		node := model.GetNode(name)
 		if node == nil {
@@ -149,6 +150,7 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 			err = errors.New("Error casting process: " + name)
 			return nil, err
 		}
+
 		ctx := model.GetNodeContext(name)
 		if ctx == nil {
 			err = errors.New("Error getting context for process: " + name)
@@ -212,123 +214,121 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 						log.Debug("chart added for user chart group service ", len(charts))
 					}
 				}
-			} else {
-				log.Debug("Processing virt-engine chart for element[", proc.Name, "]")
+			}
+		} else {
+			log.Debug("Processing virt-engine chart for element[", proc.Name, "]")
 
-				// Fill deployment template information
-				deploymentTemplate.Enabled = trueStr
-				deploymentTemplate.ContainerName = proc.Name
-				deploymentTemplate.ContainerImageRepository = proc.Image
-				deploymentTemplate.ContainerImagePullPolicy = "Always"
-				setEnv(deploymentTemplate, proc.Environment)
-				setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
-				addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
-				addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
-				deploymentTemplate.PlacementId = proc.PlacementId
+			// Fill deployment template information
+			deploymentTemplate.Enabled = trueStr
+			deploymentTemplate.ContainerName = proc.Name
+			deploymentTemplate.ContainerImageRepository = proc.Image
+			deploymentTemplate.ContainerImagePullPolicy = "Always"
+			setEnv(deploymentTemplate, proc.Environment)
+			setCommand(deploymentTemplate, proc.CommandExe, proc.CommandArguments)
+			addMatchLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+			addTemplateLabel(deploymentTemplate, "meepAppId: "+proc.Id)
+			deploymentTemplate.PlacementId = proc.PlacementId
 
-				// Enable Service template if present
-				if proc.ServiceConfig != nil {
+			// Enable Service template if present
+			if proc.ServiceConfig != nil {
 
-					// Add app name associated to service
-					svcName := proc.ServiceConfig.Name
-					serviceTemplate.Enabled = trueStr
-					serviceTemplate.Name = svcName
-					serviceTemplate.Namespace = scenarioName
-					addSelector(serviceTemplate, "meepSvc: "+svcName)
-					addServiceLabel(serviceTemplate, "meepScenario: "+scenarioName)
-					addTemplateLabel(deploymentTemplate, "meepSvc: "+svcName)
+				// Add app name associated to service
+				svcName := proc.ServiceConfig.Name
+				serviceTemplate.Enabled = trueStr
+				serviceTemplate.Name = svcName
+				serviceTemplate.Namespace = scenarioName
+				addSelector(serviceTemplate, "meepSvc: "+svcName)
+				addServiceLabel(serviceTemplate, "meepScenario: "+scenarioName)
+				addTemplateLabel(deploymentTemplate, "meepSvc: "+svcName)
+
+				// Create and store ME Service template only with first occurrence.
+				// If it already exists then add the matching pod label but don't create the service again.
+				meSvcName := proc.ServiceConfig.MeSvcName
+				if meSvcName != "" {
+					if _, found := serviceMap[meSvcName]; !found {
+						serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
+						serviceTemplate.MeServiceEnabled = trueStr
+						serviceTemplate.MeServiceName = meSvcName
+					}
+					addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
+					addTemplateLabel(deploymentTemplate, "meepMeSvc: "+meSvcName)
+				}
+
+				for _, ports := range proc.ServiceConfig.Ports {
+					var portTemplate ServicePortTemplate
+					portTemplate.Port = strconv.Itoa(int(ports.Port))
+					portTemplate.TargetPort = strconv.Itoa(int(ports.Port))
+					portTemplate.Protocol = ports.Protocol
+
+					// Add NodePort if service is exposed externally
+					if ports.ExternalPort >= serviceNodePortMin && ports.ExternalPort <= serviceNodePortMax {
+						portTemplate.NodePort = strconv.Itoa(int(ports.ExternalPort))
+						serviceTemplate.Type = "NodePort"
+					} else {
+						serviceTemplate.Type = "ClusterIP"
+					}
+
+					serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
+				}
+			}
+
+			// Enable GPU template if present
+			if proc.GpuConfig != nil {
+				deploymentTemplate.GpuEnabled = trueStr
+				deploymentTemplate.GpuType = proc.GpuConfig.Type_
+				deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
+			}
+
+			// Enable External template if set
+			if proc.IsExternal {
+				externalTemplate.Enabled = trueStr
+				addExtSelector(externalTemplate, "meepAppId: "+proc.Id)
+
+				// Add ingress Service Maps, if any
+				for _, svcMap := range proc.ExternalConfig.IngressServiceMap {
+					var ingressSvcTemplate IngressServiceTemplate
+					ingressSvcTemplate.NodePort = strconv.Itoa(int(svcMap.ExternalPort))
+					ingressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
+					ingressSvcTemplate.Protocol = svcMap.Protocol
+					ingressSvcTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcTemplate.NodePort
+
+					externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcTemplate)
+				}
+
+				// Add egress Service Maps, if any
+				for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
+					var egressSvcTemplate EgressServiceTemplate
+					egressSvcTemplate.Name = svcMap.Name
+					egressSvcTemplate.IP = svcMap.Ip
+					egressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
+					egressSvcTemplate.Protocol = svcMap.Protocol
 
 					// Create and store ME Service template only with first occurrence.
 					// If it already exists then add the matching pod label but don't create the service again.
-					meSvcName := proc.ServiceConfig.MeSvcName
+					meSvcName := svcMap.MeSvcName
 					if meSvcName != "" {
 						if _, found := serviceMap[meSvcName]; !found {
 							serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-							serviceTemplate.MeServiceEnabled = trueStr
-							serviceTemplate.MeServiceName = meSvcName
+							egressSvcTemplate.MeSvcName = meSvcName
 						}
-						addServiceLabel(serviceTemplate, "meepMeSvc: "+meSvcName)
-						addTemplateLabel(deploymentTemplate, "meepMeSvc: "+meSvcName)
 					}
 
-					for _, ports := range proc.ServiceConfig.Ports {
-						var portTemplate ServicePortTemplate
-						portTemplate.Port = strconv.Itoa(int(ports.Port))
-						portTemplate.TargetPort = strconv.Itoa(int(ports.Port))
-						portTemplate.Protocol = ports.Protocol
-
-						// Add NodePort if service is exposed externally
-						if ports.ExternalPort >= serviceNodePortMin && ports.ExternalPort <= serviceNodePortMax {
-							portTemplate.NodePort = strconv.Itoa(int(ports.ExternalPort))
-							serviceTemplate.Type = "NodePort"
-						} else {
-							serviceTemplate.Type = "ClusterIP"
-						}
-
-						serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
-					}
+					externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcTemplate)
 				}
-
-				// Enable GPU template if present
-				if proc.GpuConfig != nil {
-					deploymentTemplate.GpuEnabled = trueStr
-					deploymentTemplate.GpuType = proc.GpuConfig.Type_
-					deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
-				}
-
-				// Enable External template if set
-				if proc.IsExternal {
-					externalTemplate.Enabled = trueStr
-					addExtSelector(externalTemplate, "meepAppId: "+proc.Id)
-
-					// Add ingress Service Maps, if any
-					for _, svcMap := range proc.ExternalConfig.IngressServiceMap {
-						var ingressSvcTemplate IngressServiceTemplate
-						ingressSvcTemplate.NodePort = strconv.Itoa(int(svcMap.ExternalPort))
-						ingressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
-						ingressSvcTemplate.Protocol = svcMap.Protocol
-						ingressSvcTemplate.Name = "ingress-" + proc.Id + "-" + ingressSvcTemplate.NodePort
-
-						externalTemplate.IngressServiceMap = append(externalTemplate.IngressServiceMap, ingressSvcTemplate)
-					}
-
-					// Add egress Service Maps, if any
-					for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
-						var egressSvcTemplate EgressServiceTemplate
-						egressSvcTemplate.Name = svcMap.Name
-						egressSvcTemplate.IP = svcMap.Ip
-						egressSvcTemplate.Port = strconv.Itoa(int(svcMap.Port))
-						egressSvcTemplate.Protocol = svcMap.Protocol
-
-						// Create and store ME Service template only with first occurrence.
-						// If it already exists then add the matching pod label but don't create the service again.
-						meSvcName := svcMap.MeSvcName
-						if meSvcName != "" {
-							if _, found := serviceMap[meSvcName]; !found {
-								serviceMap[meSvcName] = "meepMeSvc: " + meSvcName
-								egressSvcTemplate.MeSvcName = meSvcName
-							}
-						}
-
-						externalTemplate.EgressServiceMap = append(externalTemplate.EgressServiceMap, egressSvcTemplate)
-					}
-				}
-
-				// Create chart files
-				chartLocation, err := templateChart(scenarioTemplate)
-				if err != nil {
-					log.Debug("yaml creation file process: ", err)
-					return nil, err
-				}
-
-				// Create virt-engine chart
-				newChart := newChart(scenarioName+"-"+proc.Name, chartLocation, "")
-				charts = append(charts, newChart)
-				log.Debug("chart added ", len(charts))
 			}
 
-		}
+			// Create chart files
+			chartLocation, err := templateChart(scenarioTemplate)
+			if err != nil {
+				log.Debug("yaml creation file process: ", err)
+				return nil, err
+			}
 
+			// Create virt-engine chart
+			newChart := newChart(scenarioName+"-"+proc.Name, chartLocation, "")
+			charts = append(charts, newChart)
+			log.Debug("chart added ", len(charts))
+		}
 	}
 
 	return charts, nil

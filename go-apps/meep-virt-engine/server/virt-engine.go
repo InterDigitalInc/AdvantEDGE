@@ -61,38 +61,39 @@ func VirtEngineInit() (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+	err = activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listening for model updates: ", err.Error())
+	}
 
 	return nil
 }
 
-// ListenEvents - Listen for model updates
-func ListenEvents() {
-	err := activeModel.Listen(eventHandler)
-	if err != nil {
-		log.Error("Failed to listening for model updates: ", err.Error())
-	}
-}
 func eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update event
 	case mod.ActiveScenarioEvents:
-		processActiveScenarioUpdate()
+		processActiveScenarioUpdate(payload)
 
 	default:
 		log.Warn("Unsupported channel event: ", channel)
 	}
 }
 
-func processActiveScenarioUpdate() {
-	if !activeModel.Active {
+func processActiveScenarioUpdate(event string) {
+	if event == "TERMINATE" {
 		terminateScenario(activeScenarioName)
 		activeScenarioName = ""
-	} else {
+	} else if event == "ACTIVATE" {
 		// Cache name for later deletion
 		activeScenarioName = activeModel.GetScenarioName()
 		activateScenario()
+	} else if event == "UPDATE" {
+		log.Debug("Reveived UPDATE event - do nothing")
+	} else {
+		log.Warn("Reveived unknown event: " + event)
 	}
 }
 
@@ -105,6 +106,9 @@ func activateScenario() {
 }
 
 func terminateScenario(name string) {
+	if name == "" {
+		return
+	}
 	// Retrieve list of releases
 	rels, _ := helm.GetReleasesName()
 	var toDelete []helm.Chart
