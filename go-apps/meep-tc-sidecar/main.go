@@ -752,7 +752,7 @@ func cmdSetIfb(shape map[string]string) error {
 		normalDistributionStr = "distribution normal"
 	}
 	str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
-	if dataRate != "0" {
+	if dataRate != "" && dataRate != "0" {
 		str = str + " rate " + dataRate + "bit"
 	}
 	_, err := cmdExec(str)
