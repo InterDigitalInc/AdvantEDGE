@@ -471,7 +471,7 @@ const mapDispatchToProps = dispatch => {
     cfgChangeTable: (data) => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: (ok) => dispatch(execChangeOkToTerminate(ok)),
     toggleMainDrawer: () => dispatch(uiToggleMainDrawer()),
-    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch)),
+    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch))
   };
 };
 
