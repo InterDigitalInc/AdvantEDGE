@@ -35,7 +35,8 @@ import {
 
 import {
   uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2
+  uiExecChangeDashboardView2,
+  uiExecExpandDashboardConfig
 } from '../state/ui';
 
 
@@ -115,23 +116,31 @@ const TimeIntervalConfig = (props) => {
     );
   }
   return (
-    <div>
+    <div style={{marginTop: 10}}>
       <Grid>
         <GridCell span={3}>
-          <Slider
-            value={props.value}
-            onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
-            discrete
-            min={5}
-            max={60}
-            step={1}
-          />
+          <div style={{margin:10}}>
+            <div>
+              <span className="mdc-typography--headline8">Timeframe in secs </span>
+            </div>
+            <Slider
+              value={props.value}
+              onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
+              discrete
+              min={5}
+              max={60}
+              step={1}
+            />
+          </div>
+          
         </GridCell>
         <GridCell span={1}>
 
         </GridCell>
         <GridCell span={8}>
-          <PauseResumeButton />
+          <div style={{margin:10}}>
+            <PauseResumeButton />
+          </div>
         </GridCell>
       </Grid>
     </div>
@@ -143,7 +152,7 @@ const TimeIntervalConfig = (props) => {
 const ConfigurationView = (props) => {
   return (
     <>
-    <Grid>
+    <Grid style={{marginBottom: 10}}>
       <GridCell span={2}>
         <IDSelect
           label={'Select View 1'}
@@ -192,13 +201,11 @@ const ConfigurationView = (props) => {
       timeIntervalDurationChanged={(value) => {props.timeIntervalDurationChanged(value);}}
       stopSlidingWindow={props.stopSlidingWindow}
       startSlidingWindow={props.startSlidingWindow}
-      slidingWindowStopped={props.slidingWidowStopped}
+      slidingWindowStopped={props.slidingWindowStopped}
     />
     </>
   );
 };
-
-const MAIN_CONFIGURATION = 'MAIN_CONFIGURATION';
 
 const buttonStyles = {
   marginRight: 0
@@ -343,7 +350,7 @@ const DashboardConfiguration = (props) => {
 
   let configurationView = null;
   
-  if(props.configurationType) {
+  if(props.dashboardConfigExpanded) {
     configurationView = (
       <ConfigurationView
         dashboardViewsList={props.dashboardViewsList}
@@ -359,23 +366,23 @@ const DashboardConfiguration = (props) => {
         displayEdgeLabels={props.displayEdgeLabels}
         timeIntervalDurationChanged={props.timeIntervalDurationChanged}
         stopSlidingWindow={props.stopSlidingWindow}
-        startSlidingWindowg={props.startSlidingWindow}
+        startSlidingWindow={props.startSlidingWindow}
         slidingWindowStopped={props.slidingWindowStopped}
       />
     );
   }
 
-  const buttonConfig = !props.configurationType
+  const buttonConfig = !props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={props.displayConfiguration}>
-          Configuration
+      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(true)}>
+          Open
       </Button>
     )
     : null;
 
-  const buttonClose = props.configurationType
+  const buttonClose = props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={props.hideConfiguration}>
+      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(false)}>
           Close
       </Button>
     )
@@ -385,10 +392,14 @@ const DashboardConfiguration = (props) => {
     <Elevation z={2}
       style={{padding: 10, marginBottom: 10}}
     >
+    
       <Grid>
-        <GridCell span={10}>
+        <GridCell span={11}>
+          <div style={{marginBottom:10}}>
+            <span className="mdc-typography--headline6">Dashboard Configuration</span>
+          </div>
         </GridCell>
-        <GridCell span={2}>
+        <GridCell span={1}>
           {buttonConfig}
           {buttonClose}
         </GridCell>
@@ -430,10 +441,10 @@ class DashboardContainer extends Component {
     this.keyForSvg = 0;
 
     this.state = {
-      configurationType: null,
       sourceNodeId: '',
       nbSecondsToDisplay: 25,
-      displayEdgeLabels: false
+      displayEdgeLabels: false,
+      slidingWindowStopped: false
     };
 
     this.epochs = [];
@@ -460,7 +471,13 @@ class DashboardContainer extends Component {
   }
 
 
+  stopSlidingWindow() {
+    this.setState({slidingWindowStopped: true});
+  }
 
+  startSlidingWindow() {
+    this.setState({slidingWindowStopped: false});
+  }
 
   render() {
 
@@ -606,12 +623,8 @@ class DashboardContainer extends Component {
       
         <DashboardConfiguration
           showConfig={this.props.showConfig}
-          configurationType={this.state.configurationType}
-          displayConfiguration={
-            () => {
-              this.setState({configurationType: MAIN_CONFIGURATION});
-            }}
-          hideConfiguration={() => {this.setState({configurationType: ''});}}
+          dashboardConfigExpanded={this.props.dashboardConfigExpanded}
+          expandDashboardConfig={(show) => this.props.expandDashboardConfig(show)}
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
           changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
@@ -665,6 +678,7 @@ const mapStateToProps = state => {
     metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration,
     scenarioState: state.exec.state.scenario,
     showConfig: state.ui.showDashboardConfig,
+    dashboardConfigExpanded: state.ui.dashboardConfigExpanded,
     view1Name: state.ui.dashboardView1,
     view2Name: state.ui.dashboardView2
   };
@@ -677,7 +691,8 @@ const mapDispatchToProps = dispatch => {
     changeMetricsTimeIntervalDuration: (duration) => dispatch(execChangeMetricsTimeIntervalDuration(duration)),
     clearMetricsEpochs: () => dispatch(execClearMetricsEpochs()),
     changeView1: (name) => dispatch(uiExecChangeDashboardView1(name)),
-    changeView2: (name) => dispatch(uiExecChangeDashboardView2(name)) 
+    changeView2: (name) => dispatch(uiExecChangeDashboardView2(name)) ,
+    expandDashboardConfig: (expand) => dispatch(uiExecExpandDashboardConfig(expand))
   };
 };
 

@@ -16,10 +16,6 @@
 
 import { updateObject } from '../../util/object-util';
 
-import { 
-  createMeepState
-} from '../../util/meep-utils';
-
 // export const PAGE_CONFIGURE = 'page-configure-link';
 // export const PAGE_EXECUTE = 'page-execute-link';
 // export const PAGE_MONITOR = 'page-monitor-link';
@@ -119,12 +115,18 @@ const uiExecChangeShowApps = (show) => {
   };
 };
 
-
-
 const UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG = 'UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG';
 const uiExecChangeShowDashboardConfig = (show) => {
   return {
     type: UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
+    payload: show
+  };
+};
+
+const UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG = 'UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG';
+const uiExecExpandDashboardConfig = (show) => {
+  return {
+    type: UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG,
     payload: show
   };
 };
@@ -179,6 +181,7 @@ export {
   UI_EXEC_CHANGE_DASHBOARD_VIEW1,
   UI_EXEC_CHANGE_DASHBOARD_VIEW2,
   uiExecChangeShowDashboardConfig,
+  uiExecExpandDashboardConfig,
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2
 };
@@ -221,6 +224,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, {refreshInterval: action.payload});
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, {execShowApps: action.payload});
+  case UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG:
+    return updateObject(state, {dashboardConfigExpanded: action.payload});
   case UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG:
     return updateObject(state, {showDashboardConfig: action.payload});
   case UI_EXEC_CHANGE_DASHBOARD_VIEW1:

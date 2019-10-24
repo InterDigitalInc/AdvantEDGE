@@ -29,6 +29,7 @@ export const createMeepState = ({ui}) => {
       refreshInterval: 1000,
       execShowApps: false,
       showDashboardConfig: false,
+      dashboardConfigExpanded: false,
       dashboardView1: VIS_VIEW,
       dashboardView2: VIEW_NAME_NONE
     },
