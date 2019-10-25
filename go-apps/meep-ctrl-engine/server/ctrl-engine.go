@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/flimzy/kivik"
-	_ "github.com/go-kivik/couchdb"
 	"github.com/gorilla/mux"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
@@ -41,12 +40,6 @@ const scenarioDBName = "scenarios"
 const activeScenarioName = "active"
 const moduleName string = "meep-ctrl-engine"
 const moduleMonEngine string = "mon-engine"
-
-const ALLUP = "0"
-const ATLEASTONENOTUP = "1"
-const NOUP = "2"
-
-const NB_CORE_PODS = 10 //although virt-engine is not a pod yet... it is considered as one as is appended to the list of pods
 
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
@@ -113,7 +106,8 @@ func CtrlEngineInit() (err error) {
 	return nil
 }
 
-// Create a new scenario in store
+// Create a new scenario in the scenario store
+// POST /scenario/{name}
 func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceCreateScenario")
 
@@ -150,7 +144,8 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Delete scenario from store
+// Delete scenario from scenario store
+// DELETE /scenarios/{name}
 func ceDeleteScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceDeleteScenario")
 
@@ -172,7 +167,8 @@ func ceDeleteScenario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Remove all scenarios from DB
+// Remove all scenarios from sceanrio store
+// DELETE /scenarios
 func ceDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceDeleteScenarioList")
 
@@ -188,7 +184,8 @@ func ceDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Retrieve the requested scenario
+// Retrieve scenario from scenario store
+// GET /scenarios/{name}
 func ceGetScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceGetScenario")
 
@@ -226,6 +223,8 @@ func ceGetScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, s)
 }
 
+// Retrieve all scenarios from scenario store
+// GET /scenarios
 func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceGetScenarioList")
 
@@ -249,7 +248,8 @@ func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, sl)
 }
 
-// Update stored scenario
+// Update scenario in scenario store
+// PUT /scenarios/{name}
 func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceSetScenario")
 
@@ -286,7 +286,8 @@ func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Activate/Deploy scenario
+// Activate a scenario
+// POST /active/{name}
 func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceActivateScenario")
 
@@ -330,7 +331,8 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// ceGetActiveScenario retrieves the deployed scenario status
+// Retrieves the active scenario
+// GET /active
 func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("CEGetActiveScenario")
 
@@ -352,10 +354,16 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(scenario))
 }
 
-// ceGetActiveNodeServiceMaps retrieves the deployed scenario external node service mappings
+// Retrieves service maps of the active scenario
+// GET /active/serviceMaps
 // NOTE: query parameters 'node', 'type' and 'service' may be specified to filter results
 func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
 	var filteredList *[]ceModel.NodeServiceMaps
+
+	if !activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
 
 	// Retrieve node ID & service name from query parameters
 	query := r.URL.Query()
@@ -431,12 +439,13 @@ func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
-// Terminate the active/deployed scenario
+// Terminate the active scenario
+// DELETE /active
 func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceTerminateScenario")
 
 	if !activeModel.Active {
-		http.Error(w, "No active model", http.StatusNotFound)
+		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
@@ -451,118 +460,15 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func ceGetEventList(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
-func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
-	if event.EventNetworkCharacteristicsUpdate == nil {
-		return "Malformed request: missing EventNetworkCharacteristicsUpdate", http.StatusBadRequest
-	}
-
-	// elementFound := false
-	netChar := event.EventNetworkCharacteristicsUpdate
-
-	err := activeModel.UpdateNetChar(netChar)
-	if err != nil {
-		return err.Error(), http.StatusInternalServerError
-	}
-	return "", -1
-}
-
-func sendEventMobility(event ceModel.Event) (string, int) {
-	if event.EventMobility == nil {
-		return "Malformed request: missing EventMobility", http.StatusBadRequest
-	}
-	// Retrieve target name (src) and destination parent name
-	elemName := event.EventMobility.ElementName
-	destName := event.EventMobility.Dest
-
-	oldNL, newNL, err := activeModel.MoveNode(elemName, destName)
-	if err != nil {
-		return err.Error(), http.StatusInternalServerError
-	}
-	log.WithFields(log.Fields{
-		"meep.log.component": "ctrl-engine",
-		"meep.log.msgType":   "mobilityEvent",
-		"meep.log.oldLoc":    oldNL,
-		"meep.log.newLoc":    newNL,
-		"meep.log.src":       elemName,
-		"meep.log.dest":      elemName,
-	}).Info("Measurements log")
-	return "", -1
-}
-
-func sendEventPoasInRange(event ceModel.Event) (string, int) {
-	if event.EventPoasInRange == nil {
-		return "Malformed request: missing EventPoasInRange", http.StatusBadRequest
-	}
-
-	var ue *ceModel.PhysicalLocation
-
-	// Retrieve UE name
-	ueName := event.EventPoasInRange.Ue
-
-	// Retrieve list of visible POAs and sort them
-	poasInRange := event.EventPoasInRange.PoasInRange
-	sort.Strings(poasInRange)
-
-	// Find UE
-	log.Debug("Searching for UE in active scenario")
-	n := activeModel.GetNode(ueName)
-	if n == nil {
-		return ("Node not found " + ueName), http.StatusNotFound
-	}
-	ue, ok := n.(*ceModel.PhysicalLocation)
-	if !ok {
-		ue = nil
-	} else if ue.Type_ != "UE" {
-		ue = nil
-	}
-
-	// Update POAS in range if necessary
-	if ue != nil {
-		log.Debug("UE Found. Checking for update to visible POAs")
-
-		// Compare new list of poas with current UE list and update if necessary
-		if !Equal(poasInRange, ue.NetworkLocationsInRange) {
-			log.Debug("Updating POAs in range for UE: " + ue.Name)
-			ue.NetworkLocationsInRange = poasInRange
-
-			//Publish updated scenario
-			err := activeModel.Activate()
-			if err != nil {
-				return err.Error(), http.StatusInternalServerError
-			}
-
-			log.Debug("Active scenario updated")
-		} else {
-			log.Debug("POA list unchanged. Ignoring.")
-		}
-	} else {
-		err := "Failed to find UE"
-		return err, http.StatusNotFound
-	}
-	return "", -1
-}
-
-// Equal tells whether a and b contain the same elements.
-// A nil argument is equivalent to an empty slice.
-func Equal(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
+// Send an event to the active scenario
+// POST /events/{type}
 func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceSendEvent")
+
+	if !activeModel.Active {
+		http.Error(w, "No scenario is active", http.StatusNotFound)
+		return
+	}
 
 	// Get event type from request parameters
 	vars := mux.Vars(r)
@@ -611,61 +517,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func ceGetMeepSettings(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
-func ceSetMeepSettings(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
-
-func getPodDetails(key string, fields map[string]string, userData interface{}) error {
-
-	podsStatus := userData.(*ceModel.PodsStatus)
-	var podStatus ceModel.PodStatus
-	if fields["meepApp"] != "" {
-		podStatus.Name = fields["meepApp"]
-	} else {
-		podStatus.Name = fields["name"]
-	}
-
-	podStatus.Namespace = fields["namespace"]
-	podStatus.MeepApp = fields["meepApp"]
-	podStatus.MeepOrigin = fields["meepOrigin"]
-	podStatus.MeepScenario = fields["meepScenario"]
-	podStatus.Phase = fields["phase"]
-	podStatus.PodInitialized = fields["initialised"]
-	podStatus.PodScheduled = fields["scheduled"]
-	podStatus.PodReady = fields["ready"]
-	podStatus.PodUnschedulable = fields["unschedulable"]
-	podStatus.PodConditionError = fields["condition-error"]
-	podStatus.NbOkContainers = fields["nbOkContainers"]
-	podStatus.NbTotalContainers = fields["nbTotalContainers"]
-	podStatus.NbPodRestart = fields["nbPodRestart"]
-	podStatus.LogicalState = fields["logicalState"]
-	podStatus.StartTime = fields["startTime"]
-
-	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
-	return nil
-}
-
-func getPodStatesOnly(key string, fields map[string]string, userData interface{}) error {
-	podsStatus := userData.(*ceModel.PodsStatus)
-	var podStatus ceModel.PodStatus
-	if fields["meepApp"] != "" {
-		podStatus.Name = fields["meepApp"]
-	} else {
-		podStatus.Name = fields["name"]
-	}
-	podStatus.LogicalState = fields["logicalState"]
-
-	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
-
-	return nil
-}
-
+// Retrieve POD states
+// GET /states
 func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 	subKey := ""
@@ -755,4 +608,156 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 	// Send response
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprint(w, string(jsonResponse))
+}
+
+// ------------------
+
+func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
+	if event.EventNetworkCharacteristicsUpdate == nil {
+		return "Malformed request: missing EventNetworkCharacteristicsUpdate", http.StatusBadRequest
+	}
+
+	// elementFound := false
+	netChar := event.EventNetworkCharacteristicsUpdate
+
+	err := activeModel.UpdateNetChar(netChar)
+	if err != nil {
+		return err.Error(), http.StatusInternalServerError
+	}
+	return "", -1
+}
+
+func sendEventMobility(event ceModel.Event) (string, int) {
+	if event.EventMobility == nil {
+		return "Malformed request: missing EventMobility", http.StatusBadRequest
+	}
+	// Retrieve target name (src) and destination parent name
+	elemName := event.EventMobility.ElementName
+	destName := event.EventMobility.Dest
+
+	oldNL, newNL, err := activeModel.MoveNode(elemName, destName)
+	if err != nil {
+		return err.Error(), http.StatusInternalServerError
+	}
+	log.WithFields(log.Fields{
+		"meep.log.component": "ctrl-engine",
+		"meep.log.msgType":   "mobilityEvent",
+		"meep.log.oldLoc":    oldNL,
+		"meep.log.newLoc":    newNL,
+		"meep.log.src":       elemName,
+		"meep.log.dest":      elemName,
+	}).Info("Measurements log")
+	return "", -1
+}
+
+func sendEventPoasInRange(event ceModel.Event) (string, int) {
+	if event.EventPoasInRange == nil {
+		return "Malformed request: missing EventPoasInRange", http.StatusBadRequest
+	}
+
+	var ue *ceModel.PhysicalLocation
+
+	// Retrieve UE name
+	ueName := event.EventPoasInRange.Ue
+
+	// Retrieve list of visible POAs and sort them
+	poasInRange := event.EventPoasInRange.PoasInRange
+	sort.Strings(poasInRange)
+
+	// Find UE
+	log.Debug("Searching for UE in active scenario")
+	n := activeModel.GetNode(ueName)
+	if n == nil {
+		return ("Node not found " + ueName), http.StatusNotFound
+	}
+	ue, ok := n.(*ceModel.PhysicalLocation)
+	if !ok {
+		ue = nil
+	} else if ue.Type_ != "UE" {
+		ue = nil
+	}
+
+	// Update POAS in range if necessary
+	if ue != nil {
+		log.Debug("UE Found. Checking for update to visible POAs")
+
+		// Compare new list of poas with current UE list and update if necessary
+		if !equal(poasInRange, ue.NetworkLocationsInRange) {
+			log.Debug("Updating POAs in range for UE: " + ue.Name)
+			ue.NetworkLocationsInRange = poasInRange
+
+			//Publish updated scenario
+			err := activeModel.Activate()
+			if err != nil {
+				return err.Error(), http.StatusInternalServerError
+			}
+
+			log.Debug("Active scenario updated")
+		} else {
+			log.Debug("POA list unchanged. Ignoring.")
+		}
+	} else {
+		err := "Failed to find UE"
+		return err, http.StatusNotFound
+	}
+	return "", -1
+}
+
+func getPodDetails(key string, fields map[string]string, userData interface{}) error {
+
+	podsStatus := userData.(*ceModel.PodsStatus)
+	var podStatus ceModel.PodStatus
+	if fields["meepApp"] != "" {
+		podStatus.Name = fields["meepApp"]
+	} else {
+		podStatus.Name = fields["name"]
+	}
+
+	podStatus.Namespace = fields["namespace"]
+	podStatus.MeepApp = fields["meepApp"]
+	podStatus.MeepOrigin = fields["meepOrigin"]
+	podStatus.MeepScenario = fields["meepScenario"]
+	podStatus.Phase = fields["phase"]
+	podStatus.PodInitialized = fields["initialised"]
+	podStatus.PodScheduled = fields["scheduled"]
+	podStatus.PodReady = fields["ready"]
+	podStatus.PodUnschedulable = fields["unschedulable"]
+	podStatus.PodConditionError = fields["condition-error"]
+	podStatus.NbOkContainers = fields["nbOkContainers"]
+	podStatus.NbTotalContainers = fields["nbTotalContainers"]
+	podStatus.NbPodRestart = fields["nbPodRestart"]
+	podStatus.LogicalState = fields["logicalState"]
+	podStatus.StartTime = fields["startTime"]
+
+	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
+	return nil
+}
+
+func getPodStatesOnly(key string, fields map[string]string, userData interface{}) error {
+	podsStatus := userData.(*ceModel.PodsStatus)
+	var podStatus ceModel.PodStatus
+	if fields["meepApp"] != "" {
+		podStatus.Name = fields["meepApp"]
+	} else {
+		podStatus.Name = fields["name"]
+	}
+	podStatus.LogicalState = fields["logicalState"]
+
+	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
+
+	return nil
+}
+
+// Equal tells whether a and b contain the same elements.
+// A nil argument is equivalent to an empty slice.
+func equal(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
 }
