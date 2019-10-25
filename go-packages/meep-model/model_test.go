@@ -786,7 +786,7 @@ func TestGetters(t *testing.T) {
 
 	fmt.Println("Get Node Names")
 	l = m.GetNodeNames("ANY")
-	if len(l) != 29 {
+	if len(l) != 30 {
 		t.Errorf("Node name list should not be empty")
 	}
 	fmt.Println(l)
@@ -837,8 +837,8 @@ func TestGetters(t *testing.T) {
 
 	fmt.Println("Get edges")
 	edges := m.GetEdges()
-	if len(edges) != 27 {
-		t.Errorf("Missing edges - expected 27")
+	if len(edges) != 28 {
+		t.Errorf("Missing edges - expected 28")
 	}
 	if edges["ue1"] != "zone1-poa1" {
 		t.Errorf("UE1 edge - expected zone1-poa1 -- got %s", edges["ue1"])
@@ -847,59 +847,106 @@ func TestGetters(t *testing.T) {
 		t.Errorf("Zone1 edge - expected operator1 -- got %s", edges["zone1"])
 	}
 
+	// Node Type
+	fmt.Println("Get node type for invalid node")
+	nodeType := m.GetNodeType("NOT-A-NODE")
+	if nodeType != "" {
+		t.Errorf("Node type should be empty")
+	}
+	fmt.Println("Get node type for OPERATOR")
+	nodeType = m.GetNodeType("operator1")
+	if nodeType != "OPERATOR" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for ZONE")
+	nodeType = m.GetNodeType("zone1")
+	if nodeType != "ZONE" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for POA")
+	nodeType = m.GetNodeType("zone1-poa1")
+	if nodeType != "POA" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for FOG")
+	nodeType = m.GetNodeType("zone1-fog1")
+	if nodeType != "FOG" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for UE")
+	nodeType = m.GetNodeType("ue1")
+	if nodeType != "UE" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for UE-APP")
+	nodeType = m.GetNodeType("ue1-iperf")
+	if nodeType != "UE-APP" {
+		t.Errorf("Invalid node type")
+	}
+	fmt.Println("Get node type for EDGE-APP")
+	nodeType = m.GetNodeType("zone1-edge1-svc")
+	if nodeType != "EDGE-APP" {
+		t.Errorf("Invalid node type")
+	}
+
+	// Node Context
 	fmt.Println("Get context for invalid node")
 	ctx := m.GetNodeContext("NOT-A-NODE")
 	if ctx != nil {
 		t.Errorf("Node context should not exist")
 	}
-
+	fmt.Println("Get Deployment context")
+	ctx = m.GetNodeContext("demo1")
+	if ctx == nil {
+		t.Errorf("Node context should exist")
+	}
+	nodeCtx, ok := ctx.(NodeContext)
+	if !ok || len(nodeCtx) != 1 || nodeCtx[Deployment] != "demo1" {
+		t.Errorf("Invalid Deployment context")
+	}
 	fmt.Println("Get Operator context")
 	ctx = m.GetNodeContext("operator1")
 	if ctx == nil {
-		t.Errorf("Node context should not exist")
+		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok := ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 1 || nodeCtx[Domain] != "operator1" {
+	nodeCtx, ok = ctx.(NodeContext)
+	if !ok || len(nodeCtx) != 2 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" {
 		t.Errorf("Invalid Operator context")
 	}
-
 	fmt.Println("Get Zone context")
 	ctx = m.GetNodeContext("zone1")
 	if ctx == nil {
-		t.Errorf("Node context should not exist")
+		t.Errorf("Node context should exist")
 	}
 	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 2 || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" {
+	if !ok || len(nodeCtx) != 3 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" {
 		t.Errorf("Invalid Operator context")
 	}
-
 	fmt.Println("Get Net Location context")
 	ctx = m.GetNodeContext("zone1-poa1")
 	if ctx == nil {
-		t.Errorf("Node context should not exist")
+		t.Errorf("Node context should exist")
 	}
 	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 3 || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" {
+	if !ok || len(nodeCtx) != 4 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" {
 		t.Errorf("Invalid Operator context")
 	}
-
 	fmt.Println("Get Phy Location context")
 	ctx = m.GetNodeContext("zone1-fog1")
 	if ctx == nil {
-		t.Errorf("Node context should not exist")
+		t.Errorf("Node context should exist")
 	}
 	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 4 || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "zone1-fog1" {
+	if !ok || len(nodeCtx) != 5 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "zone1-fog1" {
 		t.Errorf("Invalid Operator context")
 	}
-
 	fmt.Println("Get App context")
 	ctx = m.GetNodeContext("ue1-iperf")
 	if ctx == nil {
-		t.Errorf("Node context should not exist")
+		t.Errorf("Node context should exist")
 	}
 	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 4 || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "ue1" {
+	if !ok || len(nodeCtx) != 5 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "ue1" {
 		t.Errorf("Invalid Operator context")
 	}
 }

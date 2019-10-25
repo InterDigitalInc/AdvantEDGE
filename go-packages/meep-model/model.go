@@ -35,10 +35,11 @@ const activeScenarioKey = "ctrl-engine:active"
 
 // Context keys for model type 1
 const (
-	PhyLoc string = "PhyLoc"
-	NetLoc string = "NetLoc"
-	Zone   string = "Zone"
-	Domain string = "Domain"
+	PhyLoc     = "PhyLoc"
+	NetLoc     = "NetLoc"
+	Zone       = "Zone"
+	Domain     = "Domain"
+	Deployment = "Deployment"
 )
 
 // Event types (basic)
@@ -397,6 +398,16 @@ func (m *Model) GetNode(name string) (node interface{}) {
 	return node
 }
 
+// GetNodeType - Get a node by its name
+func (m *Model) GetNodeType(name string) (typ string) {
+	typ = ""
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		typ = n.nodeType
+	}
+	return typ
+}
+
 // GetNodeContext - Get a node context
 // 		Returned value is of type interface{}
 //    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
@@ -413,23 +424,29 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 
 func (m *Model) parseNodes() (err error) {
 	m.nodeMap = NewNodeMap()
-	if m.scenario.Deployment != nil {
+	if m.scenario != nil {
 		if m.scenario.Deployment != nil {
-			// Parse through scenario and fill external node service mappings
+			deployment := m.scenario.Deployment
+			ctx := make(NodeContext)
+			ctx[Deployment] = m.scenario.Name
+			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
 			for iDomain := range m.scenario.Deployment.Domains {
 				domain := &m.scenario.Deployment.Domains[iDomain]
 				ctx := make(NodeContext)
+				ctx[Deployment] = m.scenario.Name
 				ctx[Domain] = domain.Name
 				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
 				for iZone := range domain.Zones {
 					zone := &domain.Zones[iZone]
 					ctx := make(NodeContext)
+					ctx[Deployment] = m.scenario.Name
 					ctx[Domain] = domain.Name
 					ctx[Zone] = zone.Name
 					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
 						ctx := make(NodeContext)
+						ctx[Deployment] = m.scenario.Name
 						ctx[Domain] = domain.Name
 						ctx[Zone] = zone.Name
 						ctx[NetLoc] = nl.Name
@@ -437,6 +454,7 @@ func (m *Model) parseNodes() (err error) {
 						for iPL := range nl.PhysicalLocations {
 							pl := &nl.PhysicalLocations[iPL]
 							ctx := make(NodeContext)
+							ctx[Deployment] = m.scenario.Name
 							ctx[Domain] = domain.Name
 							ctx[Zone] = zone.Name
 							ctx[NetLoc] = nl.Name
@@ -445,6 +463,7 @@ func (m *Model) parseNodes() (err error) {
 							for iProc := range pl.Processes {
 								proc := &pl.Processes[iProc]
 								ctx := make(NodeContext)
+								ctx[Deployment] = m.scenario.Name
 								ctx[Domain] = domain.Name
 								ctx[Zone] = zone.Name
 								ctx[NetLoc] = nl.Name

@@ -14,30 +14,52 @@
  * limitations under the License.
  */
 
-package bws
+package netchar
 
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 const redisAddr string = "localhost:30379"
 
-func TestBwsharingBasic(t *testing.T) {
+func TestNetCharBasic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	bwSharing, err := NewBwSharing("test", redisAddr, nil, nil)
+	var netChar NetChar
+	var err error
+	netChar, err = NewNetChar("test", redisAddr)
 	if err != nil {
-		t.Errorf("Failed to create a bwSharing object.")
-	} else {
-		bwSharing.UpdateControls()
-		_ = bwSharing.Start()
+		t.Errorf("Failed to create a NetChar object.")
+		return
+	}
 
-		time.Sleep(1000 * time.Millisecond)
-		bwSharing.Stop()
+	fmt.Println("Verify NetChar not running")
+	if netChar.IsRunning() {
+		t.Errorf("NetChar should not be running")
+	}
+
+	fmt.Println("Register callback functions")
+	netChar.Register(nil, nil)
+
+	fmt.Println("Start NetChar")
+	err = netChar.Start()
+	if err != nil {
+		t.Errorf("Error starting NetChar")
+	}
+	if !netChar.IsRunning() {
+		t.Errorf("NetChar not running")
+	}
+
+	// fmt.Println("Run NetChar for 1 second")
+	// time.Sleep(1000 * time.Millisecond)
+
+	fmt.Println("Stop NetChar")
+	netChar.Stop()
+	if netChar.IsRunning() {
+		t.Errorf("NetChar should not be running")
 	}
 }
