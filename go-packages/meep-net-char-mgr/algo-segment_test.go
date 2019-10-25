@@ -97,7 +97,7 @@ func TestSegAlgoStatic(t *testing.T) {
 	// 	printFlows(segment)
 	// }
 
-	t.Errorf("DONE")
+	// t.Errorf("DONE")
 
 }
 

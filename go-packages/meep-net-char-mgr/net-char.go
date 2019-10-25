@@ -34,7 +34,7 @@ const NetCharControlChannel string = NetCharControls
 const moduleName string = "meep-net-char"
 
 // NetChar Interface
-type NetChar interface {
+type NetCharMgr interface {
 	Register(func(string, string, float64), func())
 	Start() error
 	Stop()
@@ -65,8 +65,8 @@ type NetCharConfig struct {
 	LogVerbose          bool
 }
 
-// NetChar Object
-type NetworkCharacteristics struct {
+// NetCharManager Object
+type NetCharManager struct {
 	name           string
 	isStarted      bool
 	ticker         *time.Ticker
@@ -80,11 +80,11 @@ type NetworkCharacteristics struct {
 }
 
 // NewNetChar - Create, Initialize and connect
-func NewNetChar(name string, redisAddr string) (*NetworkCharacteristics, error) {
+func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 
 	// Create new instance & set default config
 	var err error
-	var nc NetworkCharacteristics
+	var nc NetCharManager
 	if name == "" {
 		err = errors.New("Missing name")
 		log.Error(err)
@@ -138,13 +138,13 @@ func NewNetChar(name string, redisAddr string) (*NetworkCharacteristics, error) 
 }
 
 // Register - Register NetChar callback functions
-func (nc *NetworkCharacteristics) Register(updateFilterRule func(string, string, float64), applyFilterRule func()) {
+func (nc *NetCharManager) Register(updateFilterRule func(string, string, float64), applyFilterRule func()) {
 	nc.updateFilterCB = updateFilterRule
 	nc.applyFilterCB = applyFilterRule
 }
 
 // Start - Start NetChar
-func (nc *NetworkCharacteristics) Start() error {
+func (nc *NetCharManager) Start() error {
 	if !nc.isStarted {
 		nc.isStarted = true
 		nc.ticker = time.NewTicker(time.Duration(nc.config.RecalculationPeriod) * time.Millisecond)
@@ -163,7 +163,7 @@ func (nc *NetworkCharacteristics) Start() error {
 }
 
 // Stop - Stop NetChar
-func (nc *NetworkCharacteristics) Stop() {
+func (nc *NetCharManager) Stop() {
 	if nc.isStarted {
 		nc.isStarted = false
 		nc.ticker.Stop()
@@ -172,12 +172,12 @@ func (nc *NetworkCharacteristics) Stop() {
 }
 
 // IsRunning
-func (nc *NetworkCharacteristics) IsRunning() bool {
+func (nc *NetCharManager) IsRunning() bool {
 	return nc.isStarted
 }
 
 // eventHandler - Events received and processed by the registered channels
-func (nc *NetworkCharacteristics) eventHandler(channel string, payload string) {
+func (nc *NetCharManager) eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
 	nc.mutex.Lock()
 	switch channel {
@@ -194,7 +194,7 @@ func (nc *NetworkCharacteristics) eventHandler(channel string, payload string) {
 }
 
 // processActiveScenarioUpdate
-func (nc *NetworkCharacteristics) processActiveScenarioUpdate() {
+func (nc *NetCharManager) processActiveScenarioUpdate() {
 	if nc.isStarted {
 		// Process updated scenario using algorithm
 		err := nc.algo.ProcessScenario(nc.activeModel)
@@ -209,7 +209,7 @@ func (nc *NetworkCharacteristics) processActiveScenarioUpdate() {
 }
 
 // updateNetChars
-func (nc *NetworkCharacteristics) updateNetChars() {
+func (nc *NetCharManager) updateNetChars() {
 	// Recalculate network characteristics
 	updatedNetCharList := nc.algo.CalculateNetChar()
 
@@ -225,7 +225,7 @@ func (nc *NetworkCharacteristics) updateNetChars() {
 }
 
 // updateControls - Update all the different configurations attributes based on the content of the DB for dynamic updates
-func (nc *NetworkCharacteristics) updateControls() {
+func (nc *NetCharManager) updateControls() {
 	var controls = make(map[string]interface{})
 	keyName := NetCharControls
 	err := nc.rc.ForEachEntry(keyName, nc.getControlsEntryHandler, controls)
@@ -236,7 +236,7 @@ func (nc *NetworkCharacteristics) updateControls() {
 }
 
 // getControlsEntryHandler - Update all the different configurations attributes based on the content of the DB for dynamic updates
-func (nc *NetworkCharacteristics) getControlsEntryHandler(key string, fields map[string]string, userData interface{}) (err error) {
+func (nc *NetCharManager) getControlsEntryHandler(key string, fields map[string]string, userData interface{}) (err error) {
 
 	actionName := ""
 	tickerPeriod := defaultTickerPeriod
@@ -269,7 +269,7 @@ func (nc *NetworkCharacteristics) getControlsEntryHandler(key string, fields map
 }
 
 // applyAction - Execute the action in the configuration parameters for controls on the NetChar object
-func (nc *NetworkCharacteristics) applyAction() {
+func (nc *NetCharManager) applyAction() {
 	switch nc.config.Action {
 	case "start":
 		if !nc.isStarted {

@@ -29,37 +29,37 @@ func TestNetCharBasic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	var netChar NetChar
+	var netCharMgr NetCharMgr
 	var err error
-	netChar, err = NewNetChar("test", redisAddr)
+	netCharMgr, err = NewNetChar("test", redisAddr)
 	if err != nil {
 		t.Errorf("Failed to create a NetChar object.")
 		return
 	}
 
-	fmt.Println("Verify NetChar not running")
-	if netChar.IsRunning() {
-		t.Errorf("NetChar should not be running")
+	fmt.Println("Verify NetCharMgr not running")
+	if netCharMgr.IsRunning() {
+		t.Errorf("NetCharMgr should not be running")
 	}
 
 	fmt.Println("Register callback functions")
-	netChar.Register(nil, nil)
+	netCharMgr.Register(nil, nil)
 
-	fmt.Println("Start NetChar")
-	err = netChar.Start()
+	fmt.Println("Start NetCharMgr")
+	err = netCharMgr.Start()
 	if err != nil {
-		t.Errorf("Error starting NetChar")
+		t.Errorf("Error starting NetCharMgr")
 	}
-	if !netChar.IsRunning() {
+	if !netCharMgr.IsRunning() {
 		t.Errorf("NetChar not running")
 	}
 
 	// fmt.Println("Run NetChar for 1 second")
 	// time.Sleep(1000 * time.Millisecond)
 
-	fmt.Println("Stop NetChar")
-	netChar.Stop()
-	if netChar.IsRunning() {
+	fmt.Println("Stop NetCharMgr")
+	netCharMgr.Stop()
+	if netCharMgr.IsRunning() {
 		t.Errorf("NetChar should not be running")
 	}
 }

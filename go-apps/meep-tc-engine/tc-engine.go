@@ -24,10 +24,10 @@ import (
 	"sync"
 	"time"
 
-	bws "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-bw-sharing"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	ncm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -184,7 +184,7 @@ type TcEngine struct {
 	scenarioStore *ScenarioStore
 	netCharStore  *NetCharStore
 	lbRulesStore  *LbRulesStore
-	bwSharing     *bws.BwSharing
+	netCharMgr    ncm.NetCharMgr
 
 	// Flag & Counters used to indicate when TC Engine is ready to
 	tcEngineState     int
@@ -269,18 +269,18 @@ func Init() (err error) {
 	}
 	log.Info("Connected to LB Rules Store redis DB")
 
-	// Create new Bandwidth Sharing instance
-	tce.bwSharing, err = bws.NewBwSharing("default", redisAddr, updateOneFilterRule, applyOneFilterRule)
+	// Create new Network Characteristics Manager instance
+	tce.netCharMgr, err = ncm.NewNetChar("default", redisAddr)
 	if err != nil {
-		log.Error("Failed to create a bwSharing object. Error: ", err)
+		log.Error("Failed to create a netChar object. Error: ", err)
 		return err
 	}
 
-	// Configure & Start BW Sharing
-	tce.bwSharing.UpdateControls()
-	err = tce.bwSharing.Start()
+	// Configure & Start Net Char Manager
+	tce.netCharMgr.Register(updateOneFilterRule, applyOneFilterRule)
+	err = tce.netCharMgr.Start()
 	if err != nil {
-		log.Error("Failed to start BW Sharing. Error: ", err)
+		log.Error("Failed to start Net Char Manager. Error: ", err)
 		return err
 	}
 
@@ -1136,7 +1136,7 @@ func applyNetCharRules() {
 			filterInfo.LatencyCorrelation = COMMON_CORRELATION
 			value = netCharTable[i][j][PACKET_LOSS]
 			filterInfo.PacketLoss = value
-			//throughput is always updated to make sure a value will be set in the DB is bwSharing is not active at the time of setting the value in the DB
+			//throughput is always updated to make sure a value will be set in the DB is netChar is not active at the time of setting the value in the DB
 			value = netCharTable[i][j][THROUGHPUT]
 			filterInfo.DataRate = value
 			needUpdateFilter := false
@@ -1200,11 +1200,11 @@ func applyNetCharRules() {
 			if needCreate {
 				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
 				dstElementPtr.NextUniqueNumber += 2
-				_ = updateFilterRule(&filterInfo, !tce.bwSharing.IsRunning())
+				_ = updateFilterRule(&filterInfo, !tce.netCharMgr.IsRunning())
 			} else if needUpdateFilter {
-				_ = updateFilterRule(&filterInfo, !tce.bwSharing.IsRunning())
+				_ = updateFilterRule(&filterInfo, !tce.netCharMgr.IsRunning())
 			} else if needUpdateNetChar {
-				_ = updateNetCharRule(&filterInfo, !tce.bwSharing.IsRunning())
+				_ = updateNetCharRule(&filterInfo, !tce.netCharMgr.IsRunning())
 			}
 			indexToNetElemMap[j] = *dstElementPtr
 			curNetCharList[j] = *dstElementPtr
