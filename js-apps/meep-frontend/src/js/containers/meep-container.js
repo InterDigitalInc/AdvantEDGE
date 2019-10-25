@@ -18,6 +18,7 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component }  from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import { updateObject } from '../util/object-util';
 
 // Import JS dependencies
@@ -62,8 +63,10 @@ import {
   execChangeOkToTerminate,
   corePodsRunning,
   corePodsErrors,
-  execVisFilteredData
+  execVisFilteredData,
+  execAddMetricsEpoch
 } from '../state/exec';
+
 
 import {
   cfgChangeScenario,
@@ -76,11 +79,22 @@ import {
   PAGE_EXECUTE,
   PAGE_MONITOR,
   PAGE_SETTINGS
-} from '../state/ui';
+} from '../meep-constants';
+
+
+import {
+  idlog
+} from '../util/functional';
+
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
 // const basepath = 'http://10.3.16.73:30000/v1';
+
+const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
+// const metricsBasePath = 'http://10.3.16.73:30008/v1';
+
+const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
 
@@ -98,9 +112,10 @@ class MeepContainer extends Component {
     document.title = 'AdvantEDGE';
     this.props.changeEventCreationMode(false);
     this.refreshScenario();
-    // -- Migration -- //
-    this.props.changeCurrentPage(PAGE_CONFIGURE);
     this.startRefreshCycle();
+
+    clearInterval(this.dataTimer);
+    this.startMetricsPolling();
   }
 
   startRefreshCycle() {
@@ -152,7 +167,43 @@ class MeepContainer extends Component {
     }
   }
 
-  // -- Migration --
+  fetchMetrics() {
+    const delta = -7;
+    const startTime = moment().utc().add(delta, 'seconds').format(TIME_FORMAT);
+    const stopTime = moment().utc().add(delta + 1, 'seconds').format(TIME_FORMAT);
+    return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
+      .then(res => {
+
+        let epoch = {
+          data: res.data.logResponse || [],
+          startTime: startTime
+        };
+  
+        this.props.addMetricsEpoch(epoch);
+      }).catch((e) => {
+        idlog('Error while fetching metrics')(e);
+      });
+  }
+
+  stopMetricsPolling() {
+    // clearInterval(this.dataTimer);
+    this.setState({metricsPollingStopped: true});
+  }
+  startMetricsPolling() {
+    // this.props.clearMetricsEpochs();
+    this.epochCount = 0;
+    const nextData = () => {
+      this.epochCount += 1;
+      this.fetchMetrics();
+    };
+
+    if (!this.dataTimer) {
+      this.dataTimer = setInterval(nextData, 1000);
+    }
+    
+    this.setState({metricsPollingStopped: false});
+  }
+
   checkPodsPhases() {
     // Core pods
     axios.get(`${basepath}/states?long=true&type=core`)
@@ -419,7 +470,8 @@ const mapDispatchToProps = dispatch => {
     cfgChangeVisData: (data) => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: (data) => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: (ok) => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
+    toggleMainDrawer: () => dispatch(uiToggleMainDrawer()),
+    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch))
   };
 };
 

@@ -9,7 +9,6 @@ import { Checkbox } from '@rmwc/checkbox';
 import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
-import axios from 'axios';
 
 import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
@@ -17,11 +16,6 @@ import IDCAppsView from './idc-apps-view';
 import IDSelect from '../components/helper-components/id-select';
 import IDCVis from './idc-vis';
 import ResizeableContainer from './resizeable-container';
-
-
-import {
-  idlog
-} from '../util/functional';
 
 import {
   getScenarioNodeChildren,
@@ -35,20 +29,31 @@ import {
 import {
   execFakeChangeSelectedDestination,
   execChangeSourceNodeSelected,
-  execAddMetricsEpoch,
   execChangeMetricsTimeIntervalDuration,
   execClearMetricsEpochs
 } from '../state/exec';
 
 import {
-  LATENCY_METRICS,
-  THROUGHPUT_METRICS,
-  MOBILITY_EVENT,
+  uiExecChangeDashboardView1,
+  uiExecChangeDashboardView2,
+  uiExecExpandDashboardConfig
+} from '../state/ui';
+
+
+import {
+  ME_LATENCY_METRICS,
+  ME_THROUGHPUT_METRICS,
+  ME_MOBILITY_EVENT,
   TYPE_EXEC,
-  EXEC_STATE_IDLE
+  DASHBOARD_VIEWS_LIST,
+  VIEW_NAME_NONE,
+  HIERARCHY_VIEW,
+  APPS_VIEW,
+  LATENCY_VIEW,
+  THROUGHPUT_VIEW,
+  VIS_VIEW
 } from '../meep-constants';
 
-const VIEW_NAME_NONE = 'none';
 const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
 function colorArray(dataLength) {
@@ -73,9 +78,6 @@ function colorArray(dataLength) {
   return colorArray;
 }
 
-const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
-// const metricsBasePath = 'http://10.3.16.73:30008/v1';
-
 const buildSeriesFromEpoch = (series, epoch) => {
   epoch.data.forEach(p => {
     if (! series[p.dest]) {
@@ -96,10 +98,10 @@ const epochsToSeries = (epochs) => {
 
 const TimeIntervalConfig = (props) => {
   let  PauseResumeButton = null;
-  if (props.metricsPollingStopped) {
+  if (props.slidingWindowStopped) {
     PauseResumeButton = () => (
       <Button outlined
-        onClick={() => props.startMetricsPolling()}
+        onClick={() => props.startSlidingWindow()}
       >
         RESUME
       </Button>
@@ -107,30 +109,38 @@ const TimeIntervalConfig = (props) => {
   } else {
     PauseResumeButton = () => (
       <Button outlined
-        onClick={() => props.stopMetricsPolling()}
+        onClick={() => props.stopSlidingWindow()}
       >
         PAUSE
       </Button>
     );
   }
   return (
-    <div>
+    <div style={{marginTop: 10}}>
       <Grid>
         <GridCell span={3}>
-          <Slider
-            value={props.value}
-            onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
-            discrete
-            min={5}
-            max={60}
-            step={1}
-          />
+          <div style={{margin:10}}>
+            <div>
+              <span className="mdc-typography--headline8">Timeframe in secs </span>
+            </div>
+            <Slider
+              value={props.value}
+              onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
+              discrete
+              min={5}
+              max={60}
+              step={1}
+            />
+          </div>
+          
         </GridCell>
         <GridCell span={1}>
 
         </GridCell>
         <GridCell span={8}>
-          <PauseResumeButton />
+          <div style={{margin:10}}>
+            <PauseResumeButton />
+          </div>
         </GridCell>
       </Grid>
     </div>
@@ -142,7 +152,7 @@ const TimeIntervalConfig = (props) => {
 const ConfigurationView = (props) => {
   return (
     <>
-    <Grid>
+    <Grid style={{marginBottom: 10}}>
       <GridCell span={2}>
         <IDSelect
           label={'Select View 1'}
@@ -189,27 +199,17 @@ const ConfigurationView = (props) => {
     </Grid>
     <TimeIntervalConfig 
       timeIntervalDurationChanged={(value) => {props.timeIntervalDurationChanged(value);}}
-      stopMetricsPolling={props.stopMetricsPolling}
-      startMetricsPolling={props.startMetricsPolling}
-      metricsPollingStopped={props.metricsPollingStopped}
+      stopSlidingWindow={props.stopSlidingWindow}
+      startSlidingWindow={props.startSlidingWindow}
+      slidingWindowStopped={props.slidingWindowStopped}
     />
     </>
   );
 };
 
-const MAIN_CONFIGURATION = 'MAIN_CONFIGURATION';
-
 const buttonStyles = {
   marginRight: 0
 };
-
-const HIERARCHY_VIEW = 'HIERARCHY_VIEW';
-const APPS_VIEW = 'APPS_VIEW';
-const LATENCY_VIEW = 'LATENCY_VIEW';
-const THROUGHPUT_VIEW = 'THROUGHPUT_VIEW';
-const VIS_VIEW = 'VIS_VIEW';
-
-const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, VIS_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW, HIERARCHY_VIEW];
 
 const ViewForName = (
   {
@@ -344,9 +344,13 @@ const ViewForName = (
 };
 
 const DashboardConfiguration = (props) => {
+  if (!props.showConfig) {
+    return null;
+  }
+
   let configurationView = null;
   
-  if(props.configurationType) {
+  if(props.dashboardConfigExpanded) {
     configurationView = (
       <ConfigurationView
         dashboardViewsList={props.dashboardViewsList}
@@ -361,24 +365,24 @@ const DashboardConfiguration = (props) => {
         changeDisplayEdgeLabels={props.changeDisplayEdgeLabels}
         displayEdgeLabels={props.displayEdgeLabels}
         timeIntervalDurationChanged={props.timeIntervalDurationChanged}
-        stopMetricsPolling={props.stopMetricsPolling}
-        startMetricsPolling={props.startMetricsPolling}
-        metricsPollingStopped={props.metricsPollingStopped}
+        stopSlidingWindow={props.stopSlidingWindow}
+        startSlidingWindow={props.startSlidingWindow}
+        slidingWindowStopped={props.slidingWindowStopped}
       />
     );
   }
 
-  const buttonConfig = !props.configurationType
+  const buttonConfig = !props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={props.displayConfiguration}>
-          Configuration
+      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(true)}>
+          Open
       </Button>
     )
     : null;
 
-  const buttonClose = props.configurationType
+  const buttonClose = props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={props.hideConfiguration}>
+      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(false)}>
           Close
       </Button>
     )
@@ -388,10 +392,14 @@ const DashboardConfiguration = (props) => {
     <Elevation z={2}
       style={{padding: 10, marginBottom: 10}}
     >
+    
       <Grid>
-        <GridCell span={10}>
+        <GridCell span={11}>
+          <div style={{marginBottom:10}}>
+            <span className="mdc-typography--headline6">Dashboard Configuration</span>
+          </div>
         </GridCell>
-        <GridCell span={2}>
+        <GridCell span={1}>
           {buttonConfig}
           {buttonClose}
         </GridCell>
@@ -433,58 +441,25 @@ class DashboardContainer extends Component {
     this.keyForSvg = 0;
 
     this.state = {
-      configurationType: null,
-      view1Name: APPS_VIEW,
-      view2Name: LATENCY_VIEW,
       sourceNodeId: '',
       nbSecondsToDisplay: 25,
-      displayEdgeLabels: false
+      displayEdgeLabels: false,
+      slidingWindowStopped: false
     };
 
     this.epochs = [];
   }
 
   componentDidMount() {
-    clearInterval(this.dataTimer);
-    this.startMetricsPolling();
+    
   }
 
   componentWillUnmount() {
     clearInterval(this.dataTimer);
   }
 
-  fetchMetrics() {
-    const delta = -7;
-    const startTime = moment().utc().add(delta, 'seconds').format(TIME_FORMAT);
-    const stopTime = moment().utc().add(delta + 1, 'seconds').format(TIME_FORMAT);
-    return axios.get(`${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`)
-      .then(res => {
-
-        let epoch = {
-          data: res.data.logResponse || [],
-          startTime: startTime
-        };
-  
-        this.props.addMetricsEpoch(epoch);
-      }).catch((e) => {
-        idlog('Error while fetching metrics')(e);
-      });
-  }
-
   getRoot() {
     return d3.hierarchy(this.props.displayedScenario, getScenarioNodeChildren);
-  }
-
-  changeView1(name) {
-    this.setState({
-      view1Name: name
-    });
-  }
-
-  changeView2(name) {
-    this.setState({
-      view2Name: name
-    });
   }
 
   changeDisplayEdgeLabels(val) {
@@ -495,34 +470,19 @@ class DashboardContainer extends Component {
     this.props.changeMetricsTimeIntervalDuration(duration);
   }
 
-  stopMetricsPolling() {
-    // clearInterval(this.dataTimer);
-    this.setState({metricsPollingStopped: true});
-  }
-  startMetricsPolling() {
-    // this.props.clearMetricsEpochs();
-    this.epochCount = 0;
-    const nextData = () => {
-      this.epochCount += 1;
-      this.fetchMetrics();
-    };
 
-    if (!this.dataTimer) {
-      this.dataTimer = setInterval(nextData, 1000);
-    }
-    
-    this.setState({metricsPollingStopped: false});
+  stopSlidingWindow() {
+    this.setState({slidingWindowStopped: true});
   }
 
+  startSlidingWindow() {
+    this.setState({slidingWindowStopped: false});
+  }
 
   render() {
 
-    if (EXEC_STATE_IDLE === this.props.scenarioState) {
-      idlog('Scenario is idle')('');
-    }
-
     let epochs = null;
-    if (!this.state.metricsPollingStopped) {
+    if (!this.state.slidingWindowStopped) {
       this.epochs = this.props.epochs.slice();
       epochs = this.epochs;
     } else {
@@ -549,11 +509,11 @@ class DashboardContainer extends Component {
     const dataTypeForView = view => {
       switch (view) {
       case LATENCY_VIEW:
-        return LATENCY_METRICS;
+        return ME_LATENCY_METRICS;
       case THROUGHPUT_VIEW:
-        return THROUGHPUT_METRICS;
+        return ME_THROUGHPUT_METRICS;
       default:
-        return LATENCY_METRICS;
+        return ME_LATENCY_METRICS;
       }
     };
 
@@ -577,18 +537,18 @@ class DashboardContainer extends Component {
     };
 
     // For view 1
-    const view1DataType = dataTypeForView(this.state.view1Name);
+    const view1DataType = dataTypeForView(this.props.view1Name);
     const series1 =  filterSeries(appIds)(withTypeAndSource(view1DataType)(selectedSource))(series);
     const lastEpochData1 = lastEpoch.data.filter(isDataOfType(view1DataType));
 
     // For view2
-    const view2DataType = dataTypeForView(this.state.view2Name);
+    const view2DataType = dataTypeForView(this.props.view2Name);
     const series2 =  filterSeries(appIds)(withTypeAndSource(view2DataType)(selectedSource))(series);
     const lastEpochData2 = lastEpoch.data.filter(isDataOfType(view2DataType));
 
     // Mobility events
     const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
-    const extractMobilityEvents = extractPointsOfType(MOBILITY_EVENT);
+    const extractMobilityEvents = extractPointsOfType(ME_MOBILITY_EVENT);
     const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
     if (mobilityEvents.length) {
@@ -603,8 +563,8 @@ class DashboardContainer extends Component {
     // let width1 = 700;
     // let width2 = 700;
 
-    const view1Present = this.state.view1Name !== VIEW_NAME_NONE;
-    const view2Present = this.state.view2Name !== VIEW_NAME_NONE;
+    const view1Present = this.props.view1Name !== VIEW_NAME_NONE;
+    const view2Present = this.props.view2Name !== VIEW_NAME_NONE;
 
     if (view1Present && view2Present) {
       span1 = 6;
@@ -631,7 +591,7 @@ class DashboardContainer extends Component {
         selectedSource={selectedSource}
         colorForApp={colorForApp}
         changeSourceNodeSelected={(node) => this.props.changeSourceNodeSelected(node)}
-        viewName={this.state.view1Name}
+        viewName={this.props.view1Name}
         displayEdgeLabels={this.state.displayEdgeLabels}
       />
     );
@@ -652,7 +612,7 @@ class DashboardContainer extends Component {
         selectedSource={selectedSource}
         colorForApp={colorForApp}
         changeSourceNodeSelected={(node) => this.props.changeSourceNodeSelected(node)}
-        viewName={this.state.view2Name}
+        viewName={this.props.view2Name}
         displayEdgeLabels={this.state.displayEdgeLabels}
       >
       </ViewForName>
@@ -662,22 +622,19 @@ class DashboardContainer extends Component {
       <>
       
         <DashboardConfiguration
-          configurationType={this.state.configurationType}
-          displayConfiguration={
-            () => {
-              this.setState({configurationType: MAIN_CONFIGURATION});
-            }}
-          hideConfiguration={() => {this.setState({configurationType: ''});}}
+          showConfig={this.props.showConfig}
+          dashboardConfigExpanded={this.props.dashboardConfigExpanded}
+          expandDashboardConfig={(show) => this.props.expandDashboardConfig(show)}
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
           changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
           timeIntervalDurationChanged={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
-          stopMetricsPolling={() => this.stopMetricsPolling()}
-          startMetricsPolling={() => this.startMetricsPolling()}
-          metricsPollingStopped={this.state.metricsPollingStopped}
+          stopSlidingWindow={() => this.stopSlidingWindow()}
+          startSlidingWindow={() => this.startSlidingWindow()}
+          slidingWindowStopped={this.state.slidingWindowStopped}
           dashboardViewsList={DASHBOARD_VIEWS_LIST}
-          changeView1={(viewName) => this.changeView1(viewName)}
-          changeView2={(viewName) => this.changeView2(viewName)}
+          changeView1={(viewName) => this.props.changeView1(viewName)}
+          changeView2={(viewName) => this.props.changeView2(viewName)}
           displayEdgeLabels={this.state.displayEdgeLabels}
           changeDisplayEdgeLabels={(display) => this.changeDisplayEdgeLabels(display)}
         />
@@ -719,7 +676,11 @@ const mapStateToProps = state => {
     dataTypeSelected: state.exec.metrics.dataTypeSelected,
     eventCreationMode: state.exec.eventCreationMode,
     metricsTimeIntervalDuration: state.exec.metrics.timeIntervalDuration,
-    scenarioState: state.exec.state.scenario
+    scenarioState: state.exec.state.scenario,
+    showConfig: state.ui.showDashboardConfig,
+    dashboardConfigExpanded: state.ui.dashboardConfigExpanded,
+    view1Name: state.ui.dashboardView1,
+    view2Name: state.ui.dashboardView2
   };
 };
 
@@ -727,9 +688,11 @@ const mapDispatchToProps = dispatch => {
   return {
     changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
     changeSourceNodeSelected: (src) => dispatch(execChangeSourceNodeSelected(src)),
-    addMetricsEpoch: (epoch) => dispatch(execAddMetricsEpoch(epoch)),
     changeMetricsTimeIntervalDuration: (duration) => dispatch(execChangeMetricsTimeIntervalDuration(duration)),
-    clearMetricsEpochs: () => dispatch(execClearMetricsEpochs())
+    clearMetricsEpochs: () => dispatch(execClearMetricsEpochs()),
+    changeView1: (name) => dispatch(uiExecChangeDashboardView1(name)),
+    changeView2: (name) => dispatch(uiExecChangeDashboardView2(name)) ,
+    expandDashboardConfig: (expand) => dispatch(uiExecExpandDashboardConfig(expand))
   };
 };
 

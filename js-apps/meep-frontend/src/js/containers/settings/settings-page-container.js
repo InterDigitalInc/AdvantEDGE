@@ -25,13 +25,13 @@ import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
   uiChangeDevMode,
-  PAGE_SETTINGS
+  uiExecChangeShowDashboardConfig
 } from '../../state/ui';
 
 import {
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
-  SET_DEV_MODE_CHECKBOX
+  PAGE_SETTINGS
 } from '../../meep-constants';
 
 class SettingsPageContainer extends Component {
@@ -160,27 +160,24 @@ class SettingsPageContainer extends Component {
 
               <Elevation className="component-style" z={2}>
                 <Grid>
-                  <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10, marginBottom: -20}}>
-                    <div>
-                      <span className="mdc-typography--headline6">Development: </span>
-                    </div>
+                  <GridCell span={6}>
+                    <CheckableSettingItem
+                      title='Development'
+                      stateItem={this.props.devMode}
+                      changeStateItem={this.props.changeDevMode}
+                      stateItemName='Development mode'
+                    />
+                  </GridCell>
+                  <GridCell span={6}>
+                    <CheckableSettingItem
+                      title='Dashboard Config'
+                      stateItem={this.props.showDashboardConfig}
+                      changeStateItem={this.props.changeShowDashboardConfig}
+                      stateItemName='Show Dashboard Config'
+                    />
                   </GridCell>
                 </Grid>
-                <Grid span={12} style={{marginTop: 10}}>
-                  <GridCell span={4}>
-                    <div style={{paddingTop: 20, paddingBottom: 20}}>
-                      <Checkbox
-                        checked={this.props.devMode}
-                        onChange={e => this.props.changeDevMode(e.target.checked)}
-                        data-cy={SET_DEV_MODE_CHECKBOX}
-                      >
-                        Development mode
-                      </Checkbox>
-                    </div>
-                  </GridCell>
-                  <GridCell span={8}>
-                  </GridCell>
-                </Grid>
+                
               </Elevation>
 
             </GridCell>
@@ -190,6 +187,32 @@ class SettingsPageContainer extends Component {
     );
   }
 }
+
+const CheckableSettingItem = ({title, stateItem, changeStateItem, stateItemName}) => {
+  return (
+    <>
+    <Grid>
+      <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10, marginBottom: -20}}>
+        <div>
+          <span className="mdc-typography--headline6">{title}: </span>
+        </div>
+      </GridCell>
+    </Grid>
+    <Grid span={12} style={{marginTop: 10}}>
+      <GridCell span={12}>
+        <div style={{paddingTop: 20, paddingBottom: 20}}>
+          <Checkbox
+            checked={stateItem}
+            onChange={e => changeStateItem(e.target.checked)}
+          >
+            {stateItemName}
+          </Checkbox>
+        </div>
+      </GridCell>
+    </Grid>
+    </>
+  );
+};
 
 const styles = {
   headlineGrid: {
@@ -217,7 +240,8 @@ const mapStateToProps = state => {
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
-    page: state.ui.page
+    page: state.ui.page,
+    showDashboardConfig: state.ui.showDashboardConfig
   };
 };
 
@@ -225,7 +249,8 @@ const mapDispatchToProps = dispatch => {
   return {
     setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val)),
     changeRefreshInterval: (val) => dispatch(uiChangeRefreshInterval(val)),
-    changeDevMode: (mode) => dispatch(uiChangeDevMode(mode))
+    changeDevMode: (mode) => dispatch(uiChangeDevMode(mode)),
+    changeShowDashboardConfig: (show) => dispatch(uiExecChangeShowDashboardConfig(show))
   };
 };
 

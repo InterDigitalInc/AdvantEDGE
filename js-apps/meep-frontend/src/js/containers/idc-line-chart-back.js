@@ -10,7 +10,7 @@
 import _ from 'lodash';
 import React, { useRef, useEffect }  from 'react';
 import * as d3 from 'd3';
-import { LATENCY_METRICS, THROUGHPUT_METRICS } from '../meep-constants';
+import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../meep-constants';
 
 const notNull = x => x;
 const IDCLineChartBack = props => {
@@ -165,9 +165,9 @@ const IDCLineChartBack = props => {
         // text label for the y axis
         const labelForType = type => {
           switch (type) {
-          case LATENCY_METRICS:
+          case ME_LATENCY_METRICS:
             return 'Latency (ms)';
-          case THROUGHPUT_METRICS:
+          case ME_THROUGHPUT_METRICS:
             return 'Throughput (kbs)';
           default:
             return '';

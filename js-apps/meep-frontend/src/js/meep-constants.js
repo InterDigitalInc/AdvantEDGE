@@ -18,6 +18,12 @@
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
 
+
+export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
+export const PAGE_EXECUTE = 'PAGE_EXECUTE';
+export const PAGE_MONITOR = 'PAGE_MONITOR';
+export const PAGE_SETTINGS = 'PAGE_SETTINGS';
+
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
@@ -209,6 +215,18 @@ export const id = (label) => {
 };
 
 // Metrics engine data types
-export const LATENCY_METRICS = 'latency';
-export const THROUGHPUT_METRICS = 'ingressPacketStats';
-export const MOBILITY_EVENT = 'mobilityEvent';
+export const ME_LATENCY_METRICS = 'latency';
+export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
+export const ME_MOBILITY_EVENT = 'mobilityEvent';
+
+export const VIEW_NAME_NONE = 'None';
+export const HIERARCHY_VIEW = 'HIERARCHY_VIEW';
+export const APPS_VIEW = 'APPS_VIEW';
+export const LATENCY_VIEW = 'LATENCY_VIEW';
+export const THROUGHPUT_VIEW = 'THROUGHPUT_VIEW';
+export const VIS_VIEW = 'VIS_VIEW';
+
+export const MOBILITY_EVENT = 'MOBILITY';
+export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+
+export const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, VIS_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW, HIERARCHY_VIEW];

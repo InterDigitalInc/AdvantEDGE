@@ -46,8 +46,7 @@ import {
 
   // Event types
   MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE
+  NETWORK_CHARACTERISTICS_EVENT
 } from '../../state/ui';
 
 import {
@@ -59,7 +58,8 @@ import {
 
 import {
   // States
-  EXEC_STATE_IDLE
+  EXEC_STATE_IDLE,
+  PAGE_EXECUTE
 } from '../../meep-constants';
 
 
