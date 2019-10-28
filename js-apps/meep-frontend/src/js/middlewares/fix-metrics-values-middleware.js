@@ -11,6 +11,7 @@ import {
 // Compute avg for each triplet src, dest, dataType
 // Create point for each triplet and fill it with avg time and avg value
 
+let mobilityEventIndex=1;
 const mergeEpochPoints = epoch => {
   let pointsMap = epoch.data.reduce((acc, point) => {
     const key = `${point.src},${point.dest},${point.dataType}`;
@@ -31,6 +32,11 @@ const mergeEpochPoints = epoch => {
       value: d3.mean(points, p => valueOfPoint(p)),
       dataType: points[0].dataType
     };
+
+    if (p.dataType === 'mobilityEvent') {
+      p.dest = points[0].data.newPoa;
+      p.mobilityEventIndex = mobilityEventIndex++;
+    }
 
     return p;
   });
