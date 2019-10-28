@@ -51,15 +51,6 @@ type SegAlgoConfig struct {
 	LogVerbose   bool
 }
 
-type SegAlgoNetChar struct {
-	SrcElemName string
-	DstElemName string
-	Latency     float64
-	Jitter      float64
-	PacketLoss  float64
-	Throughput  float64
-}
-
 // SegAlgoSegment -
 type SegAlgoSegment struct {
 	Name                      string
@@ -155,7 +146,6 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 	if model.GetScenarioName() == "" {
 		// Remove any existing metrics
 		algo.deleteMetricsEntries()
-		return nil
 	}
 
 	// Clear segment & flow maps
@@ -195,6 +185,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 		element := new(SegAlgoNetElem)
 		element.Name = proc.Name
 		element.PhyLocName = nodeCtx[mod.PhyLoc]
+		element.DomainName = nodeCtx[mod.Domain]
 
 		// Type-specific values
 		element.Type = model.GetNodeType(element.PhyLocName)
@@ -203,7 +194,6 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 		}
 		if element.Type != "DC" {
 			element.ZoneName = nodeCtx[mod.Zone]
-			element.DomainName = nodeCtx[mod.Domain]
 		}
 
 		// Set max App Throughput (use default if set to 0)
@@ -239,8 +229,8 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 }
 
 // CalculateNetChar - Run algorithm to recalculate network characteristics using latest scenario & metrics
-func (algo *SegmentAlgorithm) CalculateNetChar() []interface{} {
-	var updatedNetCharList []interface{}
+func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
+	var updatedNetCharList []FlowNetChar
 	currentTime := time.Now()
 	algo.logTimeLapse(&currentTime, "time to print")
 
@@ -257,6 +247,13 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []interface{} {
 	algo.reCalculateThroughputs()
 	algo.logTimeLapse(&currentTime, "time to recalculate")
 
+	if flowLog, ok := algo.FlowMap["ue1-iperf:zone1-fog1-iperf"]; ok {
+		log.Error(printFlow(flowLog))
+	}
+	if flowLog, ok := algo.FlowMap["ue1-iperf:zone2-edge1-iperf"]; ok {
+		log.Error(printFlow(flowLog))
+	}
+
 	// Prepare list of updated flows
 	for _, flow := range algo.FlowMap {
 		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
@@ -264,7 +261,8 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []interface{} {
 			flow.AllocatedThroughput = flow.MaxPlannedThroughput
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
-			updatedNetCharList = append(updatedNetCharList, SegAlgoNetChar{flow.DstNetElem, flow.SrcNetElem, 0, 0, 0, flow.AllocatedThroughput})
+			flowNetChar := FlowNetChar{flow.SrcNetElem, flow.DstNetElem, 0, 0, 0, flow.AllocatedThroughput}
+			updatedNetCharList = append(updatedNetCharList, flowNetChar)
 		}
 	}
 	return updatedNetCharList
@@ -361,7 +359,7 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 		flow.DstNetElem = destElement.Name
 		algo.FlowMap[flowName] = flow
 	} else if flow.Name != flowName || flow.SrcNetElem != srcElement.Name && flow.DstNetElem != destElement.Name {
-		log.Error("bwSharingElement already exists but not the same info, something is wrong!")
+		log.Error("Flow already exists but not the same info, something is wrong!")
 	}
 
 	// Set maxBw to the minimum of the 2 ends if a max is not forced
@@ -811,10 +809,6 @@ func getMaxThroughput(elemName string, model *mod.Model) (maxThroughput float64)
 		maxThroughput = float64(pl.LinkThroughput)
 	} else if nl, ok := node.(*ceModel.NetworkLocation); ok {
 		maxThroughput = float64(nl.TerminalLinkThroughput)
-		// For compatiblity reasons, set to default value if 0
-		if maxThroughput == 0 {
-			maxThroughput = DEFAULT_THROUGHPUT_LINK
-		}
 	} else if zone, ok := node.(*ceModel.Zone); ok {
 		maxThroughput = float64(zone.EdgeFogThroughput)
 	} else if domain, ok := node.(*ceModel.Domain); ok {
@@ -824,6 +818,12 @@ func getMaxThroughput(elemName string, model *mod.Model) (maxThroughput float64)
 	} else {
 		log.Error("Error casting element: " + elemName)
 	}
+
+	// For compatiblity reasons, set to default value if 0
+	if maxThroughput == 0 {
+		maxThroughput = DEFAULT_THROUGHPUT_LINK
+	}
+
 	return maxThroughput
 }
 

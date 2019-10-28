@@ -44,7 +44,7 @@ type NetCharMgr interface {
 // NetCharAlgo
 type NetCharAlgo interface {
 	ProcessScenario(*mod.Model) error
-	CalculateNetChar() []interface{}
+	CalculateNetChar() []FlowNetChar
 	SetConfigAttribute(string, string)
 }
 
@@ -84,32 +84,32 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 
 	// Create new instance & set default config
 	var err error
-	var nc NetCharManager
+	var ncm NetCharManager
 	if name == "" {
 		err = errors.New("Missing name")
 		log.Error(err)
 		return nil, err
 	}
-	nc.name = name
-	nc.isStarted = false
-	nc.config.RecalculationPeriod = defaultTickerPeriod
+	ncm.name = name
+	ncm.isStarted = false
+	ncm.config.RecalculationPeriod = defaultTickerPeriod
 
 	// Create new NetCharAlgo
-	nc.algo, err = NewSegmentAlgorithm(redisAddr)
+	ncm.algo, err = NewSegmentAlgorithm(redisAddr)
 	if err != nil {
 		log.Error("Failed to create NetCharAlgo with error: ", err)
 		return nil, err
 	}
 
 	// Create new Model
-	nc.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
+	ncm.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return nil, err
 	}
 
 	// Create new Control listener
-	nc.rc, err = redis.NewConnector(redisAddr, netCharControlDb)
+	ncm.rc, err = redis.NewConnector(redisAddr, netCharControlDb)
 	if err != nil {
 		log.Error("Failed connection to redis DB. Error: ", err)
 		return nil, err
@@ -117,118 +117,116 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 	log.Info("Connected to Control Listener redis DB")
 
 	// Listen for Model updates
-	err = nc.activeModel.Listen(nc.eventHandler)
+	err = ncm.activeModel.Listen(ncm.eventHandler)
 	if err != nil {
 		log.Error("Failed to listen for model updates: ", err.Error())
 		return nil, err
 	}
 
 	// Listen for Control updates
-	err = nc.rc.Subscribe(NetCharControlChannel)
+	err = ncm.rc.Subscribe(NetCharControlChannel)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events on NetCharControlChannel. Error: ", err)
 		return nil, err
 	}
 	go func() {
-		_ = nc.rc.Listen(nc.eventHandler)
+		_ = ncm.rc.Listen(ncm.eventHandler)
 	}()
 
-	log.Debug("NetChar successfully created: ", nc.name)
-	return &nc, nil
+	log.Debug("NetChar successfully created: ", ncm.name)
+	return &ncm, nil
 }
 
 // Register - Register NetChar callback functions
-func (nc *NetCharManager) Register(updateFilterRule func(string, string, float64), applyFilterRule func()) {
-	nc.updateFilterCB = updateFilterRule
-	nc.applyFilterCB = applyFilterRule
+func (ncm *NetCharManager) Register(updateFilterRule func(string, string, float64), applyFilterRule func()) {
+	ncm.updateFilterCB = updateFilterRule
+	ncm.applyFilterCB = applyFilterRule
 }
 
 // Start - Start NetChar
-func (nc *NetCharManager) Start() error {
-	if !nc.isStarted {
-		nc.isStarted = true
-		nc.ticker = time.NewTicker(time.Duration(nc.config.RecalculationPeriod) * time.Millisecond)
+func (ncm *NetCharManager) Start() error {
+	if !ncm.isStarted {
+		ncm.isStarted = true
+		ncm.ticker = time.NewTicker(time.Duration(ncm.config.RecalculationPeriod) * time.Millisecond)
 		go func() {
-			for range nc.ticker.C {
-				if nc.isStarted {
-					nc.mutex.Lock()
-					nc.updateNetChars()
-					nc.mutex.Unlock()
+			for range ncm.ticker.C {
+				if ncm.isStarted {
+					ncm.mutex.Lock()
+					ncm.updateNetChars()
+					ncm.mutex.Unlock()
 				}
 			}
 		}()
-		log.Debug("NetChar started ", nc.name)
+		log.Debug("Network Characteristics Manager started: ", ncm.name)
 	}
 	return nil
 }
 
 // Stop - Stop NetChar
-func (nc *NetCharManager) Stop() {
-	if nc.isStarted {
-		nc.isStarted = false
-		nc.ticker.Stop()
-		log.Debug("NetChar stopped ", nc.name)
+func (ncm *NetCharManager) Stop() {
+	if ncm.isStarted {
+		ncm.isStarted = false
+		ncm.ticker.Stop()
+		log.Debug("NetChar stopped ", ncm.name)
 	}
 }
 
 // IsRunning
-func (nc *NetCharManager) IsRunning() bool {
-	return nc.isStarted
+func (ncm *NetCharManager) IsRunning() bool {
+	return ncm.isStarted
 }
 
 // eventHandler - Events received and processed by the registered channels
-func (nc *NetCharManager) eventHandler(channel string, payload string) {
+func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
-	nc.mutex.Lock()
+	ncm.mutex.Lock()
 	switch channel {
 	case NetCharControlChannel:
 		log.Debug("Event received on channel: ", NetCharControlChannel)
-		nc.updateControls()
+		ncm.updateControls()
 	case mod.ActiveScenarioEvents:
 		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
-		nc.processActiveScenarioUpdate()
+		ncm.processActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")
 	}
-	nc.mutex.Unlock()
+	ncm.mutex.Unlock()
 }
 
 // processActiveScenarioUpdate
-func (nc *NetCharManager) processActiveScenarioUpdate() {
-	if nc.isStarted {
+func (ncm *NetCharManager) processActiveScenarioUpdate() {
+	if ncm.isStarted {
 		// Process updated scenario using algorithm
-		err := nc.algo.ProcessScenario(nc.activeModel)
+		err := ncm.algo.ProcessScenario(ncm.activeModel)
 		if err != nil {
 			log.Error("Failed to process active model with error: ", err)
 			return
 		}
 
 		// Recalculate network characteristics
-		nc.updateNetChars()
+		ncm.updateNetChars()
 	}
 }
 
 // updateNetChars
-func (nc *NetCharManager) updateNetChars() {
+func (ncm *NetCharManager) updateNetChars() {
 	// Recalculate network characteristics
-	updatedNetCharList := nc.algo.CalculateNetChar()
+	updatedNetCharList := ncm.algo.CalculateNetChar()
 
 	// Apply updates, if any
 	if len(updatedNetCharList) != 0 {
-		for _, netChar := range updatedNetCharList {
-			if flowNetChar, ok := netChar.(FlowNetChar); ok {
-				nc.updateFilterCB(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.Throughput)
-			}
+		for _, flowNetChar := range updatedNetCharList {
+			ncm.updateFilterCB(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.Throughput)
 		}
-		nc.applyFilterCB()
+		ncm.applyFilterCB()
 	}
 }
 
 // updateControls - Update all the different configurations attributes based on the content of the DB for dynamic updates
-func (nc *NetCharManager) updateControls() {
+func (ncm *NetCharManager) updateControls() {
 	var controls = make(map[string]interface{})
 	keyName := NetCharControls
-	err := nc.rc.ForEachEntry(keyName, nc.getControlsEntryHandler, controls)
+	err := ncm.rc.ForEachEntry(keyName, ncm.getControlsEntryHandler, controls)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
 		return
@@ -236,7 +234,7 @@ func (nc *NetCharManager) updateControls() {
 }
 
 // getControlsEntryHandler - Update all the different configurations attributes based on the content of the DB for dynamic updates
-func (nc *NetCharManager) getControlsEntryHandler(key string, fields map[string]string, userData interface{}) (err error) {
+func (ncm *NetCharManager) getControlsEntryHandler(key string, fields map[string]string, userData interface{}) (err error) {
 
 	actionName := ""
 	tickerPeriod := defaultTickerPeriod
@@ -257,27 +255,27 @@ func (nc *NetCharManager) getControlsEntryHandler(key string, fields map[string]
 			}
 		default:
 		}
-		nc.algo.SetConfigAttribute(fieldName, fieldValue)
+		ncm.algo.SetConfigAttribute(fieldName, fieldValue)
 	}
 
-	nc.config.Action = actionName
-	nc.config.RecalculationPeriod = tickerPeriod
-	nc.config.LogVerbose = logVerbose
+	ncm.config.Action = actionName
+	ncm.config.RecalculationPeriod = tickerPeriod
+	ncm.config.LogVerbose = logVerbose
 
-	nc.applyAction()
+	ncm.applyAction()
 	return nil
 }
 
 // applyAction - Execute the action in the configuration parameters for controls on the NetChar object
-func (nc *NetCharManager) applyAction() {
-	switch nc.config.Action {
+func (ncm *NetCharManager) applyAction() {
+	switch ncm.config.Action {
 	case "start":
-		if !nc.isStarted {
-			_ = nc.Start()
+		if !ncm.isStarted {
+			_ = ncm.Start()
 		}
 	case "stop":
-		if nc.isStarted {
-			nc.Stop()
+		if ncm.isStarted {
+			ncm.Stop()
 		}
 	default:
 	}

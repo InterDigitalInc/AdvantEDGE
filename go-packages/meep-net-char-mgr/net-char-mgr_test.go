@@ -23,7 +23,17 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const redisAddr string = "localhost:30379"
+const netCharMgrRedisAddr string = "localhost:30380"
+
+// // Callback function to update a specific filter rule
+// func updateFilterRule(string, string, float64) {
+
+// }
+
+// // Callback function to apply filter rule updates
+// func applyFilterRule() {
+
+// }
 
 func TestNetCharBasic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -31,7 +41,7 @@ func TestNetCharBasic(t *testing.T) {
 
 	var netCharMgr NetCharMgr
 	var err error
-	netCharMgr, err = NewNetChar("test", redisAddr)
+	netCharMgr, err = NewNetChar("test", netCharMgrRedisAddr)
 	if err != nil {
 		t.Errorf("Failed to create a NetChar object.")
 		return
