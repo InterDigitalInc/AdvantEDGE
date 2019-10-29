@@ -592,10 +592,6 @@ class DashboardContainer extends Component {
     const extractMobilityEvents = extractPointsOfType(ME_MOBILITY_EVENT);
     const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
-    if (mobilityEvents.length) {
-      console.log('Some mobility events ...');
-    }
-  
     
     // const height = 600;
 

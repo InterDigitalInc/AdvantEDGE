@@ -952,8 +952,8 @@ func sendEventMobility(event Event) (string, int) {
 		log.WithFields(log.Fields{
 			"meep.log.component": "ctrl-engine",
 			"meep.log.msgType":   "mobilityEvent",
-			"meep.log.oldLoc":    oldLocName,
-			"meep.log.newLoc":    newLocName,
+			"meep.log.oldPoa":    oldLocName,
+			"meep.log.newPoa":    newLocName,
 			"meep.log.src":       elemName,
 			"meep.log.dest":      elemName,
 		}).Info("Measurements log")
