@@ -21,6 +21,9 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 
+const VIS_CONFIGURATION_MODE_LABEL = 'VIS Configuration Mode';
+const SHOW_DASHBOARD_CONFIG_LABEL = 'Show Dashboard Config';
+
 import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
@@ -165,7 +168,7 @@ class SettingsPageContainer extends Component {
                       title='Development'
                       stateItem={this.props.devMode}
                       changeStateItem={this.props.changeDevMode}
-                      stateItemName='Development mode'
+                      stateItemName={VIS_CONFIGURATION_MODE_LABEL}
                     />
                   </GridCell>
                   <GridCell span={6}>
@@ -173,7 +176,7 @@ class SettingsPageContainer extends Component {
                       title='Dashboard Config'
                       stateItem={this.props.showDashboardConfig}
                       changeStateItem={this.props.changeShowDashboardConfig}
-                      stateItemName='Show Dashboard Config'
+                      stateItemName={SHOW_DASHBOARD_CONFIG_LABEL}
                     />
                   </GridCell>
                 </Grid>

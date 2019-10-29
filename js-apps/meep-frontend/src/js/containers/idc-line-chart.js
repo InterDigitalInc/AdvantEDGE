@@ -17,6 +17,7 @@
 import _ from 'lodash';
 import * as d3 from 'd3';
 import React from 'react';
+import uuid from 'uuid';
 import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
 import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../meep-constants';
 import { blue } from './graph-utils';
@@ -38,7 +39,7 @@ const IDCLineChart = (props) => {
   // const width = props.width; // - margin.left - margin.right;
   const height = props.height; // - margin.top - margin.bottom;
 
-  const maxForKey = series => key => d3.max(series[key], p => p.value);
+  const maxForKey = series => key => d3.max(series[key], p => p.value) || 0;
   const maxes = Object.keys(props.series).map(maxForKey(props.series));
   const max = d3.max(maxes);
   const maxOfYScale = Math.ceil(max/50.0) * 50.0;
@@ -112,20 +113,30 @@ const IDCLineChart = (props) => {
   const chartTitle = chartTitleForType(props.dataType);
 
   const axisWidthOffset = 12;
-  const meX = d => x(new Date(d.timestamp)) + axisWidthOffset;
+  const yOffset = 15;
+  const meX = d => x(new Date(d.timestamp)) + axisWidthOffset + margin.left;
 
-  const mobilityEventLine = me => `M${meX(me) + margin.left},${y(yRange[1]) + margin.top} L${meX(me) + margin.left},${y(yRange[0]) + margin.top}`;
+  const mobilityEventLine = me => `M${meX(me)},${y(yRange[1]) + margin.top + yOffset} L${meX(me)},${y(yRange[0]) + margin.top}`;
+  const mobilityTrianglePolygonPoints = me => {
+    const y_ = y(yRange[1]) + margin.top + yOffset;
+    return `${meX(me) - 5},${y_} ${meX(me) + 5},${y_} ${meX(me)},${y_ + 10}`;
+  };
   const mobilityEventText = me => `ME from ${me.src} to ${me.dest}`;
 
   const mobilityEventLines = props.mobilityEvents.map(me => {
+    
     return (
+      <>
+      <text textAnchor='middle' fontSize='small' fill={blue} x={meX(me)} y={ y(yRange[1]) + margin.top + yOffset - 3} class="small">{me.mobilityEventIndex}</text>
+      <polygon key={uuid()} points={mobilityTrianglePolygonPoints(me)} style={{fill:blue, stroke:blue, strokeWidth:1}}/>
       <path
         className='mobilityEventLine'
         d={mobilityEventLine(me)}
-        id={me.timestamp}
+        id={uuid()}
         key={me.timestamp}
         style={{stroke: blue, strokeWidth: 2, fill: 'none', textAnchor: 'middle'}}
       />
+      </>
     );
   });
 

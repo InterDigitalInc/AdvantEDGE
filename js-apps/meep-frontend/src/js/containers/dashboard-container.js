@@ -10,6 +10,7 @@ import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
 
+import { blue } from './graph-utils';
 import IDCLineChart from './idc-line-chart';
 import IDCGraph from './idc-graph';
 import IDCAppsView from './idc-apps-view';
@@ -434,6 +435,46 @@ const removeDuplicatePoints = sequence => {
   return newSequence;
 };
 
+const eventLogStyle = {
+  padding: 10,
+  marginTop: 10,
+  marginLeft: 10,
+  marginRight: 10,
+  marginBottom: 10,
+  border: '1px solid #e4e4e4',
+  count: {color: blue},
+  eventName: {color: '#6e6e6e'},
+  arrow: {color: '#6e6e6e'},
+  element: {color: blue}
+};
+
+// let eventCount=0;
+const EventLog = (props) => {
+  // TODO: generalize function for other types of events.
+  // Now it creates a description for Mobility Events
+  const descriptionFromEvent = (event) => {
+    // eventCount++;
+    return (
+      <div key={event.mobilityEventIndex}>
+        <span style={eventLogStyle.count}>{event.mobilityEventIndex}.</span>
+        <span style={eventLogStyle.eventName}>{' Mobility: '}</span>
+        <span style={eventLogStyle.element}>{` ${event.src} `}</span>
+        <span style={eventLogStyle.arrow}>{' -> '}</span>
+        <span style={eventLogStyle.element}>{` ${event.dest}`}</span>
+      </div>
+    );
+  };
+  return (
+    <>
+    <span className="mdc-typography--headline8" style={{marginLeft: 10}}>Events
+    </span>
+    <div style={eventLogStyle}>
+      {props.events.map(descriptionFromEvent)}
+    </div>
+    </>
+  );
+};
+
 class DashboardContainer extends Component {
   constructor(props) {
     super(props);
@@ -551,10 +592,6 @@ class DashboardContainer extends Component {
     const extractMobilityEvents = extractPointsOfType(ME_MOBILITY_EVENT);
     const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
-    if (mobilityEvents.length) {
-      // console.log('Some mobility events ...');
-    }
-  
     
     // const height = 600;
 
@@ -618,6 +655,12 @@ class DashboardContainer extends Component {
       </ViewForName>
     );
 
+    const EventLogComponent = () => (
+      <EventLog 
+        events={mobilityEvents}
+      />
+    );
+
     return (
       <>
       
@@ -657,6 +700,7 @@ class DashboardContainer extends Component {
                 style={{padding: 10}}
               >
                 {view2}
+                <EventLogComponent />
               </Elevation>
             </GridCell>
          
