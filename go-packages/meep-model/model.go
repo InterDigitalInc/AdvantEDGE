@@ -90,9 +90,18 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	m.ActiveChannel = ActiveScenarioEvents
 	m.activeKey = activeScenarioKey
 	m.scenario = new(ceModel.Scenario)
-	m.nodeMap = NewNodeMap()
-	m.parseNodes()
-	m.updateSvcMap()
+	err = m.parseNodes()
+	if err != nil {
+		log.Error("Failed to parse nodes for new model: ", m.name)
+		log.Error(err)
+		return nil, err
+	}
+	err = m.updateSvcMap()
+	if err != nil {
+		log.Error("Failed to update service map for new model: ", m.name)
+		log.Error(err)
+		return nil, err
+	}
 
 	// Connect to Redis DB
 	m.rc, err = redis.NewConnector(dbAddr, redisTable)
@@ -143,13 +152,25 @@ func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
 
 // SetScenario - Initialize model from JSON string
 func (m *Model) SetScenario(j []byte) (err error) {
-	err = json.Unmarshal(j, m.scenario)
+	scenario := new(ceModel.Scenario)
+	err = json.Unmarshal(j, scenario)
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
-	m.parseNodes()
-	m.updateSvcMap()
+	m.scenario = scenario
+
+	err = m.parseNodes()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	err = m.updateSvcMap()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
 	if m.Active {
 		err = m.refresh()
 		if err != nil {
@@ -188,7 +209,7 @@ func (m *Model) Activate() (err error) {
 
 // Deactivate - Remove the active scenario
 func (m *Model) Deactivate() (err error) {
-	if m.Active == true {
+	if m.Active {
 		m.Active = false
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
@@ -512,7 +533,7 @@ func (m *Model) updateSvcMap() (err error) {
 }
 
 func (m *Model) refresh() (err error) {
-	if m.Active == true {
+	if m.Active {
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
 			log.Error(err.Error())
@@ -561,7 +582,7 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
-	if pl != nil && oldNL != nil && newNL != nil && oldNL != newNL {
+	if pl != nil && oldNL != newNL {
 		log.Debug("Found PL & destination. Updating PL location.")
 
 		// Add PL to new location
@@ -582,7 +603,10 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 		oldNL.PhysicalLocations = oldNL.PhysicalLocations[:len(oldNL.PhysicalLocations)-1]
 
 		// refresh pointers
-		m.parseNodes()
+		err = m.parseNodes()
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	return oldNL.Name, newNL.Name, nil
@@ -618,7 +642,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
-	if proc != nil && oldPL != nil && newPL != nil && oldPL != newPL {
+	if proc != nil && oldPL != newPL {
 		log.Debug("Found Process & destination. Updating PL location.")
 
 		// Add PL to new location
@@ -651,11 +675,10 @@ func (m *Model) internalListener(channel string, payload string) {
 		log.Debug("Scenario was deleted")
 		// Scenario was deleted
 		m.scenario = new(ceModel.Scenario)
-		m.nodeMap = NewNodeMap()
-		m.parseNodes()
-		m.updateSvcMap()
+		_ = m.parseNodes()
+		_ = m.updateSvcMap()
 	} else {
-		m.SetScenario([]byte(j))
+		_ = m.SetScenario([]byte(j))
 	}
 
 	// external listener

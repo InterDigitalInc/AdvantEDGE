@@ -109,13 +109,6 @@ func TestGetSetScenario(t *testing.T) {
 	if svcMap == nil {
 		t.Errorf("Service map expected")
 	}
-
-	fmt.Println("Set Model - deleted scenario")
-	m.scenario = nil
-	err = m.SetScenario([]byte(testScenario))
-	if err == nil {
-		t.Errorf("SetScenario should have failed (nil scenario)")
-	}
 }
 
 func TestActivateDeactivate(t *testing.T) {
@@ -610,7 +603,10 @@ func TestListenModel(t *testing.T) {
 	}
 
 	fmt.Println("Activate")
-	mPub.Activate()
+	err = mPub.Activate()
+	if err != nil {
+		t.Errorf("Failed to activate model")
+	}
 	time.Sleep(50 * time.Millisecond)
 
 	fmt.Println("Set Model")
@@ -716,7 +712,10 @@ func TestListenModel(t *testing.T) {
 
 	fmt.Println("Dectivate")
 	testCount++
-	mPub.Deactivate()
+	err = mPub.Deactivate()
+	if err != nil {
+		t.Errorf("Failed to deactivate")
+	}
 	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for Activate")
@@ -734,7 +733,10 @@ func TestListenModel(t *testing.T) {
 
 	fmt.Println("Re-Activate")
 	testCount++
-	mPub.Activate()
+	err = mPub.Activate()
+	if err != nil {
+		t.Errorf("Failed to activate")
+	}
 	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for Activate")

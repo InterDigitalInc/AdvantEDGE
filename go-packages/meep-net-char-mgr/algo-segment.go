@@ -247,13 +247,6 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 	algo.reCalculateThroughputs()
 	algo.logTimeLapse(&currentTime, "time to recalculate")
 
-	if flowLog, ok := algo.FlowMap["ue1-iperf:zone1-fog1-iperf"]; ok {
-		log.Error(printFlow(flowLog))
-	}
-	if flowLog, ok := algo.FlowMap["ue1-iperf:zone2-edge1-iperf"]; ok {
-		log.Error(printFlow(flowLog))
-	}
-
 	// Prepare list of updated flows
 	for _, flow := range algo.FlowMap {
 		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
