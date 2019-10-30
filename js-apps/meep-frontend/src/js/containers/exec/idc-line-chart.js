@@ -19,8 +19,8 @@ import * as d3 from 'd3';
 import React from 'react';
 import uuid from 'uuid';
 import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
-import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../meep-constants';
-import { blue } from './graph-utils';
+import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../../meep-constants';
+import { blue } from '../graph-utils';
 // const Axis = props => {
 //   const axisRef = axis => {
 //     axis && props.axisCreator(select(axis));

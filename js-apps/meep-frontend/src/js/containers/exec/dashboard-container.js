@@ -10,35 +10,35 @@ import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
 
-import { blue } from './graph-utils';
+import { blue } from '../graph-utils';
 import IDCLineChart from './idc-line-chart';
-import IDCGraph from './idc-graph';
-import IDCAppsView from './idc-apps-view';
-import IDSelect from '../components/helper-components/id-select';
-import IDCVis from './idc-vis';
-import ResizeableContainer from './resizeable-container';
+import IDCGraph from '../idc-graph';
+import IDCAppsView from '../idc-apps-view';
+import IDSelect from '../../components/helper-components/id-select';
+import IDCVis from '../idc-vis';
+import ResizeableContainer from '../resizeable-container';
 
 import {
   getScenarioNodeChildren,
   isApp
-} from '../util/scenario-utils';
+} from '../../util/scenario-utils';
 
 import {
   isDataPointOfType
-} from '../util/metrics';
+} from '../../util/metrics';
 
 import {
   execFakeChangeSelectedDestination,
   execChangeSourceNodeSelected,
   execChangeMetricsTimeIntervalDuration,
   execClearMetricsEpochs
-} from '../state/exec';
+} from '../../state/exec';
 
 import {
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2,
   uiExecExpandDashboardConfig
-} from '../state/ui';
+} from '../../state/ui';
 
 
 import {
@@ -53,7 +53,7 @@ import {
   LATENCY_VIEW,
   THROUGHPUT_VIEW,
   VIS_VIEW
-} from '../meep-constants';
+} from '../../meep-constants';
 
 const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
