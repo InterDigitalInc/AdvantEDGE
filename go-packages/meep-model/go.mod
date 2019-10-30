@@ -6,6 +6,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
+	github.com/RyanCarrier/dijkstra v0.0.0-20190726134004-b51cadb5ae52
 	github.com/flimzy/kivik v1.8.1
 	github.com/go-kivik/couchdb v1.8.1
 	github.com/gorilla/mux v1.7.3 // indirect

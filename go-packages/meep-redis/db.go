@@ -242,6 +242,7 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 	return json, nil
 }
 
+// JSONGetList -
 func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string, entryHandler func(string, string, string, string, interface{}) error, dataList interface{}) error {
 	if !rc.connected {
 		return errors.New("Redis Connector is disconnected (JSONGetList)")

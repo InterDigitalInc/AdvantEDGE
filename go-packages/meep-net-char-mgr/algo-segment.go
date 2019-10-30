@@ -175,7 +175,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 			err := errors.New("Error getting context for process: " + name)
 			return err
 		}
-		nodeCtx, ok := ctx.(mod.NodeContext)
+		nodeCtx, ok := ctx.(*mod.NodeContext)
 		if !ok {
 			err := errors.New("Error casting context for process: " + name)
 			return err
@@ -184,16 +184,16 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 		// Create & populate new element
 		element := new(SegAlgoNetElem)
 		element.Name = proc.Name
-		element.PhyLocName = nodeCtx[mod.PhyLoc]
-		element.DomainName = nodeCtx[mod.Domain]
+		element.PhyLocName = nodeCtx.Parents[mod.PhyLoc]
+		element.DomainName = nodeCtx.Parents[mod.Domain]
 
 		// Type-specific values
 		element.Type = model.GetNodeType(element.PhyLocName)
 		if element.Type == "UE" || element.Type == "FOG" {
-			element.PoaName = nodeCtx[mod.NetLoc]
+			element.PoaName = nodeCtx.Parents[mod.NetLoc]
 		}
 		if element.Type != "DC" {
-			element.ZoneName = nodeCtx[mod.Zone]
+			element.ZoneName = nodeCtx.Parents[mod.Zone]
 		}
 
 		// Set max App Throughput (use default if set to 0)

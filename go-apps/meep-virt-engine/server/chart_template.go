@@ -151,11 +151,6 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 			return nil, err
 		}
 
-		ctx := model.GetNodeContext(name)
-		if ctx == nil {
-			err = errors.New("Error getting context for process: " + name)
-			return nil, err
-		}
 		scenarioName := model.GetScenarioName()
 
 		// Create default scenario template

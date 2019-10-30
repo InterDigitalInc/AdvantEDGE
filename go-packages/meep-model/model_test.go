@@ -25,8 +25,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const modelRedisAddr string = "localhost:30379"
-const modelRedisTestTable = 9
+const modelRedisAddr string = "localhost:30380"
+const modelRedisTestTable = 0
 const modelName string = "test-model"
 const moduleName string = "test-module"
 const testScenario string = `
@@ -902,8 +902,8 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok := ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 1 || nodeCtx[Deployment] != "demo1" {
+	nodeCtx, ok := ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "", "", "", "") {
 		t.Errorf("Invalid Deployment context")
 	}
 	fmt.Println("Get Operator context")
@@ -911,8 +911,8 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 2 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" {
+	nodeCtx, ok = ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "", "", "") {
 		t.Errorf("Invalid Operator context")
 	}
 	fmt.Println("Get Zone context")
@@ -920,8 +920,8 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 3 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" {
+	nodeCtx, ok = ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "", "") {
 		t.Errorf("Invalid Operator context")
 	}
 	fmt.Println("Get Net Location context")
@@ -929,8 +929,8 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 4 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" {
+	nodeCtx, ok = ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "") {
 		t.Errorf("Invalid Operator context")
 	}
 	fmt.Println("Get Phy Location context")
@@ -938,8 +938,8 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 5 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "zone1-fog1" {
+	nodeCtx, ok = ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "zone1-fog1") {
 		t.Errorf("Invalid Operator context")
 	}
 	fmt.Println("Get App context")
@@ -947,8 +947,25 @@ func TestGetters(t *testing.T) {
 	if ctx == nil {
 		t.Errorf("Node context should exist")
 	}
-	nodeCtx, ok = ctx.(NodeContext)
-	if !ok || len(nodeCtx) != 5 || nodeCtx[Deployment] != "demo1" || nodeCtx[Domain] != "operator1" || nodeCtx[Zone] != "zone1" || nodeCtx[NetLoc] != "zone1-poa1" || nodeCtx[PhyLoc] != "ue1" {
+	nodeCtx, ok = ctx.(*NodeContext)
+	if !ok || !validateNodeContext(nodeCtx, "demo1", "operator1", "zone1", "zone1-poa1", "ue1") {
 		t.Errorf("Invalid Operator context")
 	}
+
+	// Network Graph
+	graph := m.GetNetworkGraph()
+	if len(graph.Verticies) != 29 {
+		t.Errorf("Invalid Network Graph")
+	}
+}
+
+func validateNodeContext(nodeCtx *NodeContext, deployment, domain, zone, netLoc, phyLoc string) bool {
+	if nodeCtx.Parents[Deployment] != deployment ||
+		nodeCtx.Parents[Domain] != domain ||
+		nodeCtx.Parents[Zone] != zone ||
+		nodeCtx.Parents[NetLoc] != netLoc ||
+		nodeCtx.Parents[PhyLoc] != phyLoc {
+		return false
+	}
+	return true
 }

@@ -25,6 +25,7 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	"github.com/RyanCarrier/dijkstra"
 )
 
 // const activeScenarioEvents = "activeScenarioEvents"
@@ -33,23 +34,12 @@ const ActiveScenarioEvents = "ctrl-engine-active"
 // const activeScenarioKey = "activeScenarioKey"
 const activeScenarioKey = "ctrl-engine:active"
 
-// Context keys for model type 1
-const (
-	PhyLoc     = "PhyLoc"
-	NetLoc     = "NetLoc"
-	Zone       = "Zone"
-	Domain     = "Domain"
-	Deployment = "Deployment"
-)
-
 // Event types (basic)
 const (
 	EventActivate  = "ACTIVATE"
 	EventTerminate = "TERMINATE"
 	EventUpdate    = "UPDATE"
 )
-
-type NodeContext map[string]string
 
 // Model - Implements a Meep Model
 type Model struct {
@@ -64,6 +54,7 @@ type Model struct {
 	scenario      *ceModel.Scenario
 	svcMap        []ceModel.NodeServiceMaps
 	nodeMap       *NodeMap
+	networkGraph  *NetworkGraph
 }
 
 var DbAddress = "meep-redis-master:6379"
@@ -93,12 +84,6 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	err = m.parseNodes()
 	if err != nil {
 		log.Error("Failed to parse nodes for new model: ", m.name)
-		log.Error(err)
-		return nil, err
-	}
-	err = m.updateSvcMap()
-	if err != nil {
-		log.Error("Failed to update service map for new model: ", m.name)
 		log.Error(err)
 		return nil, err
 	}
@@ -161,11 +146,6 @@ func (m *Model) SetScenario(j []byte) (err error) {
 	m.scenario = scenario
 
 	err = m.parseNodes()
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-	err = m.updateSvcMap()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -441,87 +421,69 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 	return ctx
 }
 
+// GetNetworkGraph - Get the network graph
+func (m *Model) GetNetworkGraph() *dijkstra.Graph {
+	return m.networkGraph.graph
+}
+
 //---Internal Funcs---
 
 func (m *Model) parseNodes() (err error) {
 	m.nodeMap = NewNodeMap()
+	m.networkGraph = NewNetworkGraph()
+	m.svcMap = nil
+
+	// Process scenario
 	if m.scenario != nil {
 		if m.scenario.Deployment != nil {
 			deployment := m.scenario.Deployment
-			ctx := make(NodeContext)
-			ctx[Deployment] = m.scenario.Name
+			ctx := NewNodeContext(m.scenario.Name, "", "", "", "")
 			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
+			m.svcMap = make([]ceModel.NodeServiceMaps, 0)
+
+			// Domains
 			for iDomain := range m.scenario.Deployment.Domains {
 				domain := &m.scenario.Deployment.Domains[iDomain]
-				ctx := make(NodeContext)
-				ctx[Deployment] = m.scenario.Name
-				ctx[Domain] = domain.Name
+				ctx := NewNodeContext(m.scenario.Name, domain.Name, "", "", "")
 				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
+				m.networkGraph.AddNode(domain.Name, "")
+
+				// Zones
 				for iZone := range domain.Zones {
 					zone := &domain.Zones[iZone]
-					ctx := make(NodeContext)
-					ctx[Deployment] = m.scenario.Name
-					ctx[Domain] = domain.Name
-					ctx[Zone] = zone.Name
+					ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "")
 					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
+					m.networkGraph.AddNode(zone.Name, domain.Name)
+
+					// Network Locations
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
-						ctx := make(NodeContext)
-						ctx[Deployment] = m.scenario.Name
-						ctx[Domain] = domain.Name
-						ctx[Zone] = zone.Name
-						ctx[NetLoc] = nl.Name
+						ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "")
 						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
+						m.networkGraph.AddNode(nl.Name, zone.Name)
+
+						// Physical Locations
 						for iPL := range nl.PhysicalLocations {
 							pl := &nl.PhysicalLocations[iPL]
-							ctx := make(NodeContext)
-							ctx[Deployment] = m.scenario.Name
-							ctx[Domain] = domain.Name
-							ctx[Zone] = zone.Name
-							ctx[NetLoc] = nl.Name
-							ctx[PhyLoc] = pl.Name
+							ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
 							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, ctx))
+							m.networkGraph.AddNode(pl.Name, nl.Name)
+
+							// Processes
 							for iProc := range pl.Processes {
 								proc := &pl.Processes[iProc]
-								ctx := make(NodeContext)
-								ctx[Deployment] = m.scenario.Name
-								ctx[Domain] = domain.Name
-								ctx[Zone] = zone.Name
-								ctx[NetLoc] = nl.Name
-								ctx[PhyLoc] = pl.Name
+								ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
 								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, ctx))
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
+								m.networkGraph.AddNode(proc.Name, pl.Name)
 
-func (m *Model) updateSvcMap() (err error) {
-	if m.scenario.Deployment == nil {
-		m.svcMap = nil
-	} else {
-		m.svcMap = make([]ceModel.NodeServiceMaps, 0)
-		// Parse through scenario and fill external node service mappings
-		for _, domain := range m.scenario.Deployment.Domains {
-			for _, zone := range domain.Zones {
-				for _, nl := range zone.NetworkLocations {
-					for _, pl := range nl.PhysicalLocations {
-						for _, proc := range pl.Processes {
-							if proc.IsExternal {
-								// Create new node service map
-								var nodeServiceMaps ceModel.NodeServiceMaps
-								nodeServiceMaps.Node = proc.Name
-								nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap,
-									proc.ExternalConfig.IngressServiceMap...)
-								nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap,
-									proc.ExternalConfig.EgressServiceMap...)
-
-								// Add new map to list
-								m.svcMap = append(m.svcMap, nodeServiceMaps)
+								// Update service map for external processes
+								if proc.IsExternal {
+									var nodeServiceMaps ceModel.NodeServiceMaps
+									nodeServiceMaps.Node = proc.Name
+									nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap, proc.ExternalConfig.IngressServiceMap...)
+									nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap, proc.ExternalConfig.EgressServiceMap...)
+									m.svcMap = append(m.svcMap, nodeServiceMaps)
+								}
 							}
 						}
 					}
@@ -676,7 +638,6 @@ func (m *Model) internalListener(channel string, payload string) {
 		// Scenario was deleted
 		m.scenario = new(ceModel.Scenario)
 		_ = m.parseNodes()
-		_ = m.updateSvcMap()
 	} else {
 		_ = m.SetScenario([]byte(j))
 	}
