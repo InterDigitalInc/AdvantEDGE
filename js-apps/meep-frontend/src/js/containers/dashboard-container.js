@@ -391,6 +391,7 @@ const DashboardConfiguration = (props) => {
 
   return (
     <Elevation z={2}
+      className="component-style"
       style={{padding: 10, marginBottom: 10}}
     >
     
@@ -664,7 +665,7 @@ class DashboardContainer extends Component {
     return (
       <>
       
-        <DashboardConfiguration
+        <DashboardConfiguration 
           showConfig={this.props.showConfig}
           dashboardConfigExpanded={this.props.dashboardConfigExpanded}
           expandDashboardConfig={(show) => this.props.expandDashboardConfig(show)}
@@ -685,8 +686,8 @@ class DashboardContainer extends Component {
         <Grid>
 
           {!view1Present ? null : (
-            <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
-              <Elevation z={2}
+            <GridCell span={span1}  className='chartContainer'>
+              <Elevation z={2} className="component-style"
                 style={{padding: 10}}
               >
                 {view1}
@@ -696,7 +697,7 @@ class DashboardContainer extends Component {
           
           {!view2Present ? null : (
             <GridCell span={span2} style={{marginLeft: -10, paddingLeft: 10}} className='chartContainer'>
-              <Elevation z={2}
+              <Elevation z={2} className="component-style"
                 style={{padding: 10}}
               >
                 {view2}

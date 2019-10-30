@@ -88,11 +88,11 @@ import {
 
 
 // MEEP Controller REST API JS client
-var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.73:30000/v1';
+// var basepath = 'http://' + location.host + location.pathname + 'v1';
+const basepath = 'http://10.3.16.73:30000/v1';
 
-const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
-// const metricsBasePath = 'http://10.3.16.73:30008/v1';
+// const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
+const metricsBasePath = 'http://10.3.16.73:30008/v1';
 
 const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
 
