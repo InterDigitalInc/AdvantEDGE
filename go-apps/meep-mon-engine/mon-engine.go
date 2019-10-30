@@ -21,6 +21,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -59,19 +60,22 @@ type MonEngineInfo struct {
 	StartTime            string
 }
 
+var rc *redis.Connector
+var redisDBAddr = "meep-redis-master:6379"
+
 // Init - Mon Engine initialization
 func Init() (err error) {
 
 	// Connect to Redis DB
-	err = DBConnect()
+	rc, err = redis.NewConnector(redisDBAddr, 0)
 	if err != nil {
-		log.Error("Failed connection to Active DB. Error: ", err)
+		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
-	log.Info("Connected to Active DB")
+	log.Info("Connected to Mon Engine DB")
 
 	// Empty DB
-	DBFlush(moduleMonEngine)
+	_ = rc.DBFlush(moduleMonEngine)
 
 	return nil
 }
@@ -126,7 +130,6 @@ func printfMonEngineInfo(monEngineInfo MonEngineInfo, reason int) {
 		"NbPodRestart : ", monEngineInfo.NbPodRestart,
 		"LogicalState : ", monEngineInfo.LogicalState,
 		"StartTime : ", monEngineInfo.StartTime)
-
 }
 
 func processEvent(obj interface{}, reason int) {
@@ -253,7 +256,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = DBSetEntry(key, fields)
+	_ = rc.SetEntry(key, fields)
 }
 
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
@@ -262,7 +265,7 @@ func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = DBRemoveEntry(key)
+	_ = rc.DelEntry(key)
 }
 
 func k8sConnect() (err error) {

@@ -35,13 +35,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
-
-const typeActive string = "active"
 const typeLb string = "lb"
-
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
 const redisAddr string = "meep-redis-master:6379"
 const DEFAULT_LB_RULES_DB = 0
@@ -200,8 +195,8 @@ func eventHandler(channel string, payload string) {
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
+	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
 		processActiveScenarioUpdate()
 
 	default:

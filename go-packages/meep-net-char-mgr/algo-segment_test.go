@@ -352,7 +352,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	if len(updatedNetCharList) != 2 {
 		t.Errorf("Invalid net char update list")
 	}
-	if !validateNetCharUpdate(updatedNetCharList, "zone1-fog1-iperf", "ue1-iperf", 0, 0, 0, 0.4) {
+	if !validateNetCharUpdate(updatedNetCharList, "zone1-fog1-iperf", "ue1-iperf", 0, 0, 0, 6) {
 		t.Errorf("Error in Net Char update")
 	}
 	if !validateNetCharUpdate(updatedNetCharList, "zone2-edge1-iperf", "ue1-iperf", 0, 0, 0, 20) {
@@ -411,7 +411,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 	if !validateNetCharUpdate(updatedNetCharList, "zone1-fog1-iperf", "ue1-iperf", 0, 0, 0, 26) {
 		t.Errorf("Error in Net Char update")
 	}
-	if !validateNetCharUpdate(updatedNetCharList, "zone2-edge1-iperf", "ue1-iperf", 0, 0, 0, 2) {
+	if !validateNetCharUpdate(updatedNetCharList, "zone2-edge1-iperf", "ue1-iperf", 0, 0, 0, 20) {
 		t.Errorf("Error in Net Char update")
 	}
 	if !validateNetCharUpdate(updatedNetCharList, "zone1-fog1-svc", "ue2-svc", 0, 0, 0, 74) {

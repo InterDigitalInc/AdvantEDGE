@@ -40,6 +40,7 @@ const moduleMetrics string = "metrics"
 type SegAlgoConfig struct {
 	// Segment config
 	MaxBwPerInactiveFlow      float64
+	MaxBwPerInactiveFlowFloor float64
 	MinActivityThreshold      float64
 	IncrementalStep           float64
 	InactivityIncrementalStep float64
@@ -118,7 +119,8 @@ func NewSegmentAlgorithm(redisAddr string) (*SegmentAlgorithm, error) {
 	var algo SegmentAlgorithm
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
-	algo.Config.MaxBwPerInactiveFlow = 2.0
+	algo.Config.MaxBwPerInactiveFlow = 20.0
+	algo.Config.MaxBwPerInactiveFlowFloor = 6.0
 	algo.Config.MinActivityThreshold = 0.3
 	algo.Config.IncrementalStep = 3.0
 	algo.Config.InactivityIncrementalStep = 1.0
@@ -264,10 +266,15 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 // SetConfigAttribute
 func (algo *SegmentAlgorithm) SetConfigAttribute(fieldName string, fieldValue string) {
 	switch fieldName {
-	case "MaxBwPerInactiveFlow":
+	case "maxBwPerInactiveFlow":
 		value, err := strconv.ParseFloat(fieldValue, 64)
 		if err == nil {
 			algo.Config.MaxBwPerInactiveFlow = value
+		}
+	case "maxBwPerInactiveFlowFloor":
+		value, err := strconv.ParseFloat(fieldValue, 64)
+		if err == nil {
+			algo.Config.MaxBwPerInactiveFlowFloor = value
 		}
 	case "minActivityThreshold":
 		value, err := strconv.ParseFloat(fieldValue, 64)
@@ -559,6 +566,9 @@ func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string,
 		// Initialize segment-specific BW attributes from Algo config
 		if algo.Config.IsPercentage {
 			segment.MaxBwPerInactiveFlow = algo.Config.MaxBwPerInactiveFlow * maxThroughput / 100
+			if segment.MaxBwPerInactiveFlow < algo.Config.MaxBwPerInactiveFlowFloor {
+				segment.MaxBwPerInactiveFlow = algo.Config.MaxBwPerInactiveFlowFloor
+			}
 			segment.MinActivityThreshold = algo.Config.MinActivityThreshold * maxThroughput / 100
 			segment.IncrementalStep = algo.Config.IncrementalStep * maxThroughput / 100
 			segment.InactivityIncrementalStep = algo.Config.InactivityIncrementalStep * maxThroughput / 100
