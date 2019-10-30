@@ -32,10 +32,11 @@ import { blue } from './graph-utils';
 const notNull = x => x;
 const IDCLineChart = (props) => {
   const keyForSvg=props.keyForSvg;
-  let width = props.width;
-  let yClipping = 45;
+  
 
   const margin = {top: 20, right: 40, bottom: 30, left: 60};
+  let width = props.width - (margin.right + margin.left);
+  let yClipping = 45;
   // const width = props.width; // - margin.left - margin.right;
   const height = props.height; // - margin.top - margin.bottom;
 
