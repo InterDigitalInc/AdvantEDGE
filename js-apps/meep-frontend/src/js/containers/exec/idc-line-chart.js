@@ -19,8 +19,8 @@ import * as d3 from 'd3';
 import React from 'react';
 import uuid from 'uuid';
 import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
-import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../meep-constants';
-import { blue } from './graph-utils';
+import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../../meep-constants';
+import { blue } from '../graph-utils';
 // const Axis = props => {
 //   const axisRef = axis => {
 //     axis && props.axisCreator(select(axis));
@@ -32,10 +32,11 @@ import { blue } from './graph-utils';
 const notNull = x => x;
 const IDCLineChart = (props) => {
   const keyForSvg=props.keyForSvg;
-  let width = props.width;
-  let yClipping = 45;
+  
 
   const margin = {top: 20, right: 40, bottom: 30, left: 60};
+  let width = props.width - (margin.right + margin.left);
+  let yClipping = 45;
   // const width = props.width; // - margin.left - margin.right;
   const height = props.height; // - margin.top - margin.bottom;
 

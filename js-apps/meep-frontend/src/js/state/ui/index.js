@@ -154,6 +154,9 @@ export {
 
   // Action types
   EXEC_CHANGE_CURRENT_EVENT,
+  UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
+  UI_EXEC_CHANGE_DASHBOARD_VIEW1,
+  UI_EXEC_CHANGE_DASHBOARD_VIEW2,
 
   // Dialogs types
   IDC_DIALOG_OPEN_SCENARIO,
@@ -175,11 +178,6 @@ export {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
   uiExecChangeShowApps,
-
-  // Dashboard
-  UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW1,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW2,
   uiExecChangeShowDashboardConfig,
   uiExecExpandDashboardConfig,
   uiExecChangeDashboardView1,

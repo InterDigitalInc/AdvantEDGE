@@ -10,35 +10,35 @@ import { Slider } from '@rmwc/slider';
 import moment from 'moment';
 import * as d3 from 'd3';
 
-import { blue } from './graph-utils';
+import { blue } from '../graph-utils';
 import IDCLineChart from './idc-line-chart';
-import IDCGraph from './idc-graph';
-import IDCAppsView from './idc-apps-view';
-import IDSelect from '../components/helper-components/id-select';
-import IDCVis from './idc-vis';
-import ResizeableContainer from './resizeable-container';
+import IDCGraph from '../idc-graph';
+import IDCAppsView from '../idc-apps-view';
+import IDSelect from '../../components/helper-components/id-select';
+import IDCVis from '../idc-vis';
+import ResizeableContainer from '../resizeable-container';
 
 import {
   getScenarioNodeChildren,
   isApp
-} from '../util/scenario-utils';
+} from '../../util/scenario-utils';
 
 import {
   isDataPointOfType
-} from '../util/metrics';
+} from '../../util/metrics';
 
 import {
   execFakeChangeSelectedDestination,
   execChangeSourceNodeSelected,
   execChangeMetricsTimeIntervalDuration,
   execClearMetricsEpochs
-} from '../state/exec';
+} from '../../state/exec';
 
 import {
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2,
   uiExecExpandDashboardConfig
-} from '../state/ui';
+} from '../../state/ui';
 
 
 import {
@@ -53,9 +53,33 @@ import {
   LATENCY_VIEW,
   THROUGHPUT_VIEW,
   VIS_VIEW
-} from '../meep-constants';
+} from '../../meep-constants';
 
 const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
+
+const MIN_TIME_RANGE_VALUE = 15;
+const MAX_TIME_RANGE_VALUE = 60;
+
+const greyColor = 'grey';
+
+const styles = {
+  button: {
+    marginRight: 0
+  },
+  slider: {
+    container: {
+      marginTop:10,
+      marginBottom: 10,
+      color: greyColor
+    },
+    boundaryValues: {
+      marginTop: 15
+    },
+    title: {
+      marginBottom: 0
+    }
+  }
+};
 
 function colorArray(dataLength) {
   const colorScale = d3.interpolateInferno;
@@ -116,22 +140,36 @@ const TimeIntervalConfig = (props) => {
       </Button>
     );
   }
+
   return (
     <div style={{marginTop: 10}}>
       <Grid>
         <GridCell span={3}>
-          <div style={{margin:10}}>
-            <div>
+          <div style={styles.slider.container}>
+            <div style={styles.slider.title}>
               <span className="mdc-typography--headline8">Timeframe in secs </span>
             </div>
-            <Slider
-              value={props.value}
-              onChange={e => props.timeIntervalDurationChanged(e.detail.value)}
-              discrete
-              min={5}
-              max={60}
-              step={1}
-            />
+            <Grid>
+              <GridCell span={1} style={styles.slider.boundaryValues}>
+                <span>{MIN_TIME_RANGE_VALUE}</span>
+              </GridCell>
+              <GridCell span={10}>
+                <Slider
+                  value={props.value}
+                  onChange={e => props.changeTimeIntervalDuration(e.detail.value)}
+                  discrete
+                  min={MIN_TIME_RANGE_VALUE}
+                  max={MAX_TIME_RANGE_VALUE}
+                  step={1}
+                />
+              </GridCell>
+              <GridCell span={1} style={styles.slider.boundaryValues}>
+                <span>{MAX_TIME_RANGE_VALUE}</span>
+              </GridCell>
+            </Grid>
+            
+            
+           
           </div>
           
         </GridCell>
@@ -199,17 +237,13 @@ const ConfigurationView = (props) => {
       </GridCell>
     </Grid>
     <TimeIntervalConfig 
-      timeIntervalDurationChanged={(value) => {props.timeIntervalDurationChanged(value);}}
+      changeTimeIntervalDuration={(value) => {props.changeTimeIntervalDuration(value);}}
       stopSlidingWindow={props.stopSlidingWindow}
       startSlidingWindow={props.startSlidingWindow}
       slidingWindowStopped={props.slidingWindowStopped}
     />
     </>
   );
-};
-
-const buttonStyles = {
-  marginRight: 0
 };
 
 const ViewForName = (
@@ -365,7 +399,7 @@ const DashboardConfiguration = (props) => {
         changeSourceNodeSelected={props.changeSourceNodeSelected}
         changeDisplayEdgeLabels={props.changeDisplayEdgeLabels}
         displayEdgeLabels={props.displayEdgeLabels}
-        timeIntervalDurationChanged={props.timeIntervalDurationChanged}
+        changeTimeIntervalDuration={props.changeTimeIntervalDuration}
         stopSlidingWindow={props.stopSlidingWindow}
         startSlidingWindow={props.startSlidingWindow}
         slidingWindowStopped={props.slidingWindowStopped}
@@ -375,7 +409,7 @@ const DashboardConfiguration = (props) => {
 
   const buttonConfig = !props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(true)}>
+      <Button outlined style={styles.button} onClick={() => props.expandDashboardConfig(true)}>
           Open
       </Button>
     )
@@ -383,7 +417,7 @@ const DashboardConfiguration = (props) => {
 
   const buttonClose = props.dashboardConfigExpanded
     ? (
-      <Button outlined style={buttonStyles} onClick={() => props.expandDashboardConfig(false)}>
+      <Button outlined style={styles.button} onClick={() => props.expandDashboardConfig(false)}>
           Close
       </Button>
     )
@@ -391,6 +425,7 @@ const DashboardConfiguration = (props) => {
 
   return (
     <Elevation z={2}
+      className="component-style"
       style={{padding: 10, marginBottom: 10}}
     >
     
@@ -664,14 +699,14 @@ class DashboardContainer extends Component {
     return (
       <>
       
-        <DashboardConfiguration
+        <DashboardConfiguration 
           showConfig={this.props.showConfig}
           dashboardConfigExpanded={this.props.dashboardConfigExpanded}
           expandDashboardConfig={(show) => this.props.expandDashboardConfig(show)}
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
           changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
-          timeIntervalDurationChanged={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
+          changeTimeIntervalDuration={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
           stopSlidingWindow={() => this.stopSlidingWindow()}
           startSlidingWindow={() => this.startSlidingWindow()}
           slidingWindowStopped={this.state.slidingWindowStopped}
@@ -685,8 +720,8 @@ class DashboardContainer extends Component {
         <Grid>
 
           {!view1Present ? null : (
-            <GridCell span={span1} style={{paddingRight: 10}} className='chartContainer'>
-              <Elevation z={2}
+            <GridCell span={span1}  className='chartContainer'>
+              <Elevation z={2} className="component-style"
                 style={{padding: 10}}
               >
                 {view1}
@@ -696,7 +731,7 @@ class DashboardContainer extends Component {
           
           {!view2Present ? null : (
             <GridCell span={span2} style={{marginLeft: -10, paddingLeft: 10}} className='chartContainer'>
-              <Elevation z={2}
+              <Elevation z={2} className="component-style"
                 style={{padding: 10}}
               >
                 {view2}
