@@ -59,6 +59,14 @@ func main() {
 			return
 		}
 
+		// Start Location Service Event Handler thread
+		err = server.Run()
+		if err != nil {
+			log.Error("Failed to start Location Service")
+			run = false
+			return
+		}
+
 		// Start Location Service REST API Server
 		router := server.NewRouter()
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})

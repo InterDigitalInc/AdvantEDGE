@@ -95,8 +95,12 @@ func Init() (err error) {
 	zoneStatusReInit()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	_ = sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
-	return nil
+	return sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
+}
+
+// Init - Location Service initialization
+func Run() (err error) {
+	return sbi.Run()
 }
 
 func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
