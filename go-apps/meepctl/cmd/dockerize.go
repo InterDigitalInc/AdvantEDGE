@@ -119,6 +119,8 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
 	gitdir := viper.GetString("meep.gitdir")
 	bindir := gitdir + "/" + target["bin"]
+	nodeIp := viper.GetString("node.ip")
+	apiHost := utils.RepoCfg.GetBool("repo.core." + targetName + ".apihost")
 
 	if len(target) == 0 {
 		fmt.Println("Invalid target:", targetName)
@@ -127,6 +129,7 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 
 	// copy container data locally
 	data := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".docker-data")
+
 	var err error
 	if len(data) != 0 {
 		for k, v := range data {
@@ -140,6 +143,130 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
 				_, err = utils.ExecuteCmd(cmd, cobraCmd)
+				//copy bin/api
+				if apiHost {
+					dstDataDirApi := dstDataDir + "/api"
+					if verbose {
+						fmt.Println("    Hosting Api in " + dstDataDirApi)
+					}
+
+					//copy swagger-ui files
+					cmd = exec.Command("cp", "-r", gitdir+"/swagger-ui/dist", dstDataDir)
+					_, err = utils.ExecuteCmd(cmd, cobraCmd)
+					if err != nil {
+						fmt.Println("Failed to copy: ", err)
+						return
+					}
+
+					//rename directory
+					cmd := exec.Command("mv", dstDataDir+"/dist", dstDataDirApi)
+					_, err = utils.ExecuteCmd(cmd, cobraCmd)
+					if err != nil {
+						fmt.Println("Failed to move: ", err)
+						return
+					}
+
+					//get all the yaml file to be put in the /api directory as well as putting the host line for the TRY-IT-OUT function to work
+					urls := " [ "
+					urlStringToReplace := `url: "https:\/\/petstore.swagger.io\/v2\/swagger.json",`
+
+					//find all the apis and copy them at the location above
+					for _, targetArg := range cobraCmd.ValidArgs {
+						if targetArg == "all" {
+							continue
+						}
+						apiLocationEntry := utils.RepoCfg.GetString("repo.core." + targetArg + ".api")
+						if apiLocationEntry == "" {
+							continue
+						}
+						apiLocationFile := gitdir + "/" + apiLocationEntry
+						nodePort := utils.RepoCfg.GetString("repo.core." + targetArg + ".nodeport")
+						if apiLocationFile != "" {
+							dstTargetApiFile := dstDataDirApi + "/" + targetArg + "-api.yaml"
+							if verbose {
+								fmt.Println("    Copying: " + apiLocationFile + " --> " + dstTargetApiFile)
+							}
+
+							cmd = exec.Command("cp", apiLocationFile, dstTargetApiFile)
+							_, err = utils.ExecuteCmd(cmd, cobraCmd)
+							if err != nil {
+								fmt.Println("Failed to copy: ", err)
+								return
+							}
+							//find if host line already exist in the file, if it does, remove it
+							cmd = exec.Command("grep", "host: ", dstTargetApiFile)
+							hostLine, _ := utils.ExecuteCmd(cmd, cobraCmd)
+							if hostLine != "" {
+								hostLine = strings.TrimSpace(hostLine)
+								sedHostLine := "/" + hostLine + "/d"
+								cmd = exec.Command("sed", "-i", sedHostLine, dstTargetApiFile)
+								_, err = utils.ExecuteCmd(cmd, cobraCmd)
+								if err != nil {
+									fmt.Println("Failed to sed: ", err)
+									return
+								}
+							}
+
+							//find the basepath line in the file and append the host line
+							cmd = exec.Command("grep", "basePath: ", dstTargetApiFile)
+							basePath, err := utils.ExecuteCmd(cmd, cobraCmd)
+							if err != nil {
+								fmt.Println("Failed to grep: ", err)
+								return
+							}
+
+							if basePath == "" {
+								fmt.Println("Error: basePath shouldn't be empty")
+								return
+							}
+
+							newHostLine := "host: " + nodeIp + ":" + nodePort
+							newBasePath := strings.Replace(basePath, `/`, `\/`, -1)
+							//removing the CR/LF at end of line
+							newBasePath = newBasePath[:len(newBasePath)-1]
+
+							sedBasePathLine := "/" + newBasePath + "/a" + newHostLine
+							cmd = exec.Command("sed", "-i", sedBasePathLine, dstTargetApiFile)
+							_, err = utils.ExecuteCmd(cmd, cobraCmd)
+							if err != nil {
+								fmt.Println("Failed to sed: ", err)
+								return
+							}
+
+							//update the string to update the drop-down menu in the index.html file of /api
+							cmd = exec.Command("grep", "title:", dstTargetApiFile)
+							title, err := utils.ExecuteCmd(cmd, cobraCmd)
+							if err != nil {
+								fmt.Println("Failed to move: ", err)
+								return
+							}
+							title = strings.TrimSpace(title)
+							title = title[6:]
+							title = strings.TrimSpace(title)
+
+							if title[0] == '"' {
+								title = title[1:]
+							}
+							if title[len(title)-1] == '"' {
+								title = title[0 : len(title)-1]
+							}
+
+							//update urls for swagger-ui index file
+							urls = urls + `{"name": "` + title + `", "url": "` + targetArg + `-api.yaml"},`
+						}
+					}
+
+					//update swagger-ui index file
+					urls = urls + " ],"
+					sedString := "s/" + urlStringToReplace + "/urls: " + urls + "/g"
+					cmd = exec.Command("sed", "-i", sedString, dstDataDirApi+"/index.html")
+					_, err = utils.ExecuteCmd(cmd, cobraCmd)
+					if err != nil {
+						fmt.Println("Failed to sed: ", err)
+						return
+					}
+
+				}
 			} else {
 				fmt.Println("    Source data not found: " + srcDataDir + " --> " + dstDataDir)
 			}
@@ -173,12 +300,12 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 	// cleanup data
-	if len(data) != 0 {
-		for k := range data {
-			dstDataDir := bindir + "/" + k
-			cmd := exec.Command("rm", "-r", dstDataDir)
-			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	/*	if len(data) != 0 {
+			for k := range data {
+				dstDataDir := bindir + "/" + k
+				cmd := exec.Command("rm", "-r", dstDataDir)
+				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+			}
 		}
-	}
-
+	*/
 }
