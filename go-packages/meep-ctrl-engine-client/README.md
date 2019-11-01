@@ -21,8 +21,6 @@ All URIs are relative to *http://localhost/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MEEPSettingsApi* | [**GetMeepSettings**](docs/MEEPSettingsApi.md#getmeepsettings) | **Get** /settings | Retrieve MEEP Controller settings
-*MEEPSettingsApi* | [**SetMeepSettings**](docs/MEEPSettingsApi.md#setmeepsettings) | **Put** /settings | Set MEEP Controller settings
 *PodStatesApi* | [**GetStates**](docs/PodStatesApi.md#getstates) | **Get** /states | This operation returns status information for pods
 *ScenarioConfigurationApi* | [**CreateScenario**](docs/ScenarioConfigurationApi.md#createscenario) | **Post** /scenarios/{name} | Add new scenario to MEEP store
 *ScenarioConfigurationApi* | [**DeleteScenario**](docs/ScenarioConfigurationApi.md#deletescenario) | **Delete** /scenarios/{name} | Delete scenario from MEEP store
@@ -33,7 +31,6 @@ Class | Method | HTTP request | Description
 *ScenarioExecutionApi* | [**ActivateScenario**](docs/ScenarioExecutionApi.md#activatescenario) | **Post** /active/{name} | Activate (deploy) scenario
 *ScenarioExecutionApi* | [**GetActiveNodeServiceMaps**](docs/ScenarioExecutionApi.md#getactivenodeservicemaps) | **Get** /active/serviceMaps | Retrieve list of active external node service mappings
 *ScenarioExecutionApi* | [**GetActiveScenario**](docs/ScenarioExecutionApi.md#getactivescenario) | **Get** /active | Retrieve active (deployed) scenario
-*ScenarioExecutionApi* | [**GetEventList**](docs/ScenarioExecutionApi.md#geteventlist) | **Get** /events | Retrieve list of supported event types for active (deployed) scenario
 *ScenarioExecutionApi* | [**SendEvent**](docs/ScenarioExecutionApi.md#sendevent) | **Post** /events/{type} | Send event to active (deployed) scenario
 *ScenarioExecutionApi* | [**TerminateScenario**](docs/ScenarioExecutionApi.md#terminatescenario) | **Delete** /active | Terminate active (deployed) scenario
 
@@ -44,7 +41,6 @@ Class | Method | HTTP request | Description
  - [Domain](docs/Domain.md)
  - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)
- - [EventList](docs/EventList.md)
  - [EventMobility](docs/EventMobility.md)
  - [EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
  - [EventOther](docs/EventOther.md)
@@ -63,7 +59,6 @@ Class | Method | HTTP request | Description
  - [ScenarioList](docs/ScenarioList.md)
  - [ServiceConfig](docs/ServiceConfig.md)
  - [ServicePort](docs/ServicePort.md)
- - [Settings](docs/Settings.md)
  - [Zone](docs/Zone.md)
 
 

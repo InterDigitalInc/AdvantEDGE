@@ -7,7 +7,6 @@ Method | HTTP request | Description
 [**ActivateScenario**](ScenarioExecutionApi.md#ActivateScenario) | **Post** /active/{name} | Activate (deploy) scenario
 [**GetActiveNodeServiceMaps**](ScenarioExecutionApi.md#GetActiveNodeServiceMaps) | **Get** /active/serviceMaps | Retrieve list of active external node service mappings
 [**GetActiveScenario**](ScenarioExecutionApi.md#GetActiveScenario) | **Get** /active | Retrieve active (deployed) scenario
-[**GetEventList**](ScenarioExecutionApi.md#GetEventList) | **Get** /events | Retrieve list of supported event types for active (deployed) scenario
 [**SendEvent**](ScenarioExecutionApi.md#SendEvent) | **Post** /events/{type} | Send event to active (deployed) scenario
 [**TerminateScenario**](ScenarioExecutionApi.md#TerminateScenario) | **Delete** /active | Terminate active (deployed) scenario
 
@@ -89,30 +88,6 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**Scenario**](Scenario.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **GetEventList**
-> EventList GetEventList(ctx, )
-Retrieve list of supported event types for active (deployed) scenario
-
-
-
-### Required Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**EventList**](EventList.md)
 
 ### Authorization
 

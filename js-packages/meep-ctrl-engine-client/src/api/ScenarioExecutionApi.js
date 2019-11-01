@@ -16,18 +16,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Event', 'model/EventList', 'model/NodeServiceMaps', 'model/Scenario'], factory);
+    define(['ApiClient', 'model/Event', 'model/NodeServiceMaps', 'model/Scenario'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/Event'), require('../model/EventList'), require('../model/NodeServiceMaps'), require('../model/Scenario'));
+    module.exports = factory(require('../ApiClient'), require('../model/Event'), require('../model/NodeServiceMaps'), require('../model/Scenario'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepControllerRestApi) {
       root.MeepControllerRestApi = {};
     }
-    root.MeepControllerRestApi.ScenarioExecutionApi = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.Event, root.MeepControllerRestApi.EventList, root.MeepControllerRestApi.NodeServiceMaps, root.MeepControllerRestApi.Scenario);
+    root.MeepControllerRestApi.ScenarioExecutionApi = factory(root.MeepControllerRestApi.ApiClient, root.MeepControllerRestApi.Event, root.MeepControllerRestApi.NodeServiceMaps, root.MeepControllerRestApi.Scenario);
   }
-}(this, function(ApiClient, Event, EventList, NodeServiceMaps, Scenario) {
+}(this, function(ApiClient, Event, NodeServiceMaps, Scenario) {
   'use strict';
 
   /**
@@ -179,47 +179,6 @@
 
       return this.apiClient.callApi(
         '/active', 'GET',
-        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
-        authNames, contentTypes, accepts, returnType, callback
-      );
-    }
-
-    /**
-     * Callback function to receive the result of the getEventList operation.
-     * @callback module:api/ScenarioExecutionApi~getEventListCallback
-     * @param {String} error Error message, if any.
-     * @param {module:model/EventList} data The data returned by the service call.
-     * @param {String} response The complete HTTP response.
-     */
-
-    /**
-     * Retrieve list of supported event types for active (deployed) scenario
-     * 
-     * @param {module:api/ScenarioExecutionApi~getEventListCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/EventList}
-     */
-    this.getEventList = function(callback) {
-      var postBody = null;
-
-
-      var pathParams = {
-      };
-      var queryParams = {
-      };
-      var collectionQueryParams = {
-      };
-      var headerParams = {
-      };
-      var formParams = {
-      };
-
-      var authNames = [];
-      var contentTypes = [];
-      var accepts = ['application/json'];
-      var returnType = EventList;
-
-      return this.apiClient.callApi(
-        '/events', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
