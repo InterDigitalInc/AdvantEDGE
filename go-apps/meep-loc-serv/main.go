@@ -23,9 +23,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/gorilla/handlers"
 )

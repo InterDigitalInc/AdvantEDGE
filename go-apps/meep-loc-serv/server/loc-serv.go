@@ -27,11 +27,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
 	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
@@ -98,7 +97,7 @@ func Init() (err error) {
 	return sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
 }
 
-// Init - Location Service initialization
+// Run - Start Location Service
 func Run() (err error) {
 	return sbi.Run()
 }

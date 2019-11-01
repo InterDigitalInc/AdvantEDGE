@@ -26,12 +26,6 @@ import (
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
-// const moduleCtrlEngine string = "ctrl-engine"
-// const typeActive string = "active"
-// const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
-// var rc *redis.Connector
-// const activeScenarioEventKey string = moduleCtrlEngine + ":" + typeActive
-
 const moduleName string = "meep-virt-engine"
 const redisAddr string = "localhost:30379"
 

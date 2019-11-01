@@ -297,7 +297,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Scenario name: ", scenarioName)
 
 	// Make sure scenario is not already deployed
-	if activeModel.Active && activeModel.GetScenarioName() == scenarioName {
+	if activeModel.Active {
 		log.Error("Scenario already active")
 		http.Error(w, "Scenario already active", http.StatusBadRequest)
 		return

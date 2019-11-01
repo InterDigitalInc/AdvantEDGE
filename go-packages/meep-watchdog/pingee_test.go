@@ -23,7 +23,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const pingeeRedisAddr string = "localhost:30379"
+const pingeeRedisAddr string = "localhost:30380"
 const pingeeName string = "pingee-tester"
 
 func TestNewPingee(t *testing.T) {

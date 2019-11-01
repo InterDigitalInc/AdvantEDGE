@@ -49,7 +49,6 @@ func NewConnector(addr string, table int) (rc *Connector, err error) {
 		err = rc.connectDB(addr, table)
 		if err != nil {
 			log.Warn("Failed to connect to DB. Retrying... Error: ", err)
-			continue
 		}
 	}
 	if err != nil {
