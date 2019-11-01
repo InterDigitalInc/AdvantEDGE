@@ -95,7 +95,12 @@ Please follow the [installation](#installation) instruction and execute the foll
 ```javascript
 var MeepControllerRestApi = require('meep_controller_rest_api');
 
-var api = new MeepControllerRestApi.MEEPSettingsApi()
+var api = new MeepControllerRestApi.PodStatesApi()
+
+var opts = { 
+  '_long': "_long_example", // {String} Enables detailed stats if true
+  'type': "type_example" // {String} Pod type
+};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -104,7 +109,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.getMeepSettings(callback);
+api.getStates(opts, callback);
 
 ```
 
@@ -114,8 +119,6 @@ All URIs are relative to *http://localhost/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*MeepControllerRestApi.MEEPSettingsApi* | [**getMeepSettings**](docs/MEEPSettingsApi.md#getMeepSettings) | **GET** /settings | Retrieve MEEP Controller settings
-*MeepControllerRestApi.MEEPSettingsApi* | [**setMeepSettings**](docs/MEEPSettingsApi.md#setMeepSettings) | **PUT** /settings | Set MEEP Controller settings
 *MeepControllerRestApi.PodStatesApi* | [**getStates**](docs/PodStatesApi.md#getStates) | **GET** /states | This operation returns status information for pods
 *MeepControllerRestApi.ScenarioConfigurationApi* | [**createScenario**](docs/ScenarioConfigurationApi.md#createScenario) | **POST** /scenarios/{name} | Add new scenario to MEEP store
 *MeepControllerRestApi.ScenarioConfigurationApi* | [**deleteScenario**](docs/ScenarioConfigurationApi.md#deleteScenario) | **DELETE** /scenarios/{name} | Delete scenario from MEEP store
@@ -126,7 +129,6 @@ Class | Method | HTTP request | Description
 *MeepControllerRestApi.ScenarioExecutionApi* | [**activateScenario**](docs/ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Activate (deploy) scenario
 *MeepControllerRestApi.ScenarioExecutionApi* | [**getActiveNodeServiceMaps**](docs/ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external node service mappings
 *MeepControllerRestApi.ScenarioExecutionApi* | [**getActiveScenario**](docs/ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Retrieve active (deployed) scenario
-*MeepControllerRestApi.ScenarioExecutionApi* | [**getEventList**](docs/ScenarioExecutionApi.md#getEventList) | **GET** /events | Retrieve list of supported event types for active (deployed) scenario
 *MeepControllerRestApi.ScenarioExecutionApi* | [**sendEvent**](docs/ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send event to active (deployed) scenario
 *MeepControllerRestApi.ScenarioExecutionApi* | [**terminateScenario**](docs/ScenarioExecutionApi.md#terminateScenario) | **DELETE** /active | Terminate active (deployed) scenario
 
@@ -137,7 +139,6 @@ Class | Method | HTTP request | Description
  - [MeepControllerRestApi.Domain](docs/Domain.md)
  - [MeepControllerRestApi.EgressService](docs/EgressService.md)
  - [MeepControllerRestApi.Event](docs/Event.md)
- - [MeepControllerRestApi.EventList](docs/EventList.md)
  - [MeepControllerRestApi.EventMobility](docs/EventMobility.md)
  - [MeepControllerRestApi.EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
  - [MeepControllerRestApi.EventOther](docs/EventOther.md)
@@ -156,7 +157,6 @@ Class | Method | HTTP request | Description
  - [MeepControllerRestApi.ScenarioList](docs/ScenarioList.md)
  - [MeepControllerRestApi.ServiceConfig](docs/ServiceConfig.md)
  - [MeepControllerRestApi.ServicePort](docs/ServicePort.md)
- - [MeepControllerRestApi.Settings](docs/Settings.md)
  - [MeepControllerRestApi.Zone](docs/Zone.md)
 
 

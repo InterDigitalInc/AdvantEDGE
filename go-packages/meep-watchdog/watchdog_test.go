@@ -24,7 +24,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const wdRedisAddr string = "localhost:30379"
+const wdRedisAddr string = "localhost:30380"
 const wdName string = "watchdog-tester"
 
 func TestWatchdogSuccess(t *testing.T) {

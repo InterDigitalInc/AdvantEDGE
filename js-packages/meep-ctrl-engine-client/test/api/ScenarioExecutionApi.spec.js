@@ -80,16 +80,6 @@
         done();
       });
     });
-    describe('getEventList', function() {
-      it('should call getEventList successfully', function(done) {
-        //uncomment below and update the code to test getEventList
-        //instance.getEventList(function(error) {
-        //  if (error) throw error;
-        //expect().to.be();
-        //});
-        done();
-      });
-    });
     describe('sendEvent', function() {
       it('should call sendEvent successfully', function(done) {
         //uncomment below and update the code to test sendEvent

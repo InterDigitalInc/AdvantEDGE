@@ -27,11 +27,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
 	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
@@ -95,8 +94,12 @@ func Init() (err error) {
 	zoneStatusReInit()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	_ = sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
-	return nil
+	return sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
+}
+
+// Run - Start Location Service
+func Run() (err error) {
+	return sbi.Run()
 }
 
 func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {

@@ -7,7 +7,6 @@ Method | HTTP request | Description
 [**activateScenario**](ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Activate (deploy) scenario
 [**getActiveNodeServiceMaps**](ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external node service mappings
 [**getActiveScenario**](ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Retrieve active (deployed) scenario
-[**getEventList**](ScenarioExecutionApi.md#getEventList) | **GET** /events | Retrieve list of supported event types for active (deployed) scenario
 [**sendEvent**](ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send event to active (deployed) scenario
 [**terminateScenario**](ScenarioExecutionApi.md#terminateScenario) | **DELETE** /active | Terminate active (deployed) scenario
 
@@ -139,46 +138,6 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**Scenario**](Scenario.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-<a name="getEventList"></a>
-# **getEventList**
-> EventList getEventList()
-
-Retrieve list of supported event types for active (deployed) scenario
-
-
-
-### Example
-```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
-
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully. Returned data: ' + data);
-  }
-};
-apiInstance.getEventList(callback);
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**EventList**](EventList.md)
 
 ### Authorization
 
