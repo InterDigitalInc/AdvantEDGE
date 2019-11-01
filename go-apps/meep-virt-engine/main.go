@@ -45,18 +45,12 @@ func main() {
 		run = false
 	}()
 
-	go func() {
-		err := server.VirtEngineInit()
-		if err != nil {
-			log.Error("Failed to initialize Virt. Engine")
-			run = false
-			return
-		}
-
-		// Start TC Engine Event Handler thread
-		server.ListenEvents()
+	err := server.VirtEngineInit()
+	if err != nil {
+		log.Error("Failed to initialize Virt. Engine")
 		run = false
-	}()
+		return
+	}
 
 	count := 0
 	for {

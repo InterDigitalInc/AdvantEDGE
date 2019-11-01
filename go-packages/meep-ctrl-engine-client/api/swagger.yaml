@@ -248,23 +248,6 @@ paths:
               $ref: "#/definitions/NodeServiceMaps"
         404:
           description: "Not found"
-  /events:
-    get:
-      tags:
-      - "Scenario Execution"
-      summary: "Retrieve list of supported event types for active (deployed) scenario"
-      description: ""
-      operationId: "getEventList"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "OK"
-          schema:
-            $ref: "#/definitions/EventList"
-        404:
-          description: "Not found"
   /events/{type}:
     post:
       tags:
@@ -293,48 +276,6 @@ paths:
           description: "OK"
         400:
           description: "Bad request"
-  /settings:
-    get:
-      tags:
-      - "MEEP Settings"
-      summary: "Retrieve MEEP Controller settings"
-      description: ""
-      operationId: "getMeepSettings"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "OK"
-          schema:
-            $ref: "#/definitions/Settings"
-        400:
-          description: "Bad request"
-        404:
-          description: "Not found"
-    put:
-      tags:
-      - "MEEP Settings"
-      summary: "Set MEEP Controller settings"
-      description: ""
-      operationId: "setMeepSettings"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "settings"
-        description: "MEEP Settings"
-        required: true
-        schema:
-          $ref: "#/definitions/Settings"
-        x-exportParamName: "Settings"
-      responses:
-        200:
-          description: "OK"
-        400:
-          description: "Bad request"
-        404:
-          description: "Not found"
   /states:
     get:
       tags:
@@ -868,15 +809,6 @@ definitions:
           $ref: "#/definitions/EgressService"
     description: "Node-specific mapping of exposed internal & external services"
     example: {}
-  EventList:
-    type: "object"
-    properties:
-      events:
-        type: "array"
-        items:
-          $ref: "#/definitions/Event"
-    description: "Event list object"
-    example: {}
   Event:
     type: "object"
     properties:
@@ -983,11 +915,6 @@ definitions:
     description: "Other Event object"
     example:
       event: "event"
-  Settings:
-    type: "object"
-    description: "MEEP settings - Key/Value Pair Map (string, string)"
-    additionalProperties:
-      type: "string"
   PodsStatus:
     type: "object"
     properties:

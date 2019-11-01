@@ -127,47 +127,51 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 
 	// copy container data locally
 	data := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".docker-data")
+	var err error
 	if len(data) != 0 {
 		for k, v := range data {
 			dstDataDir := bindir + "/" + k
 			srcDataDir := gitdir + "/" + v
-			if _, err := os.Stat(srcDataDir); !os.IsNotExist(err) {
+			if _, err = os.Stat(srcDataDir); !os.IsNotExist(err) {
 				if verbose {
 					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
 				}
 				cmd := exec.Command("rm", "-r", dstDataDir)
 				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
-				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+				_, err = utils.ExecuteCmd(cmd, cobraCmd)
 			} else {
 				fmt.Println("    Source data not found: " + srcDataDir + " --> " + dstDataDir)
 			}
 		}
 	}
 
-	// Obtain checksum of bin folder contents to add as a label in docker image
-	path := gitdir + "/" + target["bin"]
-	cmd := exec.Command("/bin/sh", "-c", "find "+path+" -type f | xargs sha256sum | sort | sha256sum")
-	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-	checksum := strings.Split(output, " ")
-
-	// dockerize & push to private meep docker registry
-	fmt.Println("dockerizing", targetName)
-	if registry != "" {
-		tag := registry + "/" + targetName
-		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, path)
-		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-		cmd = exec.Command("docker", "push", tag)
-		_, err := utils.ExecuteCmd(cmd, cobraCmd)
-		if err != nil {
-			fmt.Println("Failed to push", tag, " Error:", err)
-			return
-		}
+	if err != nil {
+		fmt.Println("Error dockerizing ", targetName)
 	} else {
-		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, path)
-		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	}
+		// Obtain checksum of bin folder contents to add as a label in docker image
+		path := gitdir + "/" + target["bin"]
+		cmd := exec.Command("/bin/sh", "-c", "find "+path+" -type f | xargs sha256sum | sort | sha256sum")
+		output, _ := utils.ExecuteCmd(cmd, cobraCmd)
+		checksum := strings.Split(output, " ")
 
+		// dockerize & push to private meep docker registry
+		fmt.Println("dockerizing", targetName)
+		if registry != "" {
+			tag := registry + "/" + targetName
+			cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, path)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+			cmd = exec.Command("docker", "push", tag)
+			_, err := utils.ExecuteCmd(cmd, cobraCmd)
+			if err != nil {
+				fmt.Println("Failed to push", tag, " Error:", err)
+				return
+			}
+		} else {
+			cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, path)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+		}
+	}
 	// cleanup data
 	if len(data) != 0 {
 		for k := range data {

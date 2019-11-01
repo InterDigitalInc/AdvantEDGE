@@ -17,63 +17,57 @@
 package sbi
 
 import (
-	"encoding/json"
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
 
-const moduleCtrlEngine string = "ctrl-engine"
-const typeActive string = "active"
-
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
-
-var updateUserInfoCB func(string, string, string)
-var updateZoneInfoCB func(string, int, int, int)
-var updateAccessPointInfoCB func(string, string, string, string, int)
-var cleanUpCB func()
-
-var CTRL_ENGINE_DB = 0
-
-var rcCtrlEng *redis.Connector
-
+const module string = "loc-serv-sbi"
 const redisAddr string = "meep-redis-master:6379"
 
-// Init - Location Service initialization
-func Init(updateUserInfo func(string, string, string), updateZoneInfo func(string, int, int, int), updateAccessPointInfo func(string, string, string, string, int), cleanUp func()) (err error) {
+type LocServSbi struct {
+	activeModel             *mod.Model
+	updateUserInfoCB        func(string, string, string)
+	updateZoneInfoCB        func(string, int, int, int)
+	updateAccessPointInfoCB func(string, string, string, string, int)
+	cleanUpCB               func()
+}
 
-	rcCtrlEng, err = redis.NewConnector(redisAddr, CTRL_ENGINE_DB)
+var sbi *LocServSbi
+
+// Init - Location Service SBI initialization
+func Init(updateUserInfo func(string, string, string), updateZoneInfo func(string, int, int, int),
+	updateAccessPointInfo func(string, string, string, string, int), cleanUp func()) (err error) {
+
+	// Create new SBI instance
+	sbi = new(LocServSbi)
+
+	// Create new Model
+	sbi.activeModel, err = mod.NewModel(redisAddr, module, "activeScenario")
 	if err != nil {
-		log.Error("Failed connection to Active ctrl engine DB in Redis. Error: ", err)
+		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Active ctrl engine DB in sbi")
 
-	// Subscribe to Pub-Sub events for MEEP Controller
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = rcCtrlEng.Subscribe(channelCtrlActive)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return err
-	}
-
-	updateUserInfoCB = updateUserInfo
-	updateZoneInfoCB = updateZoneInfo
-	updateAccessPointInfoCB = updateAccessPointInfo
-	cleanUpCB = cleanUp
-
-	go Run()
+	sbi.updateUserInfoCB = updateUserInfo
+	sbi.updateZoneInfoCB = updateZoneInfo
+	sbi.updateAccessPointInfoCB = updateAccessPointInfo
+	sbi.cleanUpCB = cleanUp
 
 	return nil
 }
 
 // Run - MEEP Location Service execution
-func Run() {
-	// Listen for subscribed events. Provide event handler method.
-	_ = rcCtrlEng.Listen(eventHandler)
+func Run() (err error) {
+
+	// Listen for Model updates
+	err = sbi.activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listen for model updates: ", err.Error())
+		return err
+	}
+	return nil
 }
 
 func eventHandler(channel string, payload string) {
@@ -81,8 +75,8 @@ func eventHandler(channel string, payload string) {
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
+	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
 		processActiveScenarioUpdate()
 
 	default:
@@ -91,69 +85,57 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := rcCtrlEng.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
-		//scenario being terminated, we just clear every loc-service entries from the DB controlled by the SBI
-		cleanUpCB()
-		return
+	log.Debug("processActiveScenarioUpdate")
+	uePerNetLocMap := make(map[string]int)
+	uePerZoneMap := make(map[string]int)
+	poaPerZoneMap := make(map[string]int)
+
+	// Update UE info
+	ueNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range ueNameList {
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for UE: " + name)
+			continue
+		}
+		nodeCtx, ok := ctx.(*mod.NodeContext)
+		if !ok {
+			log.Error("Error casting context for UE: " + name)
+			continue
+		}
+		zone := nodeCtx.Parents[mod.Zone]
+		netLoc := nodeCtx.Parents[mod.NetLoc]
+
+		sbi.updateUserInfoCB(name, zone, netLoc)
+		uePerZoneMap[zone]++
+		uePerNetLocMap[netLoc]++
 	}
-	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
-	if err != nil {
-		log.Error(err.Error())
-		return
+
+	// Update POA info
+	poaNameList := sbi.activeModel.GetNodeNames("POA")
+	for _, name := range poaNameList {
+		ctx := sbi.activeModel.GetNodeContext(name)
+		if ctx == nil {
+			log.Error("Error getting context for POA: " + name)
+			continue
+		}
+		nodeCtx, ok := ctx.(*mod.NodeContext)
+		if !ok {
+			log.Error("Error casting context for POA: " + name)
+			continue
+		}
+		zone := nodeCtx.Parents[mod.Zone]
+		netLoc := nodeCtx.Parents[mod.NetLoc]
+
+		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "SERVICEABLE", uePerNetLocMap[netLoc])
+		poaPerZoneMap[zone]++
 	}
 
-	// Parse scenario
-	parseScenario(scenario)
-
-}
-
-func parseScenario(scenario ceModel.Scenario) {
-	log.Debug("parseScenario")
-
-	// Store scenario Name
-	//scenarioName := scenario.Name
-
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
-
-		// Parse Zones
-		for _, zone := range domain.Zones {
-
-			nbZoneUsers := 0
-			nbAccessPoints := 0
-
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
-
-				nbApUsers := 0
-
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
-
-					switch pl.Type_ {
-					case "UE":
-						updateUserInfoCB(pl.Name, zone.Name, nl.Name)
-						nbApUsers++
-					default:
-					}
-				}
-
-				switch nl.Type_ {
-				case "POA":
-					updateAccessPointInfoCB(zone.Name, nl.Name, "UNKNOWN", "SERVICEABLE", nbApUsers)
-					nbAccessPoints++
-					nbZoneUsers += nbApUsers
-				default:
-				}
-			}
-			if zone.Name != "" && !strings.Contains(zone.Name, "-COMMON") {
-				updateZoneInfoCB(zone.Name, nbAccessPoints, 0, nbZoneUsers)
-			}
+	// Update Zone info
+	zoneNameList := sbi.activeModel.GetNodeNames("ZONE")
+	for _, name := range zoneNameList {
+		if name != "" && !strings.Contains(name, "-COMMON") {
+			sbi.updateZoneInfoCB(name, poaPerZoneMap[name], 0, uePerZoneMap[name])
 		}
 	}
 }

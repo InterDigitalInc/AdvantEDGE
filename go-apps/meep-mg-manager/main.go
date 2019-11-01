@@ -58,7 +58,12 @@ func main() {
 		}
 
 		// Start MG Manager Event Handler thread
-		go server.Run()
+		err = server.Run()
+		if err != nil {
+			log.Error("Failed to start MG Manager")
+			run = false
+			return
+		}
 
 		// Start MG Manager REST API Server
 		router := server.NewRouter()

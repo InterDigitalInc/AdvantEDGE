@@ -103,7 +103,6 @@ class MeepContainer extends Component {
     super(props);
     this.state = {};
     this.refreshIntervalTimer = null;
-    this.meepSettingsApi = new meepCtrlRestApiClient.MEEPSettingsApi();
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
   }

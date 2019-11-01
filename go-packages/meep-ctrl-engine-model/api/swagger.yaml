@@ -123,7 +123,7 @@ definitions:
         description: Multi-Edge service name, if any
       ip:
         type: string
-        description: External node IP address 
+        description: External node IP address
       port:
         type: integer
         description: Service port number

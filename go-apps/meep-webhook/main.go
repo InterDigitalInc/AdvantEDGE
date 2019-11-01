@@ -29,7 +29,10 @@ import (
 	"syscall"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
+
+var model *mod.Model
 
 func main() {
 	var parameters WhSvrParameters
@@ -37,10 +40,11 @@ func main() {
 	// Initialize logging
 	log.MeepJSONLogInit("meep-webhook")
 
-	// Connect to Active DB
-	err := activeDBConnect()
+	// Listen for model updates
+	var err error
+	model, err = mod.NewModel(mod.DbAddress, "meep-webhook", "activeScenario")
 	if err != nil {
-		log.Error("Failed to connect to Active DB: ", err.Error())
+		log.Error("Failed to create model: ", err.Error())
 		return
 	}
 
@@ -77,8 +81,12 @@ func main() {
 	mux.HandleFunc("/mutate", whsvr.serve)
 	whsvr.server.Handler = mux
 
-	// Start DB listener in new routine
-	go activeDBListen()
+	// Start active model listener
+	err = model.Listen(eventHandler)
+	if err != nil {
+		log.Error("Unable to listen to model updates: ", err.Error())
+		return
+	}
 
 	// Start webhook server in new routine
 	go func() {
