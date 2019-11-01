@@ -300,12 +300,12 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 		}
 	}
 	// cleanup data
-	/*	if len(data) != 0 {
-			for k := range data {
-				dstDataDir := bindir + "/" + k
-				cmd := exec.Command("rm", "-r", dstDataDir)
-				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-			}
+	if len(data) != 0 {
+		for k := range data {
+			dstDataDir := bindir + "/" + k
+			cmd := exec.Command("rm", "-r", dstDataDir)
+			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
-	*/
+	}
+
 }
