@@ -22,7 +22,7 @@ import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 
 const VIS_CONFIGURATION_MODE_LABEL = 'VIS Configuration Mode';
-const SHOW_DASHBOARD_CONFIG_LABEL = 'Show Dashboard Config';
+const SHOW_DASHBOARD_CONFIG_LABEL = 'Show Dashboard Config (Experimental)';
 
 import {
   uiSetAutomaticRefresh,
@@ -114,7 +114,7 @@ class SettingsPageContainer extends Component {
           <GridInner>
             <GridCell span={12} style={styles.inner}>
 
-              <Elevation className="component-style" z={2} style={{marginBottom: 10}}>
+              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
                 <Grid>
                   <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
                     <div>
@@ -161,26 +161,24 @@ class SettingsPageContainer extends Component {
                 </Grid>
               </Elevation>
 
-              <Elevation className="component-style" z={2}>
+              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
                 <Grid>
-                  <GridCell span={6}>
-                    <CheckableSettingItem
-                      title='Development'
-                      stateItem={this.props.devMode}
-                      changeStateItem={this.props.changeDevMode}
-                      stateItemName={VIS_CONFIGURATION_MODE_LABEL}
-                    />
-                  </GridCell>
-                  <GridCell span={6}>
-                    <CheckableSettingItem
-                      title='Dashboard Config'
-                      stateItem={this.props.showDashboardConfig}
-                      changeStateItem={this.props.changeShowDashboardConfig}
-                      stateItemName={SHOW_DASHBOARD_CONFIG_LABEL}
-                    />
+                  <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
+                    <div>
+                      <span className="mdc-typography--headline6">Development: </span>
+                    </div>
                   </GridCell>
                 </Grid>
-                
+                <CheckableSettingItem
+                  stateItem={this.props.devMode}
+                  changeStateItem={this.props.changeDevMode}
+                  stateItemName={VIS_CONFIGURATION_MODE_LABEL}
+                />
+                <CheckableSettingItem
+                  stateItem={this.props.showDashboardConfig}
+                  changeStateItem={this.props.changeShowDashboardConfig}
+                  stateItemName={SHOW_DASHBOARD_CONFIG_LABEL}
+                />
               </Elevation>
 
             </GridCell>
@@ -191,19 +189,11 @@ class SettingsPageContainer extends Component {
   }
 }
 
-const CheckableSettingItem = ({title, stateItem, changeStateItem, stateItemName}) => {
+const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName}) => {
   return (
-    <>
-    <Grid>
-      <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10, marginBottom: -20}}>
-        <div>
-          <span className="mdc-typography--headline6">{title}: </span>
-        </div>
-      </GridCell>
-    </Grid>
     <Grid span={12} style={{marginTop: 10}}>
       <GridCell span={12}>
-        <div style={{paddingTop: 20, paddingBottom: 20}}>
+        <div>
           <Checkbox
             checked={stateItem}
             onChange={e => changeStateItem(e.target.checked)}
@@ -213,7 +203,6 @@ const CheckableSettingItem = ({title, stateItem, changeStateItem, stateItemName}
         </div>
       </GridCell>
     </Grid>
-    </>
   );
 };
 

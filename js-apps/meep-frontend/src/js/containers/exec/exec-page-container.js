@@ -227,8 +227,8 @@ class ExecPageContainer extends Component {
       ? this.props.execScenarioName
       : this.props.cfgScenarioName;
 
-    const spanLeft = this.props.eventCreationMode ? 10 : 12;
-    const spanRight = this.props.eventCreationMode ? 2 : 0;
+    const spanLeft = this.props.eventCreationMode ? 9 : 12;
+    const spanRight = this.props.eventCreationMode ? 3 : 0;
     return (
       <div style={{width: '100%'}}>
         {this.renderDialogs()}
