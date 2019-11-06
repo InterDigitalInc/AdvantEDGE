@@ -40,8 +40,6 @@ describe('MEEP Settings', function() {
     // Go to monitoring page
     cy.log('Go to settings page');
     click(meep.MEEP_TAB_SET);
-    verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'not.be.checked');
-    verifyEnabled(meep.SET_EXEC_REFRESH_INT, false);
 
     // Enable refresh interval
     check(meep.SET_EXEC_REFRESH_CHECKBOX, true);
@@ -60,15 +58,18 @@ describe('MEEP Settings', function() {
     // Go to monitoring page
     cy.log('Go to settings page');
     click(meep.MEEP_TAB_SET);
-    verify(meep.SET_DEV_MODE_CHECKBOX, 'not.be.checked');
 
-    // Enable dev mode
-    check(meep.SET_DEV_MODE_CHECKBOX, true);
-    verify(meep.SET_DEV_MODE_CHECKBOX, 'be.checked');
+    // Enable & disable vis config mode
+    check(meep.SET_VIS_CFG_CHECKBOX, true);
+    verify(meep.SET_VIS_CFG_CHECKBOX, 'be.checked');
+    check(meep.SET_VIS_CFG_CHECKBOX, false);
+    verify(meep.SET_VIS_CFG_CHECKBOX, 'not.be.checked');
 
-    // Disable dev mode
-    check(meep.SET_DEV_MODE_CHECKBOX, false);
-    verify(meep.SET_DEV_MODE_CHECKBOX, 'not.be.checked');
+    // Enable & disable dashboard config mode
+    check(meep.SET_DASHBOARD_CFG_CHECKBOX, true);
+    verify(meep.SET_DASHBOARD_CFG_CHECKBOX, 'be.checked');
+    check(meep.SET_DASHBOARD_CFG_CHECKBOX, false);
+    verify(meep.SET_DASHBOARD_CFG_CHECKBOX, 'not.be.checked');
   });
 
 });

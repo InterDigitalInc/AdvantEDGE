@@ -107,7 +107,7 @@ class MeepContainer extends Component {
     this.refreshIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
-    this.metricsPollingEnabled = false
+    this.metricsPollingEnabled = false;
   }
 
   componentDidMount() {
@@ -189,16 +189,16 @@ class MeepContainer extends Component {
   }
 
   setMetricsPolling() {
-    if (this.props.dashboardView1 == VIS_VIEW && this.props.dashboardView2 == VIEW_NAME_NONE) {
-      this.stopMetricsPolling()
+    if (this.props.dashboardView1 === VIS_VIEW && this.props.dashboardView2 === VIEW_NAME_NONE) {
+      this.stopMetricsPolling();
     } else {
-      this.startMetricsPolling()
+      this.startMetricsPolling();
     }
   }
   stopMetricsPolling() {
     if (this.metricsPollingEnabled) {
       clearInterval(this.dataTimer);
-      this.metricsPollingEnabled = false
+      this.metricsPollingEnabled = false;
     }
   }
   startMetricsPolling() {
@@ -209,7 +209,7 @@ class MeepContainer extends Component {
         this.fetchMetrics();
       };
       this.dataTimer = setInterval(nextData, 1000);
-      this.metricsPollingEnabled = true
+      this.metricsPollingEnabled = true;
     }
   }
 
@@ -425,7 +425,7 @@ class MeepContainer extends Component {
 
   render() {
     const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
-    this.setMetricsPolling()
+    this.setMetricsPolling();
 
     return (
       <div style={{width: '100%'}}>

@@ -21,9 +21,6 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 
-const VIS_CONFIGURATION_MODE_LABEL = 'VIS Configuration Mode';
-const SHOW_DASHBOARD_CONFIG_LABEL = 'Show Dashboard Config (Experimental)';
-
 import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
@@ -32,9 +29,13 @@ import {
 } from '../../state/ui';
 
 import {
+  PAGE_SETTINGS,
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
-  PAGE_SETTINGS
+  SET_VIS_CFG_CHECKBOX,
+  SET_VIS_CFG_LABEL,
+  SET_DASHBOARD_CFG_CHECKBOX,
+  SET_DASHBOARD_CFG_LABEL
 } from '../../meep-constants';
 
 class SettingsPageContainer extends Component {
@@ -172,12 +173,14 @@ class SettingsPageContainer extends Component {
                 <CheckableSettingItem
                   stateItem={this.props.devMode}
                   changeStateItem={this.props.changeDevMode}
-                  stateItemName={VIS_CONFIGURATION_MODE_LABEL}
+                  stateItemName={SET_VIS_CFG_LABEL}
+                  cydata={SET_VIS_CFG_CHECKBOX}
                 />
                 <CheckableSettingItem
                   stateItem={this.props.showDashboardConfig}
                   changeStateItem={this.props.changeShowDashboardConfig}
-                  stateItemName={SHOW_DASHBOARD_CONFIG_LABEL}
+                  stateItemName={SET_DASHBOARD_CFG_LABEL}
+                  cydata={SET_DASHBOARD_CFG_CHECKBOX}
                 />
               </Elevation>
 
@@ -189,7 +192,7 @@ class SettingsPageContainer extends Component {
   }
 }
 
-const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName}) => {
+const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName, cydata}) => {
   return (
     <Grid span={12} style={{marginTop: 10}}>
       <GridCell span={12}>
@@ -197,6 +200,7 @@ const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName}) => {
           <Checkbox
             checked={stateItem}
             onChange={e => changeStateItem(e.target.checked)}
+            data-cy={cydata}
           >
             {stateItemName}
           </Checkbox>

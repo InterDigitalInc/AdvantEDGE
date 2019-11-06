@@ -186,7 +186,10 @@ export const MON_DASHBOARD_IFRAME = 'mon-dashboard-iframe';
 // Settings Page IDs
 export const SET_EXEC_REFRESH_CHECKBOX = 'set-exec-refresh-checkbox';
 export const SET_EXEC_REFRESH_INT = 'set-exec-refresh-int';
-export const SET_DEV_MODE_CHECKBOX = 'set-dev-mode-checkbox';
+export const SET_VIS_CFG_CHECKBOX = 'set-vis-cfg-checkbox';
+export const SET_VIS_CFG_LABEL = 'VIS Configuration Mode';
+export const SET_DASHBOARD_CFG_CHECKBOX = 'set-dashboard-cfg-checkbox';
+export const SET_DASHBOARD_CFG_LABEL = 'Show Dashboard Config (Experimental)';
 
 // Logical Scenario types
 export const TYPE_SCENARIO = 0;
