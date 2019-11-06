@@ -15,4 +15,5 @@
 FROM debian:9.6-slim
 COPY ./meep-ctrl-engine /meep-ctrl-engine
 COPY ./static /static
+COPY ./api /static/api
 ENTRYPOINT ["/meep-ctrl-engine"]
