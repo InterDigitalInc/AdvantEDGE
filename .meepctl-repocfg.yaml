@@ -27,7 +27,10 @@ repo:
       chart: charts/meep-ctrl-engine
       codecov: true
       lint: true
+      nodeport: 30000
+      api: go-apps/meep-ctrl-engine/api/swagger.yaml
       docker-data:
+        api: bin/meep-swagger-ui
         static: bin/meep-frontend
     meep-frontend:
       src: js-apps/meep-frontend
@@ -36,6 +39,11 @@ repo:
       lint: true
       local-deps:
         meep-ctrl-engine-api: js-packages/meep-ctrl-engine-client
+    meep-swagger-ui:
+      src: js-apps/meep-swagger-ui
+      bin: bin/meep-swagger-ui
+      codecov: false
+      lint: false
     meep-webhook:
       src: go-apps/meep-webhook
       bin: bin/meep-webhook
@@ -50,6 +58,8 @@ repo:
       chart: charts/meep-mg-manager
       codecov: true
       lint: true
+      nodeport: 30005
+      api: go-apps/meep-mg-manager/api/swagger.yaml
     meep-mon-engine:
       src: go-apps/meep-mon-engine
       bin: bin/meep-mon-engine
@@ -66,6 +76,8 @@ repo:
         - -mod=vendor
       codecov: true
       lint: true
+      nodeport: 30007
+      api: go-apps/meep-loc-serv/api/swagger.yaml
     meep-metrics-engine:
       src: go-apps/meep-metrics-engine
       bin: bin/meep-metrics-engine
@@ -74,6 +86,8 @@ repo:
         - -mod=vendor
       codecov: true
       lint: true
+      nodeport: 30008
+      api: go-apps/meep-metrics-engine/api/swagger.yaml
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine
