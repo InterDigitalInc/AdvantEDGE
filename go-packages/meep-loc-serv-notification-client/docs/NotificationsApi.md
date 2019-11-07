@@ -18,7 +18,7 @@ Zonal or User location tracking subscription notification
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **subscriptionId** | **string**| Identity of a notification subscription (user or zonal) | 
   **notification** | [**TrackingNotification**](TrackingNotification.md)| Zonal or User Tracking Notification | 
 
@@ -47,7 +47,7 @@ Zone status tracking subscription notification
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **subscriptionId** | **string**| Identity of a notification subscription (user or zonal) | 
   **notification** | [**ZoneStatusNotification**](ZoneStatusNotification.md)| Zone Status Notification | 
 

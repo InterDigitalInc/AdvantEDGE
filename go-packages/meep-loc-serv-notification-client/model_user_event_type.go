@@ -9,15 +9,11 @@
 
 package client
 
-// A type containing zone information.
-type ZoneInfo struct {
+type UserEventType string
 
-	// Identifier of zone
-	ZoneId string `json:"zoneId"`
-
-	// Number of access points or points of access within a Location Zone
-	NumberOfAccessPoints int32 `json:"numberOfAccessPoints"`
-
-	// The number of users currently on the access point
-	NumberOfUsers int32 `json:"numberOfUsers"`
-}
+// List of UserEventType
+const (
+	ENTERING_UserEventType     UserEventType = "Entering"
+	TRANSFERRING_UserEventType UserEventType = "Transferring"
+	LEAVING_UserEventType      UserEventType = "Leaving"
+)

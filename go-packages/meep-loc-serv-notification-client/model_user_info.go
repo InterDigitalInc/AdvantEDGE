@@ -9,12 +9,15 @@
 
 package client
 
-// OperationStatus : The operation status of the access point
-type OperationStatus string
-
-// List of OperationStatus
-const (
-	SERVICEABLE_OperationStatus OperationStatus = "Serviceable"
-	UNSERVICEABLE_OperationStatus OperationStatus = "Unserviceable"
-	UNKNOWN_OperationStatus OperationStatus = "Unknown"
-)
+type UserInfo struct {
+	// Unique identifier of a user or client node
+	UserId string `json:"userId,omitempty"`
+	// Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI).
+	Address string `json:"address"`
+	// Identifier of access point, <E-CGI><Cell Portion ID> (reference ETSI TS 129 171). Where the E-CGI is made up of the PLMN and Cell Identity (28 bit string). Then the PLMN is made up of the 3 digit MCC & 2 or 3 digit MNC. The Cell Portion is an optional element
+	AccessPointId string `json:"accessPointId"`
+	// Identifier of zone
+	ZoneId string `json:"zoneId"`
+	// URL where the UE may be contacted for some service (application specific)
+	ResourceURL string `json:"resourceURL"`
+}

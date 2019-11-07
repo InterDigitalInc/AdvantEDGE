@@ -15,27 +15,19 @@ import (
 
 // Zonal or User tracking notification - callback generated toward an ME app with a zonal or user tracking subscription
 type TrackingNotification struct {
-
 	// CallBackData if passed by the application during the associated ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
 	CallbackData string `json:"callbackData"`
-
 	// Identifier of zone
 	ZoneId string `json:"zoneId,omitempty"`
-
 	// Address of user (e.g. \"sip\" URI, \"tel\" URI, \"acr\" URI).
 	Address string `json:"address,omitempty"`
-
 	// Interest realm of access point (e.g. geographical area, a type of industry etc.).
-	InterestRealm string `json:"interestRealm,omitempty"`
-
+	InterestRealm string         `json:"interestRealm,omitempty"`
 	UserEventType *UserEventType `json:"userEventType,omitempty"`
-
 	// Zone ID
 	CurrentAccessPointId string `json:"currentAccessPointId,omitempty"`
-
 	// Zone ID
 	PreviousAccessPointId string `json:"previousAccessPointId,omitempty"`
-
 	// Indicates the time of day for zonal presence notification.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 }

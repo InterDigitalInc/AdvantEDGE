@@ -9,12 +9,12 @@
 
 package client
 
-// Link to other resources
-type Link struct {
-
-	// Describes the relationship between the URI and the resource.
-	Rel *interface{} `json:"rel"`
-
-	// URI
-	Href *interface{} `json:"href"`
+// A type containing zone information.
+type ZoneInfo struct {
+	// Identifier of zone
+	ZoneId string `json:"zoneId"`
+	// Number of access points or points of access within a Location Zone
+	NumberOfAccessPoints int32 `json:"numberOfAccessPoints"`
+	// The number of users currently on the access point
+	NumberOfUsers int32 `json:"numberOfUsers"`
 }

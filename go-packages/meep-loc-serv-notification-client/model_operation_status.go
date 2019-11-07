@@ -9,20 +9,12 @@
 
 package client
 
-import (
-	"time"
+// OperationStatus : The operation status of the access point
+type OperationStatus string
+
+// List of OperationStatus
+const (
+	SERVICEABLE_OperationStatus   OperationStatus = "Serviceable"
+	UNSERVICEABLE_OperationStatus OperationStatus = "Unserviceable"
+	UNKNOWN_OperationStatus       OperationStatus = "Unknown"
 )
-
-// User tracking notification - callback generated toward an ME app with a user tracking subscription
-type UserTrackingNotification struct {
-
-	// CallBackData if passed by the application during the associated ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
-	CallbackData string `json:"callbackData"`
-
-	UserInfo *UserInfo `json:"userInfo"`
-
-	// Indicates the time of day for zonal presence notification.
-	TimeStamp time.Time `json:"timeStamp"`
-
-	UserEventType *UserEventType `json:"userEventType,omitempty"`
-}
