@@ -9,32 +9,15 @@
 
 package server
 
-import (
-	"net/http"
-        "github.com/gorilla/mux"
-        "fmt"
-        "encoding/json"
-	"log"
-)
+// Edge app basic information object
+type EdgeInfo struct {
 
-func GetUeLocation(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-        vars := mux.Vars(r)
-        ueId := vars["ueId"]
+	// Edge app service
+	Svc string `json:"svc,omitempty"`
 
-        userInfo := getLocalDBUserInfo(ueId)
+	// Edge app local name
+	Name string `json:"name,omitempty"`
 
-	if userInfo != nil {
-	        jsonResponse, err := json.Marshal(userInfo)
-
-		fmt.Fprintf(w, string(jsonResponse))
-
-		if err != nil {
-                	log.Printf(err.Error())
-	                http.Error(w, err.Error(), http.StatusInternalServerError)
-       		        return
-		}
-        }
-        w.WriteHeader(http.StatusOK)
-
+	// IP address where the local edge app reside
+	Ip string `json:"ip,omitempty"`
 }

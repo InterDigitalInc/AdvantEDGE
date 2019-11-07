@@ -10,35 +10,10 @@
 package server
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
-	"strings"
 )
 
-func GetEdgeInfo(w http.ResponseWriter, r *http.Request) {
+func PostTrackingNotification(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var edgeInfo EdgeInfo
-	//podName := os.Getenv("MEEP_POD_NAME")
-	serviceName := os.Getenv("MGM_APP_ID")
-	newString := strings.ToUpper(serviceName) + "_SERVICE_HOST"
-	newString = strings.Replace(newString, "-", "_", -1)
-
-	svcName := os.Getenv("MGM_GROUP_NAME")
-
-	edgeInfo.Svc = svcName
-	edgeInfo.Name = serviceName //podName
-	edgeInfo.Ip = os.Getenv(newString)
-	// Format response
-	jsonResponse, err := json.Marshal(edgeInfo)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Send response
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, string(jsonResponse))
 }
