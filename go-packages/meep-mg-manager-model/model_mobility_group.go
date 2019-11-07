@@ -11,19 +11,14 @@ package model
 
 // Mobility Group
 type MobilityGroup struct {
-
 	// Mobility Group name
 	Name string `json:"name,omitempty"`
-
 	// State Transfer mode
 	StateTransferMode string `json:"stateTransferMode,omitempty"`
-
 	// State Transfer trigger
 	StateTransferTrigger string `json:"stateTransferTrigger,omitempty"`
-
 	// Session Transfer mode
 	SessionTransferMode string `json:"sessionTransferMode,omitempty"`
-
 	// Load Balancing Algorithm
 	LoadBalancingAlgorithm string `json:"loadBalancingAlgorithm,omitempty"`
 }

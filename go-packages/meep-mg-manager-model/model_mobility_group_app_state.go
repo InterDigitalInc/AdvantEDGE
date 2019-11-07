@@ -9,11 +9,10 @@
 
 package model
 
-// Network element service mappings
-type NetworkElement struct {
-
-	// Network element name
-	Name string `json:"name,omitempty"`
-
-	ServiceMaps []MobilityGroupServiceMap `json:"serviceMaps,omitempty"`
+// Mobility Group Application State
+type MobilityGroupAppState struct {
+	// Mobility Group UE Identifier
+	UeId string `json:"ueId,omitempty"`
+	// Mobility Group Application State for provided UE
+	UeState string `json:"ueState,omitempty"`
 }

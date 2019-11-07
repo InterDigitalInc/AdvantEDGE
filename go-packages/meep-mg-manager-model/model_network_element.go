@@ -9,12 +9,9 @@
 
 package model
 
-// Mobility Group Application instance
-type MobilityGroupApp struct {
-
-	// Mobility Group Application Identifier
-	Id string `json:"id,omitempty"`
-
-	// Event handler url
-	Url string `json:"url,omitempty"`
+// Network element service mappings
+type NetworkElement struct {
+	// Network element name
+	Name        string                    `json:"name,omitempty"`
+	ServiceMaps []MobilityGroupServiceMap `json:"serviceMaps,omitempty"`
 }

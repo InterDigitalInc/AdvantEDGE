@@ -9,12 +9,10 @@
 
 package model
 
-// Mobility Group Application State
-type MobilityGroupAppState struct {
-
-	// Mobility Group UE Identifier
-	UeId string `json:"ueId,omitempty"`
-
-	// Mobility Group Application State for provided UE
-	UeState string `json:"ueState,omitempty"`
+// Mobility group service mapping
+type MobilityGroupServiceMap struct {
+	// Mobility group service name
+	MgSvcName string `json:"mgSvcName,omitempty"`
+	// Load balanced service instance name
+	LbSvcName string `json:"lbSvcName,omitempty"`
 }

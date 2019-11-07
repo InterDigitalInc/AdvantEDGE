@@ -9,12 +9,8 @@
 
 package model
 
-// Mobility group service mapping
-type MobilityGroupServiceMap struct {
-
-	// Mobility group service name
-	MgSvcName string `json:"mgSvcName,omitempty"`
-
-	// Load balanced service instance name
-	LbSvcName string `json:"lbSvcName,omitempty"`
+// Mobility Group UE instance
+type MobilityGroupUe struct {
+	// Mobility Group UE Identifier
+	Id string `json:"id,omitempty"`
 }
