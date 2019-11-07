@@ -17,7 +17,7 @@ Send state to transfer to peers
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
   **appState** | [**MobilityGroupAppState**](MobilityGroupAppState.md)| Mobility Group App State to transfer | 

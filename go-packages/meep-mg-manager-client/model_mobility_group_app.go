@@ -9,9 +9,10 @@
 
 package client
 
-// Mobility Group UE instance
-type MobilityGroupUe struct {
-
-	// Mobility Group UE Identifier
+// Mobility Group Application instance
+type MobilityGroupApp struct {
+	// Mobility Group Application Identifier
 	Id string `json:"id,omitempty"`
+	// Event handler url
+	Url string `json:"url,omitempty"`
 }

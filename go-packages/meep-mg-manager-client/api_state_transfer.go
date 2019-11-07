@@ -10,13 +10,12 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
 )
 
 // Linger please
@@ -26,13 +25,16 @@ var (
 
 type StateTransferApiService service
 
-/* StateTransferApiService Send state to transfer to peers
+/*
+StateTransferApiService Send state to transfer to peers
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param mgName Mobility Group name
-@param appId Mobility Group App Id
-@param appState Mobility Group App State to transfer
-@return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param mgName Mobility Group name
+ * @param appId Mobility Group App Id
+ * @param appState Mobility Group App State to transfer
+
+
+*/
 func (a *StateTransferApiService) TransferAppState(ctx context.Context, mgName string, appId string, appState MobilityGroupAppState) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
@@ -60,9 +62,7 @@ func (a *StateTransferApiService) TransferAppState(ctx context.Context, mgName s
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -80,11 +80,21 @@ func (a *StateTransferApiService) TransferAppState(ctx context.Context, mgName s
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }
