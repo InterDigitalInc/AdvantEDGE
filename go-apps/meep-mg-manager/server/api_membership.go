@@ -14,45 +14,56 @@ import (
 )
 
 func CreateMobilityGroup(w http.ResponseWriter, r *http.Request) {
-	mgCreateMobilityGroup(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func CreateMobilityGroupApp(w http.ResponseWriter, r *http.Request) {
-	mgCreateMobilityGroupApp(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func CreateMobilityGroupUe(w http.ResponseWriter, r *http.Request) {
-	mgCreateMobilityGroupUe(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func DeleteMobilityGroup(w http.ResponseWriter, r *http.Request) {
-	mgDeleteMobilityGroup(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func DeleteMobilityGroupApp(w http.ResponseWriter, r *http.Request) {
-	mgDeleteMobilityGroupApp(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetMobilityGroup(w http.ResponseWriter, r *http.Request) {
-	mgGetMobilityGroup(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetMobilityGroupApp(w http.ResponseWriter, r *http.Request) {
-	mgGetMobilityGroupApp(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetMobilityGroupAppList(w http.ResponseWriter, r *http.Request) {
-	mgGetMobilityGroupAppList(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetMobilityGroupList(w http.ResponseWriter, r *http.Request) {
-	mgGetMobilityGroupList(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func SetMobilityGroup(w http.ResponseWriter, r *http.Request) {
-	mgSetMobilityGroup(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func SetMobilityGroupApp(w http.ResponseWriter, r *http.Request) {
-	mgSetMobilityGroupApp(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
