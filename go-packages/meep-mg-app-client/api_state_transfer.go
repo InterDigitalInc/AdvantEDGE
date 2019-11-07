@@ -10,12 +10,11 @@
 package client
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
 )
 
 // Linger please
@@ -25,11 +24,14 @@ var (
 
 type StateTransferApiService service
 
-/* StateTransferApiService Send event notification to registered Mobility Group Application
+/*
+StateTransferApiService Send event notification to registered Mobility Group Application
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param event Mobility Group event notification
-@return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param event Mobility Group event notification
+
+
+*/
 func (a *StateTransferApiService) HandleEvent(ctx context.Context, event MobilityGroupEvent) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
@@ -55,9 +57,7 @@ func (a *StateTransferApiService) HandleEvent(ctx context.Context, event Mobilit
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -75,11 +75,21 @@ func (a *StateTransferApiService) HandleEvent(ctx context.Context, event Mobilit
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }
