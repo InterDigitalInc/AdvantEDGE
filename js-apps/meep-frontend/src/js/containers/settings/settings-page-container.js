@@ -65,7 +65,7 @@ class SettingsPageContainer extends Component {
   }
 
   handleCheckboxChange(val) {
-    this.props.setAutomaticRefresh(val)
+    this.props.setAutomaticRefresh(val);
     if (val && this.validateInterval(this.props.refreshInterval)) {
       this.props.startRefresh();
     } else {
