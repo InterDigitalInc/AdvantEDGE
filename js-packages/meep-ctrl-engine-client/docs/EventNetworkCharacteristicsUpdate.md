@@ -21,11 +21,11 @@ Name | Type | Description | Notes
 
 * `SCENARIO` (value: `"SCENARIO"`)
 
-* `ZONE-INTER-EDGE` (value: `"ZONE-INTER-EDGE"`)
+* `ZONE_INTER_EDGE` (value: `"ZONE-INTER-EDGE"`)
 
-* `ZONE-INTER-FOG` (value: `"ZONE-INTER-FOG"`)
+* `ZONE_INTER_FOG` (value: `"ZONE-INTER-FOG"`)
 
-* `ZONE-EDGE-FOG` (value: `"ZONE-EDGE-FOG"`)
+* `ZONE_EDGE_FOG` (value: `"ZONE-EDGE-FOG"`)
 
 * `EDGE` (value: `"EDGE"`)
 
@@ -33,13 +33,13 @@ Name | Type | Description | Notes
 
 * `UE` (value: `"UE"`)
 
-* `DISTANT-CLOUD` (value: `"DISTANT-CLOUD"`)
+* `DISTANT_CLOUD` (value: `"DISTANT-CLOUD"`)
 
-* `UE-APP` (value: `"UE-APP"`)
+* `UE_APP` (value: `"UE-APP"`)
 
-* `EDGE-APP` (value: `"EDGE-APP"`)
+* `EDGE_APP` (value: `"EDGE-APP"`)
 
-* `CLOUD-APP` (value: `"CLOUD-APP"`)
+* `CLOUD_APP` (value: `"CLOUD-APP"`)
 
 
 
