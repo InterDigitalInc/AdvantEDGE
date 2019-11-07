@@ -14,9 +14,11 @@ import (
 )
 
 func UsersGet(w http.ResponseWriter, r *http.Request) {
-	usersGet(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func UsersGetById(w http.ResponseWriter, r *http.Request) {
-	usersGetById(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }

@@ -9,6 +9,6 @@
 
 package server
 
-type InlineResponse2011 struct {
-	UserTrackingSubscription *UserTrackingSubscription `json:"userTrackingSubscription,omitempty"`
+type InlineResponse2004 struct {
+	NotificationSubscriptionList *InlineResponse2001NotificationSubscriptionList `json:"notificationSubscriptionList,omitempty"`
 }

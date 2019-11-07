@@ -36,8 +36,6 @@ paths:
       responses:
         200:
           description: "Successful response to a query regarding the status of a zone"
-          schema:
-            $ref: "#/definitions/inline_response_200_3"
           examples:
             application/json:
               zoneList:
@@ -53,6 +51,10 @@ paths:
                   numberOfUsers: "36"
                   resourceURL: "http://example.com/etsi-013/location/v1/zones/zone02"
                 resourceURL: "http://example.com/etsi-013/location/v1/zones"
+          schema:
+            properties:
+              zoneList:
+                $ref: "#/definitions/ZoneList"
   /zones/{zoneId}:
     get:
       tags:
@@ -71,8 +73,6 @@ paths:
       responses:
         200:
           description: "Successful response to a query regarding the status of a zone"
-          schema:
-            $ref: "#/definitions/inline_response_200_4"
           examples:
             application/json:
               zoneInfo:
@@ -81,6 +81,10 @@ paths:
                 numberOfUnserviceableAccessPoints: "1"
                 numberOfUsers: "10"
                 resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01"
+          schema:
+            properties:
+              zoneInfo:
+                $ref: "#/definitions/ZoneInfo"
   /zones/{zoneId}/accessPoints:
     get:
       tags:
@@ -109,8 +113,6 @@ paths:
         200:
           description: "Successful response to a query a named set of access point\
             \ status request"
-          schema:
-            $ref: "#/definitions/inline_response_200_5"
           examples:
             application/json:
               accessPointList:
@@ -150,6 +152,10 @@ paths:
                   interestRealm: "NJ"
                   resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints/ap003"
                 resourceURL: "http://example.com/etsi-013/location/v1/zones/zone01/accessPoints"
+          schema:
+            properties:
+              accessPointList:
+                $ref: "#/definitions/AccessPointList"
   /zones/{zoneId}/accessPoints/{accessPointId}:
     get:
       tags:
@@ -176,8 +182,6 @@ paths:
         200:
           description: "Successful response to a query a named set of access point\
             \ status request"
-          schema:
-            $ref: "#/definitions/inline_response_200_6"
           examples:
             application/json:
               accessPointInfo:
@@ -192,6 +196,10 @@ paths:
                 numberOfUsers: "5"
                 interestRealm: "LA"
                 resourceURL: "http://example.com/etsi-013/location/v1/zones/zone001/accessPoints/ap001"
+          schema:
+            properties:
+              accessPointInfo:
+                $ref: "#/definitions/AccessPointInfo"
   /users:
     get:
       tags:
@@ -219,8 +227,6 @@ paths:
       responses:
         200:
           description: "Successful response to a query users within a zone request"
-          schema:
-            $ref: "#/definitions/inline_response_200_7"
           examples:
             application/json:
               userList:
@@ -246,6 +252,10 @@ paths:
                   zoneId: "zone02"
                   resourceURL: "http://example.com/etsi-013/location/v1/users/acr%3A192.0.2.5"
                 resourceURL: "http://example.com/etsi-013/location/v1/users"
+          schema:
+            properties:
+              userList:
+                $ref: "#/definitions/UserList"
   /users/{userId}:
     get:
       tags:
@@ -265,8 +275,6 @@ paths:
       responses:
         200:
           description: "Successful response to a query users within a zone request"
-          schema:
-            $ref: "#/definitions/inline_response_200_8"
           examples:
             application/json:
               userInfo:
@@ -280,6 +288,10 @@ paths:
                   altitude: "10.0"
                   accuracy: "0"
                 contextLocationInfo: "GroundFloor"
+          schema:
+            properties:
+              userInfo:
+                $ref: "#/definitions/UserInfo"
   /subscriptions/zonalTraffic:
     get:
       tags:
@@ -293,8 +305,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve zonal traffic subscriptions"
-          schema:
-            $ref: "#/definitions/inline_response_200_9"
           examples:
             application/json:
               notificationSubscriptionList:
@@ -314,6 +324,8 @@ paths:
                   interestRealm: "LA"
                   userEventCriteria: "Transferring"
                 resourceURL: "http://example.com/etsi-013/location/v1/zonalTraffic"
+          schema:
+            $ref: "#/definitions/inline_response_200_3"
     post:
       tags:
       - "subscriptions"
@@ -333,8 +345,6 @@ paths:
       responses:
         201:
           description: "Response to create new zonal traffic subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201"
           examples:
             application/json:
               zonalTrafficSubscription:
@@ -345,6 +355,10 @@ paths:
                 zoneId: "zone01"
                 interestRealm: "LA"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: "#/definitions/ZonalTrafficSubscription"
   /subscriptions/zonalTraffic/{subscriptionId}:
     get:
       tags:
@@ -364,8 +378,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve individual zonal traffic subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201"
           examples:
             application/json:
               zonalTrafficSubscription:
@@ -376,6 +388,10 @@ paths:
                 zoneId: "zone01"
                 interestRealm: "LA"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: "#/definitions/ZonalTrafficSubscription"
     put:
       tags:
       - "subscriptions"
@@ -401,8 +417,6 @@ paths:
       responses:
         200:
           description: "Response to update individual zonal traffic subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201"
           examples:
             application/json:
               zonalTrafficSubscription:
@@ -413,6 +427,10 @@ paths:
                 zoneId: "zone01"
                 interestRealm: "LA"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: "#/definitions/ZonalTrafficSubscription"
     delete:
       tags:
       - "subscriptions"
@@ -444,8 +462,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve user tracking subscriptions"
-          schema:
-            $ref: "#/definitions/inline_response_200_10"
           examples:
             application/json:
               notificationSubscriptionList:
@@ -463,6 +479,8 @@ paths:
                   address: "acr:192.0.2.2"
                   userEventCriteria: "Transferring"
                 resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/userTracking"
+          schema:
+            $ref: "#/definitions/inline_response_200_4"
     post:
       tags:
       - "subscriptions"
@@ -482,8 +500,6 @@ paths:
       responses:
         201:
           description: "Response to create new user tracking subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201_1"
           examples:
             application/json:
               userTrackingSubscription:
@@ -493,6 +509,10 @@ paths:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: "#/definitions/UserTrackingSubscription"
   /subscriptions/userTracking/{subscriptionId}:
     get:
       tags:
@@ -512,8 +532,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve individual user tracking subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201_1"
           examples:
             application/json:
               userTrackingSubscription:
@@ -523,6 +541,10 @@ paths:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: "#/definitions/UserTrackingSubscription"
     put:
       tags:
       - "subscriptions"
@@ -548,8 +570,6 @@ paths:
       responses:
         200:
           description: "Response to update individual user tracking subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201_1"
           examples:
             application/json:
               userTrackingSubscription:
@@ -559,6 +579,10 @@ paths:
                   notifyURL: "http://clientApp.example.com/location_notifications/123456"
                 address: "acr:192.0.2.1"
                 userEventCriteria: "Transferring"
+          schema:
+            properties:
+              userTrackingSubscription:
+                $ref: "#/definitions/UserTrackingSubscription"
     delete:
       tags:
       - "subscriptions"
@@ -590,8 +614,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve zone status subscriptions"
-          schema:
-            $ref: "#/definitions/inline_response_200_11"
           examples:
             application/json:
               notificationSubscriptionList:
@@ -611,6 +633,8 @@ paths:
                   numberOfUsersAPThreshold: "50"
                   operationStatus: "Serviceable"
                 resourceURL: "http://example.com/etsi-013/location/v1/subscriptions/zoneStatus"
+          schema:
+            $ref: "#/definitions/inline_response_200_5"
     post:
       tags:
       - "subscriptions"
@@ -630,8 +654,6 @@ paths:
       responses:
         201:
           description: "Response to create new zone status subscription"
-          schema:
-            $ref: "#/definitions/inline_response_201_2"
           examples:
             application/json:
               zoneStatusSubscription:
@@ -642,6 +664,10 @@ paths:
                 zoneId: "zone01"
                 numberOfUsersZoneThreshold: "500"
                 operationStatus: "Serviceable"
+          schema:
+            properties:
+              zonalTrafficSubscription:
+                $ref: "#/definitions/ZoneStatusSubscription"
   /subscriptions/zoneStatus/{subscriptionId}:
     get:
       tags:
@@ -661,8 +687,6 @@ paths:
       responses:
         200:
           description: "Response to retrieve individual zone status subscription"
-          schema:
-            $ref: "#/definitions/inline_response_200_12"
           examples:
             application/json:
               zoneStatusSubscription:
@@ -673,6 +697,10 @@ paths:
                 zoneId: "zone01"
                 numberOfUsersZoneThreshold: "500"
                 operationStatus: "Serviceable"
+          schema:
+            properties:
+              zoneStatusSubscription:
+                $ref: "#/definitions/ZoneStatusSubscription"
     put:
       tags:
       - "subscriptions"
@@ -698,8 +726,6 @@ paths:
       responses:
         200:
           description: "Response to update individual zone status subscription"
-          schema:
-            $ref: "#/definitions/inline_response_200_12"
           examples:
             application/json:
               zoneStatusSubscription:
@@ -710,6 +736,10 @@ paths:
                 zoneId: "zone01"
                 numberOfUsersZoneThreshold: "500"
                 operationStatus: "Serviceable"
+          schema:
+            properties:
+              zoneStatusSubscription:
+                $ref: "#/definitions/ZoneStatusSubscription"
     delete:
       tags:
       - "subscriptions"
@@ -1280,58 +1310,22 @@ definitions:
       notificationSubscriptionList:
         $ref: "#/definitions/inline_response_200_2_notificationSubscriptionList"
   inline_response_200_3:
-    properties:
-      zoneList:
-        $ref: "#/definitions/ZoneList"
-  inline_response_200_4:
-    properties:
-      zoneInfo:
-        $ref: "#/definitions/ZoneInfo"
-  inline_response_200_5:
-    properties:
-      accessPointList:
-        $ref: "#/definitions/AccessPointList"
-  inline_response_200_6:
-    properties:
-      accessPointInfo:
-        $ref: "#/definitions/AccessPointInfo"
-  inline_response_200_7:
-    properties:
-      userList:
-        $ref: "#/definitions/UserList"
-  inline_response_200_8:
-    properties:
-      userInfo:
-        $ref: "#/definitions/UserInfo"
-  inline_response_200_9:
+    type: "object"
     properties:
       notificationSubscriptionList:
         $ref: "#/definitions/inline_response_200_notificationSubscriptionList"
-  inline_response_201:
-    properties:
-      zonalTrafficSubscription:
-        $ref: "#/definitions/ZonalTrafficSubscription"
-  inline_response_200_10:
+  inline_response_200_4:
+    type: "object"
     properties:
       notificationSubscriptionList:
         $ref: "#/definitions/inline_response_200_1_notificationSubscriptionList"
-  inline_response_201_1:
-    properties:
-      userTrackingSubscription:
-        $ref: "#/definitions/UserTrackingSubscription"
-  inline_response_200_11:
+  inline_response_200_5:
+    type: "object"
     properties:
       notificationSubscriptionList:
         $ref: "#/definitions/inline_response_200_2_notificationSubscriptionList"
-  inline_response_201_2:
-    properties:
-      zonalTrafficSubscription:
-        $ref: "#/definitions/ZoneStatusSubscription"
-  inline_response_200_12:
-    properties:
-      zoneStatusSubscription:
-        $ref: "#/definitions/ZoneStatusSubscription"
   UserTrackingSubscription_callbackReference:
+    type: "object"
     required:
     - "notifyURL"
     properties:

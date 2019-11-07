@@ -16,6 +16,5 @@ type OperationStatus string
 const (
 	SERVICEABLE   OperationStatus = "Serviceable"
 	UNSERVICEABLE OperationStatus = "Unserviceable"
-	//OPSTATUS_ added in order to make this const unique, (already used in other ENUMS for the same API), unknown is also a keyword that cannot be used in go
-	OPSTATUS_UNKNOWN OperationStatus = "Unknown"
+	UNKNOWN       OperationStatus = "Unknown"
 )

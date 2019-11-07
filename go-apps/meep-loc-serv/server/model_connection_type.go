@@ -23,6 +23,5 @@ const (
 	MICRO         ConnectionType = "Micro"
 	MACRO         ConnectionType = "Macro"
 	WIMAX         ConnectionType = "Wimax"
-	//CONTYPE_ added in order to make this const unique, (already used in other ENUMS for the same API), unknown is also a keyword that cannot be used in go
-	CONTYPE_UNKNOWN ConnectionType = "Unknown"
+	UNKNOWN       ConnectionType = "Unknown"
 )

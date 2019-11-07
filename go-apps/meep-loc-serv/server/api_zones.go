@@ -14,17 +14,21 @@ import (
 )
 
 func ZonesByIdGetAps(w http.ResponseWriter, r *http.Request) {
-	zonesByIdGetAps(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func ZonesByIdGetApsById(w http.ResponseWriter, r *http.Request) {
-	zonesByIdGetApsById(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func ZonesGet(w http.ResponseWriter, r *http.Request) {
-	zonesGet(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
 
 func ZonesGetById(w http.ResponseWriter, r *http.Request) {
-	zonesGetById(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }
