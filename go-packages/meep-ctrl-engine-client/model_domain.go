@@ -9,35 +9,25 @@
 
 package client
 
-// Logical network location object
-type NetworkLocation struct {
-
-	// Unique network location ID
+// Operator domain object
+type Domain struct {
+	// Unique domain ID
 	Id string `json:"id,omitempty"`
-
-	// Network location name
+	// Domain name
 	Name string `json:"name,omitempty"`
-
-	// Network location type
+	// Domain type
 	Type_ string `json:"type,omitempty"`
-
-	// Latency in ms for all terminal links within network location
-	TerminalLinkLatency int32 `json:"terminalLinkLatency,omitempty"`
-
-	// Latency variation in ms for all terminal links within network location
-	TerminalLinkLatencyVariation int32 `json:"terminalLinkLatencyVariation,omitempty"`
-
-	// The limit of the traffic supported for all terminal links within the network location
-	TerminalLinkThroughput int32 `json:"terminalLinkThroughput,omitempty"`
-
-	// Packet lost (in terms of percentage) for all terminal links within the network location
-	TerminalLinkPacketLoss float64 `json:"terminalLinkPacketLoss,omitempty"`
-
+	// Latency in ms between zones within domain
+	InterZoneLatency int32 `json:"interZoneLatency,omitempty"`
+	// Latency variation in ms between zones within domain
+	InterZoneLatencyVariation int32 `json:"interZoneLatencyVariation,omitempty"`
+	// The limit of the traffic supported between zones within the domain
+	InterZoneThroughput int32 `json:"interZoneThroughput,omitempty"`
+	// Packet lost (in terms of percentage) between zones within the domain
+	InterZonePacketLoss float64 `json:"interZonePacketLoss,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
-
 	// Key/Value Pair Map (string, string)
 	UserMeta map[string]string `json:"userMeta,omitempty"`
-
-	PhysicalLocations []PhysicalLocation `json:"physicalLocations,omitempty"`
+	Zones    []Zone            `json:"zones,omitempty"`
 }

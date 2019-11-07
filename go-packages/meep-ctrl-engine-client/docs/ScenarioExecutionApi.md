@@ -21,7 +21,7 @@ Activate (deploy) scenario
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
 
 ### Return type
@@ -49,17 +49,17 @@ Retrieve list of active external node service mappings
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
- **optional** | **map[string]interface{}** | optional parameters | nil if no parameters
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **optional** | ***GetActiveNodeServiceMapsOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a map[string]interface{}.
+Optional parameters are passed through a pointer to a GetActiveNodeServiceMapsOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **node** | **string**| Unique node identifier | 
- **type_** | **string**| Exposed service type (ingress or egress) | 
- **service** | **string**| Exposed service name | 
+ **node** | **optional.String**| Unique node identifier | 
+ **type_** | **optional.String**| Exposed service type (ingress or egress) | 
+ **service** | **optional.String**| Exposed service name | 
 
 ### Return type
 
@@ -110,7 +110,7 @@ Send event to active (deployed) scenario
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **type_** | **string**| Event type | 
   **event** | [**Event**](Event.md)| Event to send to active scenario | 
 

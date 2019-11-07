@@ -9,6 +9,16 @@
 
 package client
 
-// MEEP settings - Key/Value Pair Map (string, string)
-type Settings struct {
+// External service exposed internally via specific port
+type EgressService struct {
+	// Service name
+	Name string `json:"name,omitempty"`
+	// Multi-Edge service name, if any
+	MeSvcName string `json:"meSvcName,omitempty"`
+	// External node IP address
+	Ip string `json:"ip,omitempty"`
+	// Service port number
+	Port int32 `json:"port,omitempty"`
+	// Service protocol (TCP or UDP)
+	Protocol string `json:"protocol,omitempty"`
 }

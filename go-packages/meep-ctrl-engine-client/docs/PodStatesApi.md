@@ -17,16 +17,16 @@ Returns pod status info for a list of pods
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
- **optional** | **map[string]interface{}** | optional parameters | nil if no parameters
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+ **optional** | ***GetStatesOpts** | optional parameters | nil if no parameters
 
 ### Optional Parameters
-Optional parameters are passed through a map[string]interface{}.
+Optional parameters are passed through a pointer to a GetStatesOpts struct
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **long** | **string**| Enables detailed stats if true | 
- **type_** | **string**| Pod type | 
+ **long** | **optional.String**| Enables detailed stats if true | 
+ **type_** | **optional.String**| Pod type | 
 
 ### Return type
 

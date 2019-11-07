@@ -9,13 +9,10 @@
 
 package client
 
-// Scenario object
-type Scenario struct {
-
-	// Unique scenario name
-	Name string `json:"name,omitempty"`
-
-	Config *ScenarioConfig `json:"config,omitempty"`
-
-	Deployment *Deployment `json:"deployment,omitempty"`
+// Mobility Event object
+type EventMobility struct {
+	// Name of the network element to be updated
+	ElementName string `json:"elementName,omitempty"`
+	// Destination element identifier
+	Dest string `json:"dest,omitempty"`
 }

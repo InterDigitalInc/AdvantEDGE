@@ -9,9 +9,10 @@
 
 package client
 
-// External Process configuration. NOTE: Only valid if 'isExternal' is set.
-type ExternalConfig struct {
+// Node-specific mapping of exposed internal & external services
+type NodeServiceMaps struct {
+	// Unique external node identifier
+	Node              string           `json:"node,omitempty"`
 	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
-
-	EgressServiceMap []EgressService `json:"egressServiceMap,omitempty"`
+	EgressServiceMap  []EgressService  `json:"egressServiceMap,omitempty"`
 }

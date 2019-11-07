@@ -9,11 +9,8 @@
 
 package client
 
-// POAs In Range Event object
-type EventPoasInRange struct {
-
-	// UE identifier
-	Ue string `json:"ue,omitempty"`
-
-	PoasInRange []string `json:"poasInRange,omitempty"`
+// External Process configuration. NOTE: Only valid if 'isExternal' is set.
+type ExternalConfig struct {
+	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
+	EgressServiceMap  []EgressService  `json:"egressServiceMap,omitempty"`
 }

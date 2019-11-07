@@ -22,7 +22,7 @@ Add new scenario to MEEP store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
   **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
 
@@ -51,7 +51,7 @@ Delete scenario from MEEP store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
 
 ### Return type
@@ -103,7 +103,7 @@ Retrieve scenario from MEEP store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
 
 ### Return type
@@ -155,7 +155,7 @@ Update scenario in MEEP store
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
   **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
 

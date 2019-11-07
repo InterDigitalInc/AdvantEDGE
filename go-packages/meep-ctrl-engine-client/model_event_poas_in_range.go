@@ -9,20 +9,9 @@
 
 package client
 
-// Event object
-type Event struct {
-
-	// Event name
-	Name string `json:"name,omitempty"`
-
-	// Event type
-	Type_ string `json:"type,omitempty"`
-
-	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
-
-	EventMobility *EventMobility `json:"eventMobility,omitempty"`
-
-	EventPoasInRange *EventPoasInRange `json:"eventPoasInRange,omitempty"`
-
-	EventOther *EventOther `json:"eventOther,omitempty"`
+// POAs In Range Event object
+type EventPoasInRange struct {
+	// UE identifier
+	Ue          string   `json:"ue,omitempty"`
+	PoasInRange []string `json:"poasInRange,omitempty"`
 }

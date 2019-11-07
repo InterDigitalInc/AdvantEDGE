@@ -10,14 +10,12 @@
 package client
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"golang.org/x/net/context"
 )
 
 // Linger please
@@ -27,12 +25,15 @@ var (
 
 type ScenarioConfigurationApiService service
 
-/* ScenarioConfigurationApiService Add new scenario to MEEP store
+/*
+ScenarioConfigurationApiService Add new scenario to MEEP store
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param name Scenario name
-@param scenario Scenario to add to MEEP store
-@return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param name Scenario name
+ * @param scenario Scenario to add to MEEP store
+
+
+*/
 func (a *ScenarioConfigurationApiService) CreateScenario(ctx context.Context, name string, scenario Scenario) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
@@ -59,9 +60,7 @@ func (a *ScenarioConfigurationApiService) CreateScenario(ctx context.Context, na
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -79,20 +78,33 @@ func (a *ScenarioConfigurationApiService) CreateScenario(ctx context.Context, na
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }
 
-/* ScenarioConfigurationApiService Delete scenario from MEEP store
+/*
+ScenarioConfigurationApiService Delete scenario from MEEP store
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param name Scenario name
-@return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param name Scenario name
+
+
+*/
 func (a *ScenarioConfigurationApiService) DeleteScenario(ctx context.Context, name string) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
@@ -119,9 +131,7 @@ func (a *ScenarioConfigurationApiService) DeleteScenario(ctx context.Context, na
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -137,19 +147,32 @@ func (a *ScenarioConfigurationApiService) DeleteScenario(ctx context.Context, na
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }
 
-/* ScenarioConfigurationApiService Delete all scenarios in MEEP store
+/*
+ScenarioConfigurationApiService Delete all scenarios in MEEP store
 
- * @param ctx context.Context for authentication, logging, tracing, etc.
- @return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+
+
+*/
 func (a *ScenarioConfigurationApiService) DeleteScenarioList(ctx context.Context) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Delete")
@@ -175,9 +198,7 @@ func (a *ScenarioConfigurationApiService) DeleteScenarioList(ctx context.Context
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -193,27 +214,40 @@ func (a *ScenarioConfigurationApiService) DeleteScenarioList(ctx context.Context
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }
 
-/* ScenarioConfigurationApiService Retrieve scenario from MEEP store
+/*
+ScenarioConfigurationApiService Retrieve scenario from MEEP store
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param name Scenario name
-@return Scenario*/
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param name Scenario name
+
+@return Scenario
+*/
 func (a *ScenarioConfigurationApiService) GetScenario(ctx context.Context, name string) (Scenario, *http.Response, error) {
 	var (
-		localVarHttpMethod = strings.ToUpper("Get")
-		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
-		successPayload     Scenario
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue Scenario
 	)
 
 	// create path and map variables
@@ -234,9 +268,7 @@ func (a *ScenarioConfigurationApiService) GetScenario(ctx context.Context, name 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -245,37 +277,65 @@ func (a *ScenarioConfigurationApiService) GetScenario(ctx context.Context, name 
 	}
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
-		return successPayload, nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHttpResponse, err := a.client.callAPI(r)
 	if err != nil || localVarHttpResponse == nil {
-		return successPayload, localVarHttpResponse, err
+		return localVarReturnValue, localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
 	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return successPayload, localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v Scenario
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
 	}
 
-	if err = json.NewDecoder(localVarHttpResponse.Body).Decode(&successPayload); err != nil {
-		return successPayload, localVarHttpResponse, err
-	}
-
-	return successPayload, localVarHttpResponse, err
+	return localVarReturnValue, localVarHttpResponse, nil
 }
 
-/* ScenarioConfigurationApiService Retrieve list of scenarios in MEEP store
+/*
+ScenarioConfigurationApiService Retrieve list of scenarios in MEEP store
 
- * @param ctx context.Context for authentication, logging, tracing, etc.
- @return ScenarioList*/
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+
+@return ScenarioList
+*/
 func (a *ScenarioConfigurationApiService) GetScenarioList(ctx context.Context) (ScenarioList, *http.Response, error) {
 	var (
-		localVarHttpMethod = strings.ToUpper("Get")
-		localVarPostBody   interface{}
-		localVarFileName   string
-		localVarFileBytes  []byte
-		successPayload     ScenarioList
+		localVarHttpMethod  = strings.ToUpper("Get")
+		localVarPostBody    interface{}
+		localVarFileName    string
+		localVarFileBytes   []byte
+		localVarReturnValue ScenarioList
 	)
 
 	// create path and map variables
@@ -295,9 +355,7 @@ func (a *ScenarioConfigurationApiService) GetScenarioList(ctx context.Context) (
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -306,32 +364,60 @@ func (a *ScenarioConfigurationApiService) GetScenarioList(ctx context.Context) (
 	}
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
-		return successPayload, nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	localVarHttpResponse, err := a.client.callAPI(r)
 	if err != nil || localVarHttpResponse == nil {
-		return successPayload, localVarHttpResponse, err
+		return localVarReturnValue, localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarReturnValue, localVarHttpResponse, err
+	}
+
+	if localVarHttpResponse.StatusCode < 300 {
+		// If we succeed, return the data, otherwise pass on to decode error.
+		err = a.client.decode(&localVarReturnValue, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+		if err == nil {
+			return localVarReturnValue, localVarHttpResponse, err
+		}
+	}
+
 	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return successPayload, localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		if localVarHttpResponse.StatusCode == 200 {
+			var v ScenarioList
+			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHttpResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHttpResponse, newErr
+		}
+
+		return localVarReturnValue, localVarHttpResponse, newErr
 	}
 
-	if err = json.NewDecoder(localVarHttpResponse.Body).Decode(&successPayload); err != nil {
-		return successPayload, localVarHttpResponse, err
-	}
-
-	return successPayload, localVarHttpResponse, err
+	return localVarReturnValue, localVarHttpResponse, nil
 }
 
-/* ScenarioConfigurationApiService Update scenario in MEEP store
+/*
+ScenarioConfigurationApiService Update scenario in MEEP store
 
-* @param ctx context.Context for authentication, logging, tracing, etc.
-@param name Scenario name
-@param scenario Scenario to add to MEEP store
-@return */
+ * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param name Scenario name
+ * @param scenario Scenario to add to MEEP store
+
+
+*/
 func (a *ScenarioConfigurationApiService) SetScenario(ctx context.Context, name string, scenario Scenario) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Put")
@@ -358,9 +444,7 @@ func (a *ScenarioConfigurationApiService) SetScenario(ctx context.Context, name 
 	}
 
 	// to determine the Accept header
-	localVarHttpHeaderAccepts := []string{
-		"application/json",
-	}
+	localVarHttpHeaderAccepts := []string{"application/json"}
 
 	// set Accept header
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
@@ -378,11 +462,21 @@ func (a *ScenarioConfigurationApiService) SetScenario(ctx context.Context, name 
 	if err != nil || localVarHttpResponse == nil {
 		return localVarHttpResponse, err
 	}
-	defer localVarHttpResponse.Body.Close()
-	if localVarHttpResponse.StatusCode >= 300 {
-		bodyBytes, _ := ioutil.ReadAll(localVarHttpResponse.Body)
-		return localVarHttpResponse, reportError("Status: %v, Body: %s", localVarHttpResponse.Status, bodyBytes)
+
+	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
+	localVarHttpResponse.Body.Close()
+	if err != nil {
+		return localVarHttpResponse, err
 	}
 
-	return localVarHttpResponse, err
+	if localVarHttpResponse.StatusCode >= 300 {
+		newErr := GenericSwaggerError{
+			body:  localVarBody,
+			error: localVarHttpResponse.Status,
+		}
+
+		return localVarHttpResponse, newErr
+	}
+
+	return localVarHttpResponse, nil
 }

@@ -11,16 +11,12 @@ package client
 
 // Internal service exposed externally via specific port
 type IngressService struct {
-
 	// Service name (unique or multi-edge)
 	Name string `json:"name,omitempty"`
-
 	// Internal service port number
 	Port int32 `json:"port,omitempty"`
-
 	// Externally-exposed unique service port in range (30000 - 32767)
 	ExternalPort int32 `json:"externalPort,omitempty"`
-
 	// Service protocol (TCP or UDP)
 	Protocol string `json:"protocol,omitempty"`
 }

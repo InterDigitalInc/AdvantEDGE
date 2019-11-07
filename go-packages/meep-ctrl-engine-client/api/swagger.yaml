@@ -18,7 +18,6 @@ basePath: "/v1"
 tags:
 - name: "Scenario Configuration"
 - name: "Scenario Execution"
-- name: "MEEP Settings"
 - name: "Pod States"
 schemes:
 - "http"
@@ -227,18 +226,21 @@ paths:
         required: false
         type: "string"
         x-exportParamName: "Node"
+        x-optionalDataType: "String"
       - name: "type"
         in: "query"
         description: "Exposed service type (ingress or egress)"
         required: false
         type: "string"
         x-exportParamName: "Type_"
+        x-optionalDataType: "String"
       - name: "service"
         in: "query"
         description: "Exposed service name"
         required: false
         type: "string"
         x-exportParamName: "Service"
+        x-optionalDataType: "String"
       responses:
         200:
           description: "OK"
@@ -292,17 +294,17 @@ paths:
         required: false
         type: "string"
         x-exportParamName: "Long"
+        x-optionalDataType: "String"
       - name: "type"
         in: "query"
         description: "Pod type"
         required: false
         type: "string"
         x-exportParamName: "Type_"
+        x-optionalDataType: "String"
       responses:
         200:
           description: "successful operation"
-          schema:
-            $ref: "#/definitions/PodsStatus"
           examples:
             application/json:
               podsStatus:
@@ -317,12 +319,13 @@ paths:
                 podScheduled: "True"
                 podUnschedulable: "False"
                 podConditionError: "containers with unready status: [myshel]"
-                containerStatusesMsg: null
                 nbOkContainers: "0"
                 nbTotalContainers: "1"
                 nbPodRestart: "15005"
                 logicalState: "Terminating"
                 startTime: "2018-09-10 14:24:00 +0000 UTC"
+          schema:
+            $ref: "#/definitions/PodsStatus"
 definitions:
   ScenarioList:
     type: "object"
@@ -991,7 +994,6 @@ definitions:
         podScheduled: "True"
         podUnschedulable: "False"
         podConditionError: "containers with unready status: [myshel]"
-        containerStatusesMsg: null
         nbOkContainers: "0"
         nbTotalContainers: "1"
         nbPodRestart: "15005"
@@ -1027,14 +1029,6 @@ parameters:
     schema:
       $ref: "http://localhost:8291/meep-model.yaml#/definitions/Event"
     x-exportParamName: "Event"
-  Settings:
-    in: "body"
-    name: "settings"
-    description: "MEEP Settings"
-    required: true
-    schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Settings"
-    x-exportParamName: "Settings"
 responses:
   Std200:
     description: "OK"

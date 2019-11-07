@@ -9,21 +9,8 @@
 
 package client
 
-// External service exposed internally via specific port
-type EgressService struct {
-
-	// Service name
-	Name string `json:"name,omitempty"`
-
-	// Multi-Edge service name, if any
-	MeSvcName string `json:"meSvcName,omitempty"`
-
-	// External node IP address
-	Ip string `json:"ip,omitempty"`
-
-	// Service port number
-	Port int32 `json:"port,omitempty"`
-
-	// Service protocol (TCP or UDP)
-	Protocol string `json:"protocol,omitempty"`
+// Other Event object
+type EventOther struct {
+	// Other event string
+	Event string `json:"event,omitempty"`
 }

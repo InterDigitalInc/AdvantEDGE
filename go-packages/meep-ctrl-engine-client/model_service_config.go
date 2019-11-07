@@ -9,7 +9,11 @@
 
 package client
 
-// Event list object
-type EventList struct {
-	Events []Event `json:"events,omitempty"`
+// Service object
+type ServiceConfig struct {
+	// Unique service name
+	Name string `json:"name,omitempty"`
+	// Multi-Edge service name, if any
+	MeSvcName string        `json:"meSvcName,omitempty"`
+	Ports     []ServicePort `json:"ports,omitempty"`
 }

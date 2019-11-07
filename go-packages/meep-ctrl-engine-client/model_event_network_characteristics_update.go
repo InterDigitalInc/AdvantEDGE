@@ -9,15 +9,18 @@
 
 package client
 
-// Service port object
-type ServicePort struct {
-
-	// Protocol that the application is using (TCP or UDP)
-	Protocol string `json:"protocol,omitempty"`
-
-	// Port number that the service is listening on
-	Port int32 `json:"port,omitempty"`
-
-	// External port number on which to expose the application (30000 - 32767)  <li>Only one application allowed per external port <li>Scenario builder must configure to prevent conflicts
-	ExternalPort int32 `json:"externalPort,omitempty"`
+// Network Characteristics update Event object
+type EventNetworkCharacteristicsUpdate struct {
+	// Name of the network element to be updated
+	ElementName string `json:"elementName,omitempty"`
+	// Type of the network element to be updated
+	ElementType string `json:"elementType,omitempty"`
+	// Latency in ms
+	Latency int32 `json:"latency,omitempty"`
+	// Latency variation in ms
+	LatencyVariation int32 `json:"latencyVariation,omitempty"`
+	// Throughput limit
+	Throughput int32 `json:"throughput,omitempty"`
+	// Packet loss percentage
+	PacketLoss float64 `json:"packetLoss,omitempty"`
 }

@@ -9,9 +9,10 @@
 
 package client
 
-// Other Event object
-type EventOther struct {
-
-	// Other event string
-	Event string `json:"event,omitempty"`
+// GPU configuration object
+type GpuConfig struct {
+	// Requested GPU type
+	Type_ string `json:"type,omitempty"`
+	// Number of GPUs requested
+	Count int32 `json:"count,omitempty"`
 }
