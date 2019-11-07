@@ -9,9 +9,10 @@
 
 package model
 
-// External Process configuration. NOTE: Only valid if 'isExternal' is set.
-type ExternalConfig struct {
-	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
-
-	EgressServiceMap []EgressService `json:"egressServiceMap,omitempty"`
+// Scenario object
+type Scenario struct {
+	// Unique scenario name
+	Name       string          `json:"name,omitempty"`
+	Config     *ScenarioConfig `json:"config,omitempty"`
+	Deployment *Deployment     `json:"deployment,omitempty"`
 }

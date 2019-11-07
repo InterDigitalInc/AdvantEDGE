@@ -9,21 +9,14 @@
 
 package model
 
-// External service exposed internally via specific port
-type EgressService struct {
-
-	// Service name
+// Internal service exposed externally via specific port
+type IngressService struct {
+	// Service name (unique or multi-edge)
 	Name string `json:"name,omitempty"`
-
-	// Multi-Edge service name, if any
-	MeSvcName string `json:"meSvcName,omitempty"`
-
-	// External node IP address
-	Ip string `json:"ip,omitempty"`
-
-	// Service port number
+	// Internal service port number
 	Port int32 `json:"port,omitempty"`
-
+	// Externally-exposed unique service port in range (30000 - 32767)
+	ExternalPort int32 `json:"externalPort,omitempty"`
 	// Service protocol (TCP or UDP)
 	Protocol string `json:"protocol,omitempty"`
 }

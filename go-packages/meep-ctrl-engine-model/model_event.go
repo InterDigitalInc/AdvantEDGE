@@ -9,18 +9,14 @@
 
 package model
 
-// Internal service exposed externally via specific port
-type IngressService struct {
-
-	// Service name (unique or multi-edge)
+// Event object
+type Event struct {
+	// Event name
 	Name string `json:"name,omitempty"`
-
-	// Internal service port number
-	Port int32 `json:"port,omitempty"`
-
-	// Externally-exposed unique service port in range (30000 - 32767)
-	ExternalPort int32 `json:"externalPort,omitempty"`
-
-	// Service protocol (TCP or UDP)
-	Protocol string `json:"protocol,omitempty"`
+	// Event type
+	Type_                             string                             `json:"type,omitempty"`
+	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
+	EventMobility                     *EventMobility                     `json:"eventMobility,omitempty"`
+	EventPoasInRange                  *EventPoasInRange                  `json:"eventPoasInRange,omitempty"`
+	EventOther                        *EventOther                        `json:"eventOther,omitempty"`
 }

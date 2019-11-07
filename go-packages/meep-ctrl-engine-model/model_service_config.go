@@ -9,11 +9,11 @@
 
 package model
 
-type Release struct {
-
-	// Release name
+// Service object
+type ServiceConfig struct {
+	// Unique service name
 	Name string `json:"name,omitempty"`
-
-	// Current release state
-	State string `json:"state,omitempty"`
+	// Multi-Edge service name, if any
+	MeSvcName string        `json:"meSvcName,omitempty"`
+	Ports     []ServicePort `json:"ports,omitempty"`
 }

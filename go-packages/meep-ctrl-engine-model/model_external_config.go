@@ -9,14 +9,8 @@
 
 package model
 
-// Service object
-type ServiceConfig struct {
-
-	// Unique service name
-	Name string `json:"name,omitempty"`
-
-	// Multi-Edge service name, if any
-	MeSvcName string `json:"meSvcName,omitempty"`
-
-	Ports []ServicePort `json:"ports,omitempty"`
+// External Process configuration. NOTE: Only valid if 'isExternal' is set.
+type ExternalConfig struct {
+	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
+	EgressServiceMap  []EgressService  `json:"egressServiceMap,omitempty"`
 }

@@ -11,38 +11,26 @@ package model
 
 // Physical location object
 type PhysicalLocation struct {
-
 	// Unique physical location ID
 	Id string `json:"id,omitempty"`
-
 	// Physical location name
 	Name string `json:"name,omitempty"`
-
 	// Physical location type
 	Type_ string `json:"type,omitempty"`
-
 	// true: Physical location is external to MEEP false: Physical location is internal to MEEP
-	IsExternal bool `json:"isExternal,omitempty"`
-
+	IsExternal              bool     `json:"isExternal,omitempty"`
 	NetworkLocationsInRange []string `json:"networkLocationsInRange,omitempty"`
-
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
-
 	// Key/Value Pair Map (string, string)
-	UserMeta map[string]string `json:"userMeta,omitempty"`
-
-	Processes []Process `json:"processes,omitempty"`
-
+	UserMeta  map[string]string `json:"userMeta,omitempty"`
+	Processes []Process         `json:"processes,omitempty"`
 	// Latency in ms between the physical location and the network (wired interface, air interface)
 	LinkLatency int32 `json:"linkLatency,omitempty"`
-
 	// Latency variation in ms between the physical location and the network (wired interface, air interface)
 	LinkLatencyVariation int32 `json:"linkLatencyVariation,omitempty"`
-
 	// The limit of the traffic supported between the physical location and the network (wired interface, air interface)
 	LinkThroughput int32 `json:"linkThroughput,omitempty"`
-
 	// Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
 	LinkPacketLoss float64 `json:"linkPacketLoss,omitempty"`
 }

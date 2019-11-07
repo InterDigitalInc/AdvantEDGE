@@ -9,12 +9,12 @@
 
 package model
 
-// GPU configuration object
-type GpuConfig struct {
-
-	// Requested GPU type
-	Type_ string `json:"type,omitempty"`
-
-	// Number of GPUs requested
-	Count int32 `json:"count,omitempty"`
+// Service port object
+type ServicePort struct {
+	// Protocol that the application is using (TCP or UDP)
+	Protocol string `json:"protocol,omitempty"`
+	// Port number that the service is listening on
+	Port int32 `json:"port,omitempty"`
+	// External port number on which to expose the application (30000 - 32767)  <li>Only one application allowed per external port <li>Scenario builder must configure to prevent conflicts
+	ExternalPort int32 `json:"externalPort,omitempty"`
 }

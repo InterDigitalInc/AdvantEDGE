@@ -9,11 +9,10 @@
 
 package model
 
-// POAs In Range Event object
-type EventPoasInRange struct {
-
-	// UE identifier
-	Ue string `json:"ue,omitempty"`
-
-	PoasInRange []string `json:"poasInRange,omitempty"`
+// GPU configuration object
+type GpuConfig struct {
+	// Requested GPU type
+	Type_ string `json:"type,omitempty"`
+	// Number of GPUs requested
+	Count int32 `json:"count,omitempty"`
 }

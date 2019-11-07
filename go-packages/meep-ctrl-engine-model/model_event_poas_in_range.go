@@ -9,13 +9,9 @@
 
 package model
 
-// Scenario object
-type Scenario struct {
-
-	// Unique scenario name
-	Name string `json:"name,omitempty"`
-
-	Config *ScenarioConfig `json:"config,omitempty"`
-
-	Deployment *Deployment `json:"deployment,omitempty"`
+// POAs In Range Event object
+type EventPoasInRange struct {
+	// UE identifier
+	Ue          string   `json:"ue,omitempty"`
+	PoasInRange []string `json:"poasInRange,omitempty"`
 }

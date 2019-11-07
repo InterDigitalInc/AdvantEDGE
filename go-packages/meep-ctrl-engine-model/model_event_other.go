@@ -9,13 +9,8 @@
 
 package model
 
-// Node-specific mapping of exposed internal & external services
-type NodeServiceMaps struct {
-
-	// Unique external node identifier
-	Node string `json:"node,omitempty"`
-
-	IngressServiceMap []IngressService `json:"ingressServiceMap,omitempty"`
-
-	EgressServiceMap []EgressService `json:"egressServiceMap,omitempty"`
+// Other Event object
+type EventOther struct {
+	// Other event string
+	Event string `json:"event,omitempty"`
 }
