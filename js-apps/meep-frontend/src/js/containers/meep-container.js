@@ -255,10 +255,8 @@ class MeepContainer extends Component {
   startAutomaticRefresh() {
     _.defer(() => {
       var value = this.props.refreshInterval;
-      if (isNaN(value) || value < 500 || value > 60000) {
-        clearInterval(this.refreshIntervalTimer);
-      } else {
-        clearInterval(this.refreshIntervalTimer);
+      clearInterval(this.refreshIntervalTimer);
+      if (!isNaN(value) && value >= 500 && value <= 60000) {
         this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
       }
     });

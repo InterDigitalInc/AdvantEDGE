@@ -46,36 +46,30 @@ class SettingsPageContainer extends Component {
     };
   }
 
-  setAutomaticRefresh(interval) {
-    this.props.setAutomaticRefresh(interval);
-  }
-
-  validateInterval(interval)  {
-    if (interval < 500 || 60000 < interval) {
+  validateInterval(val) {
+    if (isNaN(val) || val < 500 || 60000 < val) {
       return false;
     }
     return true;
   }
 
-  intervalChanged(val) {
-    if (!this.validateInterval(val)) {
-      this.props.changeRefreshInterval(val);
-      this.props.stopRefresh();
-      this.setState({error: true});
-    } else {
-      this.props.changeRefreshInterval(val);
+  handleIntervalChange(val) {
+    this.props.changeRefreshInterval(val);
+    if (this.validateInterval(val)) {
       this.props.startRefresh();
       this.setState({error: false});
+    } else {
+      this.props.stopRefresh();
+      this.setState({error: true});
     }
   }
 
-  handleCheckboxChange(e) {
-    if (e.target.checked) {
-      if (this.validateInterval(this.props.refreshInterval)) {
-        this.props.startRefresh();
-      } else {
-        this.props.stopRefresh();
-      }
+  handleCheckboxChange(val) {
+    this.props.setAutomaticRefresh(val)
+    if (val && this.validateInterval(this.props.refreshInterval)) {
+      this.props.startRefresh();
+    } else {
+      this.props.stopRefresh();
     }
   }
 
@@ -128,9 +122,7 @@ class SettingsPageContainer extends Component {
                     <div style={{marginTop: 20}}>
                       <Checkbox
                         checked={this.props.automaticRefresh}
-                        onChange={e => {
-                          this.props.setAutomaticRefresh(e.target.checked);}
-                        }
+                        onChange={e => this.handleCheckboxChange(e.target.checked)}
                         data-cy={SET_EXEC_REFRESH_CHECKBOX}>
                           Automatic refresh:
                       </Checkbox>
@@ -139,7 +131,7 @@ class SettingsPageContainer extends Component {
                   <GridCell span={2}>
                     <TextField outlined style={this.styles().interval}
                       label="Interval (ms)"
-                      onChange={(e) => this.intervalChanged(e.target.value)}
+                      onChange={(e) => this.handleIntervalChange(e.target.value)}
                       value={this.props.refreshInterval}
                       disabled={!this.props.automaticRefresh}
                       data-cy={SET_EXEC_REFRESH_INT}
