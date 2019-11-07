@@ -10,10 +10,32 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func GetUeLocation(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	ueId := vars["ueId"]
+
+	userInfo := getLocalDBUserInfo(ueId)
+
+	if userInfo != nil {
+		jsonResponse, err := json.Marshal(userInfo)
+
+		fmt.Fprintf(w, string(jsonResponse))
+
+		if err != nil {
+			log.Printf(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 	w.WriteHeader(http.StatusOK)
+
 }

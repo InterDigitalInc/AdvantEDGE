@@ -14,76 +14,61 @@ import (
 )
 
 func UserTrackingSubDelById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	userTrackingSubDelById(w, r)
 }
 
 func UserTrackingSubGet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	userTrackingSubGet(w, r)
 }
 
 func UserTrackingSubGetById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	userTrackingSubGetById(w, r)
 }
 
 func UserTrackingSubPost(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	userTrackingSubPost(w, r)
 }
 
 func UserTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	userTrackingSubPutById(w, r)
 }
 
 func ZonalTrafficSubDelById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zonalTrafficSubDelById(w, r)
 }
 
 func ZonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zonalTrafficSubGet(w, r)
 }
 
 func ZonalTrafficSubGetById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zonalTrafficSubGetById(w, r)
 }
 
 func ZonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zonalTrafficSubPost(w, r)
 }
 
 func ZonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zonalTrafficSubPutById(w, r)
 }
 
 func ZoneStatusDelById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zoneStatusDelById(w, r)
 }
 
 func ZoneStatusGet(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zoneStatusGet(w, r)
 }
 
 func ZoneStatusGetById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zoneStatusGetById(w, r)
 }
 
 func ZoneStatusPost(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zoneStatusPost(w, r)
 }
 
 func ZoneStatusPutById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	zoneStatusPutById(w, r)
 }

@@ -10,25 +10,99 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func CreateUeState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
+	vars := mux.Vars(r)
+	ueId := vars["ueId"]
+
+	val := getUe(ueId)
+
+	if val == nil {
+		addUe(ueId)
+		w.WriteHeader(http.StatusOK)
+	} else { //ue already exists, just restart the counter
+		restartUe(ueId)
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func DeleteUeState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
+	vars := mux.Vars(r)
+	ueId := vars["ueId"]
+
+	val := getUe(ueId)
+
+	if val != nil {
+		deleteUe(ueId)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+
 }
 
 func GetUeState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
+	vars := mux.Vars(r)
+	ueId := vars["ueId"]
+
+	val := getUe(ueId)
+
+	if val != nil {
+
+		// Format response
+		jsonResponse, err := json.Marshal(val)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Send response
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, string(jsonResponse))
+
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func UpdateUeState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
+	vars := mux.Vars(r)
+	ueId := vars["ueId"]
+
+	val := getUe(ueId)
+
+	if val != nil {
+		// Retrieve UeState from request body
+		ueState := new(UeState)
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&ueState)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		//update values in the state object
+		//val.Duration -- no need to update this one, we keep as is
+		val.TrafficBw = ueState.TrafficBw
+		updateUe(ueId, *val)
+		w.WriteHeader(http.StatusOK)
+
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 }
