@@ -59,7 +59,14 @@ export const createMeepState = ({ui}) => {
     },
     exec: {
       type: TYPE_EXEC,
-      state: EXEC_STATE_IDLE,
+      state: {
+        scenario: EXEC_STATE_IDLE,
+        terminateButtonEnabled: false,
+        corePodsPhases: [],
+        scenarioPodsPhases: [],
+        serviceMaps: [],
+        okToTerminate: false
+      },
       scenario: {
         name: NO_SCENARIO_NAME
       },

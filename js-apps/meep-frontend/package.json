@@ -8,7 +8,7 @@
     "test:verbose": "jest --verbose true",
     "test:coverage": "jest --verbose true --coverage --colors",
     "build": "webpack",
-    "build:dev": "webpack-serve --port 8091 --host 10.3.16.73"
+    "build:dev": "webpack-serve --port 8091 --host 10.3.16.137"
   },
   "author": "",
   "license": "ISC",

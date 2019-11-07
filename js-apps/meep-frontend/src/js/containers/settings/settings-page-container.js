@@ -21,9 +21,6 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 
-const VIS_CONFIGURATION_MODE_LABEL = 'VIS Configuration Mode';
-const SHOW_DASHBOARD_CONFIG_LABEL = 'Show Dashboard Config';
-
 import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
@@ -32,9 +29,13 @@ import {
 } from '../../state/ui';
 
 import {
+  PAGE_SETTINGS,
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
-  PAGE_SETTINGS
+  SET_VIS_CFG_CHECKBOX,
+  SET_VIS_CFG_LABEL,
+  SET_DASHBOARD_CFG_CHECKBOX,
+  SET_DASHBOARD_CFG_LABEL
 } from '../../meep-constants';
 
 class SettingsPageContainer extends Component {
@@ -45,36 +46,30 @@ class SettingsPageContainer extends Component {
     };
   }
 
-  setAutomaticRefresh(interval) {
-    this.props.setAutomaticRefresh(interval);
-  }
-
-  validateInterval(interval)  {
-    if (interval < 500 || 60000 < interval) {
+  validateInterval(val) {
+    if (isNaN(val) || val < 500 || 60000 < val) {
       return false;
     }
     return true;
   }
 
-  intervalChanged(val) {
-    if (!this.validateInterval(val)) {
-      this.props.changeRefreshInterval(val);
-      this.props.stopRefresh();
-      this.setState({error: true});
-    } else {
-      this.props.changeRefreshInterval(val);
+  handleIntervalChange(val) {
+    this.props.changeRefreshInterval(val);
+    if (this.validateInterval(val)) {
       this.props.startRefresh();
       this.setState({error: false});
+    } else {
+      this.props.stopRefresh();
+      this.setState({error: true});
     }
   }
 
-  handleCheckboxChange(e) {
-    if (e.target.checked) {
-      if (this.validateInterval(this.props.refreshInterval)) {
-        this.props.startRefresh();
-      } else {
-        this.props.stopRefresh();
-      }
+  handleCheckboxChange(val) {
+    this.props.setAutomaticRefresh(val);
+    if (val && this.validateInterval(this.props.refreshInterval)) {
+      this.props.startRefresh();
+    } else {
+      this.props.stopRefresh();
     }
   }
 
@@ -114,7 +109,7 @@ class SettingsPageContainer extends Component {
           <GridInner>
             <GridCell span={12} style={styles.inner}>
 
-              <Elevation className="component-style" z={2} style={{marginBottom: 10}}>
+              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
                 <Grid>
                   <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
                     <div>
@@ -127,9 +122,7 @@ class SettingsPageContainer extends Component {
                     <div style={{marginTop: 20}}>
                       <Checkbox
                         checked={this.props.automaticRefresh}
-                        onChange={e => {
-                          this.props.setAutomaticRefresh(e.target.checked);}
-                        }
+                        onChange={e => this.handleCheckboxChange(e.target.checked)}
                         data-cy={SET_EXEC_REFRESH_CHECKBOX}>
                           Automatic refresh:
                       </Checkbox>
@@ -138,7 +131,7 @@ class SettingsPageContainer extends Component {
                   <GridCell span={2}>
                     <TextField outlined style={this.styles().interval}
                       label="Interval (ms)"
-                      onChange={(e) => this.intervalChanged(e.target.value)}
+                      onChange={(e) => this.handleIntervalChange(e.target.value)}
                       value={this.props.refreshInterval}
                       disabled={!this.props.automaticRefresh}
                       data-cy={SET_EXEC_REFRESH_INT}
@@ -161,26 +154,26 @@ class SettingsPageContainer extends Component {
                 </Grid>
               </Elevation>
 
-              <Elevation className="component-style" z={2}>
+              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
                 <Grid>
-                  <GridCell span={6}>
-                    <CheckableSettingItem
-                      title='Development'
-                      stateItem={this.props.devMode}
-                      changeStateItem={this.props.changeDevMode}
-                      stateItemName={VIS_CONFIGURATION_MODE_LABEL}
-                    />
-                  </GridCell>
-                  <GridCell span={6}>
-                    <CheckableSettingItem
-                      title='Dashboard Config'
-                      stateItem={this.props.showDashboardConfig}
-                      changeStateItem={this.props.changeShowDashboardConfig}
-                      stateItemName={SHOW_DASHBOARD_CONFIG_LABEL}
-                    />
+                  <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
+                    <div>
+                      <span className="mdc-typography--headline6">Development: </span>
+                    </div>
                   </GridCell>
                 </Grid>
-                
+                <CheckableSettingItem
+                  stateItem={this.props.devMode}
+                  changeStateItem={this.props.changeDevMode}
+                  stateItemName={SET_VIS_CFG_LABEL}
+                  cydata={SET_VIS_CFG_CHECKBOX}
+                />
+                <CheckableSettingItem
+                  stateItem={this.props.showDashboardConfig}
+                  changeStateItem={this.props.changeShowDashboardConfig}
+                  stateItemName={SET_DASHBOARD_CFG_LABEL}
+                  cydata={SET_DASHBOARD_CFG_CHECKBOX}
+                />
               </Elevation>
 
             </GridCell>
@@ -191,29 +184,21 @@ class SettingsPageContainer extends Component {
   }
 }
 
-const CheckableSettingItem = ({title, stateItem, changeStateItem, stateItemName}) => {
+const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName, cydata}) => {
   return (
-    <>
-    <Grid>
-      <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10, marginBottom: -20}}>
-        <div>
-          <span className="mdc-typography--headline6">{title}: </span>
-        </div>
-      </GridCell>
-    </Grid>
     <Grid span={12} style={{marginTop: 10}}>
       <GridCell span={12}>
-        <div style={{paddingTop: 20, paddingBottom: 20}}>
+        <div>
           <Checkbox
             checked={stateItem}
             onChange={e => changeStateItem(e.target.checked)}
+            data-cy={cydata}
           >
             {stateItemName}
           </Checkbox>
         </div>
       </GridCell>
     </Grid>
-    </>
   );
 };
 
