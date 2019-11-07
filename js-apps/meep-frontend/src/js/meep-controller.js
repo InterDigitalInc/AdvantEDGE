@@ -30,14 +30,9 @@ import meepReducer from './state/meep-reducer';
 import { execDisplayedScenarioMiddleware } from './middlewares/exec-displayed-scenario-middleware';
 import { fixMetricsValuesMiddleware } from './middlewares/fix-metrics-values-middleware';
 
-import {
-  saveUIState,
-  loadUIState
-} from './util/persist';
+import { saveUIState, loadUIState } from './util/persist';
 
-import { 
-  createMeepState
-} from './util/meep-utils';
+import { createMeepState } from './util/meep-utils';
 
 // UI Components
 import MeepContainer from './containers/meep-container';
@@ -51,9 +46,17 @@ var loadedUIState = loadUIState();
 //   console.log('state: ', store.getState());
 // };
 
-const meepState = createMeepState({ui: loadedUIState});
+const meepState = createMeepState({ ui: loadedUIState });
 
-const meepStore = createStore(meepReducer, meepState, applyMiddleware(thunk, execDisplayedScenarioMiddleware, fixMetricsValuesMiddleware));
+const meepStore = createStore(
+  meepReducer,
+  meepState,
+  applyMiddleware(
+    thunk,
+    execDisplayedScenarioMiddleware,
+    fixMetricsValuesMiddleware
+  )
+);
 window.meepStore = meepStore;
 
 meepStore.subscribe(() => {

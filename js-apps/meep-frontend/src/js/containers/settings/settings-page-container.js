@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
@@ -57,10 +57,10 @@ class SettingsPageContainer extends Component {
     this.props.changeRefreshInterval(val);
     if (this.validateInterval(val)) {
       this.props.startRefresh();
-      this.setState({error: false});
+      this.setState({ error: false });
     } else {
       this.props.stopRefresh();
-      this.setState({error: true});
+      this.setState({ error: true });
     }
   }
 
@@ -75,9 +75,7 @@ class SettingsPageContainer extends Component {
 
   styles() {
     var styles = {
-      interval: {
-
-      },
+      interval: {},
       errorText: {
         display: 'none'
       },
@@ -98,67 +96,85 @@ class SettingsPageContainer extends Component {
   }
 
   render() {
-
     if (this.props.page !== PAGE_SETTINGS) {
       return null;
     }
 
     return (
-      <div style={{width: '100%'}}>
-        <Grid style={{width: '100%'}}>
+      <div style={{ width: '100%' }}>
+        <Grid style={{ width: '100%' }}>
           <GridInner>
             <GridCell span={12} style={styles.inner}>
-
-              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
+              <Elevation
+                className="component-style"
+                z={2}
+                style={{ paddingBottom: 10, marginBottom: 10 }}
+              >
                 <Grid>
-                  <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
+                  <GridCell
+                    span={12}
+                    style={{ paddingLeft: 10, paddingTop: 10 }}
+                  >
                     <div>
-                      <span className="mdc-typography--headline6">Execution: </span>
+                      <span className="mdc-typography--headline6">
+                        Execution:{' '}
+                      </span>
                     </div>
                   </GridCell>
                 </Grid>
                 <Grid span={12}>
                   <GridCell span={2}>
-                    <div style={{marginTop: 20}}>
+                    <div style={{ marginTop: 20 }}>
                       <Checkbox
                         checked={this.props.automaticRefresh}
-                        onChange={e => this.handleCheckboxChange(e.target.checked)}
-                        data-cy={SET_EXEC_REFRESH_CHECKBOX}>
-                          Automatic refresh:
+                        onChange={e =>
+                          this.handleCheckboxChange(e.target.checked)
+                        }
+                        data-cy={SET_EXEC_REFRESH_CHECKBOX}
+                      >
+                        Automatic refresh:
                       </Checkbox>
                     </div>
                   </GridCell>
                   <GridCell span={2}>
-                    <TextField outlined style={this.styles().interval}
+                    <TextField
+                      outlined
+                      style={this.styles().interval}
                       label="Interval (ms)"
-                      onChange={(e) => this.handleIntervalChange(e.target.value)}
+                      onChange={e => this.handleIntervalChange(e.target.value)}
                       value={this.props.refreshInterval}
                       disabled={!this.props.automaticRefresh}
                       data-cy={SET_EXEC_REFRESH_INT}
                     />
                   </GridCell>
-                  <GridCell span={8}>
-                  </GridCell>
+                  <GridCell span={8}></GridCell>
                 </Grid>
 
                 <Grid>
-                  <GridCell span={2}>
-                  </GridCell>
+                  <GridCell span={2}></GridCell>
                   <GridCell span={2} style={this.styles().errorGridCell}>
                     <p style={this.styles().errorText}>
                       500 &lt; value &lt; 60000
                     </p>
                   </GridCell>
-                  <GridCell span={8}>
-                  </GridCell>
+                  <GridCell span={8}></GridCell>
                 </Grid>
               </Elevation>
 
-              <Elevation className="component-style" z={2} style={{paddingBottom: 10, marginBottom: 10}}>
+              <Elevation
+                className="component-style"
+                z={2}
+                style={{ paddingBottom: 10, marginBottom: 10 }}
+              >
                 <Grid>
-                  <GridCell span={12} style={{paddingLeft: 10, paddingTop: 10}}>
+                  <GridCell
+                    span={12}
+                    style={{ paddingLeft: 10, paddingTop: 10 }}
+                  >
                     <div>
-                      <span className="mdc-typography--headline6">Development: </span>
+                      <span className="mdc-typography--headline6">
+                        Development:{' '}
+                      </span>
                     </div>
                   </GridCell>
                 </Grid>
@@ -175,7 +191,6 @@ class SettingsPageContainer extends Component {
                   cydata={SET_DASHBOARD_CFG_CHECKBOX}
                 />
               </Elevation>
-
             </GridCell>
           </GridInner>
         </Grid>
@@ -184,9 +199,14 @@ class SettingsPageContainer extends Component {
   }
 }
 
-const CheckableSettingItem = ({stateItem, changeStateItem, stateItemName, cydata}) => {
+const CheckableSettingItem = ({
+  stateItem,
+  changeStateItem,
+  stateItemName,
+  cydata
+}) => {
   return (
-    <Grid span={12} style={{marginTop: 10}}>
+    <Grid span={12} style={{ marginTop: 10 }}>
       <GridCell span={12}>
         <div>
           <Checkbox
@@ -235,10 +255,11 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val)),
-    changeRefreshInterval: (val) => dispatch(uiChangeRefreshInterval(val)),
-    changeDevMode: (mode) => dispatch(uiChangeDevMode(mode)),
-    changeShowDashboardConfig: (show) => dispatch(uiExecChangeShowDashboardConfig(show))
+    setAutomaticRefresh: val => dispatch(uiSetAutomaticRefresh(val)),
+    changeRefreshInterval: val => dispatch(uiChangeRefreshInterval(val)),
+    changeDevMode: mode => dispatch(uiChangeDevMode(mode)),
+    changeShowDashboardConfig: show =>
+      dispatch(uiExecChangeShowDashboardConfig(show))
   };
 };
 

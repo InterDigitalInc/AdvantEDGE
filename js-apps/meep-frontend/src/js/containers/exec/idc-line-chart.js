@@ -18,8 +18,11 @@ import _ from 'lodash';
 import * as d3 from 'd3';
 import React from 'react';
 import uuid from 'uuid';
-import {Axis, axisPropsFromTickScale, LEFT, BOTTOM} from 'react-d3-axis';
-import { ME_LATENCY_METRICS, ME_THROUGHPUT_METRICS } from '../../meep-constants';
+import { Axis, axisPropsFromTickScale, LEFT, BOTTOM } from 'react-d3-axis';
+import {
+  ME_LATENCY_METRICS,
+  ME_THROUGHPUT_METRICS
+} from '../../meep-constants';
 import { blue } from '../graph-utils';
 // const Axis = props => {
 //   const axisRef = axis => {
@@ -30,11 +33,10 @@ import { blue } from '../graph-utils';
 // };
 
 const notNull = x => x;
-const IDCLineChart = (props) => {
-  const keyForSvg=props.keyForSvg;
-  
+const IDCLineChart = props => {
+  const keyForSvg = props.keyForSvg;
 
-  const margin = {top: 20, right: 40, bottom: 30, left: 60};
+  const margin = { top: 20, right: 40, bottom: 30, left: 60 };
   let width = props.width - (margin.right + margin.left);
   let yClipping = 45;
   // const width = props.width; // - margin.left - margin.right;
@@ -43,35 +45,48 @@ const IDCLineChart = (props) => {
   const maxForKey = series => key => d3.max(series[key], p => p.value) || 0;
   const maxes = Object.keys(props.series).map(maxForKey(props.series));
   const max = d3.max(maxes);
-  const maxOfYScale = Math.ceil(max/50.0) * 50.0;
+  const maxOfYScale = Math.ceil(max / 50.0) * 50.0;
   const yRange = [0, maxOfYScale];
 
-  const destinations = props.selectedSource ? props.destinations.slice(-props.destinations.length) : [];
+  const destinations = props.selectedSource
+    ? props.destinations.slice(-props.destinations.length)
+    : [];
   const colorRange = destinations.map(s => props.colorForApp[s]);
 
   const flattenSeries = series => {
     return _.flatMap(Object.values(series));
   };
-  const timeRange = d3.extent(flattenSeries(props.series), d => new Date(d.timestamp));
-  const x = d3.scaleTime().domain(timeRange).range([0, width]);
-  const y = d3.scaleLinear().domain(yRange).range([height - yClipping, 0]);
+  const timeRange = d3.extent(
+    flattenSeries(props.series),
+    d => new Date(d.timestamp)
+  );
+  const x = d3
+    .scaleTime()
+    .domain(timeRange)
+    .range([0, width]);
+  const y = d3
+    .scaleLinear()
+    .domain(yRange)
+    .range([height - yClipping, 0]);
   const z = d3.scaleOrdinal().range(colorRange);
 
   // Compute data lines
   const dataLineFromSeries = series => key => {
     let line;
-    
+
     if (series[key]) {
-      line = series[key].filter(notNull).filter(p => p.value)
+      line = series[key]
+        .filter(notNull)
+        .filter(p => p.value)
         .sort((a, b) => {
           return x(new Date(a.timestamp)) - x(new Date(b.timestamp));
         });
     } else {
       line = [];
     }
-    
+
     //TODO: add point at props.startTime and props.endTime
-    
+
     line.key = key;
     return line;
   };
@@ -79,7 +94,8 @@ const IDCLineChart = (props) => {
 
   // dataLines = dataLines.length ? [dataLines[0]] : [];
 
-  const valueLine = d3.line()
+  const valueLine = d3
+    .line()
     .x(function(d) {
       return margin.left + x(new Date(d.timestamp));
     })
@@ -91,10 +107,10 @@ const IDCLineChart = (props) => {
   const lines = dataLines.map((dl, i) => {
     return (
       <path
-        className='line'
+        className="line"
         key={`linechart${i}`}
         d={valueLine(dl)}
-        style={{fill: 'none', 'strokeWidth': 3, 'stroke': z(i)}}
+        style={{ fill: 'none', strokeWidth: 3, stroke: z(i) }}
       />
     );
   });
@@ -110,14 +126,17 @@ const IDCLineChart = (props) => {
       return '';
     }
   };
-  
+
   const chartTitle = chartTitleForType(props.dataType);
 
   const axisWidthOffset = 12;
   const yOffset = 15;
   const meX = d => x(new Date(d.timestamp)) + axisWidthOffset + margin.left;
 
-  const mobilityEventLine = me => `M${meX(me)},${y(yRange[1]) + margin.top + yOffset} L${meX(me)},${y(yRange[0]) + margin.top}`;
+  const mobilityEventLine = me =>
+    `M${meX(me)},${y(yRange[1]) + margin.top + yOffset} L${meX(me)},${y(
+      yRange[0]
+    ) + margin.top}`;
   const mobilityTrianglePolygonPoints = me => {
     const y_ = y(yRange[1]) + margin.top + yOffset;
     return `${meX(me) - 5},${y_} ${meX(me) + 5},${y_} ${meX(me)},${y_ + 10}`;
@@ -125,41 +144,59 @@ const IDCLineChart = (props) => {
   const mobilityEventText = me => `ME from ${me.src} to ${me.dest}`;
 
   const mobilityEventLines = props.mobilityEvents.map(me => {
-    
     return (
       <>
-      <text textAnchor='middle' fontSize='small' fill={blue} x={meX(me)} y={ y(yRange[1]) + margin.top + yOffset - 3} class="small">{me.mobilityEventIndex}</text>
-      <polygon key={uuid()} points={mobilityTrianglePolygonPoints(me)} style={{fill:blue, stroke:blue, strokeWidth:1}}/>
-      <path
-        className='mobilityEventLine'
-        d={mobilityEventLine(me)}
-        id={uuid()}
-        key={me.timestamp}
-        style={{stroke: blue, strokeWidth: 2, fill: 'none', textAnchor: 'middle'}}
-      />
+        <text
+          textAnchor="middle"
+          fontSize="small"
+          fill={blue}
+          x={meX(me)}
+          y={y(yRange[1]) + margin.top + yOffset - 3}
+          class="small"
+        >
+          {me.mobilityEventIndex}
+        </text>
+        <polygon
+          key={uuid()}
+          points={mobilityTrianglePolygonPoints(me)}
+          style={{ fill: blue, stroke: blue, strokeWidth: 1 }}
+        />
+        <path
+          className="mobilityEventLine"
+          d={mobilityEventLine(me)}
+          id={uuid()}
+          key={me.timestamp}
+          style={{
+            stroke: blue,
+            strokeWidth: 2,
+            fill: 'none',
+            textAnchor: 'middle'
+          }}
+        />
       </>
     );
   });
 
-  const mobilityEventTextPathDefs = 
-  <defs>
-    {
-      props.mobilityEvents.map((me, i) => {
-        return <path
-          key={'mobilityEventLinePathDef' + i}
-          id={'mobilityEventLinePathDef' + i}
-          d={mobilityEventLine(me)}
-          className='mobilityEventLinePathDef'
-        />;
-      })
-    }
-  </defs>;
+  const mobilityEventTextPathDefs = (
+    <defs>
+      {props.mobilityEvents.map((me, i) => {
+        return (
+          <path
+            key={'mobilityEventLinePathDef' + i}
+            id={'mobilityEventLinePathDef' + i}
+            d={mobilityEventLine(me)}
+            className="mobilityEventLinePathDef"
+          />
+        );
+      })}
+    </defs>
+  );
 
   const mobilityEventTexts = props.mobilityEvents.map((me, i) => {
-    return(
+    return (
       <text
         key={'mobilityEventLinePath' + i}
-        style={{stroke: 'gray', strokeWidth: 1, fill: 'none'}}
+        style={{ stroke: 'gray', strokeWidth: 1, fill: 'none' }}
       >
         <textPath
           xlinkHref={'mobilityEventLinePathDef' + i}
@@ -169,7 +206,6 @@ const IDCLineChart = (props) => {
         </textPath>
       </text>
     );
-  
   });
 
   // text label for the y axis
@@ -183,75 +219,69 @@ const IDCLineChart = (props) => {
       return '';
     }
   };
-  
+
   const yAxisLabel = labelForType(props.dataType);
 
   return (
-    <svg
-      key={keyForSvg}
-      height={height}
-      width={'100%'}
-    >
+    <svg key={keyForSvg} height={height} width={'100%'}>
       <>
-      <g
-        transform={`translate(${margin.left}, ${margin.top})`}
-      >
-        <Axis 
-          {...axisPropsFromTickScale(y, 10)} 
-          style={{
-            orient: LEFT, tickSizeInner: -width,
-            strokeColor: '#BBBBBB'
-          }}/>
-      </g>
+        <g transform={`translate(${margin.left}, ${margin.top})`}>
+          <Axis
+            {...axisPropsFromTickScale(y, 10)}
+            style={{
+              orient: LEFT,
+              tickSizeInner: -width,
+              strokeColor: '#BBBBBB'
+            }}
+          />
+        </g>
 
-      <g
-        transform={`translate(${margin.left}, ${height - margin.top - 5})`}
-      >
-        <Axis
-          {...axisPropsFromTickScale(x, 10)}
-          style={{
-            orient: BOTTOM,
-            tickSizeInner: -(height - yClipping),
-            strokeColor: '#BBBBBB'
-          }}/>
+        <g transform={`translate(${margin.left}, ${height - margin.top - 5})`}>
+          <Axis
+            {...axisPropsFromTickScale(x, 10)}
+            style={{
+              orient: BOTTOM,
+              tickSizeInner: -(height - yClipping),
+              strokeColor: '#BBBBBB'
+            }}
+          />
 
-        {/* <Axis
+          {/* <Axis
           {...axisPropsFromTickScale(x, 10)}
           style={{
             orient: TOP,
             tickSizeInner: -(height - 2*yClipping),
             strokeColor: '#BBBBBB'
           }}/> */}
-      </g>
+        </g>
 
-      <text
-        className='chartTitle'
-        y={0 + margin.top - 8 }
-        x={width / 2}
-        style={{textAnchor: 'middle'}}
-      >
-        {chartTitle}
-      </text>
+        <text
+          className="chartTitle"
+          y={0 + margin.top - 8}
+          x={width / 2}
+          style={{ textAnchor: 'middle' }}
+        >
+          {chartTitle}
+        </text>
 
-      <text
-        className='yLabel'
-        transform='rotate(-90)'
-        y={0}
-        x={0 - (height / 2)}
-        dy='1em'
-        style={{textAnchor: 'middle'}}
-      >
-        {yAxisLabel}
-      </text>
-      
-      {lines}
-      {mobilityEventLines}
-      {mobilityEventTexts}
-      {mobilityEventTextPathDefs}
+        <text
+          className="yLabel"
+          transform="rotate(-90)"
+          y={0}
+          x={0 - height / 2}
+          dy="1em"
+          style={{ textAnchor: 'middle' }}
+        >
+          {yAxisLabel}
+        </text>
+
+        {lines}
+        {mobilityEventLines}
+        {mobilityEventTexts}
+        {mobilityEventTextPathDefs}
       </>
     </svg>
   );
-  
 };
 
 export default IDCLineChart;

@@ -1,5 +1,21 @@
+/*
+ * Copyright (c) 2019  InterDigital Communications, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
@@ -18,14 +34,9 @@ import IDSelect from '../../components/helper-components/id-select';
 import IDCVis from '../idc-vis';
 import ResizeableContainer from '../resizeable-container';
 
-import {
-  getScenarioNodeChildren,
-  isApp
-} from '../../util/scenario-utils';
+import { getScenarioNodeChildren, isApp } from '../../util/scenario-utils';
 
-import {
-  isDataPointOfType
-} from '../../util/metrics';
+import { isDataPointOfType } from '../../util/metrics';
 
 import {
   execFakeChangeSelectedDestination,
@@ -39,7 +50,6 @@ import {
   uiExecChangeDashboardView2,
   uiExecExpandDashboardConfig
 } from '../../state/ui';
-
 
 import {
   ME_LATENCY_METRICS,
@@ -68,7 +78,7 @@ const styles = {
   },
   slider: {
     container: {
-      marginTop:10,
+      marginTop: 10,
       marginBottom: 10,
       color: greyColor
     },
@@ -88,7 +98,7 @@ function colorArray(dataLength) {
   // const colorScale = d3.interpolateCool;
   // const colorScale = d3.interpolateWarm;
   // const colorScale = d3.interpolateCubehelixDefault;
-  
+
   let colorArray = [];
 
   const colorStart = 0.2;
@@ -96,7 +106,7 @@ function colorArray(dataLength) {
   const colorRange = colorEnd - colorStart;
   var intervalSize = colorRange / dataLength;
   for (let i = 0; i < dataLength; i++) {
-    const colorPoint = colorStart + i*intervalSize;
+    const colorPoint = colorStart + i * intervalSize;
     colorArray.push(colorScale(colorPoint));
   }
 
@@ -105,7 +115,7 @@ function colorArray(dataLength) {
 
 const buildSeriesFromEpoch = (series, epoch) => {
   epoch.data.forEach(p => {
-    if (! series[p.dest]) {
+    if (!series[p.dest]) {
       series[p.dest] = [];
     }
     series[p.dest].push(p);
@@ -114,40 +124,38 @@ const buildSeriesFromEpoch = (series, epoch) => {
   return series;
 };
 
-const epochsToSeries = (epochs) => {
+const epochsToSeries = epochs => {
   let series = epochs.reduce((s, current) => {
     return buildSeriesFromEpoch(s, current);
   }, {});
   return series;
 };
 
-const TimeIntervalConfig = (props) => {
-  let  PauseResumeButton = null;
+const TimeIntervalConfig = props => {
+  let PauseResumeButton = null;
   if (props.slidingWindowStopped) {
     PauseResumeButton = () => (
-      <Button outlined
-        onClick={() => props.startSlidingWindow()}
-      >
+      <Button outlined onClick={() => props.startSlidingWindow()}>
         RESUME
       </Button>
     );
   } else {
     PauseResumeButton = () => (
-      <Button outlined
-        onClick={() => props.stopSlidingWindow()}
-      >
+      <Button outlined onClick={() => props.stopSlidingWindow()}>
         PAUSE
       </Button>
     );
   }
 
   return (
-    <div style={{marginTop: 10}}>
+    <div style={{ marginTop: 10 }}>
       <Grid>
         <GridCell span={3}>
           <div style={styles.slider.container}>
             <div style={styles.slider.title}>
-              <span className="mdc-typography--headline8">Timeframe in secs </span>
+              <span className="mdc-typography--headline8">
+                Timeframe in secs{' '}
+              </span>
             </div>
             <Grid>
               <GridCell span={1} style={styles.slider.boundaryValues}>
@@ -156,7 +164,9 @@ const TimeIntervalConfig = (props) => {
               <GridCell span={10}>
                 <Slider
                   value={props.value}
-                  onChange={e => props.changeTimeIntervalDuration(e.detail.value)}
+                  onChange={e =>
+                    props.changeTimeIntervalDuration(e.detail.value)
+                  }
                   discrete
                   min={MIN_TIME_RANGE_VALUE}
                   max={MAX_TIME_RANGE_VALUE}
@@ -167,147 +177,135 @@ const TimeIntervalConfig = (props) => {
                 <span>{MAX_TIME_RANGE_VALUE}</span>
               </GridCell>
             </Grid>
-            
-            
-           
           </div>
-          
         </GridCell>
-        <GridCell span={1}>
-
-        </GridCell>
+        <GridCell span={1}></GridCell>
         <GridCell span={8}>
-          <div style={{margin:10}}>
+          <div style={{ margin: 10 }}>
             <PauseResumeButton />
           </div>
         </GridCell>
       </Grid>
     </div>
-    
-    
   );
 };
 
-const ConfigurationView = (props) => {
+const ConfigurationView = props => {
   return (
     <>
-    <Grid style={{marginBottom: 10}}>
-      <GridCell span={2}>
-        <IDSelect
-          label={'Select View 1'}
-          outlined
-          options={props.dashboardViewsList}
-          onChange={(e) => {
-            props.changeView1(e.target.value);
-          }}
-          value={props.view1}
-        />
-      </GridCell>
-      <GridCell span={2}>
-        <IDSelect
-          label={'Select View 2'}
-          outlined
-          options={props.dashboardViewsList}
-          onChange={(e) => {
-            props.changeView2(e.target.value);
-          }}
-          value={props.view1}
-        />
-      </GridCell>
-      <GridCell span={3}>
-        <IDSelect
-          label={'Select Source Node'}
-          outlined
-          options={props.nodeIds}
-          onChange={(e) => {
-            props.changeSourceNodeSelected(e.target.value);
-          }}
-          value={props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''}
-        />
-      </GridCell>
-      <GridCell span={4}>
-        <Checkbox
-          checked={props.displayEdgeLabels}
-          onChange={() => props.changeDisplayEdgeLabels(!props.displayEdgeLabels)}
-        >
-                    Show data on edges
-        </Checkbox>
-      </GridCell>
-      <GridCell span={1}>
-      </GridCell>
-    </Grid>
-    <TimeIntervalConfig 
-      changeTimeIntervalDuration={(value) => {props.changeTimeIntervalDuration(value);}}
-      stopSlidingWindow={props.stopSlidingWindow}
-      startSlidingWindow={props.startSlidingWindow}
-      slidingWindowStopped={props.slidingWindowStopped}
-    />
+      <Grid style={{ marginBottom: 10 }}>
+        <GridCell span={2}>
+          <IDSelect
+            label={'Select View 1'}
+            outlined
+            options={props.dashboardViewsList}
+            onChange={e => {
+              props.changeView1(e.target.value);
+            }}
+            value={props.view1}
+          />
+        </GridCell>
+        <GridCell span={2}>
+          <IDSelect
+            label={'Select View 2'}
+            outlined
+            options={props.dashboardViewsList}
+            onChange={e => {
+              props.changeView2(e.target.value);
+            }}
+            value={props.view1}
+          />
+        </GridCell>
+        <GridCell span={3}>
+          <IDSelect
+            label={'Select Source Node'}
+            outlined
+            options={props.nodeIds}
+            onChange={e => {
+              props.changeSourceNodeSelected(e.target.value);
+            }}
+            value={
+              props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''
+            }
+          />
+        </GridCell>
+        <GridCell span={4}>
+          <Checkbox
+            checked={props.displayEdgeLabels}
+            onChange={() =>
+              props.changeDisplayEdgeLabels(!props.displayEdgeLabels)
+            }
+          >
+            Show data on edges
+          </Checkbox>
+        </GridCell>
+        <GridCell span={1}></GridCell>
+      </Grid>
+      <TimeIntervalConfig
+        changeTimeIntervalDuration={value => {
+          props.changeTimeIntervalDuration(value);
+        }}
+        stopSlidingWindow={props.stopSlidingWindow}
+        startSlidingWindow={props.startSlidingWindow}
+        slidingWindowStopped={props.slidingWindowStopped}
+      />
     </>
   );
 };
 
-const ViewForName = (
-  {
-    keyForSvg,
-    apps,
-    colorRange,
-    min,
-    max,
-    data,
-    series,
-    startTime,
-    mobilityEvents,
-    dataPoints,
-    dataAccessor,
-    dataType,
-    selectedSource,
-    colorForApp,
-    changeSourceNodeSelected,
-    viewName,
-    displayEdgeLabels
-  }
-) => {
-  
+const ViewForName = ({
+  keyForSvg,
+  apps,
+  colorRange,
+  min,
+  max,
+  data,
+  series,
+  startTime,
+  mobilityEvents,
+  dataPoints,
+  dataAccessor,
+  dataType,
+  selectedSource,
+  colorForApp,
+  changeSourceNodeSelected,
+  viewName,
+  displayEdgeLabels
+}) => {
   const appIds = apps.map(app => app.data.id);
-  switch(viewName) {
+  switch (viewName) {
   case HIERARCHY_VIEW:
     return (
       <ResizeableContainer key={keyForSvg}>
         {(width, height) => (
-          <IDCGraph 
-            keyForSvg={keyForSvg}
-            width={width}
-            height={height}
-          />)}
+          <IDCGraph keyForSvg={keyForSvg} width={width} height={height} />
+        )}
       </ResizeableContainer>
     );
   case APPS_VIEW:
     return (
       <ResizeableContainer key={keyForSvg}>
-        {
-          (width, height) => (
-            <IDCAppsView
-              keyForSvg={keyForSvg}
-              apps={apps}
-              colorRange={colorRange}
-              width={width}
-              height={height}
-              data={data}
-              series={series}
-              startTime={startTime}
-              dataAccessor={dataAccessor}
-              dataType={dataType}
-              selectedSource={selectedSource}
-              colorForApp={colorForApp}
-              onNodeClicked={(e) => {
-                changeSourceNodeSelected(e.node);
-              }}
-              displayEdgeLabels={displayEdgeLabels}
-            />
-          )
-        }
+        {(width, height) => (
+          <IDCAppsView
+            keyForSvg={keyForSvg}
+            apps={apps}
+            colorRange={colorRange}
+            width={width}
+            height={height}
+            data={data}
+            series={series}
+            startTime={startTime}
+            dataAccessor={dataAccessor}
+            dataType={dataType}
+            selectedSource={selectedSource}
+            colorForApp={colorForApp}
+            onNodeClicked={e => {
+              changeSourceNodeSelected(e.node);
+            }}
+            displayEdgeLabels={displayEdgeLabels}
+          />
+        )}
       </ResizeableContainer>
-      
     );
   case LATENCY_VIEW:
     return (
@@ -319,7 +317,8 @@ const ViewForName = (
             series={series}
             startTime={startTime}
             mobilityEvents={mobilityEvents}
-            width={width} height={height}
+            width={width}
+            height={height}
             destinations={appIds}
             colorRange={colorRange}
             selectedSource={selectedSource}
@@ -328,49 +327,43 @@ const ViewForName = (
             max={max}
             colorForApp={colorForApp}
           />
-        )
-        }
+        )}
       </ResizeableContainer>
-      
     );
   case THROUGHPUT_VIEW:
     return (
       <ResizeableContainer key={keyForSvg}>
-        {
-          (width, height) => (
-            <IDCLineChart
-              keyForSvg={keyForSvg}
-              data={dataPoints}
-              series={series}
-              startTime={startTime}
-              mobilityEvents={mobilityEvents}
-              width={width} height={height}
-              destinations={appIds}
-              colorRange={colorRange}
-              selectedSource={selectedSource}
-              dataType={dataType}
-              min={min}
-              max={max}
-              colorForApp={colorForApp}
-            />
-          )
-        }
+        {(width, height) => (
+          <IDCLineChart
+            keyForSvg={keyForSvg}
+            data={dataPoints}
+            series={series}
+            startTime={startTime}
+            mobilityEvents={mobilityEvents}
+            width={width}
+            height={height}
+            destinations={appIds}
+            colorRange={colorRange}
+            selectedSource={selectedSource}
+            dataType={dataType}
+            min={min}
+            max={max}
+            colorForApp={colorForApp}
+          />
+        )}
       </ResizeableContainer>
     );
   case VIS_VIEW:
     return (
       <ResizeableContainer>
-        {
-          (width, height) => (
-            <IDCVis 
-              type={TYPE_EXEC}
-              width={width}
-              height={height}
-              onEditElement={() => {}}
-            />
-          )
-        }
-        
+        {(width, height) => (
+          <IDCVis
+            type={TYPE_EXEC}
+            width={width}
+            height={height}
+            onEditElement={() => {}}
+          />
+        )}
       </ResizeableContainer>
     );
   default:
@@ -378,14 +371,14 @@ const ViewForName = (
   }
 };
 
-const DashboardConfiguration = (props) => {
+const DashboardConfiguration = props => {
   if (!props.showConfig) {
     return null;
   }
 
   let configurationView = null;
-  
-  if(props.dashboardConfigExpanded) {
+
+  if (props.dashboardConfigExpanded) {
     configurationView = (
       <ConfigurationView
         dashboardViewsList={props.dashboardViewsList}
@@ -393,7 +386,6 @@ const DashboardConfiguration = (props) => {
         view2Type={props.view2Type}
         changeView1={props.changeView1}
         changeView2={props.changeView2}
-
         nodeIds={props.nodeIds}
         sourceNodeSelected={props.sourceNodeSelected}
         changeSourceNodeSelected={props.changeSourceNodeSelected}
@@ -407,32 +399,38 @@ const DashboardConfiguration = (props) => {
     );
   }
 
-  const buttonConfig = !props.dashboardConfigExpanded
-    ? (
-      <Button outlined style={styles.button} onClick={() => props.expandDashboardConfig(true)}>
-          Open
-      </Button>
-    )
-    : null;
+  const buttonConfig = !props.dashboardConfigExpanded ? (
+    <Button
+      outlined
+      style={styles.button}
+      onClick={() => props.expandDashboardConfig(true)}
+    >
+      Open
+    </Button>
+  ) : null;
 
-  const buttonClose = props.dashboardConfigExpanded
-    ? (
-      <Button outlined style={styles.button} onClick={() => props.expandDashboardConfig(false)}>
-          Close
-      </Button>
-    )
-    : null;
+  const buttonClose = props.dashboardConfigExpanded ? (
+    <Button
+      outlined
+      style={styles.button}
+      onClick={() => props.expandDashboardConfig(false)}
+    >
+      Close
+    </Button>
+  ) : null;
 
   return (
-    <Elevation z={2}
+    <Elevation
+      z={2}
       className="component-style"
-      style={{padding: 10, marginBottom: 10}}
+      style={{ padding: 10, marginBottom: 10 }}
     >
-    
       <Grid>
         <GridCell span={11}>
-          <div style={{marginBottom:10}}>
-            <span className="mdc-typography--headline6">Dashboard Configuration</span>
+          <div style={{ marginBottom: 10 }}>
+            <span className="mdc-typography--headline6">
+              Dashboard Configuration
+            </span>
           </div>
         </GridCell>
         <GridCell span={1}>
@@ -442,7 +440,6 @@ const DashboardConfiguration = (props) => {
       </Grid>
       {configurationView}
     </Elevation>
-     
   );
 };
 
@@ -477,17 +474,17 @@ const eventLogStyle = {
   marginRight: 10,
   marginBottom: 10,
   border: '1px solid #e4e4e4',
-  count: {color: blue},
-  eventName: {color: '#6e6e6e'},
-  arrow: {color: '#6e6e6e'},
-  element: {color: blue}
+  count: { color: blue },
+  eventName: { color: '#6e6e6e' },
+  arrow: { color: '#6e6e6e' },
+  element: { color: blue }
 };
 
 // let eventCount=0;
-const EventLog = (props) => {
+const EventLog = props => {
   // TODO: generalize function for other types of events.
   // Now it creates a description for Mobility Events
-  const descriptionFromEvent = (event) => {
+  const descriptionFromEvent = event => {
     // eventCount++;
     return (
       <div key={event.mobilityEventIndex}>
@@ -501,11 +498,10 @@ const EventLog = (props) => {
   };
   return (
     <>
-    <span className="mdc-typography--headline8" style={{marginLeft: 10}}>Events
-    </span>
-    <div style={eventLogStyle}>
-      {props.events.map(descriptionFromEvent)}
-    </div>
+      <span className="mdc-typography--headline8" style={{ marginLeft: 10 }}>
+        Events
+      </span>
+      <div style={eventLogStyle}>{props.events.map(descriptionFromEvent)}</div>
     </>
   );
 };
@@ -526,9 +522,7 @@ class DashboardContainer extends Component {
     this.epochs = [];
   }
 
-  componentDidMount() {
-    
-  }
+  componentDidMount() {}
 
   componentWillUnmount() {
     clearInterval(this.dataTimer);
@@ -539,24 +533,22 @@ class DashboardContainer extends Component {
   }
 
   changeDisplayEdgeLabels(val) {
-    this.setState({displayEdgeLabels: val});
+    this.setState({ displayEdgeLabels: val });
   }
 
   changeMetricsTimeIntervalDuration(duration) {
     this.props.changeMetricsTimeIntervalDuration(duration);
   }
 
-
   stopSlidingWindow() {
-    this.setState({slidingWindowStopped: true});
+    this.setState({ slidingWindowStopped: true });
   }
 
   startSlidingWindow() {
-    this.setState({slidingWindowStopped: false});
+    this.setState({ slidingWindowStopped: false });
   }
 
   render() {
-
     let epochs = null;
     if (!this.state.slidingWindowStopped) {
       this.epochs = this.props.epochs.slice();
@@ -568,20 +560,25 @@ class DashboardContainer extends Component {
     this.keyForSvg++;
     const root = this.getRoot();
     const nodes = root.descendants();
-   
+
     const apps = nodes.filter(isApp);
     const appIds = apps.map(a => a.data.id);
-    const appMap = apps.reduce((acc, app) => {acc[app.data.id] = app; return acc;}, {});
+    const appMap = apps.reduce((acc, app) => {
+      acc[app.data.id] = app;
+      return acc;
+    }, {});
     const colorRange = colorArray(appIds.length);
 
-    const selectedSource = this.props.sourceNodeSelected ? this.props.sourceNodeSelected.data.id : null;
+    const selectedSource = this.props.sourceNodeSelected
+      ? this.props.sourceNodeSelected.data.id
+      : null;
 
     const colorForApp = apps.reduce((res, val, i) => {
-      return {...res, [val.data.id]: colorRange[i]};
+      return { ...res, [val.data.id]: colorRange[i] };
     }, {});
 
     const isDataOfType = type => dataPoint => dataPoint.dataType === type;
-    
+
     const dataTypeForView = view => {
       switch (view) {
       case LATENCY_VIEW:
@@ -594,18 +591,26 @@ class DashboardContainer extends Component {
     };
 
     // Determine first and last epochs
-    const firstEpoch = epochs.length ? epochs[0] : {
-      data: [],
-      startTime: null
-    };
-    let lastEpoch = epochs.length ? epochs.slice(-1)[0] : {
-      data: [],
-      startTime: null
-    };
- 
+    const firstEpoch = epochs.length
+      ? epochs[0]
+      : {
+        data: [],
+        startTime: null
+      };
+    let lastEpoch = epochs.length
+      ? epochs.slice(-1)[0]
+      : {
+        data: [],
+        startTime: null
+      };
+
     // Determine startTime of first epoch and endTime of last epoch
     const startTime = firstEpoch.data.length ? firstEpoch.startTime : null;
-    const endTime = lastEpoch.data.length ? moment(lastEpoch.startTime).add(1, 'seconds').format(TIME_FORMAT) : null;
+    const endTime = lastEpoch.data.length
+      ? moment(lastEpoch.startTime)
+        .add(1, 'seconds')
+        .format(TIME_FORMAT)
+      : null;
     const series = epochsToSeries(epochs, selectedSource);
 
     const withTypeAndSource = type => source => point => {
@@ -614,20 +619,24 @@ class DashboardContainer extends Component {
 
     // For view 1
     const view1DataType = dataTypeForView(this.props.view1Name);
-    const series1 =  filterSeries(appIds)(withTypeAndSource(view1DataType)(selectedSource))(series);
+    const series1 = filterSeries(appIds)(
+      withTypeAndSource(view1DataType)(selectedSource)
+    )(series);
     const lastEpochData1 = lastEpoch.data.filter(isDataOfType(view1DataType));
 
     // For view2
     const view2DataType = dataTypeForView(this.props.view2Name);
-    const series2 =  filterSeries(appIds)(withTypeAndSource(view2DataType)(selectedSource))(series);
+    const series2 = filterSeries(appIds)(
+      withTypeAndSource(view2DataType)(selectedSource)
+    )(series);
     const lastEpochData2 = lastEpoch.data.filter(isDataOfType(view2DataType));
 
     // Mobility events
-    const extractPointsOfType = type => epoch => epoch.data.filter(isDataPointOfType(type));
+    const extractPointsOfType = type => epoch =>
+      epoch.data.filter(isDataPointOfType(type));
     const extractMobilityEvents = extractPointsOfType(ME_MOBILITY_EVENT);
     const mobilityEvents = epochs.flatMap(extractMobilityEvents);
 
-    
     // const height = 600;
 
     let span1 = 12;
@@ -647,7 +656,6 @@ class DashboardContainer extends Component {
     }
 
     const view1 = (
-
       <ViewForName
         keyForSvg={this.keyForSvg}
         apps={apps}
@@ -662,7 +670,9 @@ class DashboardContainer extends Component {
         dataType={view1DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
-        changeSourceNodeSelected={(node) => this.props.changeSourceNodeSelected(node)}
+        changeSourceNodeSelected={node =>
+          this.props.changeSourceNodeSelected(node)
+        }
         viewName={this.props.view1Name}
         displayEdgeLabels={this.state.displayEdgeLabels}
       />
@@ -683,65 +693,72 @@ class DashboardContainer extends Component {
         dataType={view2DataType}
         selectedSource={selectedSource}
         colorForApp={colorForApp}
-        changeSourceNodeSelected={(node) => this.props.changeSourceNodeSelected(node)}
+        changeSourceNodeSelected={node =>
+          this.props.changeSourceNodeSelected(node)
+        }
         viewName={this.props.view2Name}
         displayEdgeLabels={this.state.displayEdgeLabels}
-      >
-      </ViewForName>
+      ></ViewForName>
     );
 
-    const EventLogComponent = () => (
-      <EventLog 
-        events={mobilityEvents}
-      />
-    );
+    const EventLogComponent = () => <EventLog events={mobilityEvents} />;
 
     return (
       <>
-      
-        <DashboardConfiguration 
+        <DashboardConfiguration
           showConfig={this.props.showConfig}
           dashboardConfigExpanded={this.props.dashboardConfigExpanded}
-          expandDashboardConfig={(show) => this.props.expandDashboardConfig(show)}
+          expandDashboardConfig={show => this.props.expandDashboardConfig(show)}
           nodeIds={appIds}
           sourceNodeSelected={this.props.sourceNodeSelected}
-          changeSourceNodeSelected={(nodeId) => this.props.changeSourceNodeSelected(appMap[nodeId])}
-          changeTimeIntervalDuration={(duration) => {this.changeMetricsTimeIntervalDuration(duration);}}
+          changeSourceNodeSelected={nodeId =>
+            this.props.changeSourceNodeSelected(appMap[nodeId])
+          }
+          changeTimeIntervalDuration={duration => {
+            this.changeMetricsTimeIntervalDuration(duration);
+          }}
           stopSlidingWindow={() => this.stopSlidingWindow()}
           startSlidingWindow={() => this.startSlidingWindow()}
           slidingWindowStopped={this.state.slidingWindowStopped}
           dashboardViewsList={DASHBOARD_VIEWS_LIST}
-          changeView1={(viewName) => this.props.changeView1(viewName)}
-          changeView2={(viewName) => this.props.changeView2(viewName)}
+          changeView1={viewName => this.props.changeView1(viewName)}
+          changeView2={viewName => this.props.changeView2(viewName)}
           displayEdgeLabels={this.state.displayEdgeLabels}
-          changeDisplayEdgeLabels={(display) => this.changeDisplayEdgeLabels(display)}
+          changeDisplayEdgeLabels={display =>
+            this.changeDisplayEdgeLabels(display)
+          }
         />
-        
-        <Grid>
 
+        <Grid>
           {!view1Present ? null : (
-            <GridCell span={span1}  className='chartContainer'>
-              <Elevation z={2} className="component-style"
-                style={{padding: 10}}
+            <GridCell span={span1} className="chartContainer">
+              <Elevation
+                z={2}
+                className="component-style"
+                style={{ padding: 10 }}
               >
                 {view1}
               </Elevation>
             </GridCell>
           )}
-          
+
           {!view2Present ? null : (
-            <GridCell span={span2} style={{marginLeft: -10, paddingLeft: 10}} className='chartContainer'>
-              <Elevation z={2} className="component-style"
-                style={{padding: 10}}
+            <GridCell
+              span={span2}
+              style={{ marginLeft: -10, paddingLeft: 10 }}
+              className="chartContainer"
+            >
+              <Elevation
+                z={2}
+                className="component-style"
+                style={{ padding: 10 }}
               >
                 {view2}
                 <EventLogComponent />
               </Elevation>
             </GridCell>
-         
           )}
         </Grid>
-      
       </>
     );
   }
@@ -765,13 +782,17 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeSelectedDestination: (dest) => dispatch(execFakeChangeSelectedDestination(dest)),
-    changeSourceNodeSelected: (src) => dispatch(execChangeSourceNodeSelected(src)),
-    changeMetricsTimeIntervalDuration: (duration) => dispatch(execChangeMetricsTimeIntervalDuration(duration)),
+    changeSelectedDestination: dest =>
+      dispatch(execFakeChangeSelectedDestination(dest)),
+    changeSourceNodeSelected: src =>
+      dispatch(execChangeSourceNodeSelected(src)),
+    changeMetricsTimeIntervalDuration: duration =>
+      dispatch(execChangeMetricsTimeIntervalDuration(duration)),
     clearMetricsEpochs: () => dispatch(execClearMetricsEpochs()),
-    changeView1: (name) => dispatch(uiExecChangeDashboardView1(name)),
-    changeView2: (name) => dispatch(uiExecChangeDashboardView2(name)) ,
-    expandDashboardConfig: (expand) => dispatch(uiExecExpandDashboardConfig(expand))
+    changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
+    changeView2: name => dispatch(uiExecChangeDashboardView2(name)),
+    expandDashboardConfig: expand =>
+      dispatch(uiExecExpandDashboardConfig(expand))
   };
 };
 

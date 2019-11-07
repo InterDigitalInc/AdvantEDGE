@@ -22,7 +22,7 @@ export function saveUIState(state) {
   try {
     let serializedState = JSON.stringify(state);
     localStorage.setItem(UI_STATE_KEY, serializedState);
-  } catch(e) {
+  } catch (e) {
     // TODO: consider showing an alert.
     // console.log('Error while saving app state: ', e);
   }
@@ -37,8 +37,7 @@ export function loadUIState() {
     }
 
     return JSON.parse(serializedState);
-  }
-  catch (err) {
+  } catch (err) {
     return null;
   }
 }

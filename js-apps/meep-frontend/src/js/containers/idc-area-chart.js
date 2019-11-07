@@ -1,13 +1,20 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import React, { useRef, useEffect }  from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 
 const IDCAreaChart = props => {
@@ -18,68 +25,80 @@ const IDCAreaChart = props => {
        for instance inserting elements into the DOM using D3 */
   useEffect(
     () => {
-      
-      const margin = {top: 20, right: 40, bottom: 30, left: 30};
+      const margin = { top: 20, right: 40, bottom: 30, left: 30 };
       const width = props.width - margin.left - margin.right;
       const height = props.height - margin.top - margin.bottom;
 
       let mainGroup = d3.select(d3Container.current);
       if (mainGroup.select('g').size() === 0) {
-        mainGroup = mainGroup.append('g')
+        mainGroup = mainGroup
+          .append('g')
           .attr('width', props.width + margin.left + margin.right)
           .attr('height', props.height + margin.top + margin.bottom)
           .attr('transform', `translate(${margin.left}, ${margin.top})`);
       }
-      
-      const chart = (data) => {
 
+      const chart = data => {
         const colorRange = props.colorRange;
         const strokecolor = colorRange[0];
 
         const yRange = [0, 400];
         const timeRange = d3.extent(data, d => new Date(d.date));
-        const x = d3.scaleTime().domain(timeRange).range([0, width]);
-        const y = d3.scaleLinear().domain(yRange).range([height - 50, 0]);
+        const x = d3
+          .scaleTime()
+          .domain(timeRange)
+          .range([0, width]);
+        const y = d3
+          .scaleLinear()
+          .domain(yRange)
+          .range([height - 50, 0]);
         const z = d3.scaleOrdinal().range(colorRange);
-      
+
         // Axes
         const xAxis = d3.axisBottom(x); //.ticks(d3.timeSeconds);
-        const yAxis = d3.axisLeft(y).scale(y)
+        const yAxis = d3
+          .axisLeft(y)
+          .scale(y)
           .tickSize(0.01);
         // const yAxisr = d3.axisLeft(y);
 
         const keys = props.sources;
         const stack = d3.stack().keys(keys);
 
-        const area = d3.area()
-          .x( (d, i) => x(data[i].date))
+        const area = d3
+          .area()
+          .x((d, i) => x(data[i].date))
           .y0(d => y(d[0]))
           .y1(d => y(d[1]))
           .curve(d3.curveCardinal);
 
         const layers = stack(data);
 
-        mainGroup.selectAll('.layer')
+        mainGroup
+          .selectAll('.layer')
           .data(layers, d => d.key)
-          .join('path').attr('class', 'layer')
-        // .transition()
-        //     .duration(250)
+          .join('path')
+          .attr('class', 'layer')
+          // .transition()
+          //     .duration(250)
           .attr('d', d => area(d))
           .style('fill', (d, i) => z(i));
-              
+
         const xAxisGroup = mainGroup.selectAll('.xaxis');
         if (xAxisGroup.size() === 0) {
-          mainGroup.append('g')
+          mainGroup
+            .append('g')
             .attr('class', 'xaxis')
-            .attr('transform', 'translate(0,' + height + ')').call(xAxis);
-            
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(xAxis);
         }
 
         mainGroup.selectAll('.xaxis').call(xAxis);
-         
+
         const yAxisGroup = mainGroup.selectAll('.yaxis');
         if (yAxisGroup.size() === 0) {
-          mainGroup.append('g')
+          mainGroup
+            .append('g')
             .attr('class', 'yaxis')
             .attr('transform', 'translate(' + width + ', 0)')
             .style('z-index', '18')
@@ -88,13 +107,13 @@ const IDCAreaChart = props => {
 
         const yAxisGroup0 = mainGroup.selectAll('.yaxis0');
         if (yAxisGroup0.size() === 0) {
-          mainGroup.append('g')
+          mainGroup
+            .append('g')
             .attr('class', 'yaxis0')
             .attr('transform', 'translate(0 , 0)')
             .style('z-index', '18')
             .call(yAxis);
         }
-              
 
         // svg.append('g').append('path')
         //   .attr('class', 'vertical')
@@ -104,17 +123,21 @@ const IDCAreaChart = props => {
         //   .attr('stroke', '000')
         //   .attr('stroke-width', '10px')
         //   .attr('visibility', 'visible');
-              
+
         // svg.append('g')
         //   .attr('class', 'y axis')
         //   .call(yAxis);
-      
-        mainGroup.selectAll('.layer')
+
+        mainGroup
+          .selectAll('.layer')
           // .attr('opacity', 1)
           .on('click', function(d, i, nodes) {
             const node = nodes[i];
             const selected = d3.select(node).classed('selected');
-            mainGroup.selectAll('.layer').transition().duration(250)
+            mainGroup
+              .selectAll('.layer')
+              .transition()
+              .duration(250)
               .attr('opacity', (d, j) => {
                 if (selected) {
                   return 1.0;
@@ -122,9 +145,9 @@ const IDCAreaChart = props => {
                   return j !== i ? 0.6 : 1;
                 }
               })
-            // .classed('hover', (d, i) => {   
-            //     return j !== i ? false : true;
-            // })
+              // .classed('hover', (d, i) => {
+              //     return j !== i ? false : true;
+              // })
               .attr('stroke', (d, j) => {
                 return j !== i ? colorRange[j] : strokecolor;
               })
@@ -147,9 +170,9 @@ const IDCAreaChart = props => {
         //       break;
         //     }
         //   }
-          
+
         // const value = d[index][1] - d[index][0];
-          
+
         // mainGroup.select(this)
         //     .classed('hover', true)
         //     .attr('stroke', strokecolor)
@@ -164,10 +187,10 @@ const IDCAreaChart = props => {
         //     .attr('opacity', '1');
         //   mainGroup.select(this)
         //     .classed('hover', false)
-        //     .attr('stroke-width', '0px');              
+        //     .attr('stroke-width', '0px');
         //   // tooltip.html( '<p>' + '</p>' ).style('visibility', 'hidden');
         // });
-      
+
         // var vertical = d3.select('.chart')
         //   .append('div')
         //   .attr('class', 'remove')
@@ -180,8 +203,9 @@ const IDCAreaChart = props => {
         //   .style('left', '0px')
         //   .style('background', '#fff');
 
-        mainGroup.select('.chart')
-          .on('mousemove', function(){  
+        mainGroup
+          .select('.chart')
+          .on('mousemove', function() {
             let mousex = d3.mouse(this);
             mousex = mousex[0] + 5;
             const vertical = d3.select('.vertical');
@@ -190,7 +214,7 @@ const IDCAreaChart = props => {
               .attr('transform', `translate(${mousex + 5}, 0)`)
               .attr('visibility', 'visible');
           })
-          .on('mouseover', function(){  
+          .on('mouseover', function() {
             let mousex = d3.mouse(this);
             mousex = mousex[0] + 5;
             d3.select('.vertical')
@@ -198,7 +222,7 @@ const IDCAreaChart = props => {
               .attr('visibility', 'visible');
           });
       };
-        
+
       chart(props.data);
     },
 
@@ -209,22 +233,20 @@ const IDCAreaChart = props => {
             if the variables are valid, but we do not have to compare old props
             to next props to decide whether to rerender.
         */
-    [props.data, d3Container.current]);
+    [props.data, d3Container.current]
+  );
 
   return (
-    <div className='chart'>
+    <div className="chart">
       <svg
         //viewBox='0 -20 200 33'
         ref={d3Container}
-        className='d3-component'
+        className="d3-component"
         height={props.height}
         width={props.width}
-      >
-      
-      </svg>
-
+      ></svg>
     </div>
-  );  
+  );
 };
 
 export default IDCAreaChart;

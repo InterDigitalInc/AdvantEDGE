@@ -1,20 +1,23 @@
 /*
- * Copyright (c) 2019
- * InterDigital Communications, Inc.
- * All rights reserved.
+ * Copyright (c) 2019  InterDigital Communications, Inc
  *
- * The information provided herein is the proprietary and confidential
- * information of InterDigital Communications, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-import _ from 'lodash';
-import React, { Component }  from 'react';
 
-import {
-  plusGenerator,
-  minusGenerator,
-  visitNodes,
-  blue
-} from './graph-utils';
+import _ from 'lodash';
+import React, { Component } from 'react';
+
+import { plusGenerator, minusGenerator, visitNodes, blue } from './graph-utils';
 
 const translate = d => {
   return `translate(${d.X}, ${d.Y})`;
@@ -44,17 +47,19 @@ const Plus = props => {
   const d = props.d;
 
   const plusMinus = props.collapsible
-    ? (d.collapsed ? plusGenerator : minusGenerator)
+    ? d.collapsed
+      ? plusGenerator
+      : minusGenerator
     : () => '';
-    
+
   return (
     <path
       width={20}
       height={20}
       d={plusMinus()}
-      style={{fill: blue, 'strokeWidth': 2}}
+      style={{ fill: blue, strokeWidth: 2 }}
       stroke={blue}
-      className='plus'
+      className="plus"
       onClick={() => {
         d.collapsed = !d.collapsed;
         if (d.collapsed) {
@@ -84,78 +89,106 @@ export default class IDCNode extends Component {
 
     const fill = this.highlighted ? '#69b3a2' : '#69b3a2';
     const radius = this.highlighted ? 14 : 12;
-    const size=30;
+    const size = 30;
 
-    return (<g
-      transform={translate(d)}
-    >
-      <Plus width={10} height={10} d={d} updateParent={this.props.updateParent}/>
-      <circle xlinkHref={`../img/${d.data.iconName}`} height={size} width={size} cx={-size/2 + 15} cy={-size/2 + 15} /*filter={d.selected ? 'url(#filter)' : '' }*/
-        r={radius}
-        style={{fill: fill}}
-        stroke={'black'}
-        strokeWidth={3}
-        onMouseDown={ (e) => {
-          this.dragging = true;
-          this.highlighted = true;
+    return (
+      <g transform={translate(d)}>
+        <Plus
+          width={10}
+          height={10}
+          d={d}
+          updateParent={this.props.updateParent}
+        />
+        <circle
+          xlinkHref={`../img/${d.data.iconName}`}
+          height={size}
+          width={size}
+          cx={-size / 2 + 15}
+          cy={-size / 2 + 15} /*filter={d.selected ? 'url(#filter)' : '' }*/
+          r={radius}
+          style={{ fill: fill }}
+          stroke={'black'}
+          strokeWidth={3}
+          onMouseDown={e => {
+            this.dragging = true;
+            this.highlighted = true;
 
-          this.mouseCoords={
-            x: e.clientX - e.target.farthestViewportElement.parentNode.offsetLeft,
-            y: e.clientY - e.target.farthestViewportElement.parentNode.offsetTop
-          };
+            this.mouseCoords = {
+              x:
+                e.clientX -
+                e.target.farthestViewportElement.parentNode.offsetLeft,
+              y:
+                e.clientY -
+                e.target.farthestViewportElement.parentNode.offsetTop
+            };
 
-          this.props.updateParent();
-        }}
-        onMouseUp={ () => {
-          this.dragging = false;
-          this.highlighted = false;
-        }}
-        
-        onMouseMove={ (e) => {
-          if (!this.dragging) {
-            return;
-          }
-          e.preventDefault();
+            this.props.updateParent();
+          }}
+          onMouseUp={() => {
+            this.dragging = false;
+            this.highlighted = false;
+          }}
+          onMouseMove={e => {
+            if (!this.dragging) {
+              return;
+            }
+            e.preventDefault();
 
-          const newX = e.clientX - e.target.farthestViewportElement.parentNode.offsetLeft;
-          const newY = e.clientY - e.target.farthestViewportElement.parentNode.offsetTop;
+            const newX =
+              e.clientX -
+              e.target.farthestViewportElement.parentNode.offsetLeft;
+            const newY =
+              e.clientY - e.target.farthestViewportElement.parentNode.offsetTop;
 
-          const dx = newX - this.mouseCoords.x;
-          const dy = newY - this.mouseCoords.y;
+            const dx = newX - this.mouseCoords.x;
+            const dy = newY - this.mouseCoords.y;
 
-          this.mouseCoords.x = newX;
-          this.mouseCoords.y = newY;
+            this.mouseCoords.x = newX;
+            this.mouseCoords.y = newY;
 
-          const targetXY = e.currentTarget.parentNode.getAttribute('transform').substr(10).slice(0, -1).split(', ');
-          const targetX = Number(targetXY[0]);
-          const targetY = Number(targetXY[1]);
+            const targetXY = e.currentTarget.parentNode
+              .getAttribute('transform')
+              .substr(10)
+              .slice(0, -1)
+              .split(', ');
+            const targetX = Number(targetXY[0]);
+            const targetY = Number(targetXY[1]);
 
-          // console.log(`(${d.x}, ${d.y}) -> (${X}, ${Y})`);
-          d.X = targetX + dx;
-          d.Y = targetY + dy;
-        
-          this.props.updateParent();
-        }}
-        onClick={() => {
-          d.selected = !d.selected;
-          // this.props.updateParent();
-          this.props.onClick({node: d});
-        }}
-        onMouseOver={() => {
-          this.highlighted = true;
-          d.highlighted = true;
-          d.data.dR = 4;
-          this.props.updateParent();
-        }}
-        onMouseOut={() => {
-          d.data.dR = 0;
-          this.dragging = false;
-          this.highlighted = false;
-          d.highlighted = false;
-          this.props.updateParent();
-        }}
-      />
-      <text x={-size/2} y="35" className="tiny" stroke={this.props.stroke} fontWeight={this.highlighted ? 'bold' : 'normal'}>{d.data.id}</text>
-    </g>);
+            // console.log(`(${d.x}, ${d.y}) -> (${X}, ${Y})`);
+            d.X = targetX + dx;
+            d.Y = targetY + dy;
+
+            this.props.updateParent();
+          }}
+          onClick={() => {
+            d.selected = !d.selected;
+            // this.props.updateParent();
+            this.props.onClick({ node: d });
+          }}
+          onMouseOver={() => {
+            this.highlighted = true;
+            d.highlighted = true;
+            d.data.dR = 4;
+            this.props.updateParent();
+          }}
+          onMouseOut={() => {
+            d.data.dR = 0;
+            this.dragging = false;
+            this.highlighted = false;
+            d.highlighted = false;
+            this.props.updateParent();
+          }}
+        />
+        <text
+          x={-size / 2}
+          y="35"
+          className="tiny"
+          stroke={this.props.stroke}
+          fontWeight={this.highlighted ? 'bold' : 'normal'}
+        >
+          {d.data.id}
+        </text>
+      </g>
+    );
   }
 }

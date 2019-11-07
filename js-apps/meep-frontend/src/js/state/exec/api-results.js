@@ -24,10 +24,7 @@ function execChangeScenarioList(scenarios) {
   };
 }
 
-export {
-  EXEC_CHANGE_SCENARIO_LIST,
-  execChangeScenarioList
-};
+export { EXEC_CHANGE_SCENARIO_LIST, execChangeScenarioList };
 
 const initialState = {
   scenarios: []
@@ -36,7 +33,7 @@ const initialState = {
 export function execApiResultsReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SCENARIO_LIST:
-    return updateObject(state, {scenarios: action.payload});
+    return updateObject(state, { scenarios: action.payload });
   default:
     return state;
   }

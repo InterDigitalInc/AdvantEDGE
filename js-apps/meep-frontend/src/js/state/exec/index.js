@@ -46,39 +46,94 @@ export * from './fake-data-reducer';
 export * from './metrics-reducer';
 
 const execTableElements = state => state.exec.table.entries;
-const execUEs = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'UE');
-});
+const execUEs = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'UE');
+  }
+);
 
-const execMobTypes = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'UE' || getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' || (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' && getElemFieldVal(elem, FIELD_GROUP) === '')));
-});
+const execMobTypes = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem =>
+        getElemFieldVal(elem, FIELD_TYPE) === 'UE' ||
+        getElemFieldVal(elem, FIELD_TYPE) === 'FOG' ||
+        getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' ||
+        (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' &&
+          getElemFieldVal(elem, FIELD_GROUP) === '')
+    );
+  }
+);
 
-const execFogEdges = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => (getElemFieldVal(elem, FIELD_TYPE) === 'FOG' || getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'));
-});
+const execFogEdges = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem =>
+        getElemFieldVal(elem, FIELD_TYPE) === 'FOG' ||
+        getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'
+    );
+  }
+);
 
-const execEdgeApps = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION');
-});
+const execEdgeApps = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION'
+    );
+  }
+);
 
-const execEdges = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE');
-});
+const execEdges = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'
+    );
+  }
+);
 
-const execFogs = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'FOG');
-});
+const execFogs = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'FOG');
+  }
+);
 
-const execZones = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'ZONE');
-});
+const execZones = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(
+      elems,
+      elem => getElemFieldVal(elem, FIELD_TYPE) === 'ZONE'
+    );
+  }
+);
 
-const execPOAs = createSelector([execTableElements], elems => {
-  return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'POA');
-});
+const execPOAs = createSelector(
+  [execTableElements],
+  elems => {
+    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'POA');
+  }
+);
 
-export { execUEs, execPOAs, execMobTypes, execEdges, execFogs, execZones, execEdgeApps, execFogEdges };
+export {
+  execUEs,
+  execPOAs,
+  execMobTypes,
+  execEdges,
+  execFogs,
+  execZones,
+  execEdgeApps,
+  execFogEdges
+};
 
 const execReducer = combineReducers({
   type: typeReducer,

@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
@@ -23,9 +23,7 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
-import {
-  uiExecChangeCurrentEvent
-} from '../../state/ui';
+import { uiExecChangeCurrentEvent } from '../../state/ui';
 
 import {
   MOBILITY_EVENT,
@@ -44,12 +42,9 @@ import {
   execZones
 } from '../../state/exec';
 
-import {
-  EXEC_EVT_TYPE,
-  PAGE_EXECUTE
-} from '../../meep-constants';
+import { EXEC_EVT_TYPE, PAGE_EXECUTE } from '../../meep-constants';
 
-const EventTypeSelect = (props) => {
+const EventTypeSelect = props => {
   return (
     <Grid style={styles.field}>
       <GridCell span={12}>
@@ -67,7 +62,7 @@ const EventTypeSelect = (props) => {
   );
 };
 
-const EventCreationFields = (props) => {
+const EventCreationFields = props => {
   switch (props.currentEvent) {
   case MOBILITY_EVENT:
     return (
@@ -99,16 +94,14 @@ const EventCreationFields = (props) => {
         currentEvent={props.currentEvent}
         table={props.table}
         networkElements={props.networkElements}
-
       />
     );
   default:
-    return (<div>NO EVENT</div>);
+    return <div>NO EVENT</div>;
   }
 };
 
 class EventCreationPane extends Component {
-
   constructor(props) {
     super(props);
     this.state = {};
@@ -121,22 +114,28 @@ class EventCreationPane extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) { return null; }
+    if (this.props.page !== PAGE_EXECUTE) {
+      return null;
+    }
 
     return (
-      <div style={{padding: 10}}>
+      <div style={{ padding: 10 }}>
         <div style={styles.block}>
           <Typography use="headline6">Trigger Event</Typography>
         </div>
         <EventTypeSelect
           eventTypes={this.props.eventTypes}
-          onChange={(event)=>{this.props.changeEvent(event.target.value);}}
+          onChange={event => {
+            this.props.changeEvent(event.target.value);
+          }}
         />
         <EventCreationFields
           element={this.props.selectedScenarioElement}
           currentEvent={this.props.currentEvent}
           api={this.props.api}
-          updateElement={(element) => {this.updateElement(element);}}
+          updateElement={element => {
+            this.updateElement(element);
+          }}
           onSuccess={this.props.onSuccess}
           onClose={this.props.onClose}
           UEs={this.props.UEs}
@@ -187,8 +186,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeEvent: (event) => dispatch(uiExecChangeCurrentEvent(event)),
-    changeSelectedScenarioElement: (element) => dispatch(execChangeSelectedScenarioElement(element))
+    changeEvent: event => dispatch(uiExecChangeCurrentEvent(event)),
+    changeSelectedScenarioElement: element =>
+      dispatch(execChangeSelectedScenarioElement(element))
   };
 };
 

@@ -18,7 +18,6 @@
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
 
-
 export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
 export const PAGE_EXECUTE = 'PAGE_EXECUTE';
 export const PAGE_MONITOR = 'PAGE_MONITOR';
@@ -43,7 +42,8 @@ export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
 export const MEEP_DLG_INVALID_SCENARIO = 'meep-dlg-invalid-scenario';
 export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
-export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
+export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
+  'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
@@ -211,9 +211,10 @@ export const PREFIX_APP = 'Application';
 
 // Types of layout for components
 export const MEEP_COMPONENT_TABLE_LAYOUT = 'MEEP_COMPONENT_TABLE_LAYOUT';
-export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT = 'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
+export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT =
+  'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
 
-export const id = (label) => {
+export const id = label => {
   return '#' + label;
 };
 
@@ -232,4 +233,11 @@ export const VIS_VIEW = 'Network Topology (vis)';
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
-export const DASHBOARD_VIEWS_LIST = [VIEW_NAME_NONE, VIS_VIEW, APPS_VIEW, LATENCY_VIEW, THROUGHPUT_VIEW, HIERARCHY_VIEW];
+export const DASHBOARD_VIEWS_LIST = [
+  VIEW_NAME_NONE,
+  VIS_VIEW,
+  APPS_VIEW,
+  LATENCY_VIEW,
+  THROUGHPUT_VIEW,
+  HIERARCHY_VIEW
+];

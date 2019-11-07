@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
 import { TextField } from '@rmwc/textfield';
 
@@ -31,7 +31,6 @@ import {
   CFG_BTN_EXP_SCENARIO
 } from '../../meep-constants';
 
-
 class CfgPageScenarioButtons extends Component {
   constructor(props) {
     super(props);
@@ -39,12 +38,20 @@ class CfgPageScenarioButtons extends Component {
 
   canCreateNewScenario() {
     const cfgState = this.props.cfgState;
-    return this.props.cfgState === CFG_STATE_IDLE || cfgState === CFG_STATE_NEW || cfgState === CFG_STATE_LOADED;
+    return (
+      this.props.cfgState === CFG_STATE_IDLE ||
+      cfgState === CFG_STATE_NEW ||
+      cfgState === CFG_STATE_LOADED
+    );
   }
 
   canOpenScenario() {
     const cfgState = this.props.cfgState;
-    return cfgState === CFG_STATE_IDLE || cfgState === CFG_STATE_NEW || cfgState === CFG_STATE_LOADED;
+    return (
+      cfgState === CFG_STATE_IDLE ||
+      cfgState === CFG_STATE_NEW ||
+      cfgState === CFG_STATE_LOADED
+    );
   }
 
   canSaveScenario() {
@@ -59,7 +66,11 @@ class CfgPageScenarioButtons extends Component {
 
   canImportScenario() {
     const cfgState = this.props.cfgState;
-    return cfgState === CFG_STATE_IDLE || cfgState === CFG_STATE_NEW || cfgState === CFG_STATE_LOADED;
+    return (
+      cfgState === CFG_STATE_IDLE ||
+      cfgState === CFG_STATE_NEW ||
+      cfgState === CFG_STATE_LOADED
+    );
   }
 
   canExportScenario() {
@@ -68,72 +79,76 @@ class CfgPageScenarioButtons extends Component {
   }
 
   render() {
-
     const input = (
       <TextField
         type="file"
-        ref={input => this.inputElement = input}
+        ref={input => (this.inputElement = input)}
         onClick={() => this.props.onInputScenario(this.inputElement.input_)}
         onChange={() => this.props.onInputScenario(this.inputElement.input_)}
-        style={{height: '0%', width: '0%', marginTop: -20, paddingTop: -20}}
+        style={{ height: '0%', width: '0%', marginTop: -20, paddingTop: -20 }}
       />
     );
     return (
-      <div style={{marginTop: 12}}>
-        <Button raised
-
+      <div style={{ marginTop: 12 }}>
+        <Button
+          raised
           style={buttonStyles}
           onClick={() => this.props.onNewScenario()}
-          disabled = {!this.canCreateNewScenario()}
+          disabled={!this.canCreateNewScenario()}
           data-cy={CFG_BTN_NEW_SCENARIO}
         >
-                    NEW
+          NEW
         </Button>
-        <Button raised
+        <Button
+          raised
           style={buttonStyles}
           onClick={() => this.props.onOpenScenario()}
-          disabled = {!this.canOpenScenario()}
+          disabled={!this.canOpenScenario()}
           data-cy={CFG_BTN_OPEN_SCENARIO}
         >
-                    OPEN
+          OPEN
         </Button>
-        <Button raised
+        <Button
+          raised
           style={buttonStyles}
           onClick={() => this.props.onSaveScenario()}
-          disabled = {!this.canSaveScenario()}
+          disabled={!this.canSaveScenario()}
           data-cy={CFG_BTN_SAVE_SCENARIO}
         >
-                    SAVE
+          SAVE
         </Button>
-        <Button raised
+        <Button
+          raised
           style={buttonStyles}
           onClick={() => this.props.onDeleteScenario()}
-          disabled = {!this.canDeleteScenario()}
+          disabled={!this.canDeleteScenario()}
           data-cy={CFG_BTN_DEL_SCENARIO}
         >
-                    DELETE
+          DELETE
         </Button>
 
         {input}
 
-        <Button raised
-          style={{...buttonStyles, marginLeft: 10}}
+        <Button
+          raised
+          style={{ ...buttonStyles, marginLeft: 10 }}
           onClick={() => {
             this.inputElement.input_.click();
           }}
-          disabled = {!this.canImportScenario()}
+          disabled={!this.canImportScenario()}
           data-cy={CFG_BTN_IMP_SCENARIO}
         >
-                    IMPORT
+          IMPORT
         </Button>
 
-        <Button raised
+        <Button
+          raised
           style={buttonStyles}
           onClick={() => this.props.onExportScenario()}
-          disabled = {!this.canExportScenario()}
+          disabled={!this.canExportScenario()}
           data-cy={CFG_BTN_EXP_SCENARIO}
         >
-                    EXPORT
+          EXPORT
         </Button>
 
         <a id="export-scenario-link" download="config.yaml" hidden></a>

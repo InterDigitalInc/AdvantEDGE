@@ -48,7 +48,6 @@ import {
   DEFAULT_LATENCY_JITTER_APP,
   DEFAULT_THROUGHPUT_APP,
   DEFAULT_PACKET_LOSS_APP
-
 } from '../meep-constants';
 
 // Network Element Fields
@@ -107,7 +106,7 @@ export const FIELD_APP_THROUGPUT = 'appThroughput';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 
 export const getElemFieldVal = (elem, field) => {
-  return (elem[field]) ? elem[field].val : null;
+  return elem[field] ? elem[field].val : null;
 };
 
 export const setElemFieldVal = (elem, field, val) => {
@@ -115,68 +114,124 @@ export const setElemFieldVal = (elem, field, val) => {
 };
 
 export const getElemFieldErr = (elem, field) => {
-  return (elem[field]) ? elem[field].err : null;
+  return elem[field] ? elem[field].err : null;
 };
 
 export const setElemFieldErr = (elem, field, err) => {
   elem[field].err = err;
 };
 
-export const createElem = (name) => {
+export const createElem = name => {
   var elem = {};
-  setElemFieldVal(elem, FIELD_TYPE,                   '');
-  setElemFieldVal(elem, FIELD_PARENT,                 '');
-  setElemFieldVal(elem, FIELD_NAME,                   name);
-  setElemFieldVal(elem, FIELD_IMAGE,                  '');
-  setElemFieldVal(elem, FIELD_PORT,                   '');
-  setElemFieldVal(elem, FIELD_PROTOCOL,               '');
-  setElemFieldVal(elem, FIELD_GROUP,                  '');
-  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP,        '');
-  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP,         '');
-  setElemFieldVal(elem, FIELD_GPU_COUNT,              '');
-  setElemFieldVal(elem, FIELD_GPU_TYPE,               '');
-  setElemFieldVal(elem, FIELD_PLACEMENT_ID,           '');
-  setElemFieldVal(elem, FIELD_ENV_VAR,                '');
-  setElemFieldVal(elem, FIELD_CMD,                    '');
-  setElemFieldVal(elem, FIELD_CMD_ARGS,               '');
-  setElemFieldVal(elem, FIELD_EXT_PORT,               '');
-  setElemFieldVal(elem, FIELD_IS_EXTERNAL,            false);
-  setElemFieldVal(elem, FIELD_CHART_ENABLED,          false);
-  setElemFieldVal(elem, FIELD_CHART_LOC,              '');
-  setElemFieldVal(elem, FIELD_CHART_VAL,              '');
-  setElemFieldVal(elem, FIELD_CHART_GROUP,            '');
-  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY,        DEFAULT_LATENCY_INTER_DOMAIN);
-  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY_VAR,    DEFAULT_LATENCY_JITTER_INTER_DOMAIN);
-  setElemFieldVal(elem, FIELD_INT_DOM_THROUGPUT,      DEFAULT_THROUGHPUT_INTER_DOMAIN);
-  setElemFieldVal(elem, FIELD_INT_DOM_PKT_LOSS,       DEFAULT_PACKET_LOSS_INTER_DOMAIN);
-  setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY,       DEFAULT_LATENCY_INTER_ZONE);
-  setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY_VAR,   DEFAULT_LATENCY_JITTER_INTER_ZONE);
-  setElemFieldVal(elem, FIELD_INT_ZONE_THROUGPUT,     DEFAULT_THROUGHPUT_INTER_ZONE);
-  setElemFieldVal(elem, FIELD_INT_ZONE_PKT_LOSS,      DEFAULT_PACKET_LOSS_INTER_ZONE);
-  setElemFieldVal(elem, FIELD_INT_EDGE_LATENCY,       DEFAULT_LATENCY_INTER_EDGE);
-  setElemFieldVal(elem, FIELD_INT_EDGE_LATENCY_VAR,   DEFAULT_LATENCY_JITTER_INTER_EDGE);
-  setElemFieldVal(elem, FIELD_INT_EDGE_THROUGPUT,     DEFAULT_THROUGHPUT_INTER_EDGE);
-  setElemFieldVal(elem, FIELD_INT_EDGE_PKT_LOSS,      DEFAULT_PACKET_LOSS_INTER_EDGE);
-  setElemFieldVal(elem, FIELD_INT_FOG_LATENCY,        DEFAULT_LATENCY_INTER_FOG);
-  setElemFieldVal(elem, FIELD_INT_FOG_LATENCY_VAR,    DEFAULT_LATENCY_JITTER_INTER_FOG);
-  setElemFieldVal(elem, FIELD_INT_FOG_THROUGPUT,      DEFAULT_THROUGHPUT_INTER_FOG);
-  setElemFieldVal(elem, FIELD_INT_FOG_PKT_LOSS,       DEFAULT_PACKET_LOSS_INTER_FOG);
-  setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY,       DEFAULT_LATENCY_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY_VAR,   DEFAULT_LATENCY_JITTER_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_EDGE_FOG_THROUGPUT,     DEFAULT_THROUGHPUT_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_EDGE_FOG_PKT_LOSS,      DEFAULT_PACKET_LOSS_EDGE_FOG);
-  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY,      DEFAULT_LATENCY_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR,  DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT,    DEFAULT_THROUGHPUT_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS,     DEFAULT_PACKET_LOSS_TERMINAL_LINK);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY,           DEFAULT_LATENCY_LINK);
-  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR,       DEFAULT_LATENCY_JITTER_LINK);
-  setElemFieldVal(elem, FIELD_LINK_THROUGPUT,         DEFAULT_THROUGHPUT_LINK);
-  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS,          DEFAULT_PACKET_LOSS_LINK);
-  setElemFieldVal(elem, FIELD_APP_LATENCY,            DEFAULT_LATENCY_APP);
-  setElemFieldVal(elem, FIELD_APP_LATENCY_VAR,        DEFAULT_LATENCY_JITTER_APP);
-  setElemFieldVal(elem, FIELD_APP_THROUGPUT,          DEFAULT_THROUGHPUT_APP);
-  setElemFieldVal(elem, FIELD_APP_PKT_LOSS,           DEFAULT_PACKET_LOSS_APP);
+  setElemFieldVal(elem, FIELD_TYPE, '');
+  setElemFieldVal(elem, FIELD_PARENT, '');
+  setElemFieldVal(elem, FIELD_NAME, name);
+  setElemFieldVal(elem, FIELD_IMAGE, '');
+  setElemFieldVal(elem, FIELD_PORT, '');
+  setElemFieldVal(elem, FIELD_PROTOCOL, '');
+  setElemFieldVal(elem, FIELD_GROUP, '');
+  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP, '');
+  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP, '');
+  setElemFieldVal(elem, FIELD_GPU_COUNT, '');
+  setElemFieldVal(elem, FIELD_GPU_TYPE, '');
+  setElemFieldVal(elem, FIELD_PLACEMENT_ID, '');
+  setElemFieldVal(elem, FIELD_ENV_VAR, '');
+  setElemFieldVal(elem, FIELD_CMD, '');
+  setElemFieldVal(elem, FIELD_CMD_ARGS, '');
+  setElemFieldVal(elem, FIELD_EXT_PORT, '');
+  setElemFieldVal(elem, FIELD_IS_EXTERNAL, false);
+  setElemFieldVal(elem, FIELD_CHART_ENABLED, false);
+  setElemFieldVal(elem, FIELD_CHART_LOC, '');
+  setElemFieldVal(elem, FIELD_CHART_VAL, '');
+  setElemFieldVal(elem, FIELD_CHART_GROUP, '');
+  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, DEFAULT_LATENCY_INTER_DOMAIN);
+  setElemFieldVal(
+    elem,
+    FIELD_INT_DOM_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_INTER_DOMAIN
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_DOM_THROUGPUT,
+    DEFAULT_THROUGHPUT_INTER_DOMAIN
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_DOM_PKT_LOSS,
+    DEFAULT_PACKET_LOSS_INTER_DOMAIN
+  );
+  setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY, DEFAULT_LATENCY_INTER_ZONE);
+  setElemFieldVal(
+    elem,
+    FIELD_INT_ZONE_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_INTER_ZONE
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_ZONE_THROUGPUT,
+    DEFAULT_THROUGHPUT_INTER_ZONE
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_ZONE_PKT_LOSS,
+    DEFAULT_PACKET_LOSS_INTER_ZONE
+  );
+  setElemFieldVal(elem, FIELD_INT_EDGE_LATENCY, DEFAULT_LATENCY_INTER_EDGE);
+  setElemFieldVal(
+    elem,
+    FIELD_INT_EDGE_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_INTER_EDGE
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_EDGE_THROUGPUT,
+    DEFAULT_THROUGHPUT_INTER_EDGE
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_INT_EDGE_PKT_LOSS,
+    DEFAULT_PACKET_LOSS_INTER_EDGE
+  );
+  setElemFieldVal(elem, FIELD_INT_FOG_LATENCY, DEFAULT_LATENCY_INTER_FOG);
+  setElemFieldVal(
+    elem,
+    FIELD_INT_FOG_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_INTER_FOG
+  );
+  setElemFieldVal(elem, FIELD_INT_FOG_THROUGPUT, DEFAULT_THROUGHPUT_INTER_FOG);
+  setElemFieldVal(elem, FIELD_INT_FOG_PKT_LOSS, DEFAULT_PACKET_LOSS_INTER_FOG);
+  setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY, DEFAULT_LATENCY_EDGE_FOG);
+  setElemFieldVal(
+    elem,
+    FIELD_EDGE_FOG_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_EDGE_FOG
+  );
+  setElemFieldVal(elem, FIELD_EDGE_FOG_THROUGPUT, DEFAULT_THROUGHPUT_EDGE_FOG);
+  setElemFieldVal(elem, FIELD_EDGE_FOG_PKT_LOSS, DEFAULT_PACKET_LOSS_EDGE_FOG);
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, DEFAULT_LATENCY_TERMINAL_LINK);
+  setElemFieldVal(
+    elem,
+    FIELD_TERM_LINK_LATENCY_VAR,
+    DEFAULT_LATENCY_JITTER_TERMINAL_LINK
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_TERM_LINK_THROUGPUT,
+    DEFAULT_THROUGHPUT_TERMINAL_LINK
+  );
+  setElemFieldVal(
+    elem,
+    FIELD_TERM_LINK_PKT_LOSS,
+    DEFAULT_PACKET_LOSS_TERMINAL_LINK
+  );
+  setElemFieldVal(elem, FIELD_LINK_LATENCY, DEFAULT_LATENCY_LINK);
+  setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, DEFAULT_LATENCY_JITTER_LINK);
+  setElemFieldVal(elem, FIELD_LINK_THROUGPUT, DEFAULT_THROUGHPUT_LINK);
+  setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, DEFAULT_PACKET_LOSS_LINK);
+  setElemFieldVal(elem, FIELD_APP_LATENCY, DEFAULT_LATENCY_APP);
+  setElemFieldVal(elem, FIELD_APP_LATENCY_VAR, DEFAULT_LATENCY_JITTER_APP);
+  setElemFieldVal(elem, FIELD_APP_THROUGPUT, DEFAULT_THROUGHPUT_APP);
+  setElemFieldVal(elem, FIELD_APP_PKT_LOSS, DEFAULT_PACKET_LOSS_APP);
 
   return elem;
 };
