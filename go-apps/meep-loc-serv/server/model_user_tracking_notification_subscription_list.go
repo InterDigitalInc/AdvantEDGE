@@ -9,8 +9,8 @@
 
 package server
 
-type InlineResponse2002NotificationSubscriptionList struct {
-	ZoneStatusSubscription []ZoneStatusSubscription `json:"zoneStatusSubscription,omitempty"`
+type UserTrackingNotificationSubscriptionList struct {
+	UserTrackingSubscription []UserTrackingSubscription `json:"userTrackingSubscription,omitempty"`
 
 	// Self referring URL.
 	ResourceURL string `json:"resourceURL,omitempty"`

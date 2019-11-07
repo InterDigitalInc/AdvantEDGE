@@ -9,6 +9,6 @@
 
 package server
 
-type InlineResponse2005 struct {
-	NotificationSubscriptionList *InlineResponse2002NotificationSubscriptionList `json:"notificationSubscriptionList,omitempty"`
+type ResponseZoneInfo struct {
+	ZoneInfo *ZoneInfo `json:"zoneInfo,omitempty"`
 }
