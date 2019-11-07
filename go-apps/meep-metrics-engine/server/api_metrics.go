@@ -14,5 +14,6 @@ import (
 )
 
 func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 }

@@ -41,18 +41,21 @@ paths:
         required: false
         type: "string"
         x-exportParamName: "Dest"
+        x-optionalDataType: "String"
       - name: "dataType"
         in: "query"
         description: "Log Message Type"
         required: false
         type: "string"
         x-exportParamName: "DataType"
+        x-optionalDataType: "String"
       - name: "src"
         in: "query"
         description: "Pod that originated the metrics logged in the message"
         required: false
         type: "string"
         x-exportParamName: "Src"
+        x-optionalDataType: "String"
       - name: "starTime"
         in: "query"
         description: "Starting timestamp of time range"
@@ -71,8 +74,6 @@ paths:
         200:
           description: "Successful response to a query regarding metrics based on\
             \ search criteria"
-          schema:
-            $ref: "#/definitions/LogResponseList"
           examples:
             application/json:
               logResponseList:
@@ -85,6 +86,8 @@ paths:
                   dataType: "latency"
                   src: "pod1"
                   timestamp: "2019-07-09T13:47:04.379+0000"
+          schema:
+            $ref: "#/definitions/LogResponseList"
         404:
           description: "Not found"
         500:
@@ -128,6 +131,7 @@ definitions:
       logResponseList:
         $ref: "#/definitions/LogResponseList"
   LogResponse_data:
+    type: "object"
     properties:
       rx:
         type: "integer"
