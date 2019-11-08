@@ -28,14 +28,14 @@ import { Elevation } from '@rmwc/elevation';
 
 const CorePodsLed = props => {
   /*eslint-disable */
-  const greenLed = require("../../img/green-led.png");
-  const redLed = require("../../img/red-led.png");
-  /*eslint-enable */
+  const greenLed = require('../../img/green-led.png');
+  const redLed = require('../../img/red-led.png');
+  /* eslint-enable */
   const tooltipType = props.corePodsRunning ? 'success' : 'error';
   const marginLeft = { marginLeft: -35 };
   return (
     <>
-      <a data-tip data-for="led">
+      <a data-tip data-for='led'>
         <img
           src={props.corePodsRunning ? greenLed : redLed}
           height={30}
@@ -44,10 +44,10 @@ const CorePodsLed = props => {
         />
       </a>
       <ReactTooltip
-        id="led"
-        aria-haspopup="true"
-        role="example"
-        place="left"
+        id='led'
+        aria-haspopup='true'
+        role='example'
+        place='left'
         type={tooltipType}
       >
         <ul style={{ listStyle: 'none' }}>
@@ -70,24 +70,24 @@ const CorePodsLed = props => {
 
 const MeepTopBar = props => {
   /*eslint-disable */
-  const logo = require("../../img/ID-Icon-01-idcc.svg");
-  const advantEdge = require("../../img/AdvantEDGE-logo-NoTagline_White_RGB.png");
-  /*eslint-enable */
+  const logo = require('../../img/ID-Icon-01-idcc.svg');
+  const advantEdge = require('../../img/AdvantEDGE-logo-NoTagline_White_RGB.png');
+  /* eslint-enable */
   return (
     <Toolbar>
       <Elevation z={4}>
         <ToolbarRow>
           <ToolbarSection alignStart>
             <img
-              id="idcc-logo"
-              className="idcc-toolbar-menu mdc-top-app-bar__navigation-icon"
+              id='idcc-logo'
+              className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
               src={logo}
-              alt=""
+              alt=''
               onClick={() => {
                 props.toggleMainDrawer();
               }}
             />
-            <img id="AdvantEdgeLogo" height={50} src={advantEdge} alt="" />
+            <img id='AdvantEdgeLogo' height={50} src={advantEdge} alt='' />
             <ToolbarTitle>
               <span style={titleStyle}>{props.title}</span>
             </ToolbarTitle>
