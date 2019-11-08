@@ -50,7 +50,7 @@ const initialState = {
 export function scenarioReducer(state = initialState, action) {
   switch (action.type) {
   case CFG_CHANGE_SCENARIO_NAME:
-    return updateObject(state, {name: action.payload});
+    return updateObject(state, { name: action.payload });
   case CFG_CHANGE_SCENARIO:
     return action.payload;
   default:

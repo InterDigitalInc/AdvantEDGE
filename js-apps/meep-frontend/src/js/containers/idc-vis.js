@@ -16,23 +16,21 @@
 
 import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component, createRef }  from 'react';
+import React, { Component, createRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Button } from '@rmwc/button';
 import * as vis from 'vis';
 import { updateObject } from '../util/object-util';
-import { execChangeTable, execChangeVis, execVisFilteredData } from '../state/exec';
+import {
+  execChangeTable,
+  execChangeVis,
+  execVisFilteredData
+} from '../state/exec';
 import { cfgChangeTable, cfgChangeVis, cfgElemEdit } from '../state/cfg';
 
-import {
-  TYPE_CFG,
-  TYPE_EXEC
-} from '../meep-constants';
+import { TYPE_CFG, TYPE_EXEC } from '../meep-constants';
 
-import {
-  FIELD_NAME,
-  getElemFieldVal
-} from '../util/elem-utils';
+import { FIELD_NAME, getElemFieldVal } from '../util/elem-utils';
 
 function createBoxGroup(groups, name, bgColor) {
   groups[name] = {
@@ -85,10 +83,16 @@ function setFixedGroup(group) {
   };
 }
 
-const visFilters = ['nodes', 'edges', 'layout', 'interaction', 'manipulation', 'physics'];
+const visFilters = [
+  'nodes',
+  'edges',
+  'layout',
+  'interaction',
+  'manipulation',
+  'physics'
+];
 
 class IDCVis extends Component {
-
   constructor(props) {
     super(props);
     this.state = {};
@@ -98,7 +102,6 @@ class IDCVis extends Component {
   }
 
   initializeVisualizationOptions(vis, container) {
-
     vis.options = {
       //clickToUse:true,
       configure: {
@@ -211,7 +214,6 @@ class IDCVis extends Component {
   }
 
   componentDidMount() {
-
     const newVis = updateObject({}, this.getVis());
     if (newVis.data.nodes.length < 1) {
       newVis.data.nodes = [
@@ -229,16 +231,22 @@ class IDCVis extends Component {
     this.initializeVisualizationOptions(newVis, this.configRef.current);
 
     var domNode = ReactDOM.findDOMNode(this);
-    newVis.network = new vis.Network(domNode, (this.props.type === TYPE_CFG) ? newVis.data : this.props.execVisData, newVis.options);
+    newVis.network = new vis.Network(
+      domNode,
+      this.props.type === TYPE_CFG ? newVis.data : this.props.execVisData,
+      newVis.options
+    );
 
-    this.table = updateObject(this.getTable(), {data: newVis.data});
+    this.table = updateObject(this.getTable(), { data: newVis.data });
     this.changeVis(newVis);
     this.changeTable(this.table);
 
     // Configuration Visualization handlers
     if (this.props.type === TYPE_CFG) {
-      newVis.network.on('click', (obj) => {
-        if (!this.props.cfgVis.data.nodes.get) {return;}
+      newVis.network.on('click', obj => {
+        if (!this.props.cfgVis.data.nodes.get) {
+          return;
+        }
         // meep.cfg.vis.reportContainer.innerHTML = "x:" + obj.pointer.canvas.x + ", y:" + obj.pointer.canvas.y;
 
         var clickedNodes = this.props.cfgVis.data.nodes.get(obj.nodes);
@@ -255,7 +263,11 @@ class IDCVis extends Component {
 
         // Open first selected element in element configuration pane
         if (this.props.type === TYPE_CFG) {
-          this.props.onEditElement((table.selected.length) ? this.getElementByName(table.entries, table.selected[0]) : null);
+          this.props.onEditElement(
+            table.selected.length
+              ? this.getElementByName(table.entries, table.selected[0])
+              : null
+          );
         }
       });
     }
@@ -271,7 +283,7 @@ class IDCVis extends Component {
   }
 
   getTable() {
-    switch(this.props.type) {
+    switch (this.props.type) {
     case TYPE_CFG:
       return this.props.cfgTable;
     case TYPE_EXEC:
@@ -282,7 +294,7 @@ class IDCVis extends Component {
   }
 
   changeTable(table) {
-    switch(this.props.type) {
+    switch (this.props.type) {
     case TYPE_CFG:
       this.props.changeCfgTable(table);
       break;
@@ -295,7 +307,7 @@ class IDCVis extends Component {
   }
 
   changeVis(vis) {
-    switch(this.props.type) {
+    switch (this.props.type) {
     case TYPE_CFG:
       this.props.changeCfgVis(vis);
       break;
@@ -308,7 +320,7 @@ class IDCVis extends Component {
   }
 
   getVis() {
-    switch(this.props.type) {
+    switch (this.props.type) {
     case TYPE_CFG:
       return this.props.cfgVis;
     case TYPE_EXEC:
@@ -321,7 +333,10 @@ class IDCVis extends Component {
   // Toggle visualization controls
   toggleConfig(filterStr) {
     var vis = this.getVis();
-    if (vis.showConfig === false || (vis.showConfig === true && vis.options.configure.filter === filterStr)) {
+    if (
+      vis.showConfig === false ||
+      (vis.showConfig === true && vis.options.configure.filter === filterStr)
+    ) {
       vis.showConfig = !vis.showConfig;
     }
     vis.options.configure.enabled = vis.showConfig;
@@ -340,29 +355,34 @@ class IDCVis extends Component {
   render() {
     this.updateConfigVisibility();
     return (
-        <>
-            <div className="vis-network-div" ref={this.thisRef} data-cy={this.props.cydata}>
-                Vis Component
-            </div>
-            <div className="idcc-margin-top">
-              {(this.props.devMode) ?
-                _.map(visFilters, (filter) => {
-                  return (
-                    <Button raised
-                      style={buttonStyles}
-                      key={filter}
-                      onClick={() => {this.toggleConfig(filter);}}
-                    >
-                      {filter}
-                    </Button>
-                  );
-                })
-                :
-                null
-              }
-              <div className="idcc-margin-top" ref = {this.configRef} />
-            </div>
-        </>
+      <>
+        <div
+          className="vis-network-div"
+          ref={this.thisRef}
+          data-cy={this.props.cydata}
+        >
+          Vis Component
+        </div>
+        <div className="idcc-margin-top">
+          {this.props.devMode
+            ? _.map(visFilters, filter => {
+              return (
+                <Button
+                  raised
+                  style={buttonStyles}
+                  key={filter}
+                  onClick={() => {
+                    this.toggleConfig(filter);
+                  }}
+                >
+                  {filter}
+                </Button>
+              );
+            })
+            : null}
+          <div className="idcc-margin-top" ref={this.configRef} />
+        </div>
+      </>
     );
   }
 }
@@ -385,11 +405,15 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeExecTable: (table) => {dispatch(execChangeTable(table));},
-    changeCfgTable: (table) => {dispatch(cfgChangeTable(table));},
-    changeExecVis: (vis) => dispatch(execChangeVis(vis)),
-    changeCfgVis: (vis) => dispatch(cfgChangeVis(vis)),
-    changeCfgElement: (element) => dispatch(cfgElemEdit(element))
+    changeExecTable: table => {
+      dispatch(execChangeTable(table));
+    },
+    changeCfgTable: table => {
+      dispatch(cfgChangeTable(table));
+    },
+    changeExecVis: vis => dispatch(execChangeVis(vis)),
+    changeCfgVis: vis => dispatch(cfgChangeVis(vis)),
+    changeCfgElement: element => dispatch(cfgElemEdit(element))
   };
 };
 

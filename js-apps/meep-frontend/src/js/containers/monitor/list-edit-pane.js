@@ -21,31 +21,42 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Button } from '@rmwc/button';
 
-export const ListEditPaneRow = ({item, itemLabelLabel, itemValueLabel, updateItemSelection, updateItemValue, updateItemLabel}) => {
+export const ListEditPaneRow = ({
+  item,
+  itemLabelLabel,
+  itemValueLabel,
+  updateItemSelection,
+  updateItemValue,
+  updateItemLabel
+}) => {
   return (
     <Grid>
       <GridCell span={4} style={styles.editListItemCell}>
-        <TextField outlined style={{width: '100%'}}
+        <TextField
+          outlined
+          style={{ width: '100%' }}
           label={itemLabelLabel}
           value={item.label}
-          onChange={(e) => {
+          onChange={e => {
             updateItemLabel(item.index, e.target.value);
           }}
         />
       </GridCell>
       <GridCell span={7} style={styles.editListItemCell}>
-        <TextField outlined style={{width: '100%'}}
+        <TextField
+          outlined
+          style={{ width: '100%' }}
           label={itemValueLabel}
           value={item.value}
-          onChange={(e) => {
+          onChange={e => {
             updateItemValue(item.index, e.target.value);
           }}
         />
       </GridCell>
-      <GridCell span={1} style={{...styles.editListItemCell, paddingTop: 30}}>
+      <GridCell span={1} style={{ ...styles.editListItemCell, paddingTop: 30 }}>
         <Checkbox
           checked={item.selected}
-          onChange={(e) => {
+          onChange={e => {
             updateItemSelection(item.index, e.target.checked);
           }}
         />
@@ -53,53 +64,44 @@ export const ListEditPaneRow = ({item, itemLabelLabel, itemValueLabel, updateIte
     </Grid>
   );
 };
-  
-export const ListEditPane = (props) => {
+
+export const ListEditPane = props => {
   return (
     <div>
       {_.map(props.items, (item, index) => {
-        return (<ListEditPaneRow
-          item={item}
-          key={index}
-          itemLabelLabel={props.itemLabelLabel}
-          itemValueLabel={props.itemValueLabel}
-          updateItemLabel={props.updateItemLabel}
-          updateItemValue={props.updateItemValue}
-          updateItemSelection={props.updateItemSelection}
-        />);
-      })
-      }
+        return (
+          <ListEditPaneRow
+            item={item}
+            key={index}
+            itemLabelLabel={props.itemLabelLabel}
+            itemValueLabel={props.itemValueLabel}
+            updateItemLabel={props.updateItemLabel}
+            updateItemValue={props.updateItemValue}
+            updateItemSelection={props.updateItemSelection}
+          />
+        );
+      })}
 
-      <Grid style={{marginTop: 20, marginBottom: 10}}>
-        <GridCell span={7}>
-
-        </GridCell>
+      <Grid style={{ marginTop: 20, marginBottom: 10 }}>
+        <GridCell span={7}></GridCell>
 
         <GridCell span={5}>
-          <Button raised
-            style={styles.button}
-            onClick={props.cancelEditMode}
-          >
-              CANCEL
+          <Button raised style={styles.button} onClick={props.cancelEditMode}>
+            CANCEL
           </Button>
-          <Button raised
+          <Button
+            raised
             style={styles.button}
             onClick={props.deleteItems}
             disabled={!props.canDelete()}
           >
-              DELETE
+            DELETE
           </Button>
-          <Button raised
-            style={styles.button}
-            onClick={props.addItem}
-          >
-              ADD
+          <Button raised style={styles.button} onClick={props.addItem}>
+            ADD
           </Button>
-          <Button raised
-            style={styles.button}
-            onClick={props.saveItems}
-          >
-              SAVE
+          <Button raised style={styles.button} onClick={props.saveItems}>
+            SAVE
           </Button>
         </GridCell>
       </Grid>

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 
 import IDDialog from './id-dialog';
 import { MEEP_DLG_DEL_SCENARIO } from '../../meep-constants';
 
 class IDDeleteScenarioDialog extends Component {
-
   constructor(props) {
     super(props);
-    this.state={};
+    this.state = {};
   }
 
   render() {
@@ -35,7 +34,11 @@ class IDDeleteScenarioDialog extends Component {
         onSubmit={this.props.deleteScenario}
         cydata={MEEP_DLG_DEL_SCENARIO}
       >
-        <span style={styles.text}>{'Are you sure you want to delete the current scenario from the MEEP Controller?'}</span>
+        <span style={styles.text}>
+          {
+            'Are you sure you want to delete the current scenario from the MEEP Controller?'
+          }
+        </span>
       </IDDialog>
     );
   }

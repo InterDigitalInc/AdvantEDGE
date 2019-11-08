@@ -15,7 +15,7 @@
  */
 
 import _ from 'lodash';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { updateObject } from '../../util/object-util';
@@ -26,8 +26,7 @@ import IDSelect from '../../components/helper-components/id-select';
 import {
   camelCasePrefix,
   firstLetterUpper
-
-} from '../../util/stringManipulation';
+} from '../../util/string-manipulation';
 
 import {
   EXEC_EVT_NC_TYPE,
@@ -57,8 +56,10 @@ import {
   PREFIX_EDGE_FOG,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
-  PREFIX_APP
+  PREFIX_APP,
 
+  // Layout type
+  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT
 } from '../../meep-constants';
 
 import {
@@ -97,16 +98,28 @@ import {
   FIELD_APP_LATENCY_VAR,
   FIELD_APP_THROUGPUT,
   FIELD_APP_PKT_LOSS,
-
   getElemFieldVal,
   setElemFieldVal,
   setElemFieldErr
 } from '../../util/elem-utils';
 
-const ncApplicableTypes = [ELEMENT_TYPE_SCENARIO, ELEMENT_TYPE_OPERATOR, 'ZONE-INTER-EDGE', 'ZONE-INTER-FOG', 'ZONE-EDGE-FOG', ELEMENT_TYPE_POA, ELEMENT_TYPE_DC, ELEMENT_TYPE_EDGE, ELEMENT_TYPE_FOG, ELEMENT_TYPE_UE, ELEMENT_TYPE_UE_APP, ELEMENT_TYPE_EDGE_APP, ELEMENT_TYPE_CLOUD_APP];
+const ncApplicableTypes = [
+  ELEMENT_TYPE_SCENARIO,
+  ELEMENT_TYPE_OPERATOR,
+  'ZONE-INTER-EDGE',
+  'ZONE-INTER-FOG',
+  'ZONE-EDGE-FOG',
+  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_DC,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_UE,
+  ELEMENT_TYPE_UE_APP,
+  ELEMENT_TYPE_EDGE_APP,
+  ELEMENT_TYPE_CLOUD_APP
+];
 
 class NetworkCharacteristicsEventPane extends Component {
-
   constructor(props) {
     super(props);
 
@@ -121,13 +134,19 @@ class NetworkCharacteristicsEventPane extends Component {
     var element = this.props.element;
 
     // Verify that no field is in error
-    var fieldsInError=0;
-    _.forOwn(element, (val) => fieldsInError = val.err ? fieldsInError+1 : fieldsInError);
+    var fieldsInError = 0;
+    _.forOwn(
+      element,
+      val => (fieldsInError = val.err ? fieldsInError + 1 : fieldsInError)
+    );
     if (fieldsInError) {
       return;
     }
 
-    var neType = (this.state.currentElementType === 'DOMAIN') ? 'OPERATOR' : this.state.currentElementType;
+    var neType =
+      this.state.currentElementType === 'DOMAIN'
+        ? 'OPERATOR'
+        : this.state.currentElementType;
     var ncEvent = {
       name: 'name',
       type: this.props.currentEvent,
@@ -141,9 +160,9 @@ class NetworkCharacteristicsEventPane extends Component {
     this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate, element);
 
     // trigger event with this.props.api
-    this.props.api.sendEvent(this.props.currentEvent, ncEvent, (error) => {
+    this.props.api.sendEvent(this.props.currentEvent, ncEvent, error => {
       if (!error) {
-        this.setState({dialogOpen: true});
+        this.setState({ dialogOpen: true });
         this.props.onSuccess();
       }
     });
@@ -151,7 +170,7 @@ class NetworkCharacteristicsEventPane extends Component {
 
   firstElementMatchingType(type) {
     var elements = _.chain(this.props.networkElements)
-      .filter((e) => {
+      .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         if (type === 'DOMAIN' || type === 'OPERATOR') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
@@ -167,7 +186,7 @@ class NetworkCharacteristicsEventPane extends Component {
   }
 
   currentPrefix() {
-    switch(this.state.currentElementType) {
+    switch (this.state.currentElementType) {
     case ELEMENT_TYPE_SCENARIO:
       return PREFIX_INT_DOM;
     case ELEMENT_TYPE_OPERATOR:
@@ -200,7 +219,6 @@ class NetworkCharacteristicsEventPane extends Component {
   }
 
   setNetCharFromElem(netChar, element) {
-
     // Retrieve field names
     var latencyFieldName = null;
     var latencyVarFieldName = null;
@@ -268,7 +286,9 @@ class NetworkCharacteristicsEventPane extends Component {
 
   fieldName(genericFieldName) {
     const prefix = this.currentPrefix();
-    var name = (camelCasePrefix(prefix) + firstLetterUpper(genericFieldName)).replace(/\s/g,'');
+    var name = (
+      camelCasePrefix(prefix) + firstLetterUpper(genericFieldName)
+    ).replace(/\s/g, '');
     return name;
   }
 
@@ -292,12 +312,16 @@ class NetworkCharacteristicsEventPane extends Component {
   render() {
     var element = this.props.element;
     var type = getElemFieldVal(element, FIELD_TYPE);
-    var nbErrors = _.reduce(element, (result, value) => {
-      return (value.err) ? result = result + 1 : result;
-    }, 0);
+    var nbErrors = _.reduce(
+      element,
+      (result, value) => {
+        return value.err ? (result = result + 1) : result;
+      },
+      0
+    );
 
     var elements = _.chain(this.props.networkElements)
-      .filter((e) => {
+      .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         if (type === 'DOMAIN' || type === 'OPERATOR') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
@@ -307,7 +331,7 @@ class NetworkCharacteristicsEventPane extends Component {
         }
         return this.state.currentElementType === elemType;
       })
-      .map((e) => {
+      .map(e => {
         return getElemFieldVal(e, FIELD_NAME);
       })
       .value();
@@ -321,16 +345,15 @@ class NetworkCharacteristicsEventPane extends Component {
               label="Network Element Type"
               outlined
               options={ncApplicableTypes}
-              onChange={(event) => {
+              onChange={event => {
                 var elem = this.firstElementMatchingType(event.target.value);
                 this.props.updateElement(elem);
-                this.setState({currentElementType: event.target.value});
+                this.setState({ currentElementType: event.target.value });
               }}
               data-cy={EXEC_EVT_NC_TYPE}
             />
           </GridCell>
-          <GridCell span="4">
-          </GridCell>
+          <GridCell span="4"></GridCell>
         </Grid>
 
         <Grid>
@@ -340,18 +363,22 @@ class NetworkCharacteristicsEventPane extends Component {
               label="Network Element"
               value={element ? getElemFieldVal(element, FIELD_NAME) || '' : ''}
               options={elements}
-              onChange={(event)=>{
-                this.props.updateElement(this.getElementByName(event.target.value));
+              onChange={event => {
+                this.props.updateElement(
+                  this.getElementByName(event.target.value)
+                );
               }}
               cydata={EXEC_EVT_NC_NAME}
             />
           </GridCell>
-          <GridCell span="4">
-          </GridCell>
+          <GridCell span="4"></GridCell>
         </Grid>
 
         <NCGroup
-          onUpdate={(name, val, err) => {this.onUpdateElement(name, val, err);}}
+          layout={MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT}
+          onUpdate={(name, val, err) => {
+            this.onUpdateElement(name, val, err);
+          }}
           parent={this}
           element={element}
           prefix={this.currentPrefix()}
@@ -360,9 +387,13 @@ class NetworkCharacteristicsEventPane extends Component {
         <CancelApplyPair
           cancelText="Close"
           applyText="Submit"
-          onCancel={() => {this.props.onClose();}}
-          onApply={(e) => this.triggerEvent(e)}
-          saveDisabled={!element.elementType || !this.props.element.name || nbErrors}
+          onCancel={() => {
+            this.props.onClose();
+          }}
+          onApply={e => this.triggerEvent(e)}
+          saveDisabled={
+            !element.elementType || !this.props.element.name || nbErrors
+          }
         />
       </div>
     );

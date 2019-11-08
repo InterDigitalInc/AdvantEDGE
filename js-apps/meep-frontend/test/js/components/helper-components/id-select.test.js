@@ -40,7 +40,7 @@ describe('<IDSelect />', () => {
         span: 100,
         label: 'myLabel',
         options: 'myOptions',
-        onChange: function myFunction(){},
+        onChange: function myFunction() { },
         disabled: true,
         value: 'myValue'
       };

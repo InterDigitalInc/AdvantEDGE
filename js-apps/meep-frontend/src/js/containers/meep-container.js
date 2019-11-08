@@ -16,8 +16,9 @@
 
 import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import { updateObject } from '../util/object-util';
 
 // Import JS dependencies
@@ -34,7 +35,9 @@ import {
   TYPE_CFG,
   TYPE_EXEC,
   EXEC_STATE_DEPLOYED,
-  NO_SCENARIO_NAME
+  NO_SCENARIO_NAME,
+  VIS_VIEW,
+  VIEW_NAME_NONE
 } from '../meep-constants';
 
 import {
@@ -62,7 +65,8 @@ import {
   execChangeOkToTerminate,
   corePodsRunning,
   corePodsErrors,
-  execVisFilteredData
+  execVisFilteredData,
+  execAddMetricsEpoch
 } from '../state/exec';
 
 import {
@@ -76,13 +80,23 @@ import {
   PAGE_EXECUTE,
   PAGE_MONITOR,
   PAGE_SETTINGS
-} from '../state/ui';
+} from '../meep-constants';
+
+import { idlog } from '../util/functional';
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// var basepath = 'http://10.3.16.73:30000/v1';
+// const basepath = 'http://10.3.16.137:30000/v1';
 
-meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/, '');
+const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
+// const metricsBasePath = 'http://10.3.16.137:30008/v1';
+
+const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
+
+meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
+  /\/+$/,
+  ''
+);
 
 class MeepContainer extends Component {
   constructor(props) {
@@ -91,15 +105,18 @@ class MeepContainer extends Component {
     this.refreshIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
+    this.metricsPollingEnabled = false;
   }
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
     this.props.changeEventCreationMode(false);
     this.refreshScenario();
-    // -- Migration -- //
-    this.props.changeCurrentPage(PAGE_CONFIGURE);
+    if (this.props.automaticRefresh) {
+      this.startAutomaticRefresh();
+    }
     this.startRefreshCycle();
+    this.setMetricsPolling();
   }
 
   startRefreshCycle() {
@@ -108,7 +125,10 @@ class MeepContainer extends Component {
   }
 
   startPodsPhasesPeriodicCheck() {
-    this.podsPhasesIntervalTimer = setInterval(() => this.checkPodsPhases(), 1000);
+    this.podsPhasesIntervalTimer = setInterval(
+      () => this.checkPodsPhases(),
+      1000
+    );
   }
 
   stopCorePodsPhasesPeriodicCheck() {
@@ -117,7 +137,8 @@ class MeepContainer extends Component {
 
   monitorTabFocus() {
     var hidden, visibilityChange;
-    if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support
+    if (typeof document.hidden !== 'undefined') {
+      // Opera 12.10 and Firefox 18 and later support
       hidden = 'hidden';
       visibilityChange = 'visibilitychange';
     } else if (typeof document.msHidden !== 'undefined') {
@@ -142,40 +163,107 @@ class MeepContainer extends Component {
     };
 
     // Warn if the browser doesn't support addEventListener or the Page Visibility API
-    if (typeof document.addEventListener === 'undefined' || hidden === undefined) {
+    if (
+      typeof document.addEventListener === 'undefined' ||
+      hidden === undefined
+    ) {
       // TODO: consider showing an alert
       // console.log('This demo requires a browser, such as Google Chrome or Firefox, that supports the Page Visibility API.');
     } else {
       // Handle page visibility change
-      document.addEventListener(visibilityChange, handleVisibilityChange, false);
+      document.addEventListener(
+        visibilityChange,
+        handleVisibilityChange,
+        false
+      );
     }
   }
 
-  // -- Migration --
+  fetchMetrics() {
+    const delta = -7;
+    const startTime = moment()
+      .utc()
+      .add(delta, 'seconds')
+      .format(TIME_FORMAT);
+    const stopTime = moment()
+      .utc()
+      .add(delta + 1, 'seconds')
+      .format(TIME_FORMAT);
+    return axios
+      .get(
+        `${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`
+      )
+      .then(res => {
+        let epoch = {
+          data: res.data.logResponse || [],
+          startTime: startTime
+        };
+
+        this.props.addMetricsEpoch(epoch);
+      })
+      .catch(e => {
+        idlog('Error while fetching metrics')(e);
+      });
+  }
+
+  setMetricsPolling() {
+    if (
+      this.props.dashboardView1 === VIS_VIEW &&
+      this.props.dashboardView2 === VIEW_NAME_NONE
+    ) {
+      this.stopMetricsPolling();
+    } else {
+      this.startMetricsPolling();
+    }
+  }
+  stopMetricsPolling() {
+    if (this.metricsPollingEnabled) {
+      clearInterval(this.dataTimer);
+      this.metricsPollingEnabled = false;
+    }
+  }
+  startMetricsPolling() {
+    if (!this.metricsPollingEnabled) {
+      this.epochCount = 0;
+      const nextData = () => {
+        this.epochCount += 1;
+        this.fetchMetrics();
+      };
+      this.dataTimer = setInterval(nextData, 1000);
+      this.metricsPollingEnabled = true;
+    }
+  }
+
   checkPodsPhases() {
     // Core pods
-    axios.get(`${basepath}/states?long=true&type=core`)
+    axios
+      .get(`${basepath}/states?long=true&type=core`)
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
-      }).catch(() => {
+      })
+      .catch(() => {
         this.props.changeCorePodsPhases([]);
       });
 
     // Scenario pods
-    axios.get(`${basepath}/states?long=true&type=scenario`)
+    axios
+      .get(`${basepath}/states?long=true&type=scenario`)
       .then(res => {
         var scenarioPodsPhases = res.data.podStatus;
         this.props.changeScenarioPodsPhases(scenarioPodsPhases);
-      }).catch(() => {
+      })
+      .catch(() => {
         this.props.changeScenarioPodsPhases([]);
       });
 
     // Service maps
-    axios.get(`${basepath}/active/serviceMaps`)
+    axios
+      .get(`${basepath}/active/serviceMaps`)
       .then(res => {
         var serviceMaps = res.data;
         this.props.changeServiceMaps(serviceMaps);
-      }).catch(() => {
+      })
+      .catch(() => {
         this.props.changeServiceMaps([]);
       });
   }
@@ -186,7 +274,7 @@ class MeepContainer extends Component {
 
   // Periodic visualization update handler
   refreshMeepController() {
-    if ((this.props.page === PAGE_EXECUTE) && this.props.automaticRefresh) {
+    if (this.props.page === PAGE_EXECUTE && this.props.automaticRefresh) {
       this.refreshScenario();
     }
   }
@@ -194,11 +282,12 @@ class MeepContainer extends Component {
   startAutomaticRefresh() {
     _.defer(() => {
       var value = this.props.refreshInterval;
-      if (isNaN(value) || value < 500 || value > 60000) {
-        clearInterval(this.refreshIntervalTimer);
-      } else {
-        clearInterval(this.refreshIntervalTimer);
-        this.refreshIntervalTimer = setInterval(() => this.refreshMeepController(), value);
+      clearInterval(this.refreshIntervalTimer);
+      if (!isNaN(value) && value >= 500 && value <= 60000) {
+        this.refreshIntervalTimer = setInterval(
+          () => this.refreshMeepController(),
+          value
+        );
       }
     });
   }
@@ -208,11 +297,11 @@ class MeepContainer extends Component {
   }
 
   /**
-     * Callback function to receive the result of the getActiveScenario operation.
-     * @callback module:api/ScenarioExecutionApi~getActiveScenarioCallback
-     * @param {String} error Error message, if any.
-     * @param {module:model/Scenario} data The data returned by the service call.
-     */
+   * Callback function to receive the result of the getActiveScenario operation.
+   * @callback module:api/ScenarioExecutionApi~getActiveScenarioCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/Scenario} data The data returned by the service call.
+   */
   getActiveScenarioCb(error, data) {
     if (error !== null) {
       // console.log(error);
@@ -243,8 +332,8 @@ class MeepContainer extends Component {
       this.props.execChangeScenario(scenario);
     }
 
-    // Parse Scenario object to retrieve visualization data and scenario table 
-    var page = (pageType === TYPE_CFG) ? this.props.cfg : this.props.exec;
+    // Parse Scenario object to retrieve visualization data and scenario table
+    var page = pageType === TYPE_CFG ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     var updatedTable = updateObject(page.table, parsedScenario.table);
@@ -290,12 +379,17 @@ class MeepContainer extends Component {
 
   // Refresh Active scenario
   refreshScenario() {
-    this.meepExecApi.getActiveScenario((error, data) => this.getActiveScenarioCb(error, data));
+    this.meepExecApi.getActiveScenario((error, data) =>
+      this.getActiveScenarioCb(error, data)
+    );
   }
 
   // Add new element to scenario
   newScenarioElem(pageType, element) {
-    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario =
+      pageType === TYPE_CFG
+        ? this.props.cfg.scenario
+        : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -303,7 +397,10 @@ class MeepContainer extends Component {
 
   // Update element in scenario
   updateScenarioElem(pageType, element) {
-    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario =
+      pageType === TYPE_CFG
+        ? this.props.cfg.scenario
+        : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     updateElementInScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -311,51 +408,71 @@ class MeepContainer extends Component {
 
   // Delete element in scenario (also deletes child elements)
   deleteScenarioElem(pageType, element) {
-    var scenario = (pageType === TYPE_CFG) ? this.props.cfg.scenario : this.props.exec.scenario;
+    var scenario =
+      pageType === TYPE_CFG
+        ? this.props.cfg.scenario
+        : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     removeElementFromScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
   }
 
   renderPage() {
-    switch(this.props.page) {
+    switch (this.props.page) {
     case PAGE_CONFIGURE:
       return (
-        <CfgPageContainer style={{width: '100%'}}
+        <CfgPageContainer
+          style={{ width: '100%' }}
           api={this.meepCfgApi}
-          createScenario={(name) => {this.createScenario(TYPE_CFG, name);}}
-          setScenario={(scenario) => {this.setScenario(TYPE_CFG, scenario);}}
-          deleteScenario={() => {this.deleteScenario(TYPE_CFG);}}
-          newScenarioElem={(elem) => {this.newScenarioElem(TYPE_CFG, elem);}}
-          updateScenarioElem={(elem) => {this.updateScenarioElem(TYPE_CFG, elem);}}
-          deleteScenarioElem={(elem) => {this.deleteScenarioElem(TYPE_CFG, elem);}}
+          createScenario={name => {
+            this.createScenario(TYPE_CFG, name);
+          }}
+          setScenario={scenario => {
+            this.setScenario(TYPE_CFG, scenario);
+          }}
+          deleteScenario={() => {
+            this.deleteScenario(TYPE_CFG);
+          }}
+          newScenarioElem={elem => {
+            this.newScenarioElem(TYPE_CFG, elem);
+          }}
+          updateScenarioElem={elem => {
+            this.updateScenarioElem(TYPE_CFG, elem);
+          }}
+          deleteScenarioElem={elem => {
+            this.deleteScenarioElem(TYPE_CFG, elem);
+          }}
         />
       );
 
     case PAGE_EXECUTE:
       return (
-        <>
-        <ExecPageContainer style={{width: '100%'}}
-          api={this.meepExecApi}
-          cfgApi={this.meepCfgApi}
-          refreshScenario={() => {this.refreshScenario();}}
-          deleteScenario={() => {this.deleteScenario(TYPE_EXEC);}}
-        />
-        </>
+          <>
+            <ExecPageContainer
+              style={{ width: '100%' }}
+              api={this.meepExecApi}
+              cfgApi={this.meepCfgApi}
+              refreshScenario={() => {
+                this.refreshScenario();
+              }}
+              deleteScenario={() => {
+                this.deleteScenario(TYPE_EXEC);
+              }}
+            />
+          </>
       );
 
     case PAGE_SETTINGS:
       return (
-        <SettingsPageContainer style={{width: '100%'}}
+        <SettingsPageContainer
+          style={{ width: '100%' }}
           startRefresh={() => this.startAutomaticRefresh()}
           stopRefresh={() => this.stopAutomaticRefresh()}
         />
       );
 
     case PAGE_MONITOR:
-      return (
-        <MonitorPageContainer style={{paddingRight: '100%'}} />
-      );
+      return <MonitorPageContainer style={{ paddingRight: '100%' }} />;
 
     default:
       return null;
@@ -364,8 +481,10 @@ class MeepContainer extends Component {
 
   render() {
     const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
+    this.setMetricsPolling();
+
     return (
-      <div style={{width: '100%'}}>
+      <div style={{ width: '100%' }}>
         <MeepTopBar
           title=""
           toggleMainDrawer={() => this.props.toggleMainDrawer()}
@@ -373,13 +492,14 @@ class MeepContainer extends Component {
           corePodsErrors={this.props.corePodsErrors}
         />
 
-        <div style={{display: 'flex'}}>
-          <div className="component-style" style={{overflow: 'hidden', flex: flexString, marginTop: '5px'}}>
-            <MeepDrawer open={this.props.mainDrawerOpen} style={{flex:1}}/>
+        <div style={{ display: 'flex' }}>
+          <div
+            className="component-style"
+            style={{ overflow: 'hidden', flex: flexString, marginTop: '5px' }}
+          >
+            <MeepDrawer open={this.props.mainDrawerOpen} style={{ flex: 1 }} />
           </div>
-          <div style={{flex: '1', padding: 10}}>
-            {this.renderPage()}
-          </div>
+          <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
         </div>
       </div>
     );
@@ -397,6 +517,8 @@ const mapStateToProps = state => {
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
     mainDrawerOpen: state.ui.mainDrawerOpen,
+    dashboardView1: state.ui.dashboardView1,
+    dashboardView2: state.ui.dashboardView2,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
     execVisData: execVisFilteredData(state)
@@ -405,20 +527,23 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeCurrentPage: (page) => dispatch(uiChangeCurrentPage(page)),
-    changeEventCreationMode: (mode) => dispatch(uiExecChangeEventCreationMode(mode)),
-    cfgChangeScenario: (scenario) => dispatch(cfgChangeScenario(scenario)),
-    execChangeScenario: (scenario) => dispatch(execChangeScenario(scenario)),
-    execChangeScenarioState: (s) => dispatch(execChangeScenarioState(s)),
-    changeScenarioPodsPhases: (phases) => dispatch(execChangeScenarioPodsPhases(phases)),
-    changeCorePodsPhases: (phases) => dispatch(execChangeCorePodsPhases(phases)),
-    changeServiceMaps: (maps) => dispatch(execChangeServiceMaps(maps)),
-    execChangeVisData: (data) => dispatch(execChangeVisData(data)),
-    execChangeTable: (table) => dispatch(execChangeTable(table)),
-    cfgChangeVisData: (data) => dispatch(cfgChangeVisData(data)),
-    cfgChangeTable: (data) => dispatch(cfgChangeTable(data)),
-    execChangeOkToTerminate: (ok) => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
+    changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
+    changeEventCreationMode: mode =>
+      dispatch(uiExecChangeEventCreationMode(mode)),
+    cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
+    execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
+    execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),
+    changeScenarioPodsPhases: phases =>
+      dispatch(execChangeScenarioPodsPhases(phases)),
+    changeCorePodsPhases: phases => dispatch(execChangeCorePodsPhases(phases)),
+    changeServiceMaps: maps => dispatch(execChangeServiceMaps(maps)),
+    execChangeVisData: data => dispatch(execChangeVisData(data)),
+    execChangeTable: table => dispatch(execChangeTable(table)),
+    cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
+    cfgChangeTable: data => dispatch(cfgChangeTable(data)),
+    execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
+    toggleMainDrawer: () => dispatch(uiToggleMainDrawer()),
+    addMetricsEpoch: epoch => dispatch(execAddMetricsEpoch(epoch))
   };
 };
 

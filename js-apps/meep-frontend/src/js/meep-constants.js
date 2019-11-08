@@ -18,6 +18,11 @@
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
 
+export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
+export const PAGE_EXECUTE = 'PAGE_EXECUTE';
+export const PAGE_MONITOR = 'PAGE_MONITOR';
+export const PAGE_SETTINGS = 'PAGE_SETTINGS';
+
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
@@ -37,7 +42,8 @@ export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
 export const MEEP_DLG_INVALID_SCENARIO = 'meep-dlg-invalid-scenario';
 export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
-export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
+export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
+  'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
@@ -180,7 +186,10 @@ export const MON_DASHBOARD_IFRAME = 'mon-dashboard-iframe';
 // Settings Page IDs
 export const SET_EXEC_REFRESH_CHECKBOX = 'set-exec-refresh-checkbox';
 export const SET_EXEC_REFRESH_INT = 'set-exec-refresh-int';
-export const SET_DEV_MODE_CHECKBOX = 'set-dev-mode-checkbox';
+export const SET_VIS_CFG_CHECKBOX = 'set-vis-cfg-checkbox';
+export const SET_VIS_CFG_LABEL = 'VIS Configuration Mode';
+export const SET_DASHBOARD_CFG_CHECKBOX = 'set-dashboard-cfg-checkbox';
+export const SET_DASHBOARD_CFG_LABEL = 'Show Dashboard Config (Experimental)';
 
 // Logical Scenario types
 export const TYPE_SCENARIO = 0;
@@ -200,6 +209,35 @@ export const PREFIX_TERM_LINK = 'Terminal Link';
 export const PREFIX_LINK = 'Link';
 export const PREFIX_APP = 'Application';
 
-export const id = (label) => {
+// Types of layout for components
+export const MEEP_COMPONENT_TABLE_LAYOUT = 'MEEP_COMPONENT_TABLE_LAYOUT';
+export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT =
+  'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
+
+export const id = label => {
   return '#' + label;
 };
+
+// Metrics engine data types
+export const ME_LATENCY_METRICS = 'latency';
+export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
+export const ME_MOBILITY_EVENT = 'mobilityEvent';
+
+export const VIEW_NAME_NONE = 'None';
+export const HIERARCHY_VIEW = 'Network Topology';
+export const APPS_VIEW = 'Applications';
+export const LATENCY_VIEW = 'Latency Graph';
+export const THROUGHPUT_VIEW = 'Throughput Graph';
+export const VIS_VIEW = 'Network Topology (vis)';
+
+export const MOBILITY_EVENT = 'MOBILITY';
+export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+
+export const DASHBOARD_VIEWS_LIST = [
+  VIEW_NAME_NONE,
+  VIS_VIEW,
+  APPS_VIEW,
+  LATENCY_VIEW,
+  THROUGHPUT_VIEW,
+  HIERARCHY_VIEW
+];

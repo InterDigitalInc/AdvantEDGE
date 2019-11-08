@@ -438,23 +438,18 @@ describe('Scenario Execution', function() {
       ueAppName = 'ue1-iperf';
       ueAddressLabel = 'span[id="demo-svc-loc-serv-address-1"]';
       ueLocationLabel = 'span[id="demo-svc-loc-serv-location-1"]';
-    } else {
-      if (ue == 'ue2-ext') {
-        ueAppName = 'ue2-svc';
-        ueAddressLabel = 'span[id="demo-svc-loc-serv-address-2"]';
-        ueLocationLabel = 'span[id="demo-svc-loc-serv-location-2"]';
-      }
+    } else if (ue == 'ue2-ext') {
+      ueAppName = 'ue2-svc';
+      ueAddressLabel = 'span[id="demo-svc-loc-serv-address-2"]';
+      ueLocationLabel = 'span[id="demo-svc-loc-serv-location-2"]';
     }
+    
     if (dest == 'zone1-poa1') {
       ueAppLocation = 'zone1 / zone1-poa1';
-    } else {
-      if (dest == 'zone1-poa2') {
-        ueAppLocation = 'zone1 / zone1-poa2';
-      } else {
-        if (dest == 'zone2-poa1') {
-          ueAppLocation = 'zone2 / zone2-poa1';
-        }
-      }
+    } else if (dest == 'zone1-poa2') {
+      ueAppLocation = 'zone1 / zone1-poa2';
+    } else if (dest == 'zone2-poa1') {
+      ueAppLocation = 'zone2 / zone2-poa1';
     }
     cy.contains(ueLocationLabel, ueAppLocation)
   }

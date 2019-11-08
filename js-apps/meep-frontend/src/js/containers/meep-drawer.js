@@ -15,27 +15,26 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
-import { PAGE_CONFIGURE, PAGE_EXECUTE, PAGE_MONITOR, PAGE_SETTINGS } from '../state/ui';
+import React, { Component } from 'react';
 
 import {
   MEEP_TAB_CFG,
   MEEP_TAB_EXEC,
   MEEP_TAB_MON,
-  MEEP_TAB_SET
+  MEEP_TAB_SET,
+  PAGE_CONFIGURE,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS
 } from '../meep-constants';
 
 import { uiChangeCurrentPage } from '../state/ui';
 
-import {
-  List,
-  ListItem
-} from '@rmwc/list';
+import { List, ListItem } from '@rmwc/list';
 
 import { Icon } from '@rmwc/icon';
 
 class MeepDrawer extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -48,33 +47,75 @@ class MeepDrawer extends Component {
   }
 
   styleForPage(page) {
-    var style = (this.props.currentPage === page) ? {backgroundColor: '#E0F0F9'} : null;
+    var style =
+      this.props.currentPage === page ? { backgroundColor: '#E0F0F9' } : null;
     return style;
   }
 
   render() {
     return (
-      <div className="component-style" style={{overflow: 'hidden', position: 'relative'}}>
-        <div
-          style={containerStyle}
-          open={this.props.open}>
-          <div style={{marginTop: '-80px'}}>
+      <div
+        className="component-style"
+        style={{ overflow: 'hidden', position: 'relative' }}
+      >
+        <div style={containerStyle} open={this.props.open}>
+          <div style={{ marginTop: '-80px' }}>
             <div className="idcc-margin-top mdc-top-app-bar--fixed-adjust"></div>
             <List>
-              <ListItem data-cy={MEEP_TAB_CFG} style={this.styleForPage(PAGE_CONFIGURE)} onClick = {() => {this.handleItemClick(PAGE_CONFIGURE);}}>
-                <Icon icon="sort" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
+              <ListItem
+                data-cy={MEEP_TAB_CFG}
+                style={this.styleForPage(PAGE_CONFIGURE)}
+                onClick={() => {
+                  this.handleItemClick(PAGE_CONFIGURE);
+                }}
+              >
+                <Icon
+                  icon="sort"
+                  iconOptions={{ strategy: 'ligature' }}
+                  style={iconStyles}
+                />
                 <span style={textStyles}>Configure</span>
               </ListItem>
-              <ListItem data-cy={MEEP_TAB_EXEC} style={this.styleForPage(PAGE_EXECUTE)} onClick = {() => {this.handleItemClick(PAGE_EXECUTE);}}>
-                <Icon icon="forward" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
+              <ListItem
+                data-cy={MEEP_TAB_EXEC}
+                style={this.styleForPage(PAGE_EXECUTE)}
+                onClick={() => {
+                  this.handleItemClick(PAGE_EXECUTE);
+                }}
+              >
+                <Icon
+                  icon="forward"
+                  iconOptions={{ strategy: 'ligature' }}
+                  style={iconStyles}
+                />
                 <span style={textStyles}>Execute</span>
               </ListItem>
-              <ListItem data-cy={MEEP_TAB_MON} style={this.styleForPage(PAGE_MONITOR)} onClick = {() => {this.handleItemClick(PAGE_MONITOR);}}>
-                <Icon icon="tv" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
+              <ListItem
+                data-cy={MEEP_TAB_MON}
+                style={this.styleForPage(PAGE_MONITOR)}
+                onClick={() => {
+                  this.handleItemClick(PAGE_MONITOR);
+                }}
+              >
+                <Icon
+                  icon="tv"
+                  iconOptions={{ strategy: 'ligature' }}
+                  style={iconStyles}
+                />
                 <span style={textStyles}>Monitor</span>
               </ListItem>
-              <ListItem data-cy={MEEP_TAB_SET} style={this.styleForPage(PAGE_SETTINGS)} onClick = {() => {this.handleItemClick(PAGE_SETTINGS);}}>
-                <Icon icon="settings" iconOptions={{strategy: 'ligature'}} style={iconStyles}/>
+              <ListItem
+                data-cy={MEEP_TAB_SET}
+                style={this.styleForPage(PAGE_SETTINGS)}
+                onClick={() => {
+                  this.handleItemClick(PAGE_SETTINGS);
+                }}
+              >
+                <Icon
+                  icon="settings"
+                  iconOptions={{ strategy: 'ligature' }}
+                  style={iconStyles}
+                />
                 <span style={textStyles}>Settings</span>
               </ListItem>
             </List>
@@ -102,7 +143,7 @@ const iconStyles = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeCurrentPage: (page) => dispatch(uiChangeCurrentPage(page))
+    changeCurrentPage: page => dispatch(uiChangeCurrentPage(page))
   };
 };
 

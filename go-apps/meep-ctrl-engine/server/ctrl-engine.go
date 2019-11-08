@@ -651,8 +651,8 @@ func sendEventMobility(event ceModel.Event) (string, int) {
 	log.WithFields(log.Fields{
 		"meep.log.component": "ctrl-engine",
 		"meep.log.msgType":   "mobilityEvent",
-		"meep.log.oldLoc":    oldNL,
-		"meep.log.newLoc":    newNL,
+		"meep.log.oldPoa":    oldNL,
+		"meep.log.newPoa":    newNL,
 		"meep.log.src":       elemName,
 		"meep.log.dest":      elemName,
 	}).Info("Measurements log")

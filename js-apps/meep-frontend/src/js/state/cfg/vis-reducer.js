@@ -38,7 +38,6 @@ export {
   // Action creators
   cfgChangeVis,
   cfgChangeVisData,
-
   CFG_CHANGE_VIS
 };
 
@@ -57,7 +56,7 @@ export function cfgVisReducer(state = initialState, action) {
   case CFG_CHANGE_VIS:
     return action.payload;
   case CFG_CHANGE_VIS_DATA:
-    return updateObject(state, {data: action.payload});
+    return updateObject(state, { data: action.payload });
   default:
     return state;
   }

@@ -25,7 +25,7 @@ import {
   DialogButton
 } from '@rmwc/dialog';
 
-const IDDialog = (props) => {
+const IDDialog = props => {
   return (
     <Dialog
       open={props.open}
@@ -36,58 +36,54 @@ const IDDialog = (props) => {
     >
       <DialogTitle style={styles.title}>
         <Grid>
-          <GridCell span={12}>
-            {props.title}
-          </GridCell>
+          <GridCell span={12}>{props.title}</GridCell>
         </Grid>
       </DialogTitle>
 
       <DialogContent style={styles.content}>
         <Grid>
-          <GridCell span={12}>
-            {props.children}
-          </GridCell>
+          <GridCell span={12}>{props.children}</GridCell>
         </Grid>
       </DialogContent>
 
       <DialogActions style={styles.actions}>
         <Grid>
-          <GridCell span={8}>
-          </GridCell>
+          <GridCell span={8}></GridCell>
           <GridCell span={2}>
-            <DialogButton style={styles.button}
+            <DialogButton
+              style={styles.button}
               action="close"
               onClick={props.onClose}
             >
-                                Cancel
+              Cancel
             </DialogButton>
           </GridCell>
 
           <GridCell span={2}>
-            <DialogButton style={styles.button}
+            <DialogButton
+              style={styles.button}
               action="accept"
               isDefaultAction
               onClick={() => props.onSubmit()}
               disabled={props.okDisabled}
             >
-                                Ok
+              Ok
             </DialogButton>
           </GridCell>
         </Grid>
       </DialogActions>
-
     </Dialog>
   );
 };
 
 const styles = {
   title: {
-    paddingLeft:25,
-    paddingRight:25
+    paddingLeft: 25,
+    paddingRight: 25
   },
   content: {
-    paddingLeft:25,
-    paddingRight:30
+    paddingLeft: 25,
+    paddingRight: 30
   },
   actions: {
     marginTop: 20

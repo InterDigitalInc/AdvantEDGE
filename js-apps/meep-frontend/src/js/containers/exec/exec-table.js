@@ -29,14 +29,12 @@ import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 
 import { updateObject } from '../../util/object-util';
 import { podsWithServiceMaps } from '../../state/exec';
 
-import {
-  execChangeTable
-} from '../../state/exec';
+import { execChangeTable } from '../../state/exec';
 
 import {
   getSorting,
@@ -46,21 +44,28 @@ import {
   isRowSelected
 } from '../../util/table-utils';
 
-const IngressServiceMapRow = (props) => {
+const IngressServiceMapRow = props => {
   return (
-    <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
+    <Grid style={{ marginBottom: 10, marginTop: 10, marginLeft: -10 }}>
       <GridCell span={12}>
-        <span> I: {props.entry.name}: {props.entry.externalPort} </span>
+        <span>
+          {' '}
+          I: {props.entry.name}: {props.entry.externalPort}{' '}
+        </span>
       </GridCell>
     </Grid>
   );
 };
 
-const EgressServiceMapRow = (props) => {
+const EgressServiceMapRow = props => {
   return (
-    <Grid style={{marginBottom: 10, marginTop: 10, marginLeft: -10}}>
+    <Grid style={{ marginBottom: 10, marginTop: 10, marginLeft: -10 }}>
       <GridCell span={12}>
-        <span> E: {props.entry.name}: {props.entry.meSvcName},{props.entry.ip},{props.entry.port},{props.entry.protocol}</span>
+        <span>
+          {' '}
+          E: {props.entry.name}: {props.entry.meSvcName},{props.entry.ip},
+          {props.entry.port},{props.entry.protocol}
+        </span>
       </GridCell>
     </Grid>
   );
@@ -96,12 +101,21 @@ const execTableStyles = theme => ({
 
 const execTableColumnData = [
   { id: 'name', numeric: false, disablePadding: false, label: 'NAME' },
-  { id: 'logicalState', numeric: false, disablePadding: false, label: 'STATUS' },
-  { id: 'serviceMaps', numeric: false, disablePadding: false, label: 'SERVICE MAPS' }
+  {
+    id: 'logicalState',
+    numeric: false,
+    disablePadding: false,
+    label: 'STATUS'
+  },
+  {
+    id: 'serviceMaps',
+    numeric: false,
+    disablePadding: false,
+    label: 'SERVICE MAPS'
+  }
 ];
 
 class ExecTable extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -143,20 +157,29 @@ class ExecTable extends Component {
     const orderBy = table.orderBy;
     const rowsPerPage = table.rowsPerPage;
     const page = table.page;
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const emptyRows =
+      rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
-    if (!data || !data.length) {return null;}
+    if (!data || !data.length) {
+      return null;
+    }
 
     return (
       <Grid>
         <GridCell span={12}>
-          <Elevation className="component-style"z={2}  style={styles.execTable}>
+          <Elevation className="component-style" z={2} style={styles.execTable}>
             <div>
-              <span className="mdc-typography--headline6">Network Elements </span>
+              <span className="mdc-typography--headline6">
+                Network Elements{' '}
+              </span>
             </div>
             <Paper className={classes.root}>
               <div className={classes.tableWrapper}>
-                <Table className={classes.table} aria-labelledby="tableTitle" style={{width: '100%'}}>
+                <Table
+                  className={classes.table}
+                  aria-labelledby="tableTitle"
+                  style={{ width: '100%' }}
+                >
                   <TableHead className={classes.tableHead}>
                     <TableRow>
                       {execTableColumnData.map(column => {
@@ -165,18 +188,24 @@ class ExecTable extends Component {
                             key={column.id}
                             numeric={column.numeric}
                             padding={column.disablePadding ? 'none' : 'default'}
-                            sortDirection={orderBy === column.id ? order : false}
+                            sortDirection={
+                              orderBy === column.id ? order : false
+                            }
                             className={classes.tableHeadColor}
                           >
                             <Tooltip
                               title="Sort"
-                              placement={column.numeric ? 'bottom-end' : 'bottom-start'}
+                              placement={
+                                column.numeric ? 'bottom-end' : 'bottom-start'
+                              }
                               enterDelay={300}
                             >
                               <TableSortLabel
                                 active={orderBy === column.id}
                                 direction={order}
-                                onClick={(event) => this.onRequestSort(event, column.id)}
+                                onClick={event =>
+                                  this.onRequestSort(event, column.id)
+                                }
                                 className={classes.tableHeadColor}
                               >
                                 {column.label}
@@ -188,8 +217,12 @@ class ExecTable extends Component {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.sort(getSorting(order, orderBy))
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    {data
+                      .sort(getSorting(order, orderBy))
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
                       .map(n => {
                         const isSelected = isRowSelected(table, n.name);
                         return (
@@ -202,17 +235,39 @@ class ExecTable extends Component {
                             key={n.name}
                             selected={isSelected}
                           >
-                            <TableCell component="th" scope="row">{n.name}</TableCell>
-                            <TableCell className={ (n.logicalState === 'Running') ? classes.statusRunning : classes.statusPending}>
+                            <TableCell component="th" scope="row">
+                              {n.name}
+                            </TableCell>
+                            <TableCell
+                              className={
+                                n.logicalState === 'Running'
+                                  ? classes.statusRunning
+                                  : classes.statusPending
+                              }
+                            >
                               {n.logicalState}
                             </TableCell>
                             <TableCell>
-                              { n.ingressServiceMap ? _.map(n.ingressServiceMap, (sm) => {
-                                return (<IngressServiceMapRow entry={sm} key={sm.externalPort}/>);
-                              }) : ''}
-                              { n.egressServiceMap ? _.map(n.egressServiceMap, (sm) => {
-                                return (<EgressServiceMapRow entry={sm} key={sm.name}/>);
-                              }) : ''}
+                              {n.ingressServiceMap
+                                ? _.map(n.ingressServiceMap, sm => {
+                                  return (
+                                    <IngressServiceMapRow
+                                      entry={sm}
+                                      key={sm.externalPort}
+                                    />
+                                  );
+                                })
+                                : ''}
+                              {n.egressServiceMap
+                                ? _.map(n.egressServiceMap, sm => {
+                                  return (
+                                    <EgressServiceMapRow
+                                      entry={sm}
+                                      key={sm.name}
+                                    />
+                                  );
+                                })
+                                : ''}
                             </TableCell>
                           </TableRow>
                         );
@@ -230,8 +285,8 @@ class ExecTable extends Component {
                 count={data.length ? data.length : 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
-                backIconButtonProps={{'aria-label': 'Previous Page'}}
-                nextIconButtonProps={{'aria-label': 'Next Page'}}
+                backIconButtonProps={{ 'aria-label': 'Previous Page' }}
+                nextIconButtonProps={{ 'aria-label': 'Next Page' }}
                 onChangePage={(event, page) => this.onChangePage(event, page)}
                 onChangeRowsPerPage={event => this.onChangeRowsPerPage(event)}
               />
@@ -254,7 +309,7 @@ ExecTable.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
   return {
     table: state.exec.table,
     podsWithServiceMaps: podsWithServiceMaps(state)
@@ -263,8 +318,13 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeTable: (table) => dispatch(execChangeTable(table))
+    changeTable: table => dispatch(execChangeTable(table))
   };
 };
 
-export default withStyles(execTableStyles)(connect(mapStateToProps, mapDispatchToProps)(ExecTable));
+export default withStyles(execTableStyles)(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(ExecTable)
+);
