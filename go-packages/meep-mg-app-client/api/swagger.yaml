@@ -65,13 +65,6 @@ definitions:
       appState:
         $ref: "#/definitions/MobilityGroupAppState"
     description: "Event object"
-    example:
-      appState:
-        ueState: "ueState"
-        ueId: "ueId"
-      name: "name"
-      type: "STATE-UPDATE"
-      ueId: "ueId"
   MobilityGroupAppState:
     type: "object"
     properties:
@@ -82,9 +75,6 @@ definitions:
         type: "string"
         description: "Mobility Group Application State for provided UE"
     description: "Mobility Group Application State"
-    example:
-      ueState: "ueState"
-      ueId: "ueId"
 parameters:
   event:
     in: "body"

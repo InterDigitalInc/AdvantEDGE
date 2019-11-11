@@ -3,10 +3,10 @@
 ## Enum
 
 
-* `Entering` (value: `"Entering"`)
+* `entering` (value: `"Entering"`)
 
-* `Transferring` (value: `"Transferring"`)
+* `transferring` (value: `"Transferring"`)
 
-* `Exiting` (value: `"Exiting"`)
+* `exiting` (value: `"Exiting"`)
 
 

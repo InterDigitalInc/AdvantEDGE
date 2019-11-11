@@ -303,7 +303,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
 					event := new(clientNotifOMA.UserEventType)
-					*event = clientNotifOMA.ENTERING
+					*event = clientNotifOMA.ENTERING_UserEventType
 					zonal.UserEventType = event
 					go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
 					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
@@ -313,7 +313,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
 						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.LEAVING
+						*event = clientNotifOMA.LEAVING_UserEventType
 						zonal.UserEventType = event
 						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
 						log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
@@ -326,7 +326,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.PreviousAccessPointId = oldApId
 						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.TRANSFERRING
+						*event = clientNotifOMA.TRANSFERRING_UserEventType
 						zonal.UserEventType = event
 						go sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
 						log.Info("User Notification" + "(" + subsIdStr + "): " + " Transferring event within zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
@@ -386,7 +386,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = newApId
 						zonal.Address = userId
 						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.ENTERING
+						*event = clientNotifOMA.ENTERING_UserEventType
 						zonal.UserEventType = event
 						zonal.Timestamp = time.Now()
 						zonal.CallbackData = subscription.ClientCorrelator
@@ -409,7 +409,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 							zonal.PreviousAccessPointId = oldApId
 							zonal.Address = userId
 							event := new(clientNotifOMA.UserEventType)
-							*event = clientNotifOMA.TRANSFERRING
+							*event = clientNotifOMA.TRANSFERRING_UserEventType
 							zonal.UserEventType = event
 							zonal.Timestamp = time.Now()
 							zonal.CallbackData = subscription.ClientCorrelator
@@ -434,7 +434,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						zonal.CurrentAccessPointId = oldApId
 						zonal.Address = userId
 						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.LEAVING
+						*event = clientNotifOMA.LEAVING_UserEventType
 						zonal.UserEventType = event
 						zonal.Timestamp = time.Now()
 						zonal.CallbackData = subscription.ClientCorrelator
@@ -456,7 +456,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	zoneIdVar := q.Get("zoneId")
 	accessPointIdVar := q.Get("accessPointId")
 
-	var response InlineResponse2007
+	var response ResponseUserList
 	var userList UserList
 	response.UserList = &userList
 
@@ -509,7 +509,7 @@ func usersGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse2008
+	var response ResponseUserInfo
 	var userInfo UserInfo
 	response.UserInfo = &userInfo
 
@@ -543,7 +543,7 @@ func zonesByIdGetAps(w http.ResponseWriter, r *http.Request) {
 	q := u.Query()
 	interestRealm := q.Get("interestRealm")
 
-	var response InlineResponse2005
+	var response ResponseAccessPointList
 	var apList AccessPointList
 	response.AccessPointList = &apList
 
@@ -567,7 +567,7 @@ func zonesByIdGetApsById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse2006
+	var response ResponseAccessPointInfo
 	var apInfo AccessPointInfo
 	response.AccessPointInfo = &apInfo
 
@@ -597,7 +597,7 @@ func zonesByIdGetApsById(w http.ResponseWriter, r *http.Request) {
 func zonesGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2003
+	var response ResponseZoneList
 	var zoneList ZoneList
 	response.ZoneList = &zoneList
 
@@ -618,7 +618,7 @@ func zonesGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse2004
+	var response ResponseZoneInfo
 	var zoneInfo ZoneInfo
 	response.ZoneInfo = &zoneInfo
 
@@ -704,8 +704,8 @@ func userTrackingSubDelById(w http.ResponseWriter, r *http.Request) {
 func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2001
-	var userTrackingSubList InlineResponse2001NotificationSubscriptionList
+	var response ResponseUserTrackingNotificationSubscriptionList
+	var userTrackingSubList UserTrackingNotificationSubscriptionList
 	response.NotificationSubscriptionList = &userTrackingSubList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeUserSubscription, populateUserTrackingList, &userTrackingSubList)
@@ -726,7 +726,7 @@ func userTrackingSubGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse2011
+	var response ResponseUserTrackingSubscription
 	var userTrackingSub UserTrackingSubscription
 	response.UserTrackingSubscription = &userTrackingSub
 
@@ -756,7 +756,7 @@ func userTrackingSubGetById(w http.ResponseWriter, r *http.Request) {
 func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2011
+	var response ResponseUserTrackingSubscription
 	userTrackingSub := new(UserTrackingSubscription)
 	response.UserTrackingSubscription = userTrackingSub
 
@@ -791,7 +791,7 @@ func userTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse2011
+	var response ResponseUserTrackingSubscription
 	userTrackingSub := new(UserTrackingSubscription)
 	response.UserTrackingSubscription = userTrackingSub
 
@@ -823,7 +823,7 @@ func userTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
 
 func populateUserTrackingList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
 
-	userList := userData.(*InlineResponse2001NotificationSubscriptionList)
+	userList := userData.(*UserTrackingNotificationSubscriptionList)
 	var userInfo UserTrackingSubscription
 
 	// Format response
@@ -852,8 +852,8 @@ func zonalTrafficSubDelById(w http.ResponseWriter, r *http.Request) {
 func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse200
-	var zonalTrafficSubList InlineResponse200NotificationSubscriptionList
+	var response ResponseZonalTrafficNotificationSubscriptionList
+	var zonalTrafficSubList ZonalTrafficNotificationSubscriptionList
 	response.NotificationSubscriptionList = &zonalTrafficSubList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZonalSubscription, populateZonalTrafficList, &zonalTrafficSubList)
@@ -873,7 +873,7 @@ func zonalTrafficSubGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse201
+	var response ResponseZonalTrafficSubscription
 	var zonalTrafficSub ZonalTrafficSubscription
 	response.ZonalTrafficSubscription = &zonalTrafficSub
 
@@ -903,7 +903,7 @@ func zonalTrafficSubGetById(w http.ResponseWriter, r *http.Request) {
 func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse201
+	var response ResponseZonalTrafficSubscription
 	zonalTrafficSub := new(ZonalTrafficSubscription)
 	response.ZonalTrafficSubscription = zonalTrafficSub
 
@@ -950,7 +950,7 @@ func zonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse201
+	var response ResponseZonalTrafficSubscription
 	zonalTrafficSub := new(ZonalTrafficSubscription)
 	response.ZonalTrafficSubscription = zonalTrafficSub
 
@@ -982,7 +982,7 @@ func zonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
 
 func populateZonalTrafficList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
 
-	zoneList := userData.(*InlineResponse200NotificationSubscriptionList)
+	zoneList := userData.(*ZonalTrafficNotificationSubscriptionList)
 	var zoneInfo ZonalTrafficSubscription
 
 	// Format response
@@ -1011,8 +1011,8 @@ func zoneStatusDelById(w http.ResponseWriter, r *http.Request) {
 func zoneStatusGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2002
-	var zoneStatusSubList InlineResponse2002NotificationSubscriptionList
+	var response ResponseZoneStatusNotificationSubscriptionList
+	var zoneStatusSubList ZoneStatusNotificationSubscriptionList
 	response.NotificationSubscriptionList = &zoneStatusSubList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneStatusSubList)
@@ -1033,7 +1033,7 @@ func zoneStatusGetById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse20012
+	var response ResponseZoneStatusSubscription2
 	var zoneStatusSub ZoneStatusSubscription
 	response.ZoneStatusSubscription = &zoneStatusSub
 
@@ -1063,7 +1063,7 @@ func zoneStatusGetById(w http.ResponseWriter, r *http.Request) {
 func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2012
+	var response ResponseZoneStatusSubscription
 	zoneStatusSub := new(ZoneStatusSubscription)
 	response.ZonalTrafficSubscription = zoneStatusSub
 
@@ -1100,7 +1100,7 @@ func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponse20012
+	var response ResponseZoneStatusSubscription2
 	zoneStatusSub := new(ZoneStatusSubscription)
 	response.ZoneStatusSubscription = zoneStatusSub
 
@@ -1133,7 +1133,7 @@ func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 
 func populateZoneStatusList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
 
-	zoneList := userData.(*InlineResponse2002NotificationSubscriptionList)
+	zoneList := userData.(*ZoneStatusNotificationSubscriptionList)
 	var zoneInfo ZoneStatusSubscription
 
 	// Format response
@@ -1306,7 +1306,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 func zoneStatusReInit() {
 
 	//reusing the object response for the get multiple zoneStatusSubscription
-	var zoneList InlineResponse2002NotificationSubscriptionList
+	var zoneList ZoneStatusNotificationSubscriptionList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneList)
 
@@ -1349,7 +1349,7 @@ func zoneStatusReInit() {
 func zonalTrafficReInit() {
 
 	//reusing the object response for the get multiple zonalSubscription
-	var zoneList InlineResponse200NotificationSubscriptionList
+	var zoneList ZonalTrafficNotificationSubscriptionList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZonalSubscription, populateZonalTrafficList, &zoneList)
 
@@ -1385,7 +1385,7 @@ func zonalTrafficReInit() {
 func userTrackingReInit() {
 
 	//reusing the object response for the get multiple zonalSubscription
-	var userList InlineResponse2001NotificationSubscriptionList
+	var userList UserTrackingNotificationSubscriptionList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeUserSubscription, populateUserTrackingList, &userList)
 

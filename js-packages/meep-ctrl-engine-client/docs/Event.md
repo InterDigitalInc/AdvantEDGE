@@ -15,11 +15,11 @@ Name | Type | Description | Notes
 ## Enum: TypeEnum
 
 
-* `NETWORK-CHARACTERISTICS-UPDATE` (value: `"NETWORK-CHARACTERISTICS-UPDATE"`)
+* `NETWORK_CHARACTERISTICS_UPDATE` (value: `"NETWORK-CHARACTERISTICS-UPDATE"`)
 
 * `MOBILITY` (value: `"MOBILITY"`)
 
-* `POAS-IN-RANGE` (value: `"POAS-IN-RANGE"`)
+* `POAS_IN_RANGE` (value: `"POAS-IN-RANGE"`)
 
 * `OTHER` (value: `"OTHER"`)
 

@@ -27,7 +27,7 @@ Add new Mobility Group
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **mobilityGroup** | [**MobilityGroup**](MobilityGroup.md)| Mobility Group to create/update | 
 
@@ -56,7 +56,7 @@ Add new Mobility Group App
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
   **mgApp** | [**MobilityGroupApp**](MobilityGroupApp.md)| Mobility Group App to create/update | 
@@ -86,7 +86,7 @@ Add UE to group tracking list
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
   **mgUe** | [**MobilityGroupUe**](MobilityGroupUe.md)| Mobility Group UE to create/update | 
@@ -116,7 +116,7 @@ Delete Mobility Group
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
 
 ### Return type
@@ -144,7 +144,7 @@ Delete Mobility Group App
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
 
@@ -173,7 +173,7 @@ Retrieve Mobility Groups with provided name
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
 
 ### Return type
@@ -201,7 +201,7 @@ Retrieve App information using provided Mobility Group Name & App ID
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
 
@@ -230,7 +230,7 @@ Retrieve list of Apps in provided Mobility Group
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
 
 ### Return type
@@ -282,7 +282,7 @@ Update Mobility Group
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **mobilityGroup** | [**MobilityGroup**](MobilityGroup.md)| Mobility Group to create/update | 
 
@@ -311,7 +311,7 @@ Update Mobility GroupApp
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **mgName** | **string**| Mobility Group name | 
   **appId** | **string**| Mobility Group App Id | 
   **mgApp** | [**MobilityGroupApp**](MobilityGroupApp.md)| Mobility Group App to create/update | 

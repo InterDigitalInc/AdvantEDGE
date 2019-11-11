@@ -17,7 +17,7 @@ Send event notification to registered Mobility Group Application
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **event** | [**MobilityGroupEvent**](MobilityGroupEvent.md)| Mobility Group event notification | 
 
 ### Return type
