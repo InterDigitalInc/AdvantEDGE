@@ -159,9 +159,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 	// Clear segment & flow maps
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	// Process active scenario
-	procNames := model.GetNodeNames("CLOUD-APP")
-	procNames = append(procNames, model.GetNodeNames("EDGE-APP")...)
-	procNames = append(procNames, model.GetNodeNames("UE-APP")...)
+	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
 
 	// Create NetElem for each scenario process
 	for _, name := range procNames {

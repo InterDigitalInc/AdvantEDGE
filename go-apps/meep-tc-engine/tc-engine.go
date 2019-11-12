@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	ncm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
@@ -36,7 +38,6 @@ import (
 )
 
 const moduleTcEngine string = "tc-engine"
-const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
 
 const typeActive string = "active"
@@ -55,7 +56,6 @@ const fieldLbSvcName string = "lb-svc-name"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
 
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
 const channelTcNet string = moduleTcEngine + "-" + typeNet
 const channelTcLb string = moduleTcEngine + "-" + typeLb
@@ -69,44 +69,22 @@ const (
 	stateReady        = 2
 )
 
-const DEFAULT_SCENARIO_DB = 0
 const DEFAULT_NET_CHAR_DB = 0
 const DEFAULT_LB_RULES_DB = 0
 const redisAddr string = "meep-redis-master:6379"
 
-type NetChar struct {
-	Latency            int
-	LatencyVariation   int
-	LatencyCorrelation int
-	Throughput         int
-	PacketLoss         int
-}
-
-//NetElem -
-//NextUniqueNumber is reserving 2 spaces for each unique number to apply changes starting with odd number and using even number to apply the 1st change
-//and come bask on the odd number for the next update to apply
+// NetElem -
+// NextUniqueNumber is reserving 2 spaces for each unique number to apply
+// changes starting with odd number and using even number to apply the 1st
+// change and come bask on the odd number for the next update to apply
 type NetElem struct {
 	Name             string
-	Type             string
-	ParentName       string
-	ScenarioName     string
-	DomainName       string
-	ZoneName         string
-	Poa              NetChar
-	EdgeFog          NetChar
-	InterDomain      NetChar
-	InterZone        NetChar
-	InterEdge        NetChar
-	InterFog         NetChar
-	Link             NetChar
-	App              NetChar
-	Index            int
 	FilterInfoList   []FilterInfo
 	Ip               string
 	NextUniqueNumber int
 }
 
-//FilterInfo -
+// FilterInfo -
 type FilterInfo struct {
 	PodName            string
 	SrcIp              string
@@ -123,14 +101,14 @@ type FilterInfo struct {
 	DataRate           int
 }
 
-//PortInfo -
+// PortInfo -
 type PortInfo struct {
 	Port     int32
 	ExpPort  int32
 	Protocol string
 }
 
-//ServiceInfo -
+// ServiceInfo -
 type ServiceInfo struct {
 	Name  string
 	Node  string
@@ -138,13 +116,13 @@ type ServiceInfo struct {
 	MgSvc *MgServiceInfo
 }
 
-//MgServiceInfo -
+// MgServiceInfo -
 type MgServiceInfo struct {
 	Name     string
 	Services map[string]*ServiceInfo
 }
 
-//IngressSvcMap -
+// IngressSvcMap -
 type IngressSvcMap struct {
 	NodePort int32
 	SvcName  string
@@ -152,7 +130,7 @@ type IngressSvcMap struct {
 	Protocol string
 }
 
-//EgressSvcMap -
+// EgressSvcMap -
 type EgressSvcMap struct {
 	SvcName  string
 	SvcIp    string
@@ -160,7 +138,7 @@ type EgressSvcMap struct {
 	Protocol string
 }
 
-//PodInfo -
+// PodInfo -
 type PodInfo struct {
 	Name              string
 	MgSvcMap          map[string]*ServiceInfo
@@ -168,27 +146,22 @@ type PodInfo struct {
 	EgressSvcMapList  map[string]*EgressSvcMap
 }
 
-//ScenarioStore -
-type ScenarioStore struct {
-	rc *redis.Connector
-}
-
-//NetCharStore -
+// NetCharStore -
 type NetCharStore struct {
 	rc *redis.Connector
 }
 
-//LbRulesStore -
+// LbRulesStore -
 type LbRulesStore struct {
 	rc *redis.Connector
 }
 
-//TcEngine -
+// TcEngine -
 type TcEngine struct {
-	scenarioStore *ScenarioStore
-	netCharStore  *NetCharStore
-	lbRulesStore  *LbRulesStore
-	netCharMgr    ncm.NetCharMgr
+	activeModel  *mod.Model
+	netCharStore *NetCharStore
+	lbRulesStore *LbRulesStore
+	netCharMgr   ncm.NetCharMgr
 
 	// Flag & Counters used to indicate when TC Engine is ready to
 	tcEngineState     int
@@ -206,8 +179,6 @@ var mgSvcInfoMap = map[string]*MgServiceInfo{}
 // Pod Info mapping
 var podInfoMap = map[string]*PodInfo{}
 
-var netElemMap = map[string]*NetElem{}
-
 // Scenario Name
 var scenarioName string
 
@@ -216,14 +187,16 @@ var podIPMap = map[string]string{}
 var svcIPMap = map[string]string{}
 
 var nextUniqueNumberMap = map[string]int{}
-
 var mutex sync.Mutex
 
+// Map of active network elements
+var netElemMap = map[string]*NetElem{}
+
+// TC Engine Instance
 var tce *TcEngine
 
 // Init - TC Engine initialization
 func Init() (err error) {
-
 	// Create new TC Engine
 	tce = new(TcEngine)
 	tce.tcEngineState = stateIdle
@@ -233,14 +206,12 @@ func Init() (err error) {
 	tce.svcCount = 0
 	tce.nextTransactionId = 1
 
-	// Open Scenario Store
-	tce.scenarioStore = new(ScenarioStore)
-	tce.scenarioStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_SCENARIO_DB)
+	// Create new Model
+	tce.activeModel, err = mod.NewModel(redisAddr, moduleTcEngine, "activeScenario")
 	if err != nil {
-		log.Error("Failed connection to Scenario Store Redis DB.  Error: ", err)
+		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Scenario Store redis DB")
 
 	// Open Network Characteristics Store
 	tce.netCharStore = new(NetCharStore)
@@ -282,14 +253,11 @@ func Init() (err error) {
 func Run() error {
 
 	// Listen for Active Scenario updates
-	go func() {
-		err := tce.scenarioStore.rc.Subscribe(channelCtrlActive)
-		if err != nil {
-			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-			return
-		}
-		_ = tce.scenarioStore.rc.Listen(eventHandler)
-	}()
+	err := tce.activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listen for model updates: ", err.Error())
+		return err
+	}
 
 	// Listen for LB Rules updates
 	go func() {
@@ -305,53 +273,40 @@ func Run() error {
 }
 
 func eventHandler(channel string, payload string) {
-
 	mutex.Lock()
 
 	// Handle Message according to Rx Channel
 	switch channel {
-
-	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
+	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
 		processActiveScenarioUpdate()
-
 	case channelMgManagerLb:
 		log.Debug("Event received on channel: ", channelMgManagerLb)
 		processMgSvcMapUpdate()
-
 	default:
 		log.Warn("Unsupported channel")
 	}
 
 	mutex.Unlock()
-
 }
 
 func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := tce.scenarioStore.rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
+	// Stop scenario if not active
+	scenarioName := tce.activeModel.GetScenarioName()
+	if scenarioName == "" {
 		stopScenario()
 		return
 	}
 
-	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
-	if err != nil {
-		log.Error(err.Error())
-		stopScenario()
-		return
-	}
-	// Parse scenario
-	parseScenario(scenario)
+	// Process updated scenario
+	processScenario(tce.activeModel)
 
 	switch tce.tcEngineState {
 	case stateIdle:
 		// Retrieve platform information: Pod ID & Service IP
 		getPlatformInfo()
+
+		// Start
 		err := tce.netCharMgr.Start()
 		if err != nil {
 			log.Error("Failed to start Net Char Manager. Error: ", err)
@@ -362,9 +317,9 @@ func processActiveScenarioUpdate() {
 		log.Debug("TC Engine already initializing")
 
 	case stateReady:
-
 		// Apply network characteristic rules
 		applyNetCharFilterRules()
+
 		//launch the scenario update for the net-char-mgr
 		go tce.netCharMgr.ProcessActiveScenarioUpdate()
 		//Update the Db for state information (only transactionId for now)
@@ -384,7 +339,7 @@ func processMgSvcMapUpdate() {
 		return
 	}
 
-	// Retrieve active scenario from DB
+	// Retrieve LB rules from DB
 	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
@@ -462,112 +417,100 @@ func stopScenario() {
 	tce.netCharMgr.Stop()
 }
 
-func parseScenario(scenario ceModel.Scenario) {
-	log.Debug("parseScenario")
+func processScenario(model *mod.Model) error {
+	log.Debug("processScenario")
+	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
 
-	// Store scenario Name
-	scenarioName = scenario.Name
+	// Create NetElem for each scenario process
+	for _, name := range procNames {
+		// Retrieve node & context from model
+		node := model.GetNode(name)
+		if node == nil {
+			err := errors.New("Error finding process: " + name)
+			return err
+		}
+		proc, ok := node.(*ceModel.Process)
+		if !ok {
+			err := errors.New("Error casting process: " + name)
+			return err
+		}
 
-	//indexToNetElemMap = make(map[int]NetElem)
-	//index := 0
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
+		// Add pod to list for retrieving IP addresses
+		addPod(proc.Name)
 
-		// Parse Zones
-		for _, zone := range domain.Zones {
+		// Retrieve existing element or create new net element if none found
+		element := netElemMap[proc.Name]
+		if element == nil {
+			element = new(NetElem)
+			element.Name = proc.Name
+			element.NextUniqueNumber = nextUniqueNumberMap[proc.Name]
+			element.Ip = podIPMap[proc.Name]
+			netElemMap[proc.Name] = element
+		}
 
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
+		// Create pod information entry and add to map
+		podInfo := new(PodInfo)
+		podInfo.Name = proc.Name
+		podInfo.MgSvcMap = make(map[string]*ServiceInfo)
+		podInfo.IngressSvcMapList = make(map[int32]*IngressSvcMap)
+		podInfo.EgressSvcMapList = make(map[string]*EgressSvcMap)
+		podInfoMap[proc.Name] = podInfo
 
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
+		// Store service information from service config
+		if proc.ServiceConfig != nil {
+			addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
+		}
 
-					// Parse Processes
-					for _, proc := range pl.Processes {
-						addPod(proc.Name)
+		// Store service information from user chart
+		// Format: <service instance name>:[group service name]:<port>:<protocol>
+		if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
+			userChartGroup := strings.Split(proc.UserChartGroup, ":")
 
-						// Retrieve existing element or create new net element if none found
-						element := netElemMap[proc.Name]
-						if element == nil {
-							element = new(NetElem)
-							element.ScenarioName = scenario.Name
-							element.Name = proc.Name
-							element.NextUniqueNumber = nextUniqueNumberMap[proc.Name]
-							element.Ip = podIPMap[proc.Name]
+			// Retrieve service ports
+			var servicePorts []ceModel.ServicePort
+			port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
+			if err == nil {
+				var servicePort ceModel.ServicePort
+				servicePort.Port = int32(port)
+				servicePort.Protocol = userChartGroup[3]
+				servicePorts = append(servicePorts, servicePort)
+			}
 
-						}
+			addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
+		}
 
-						// Update element information based on current location characteristics
-						element.DomainName = domain.Name
-						element.ZoneName = zone.Name
-						element.Type = pl.Type_
+		// Add pod-specific external service mapping, if any
+		if proc.IsExternal {
+			// Map external port to internal service for Ingress services
+			for _, service := range proc.ExternalConfig.IngressServiceMap {
+				ingressSvcMap := new(IngressSvcMap)
+				ingressSvcMap.NodePort = service.ExternalPort
+				ingressSvcMap.SvcName = service.Name
+				ingressSvcMap.SvcPort = service.Port
+				ingressSvcMap.Protocol = service.Protocol
+				podInfo.IngressSvcMapList[ingressSvcMap.NodePort] = ingressSvcMap
+			}
 
-						addElementToList(element)
-						// Create pod information entry and add to map
-						podInfo := new(PodInfo)
-						podInfo.Name = proc.Name
-						podInfo.MgSvcMap = make(map[string]*ServiceInfo)
-						podInfo.IngressSvcMapList = make(map[int32]*IngressSvcMap)
-						podInfo.EgressSvcMapList = make(map[string]*EgressSvcMap)
-						podInfoMap[proc.Name] = podInfo
+			// Add External service mapping & service info for Egress services
+			for _, service := range proc.ExternalConfig.EgressServiceMap {
+				egressSvcMap := new(EgressSvcMap)
+				egressSvcMap.SvcName = service.Name
+				egressSvcMap.SvcIp = service.Ip
+				egressSvcMap.SvcPort = service.Port
+				egressSvcMap.Protocol = service.Protocol
+				podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
 
-						// Store service information from service config
-						if proc.ServiceConfig != nil {
-							addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
-						}
-
-						// Store service information from user chart
-						// Format: <service instance name>:[group service name]:<port>:<protocol>
-						if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
-							userChartGroup := strings.Split(proc.UserChartGroup, ":")
-
-							// Retrieve service ports
-							var servicePorts []ceModel.ServicePort
-							port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
-							if err == nil {
-								var servicePort ceModel.ServicePort
-								servicePort.Port = int32(port)
-								servicePort.Protocol = userChartGroup[3]
-								servicePorts = append(servicePorts, servicePort)
-							}
-
-							addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
-						}
-
-						// Add pod-specific external service mapping, if any
-						if proc.IsExternal {
-							// Map external port to internal service for Ingress services
-							for _, service := range proc.ExternalConfig.IngressServiceMap {
-								ingressSvcMap := new(IngressSvcMap)
-								ingressSvcMap.NodePort = service.ExternalPort
-								ingressSvcMap.SvcName = service.Name
-								ingressSvcMap.SvcPort = service.Port
-								ingressSvcMap.Protocol = service.Protocol
-								podInfo.IngressSvcMapList[ingressSvcMap.NodePort] = ingressSvcMap
-							}
-
-							// Add External service mapping & service info for Egress services
-							for _, service := range proc.ExternalConfig.EgressServiceMap {
-								egressSvcMap := new(EgressSvcMap)
-								egressSvcMap.SvcName = service.Name
-								egressSvcMap.SvcIp = service.Ip
-								egressSvcMap.SvcPort = service.Port
-								egressSvcMap.Protocol = service.Protocol
-								podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
-
-								var servicePorts []ceModel.ServicePort
-								var servicePort ceModel.ServicePort
-								servicePort.Port = service.Port
-								servicePort.Protocol = service.Protocol
-								servicePorts = append(servicePorts, servicePort)
-								addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
-							}
-						}
-					}
-				}
+				var servicePorts []ceModel.ServicePort
+				var servicePort ceModel.ServicePort
+				servicePort.Port = service.Port
+				servicePort.Protocol = service.Protocol
+				servicePorts = append(servicePorts, servicePort)
+				addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
 			}
 		}
 	}
+
+	return nil
 }
 
 // Create & store new service & MG service information
@@ -614,47 +557,44 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 	svcInfoMap[svcInfo.Name] = svcInfo
 }
 
-func addElementToList(element *NetElem) {
-	netElemMap[element.Name] = element
-}
-
 func updateDbState(transactionId int) {
-
 	var dbState = make(map[string]interface{})
 	dbState["transactionIdStored"] = transactionId
-
 	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
 	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
 func updateOneFilterRule(dstName string, srcName string, rate float64, latency float64, latencyVariation float64, packetLoss float64) {
-	var filterInfo FilterInfo
 	mutex.Lock()
-	for _, dstElement := range netElemMap {
-		if dstElement.Name == dstName {
-			for _, storedFilterInfo := range dstElement.FilterInfoList {
-				if storedFilterInfo.SrcName == srcName {
-					filterInfo.PodName = storedFilterInfo.PodName
-					filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
-					filterInfo.Latency = int(latency)
-					filterInfo.LatencyVariation = int(latencyVariation)
-					filterInfo.LatencyCorrelation = storedFilterInfo.LatencyCorrelation
-					filterInfo.PacketLoss = int(100 * packetLoss)
-					filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
 
-					log.Info("SIMON upda", filterInfo.PodName, "-", filterInfo.UniqueNumber, "-", filterInfo.Latency, "-", filterInfo.DataRate)
-					_ = updateNetCharRule(&filterInfo, true)
-					break
-				}
-			}
+	// Retrieve element
+	dstElement, found := netElemMap[dstName]
+	if !found {
+		log.Error("Failed to find element: ", dstName)
+		return
+	}
+
+	// Find & update filter info with matching source name
+	for _, storedFilterInfo := range dstElement.FilterInfoList {
+		if storedFilterInfo.SrcName == srcName {
+			var filterInfo FilterInfo
+			filterInfo.PodName = storedFilterInfo.PodName
+			filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
+			filterInfo.Latency = int(latency)
+			filterInfo.LatencyVariation = int(latencyVariation)
+			filterInfo.LatencyCorrelation = storedFilterInfo.LatencyCorrelation
+			filterInfo.PacketLoss = int(100 * packetLoss)
+			filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
+
+			log.Info("SIMON upda", filterInfo.PodName, "-", filterInfo.UniqueNumber, "-", filterInfo.Latency, "-", filterInfo.DataRate)
+			_ = updateNetCharRule(&filterInfo, true)
+			break
 		}
 	}
 	mutex.Unlock()
-
 }
 
 func applyOneFilterRule() {
-
 	mutex.Lock()
 
 	//Update the Db for state information (only transactionId for now)
@@ -666,15 +606,13 @@ func applyOneFilterRule() {
 	tce.nextTransactionId++
 
 	mutex.Unlock()
-
 }
 
 func applyNetCharFilterRules() {
 	log.Debug("applyNetCharFilterRules", "+---+", netElemMap)
 
-	// Loop through all the processes
+	// Loop through all the flows (src/dst combinations)
 	for _, dstElementPtr := range netElemMap {
-
 		for _, srcElementPtr := range netElemMap {
 			if dstElementPtr.Name == srcElementPtr.Name {
 				continue
@@ -708,7 +646,8 @@ func applyNetCharFilterRules() {
 
 							//there is a difference... replace the old one
 							needUpdateFilter = true //store the index
-							//using a convention where one odd and even number reserved for the same rule (applied and updated one)nd using one after the other
+							// using a convention where one odd and even number reserved for the same rule
+							// (applied and updated one)nd using one after the other
 							if storedFilterInfo.UniqueNumber%2 == 0 {
 								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber - 1
 							} else {
@@ -720,6 +659,7 @@ func applyNetCharFilterRules() {
 						break
 					}
 				}
+
 				if needCreate {
 					dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
 				} else {
@@ -743,7 +683,6 @@ func applyNetCharFilterRules() {
 }
 
 func deleteFilterRule(filterInfo *FilterInfo) error {
-
 	// Retrieve unique IFB number for rules to delete
 	filterNumber := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
 
@@ -1072,34 +1011,10 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// Used to print network characteristics belonging to a NetChar object -- uncomment to use -- for debug purpose
-// func printfNetChar(nc NetChar) {
-//      log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
-//      log.Debug("throughput : ", nc.Throughput)
-//      log.Debug("packet loss: ", nc.PacketLoss)
-// }
-//
 // Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
 // func printfElement(element NetElem) {
 //      log.Debug("element name : ", element.Name)
-//      log.Debug("element index : ", element.Index)
-//      log.Debug("element parent name : ", element.ParentName)
-//      log.Debug("element zone name : ", element.ZoneName)
-//      log.Debug("element domain name : ", element.DomainName)
 //      log.Debug("element type : ", element.Type)
-//      log.Debug("element scenario name : ", element.ScenarioName)
-//      log.Debug("element poa: ")
-//      printfNetChar(element.Poa)
-//      log.Debug("element poa-edge: ")
-//      printfNetChar(element.EdgeFog)
-//      log.Debug("element inter-fog: ")
-//      printfNetChar(element.InterFog)
-//      log.Debug("element inter-edge: ")
-//      printfNetChar(element.InterEdge)
-//      log.Debug("element inter-zone: ")
-//      printfNetChar(element.InterZone)
-//      log.Debug("element inter-domain: ")
-//      printfNetChar(element.InterDomain)
 //      log.Debug("element filter size: ", len(element.FilterInfoList))
 //      log.Debug("element ip: ", element.Ip)
 //      log.Debug("element next unique nb: ", element.NextUniqueNumber)

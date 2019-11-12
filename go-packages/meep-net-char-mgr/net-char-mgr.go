@@ -39,7 +39,7 @@ type NetCharMgr interface {
 	Start() error
 	Stop()
 	IsRunning() bool
-	ProcessActiveScenarioUpdate()
+	ProcessScenario(*mod.Model)
 }
 
 // NetCharAlgo
@@ -107,13 +107,6 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 		return nil, err
 	}
 
-	// Create new Model
-	ncm.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
-		return nil, err
-	}
-
 	// Create new Control listener
 	ncm.rc, err = redis.NewConnector(redisAddr, netCharControlDb)
 	if err != nil {
@@ -121,13 +114,6 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 		return nil, err
 	}
 	log.Info("Connected to Control Listener redis DB")
-
-	// Listen for Model updates
-	err = ncm.activeModel.Listen(ncm.eventHandler)
-	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
-		return nil, err
-	}
 
 	// Listen for Control updates
 	err = ncm.rc.Subscribe(NetCharControlChannel)
@@ -183,6 +169,28 @@ func (ncm *NetCharManager) IsRunning() bool {
 	return ncm.isStarted
 }
 
+// ProcessScenario
+func (ncm *NetCharManager) ProcessScenario(model *mod.Model) {
+	ncm.mutex.Lock()
+	// Store latest scenario
+	ncm.activeModel = model
+
+	// Process new scenario if started
+	if ncm.isStarted {
+		// Process updated scenario using algorithm
+		err := ncm.algo.ProcessScenario(ncm.activeModel)
+		if err != nil {
+			log.Error("Failed to process active model with error: ", err)
+			ncm.mutex.Unlock()
+			return
+		}
+
+		// Recalculate network characteristics
+		ncm.updateNetChars()
+	}
+	ncm.mutex.Unlock()
+}
+
 // eventHandler - Events received and processed by the registered channels
 func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
@@ -191,28 +199,10 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	case NetCharControlChannel:
 		log.Debug("Event received on channel: ", NetCharControlChannel)
 		ncm.updateControls()
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
-//		ncm.processActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")
 	}
 	ncm.mutex.Unlock()
-}
-
-// processActiveScenarioUpdate
-func (ncm *NetCharManager) ProcessActiveScenarioUpdate() {
-	if ncm.isStarted {
-		// Process updated scenario using algorithm
-		err := ncm.algo.ProcessScenario(ncm.activeModel)
-		if err != nil {
-			log.Error("Failed to process active model with error: ", err)
-			return
-		}
-
-		// Recalculate network characteristics
-		ncm.updateNetChars()
-	}
 }
 
 // updateNetChars
