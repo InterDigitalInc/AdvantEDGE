@@ -35,10 +35,11 @@ const moduleName string = "meep-net-char"
 
 // NetChar Interface
 type NetCharMgr interface {
-	Register(func(string, string, float64), func())
+	Register(func(string, string, float64, float64, float64, float64), func())
 	Start() error
 	Stop()
 	IsRunning() bool
+	ProcessActiveScenarioUpdate()
 }
 
 // NetCharAlgo
@@ -48,14 +49,19 @@ type NetCharAlgo interface {
 	SetConfigAttribute(string, string)
 }
 
+// NetChar
+type NetChar struct {
+	Latency    float64
+	Jitter     float64
+	PacketLoss float64
+	Throughput float64
+}
+
 // FlowNetChar
 type FlowNetChar struct {
 	SrcElemName string
 	DstElemName string
-	Latency     float64
-	Jitter      float64
-	PacketLoss  float64
-	Throughput  float64
+	MyNetChar   NetChar
 }
 
 // NetCharConfig
@@ -74,7 +80,7 @@ type NetCharManager struct {
 	mutex          sync.Mutex
 	config         NetCharConfig
 	activeModel    *mod.Model
-	updateFilterCB func(string, string, float64)
+	updateFilterCB func(string, string, float64, float64, float64, float64)
 	applyFilterCB  func()
 	algo           NetCharAlgo
 }
@@ -138,7 +144,7 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 }
 
 // Register - Register NetChar callback functions
-func (ncm *NetCharManager) Register(updateFilterRule func(string, string, float64), applyFilterRule func()) {
+func (ncm *NetCharManager) Register(updateFilterRule func(string, string, float64, float64, float64, float64), applyFilterRule func()) {
 	ncm.updateFilterCB = updateFilterRule
 	ncm.applyFilterCB = applyFilterRule
 }
@@ -147,6 +153,7 @@ func (ncm *NetCharManager) Register(updateFilterRule func(string, string, float6
 func (ncm *NetCharManager) Start() error {
 	if !ncm.isStarted {
 		ncm.isStarted = true
+		ncm.updateControls()
 		ncm.ticker = time.NewTicker(time.Duration(ncm.config.RecalculationPeriod) * time.Millisecond)
 		go func() {
 			for range ncm.ticker.C {
@@ -186,7 +193,7 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 		ncm.updateControls()
 	case mod.ActiveScenarioEvents:
 		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
-		ncm.processActiveScenarioUpdate()
+//		ncm.processActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")
 	}
@@ -194,7 +201,7 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 }
 
 // processActiveScenarioUpdate
-func (ncm *NetCharManager) processActiveScenarioUpdate() {
+func (ncm *NetCharManager) ProcessActiveScenarioUpdate() {
 	if ncm.isStarted {
 		// Process updated scenario using algorithm
 		err := ncm.algo.ProcessScenario(ncm.activeModel)
@@ -216,7 +223,7 @@ func (ncm *NetCharManager) updateNetChars() {
 	// Apply updates, if any
 	if len(updatedNetCharList) != 0 {
 		for _, flowNetChar := range updatedNetCharList {
-			ncm.updateFilterCB(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.Throughput)
+			ncm.updateFilterCB(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.PacketLoss)
 		}
 		ncm.applyFilterCB()
 	}

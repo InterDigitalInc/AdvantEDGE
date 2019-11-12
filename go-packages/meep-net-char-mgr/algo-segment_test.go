@@ -441,10 +441,10 @@ func validateNetCharUpdate(updatedNetCharList []FlowNetChar, src string, dst str
 	for _, flowNetChar := range updatedNetCharList {
 		if flowNetChar.DstElemName == dst &&
 			flowNetChar.SrcElemName == src &&
-			flowNetChar.Latency == latency &&
-			flowNetChar.Jitter == jitter &&
-			flowNetChar.PacketLoss == packetloss &&
-			flowNetChar.Throughput == throughput {
+			flowNetChar.MyNetChar.Latency == latency &&
+			flowNetChar.MyNetChar.Jitter == jitter &&
+			flowNetChar.MyNetChar.PacketLoss == packetloss &&
+			flowNetChar.MyNetChar.Throughput == throughput {
 			found = true
 			break
 		}

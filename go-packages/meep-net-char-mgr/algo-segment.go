@@ -55,7 +55,7 @@ type SegAlgoConfig struct {
 // SegAlgoSegment -
 type SegAlgoSegment struct {
 	Name                      string
-	MaxThroughput             float64
+	ConfiguredNetChar         NetChar
 	MaxFairShareBwPerFlow     float64
 	CurrentThroughput         float64
 	MaxBwPerInactiveFlow      float64
@@ -72,7 +72,11 @@ type SegAlgoFlow struct {
 	Name                          string
 	SrcNetElem                    string
 	DstNetElem                    string
-	MaximumThroughput             float64 //config
+	ConfiguredNetChar             NetChar
+	AppliedNetChar                NetChar
+	ComputedLatency               float64
+	ComputedJitter                float64
+	ComputedPacketLoss            float64
 	AllocatedThroughput           float64 //allocated
 	AllocatedThroughputLowerBound float64 //allocated
 	AllocatedThroughputUpperBound float64 //allocated
@@ -95,13 +99,13 @@ type SegAlgoPath struct {
 
 // SegAlgoNetElem -
 type SegAlgoNetElem struct {
-	Name          string
-	Type          string
-	PhyLocName    string
-	PoaName       string
-	ZoneName      string
-	DomainName    string
-	MaxThroughput float64
+	Name              string
+	Type              string
+	PhyLocName        string
+	PoaName           string
+	ZoneName          string
+	DomainName        string
+	ConfiguredNetChar NetChar
 }
 
 // SegmentAlgorithm -
@@ -153,7 +157,6 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 	// Clear segment & flow maps
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
-
 	// Process active scenario
 	procNames := model.GetNodeNames("CLOUD-APP")
 	procNames = append(procNames, model.GetNodeNames("EDGE-APP")...)
@@ -198,11 +201,14 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 			element.ZoneName = nodeCtx.Parents[mod.Zone]
 		}
 
-		// Set max App Throughput (use default if set to 0)
-		element.MaxThroughput = float64(proc.AppThroughput)
-		if element.MaxThroughput == 0 {
-			element.MaxThroughput = DEFAULT_THROUGHPUT_LINK
+		// Set max App Net chars (use default if set to 0)
+		element.ConfiguredNetChar.Throughput = float64(proc.AppThroughput)
+		if element.ConfiguredNetChar.Throughput == 0 {
+			element.ConfiguredNetChar.Throughput = DEFAULT_THROUGHPUT_LINK
 		}
+		element.ConfiguredNetChar.Latency = float64(proc.AppLatency)
+		element.ConfiguredNetChar.Jitter = float64(proc.AppLatencyVariation)
+		element.ConfiguredNetChar.PacketLoss = float64(proc.AppPacketLoss)
 
 		// Add element to list
 		netElemList = append(netElemList, *element)
@@ -246,17 +252,26 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 	algo.logTimeLapse(&currentTime, "time to update metrics")
 
 	// Recalculate segment BW allocation for each flow
-	algo.reCalculateThroughputs()
-	algo.logTimeLapse(&currentTime, "time to recalculate")
+	algo.reCalculateNetChar()
+	algo.logTimeLapse(&currentTime, "time to recalculate throughput")
 
 	// Prepare list of updated flows
 	for _, flow := range algo.FlowMap {
-		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
-			log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput)
+		if (flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT) ||
+			(flow.ComputedLatency != flow.AppliedNetChar.Latency) ||
+			(flow.ComputedJitter != flow.AppliedNetChar.Jitter) ||
+			(flow.ComputedPacketLoss != flow.AppliedNetChar.PacketLoss) {
+			log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput, "-", flow.ComputedLatency, "-", flow.ComputedJitter, "-", flow.ComputedPacketLoss)
 			flow.AllocatedThroughput = flow.MaxPlannedThroughput
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
-			flowNetChar := FlowNetChar{flow.SrcNetElem, flow.DstNetElem, 0, 0, 0, flow.AllocatedThroughput}
+			flow.AppliedNetChar.Throughput = flow.AllocatedThroughput
+			flow.AppliedNetChar.Latency = flow.ComputedLatency
+			flow.AppliedNetChar.Jitter = flow.ComputedJitter
+			flow.AppliedNetChar.PacketLoss = flow.ComputedPacketLoss
+
+			netchar := NetChar{flow.AppliedNetChar.Latency, flow.AppliedNetChar.Jitter, flow.AppliedNetChar.PacketLoss, flow.AppliedNetChar.Throughput}
+			flowNetChar := FlowNetChar{flow.SrcNetElem, flow.DstNetElem, netchar}
 			updatedNetCharList = append(updatedNetCharList, flowNetChar)
 		}
 	}
@@ -364,17 +379,140 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 
 	// Set maxBw to the minimum of the 2 ends if a max is not forced
 	if maxBw == 0 {
-		if srcElement.MaxThroughput < destElement.MaxThroughput {
-			maxBw = srcElement.MaxThroughput
+		if srcElement.ConfiguredNetChar.Throughput < destElement.ConfiguredNetChar.Throughput {
+			maxBw = srcElement.ConfiguredNetChar.Throughput
 		} else {
-			maxBw = destElement.MaxThroughput
+			maxBw = destElement.ConfiguredNetChar.Throughput
 		}
 	}
-	flow.MaximumThroughput = maxBw
-
+	flow.ConfiguredNetChar.Throughput = maxBw
+	flow.ConfiguredNetChar.Latency = 0
+	flow.ConfiguredNetChar.Jitter = 0
+	flow.ConfiguredNetChar.PacketLoss = 0
 	// Create a new path for this flow
 	flow.Path = algo.createPath(flowName, srcElement, destElement, model)
 }
+
+// createPath -
+func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, model *mod.Model) *SegAlgoPath {
+
+	direction := ""
+	segmentName := ""
+	var segment *SegAlgoSegment
+
+	path := new(SegAlgoPath)
+	path.Name = flowName
+
+	//app segment ul, dl
+	direction = "uplink"
+	segmentName = srcElement.Name + direction
+	segment = algo.createSegment(segmentName, flowName, srcElement.Name, model)
+	path.Segments = append(path.Segments, segment)
+	direction = "downlink"
+	segmentName = destElement.Name + direction
+	segment = algo.createSegment(segmentName, flowName, destElement.Name, model)
+	path.Segments = append(path.Segments, segment)
+
+	//node segment ul, dl
+	direction = "uplink"
+	segmentName = srcElement.PhyLocName + direction
+	segment = algo.createSegment(segmentName, flowName, srcElement.PhyLocName, model)
+	path.Segments = append(path.Segments, segment)
+	direction = "downlink"
+	segmentName = destElement.PhyLocName + direction
+	segment = algo.createSegment(segmentName, flowName, destElement.PhyLocName, model)
+	path.Segments = append(path.Segments, segment)
+
+	//if on same node, return
+	if srcElement.PhyLocName == destElement.PhyLocName {
+		return path
+	}
+
+	//network location ul, dl
+	if srcElement.Type == "UE" {
+		direction = "uplink"
+		segmentName = srcElement.PoaName + direction
+		segment = algo.createSegment(segmentName, flowName, srcElement.PoaName, model)
+		path.Segments = append(path.Segments, segment)
+	}
+
+	if destElement.Type == "UE" {
+		direction = "downlink"
+		segmentName = destElement.PoaName + direction
+		segment = algo.createSegment(segmentName, flowName, destElement.PoaName, model)
+		path.Segments = append(path.Segments, segment)
+	}
+
+	//if on same network location (poa), return
+	if srcElement.PoaName == destElement.PoaName {
+		return path
+	}
+
+	//zone ul, dl
+	if srcElement.Type != "CLOUD" {
+		direction = "uplink"
+		segmentName = srcElement.ZoneName + direction
+		segment = algo.createSegment(segmentName, flowName, srcElement.ZoneName, model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	if destElement.Type != "CLOUD" {
+		direction = "downlink"
+		segmentName = destElement.ZoneName + direction
+		segment = algo.createSegment(segmentName, flowName, destElement.ZoneName, model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	//if in same zone, return
+	if srcElement.ZoneName == destElement.ZoneName {
+		return path
+	}
+
+	//domain ul, dl
+	if srcElement.Type != "CLOUD" {
+		direction = "uplink"
+		segmentName = srcElement.DomainName + direction
+		segment = algo.createSegment(segmentName, flowName, srcElement.DomainName, model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	if destElement.Type != "CLOUD" {
+		direction = "downlink"
+		segmentName = destElement.DomainName + direction
+		segment = algo.createSegment(segmentName, flowName, destElement.DomainName, model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	//if in same domain, return
+	if srcElement.DomainName == destElement.DomainName {
+		return path
+	}
+
+	//cloud ul, dl
+	if srcElement.Type == "CLOUD" {
+		direction = "uplink"
+		segmentName = model.GetScenarioName() + "-cloud-" + direction
+		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	if destElement.Type == "CLOUD" {
+		direction = "downlink"
+		segmentName = model.GetScenarioName() + "-cloud-" + direction
+		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
+		path.Segments = append(path.Segments, segment)
+
+	}
+
+	return path
+}
+
+/*
 
 // createPath -
 func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, model *mod.Model) *SegAlgoPath {
@@ -550,6 +688,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	return path
 }
+*/
 
 // createSegment -
 func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string, elemName string, model *mod.Model) *SegAlgoSegment {
@@ -560,9 +699,9 @@ func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string,
 		segment.Name = segmentName
 
 		// Retrieve max throughput from model using model scenario element name
-		maxThroughput := getMaxThroughput(elemName, model)
-		segment.MaxThroughput = maxThroughput
-
+		nc := getNetChars(elemName, model)
+		segment.ConfiguredNetChar = nc
+		maxThroughput := nc.Throughput
 		// Initialize segment-specific BW attributes from Algo config
 		if algo.Config.IsPercentage {
 			segment.MaxBwPerInactiveFlow = algo.Config.MaxBwPerInactiveFlow * maxThroughput / 100
@@ -612,14 +751,16 @@ func (algo *SegmentAlgorithm) getMetricsThroughputEntryHandler(key string, field
 }
 
 // reCalculateThroughputs -
-func (algo *SegmentAlgorithm) reCalculateThroughputs() {
+func (algo *SegmentAlgorithm) reCalculateNetChar() {
 	//reset every planned throughput values for every flow since they will start to populate those
 	for _, flow := range algo.FlowMap {
-		resetFlowMaxPlannedThroughput(flow)
+		resetComputedNetChar(flow)
 	}
 
 	//all segments determined by the scenario
 	for _, segment := range algo.SegmentMap {
+
+		//throughput specific
 		updateMaxFairShareBwPerFlow(segment)
 		unusedBw, list := needToReevaluate(segment)
 
@@ -628,26 +769,42 @@ func (algo *SegmentAlgorithm) reCalculateThroughputs() {
 				log.Info("Segment ", segment.Name, " reevaluation result - BW unused: ", unusedBw, "***Flows to evaluate***: ", printFlowNamesFromList(list))
 			}
 
-			recalculateSegment(segment, list, unusedBw)
+			recalculateSegmentBw(segment, list, unusedBw)
+		}
 
-			if algo.Config.LogVerbose {
-				printFlows(segment)
+		//latency, jitter, packet-loss computation for each flow in each segment
+		for _, flow := range segment.Flows {
+			flow.ComputedLatency += segment.ConfiguredNetChar.Latency
+			flow.ComputedJitter += segment.ConfiguredNetChar.Jitter
+			if flow.ComputedPacketLoss == 0 {
+				//first time it finds a value, it applies it directly
+				flow.ComputedPacketLoss = segment.ConfiguredNetChar.PacketLoss
+			} else {
+				flow.ComputedPacketLoss += (flow.ComputedPacketLoss * (1 - segment.ConfiguredNetChar.PacketLoss))
 			}
 		}
+		if algo.Config.LogVerbose {
+			printFlows(segment)
+		}
+
 	}
 }
 
-// resetFlowMaxPlannedThroughput -
-func resetFlowMaxPlannedThroughput(flow *SegAlgoFlow) {
+// resetComputedNetChar -
+func resetComputedNetChar(flow *SegAlgoFlow) {
 	flow.MaxPlannedThroughput = MAX_THROUGHPUT
 	flow.MaxPlannedLowerBound = MAX_THROUGHPUT
 	flow.MaxPlannedUpperBound = MAX_THROUGHPUT
+	flow.ComputedLatency = 0
+	flow.ComputedJitter = 0
+	flow.ComputedPacketLoss = 0
+
 }
 
-// recalculateSegment -
-func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow, unusedBw float64) {
+// recalculateSegmentBw -
+func recalculateSegmentBw(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow, unusedBw float64) {
 	nbEvaluatedflowsLeft := len(flowsToEvaluate)
-	if segment.CurrentThroughput > segment.MaxThroughput || nbEvaluatedflowsLeft >= 1 {
+	if segment.CurrentThroughput > segment.ConfiguredNetChar.Throughput || nbEvaluatedflowsLeft >= 1 {
 
 		//category 1 Flows
 		for _, flow := range flowsToEvaluate {
@@ -660,8 +817,8 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 					flow.PlannedLowerBound = 0
 				} else {
 					flow.PlannedThroughput = flow.CurrentThroughput + segment.IncrementalStep
-					if flow.PlannedThroughput > flow.MaximumThroughput {
-						flow.PlannedThroughput = flow.MaximumThroughput
+					if flow.PlannedThroughput > flow.ConfiguredNetChar.Throughput {
+						flow.PlannedThroughput = flow.ConfiguredNetChar.Throughput
 					}
 					flow.PlannedUpperBound = flow.PlannedThroughput - segment.ActionUpperThreshold
 					flow.PlannedLowerBound = flow.PlannedUpperBound - segment.TolerationThreshold
@@ -688,8 +845,8 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 						nbEvaluatedflowsLeft--
 						if nbEvaluatedflowsLeft == 0 { //allocate everything of what is left
 							flow.PlannedThroughput = unusedBw
-							if flow.PlannedThroughput > flow.MaximumThroughput {
-								flow.PlannedThroughput = flow.MaximumThroughput
+							if flow.PlannedThroughput > flow.ConfiguredNetChar.Throughput {
+								flow.PlannedThroughput = flow.ConfiguredNetChar.Throughput
 							}
 							flow.PlannedUpperBound = flow.PlannedThroughput
 							flow.PlannedLowerBound = flow.PlannedThroughput - segment.TolerationThreshold
@@ -699,8 +856,8 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 							}
 						} else {
 							flow.PlannedThroughput = flow.CurrentThroughput + segment.IncrementalStep
-							if flow.PlannedThroughput > flow.MaximumThroughput {
-								flow.PlannedThroughput = flow.MaximumThroughput
+							if flow.PlannedThroughput > flow.ConfiguredNetChar.Throughput {
+								flow.PlannedThroughput = flow.ConfiguredNetChar.Throughput
 							}
 							flow.PlannedUpperBound = flow.PlannedThroughput - segment.ActionUpperThreshold
 							flow.PlannedLowerBound = flow.PlannedUpperBound - segment.TolerationThreshold
@@ -725,8 +882,8 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 				for _, flow := range flowsToEvaluate {
 					if flow.PlannedThroughput == segment.MaxFairShareBwPerFlow && flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow {
 						flow.PlannedThroughput = segment.MaxFairShareBwPerFlow + extra
-						if flow.PlannedThroughput > flow.MaximumThroughput {
-							flow.PlannedThroughput = flow.MaximumThroughput
+						if flow.PlannedThroughput > flow.ConfiguredNetChar.Throughput {
+							flow.PlannedThroughput = flow.ConfiguredNetChar.Throughput
 						}
 						flow.PlannedUpperBound = flow.PlannedThroughput - segment.ActionUpperThreshold
 						flow.PlannedLowerBound = flow.PlannedUpperBound - segment.TolerationThreshold
@@ -742,8 +899,8 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 		for _, flow := range flowsToEvaluate {
 			if flow.CurrentThroughput > segment.MinActivityThreshold {
 				flow.PlannedThroughput = segment.MaxFairShareBwPerFlow
-				if flow.PlannedThroughput > flow.MaximumThroughput {
-					flow.PlannedThroughput = flow.MaximumThroughput
+				if flow.PlannedThroughput > flow.ConfiguredNetChar.Throughput {
+					flow.PlannedThroughput = flow.ConfiguredNetChar.Throughput
 				}
 				flow.PlannedLowerBound = 0
 				flow.PlannedUpperBound = 0
@@ -764,7 +921,7 @@ func recalculateSegment(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlow,
 
 // needToReevaluate - determines which Flows must be recalculated for bandwidth sharing within the segment
 func needToReevaluate(segment *SegAlgoSegment) (unusedBw float64, list []*SegAlgoFlow) {
-	unusedBw = segment.MaxThroughput
+	unusedBw = segment.ConfiguredNetChar.Throughput
 
 	//how many active connections that needs to be taken into account
 	for _, flow := range segment.Flows {
@@ -792,32 +949,56 @@ func updateMaxFairShareBwPerFlow(segment *SegAlgoSegment) {
 		}
 	}
 	if nbActiveConnections >= 1 {
-		segment.MaxFairShareBwPerFlow = segment.MaxThroughput / float64(nbActiveConnections)
+		segment.MaxFairShareBwPerFlow = segment.ConfiguredNetChar.Throughput / float64(nbActiveConnections)
 	} else {
 		segment.MaxFairShareBwPerFlow = MAX_THROUGHPUT
 	}
 }
 
-// getMaxThroughput - Retrieve max throughput from model for provided element name
-func getMaxThroughput(elemName string, model *mod.Model) (maxThroughput float64) {
+// getNetChars - Retrieve all network characteristics from model for provided element name
+func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
 	// Get Node
 	node := model.GetNode(elemName)
 	if node == nil {
 		log.Error("Error finding element: " + elemName)
-		return maxThroughput
+		return nc
 	}
 
-	// Get max throughput based on Node Type
-	if pl, ok := node.(*ceModel.PhysicalLocation); ok {
+	maxThroughput := 0.0
+	latency := 0.0
+	jitter := 0.0
+	packetLoss := 0.0
+	// Get max throughput based on Node Type, as well as other netcharse
+	if p, ok := node.(*ceModel.Process); ok {
+		maxThroughput = float64(p.AppThroughput)
+		latency = float64(p.AppLatency)
+		jitter = float64(p.AppLatencyVariation)
+		packetLoss = float64(p.AppPacketLoss)
+	} else if pl, ok := node.(*ceModel.PhysicalLocation); ok {
 		maxThroughput = float64(pl.LinkThroughput)
+		latency = float64(pl.LinkLatency)
+		jitter = float64(pl.LinkLatencyVariation)
+		packetLoss = float64(pl.LinkPacketLoss)
 	} else if nl, ok := node.(*ceModel.NetworkLocation); ok {
 		maxThroughput = float64(nl.TerminalLinkThroughput)
+		latency = float64(nl.TerminalLinkLatency)
+		jitter = float64(nl.TerminalLinkLatencyVariation)
+		packetLoss = float64(nl.TerminalLinkPacketLoss)
 	} else if zone, ok := node.(*ceModel.Zone); ok {
 		maxThroughput = float64(zone.EdgeFogThroughput)
+		latency = float64(zone.EdgeFogLatency)
+		jitter = float64(zone.EdgeFogLatencyVariation)
+		packetLoss = float64(zone.EdgeFogPacketLoss)
 	} else if domain, ok := node.(*ceModel.Domain); ok {
 		maxThroughput = float64(domain.InterZoneThroughput)
+		latency = float64(domain.InterZoneLatency)
+		jitter = float64(domain.InterZoneLatencyVariation)
+		packetLoss = float64(domain.InterZonePacketLoss)
 	} else if deployment, ok := node.(*ceModel.Deployment); ok {
 		maxThroughput = float64(deployment.InterDomainThroughput)
+		latency = float64(deployment.InterDomainLatency)
+		jitter = float64(deployment.InterDomainLatencyVariation)
+		packetLoss = float64(deployment.InterDomainPacketLoss)
 	} else {
 		log.Error("Error casting element: " + elemName)
 	}
@@ -827,7 +1008,12 @@ func getMaxThroughput(elemName string, model *mod.Model) (maxThroughput float64)
 		maxThroughput = DEFAULT_THROUGHPUT_LINK
 	}
 
-	return maxThroughput
+	nc.Throughput = maxThroughput
+	nc.Latency = latency
+	nc.Jitter = jitter
+	nc.PacketLoss = packetLoss
+
+	return nc
 }
 
 // printFlowNamesFromList -
@@ -851,7 +1037,10 @@ func printFlows(segment *SegAlgoSegment) {
 func printFlow(flow *SegAlgoFlow) string {
 	s0 := fmt.Sprintf("%x", &flow)
 	s1 := flow.Name + "(" + s0 + ")"
-	s2 := fmt.Sprintf("%f", flow.MaximumThroughput)
+	s2t := fmt.Sprintf("%f", flow.ConfiguredNetChar.Throughput)
+	s2l := fmt.Sprintf("%f", flow.ConfiguredNetChar.Latency)
+	s2j := fmt.Sprintf("%f", flow.ConfiguredNetChar.Jitter)
+	s2p := fmt.Sprintf("%f", flow.ConfiguredNetChar.PacketLoss)
 	s3a := fmt.Sprintf("%f", flow.AllocatedThroughput)
 	s4a := fmt.Sprintf("%f", flow.AllocatedThroughputLowerBound)
 	s5a := fmt.Sprintf("%f", flow.AllocatedThroughputUpperBound)
@@ -862,8 +1051,14 @@ func printFlow(flow *SegAlgoFlow) string {
 	s4p := fmt.Sprintf("%f", flow.PlannedLowerBound)
 	s5p := fmt.Sprintf("%f", flow.PlannedUpperBound)
 	s6 := fmt.Sprintf("%f", flow.CurrentThroughput)
+	s7l := fmt.Sprintf("%f", flow.ComputedLatency)
+	s7j := fmt.Sprintf("%f", flow.ComputedJitter)
+	s7p := fmt.Sprintf("%f", flow.ComputedPacketLoss)
+	s8l := fmt.Sprintf("%f", flow.AppliedNetChar.Latency)
+	s8j := fmt.Sprintf("%f", flow.AppliedNetChar.Jitter)
+	s8p := fmt.Sprintf("%f", flow.AppliedNetChar.PacketLoss)
 
-	str := s1 + ": " + "Current: " + s6 + " - Max: " + s2 + " - Allocated: " + s3a + "[" + s4a + "-" + s5a + "]" + " - MaxPlanned: " + s3m + "[" + s4m + "-" + s5m + "]" + " - Planned: " + s3p + "[" + s4p + "-" + s5p + "] "
+	str := s1 + ": " + "Current: " + s6 + " - Configured: [" + s2t + "-" + s2l + "-" + s2j + "-" + s2p + "] Allocated: " + s3a + "[" + s4a + "-" + s5a + "]" + " - MaxPlanned: " + s3m + "[" + s4m + "-" + s5m + "]" + " - Planned: " + s3p + "[" + s4p + "-" + s5p + "] Computed Net Char: [" + s7l + "-" + s7j + "-" + s7p + "] Applied Net Char: [" + s8l + "-" + s8j + "-" + s8p + "]"
 	str += printPath(flow.Path)
 	return str
 }
