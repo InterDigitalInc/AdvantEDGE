@@ -152,10 +152,11 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 	if model.GetScenarioName() == "" {
 		// Remove any existing metrics
 		algo.deleteMetricsEntries()
+		//reset the map
+		algo.FlowMap = make(map[string]*SegAlgoFlow)
 	}
 
 	// Clear segment & flow maps
-	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	// Process active scenario
 	procNames := model.GetNodeNames("CLOUD-APP")
@@ -257,19 +258,33 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 
 	// Prepare list of updated flows
 	for _, flow := range algo.FlowMap {
-		if (flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT) ||
-			(flow.ComputedLatency != flow.AppliedNetChar.Latency) ||
-			(flow.ComputedJitter != flow.AppliedNetChar.Jitter) ||
-			(flow.ComputedPacketLoss != flow.AppliedNetChar.PacketLoss) {
-			log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput, "-", flow.ComputedLatency, "-", flow.ComputedJitter, "-", flow.ComputedPacketLoss)
+		updateNeeded := false
+		if flow.MaxPlannedThroughput != flow.AllocatedThroughput && flow.MaxPlannedThroughput != MAX_THROUGHPUT {
+			if algo.Config.LogVerbose {
+				log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput, " from ", flow.AllocatedThroughput)
+			}
+
 			flow.AllocatedThroughput = flow.MaxPlannedThroughput
 			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
 			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
 			flow.AppliedNetChar.Throughput = flow.AllocatedThroughput
+			updateNeeded = true
+		}
+
+		if (flow.ComputedLatency != flow.AppliedNetChar.Latency) ||
+			(flow.ComputedJitter != flow.AppliedNetChar.Jitter) ||
+			(flow.ComputedPacketLoss != flow.AppliedNetChar.PacketLoss) {
+			if algo.Config.LogVerbose {
+				log.Info("Update other netchars for ", flow.Name, " to ", flow.ComputedLatency, "-", flow.ComputedJitter, "-", flow.ComputedPacketLoss, " from ", flow.AppliedNetChar.Latency, "-", flow.AppliedNetChar.Jitter, "-", flow.AppliedNetChar.PacketLoss)
+			}
+
 			flow.AppliedNetChar.Latency = flow.ComputedLatency
 			flow.AppliedNetChar.Jitter = flow.ComputedJitter
 			flow.AppliedNetChar.PacketLoss = flow.ComputedPacketLoss
+			updateNeeded = true
+		}
 
+		if updateNeeded {
 			netchar := NetChar{flow.AppliedNetChar.Latency, flow.AppliedNetChar.Jitter, flow.AppliedNetChar.PacketLoss, flow.AppliedNetChar.Throughput}
 			flowNetChar := FlowNetChar{flow.SrcNetElem, flow.DstNetElem, netchar}
 			updatedNetCharList = append(updatedNetCharList, flowNetChar)
@@ -449,7 +464,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//zone ul, dl
-	if srcElement.Type != "CLOUD" {
+	if srcElement.Type != "DC" {
 		direction = "uplink"
 		segmentName = srcElement.ZoneName + direction
 		segment = algo.createSegment(segmentName, flowName, srcElement.ZoneName, model)
@@ -457,7 +472,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	}
 
-	if destElement.Type != "CLOUD" {
+	if destElement.Type != "DC" {
 		direction = "downlink"
 		segmentName = destElement.ZoneName + direction
 		segment = algo.createSegment(segmentName, flowName, destElement.ZoneName, model)
@@ -471,7 +486,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//domain ul, dl
-	if srcElement.Type != "CLOUD" {
+	if srcElement.Type != "DC" {
 		direction = "uplink"
 		segmentName = srcElement.DomainName + direction
 		segment = algo.createSegment(segmentName, flowName, srcElement.DomainName, model)
@@ -479,7 +494,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	}
 
-	if destElement.Type != "CLOUD" {
+	if destElement.Type != "DC" {
 		direction = "downlink"
 		segmentName = destElement.DomainName + direction
 		segment = algo.createSegment(segmentName, flowName, destElement.DomainName, model)
@@ -493,7 +508,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	}
 
 	//cloud ul, dl
-	if srcElement.Type == "CLOUD" {
+	if srcElement.Type == "DC" {
 		direction = "uplink"
 		segmentName = model.GetScenarioName() + "-cloud-" + direction
 		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
@@ -501,7 +516,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	}
 
-	if destElement.Type == "CLOUD" {
+	if destElement.Type == "DC" {
 		direction = "downlink"
 		segmentName = model.GetScenarioName() + "-cloud-" + direction
 		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
@@ -750,7 +765,7 @@ func (algo *SegmentAlgorithm) getMetricsThroughputEntryHandler(key string, field
 	return nil
 }
 
-// reCalculateThroughputs -
+// reCalculateNetChar -
 func (algo *SegmentAlgorithm) reCalculateNetChar() {
 	//reset every planned throughput values for every flow since they will start to populate those
 	for _, flow := range algo.FlowMap {
@@ -930,11 +945,9 @@ func needToReevaluate(segment *SegAlgoSegment) (unusedBw float64, list []*SegAlg
 			list = append(list, flow)
 		} else {
 			//no need to reevalute algo one, so removing its allocated bw from the available one
-			unusedBw -= flow.AllocatedThroughput
-		}
-		if flow.CurrentThroughput < segment.MinActivityThreshold {
-			//we just re-add the bw for inactive connections
-			unusedBw += flow.AllocatedThroughput
+			if flow.CurrentThroughput >= segment.MinActivityThreshold {
+				unusedBw -= flow.AllocatedThroughput
+			}
 		}
 	}
 	return unusedBw, list
@@ -1078,5 +1091,11 @@ func printPath(path *SegAlgoPath) string {
 			}
 		}
 	}
+	return str
+}
+
+// printElement -
+func printElement(elem *SegAlgoNetElem) string {
+	str := elem.Name + "-" + elem.Type + "-" + elem.PhyLocName + "-" + elem.PoaName + "-" + elem.ZoneName + "-" + elem.DomainName
 	return str
 }

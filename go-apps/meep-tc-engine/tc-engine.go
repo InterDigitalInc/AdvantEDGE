@@ -691,14 +691,14 @@ func applyNetCharFilterRules() {
 			filterInfo.UniqueNumber = dstElementPtr.NextUniqueNumber
 			filterInfo.LatencyCorrelation = COMMON_CORRELATION
 			needUpdateFilter := false
-			needCreate := false
+			needCreate := true
 			if dstElementPtr.FilterInfoList == nil {
 				dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
-				needCreate = true
 			} else { //check to see if it exists
 				index := 0
 				for indx, storedFilterInfo := range dstElementPtr.FilterInfoList {
 					if storedFilterInfo.SrcName == filterInfo.SrcName {
+						needCreate = false
 						//it has to be unique so check the other values
 						if !(storedFilterInfo.PodName == filterInfo.PodName &&
 							storedFilterInfo.SrcIp == filterInfo.SrcIp &&
@@ -718,8 +718,6 @@ func applyNetCharFilterRules() {
 							index = indx
 						}
 						break
-					} else {
-						needCreate = true
 					}
 				}
 				if needCreate {
