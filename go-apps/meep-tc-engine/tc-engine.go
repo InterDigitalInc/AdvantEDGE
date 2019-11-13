@@ -288,7 +288,7 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	// Stop scenario if not active
-	scenarioName := tce.activeModel.GetScenarioName()
+	scenarioName = tce.activeModel.GetScenarioName()
 	if scenarioName == "" {
 		stopScenario()
 		return
