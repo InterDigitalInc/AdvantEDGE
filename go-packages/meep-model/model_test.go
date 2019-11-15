@@ -818,6 +818,22 @@ func TestGetters(t *testing.T) {
 	fmt.Println(l)
 	fmt.Println(len(l))
 
+	fmt.Println("Get UE + POA Node Names")
+	l = m.GetNodeNames("UE", "POA")
+	if len(l) != 5 {
+		t.Errorf("UE + POA node name list should be 5")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
+	fmt.Println("Get UE + POA + ZONE Node Names")
+	l = m.GetNodeNames("UE", "POA", "ZONE")
+	if len(l) != 7 {
+		t.Errorf("UE + POA + ZONE node name list should be 10")
+	}
+	fmt.Println(l)
+	fmt.Println(len(l))
+
 	fmt.Println("Get invalid node")
 	n := m.GetNode("NOT-A-NODE")
 	if n != nil {

@@ -254,9 +254,7 @@ func processScenario(model *mod.Model) error {
 	mgm.netLocList = append(mgm.netLocList, model.GetNodeNames("DEFAULT")...)
 
 	// Get list of processes
-	procNames := model.GetNodeNames("CLOUD-APP")
-	procNames = append(procNames, model.GetNodeNames("EDGE-APP")...)
-	procNames = append(procNames, model.GetNodeNames("UE-APP")...)
+	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
 
 	// Get network graph from model
 	mgm.networkGraph = model.GetNetworkGraph()

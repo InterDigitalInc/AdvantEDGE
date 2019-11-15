@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ import (
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	ncm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
@@ -36,10 +38,8 @@ import (
 )
 
 const moduleTcEngine string = "tc-engine"
-const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
 
-const typeActive string = "active"
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
@@ -55,23 +55,12 @@ const fieldLbSvcName string = "lb-svc-name"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
 
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
 const channelTcNet string = moduleTcEngine + "-" + typeNet
 const channelTcLb string = moduleTcEngine + "-" + typeLb
 
-const MAX_THROUGHPUT = 9999999999 //easy value to spot in the array
 const COMMON_CORRELATION = 50
-
-// const COMMON_PACKET_LOSS = 10        // 1000 -> 10.00%
-const THROUGHPUT_UNIT = 1000000      //convert from Mbps to bps
-const DEFAULT_THROUGHPUT_LINK = 1000 //1000 mbps)
-const DEFAULT_THROUGHPUT_APP = 1000  //1000mbps)
-//index in array
-const LATENCY = 0
-const LATENCY_VARIATION = 1
-const THROUGHPUT = 2
-const PACKET_LOSS = 3
+const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 
 const (
 	stateIdle         = 0
@@ -79,42 +68,22 @@ const (
 	stateReady        = 2
 )
 
-const DEFAULT_SCENARIO_DB = 0
 const DEFAULT_NET_CHAR_DB = 0
 const DEFAULT_LB_RULES_DB = 0
 const redisAddr string = "meep-redis-master:6379"
 
-type NetChar struct {
-	Latency            int
-	LatencyVariation   int
-	LatencyCorrelation int
-	Throughput         int
-	PacketLoss         int
-}
-
-//NextUniqueNumber is reserving 2 spaces for each unique number to apply changes starting with odd number and using even number to apply the 1st change
-//and come bask on the odd number for the next update to apply
+// NetElem -
+// NextUniqueNumber is reserving 2 spaces for each unique number to apply
+// changes starting with odd number and using even number to apply the 1st
+// change and come bask on the odd number for the next update to apply
 type NetElem struct {
 	Name             string
-	Type             string
-	ParentName       string
-	ScenarioName     string
-	DomainName       string
-	ZoneName         string
-	Poa              NetChar
-	EdgeFog          NetChar
-	InterDomain      NetChar
-	InterZone        NetChar
-	InterEdge        NetChar
-	InterFog         NetChar
-	Link             NetChar
-	App              NetChar
-	Index            int
-	FilterInfoList   []FilterInfo
+	FilterInfoMap    map[string]*FilterInfo
 	Ip               string
 	NextUniqueNumber int
 }
 
+// FilterInfo -
 type FilterInfo struct {
 	PodName            string
 	SrcIp              string
@@ -131,12 +100,14 @@ type FilterInfo struct {
 	DataRate           int
 }
 
+// PortInfo -
 type PortInfo struct {
 	Port     int32
 	ExpPort  int32
 	Protocol string
 }
 
+// ServiceInfo -
 type ServiceInfo struct {
 	Name  string
 	Node  string
@@ -144,11 +115,13 @@ type ServiceInfo struct {
 	MgSvc *MgServiceInfo
 }
 
+// MgServiceInfo -
 type MgServiceInfo struct {
 	Name     string
 	Services map[string]*ServiceInfo
 }
 
+// IngressSvcMap -
 type IngressSvcMap struct {
 	NodePort int32
 	SvcName  string
@@ -156,6 +129,7 @@ type IngressSvcMap struct {
 	Protocol string
 }
 
+// EgressSvcMap -
 type EgressSvcMap struct {
 	SvcName  string
 	SvcIp    string
@@ -163,6 +137,7 @@ type EgressSvcMap struct {
 	Protocol string
 }
 
+// PodInfo -
 type PodInfo struct {
 	Name              string
 	MgSvcMap          map[string]*ServiceInfo
@@ -170,21 +145,22 @@ type PodInfo struct {
 	EgressSvcMapList  map[string]*EgressSvcMap
 }
 
-type ScenarioStore struct {
-	rc *redis.Connector
-}
+// NetCharStore -
 type NetCharStore struct {
 	rc *redis.Connector
 }
+
+// LbRulesStore -
 type LbRulesStore struct {
 	rc *redis.Connector
 }
 
+// TcEngine -
 type TcEngine struct {
-	scenarioStore *ScenarioStore
-	netCharStore  *NetCharStore
-	lbRulesStore  *LbRulesStore
-	netCharMgr    ncm.NetCharMgr
+	activeModel  *mod.Model
+	netCharStore *NetCharStore
+	lbRulesStore *LbRulesStore
+	netCharMgr   ncm.NetCharMgr
 
 	// Flag & Counters used to indicate when TC Engine is ready to
 	tcEngineState     int
@@ -202,18 +178,6 @@ var mgSvcInfoMap = map[string]*MgServiceInfo{}
 // Pod Info mapping
 var podInfoMap = map[string]*PodInfo{}
 
-var elementDistantCloudArray []NetElem
-var elementEdgeArray []NetElem
-var elementFogArray []NetElem
-var elementUEArray []NetElem
-var curNetCharList []NetElem
-var netElemMap = map[string]*NetElem{}
-
-var indexToNetElemMap map[int]NetElem
-var netElemNameToIndexMap = map[string]int{}
-
-var netCharTable [][][]int
-
 // Scenario Name
 var scenarioName string
 
@@ -221,15 +185,16 @@ var scenarioName string
 var podIPMap = map[string]string{}
 var svcIPMap = map[string]string{}
 
-var nextUniqueNumberMap = map[string]int{}
-
 var mutex sync.Mutex
 
+// Map of active network elements
+var netElemMap = map[string]*NetElem{}
+
+// TC Engine Instance
 var tce *TcEngine
 
 // Init - TC Engine initialization
 func Init() (err error) {
-
 	// Create new TC Engine
 	tce = new(TcEngine)
 	tce.tcEngineState = stateIdle
@@ -239,14 +204,12 @@ func Init() (err error) {
 	tce.svcCount = 0
 	tce.nextTransactionId = 1
 
-	// Open Scenario Store
-	tce.scenarioStore = new(ScenarioStore)
-	tce.scenarioStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_SCENARIO_DB)
+	// Create new Model
+	tce.activeModel, err = mod.NewModel(redisAddr, moduleTcEngine, "activeScenario")
 	if err != nil {
-		log.Error("Failed connection to Scenario Store Redis DB.  Error: ", err)
+		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Scenario Store redis DB")
 
 	// Open Network Characteristics Store
 	tce.netCharStore = new(NetCharStore)
@@ -277,14 +240,7 @@ func Init() (err error) {
 	}
 
 	// Configure & Start Net Char Manager
-	tce.netCharMgr.Register(updateOneFilterRule, applyOneFilterRule)
-	err = tce.netCharMgr.Start()
-	if err != nil {
-		log.Error("Failed to start Net Char Manager. Error: ", err)
-		return err
-	}
-
-	// Initialize TC Engine with current active scenario & LB rules
+	tce.netCharMgr.Register(netCharUpdate, updateComplete)
 	processActiveScenarioUpdate()
 	processMgSvcMapUpdate()
 
@@ -295,14 +251,11 @@ func Init() (err error) {
 func Run() error {
 
 	// Listen for Active Scenario updates
-	go func() {
-		err := tce.scenarioStore.rc.Subscribe(channelCtrlActive)
-		if err != nil {
-			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-			return
-		}
-		_ = tce.scenarioStore.rc.Listen(eventHandler)
-	}()
+	err := tce.activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listen for model updates: ", err.Error())
+		return err
+	}
 
 	// Listen for LB Rules updates
 	go func() {
@@ -319,75 +272,38 @@ func Run() error {
 
 func eventHandler(channel string, payload string) {
 	mutex.Lock()
-
 	// Handle Message according to Rx Channel
 	switch channel {
-
-	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
+	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
 		processActiveScenarioUpdate()
-
 	case channelMgManagerLb:
 		log.Debug("Event received on channel: ", channelMgManagerLb)
 		processMgSvcMapUpdate()
-
 	default:
 		log.Warn("Unsupported channel")
 	}
-
 	mutex.Unlock()
 }
 
 func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := tce.scenarioStore.rc.JSONGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
+	// Stop scenario if not active
+	scenarioName = tce.activeModel.GetScenarioName()
+	if scenarioName == "" {
 		stopScenario()
 		return
 	}
 
-	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
+	// Process updated scenario
+	err := processScenario(tce.activeModel)
 	if err != nil {
-		log.Error(err.Error())
-		stopScenario()
+		log.Error("Failed to process active scenario: ", scenarioName)
 		return
 	}
 
-	// Parse scenario
-	parseScenario(scenario)
-
-	switch tce.tcEngineState {
-	case stateIdle:
-		// Retrieve platform information: Pod ID & Service IP
+	// Retrieve platform information: Pod ID & Service IP
+	if tce.tcEngineState == stateIdle {
 		getPlatformInfo()
-
-	case stateInitializing:
-		log.Debug("TC Engine already initializing")
-
-	case stateReady:
-		// Update Network Characteristic matrix table
-		refreshNetCharTable()
-
-		//debug for the tables
-		printNetCharTable(LATENCY)
-		printNetCharTable(LATENCY_VARIATION)
-		printNetCharTable(THROUGHPUT)
-		printNetCharTable(PACKET_LOSS)
-
-		// Apply network characteristic rules
-		applyNetCharRules()
-
-		//Update the Db for state information (only transactionId for now)
-		updateDbState(tce.nextTransactionId)
-
-		// Publish update to TC Sidecars for enforcement
-		transactionIdStr := strconv.Itoa(tce.nextTransactionId)
-		_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
-		tce.nextTransactionId++
 	}
 }
 
@@ -398,7 +314,7 @@ func processMgSvcMapUpdate() {
 		return
 	}
 
-	// Retrieve active scenario from DB
+	// Retrieve LB rules from DB
 	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
@@ -448,65 +364,15 @@ func addSvc(name string) {
 	}
 }
 
-func convertDebugInfoToStr(debugInfo int) string {
-
-	value := ""
-	switch debugInfo {
-	case LATENCY:
-		value = "LATENCY"
-	case LATENCY_VARIATION:
-		value = "LATENCY VARIATION"
-	case THROUGHPUT:
-		value = "THROUGHPUT"
-	case PACKET_LOSS:
-		value = "PACKET_LOSS"
-	default:
-	}
-	return value
-}
-
-func printNetCharTable(debugInfo int) {
-	//explicit initialisation
-	index := len(netCharTable)
-
-	log.Info("***** " + convertDebugInfoToStr(debugInfo) + "*****")
-	line := ""
-	for _, element := range curNetCharList {
-		line = line + element.Name + " "
-	}
-
-	log.Info(line)
-
-	for i := 0; i < index; i++ {
-		line = curNetCharList[i].Name + ": "
-		for j := 0; j < index; j++ {
-			line = line + strconv.Itoa(netCharTable[i][j][debugInfo]) + " "
-		}
-		log.Info(line)
-	}
-}
-
 func stopScenario() {
 	log.Debug("stopScenario() -- Resetting all variables")
 
-	elementDistantCloudArray = nil
-	elementEdgeArray = nil
-	elementFogArray = nil
-	elementUEArray = nil
-
-	curNetCharList = nil
-
-	netElemMap = map[string]*NetElem{}
-	indexToNetElemMap = nil
-	netElemNameToIndexMap = nil
-	netCharTable = nil
-
-	podIPMap = map[string]string{}
-	svcIPMap = map[string]string{}
-
-	svcInfoMap = map[string]*ServiceInfo{}
-	mgSvcInfoMap = map[string]*MgServiceInfo{}
-	podInfoMap = map[string]*PodInfo{}
+	netElemMap = make(map[string]*NetElem)
+	podIPMap = make(map[string]string)
+	svcIPMap = make(map[string]string)
+	svcInfoMap = make(map[string]*ServiceInfo)
+	mgSvcInfoMap = make(map[string]*MgServiceInfo)
+	podInfoMap = make(map[string]*PodInfo)
 
 	tce.tcEngineState = stateIdle
 	tce.podCountReq = 0
@@ -520,299 +386,105 @@ func stopScenario() {
 
 	_ = tce.netCharStore.rc.Publish(channelTcNet, "delAll")
 	_ = tce.netCharStore.rc.Publish(channelTcLb, "delAll")
+
+	tce.netCharMgr.Stop()
 }
 
-func validateLatencyVariation(value int) int {
-	if value < 0 {
-		value = 0
-	}
-	return value
-}
+func processScenario(model *mod.Model) error {
+	log.Debug("processScenario")
+	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
 
-func parseScenario(scenario ceModel.Scenario) {
-	log.Debug("parseScenario")
-	//resets variables
-	elementDistantCloudArray = nil
-	elementEdgeArray = nil
-	elementFogArray = nil
-	elementUEArray = nil
+	// Create NetElem for each scenario process
+	for _, name := range procNames {
+		// Retrieve node & context from model
+		node := model.GetNode(name)
+		if node == nil {
+			err := errors.New("Error finding process: " + name)
+			return err
+		}
+		proc, ok := node.(*ceModel.Process)
+		if !ok {
+			err := errors.New("Error casting process: " + name)
+			return err
+		}
 
-	curNetCharList = nil
-	// Store scenario Name
-	scenarioName = scenario.Name
+		// Add pod to list for retrieving IP addresses
+		addPod(proc.Name)
 
-	// Scenario network characteristics
-	interDomainLatency := int(scenario.Deployment.InterDomainLatency)
-	interDomainLatencyVariation := int(scenario.Deployment.InterDomainLatencyVariation)
-	interDomainLatencyVariation = validateLatencyVariation(interDomainLatencyVariation)
-	interDomainLatencyCorrelation := COMMON_CORRELATION
-	interDomainThroughput := THROUGHPUT_UNIT * int(scenario.Deployment.InterDomainThroughput)
-	// Packet loss (float) converted to hundredth & truncated
-	interDomainPacketLoss := int(100 * scenario.Deployment.InterDomainPacketLoss)
+		// Retrieve existing element or create new net element if none found
+		element := netElemMap[proc.Name]
+		if element == nil {
+			element = new(NetElem)
+			element.Name = proc.Name
+			element.NextUniqueNumber = 1
+			element.Ip = podIPMap[proc.Name]
+			element.FilterInfoMap = make(map[string]*FilterInfo)
+			netElemMap[proc.Name] = element
+		}
 
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
-		interZoneLatency := int(domain.InterZoneLatency)
-		interZoneLatencyVariation := int(domain.InterZoneLatencyVariation)
-		interZoneLatencyVariation = validateLatencyVariation(interZoneLatencyVariation)
-		interZoneLatencyCorrelation := COMMON_CORRELATION
-		interZoneThroughput := THROUGHPUT_UNIT * int(domain.InterZoneThroughput)
-		// Packet loss (float) converted to hundredth & truncated
-		interZonePacketLoss := int(100 * domain.InterZonePacketLoss)
+		// Create pod information entry and add to map
+		podInfo := new(PodInfo)
+		podInfo.Name = proc.Name
+		podInfo.MgSvcMap = make(map[string]*ServiceInfo)
+		podInfo.IngressSvcMapList = make(map[int32]*IngressSvcMap)
+		podInfo.EgressSvcMapList = make(map[string]*EgressSvcMap)
+		podInfoMap[proc.Name] = podInfo
 
-		// Parse Zones
-		for _, zone := range domain.Zones {
-			interFogLatency := int(zone.InterFogLatency)
-			interFogLatencyVariation := int(zone.InterFogLatencyVariation)
-			interFogLatencyVariation = validateLatencyVariation(interFogLatencyVariation)
-			interFogLatencyCorrelation := COMMON_CORRELATION
-			interFogThroughput := THROUGHPUT_UNIT * int(zone.InterFogThroughput)
-			// Packet loss (float) converted to hundredth & truncated
-			interFogPacketLoss := int(100 * zone.InterFogPacketLoss)
+		// Store service information from service config
+		if proc.ServiceConfig != nil {
+			addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
+		}
 
-			interEdgeLatency := int(zone.InterEdgeLatency)
-			interEdgeLatencyVariation := int(zone.InterEdgeLatencyVariation)
-			interEdgeLatencyVariation = validateLatencyVariation(interEdgeLatencyVariation)
-			interEdgeLatencyCorrelation := COMMON_CORRELATION
-			interEdgeThroughput := THROUGHPUT_UNIT * int(zone.InterEdgeThroughput)
-			// Packet loss (float) converted to hundredth & truncated
-			interEdgePacketLoss := int(100 * zone.InterEdgePacketLoss)
+		// Store service information from user chart
+		// Format: <service instance name>:[group service name]:<port>:<protocol>
+		if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
+			userChartGroup := strings.Split(proc.UserChartGroup, ":")
 
-			edgeFogLatency := int(zone.EdgeFogLatency)
-			edgeFogLatencyVariation := int(zone.EdgeFogLatencyVariation)
-			edgeFogLatencyVariation = validateLatencyVariation(edgeFogLatencyVariation)
-			edgeFogLatencyCorrelation := COMMON_CORRELATION
-			edgeFogThroughput := THROUGHPUT_UNIT * int(zone.EdgeFogThroughput)
-			// Packet loss (float) converted to hundredth & truncated
-			edgeFogPacketLoss := int(100 * zone.EdgeFogPacketLoss)
-
-			parentEdge := ""
-			var revisitFogList []*NetElem
-
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
-				poaLatency := int(nl.TerminalLinkLatency)
-				poaLatencyVariation := int(nl.TerminalLinkLatencyVariation)
-				poaLatencyVariation = validateLatencyVariation(poaLatencyVariation)
-				poaLatencyCorrelation := COMMON_CORRELATION
-				poaThroughput := THROUGHPUT_UNIT * int(nl.TerminalLinkThroughput)
-				// Packet loss (float) converted to hundredth & truncated
-				poaPacketLoss := int(100 * nl.TerminalLinkPacketLoss)
-
-				parentFog := ""
-				var revisitUEList []*NetElem
-
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
-
-					linkLatency := int(pl.LinkLatency)
-					linkLatencyVariation := int(pl.LinkLatencyVariation)
-					linkLatencyVariation = validateLatencyVariation(linkLatencyVariation)
-					linkLatencyCorrelation := COMMON_CORRELATION
-					linkThroughput := int(pl.LinkThroughput)
-					if linkThroughput == 0 {
-						linkThroughput = DEFAULT_THROUGHPUT_LINK
-					}
-					linkThroughput = THROUGHPUT_UNIT * linkThroughput
-					// Packet loss (float) converted to hundredth & truncated
-					linkPacketLoss := int(100 * pl.LinkPacketLoss)
-
-					// Parse Processes
-					for _, proc := range pl.Processes {
-						addPod(proc.Name)
-
-						// Retrieve existing element or create new net element if none found
-						element := netElemMap[proc.Name]
-						if element == nil {
-							element = new(NetElem)
-							element.ScenarioName = scenario.Name
-							element.Name = proc.Name
-							element.NextUniqueNumber = nextUniqueNumberMap[proc.Name]
-							element.Ip = podIPMap[proc.Name]
-
-						}
-
-						appLatency := int(proc.AppLatency)
-						appLatencyVariation := int(proc.AppLatencyVariation)
-						appLatencyVariation = validateLatencyVariation(appLatencyVariation)
-						appLatencyCorrelation := COMMON_CORRELATION
-						appThroughput := int(proc.AppThroughput)
-						if appThroughput == 0 {
-							appThroughput = DEFAULT_THROUGHPUT_APP
-						}
-						appThroughput = THROUGHPUT_UNIT * appThroughput
-						// Packet loss (float) converted to hundredth & truncated
-						appPacketLoss := int(100 * proc.AppPacketLoss)
-
-						// Update element information based on current location characteristics
-						element.DomainName = domain.Name
-						element.ZoneName = zone.Name
-						element.Type = pl.Type_
-						populateNetChar(&element.Poa, poaLatency, poaLatencyVariation, poaLatencyCorrelation, poaThroughput, poaPacketLoss)
-						populateNetChar(&element.InterDomain, interDomainLatency, interDomainLatencyVariation, interDomainLatencyCorrelation, interDomainThroughput, interDomainPacketLoss)
-						populateNetChar(&element.InterZone, interZoneLatency, interZoneLatencyVariation, interZoneLatencyCorrelation, interZoneThroughput, interZonePacketLoss)
-						populateNetChar(&element.InterEdge, interEdgeLatency, interEdgeLatencyVariation, interEdgeLatencyCorrelation, interEdgeThroughput, interEdgePacketLoss)
-						populateNetChar(&element.InterFog, interFogLatency, interFogLatencyVariation, interFogLatencyCorrelation, interFogThroughput, interFogPacketLoss)
-						populateNetChar(&element.EdgeFog, edgeFogLatency, edgeFogLatencyVariation, edgeFogLatencyCorrelation, edgeFogThroughput, edgeFogPacketLoss)
-						populateNetChar(&element.Link, linkLatency, linkLatencyVariation, linkLatencyCorrelation, linkThroughput, linkPacketLoss)
-						populateNetChar(&element.App, appLatency, appLatencyVariation, appLatencyCorrelation, appThroughput, appPacketLoss)
-
-						switch pl.Type_ {
-						case "EDGE":
-							//keep track of edge being the parent of fogs
-							parentEdge = proc.Name
-							addElementToList(element)
-						case "FOG":
-							//keep this fog as a parent for the UEs below
-							parentFog = proc.Name
-							revisitFogList = append(revisitFogList, element)
-						case "UE":
-							revisitUEList = append(revisitUEList, element)
-						case "DC":
-							addElementToList(element)
-						default:
-						}
-
-						// Create pod information entry and add to map
-						podInfo := new(PodInfo)
-						podInfo.Name = proc.Name
-						podInfo.MgSvcMap = make(map[string]*ServiceInfo)
-						podInfo.IngressSvcMapList = make(map[int32]*IngressSvcMap)
-						podInfo.EgressSvcMapList = make(map[string]*EgressSvcMap)
-						podInfoMap[proc.Name] = podInfo
-
-						// Store service information from service config
-						if proc.ServiceConfig != nil {
-							addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.Ports, proc.ServiceConfig.MeSvcName, proc.Name)
-						}
-
-						// Store service information from user chart
-						// Format: <service instance name>:[group service name]:<port>:<protocol>
-						if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
-							userChartGroup := strings.Split(proc.UserChartGroup, ":")
-
-							// Retrieve service ports
-							var servicePorts []ceModel.ServicePort
-							port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
-							if err == nil {
-								var servicePort ceModel.ServicePort
-								servicePort.Port = int32(port)
-								servicePort.Protocol = userChartGroup[3]
-								servicePorts = append(servicePorts, servicePort)
-							}
-
-							addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
-						}
-
-						// Add pod-specific external service mapping, if any
-						if proc.IsExternal {
-							// Map external port to internal service for Ingress services
-							for _, service := range proc.ExternalConfig.IngressServiceMap {
-								ingressSvcMap := new(IngressSvcMap)
-								ingressSvcMap.NodePort = service.ExternalPort
-								ingressSvcMap.SvcName = service.Name
-								ingressSvcMap.SvcPort = service.Port
-								ingressSvcMap.Protocol = service.Protocol
-								podInfo.IngressSvcMapList[ingressSvcMap.NodePort] = ingressSvcMap
-							}
-
-							// Add External service mapping & service info for Egress services
-							for _, service := range proc.ExternalConfig.EgressServiceMap {
-								egressSvcMap := new(EgressSvcMap)
-								egressSvcMap.SvcName = service.Name
-								egressSvcMap.SvcIp = service.Ip
-								egressSvcMap.SvcPort = service.Port
-								egressSvcMap.Protocol = service.Protocol
-								podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
-
-								var servicePorts []ceModel.ServicePort
-								var servicePort ceModel.ServicePort
-								servicePort.Port = service.Port
-								servicePort.Protocol = service.Protocol
-								servicePorts = append(servicePorts, servicePort)
-								addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
-							}
-						}
-					}
-				}
-
-				//revisit UEs based on parent fog info, create the parent fog if none
-				if parentFog == "" {
-					// Retrieve existing element or create new net element if none found
-					// Create a dummy virtual parent for table calculation purpose
-					name := "dummy-fog-" + nl.Name //this is unique within the zone
-					element := netElemMap[name]
-					if element == nil {
-						element = new(NetElem)
-						element.ScenarioName = scenario.Name
-						element.Name = name
-						element.NextUniqueNumber = 1
-					}
-
-					element.DomainName = domain.Name
-					element.ZoneName = zone.Name
-					element.Type = "FOG"
-
-					populateNetChar(&element.Poa, 0, 0, 0, MAX_THROUGHPUT, 0)
-					populateNetChar(&element.InterDomain, interDomainLatency, interDomainLatencyVariation, interDomainLatencyCorrelation, interDomainThroughput, interDomainPacketLoss)
-					populateNetChar(&element.InterZone, interZoneLatency, interZoneLatencyVariation, interZoneLatencyCorrelation, interZoneThroughput, interZonePacketLoss)
-					populateNetChar(&element.InterEdge, interEdgeLatency, interEdgeLatencyVariation, interEdgeLatencyCorrelation, interEdgeThroughput, interEdgePacketLoss)
-					populateNetChar(&element.InterFog, interFogLatency, interFogLatencyVariation, interFogLatencyCorrelation, interFogThroughput, interFogPacketLoss)
-					populateNetChar(&element.EdgeFog, edgeFogLatency, edgeFogLatencyVariation, edgeFogLatencyCorrelation, edgeFogThroughput, edgeFogPacketLoss)
-
-					revisitFogList = append(revisitFogList, element)
-					parentFog = element.Name
-				}
-
-				for _, el := range revisitUEList {
-					el.ParentName = parentFog
-					addElementToList(el)
-				}
+			// Retrieve service ports
+			var servicePorts []ceModel.ServicePort
+			port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
+			if err == nil {
+				var servicePort ceModel.ServicePort
+				servicePort.Port = int32(port)
+				servicePort.Protocol = userChartGroup[3]
+				servicePorts = append(servicePorts, servicePort)
 			}
 
-			//revisit Fogs based on parent edge info, create the parent edge if none
-			if parentEdge == "" {
-				// Retrieve existing element or create new net element if none found
-				// Create a dummy virtual parent for table calculation purpose
-				name := "dummy-edge-" + zone.Name //this is unique within the zone
-				element := netElemMap[name]
-				if element == nil {
-					element = new(NetElem)
-					element.ScenarioName = scenario.Name
-					element.Name = name
-					element.NextUniqueNumber = 1
-				}
+			addServiceInfo(userChartGroup[0], servicePorts, userChartGroup[1], proc.Name)
+		}
 
-				element.DomainName = domain.Name
-				element.ZoneName = zone.Name
-				//element.ParentName = nl.Name
-				element.Type = "EDGE"
-
-				populateNetChar(&element.Poa, 0, 0, 0, MAX_THROUGHPUT, 0)
-				populateNetChar(&element.InterDomain, interDomainLatency, interDomainLatencyVariation, interDomainLatencyCorrelation, interDomainThroughput, interDomainPacketLoss)
-				populateNetChar(&element.InterZone, interZoneLatency, interZoneLatencyVariation, interZoneLatencyCorrelation, interZoneThroughput, interZonePacketLoss)
-				populateNetChar(&element.InterEdge, interEdgeLatency, interEdgeLatencyVariation, interEdgeLatencyCorrelation, interEdgeThroughput, interEdgePacketLoss)
-				populateNetChar(&element.InterFog, interFogLatency, interFogLatencyVariation, interFogLatencyCorrelation, interFogThroughput, interFogPacketLoss)
-				populateNetChar(&element.EdgeFog, 0, 0, 0, MAX_THROUGHPUT, 0)
-
-				parentEdge = element.Name
-				addElementToList(element)
+		// Add pod-specific external service mapping, if any
+		if proc.IsExternal {
+			// Map external port to internal service for Ingress services
+			for _, service := range proc.ExternalConfig.IngressServiceMap {
+				ingressSvcMap := new(IngressSvcMap)
+				ingressSvcMap.NodePort = service.ExternalPort
+				ingressSvcMap.SvcName = service.Name
+				ingressSvcMap.SvcPort = service.Port
+				ingressSvcMap.Protocol = service.Protocol
+				podInfo.IngressSvcMapList[ingressSvcMap.NodePort] = ingressSvcMap
 			}
 
-			for _, el := range revisitFogList {
-				el.ParentName = parentEdge
-				addElementToList(el)
+			// Add External service mapping & service info for Egress services
+			for _, service := range proc.ExternalConfig.EgressServiceMap {
+				egressSvcMap := new(EgressSvcMap)
+				egressSvcMap.SvcName = service.Name
+				egressSvcMap.SvcIp = service.Ip
+				egressSvcMap.SvcPort = service.Port
+				egressSvcMap.Protocol = service.Protocol
+				podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
+
+				var servicePorts []ceModel.ServicePort
+				var servicePort ceModel.ServicePort
+				servicePort.Port = service.Port
+				servicePort.Protocol = service.Protocol
+				servicePorts = append(servicePorts, servicePort)
+				addServiceInfo(service.Name, servicePorts, service.MeSvcName, proc.Name)
 			}
 		}
 	}
 
-	if curNetCharList == nil {
-		curNetCharList = append(curNetCharList, elementDistantCloudArray...)
-		curNetCharList = append(curNetCharList, elementEdgeArray...)
-		curNetCharList = append(curNetCharList, elementFogArray...)
-		curNetCharList = append(curNetCharList, elementUEArray...)
-	}
-
+	return nil
 }
 
 // Create & store new service & MG service information
@@ -859,404 +531,91 @@ func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName st
 	svcInfoMap[svcInfo.Name] = svcInfo
 }
 
-func addElementToList(element *NetElem) {
-	switch element.Type {
-	case "FOG":
-		elementFogArray = append(elementFogArray, *element)
-		netElemMap[element.Name] = element
-	case "EDGE":
-		elementEdgeArray = append(elementEdgeArray, *element)
-		netElemMap[element.Name] = element
-	case "UE":
-		elementUEArray = append(elementUEArray, *element)
-		netElemMap[element.Name] = element
-	case "DC":
-		elementDistantCloudArray = append(elementDistantCloudArray, *element)
-		netElemMap[element.Name] = element
-	default:
-	}
-}
-
-func refreshNetCharTable() {
-	log.Debug("refreshNetCharTable")
-
-	indexToNetElemMap = make(map[int]NetElem)
-	netElemNameToIndexMap = make(map[string]int)
-
-	arraySize := 0
-	for index, element := range curNetCharList /*elementList*/ {
-		//adding them in order of hierarchy in a table
-		//the table does not exist yet.. but we assigned then an index in that table to be
-		element.Index = index
-		netElemNameToIndexMap[element.Name] = index
-		indexToNetElemMap[index] = element
-		arraySize = index + 1
-	}
-
-	//allocate a square 3d array.... even if only symetrical latencies are currently supported
-	netCharTable = make([][][]int, arraySize)
-	for i := 0; i < arraySize; i++ {
-		netCharTable[i] = make([][]int, arraySize)
-	}
-	for i := 0; i < arraySize; i++ {
-		for j := 0; j < arraySize; j++ {
-			netCharTable[i][j] = make([]int, 4)
-		}
-	}
-
-	//explicit initialisation
-	for i := 0; i < arraySize; i++ {
-		for j := 0; j < arraySize; j++ {
-			netCharTable[i][j][LATENCY] = 0
-			netCharTable[i][j][LATENCY_VARIATION] = 0
-			netCharTable[i][j][THROUGHPUT] = MAX_THROUGHPUT
-			netCharTable[i][j][PACKET_LOSS] = 0
-		}
-	}
-
-	for i := 1; i < arraySize; i++ {
-		srcElement := indexToNetElemMap[i]
-
-		for j := 0; j < i; j++ {
-			dstElement := indexToNetElemMap[j]
-
-			//always check the current level plus one level above only...
-			switch srcElement.Type {
-			case "DC":
-				//dst can only be DC
-				duplicateValueBasedOnSource(&srcElement.InterDomain, i, j)
-			case "EDGE":
-				if dstElement.Type == "EDGE" {
-					if srcElement.DomainName != dstElement.DomainName {
-						duplicateValueBasedOnSource(&srcElement.InterDomain, i, j)
-					} else {
-						if srcElement.ZoneName != dstElement.ZoneName {
-							duplicateValueBasedOnSource(&srcElement.InterZone, i, j)
-						} else {
-							duplicateValueBasedOnSource(&srcElement.InterEdge, i, j)
-						}
-					}
-				} else {
-					duplicateValueBasedOnSource(&srcElement.InterDomain, i, j)
-				}
-			case "FOG":
-				if dstElement.Type == "FOG" {
-					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
-						duplicateValueBasedOnSource(&srcElement.InterFog, i, j)
-					} else {
-						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.EdgeFog, i, j)
-					}
-				} else { //dst element is EDGE or CLOUD, so it goes directly to edge
-					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
-						duplicateValueBasedOnSource(&srcElement.EdgeFog, i, j)
-					} else {
-						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.EdgeFog, i, j)
-					}
-				}
-			case "UE":
-				if dstElement.Type == "FOG" {
-					if srcElement.ZoneName == dstElement.ZoneName && srcElement.DomainName == dstElement.DomainName {
-						duplicateValueBasedOnSource(&srcElement.Poa, i, j)
-					} else {
-						updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.Poa, i, j)
-					}
-				} else {
-					updateValueBasedOnParent(netElemNameToIndexMap[srcElement.ParentName], &srcElement.Poa, i, j)
-				}
-			default:
-			}
-		}
-	}
-	//second pass to add the individual values
-	//first update every row
-	for i := 1; i < arraySize; i++ {
-		srcElement := indexToNetElemMap[i]
-
-		//add the values on the whole row then column
-		for j := 0; j < i; j++ {
-			updateValueBasedOnSource(&srcElement.Link, i, j)
-			updateValueBasedOnSource(&srcElement.App, i, j)
-		}
-	}
-	//then update every column
-	for j := 0; j < arraySize; j++ {
-		dstElement := indexToNetElemMap[j]
-
-		//add the values on the whole row then column
-		for i := j + 1; i < arraySize; i++ {
-			updateValueBasedOnSource(&dstElement.Link, i, j)
-			updateValueBasedOnSource(&dstElement.App, i, j)
-		}
-	}
-}
-
-func updateValueBasedOnSource(nc *NetChar, i int, j int) {
-	if nc == nil {
-		return
-	}
-	netCharTable[i][j][LATENCY] += nc.Latency
-	netCharTable[j][i][LATENCY] = netCharTable[i][j][LATENCY]
-	netCharTable[i][j][LATENCY_VARIATION] += nc.LatencyVariation
-	netCharTable[j][i][LATENCY_VARIATION] = netCharTable[i][j][LATENCY_VARIATION]
-
-	if nc.Throughput < netCharTable[i][j][THROUGHPUT] {
-		netCharTable[i][j][THROUGHPUT] = nc.Throughput
-	} //else no change
-	netCharTable[j][i][THROUGHPUT] = netCharTable[i][j][THROUGHPUT]
-
-	valuef := float64(netCharTable[i][j][PACKET_LOSS]) / float64(10000) // 100.00 % == 1, 10.00% == 0.1 ... etc)
-	valuef = float64(10000-nc.PacketLoss) * valuef
-	netCharTable[i][j][PACKET_LOSS] = nc.PacketLoss + int(valuef)
-	netCharTable[j][i][PACKET_LOSS] = netCharTable[i][j][PACKET_LOSS]
-
-}
-
-func duplicateValueBasedOnSource(nc *NetChar, i int, j int) {
-	netCharTable[i][j][LATENCY] = nc.Latency
-	netCharTable[j][i][LATENCY] = netCharTable[i][j][LATENCY]
-	netCharTable[i][j][LATENCY_VARIATION] = nc.LatencyVariation
-	netCharTable[j][i][LATENCY_VARIATION] = netCharTable[i][j][LATENCY_VARIATION]
-
-	netCharTable[i][j][THROUGHPUT] = nc.Throughput
-	netCharTable[j][i][THROUGHPUT] = netCharTable[i][j][THROUGHPUT]
-	netCharTable[i][j][PACKET_LOSS] = nc.PacketLoss
-	netCharTable[j][i][PACKET_LOSS] = netCharTable[i][j][PACKET_LOSS]
-}
-
-func updateValueBasedOnParent(parentIndex int, nc *NetChar, i int, j int) {
-	netCharTable[i][j][LATENCY] = nc.Latency + netCharTable[parentIndex][j][LATENCY]
-	netCharTable[j][i][LATENCY] = netCharTable[i][j][LATENCY]
-	netCharTable[i][j][LATENCY_VARIATION] = nc.LatencyVariation + netCharTable[parentIndex][j][LATENCY_VARIATION]
-	netCharTable[j][i][LATENCY_VARIATION] = netCharTable[i][j][LATENCY_VARIATION]
-
-	//taking the min value, no max functions in golang for integers, only for float64
-	if nc.Throughput < netCharTable[parentIndex][j][THROUGHPUT] {
-		netCharTable[i][j][THROUGHPUT] = nc.Throughput
-	} else {
-		netCharTable[i][j][THROUGHPUT] = netCharTable[parentIndex][j][THROUGHPUT]
-	}
-	netCharTable[j][i][THROUGHPUT] = netCharTable[i][j][THROUGHPUT]
-
-	valuef := float64(netCharTable[parentIndex][j][PACKET_LOSS]) / float64(10000) // 100.00 % == 1, 10.00% == 0.1 ... etc)
-	valuef = float64(10000-nc.PacketLoss) * valuef
-	netCharTable[i][j][PACKET_LOSS] = nc.PacketLoss + int(valuef)
-	netCharTable[j][i][PACKET_LOSS] = netCharTable[i][j][PACKET_LOSS]
-}
-
-func populateNetChar(nc *NetChar, latency int, latencyVariation int, latencyCorrelation int, throughput int, packetLoss int) {
-	nc.Latency = latency
-	nc.LatencyVariation = latencyVariation
-	nc.LatencyCorrelation = latencyCorrelation
-	nc.Throughput = throughput
-	nc.PacketLoss = packetLoss
-}
-
 func updateDbState(transactionId int) {
-
 	var dbState = make(map[string]interface{})
 	dbState["transactionIdStored"] = transactionId
-
 	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
 	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
-func updateOneFilterRule(dstName string, srcName string, rate float64) {
-	var filterInfo FilterInfo
-
+func netCharUpdate(dstName string, srcName string, rate float64, latency float64, latencyVariation float64, packetLoss float64) {
 	mutex.Lock()
-	for _, dstElement := range indexToNetElemMap {
-		if dstElement.Name == dstName {
-			for _, storedFilterInfo := range dstElement.FilterInfoList {
-				if storedFilterInfo.SrcName == srcName {
-					filterInfo.PodName = storedFilterInfo.PodName
-					filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
-					filterInfo.Latency = storedFilterInfo.Latency
-					filterInfo.LatencyVariation = storedFilterInfo.LatencyVariation
-					filterInfo.LatencyCorrelation = storedFilterInfo.LatencyCorrelation
-					filterInfo.PacketLoss = storedFilterInfo.PacketLoss
-					filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
-
-					_ = updateNetCharRule(&filterInfo, true)
-					break
-				}
-			}
-		}
+	// Retrieve flow filter info
+	dstElement, found := netElemMap[dstName]
+	if !found {
+		log.Error("Failed to find flow destination: ", dstName)
+		mutex.Unlock()
+		return
 	}
+	filterInfo, found := dstElement.FilterInfoMap[srcName]
+	if !found {
+		log.Error("Failed to find flow source: ", srcName)
+		mutex.Unlock()
+		return
+	}
+
+	// Update filter info
+	filterInfo.Latency = int(latency)
+	filterInfo.LatencyVariation = int(latencyVariation)
+	filterInfo.PacketLoss = int(100 * packetLoss)
+	filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
+	_ = setShapingRule(filterInfo)
 	mutex.Unlock()
 }
 
-func applyOneFilterRule() {
+func updateComplete() {
 	mutex.Lock()
-
-	//Update the Db for state information (only transactionId for now)
+	// Update the Db for state information (only transactionId for now)
 	updateDbState(tce.nextTransactionId)
 
 	// Publish update to TC Sidecars for enforcement
 	transactionIdStr := strconv.Itoa(tce.nextTransactionId)
 	_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
 	tce.nextTransactionId++
-
 	mutex.Unlock()
 }
 
-func applyNetCharRules() {
-	log.Debug("applyNetCharRules")
+func setFilterInfoRules() {
+	log.Debug("setFilterInfoRules", "+---+", netElemMap)
 
-	// Loop through
-	for j, dstElement := range indexToNetElemMap {
-		dstElementPtr := netElemMap[dstElement.Name]
-		// Ignore dummy
-		if strings.Contains(dstElement.Name, "dummy") {
-			continue
-		}
-
-		for i, srcElement := range indexToNetElemMap {
-			srcElementPtr := netElemMap[srcElement.Name]
-			if i == j {
+	// Loop through all the flows (src/dst combinations)
+	for _, dstElem := range netElemMap {
+		for _, srcElem := range netElemMap {
+			if dstElem.Name == srcElem.Name {
 				continue
 			}
 
-			if strings.Contains(srcElement.Name, "dummy") {
-				continue
+			// Retrieve existing filter or create new one if none found
+			filterInfo := dstElem.FilterInfoMap[srcElem.Name]
+			if filterInfo == nil {
+				filterInfo = new(FilterInfo)
+				filterInfo.PodName = dstElem.Name
+				filterInfo.SrcIp = srcElem.Ip
+				filterInfo.SrcSvcIp = svcIPMap[srcElem.Name]
+				filterInfo.SrcName = srcElem.Name
+				filterInfo.SrcNetmask = "0"
+				filterInfo.SrcPort = 0
+				filterInfo.DstPort = 0
+				filterInfo.UniqueNumber = dstElem.NextUniqueNumber
+				filterInfo.Latency = 0
+				filterInfo.LatencyVariation = 0
+				filterInfo.LatencyCorrelation = COMMON_CORRELATION
+				filterInfo.PacketLoss = 0
+				filterInfo.DataRate = 0
+
+				dstElem.FilterInfoMap[srcElem.Name] = filterInfo
+				dstElem.NextUniqueNumber++
+
+				_ = setShapingRule(filterInfo)
+				_ = setFilterRule(filterInfo)
 			}
-
-			var filterInfo FilterInfo
-			filterInfo.PodName = dstElementPtr.Name
-			filterInfo.SrcIp = srcElementPtr.Ip
-			filterInfo.SrcSvcIp = svcIPMap[srcElementPtr.Name]
-			filterInfo.SrcName = srcElementPtr.Name
-			filterInfo.SrcNetmask = "0"
-			filterInfo.SrcPort = 0
-			filterInfo.DstPort = 0
-			filterInfo.UniqueNumber = dstElementPtr.NextUniqueNumber
-			value := netCharTable[i][j][LATENCY]
-			valueVar := netCharTable[i][j][LATENCY_VARIATION]
-			filterInfo.Latency = value
-			filterInfo.LatencyVariation = valueVar
-			filterInfo.LatencyCorrelation = COMMON_CORRELATION
-			value = netCharTable[i][j][PACKET_LOSS]
-			filterInfo.PacketLoss = value
-			//throughput is always updated to make sure a value will be set in the DB is netChar is not active at the time of setting the value in the DB
-			value = netCharTable[i][j][THROUGHPUT]
-			filterInfo.DataRate = value
-			needUpdateFilter := false
-			needUpdateNetChar := false
-			needCreate := false
-			if dstElementPtr.FilterInfoList == nil {
-				dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
-				needCreate = true
-			} else { //check to see if it exists
-				index := 0
-				for indx, storedFilterInfo := range dstElementPtr.FilterInfoList {
-					if storedFilterInfo.SrcName == filterInfo.SrcName {
-						//it has to be unique so check the other values
-						needCreate = false
-						if storedFilterInfo.PodName == filterInfo.PodName &&
-							storedFilterInfo.SrcIp == filterInfo.SrcIp &&
-							storedFilterInfo.SrcSvcIp == filterInfo.SrcSvcIp &&
-							storedFilterInfo.SrcNetmask == filterInfo.SrcNetmask &&
-							storedFilterInfo.SrcPort == filterInfo.SrcPort {
-
-							if storedFilterInfo.Latency != filterInfo.Latency ||
-								storedFilterInfo.LatencyVariation != filterInfo.LatencyVariation ||
-								storedFilterInfo.LatencyCorrelation != filterInfo.LatencyCorrelation ||
-								storedFilterInfo.PacketLoss != filterInfo.PacketLoss ||
-								storedFilterInfo.DataRate != filterInfo.DataRate {
-								needUpdateNetChar = true
-								//we don't want a new filter to be created, but we want a new set of network char. to be applied
-								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber
-								index = indx
-							}
-						} else { //there is a difference... replace the old one
-							needUpdateFilter = true //store the index
-							//using a convention where one odd and even number reserved for the same rule (applied and updated one)nd using one after the other
-							if storedFilterInfo.UniqueNumber%2 == 0 {
-								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber - 1
-							} else {
-								filterInfo.UniqueNumber = storedFilterInfo.UniqueNumber + 1
-							}
-
-							index = indx
-						}
-						break
-					} else {
-						needCreate = true
-					}
-				}
-				if needCreate {
-					dstElementPtr.FilterInfoList = append(dstElementPtr.FilterInfoList, filterInfo)
-				} else {
-					if needUpdateFilter {
-						list := dstElementPtr.FilterInfoList
-						_ = deleteFilterRule(&list[index])
-						list[index] = filterInfo //swap
-					} else if needUpdateNetChar {
-						list := dstElementPtr.FilterInfoList
-						list[index] = filterInfo //replace only
-					}
-				}
-			}
-
-			if needCreate {
-				//follows +2 convention since one odd and even number reserved for the same rule (applied and updated one)
-				dstElementPtr.NextUniqueNumber += 2
-				_ = updateFilterRule(&filterInfo, !tce.netCharMgr.IsRunning())
-			} else if needUpdateFilter {
-				_ = updateFilterRule(&filterInfo, !tce.netCharMgr.IsRunning())
-			} else if needUpdateNetChar {
-				_ = updateNetCharRule(&filterInfo, !tce.netCharMgr.IsRunning())
-			}
-			indexToNetElemMap[j] = *dstElementPtr
-			curNetCharList[j] = *dstElementPtr
 		}
 	}
 }
 
-func deleteFilterRule(filterInfo *FilterInfo) error {
+func setFilterRule(filterInfo *FilterInfo) error {
+	uniqueId := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
 
-	// Retrieve unique IFB number for rules to delete
-	filterNumber := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
-
-	// Delete filter rule
-	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumber
-	err := tce.netCharStore.rc.DelEntry(keyName)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
-	var err error
-	var keyName string
-
-	ifbNumber := filterInfo.UniqueNumber
-	//ifbNumber is always the same for the shaping, but varies for the filter
-	if filterInfo.UniqueNumber%2 == 0 {
-		ifbNumber = filterInfo.UniqueNumber - 1
-	}
-	ifbNumberStr := strconv.FormatInt(int64(ifbNumber), 10)
-
-	// SHAPING
-	var m_shape = make(map[string]interface{})
-	m_shape["delay"] = strconv.FormatInt(int64(filterInfo.Latency), 10)
-	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
-	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
-	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
-	if updateDataRate {
-		m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
-	}
-	m_shape["ifb_uniqueId"] = ifbNumberStr
-
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = tce.netCharStore.rc.SetEntry(keyName, m_shape)
-	if err != nil {
-		return err
-	}
-
-	filterNumberStr := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
-
-	// FILTER
 	var m_filter = make(map[string]interface{})
 	m_filter["PodName"] = filterInfo.PodName
 	m_filter["srcIp"] = filterInfo.SrcIp
@@ -1265,45 +624,33 @@ func updateFilterRule(filterInfo *FilterInfo, updateDataRate bool) error {
 	m_filter["srcNetmask"] = filterInfo.SrcNetmask
 	m_filter["srcPort"] = strconv.FormatInt(int64(filterInfo.SrcPort), 10)
 	m_filter["dstPort"] = strconv.FormatInt(int64(filterInfo.DstPort), 10)
-	m_filter["ifb_uniqueId"] = ifbNumberStr
-	m_filter["filter_uniqueId"] = filterNumberStr
+	m_filter["ifb_uniqueId"] = uniqueId
+	m_filter["filter_uniqueId"] = uniqueId
 
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + filterNumberStr
-	err = tce.netCharStore.rc.SetEntry(keyName, m_filter)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + uniqueId
+	err := tce.netCharStore.rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func updateNetCharRule(filterInfo *FilterInfo, updateDataRate bool) error {
-	var err error
-	var keyName string
+func setShapingRule(filterInfo *FilterInfo) error {
+	uniqueId := strconv.FormatInt(int64(filterInfo.UniqueNumber), 10)
 
-	ifbNumber := filterInfo.UniqueNumber
-	//ifbNumber is always the same for the shaping, but varies for the filter
-	if filterInfo.UniqueNumber%2 == 0 {
-		ifbNumber = filterInfo.UniqueNumber - 1
-	}
-	ifbNumberStr := strconv.FormatInt(int64(ifbNumber), 10)
-
-	// SHAPING
 	var m_shape = make(map[string]interface{})
 	m_shape["delay"] = strconv.FormatInt(int64(filterInfo.Latency), 10)
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
-	if updateDataRate {
-		m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
-	}
-	m_shape["ifb_uniqueId"] = ifbNumberStr
+	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
+	m_shape["ifb_uniqueId"] = uniqueId
 
-	keyName = moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + ifbNumberStr
-	err = tce.netCharStore.rc.SetEntry(keyName, m_shape)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + uniqueId
+	err := tce.netCharStore.rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -1315,13 +662,10 @@ func applyMgSvcMapping() {
 
 	// For each pod, add MG, ingress & egress Service LB rules
 	for _, podInfo := range podInfoMap {
-
 		// MG Service LB rules
 		for _, svcInfo := range podInfo.MgSvcMap {
-
 			// Add one rule per port
 			for _, portInfo := range svcInfo.Ports {
-
 				// Populate rule fields
 				fields := make(map[string]interface{})
 				fields[fieldSvcType] = typeMeSvc
@@ -1345,7 +689,6 @@ func applyMgSvcMapping() {
 
 		// Ingress Service rules
 		for _, svcMap := range podInfo.IngressSvcMapList {
-
 			// Get Service info from exposed service name
 			// Check if MG Service first
 			var svcInfo *ServiceInfo
@@ -1380,7 +723,6 @@ func applyMgSvcMapping() {
 
 		// Egress Service rules
 		for _, svcMap := range podInfo.EgressSvcMapList {
-
 			// Populate rule fields
 			fields := make(map[string]interface{})
 			fields[fieldSvcType] = typeEgressSvc
@@ -1467,7 +809,6 @@ func getPlatformInfo() {
 					if ip, found := podIPMap[podName]; found && ip == "" && podIP != "" {
 						log.Debug("Setting podName: ", podName, " to IP: ", podIP)
 						podIPMap[podName] = podIP
-						nextUniqueNumberMap[podName] = 1
 						//set the element if it has already been created by the scenario parsing
 						element := netElemMap[podName]
 						if element != nil {
@@ -1508,18 +849,25 @@ func getPlatformInfo() {
 			// Stop thread if all platform information has been retrieved
 			if tce.podCount == tce.podCountReq && tce.svcCount == tce.svcCountReq {
 				if tce.tcEngineState == stateInitializing {
+					mutex.Lock()
 					log.Info("TC Engine scenario data retrieved. Moving to Ready state.")
 					tce.tcEngineState = stateReady
 
-					mutex.Lock()
-
-					// Refresh & apply network characteristics rules
-					processActiveScenarioUpdate()
+					// Create & Apply network characteristic rules
+					setFilterInfoRules()
 
 					// Refresh & apply LB rules
 					processMgSvcMapUpdate()
 
+					// Start Net Char Manager
+					err := tce.netCharMgr.Start()
+					if err != nil {
+						log.Error("Failed to start Net Char Manager. Error: ", err)
+						mutex.Unlock()
+						return
+					}
 					mutex.Unlock()
+
 				} else {
 					log.Warn("TC Engine thread completed while not in Initializing state")
 				}
@@ -1548,34 +896,10 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
-// Used to print network characteristics belonging to a NetChar object -- uncomment to use -- for debug purpose
-// func printfNetChar(nc NetChar) {
-//      log.Debug("latency : ", nc.Latency, "~", nc.LatencyVariation, "|", nc.LatencyCorrelation)
-//      log.Debug("throughput : ", nc.Throughput)
-//      log.Debug("packet loss: ", nc.PacketLoss)
-// }
-//
 // Used to print all the element information belonging to an NetElem object -- uncomment to use -- for debug purpose
 // func printfElement(element NetElem) {
 //      log.Debug("element name : ", element.Name)
-//      log.Debug("element index : ", element.Index)
-//      log.Debug("element parent name : ", element.ParentName)
-//      log.Debug("element zone name : ", element.ZoneName)
-//      log.Debug("element domain name : ", element.DomainName)
 //      log.Debug("element type : ", element.Type)
-//      log.Debug("element scenario name : ", element.ScenarioName)
-//      log.Debug("element poa: ")
-//      printfNetChar(element.Poa)
-//      log.Debug("element poa-edge: ")
-//      printfNetChar(element.EdgeFog)
-//      log.Debug("element inter-fog: ")
-//      printfNetChar(element.InterFog)
-//      log.Debug("element inter-edge: ")
-//      printfNetChar(element.InterEdge)
-//      log.Debug("element inter-zone: ")
-//      printfNetChar(element.InterZone)
-//      log.Debug("element inter-domain: ")
-//      printfNetChar(element.InterDomain)
 //      log.Debug("element filter size: ", len(element.FilterInfoList))
 //      log.Debug("element ip: ", element.Ip)
 //      log.Debug("element next unique nb: ", element.NextUniqueNumber)

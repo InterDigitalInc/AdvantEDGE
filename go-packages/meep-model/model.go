@@ -356,17 +356,19 @@ func (m *Model) GetScenarioName() string {
 }
 
 //GetNodeNames - Get the list of nodes of a certain type; "" or "ANY" returns all
-func (m *Model) GetNodeNames(typ string) []string {
-	var l int
-	var nm map[string]*Node
-	if typ == "" || typ == "ANY" {
-		nm = m.nodeMap.nameMap
-		l = len(nm)
-	} else {
-		nm = m.nodeMap.typeMap[typ]
-		l = len(nm)
+func (m *Model) GetNodeNames(typ ...string) []string {
+	nm := make(map[string]*Node)
+	for _, t := range typ {
+		if t == "" || t == "ANY" {
+			nm = m.nodeMap.nameMap
+			break
+		}
+		for k, v := range m.nodeMap.typeMap[t] {
+			nm[k] = v
+		}
 	}
-	list := make([]string, 0, l)
+
+	list := make([]string, 0, len(nm))
 	for k := range nm {
 		list = append(list, k)
 	}
@@ -496,11 +498,6 @@ func (m *Model) parseNodes() (err error) {
 
 func (m *Model) refresh() (err error) {
 	if m.Active {
-		err = m.rc.JSONDelEntry(m.activeKey, ".")
-		if err != nil {
-			log.Error(err.Error())
-			return err
-		}
 		jsonScenario, err := json.Marshal(m.scenario)
 		if err != nil {
 			log.Error(err.Error())

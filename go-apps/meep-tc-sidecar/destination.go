@@ -41,13 +41,14 @@ type historyRx struct {
 }
 
 type destination struct {
-	host       string
-	hostName   string
-	remote     *net.IPAddr
-	remoteName string
-	ifbNumber  string
-	history    *history
-	historyRx  *historyRx
+	host         string
+	hostName     string
+	remote       *net.IPAddr
+	remoteName   string
+	ifbNumber    string
+	history      *history
+	historyRx    *historyRx
+	historyLogRx *historyRx
 }
 
 type stat struct {
@@ -61,8 +62,6 @@ type stat struct {
 }
 
 const moduleMetrics string = "metrics"
-
-var elasticLogPacing uint
 
 func (u *destination) ping(pinger *Pinger) {
 	rtt, err := pinger.Ping(u.remote, opts.timeout)
@@ -206,10 +205,8 @@ func (u *destination) processRxTx(rc *redis.Connector) {
 		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diffInSeconds
 	}
 
-	var throughputStr, throughputVal string
 	//all the throughput in Mbps
-	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-	throughputStr = throughputVal + " Mbps"
+	throughputVal := strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
 
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes
@@ -237,22 +234,78 @@ func (u *destination) processRxTx(rc *redis.Connector) {
 	if rc.EntryExists(key) {
 		_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
 	}
+}
 
-	//pacing the logs in ES
-	elasticLogPacing++
-	if elasticLogPacing%opts.trafficIntervalsPerLog == 0 {
-		log.WithFields(log.Fields{
-			"meep.log.component":     "sidecar",
-			"meep.log.msgType":       "ingressPacketStats",
-			"meep.log.src":           u.remoteName,
-			"meep.log.dest":          u.hostName,
-			"meep.log.rx":            rcvedPkts,
-			"meep.log.rxd":           droppedPkts,
-			"meep.log.rxBytes":       rcvedBytes,
-			"meep.log.throughput":    throughput / 1000000, //converting bps to mbps for graph display
-			"meep.log.throughputStr": throughputStr,
-			"meep.log.packet-loss":   pktDroppedRateStr,
-		}).Info("Measurements log")
+func (u *destination) logRxTx(rc *redis.Connector) {
+
+	str := "tc -s qdisc show dev ifb" + u.ifbNumber
+	out, err := cmdExec(str)
+	if err != nil {
+		log.Error("tc -s qdisc show dev ifb", u.ifbNumber)
+		log.Error(err)
+		return
+	}
+	//ex :qdisc netem 1: root refcnt 2 limit 1000 delay 100.0ms  10.0ms 50% loss 50% rate 2Mbit\n Sent 756 bytes 8 pkt (dropped 4, overlimits 0 requeues 0
+	allStr := strings.Split(out, " ")
+
+	//we have to read the allStr from the back since based on the results are always at the end but the characteristic may be different (no pkt loss, no normal distribution, etc)
+	var rcvedPkts int
+	var droppedPkts int
+	var rcvedBytes int
+	if len(allStr) > 20 {
+		rcvedPkts, _ = strconv.Atoi(allStr[len(allStr)-15])
+		droppedPkts, _ = strconv.Atoi(allStr[len(allStr)-12][:len(allStr[len(allStr)-12])-1])
+		rcvedBytes, _ = strconv.Atoi(allStr[len(allStr)-17])
+	} else {
+		log.Error("Error in the ifb statistics output: ", allStr)
+		rcvedPkts = 0
+		droppedPkts = 0
+		rcvedBytes = 0
 	}
 
+	//dropped rate in %
+	var pktDroppedRate float64
+	pktDroppedRateStr := "0"
+
+	totalPkts := rcvedPkts + droppedPkts
+	if totalPkts > 0 {
+		top := droppedPkts * 100
+		pktDroppedRate = (float64(top)) / float64(totalPkts)
+		pktDroppedRateStr = strconv.FormatFloat(pktDroppedRate, 'f', 3, 64)
+	}
+
+	currentTime := time.Now()
+
+	previousRcvedBytes := u.historyLogRx.rcvedBytes
+
+	var throughput float64
+	if previousRcvedBytes != 0 {
+
+		previousTime := u.historyLogRx.time
+
+		diff := currentTime.Sub(previousTime)
+		diffInSeconds := diff.Seconds()
+		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diffInSeconds
+	}
+
+	var throughputStr, throughputVal string
+	//all the throughput in Mbps
+	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
+	throughputStr = throughputVal + " Mbps"
+
+	u.historyLogRx.time = currentTime
+	u.historyLogRx.rcvedBytes = rcvedBytes
+
+	log.WithFields(log.Fields{
+		"meep.log.component":     "sidecar",
+		"meep.log.msgType":       "ingressPacketStats",
+		"meep.log.src":           u.remoteName,
+		"meep.log.dest":          u.hostName,
+		"meep.log.rx":            rcvedPkts,
+		"meep.log.rxd":           droppedPkts,
+		"meep.log.rxBytes":       rcvedBytes,
+		"meep.log.throughput":    throughput / 1000000, //converting bps to mbps for graph display
+		"meep.log.throughputStr": throughputStr,
+		"meep.log.packet-loss":   pktDroppedRateStr,
+	}).Info("Measurements log")
 }
