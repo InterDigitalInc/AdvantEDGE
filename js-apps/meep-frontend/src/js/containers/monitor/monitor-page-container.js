@@ -74,7 +74,8 @@ const DashboardContainer = props => {
                   display="initial"
                   position="relative"
                   allowFullScreen
-                  styles={{ width: '100%', height: '100%' }}
+                  width='100%'
+                  height='100%'
                 />
               </div>
             </div>
