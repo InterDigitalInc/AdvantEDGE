@@ -22,7 +22,6 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -94,6 +93,14 @@ var opts = struct {
 	resolverTimeout:        15000 * time.Millisecond,
 }
 
+// NetChar
+type NetChar struct {
+	Latency    string
+	Jitter     string
+	PacketLoss string
+	Throughput string
+}
+
 var pinger *Pinger
 var PodName string
 var ipTbl *ipt.IPTables
@@ -102,14 +109,11 @@ var letters = []rune(capLetters)
 var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
+var netcharMap = map[string]*NetChar{}
 
 var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
-
-var currentTransactionId = 0
-var dbTransactionId = 0
-var lastTransactionIdApplied = 0
 
 const redisAddr string = "meep-redis-master:6379"
 
@@ -204,11 +208,7 @@ func eventHandler(channel string, payload string) {
 }
 
 func processNetCharMsg(payload string) {
-	// NOTE: Payload contains only a transaction Id
-	currentTransactionId, _ = strconv.Atoi(payload)
-	_ = getTransactionIdApplied() //sets dbTransactionId and will apply it
 	refreshNetCharRules()
-	lastTransactionIdApplied = dbTransactionId
 }
 
 func processLbMsg(payload string) {
@@ -220,16 +220,25 @@ func refreshNetCharRules() {
 	// Create shape rules
 	_ = initializeOnFirstPass()
 
+	// moduleName := "sidecar"
+	// currentTime := time.Now()
+
 	_ = createIfbs()
 
-	// Create new filters (lower priority than the old one)
 	_ = createFilters()
 
-	// // Delete unused filters
+	// Delete unused filters
 	deleteUnusedFilters()
 
 	// Delete unused ifbs
 	deleteUnusedIfbs()
+
+	// elapsed := time.Since(currentTime)
+	// log.WithFields(log.Fields{
+	// 	"meep.log.component": moduleName,
+	// 	"meep.time.location": "refreshNetCharRules execution time",
+	// 	"meep.time.exec":     elapsed,
+	// }).Info("Measurements log")
 
 	// Start measurements
 	startMeasurementThreads()
@@ -461,6 +470,7 @@ func startMeasurementThreads() {
 		callPing()
 		go workLatency()
 		go workRxTxPackets()
+		go workLogRxTxData()
 		measurementsRunning = true
 	}
 }
@@ -492,6 +502,9 @@ func callPing() {
 					results: make([]time.Duration, opts.statBufferSize),
 				},
 				historyRx: &historyRx{
+					rcvedBytes: 0,
+				},
+				historyLogRx: &historyRx{
 					rcvedBytes: 0,
 				},
 			}
@@ -546,6 +559,24 @@ func workRxTxPackets() {
 	}
 }
 
+func workLogRxTxData() {
+	for {
+		//only this one affects the destinations based on info in the DB
+
+		sem <- 1
+
+		for i, u := range opts.dests {
+			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
+			go func(u *destination, i int) {
+				u.logRxTx(rc)
+			}(u, i)
+		}
+		<-sem
+
+		time.Sleep(opts.interval)
+	}
+}
+
 func createPing() ([]podShortElement, error) {
 	var podsToPing []podShortElement
 	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
@@ -568,21 +599,6 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 	return nil
 }
 
-func getTransactionIdApplied() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
-	err := rc.ForEachEntry(keyName, getDbStateHandler, nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getDbStateHandler(key string, fields map[string]string, userData interface{}) error {
-	var err error
-	dbTransactionId, err = strconv.Atoi(fields["transactionIdStored"])
-	return err
-}
-
 func createIfbs() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
 	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
@@ -596,18 +612,12 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 	ifbNumber := fields["ifb_uniqueId"]
 
 	_, exists := ifbs[ifbNumber]
-
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
 		_ = cmdSetIfb(fields)
 	} else {
-		if lastTransactionIdApplied < currentTransactionId {
-			_ = cmdSetIfb(fields)
-			log.Info("Transactions processed: current ", currentTransactionId, " and last applied ", lastTransactionIdApplied)
-		} else {
-			log.Info("Transactions processed on the TC-Engine already applied ", currentTransactionId, " vs last applied ", lastTransactionIdApplied)
-		}
+		_ = cmdSetIfb(fields)
 	}
 
 	return nil
@@ -751,13 +761,29 @@ func cmdSetIfb(shape map[string]string) error {
 	if delayVariation != "0" {
 		normalDistributionStr = "distribution normal"
 	}
-	str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
-	if dataRate != "" && dataRate != "0" {
-		str = str + " rate " + dataRate + "bit"
+
+	nc := netcharMap[ifbNumber]
+	if nc == nil {
+		nc = new(NetChar)
+		netcharMap[ifbNumber] = nc
 	}
-	_, err := cmdExec(str)
-	if err != nil {
-		return err
+	//only apply if an update is needed
+	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate {
+		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
+		if dataRate != "" && dataRate != "0" {
+			str = str + " rate " + dataRate + "bit"
+		}
+
+		_, err := cmdExec(str)
+		if err != nil {
+			return err
+		}
+
+		//store the new values
+		nc.Latency = delay
+		nc.Jitter = delayVariation
+		nc.PacketLoss = loss
+		nc.Throughput = dataRate
 	}
 
 	return nil

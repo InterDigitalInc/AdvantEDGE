@@ -498,11 +498,6 @@ func (m *Model) parseNodes() (err error) {
 
 func (m *Model) refresh() (err error) {
 	if m.Active {
-		err = m.rc.JSONDelEntry(m.activeKey, ".")
-		if err != nil {
-			log.Error(err.Error())
-			return err
-		}
 		jsonScenario, err := json.Marshal(m.scenario)
 		if err != nil {
 			log.Error(err.Error())

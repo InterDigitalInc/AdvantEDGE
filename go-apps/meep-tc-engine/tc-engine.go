@@ -544,11 +544,13 @@ func netCharUpdate(dstName string, srcName string, rate float64, latency float64
 	dstElement, found := netElemMap[dstName]
 	if !found {
 		log.Error("Failed to find flow destination: ", dstName)
+		mutex.Unlock()
 		return
 	}
 	filterInfo, found := dstElement.FilterInfoMap[srcName]
 	if !found {
 		log.Error("Failed to find flow source: ", srcName)
+		mutex.Unlock()
 		return
 	}
 
