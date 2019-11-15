@@ -70,6 +70,8 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      if (data.hasOwnProperty('version'))
+        obj.version = ApiClient.convertToType(data['version'], 'String');
       if (data.hasOwnProperty('name'))
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('config'))
@@ -79,6 +81,12 @@
     }
     return obj;
   }
+
+  /**
+   * Scenario version
+   * @member {String} version
+   */
+  exports.prototype.version = undefined;
 
   /**
    * Unique scenario name

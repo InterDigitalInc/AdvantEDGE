@@ -36,6 +36,10 @@ import (
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
+type Scenario struct {
+	Name string `json:"name,omitempty"`
+}
+
 const scenarioDBName = "scenarios"
 const activeScenarioName = "active"
 const moduleName string = "meep-ctrl-engine"
@@ -78,6 +82,34 @@ func CtrlEngineInit() (err error) {
 	}
 	log.Info("Connected to Scenario DB")
 
+	// Retrieve scenario list from DB
+	scenarioList, err := getScenarioList(db)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Validate DB scenarios & upgrade them if compatible
+	for _, scenario := range scenarioList {
+		validScenario, status, err := mod.ValidateScenario(scenario)
+		if err == nil && status == mod.ValidatorStatusUpdated {
+			// Retrieve scenario name
+			s := new(Scenario)
+			err = json.Unmarshal(validScenario, s)
+			if err != nil || s.Name == "" {
+				return errors.New("Failed to get scenario name from valid scenario")
+			}
+
+			// Update scenario in DB
+			rev, err := setScenario(db, s.Name, validScenario)
+			if err != nil {
+				return errors.New("Failed to update scenario with error: " + err.Error())
+			}
+			log.Debug("Scenario updated with rev: ", rev)
+		}
+	}
+
+	// Create new active scenario model
 	activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -130,8 +162,16 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate scenario
+	validScenario, _, err := mod.ValidateScenario(b)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Add new scenario to DB
-	rev, err := addScenario(db, scenarioName, b)
+	rev, err := addScenario(db, scenarioName, validScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -272,8 +312,16 @@ func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate scenario
+	validScenario, _, err := mod.ValidateScenario(b)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// Update scenario in DB
-	rev, err := setScenario(db, scenarioName, b)
+	rev, err := setScenario(db, scenarioName, validScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)

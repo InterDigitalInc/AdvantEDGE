@@ -28,7 +28,7 @@
  *
  */
 
-(function(root, factory) {
+(function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD.
     define(['expect.js', '../../src/index'], factory);
@@ -39,19 +39,19 @@
     // Browser globals (root is window)
     factory(root.expect, root.AdvantEdgePlatformControllerRestApi);
   }
-}(this, function(expect, AdvantEdgePlatformControllerRestApi) {
+}(this, function (expect, AdvantEdgePlatformControllerRestApi) {
   'use strict';
 
   var instance;
 
-  beforeEach(function() {
+  beforeEach(function () {
     instance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
   });
 
-  describe('(package)', function() {
-    describe('ScenarioExecutionApi', function() {
-      describe('activateScenario', function() {
-        it('should call activateScenario successfully', function(done) {
+  describe('(package)', function () {
+    describe('ScenarioExecutionApi', function () {
+      describe('activateScenario', function () {
+        it('should call activateScenario successfully', function (done) {
           // TODO: uncomment, update parameter values for activateScenario call
           /*
           var name = "name_example";
@@ -69,8 +69,8 @@
           done();
         });
       });
-      describe('getActiveNodeServiceMaps', function() {
-        it('should call getActiveNodeServiceMaps successfully', function(done) {
+      describe('getActiveNodeServiceMaps', function () {
+        it('should call getActiveNodeServiceMaps successfully', function (done) {
           // TODO: uncomment, update parameter values for getActiveNodeServiceMaps call and complete the assertions
           /*
           var opts = {};
@@ -137,8 +137,8 @@
           done();
         });
       });
-      describe('getActiveScenario', function() {
-        it('should call getActiveScenario successfully', function(done) {
+      describe('getActiveScenario', function () {
+        it('should call getActiveScenario successfully', function (done) {
           // TODO: uncomment getActiveScenario call and complete the assertions
           /*
 
@@ -149,6 +149,8 @@
             }
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
+            expect(data.version).to.be.a('string');
+            expect(data.version).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -239,6 +241,15 @@
                       expect(data.name).to.be("");
                       expect(data.type).to.be.a('string');
                       expect(data.type).to.be("ZONE");
+                      expect(data.netChar).to.be.a(MeepControllerRestApi.NetworkCharacteristics);
+                            expect(data.netChar.latency).to.be.a('number');
+                        expect(data.netChar.latency).to.be(0);
+                        expect(data.netChar.latencyVariation).to.be.a('number');
+                        expect(data.netChar.latencyVariation).to.be(0);
+                        expect(data.netChar.throughput).to.be.a('number');
+                        expect(data.netChar.throughput).to.be(0);
+                        expect(data.netChar.packetLoss).to.be.a('number');
+                        expect(data.netChar.packetLoss).to.be(0.0);
                       expect(data.interFogLatency).to.be.a('number');
                       expect(data.interFogLatency).to.be(0);
                       expect(data.interFogLatencyVariation).to.be.a('number');
@@ -518,8 +529,8 @@
           done();
         });
       });
-      describe('sendEvent', function() {
-        it('should call sendEvent successfully', function(done) {
+      describe('sendEvent', function () {
+        it('should call sendEvent successfully', function (done) {
           // TODO: uncomment, update parameter values for sendEvent call
           /*
           var type = "type_example";
@@ -555,8 +566,8 @@
           done();
         });
       });
-      describe('terminateScenario', function() {
-        it('should call terminateScenario successfully', function(done) {
+      describe('terminateScenario', function () {
+        it('should call terminateScenario successfully', function (done) {
           // TODO: uncomment terminateScenario call
           /*
 

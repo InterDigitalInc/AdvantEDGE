@@ -26,6 +26,8 @@ package client
 
 // Scenario object
 type Scenario struct {
+	// Scenario version
+	Version string `json:"version,omitempty"`
 	// Unique scenario name
 	Name       string          `json:"name,omitempty"`
 	Config     *ScenarioConfig `json:"config,omitempty"`

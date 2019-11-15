@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 1.0.0
+  version: 1.3.0
   title: MEEP Model
   license:
     name: "Apache 2.0"
@@ -273,6 +273,24 @@ definitions:
         type: string
         description: Service protocol (TCP or UDP)
     description: Internal service exposed externally via specific port
+  NetworkCharacteristics:
+    type: object
+    properties:
+      latency:
+        type: integer
+        description: Latency in ms
+      latencyVariation:
+        type: integer
+        description: Latency variation in ms
+      throughput:
+        type: integer
+        description: Throughput limit in Mbps
+      packetLoss:
+        type: number
+        format: double
+        description: Packet loss percentage
+    description: Network characteristics object
+    example: {}
   NetworkLocation:
     type: object
     properties:
@@ -550,6 +568,9 @@ definitions:
   Scenario:
     type: object
     properties:
+      version:
+        type: string
+        description: Scenario version
       name:
         type: string
         description: Unique scenario name
@@ -631,45 +652,47 @@ definitions:
         enum:
           - ZONE
           - COMMON
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
       interFogLatency:
         type: integer
-        description: Latency in ms between fog nodes (or PoAs) within zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interFogLatencyVariation:
         type: integer
-        description: Latency variation in ms between fog nodes (or PoAs) within zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interFogThroughput:
         type: integer
-        description: The limit of the traffic supported between fog nodes (or PoAs) within the zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interFogPacketLoss:
         type: number
         format: double
-        description: Packet lost (in terms of percentage) between fog nodes (or PoAs) within the zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interEdgeLatency:
         type: integer
-        description: Latency in ms between edge nodes within zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interEdgeLatencyVariation:
         type: integer
-        description: Latency variation in ms between edge nodes within zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interEdgeThroughput:
         type: integer
-        description: The limit of the traffic supported between edge nodes within the zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       interEdgePacketLoss:
         type: number
         format: double
-        description: Packet lost (in terms of percentage) between edge nodes within the zone
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
       edgeFogLatency:
         type: integer
-        description: Latency in ms between fog nodes (or PoAs) and edge nodes within zone
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latency'
       edgeFogLatencyVariation:
         type: integer
-        description: Latency variation in ms between fog nodes (or PoAs) and edge nodes within zone
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latencyVariation'
       edgeFogThroughput:
         type: integer
-        description: The limit of the traffic supported between fog nodes (or PoAs) and edge nodes within the zone
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar throughput'
       edgeFogPacketLoss:
         type: number
         format: double
-        description: Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar packetLoss'
       meta:
         type: object
         description: Key/Value Pair Map (string, string)

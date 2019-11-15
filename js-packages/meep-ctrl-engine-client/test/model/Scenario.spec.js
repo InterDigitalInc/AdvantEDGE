@@ -55,6 +55,12 @@
         expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
       });
 
+      it('should have the property version (base name: "version")', function() {
+        // TODO: update the code to test the property version
+        expect(instance).to.have.property('version');
+        // expect(instance.version).to.be(expectedValueLiteral);
+      });
+
       it('should have the property name (base name: "name")', function() {
         // TODO: update the code to test the property name
         expect(instance).to.have.property('name');
