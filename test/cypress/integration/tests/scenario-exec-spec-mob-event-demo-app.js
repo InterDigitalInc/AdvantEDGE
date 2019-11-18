@@ -303,12 +303,8 @@ describe('Scenario Execution', function () {
     cy.log('Create & Validate Network Characteristic event');
     createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
     createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('INTER-EDGE', 'zone1', 5, 0, 1, 80000);
-    createNetCharEvent('INTER-FOG', 'zone1', 3, 2, 1, 75000);
-    createNetCharEvent('EDGE-FOG', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('INTER-EDGE', 'zone2', 5, 0, 1, 80000);
-    createNetCharEvent('INTER-FOG', 'zone2', 3, 2, 1, 75000);
-    createNetCharEvent('EDGE-FOG', 'zone2', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000);
     createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
     createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
     createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
