@@ -1,4 +1,4 @@
-# MeepControllerRestApi.ExternalConfig
+# AdvantEdgePlatformControllerRestApi.ExternalConfig
 
 ## Properties
 Name | Type | Description | Notes

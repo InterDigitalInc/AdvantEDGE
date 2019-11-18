@@ -1,4 +1,4 @@
-# MeepControllerRestApi.Domain
+# AdvantEdgePlatformControllerRestApi.Domain
 
 ## Properties
 Name | Type | Description | Notes

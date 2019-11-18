@@ -1,4 +1,4 @@
-# MeepControllerRestApi.Zone
+# AdvantEdgePlatformControllerRestApi.Zone
 
 ## Properties
 Name | Type | Description | Notes

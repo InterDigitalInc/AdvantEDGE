@@ -4,18 +4,18 @@ All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**ActivateScenario**](ScenarioExecutionApi.md#ActivateScenario) | **Post** /active/{name} | Activate (deploy) scenario
-[**GetActiveNodeServiceMaps**](ScenarioExecutionApi.md#GetActiveNodeServiceMaps) | **Get** /active/serviceMaps | Retrieve list of active external node service mappings
-[**GetActiveScenario**](ScenarioExecutionApi.md#GetActiveScenario) | **Get** /active | Retrieve active (deployed) scenario
-[**SendEvent**](ScenarioExecutionApi.md#SendEvent) | **Post** /events/{type} | Send event to active (deployed) scenario
-[**TerminateScenario**](ScenarioExecutionApi.md#TerminateScenario) | **Delete** /active | Terminate active (deployed) scenario
+[**ActivateScenario**](ScenarioExecutionApi.md#ActivateScenario) | **Post** /active/{name} | Deploy a scenario
+[**GetActiveNodeServiceMaps**](ScenarioExecutionApi.md#GetActiveNodeServiceMaps) | **Get** /active/serviceMaps | Get deployed scenario&#39;s port mapping
+[**GetActiveScenario**](ScenarioExecutionApi.md#GetActiveScenario) | **Get** /active | Get the deployed scenario
+[**SendEvent**](ScenarioExecutionApi.md#SendEvent) | **Post** /events/{type} | Send events to the deployed scenario
+[**TerminateScenario**](ScenarioExecutionApi.md#TerminateScenario) | **Delete** /active | Terminate the deployed scenario
 
 
 # **ActivateScenario**
 > ActivateScenario(ctx, name)
-Activate (deploy) scenario
+Deploy a scenario
 
-
+Deploy a scenario present in the platform scenario store
 
 ### Required Parameters
 
@@ -34,16 +34,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetActiveNodeServiceMaps**
 > []NodeServiceMaps GetActiveNodeServiceMaps(ctx, optional)
-Retrieve list of active external node service mappings
+Get deployed scenario's port mapping
 
-
+Returns the deployed scenario's port mapping<p> <li>Ports are used by external nodes to access services internal to the platform <li>Port mapping concept for external nodes is available [here](https://github.com/InterDigitalInc/AdvantEDGE/wiki/external-ue#port-mapping)
 
 ### Required Parameters
 
@@ -71,16 +71,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetActiveScenario**
 > Scenario GetActiveScenario(ctx, )
-Retrieve active (deployed) scenario
+Get the deployed scenario
 
-
+Get the scenario currently deployed on the platform
 
 ### Required Parameters
 This endpoint does not need any parameter.
@@ -95,16 +95,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SendEvent**
 > SendEvent(ctx, type_, event)
-Send event to active (deployed) scenario
+Send events to the deployed scenario
 
-
+Generate events towards the deployed scenario. <p><p>Events: <li>Mobility: move a node in the emulated network <li>Network Characteristic: change network characteristics dynamically <li>PoAs-In-Range: provide PoAs in range of a UE (used with Application State Transfer)
 
 ### Required Parameters
 
@@ -124,16 +124,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **TerminateScenario**
 > TerminateScenario(ctx, )
-Terminate active (deployed) scenario
+Terminate the deployed scenario
 
-
+Terminate the scenario currently deployed on the platform
 
 ### Required Parameters
 This endpoint does not need any parameter.
@@ -148,7 +148,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

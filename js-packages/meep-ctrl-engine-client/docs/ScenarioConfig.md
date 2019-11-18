@@ -1,4 +1,4 @@
-# MeepControllerRestApi.ScenarioConfig
+# AdvantEdgePlatformControllerRestApi.ScenarioConfig
 
 ## Properties
 Name | Type | Description | Notes

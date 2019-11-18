@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EventMobility
+# AdvantEdgePlatformControllerRestApi.EventMobility
 
 ## Properties
 Name | Type | Description | Notes

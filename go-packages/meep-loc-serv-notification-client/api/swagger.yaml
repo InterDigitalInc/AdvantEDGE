@@ -1,25 +1,23 @@
 ---
 swagger: "2.0"
 info:
-  description: "Copyright (c) 2019  InterDigital Communications, Inc\nLicensed under\
-    \ the Apache License, Version 2.0 (the \"License\"); you may not use this file\
-    \ except in compliance with the License. You may obtain a copy of the License\
-    \ at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable\
-    \ law or agreed to in writing, software distributed under the License is distributed\
-    \ on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either\
-    \ express or implied. See the License for the specific language governing permissions\
-    \ and limitations under the License.\n"
-  version: "0.0.0"
-  title: "MEEP Location Service - Notification Callback"
+  description: "This API enables the Location Service to post location events to edge\
+    \ applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's Edge\
+    \ Applications subscribing to Location events must implement this API <p>**Details**<br>API\
+    \ details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>This\
+    \ API is not exposed by default on the AdvantEDGE platform"
+  version: "1.0.0"
+  title: "AdvantEDGE Location Service Subscription Notification REST API"
+  contact:
+    name: "InterDigital AdvantEDGE Support"
+    email: "AdvantEDGE@InterDigital.com"
   license:
     name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
 host: "172.0.0.1:8081"
 basePath: "/location/v1"
 tags:
 - name: "notifications"
-  description: "AdvantEDGE Location Subscription Notification Callbacks (user and\
-    \ zonal)"
 schemes:
 - "http"
 consumes:

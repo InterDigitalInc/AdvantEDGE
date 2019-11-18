@@ -1,4 +1,4 @@
-# MeepMetricsEngineServiceRestApi.MetricsApi
+# AdvantEdgeMetricsServiceRestApi.MetricsApi
 
 All URIs are relative to *http://localhost/v1*
 
@@ -17,9 +17,9 @@ Used to get a list of all metrics for a specific message type, destination pd an
 
 ### Example
 ```javascript
-var MeepMetricsEngineServiceRestApi = require('meep_metrics_engine_service_rest_api');
+var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_api');
 
-var apiInstance = new MeepMetricsEngineServiceRestApi.MetricsApi();
+var apiInstance = new AdvantEdgeMetricsServiceRestApi.MetricsApi();
 
 var opts = { 
   'dest': "dest_example", // String | Pod where the log message is taken from

@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EventOther
+# AdvantEdgePlatformControllerRestApi.EventOther
 
 ## Properties
 Name | Type | Description | Notes

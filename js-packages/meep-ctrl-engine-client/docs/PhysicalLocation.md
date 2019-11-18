@@ -1,4 +1,4 @@
-# MeepControllerRestApi.PhysicalLocation
+# AdvantEdgePlatformControllerRestApi.PhysicalLocation
 
 ## Properties
 Name | Type | Description | Notes

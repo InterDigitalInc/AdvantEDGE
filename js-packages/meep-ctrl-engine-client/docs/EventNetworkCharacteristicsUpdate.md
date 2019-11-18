@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EventNetworkCharacteristicsUpdate
+# AdvantEdgePlatformControllerRestApi.EventNetworkCharacteristicsUpdate
 
 ## Properties
 Name | Type | Description | Notes
