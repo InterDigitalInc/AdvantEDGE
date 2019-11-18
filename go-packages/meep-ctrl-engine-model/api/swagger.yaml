@@ -165,12 +165,10 @@ definitions:
         type: string
         description: Type of the network element to be updated
         enum:
-          - OPERATOR
-          - POA
           - SCENARIO
-          - ZONE-INTER-EDGE
-          - ZONE-INTER-FOG
-          - ZONE-EDGE-FOG
+          - OPERATOR
+          - ZONE
+          - POA
           - EDGE
           - FOG
           - UE

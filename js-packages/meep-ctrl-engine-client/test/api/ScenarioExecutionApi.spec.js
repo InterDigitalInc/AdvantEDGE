@@ -539,7 +539,7 @@
           event.type = "NETWORK-CHARACTERISTICS-UPDATE";
           event.eventNetworkCharacteristicsUpdate = new AdvantEdgePlatformControllerRestApi.EventNetworkCharacteristicsUpdate();
           event.eventNetworkCharacteristicsUpdate.elementName = "";
-          event.eventNetworkCharacteristicsUpdate.elementType = "OPERATOR";
+          event.eventNetworkCharacteristicsUpdate.elementType = "SCENARIO";
           event.eventNetworkCharacteristicsUpdate.latency = 0;
           event.eventNetworkCharacteristicsUpdate.latencyVariation = 0;
           event.eventNetworkCharacteristicsUpdate.throughput = 0;

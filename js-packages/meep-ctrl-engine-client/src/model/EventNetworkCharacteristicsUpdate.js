@@ -130,40 +130,28 @@
    */
   exports.ElementTypeEnum = {
     /**
-     * value: "OPERATOR"
-     * @const
-     */
-    OPERATOR: "OPERATOR",
-
-    /**
-     * value: "POA"
-     * @const
-     */
-    POA: "POA",
-
-    /**
      * value: "SCENARIO"
      * @const
      */
     SCENARIO: "SCENARIO",
 
     /**
-     * value: "ZONE-INTER-EDGE"
+     * value: "OPERATOR"
      * @const
      */
-    ZONE_INTER_EDGE: "ZONE-INTER-EDGE",
+    OPERATOR: "OPERATOR",
 
     /**
-     * value: "ZONE-INTER-FOG"
+     * value: "ZONE"
      * @const
      */
-    ZONE_INTER_FOG: "ZONE-INTER-FOG",
+    ZONE: "ZONE",
 
     /**
-     * value: "ZONE-EDGE-FOG"
+     * value: "POA"
      * @const
      */
-    ZONE_EDGE_FOG: "ZONE-EDGE-FOG",
+    POA: "POA",
 
     /**
      * value: "EDGE"
