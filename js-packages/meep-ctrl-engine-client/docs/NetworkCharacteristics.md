@@ -1,4 +1,4 @@
-# MeepControllerRestApi.NetworkCharacteristics
+# AdvantEdgePlatformControllerRestApi.NetworkCharacteristics
 
 ## Properties
 Name | Type | Description | Notes

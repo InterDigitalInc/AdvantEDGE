@@ -28,7 +28,7 @@
  *
  */
 
-(function (root, factory) {
+(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD.
     define(['expect.js', '../../src/index'], factory);
@@ -39,24 +39,24 @@
     // Browser globals (root is window)
     factory(root.expect, root.AdvantEdgePlatformControllerRestApi);
   }
-}(this, function (expect, AdvantEdgePlatformControllerRestApi) {
+}(this, function(expect, AdvantEdgePlatformControllerRestApi) {
   'use strict';
 
   var instance;
 
-  beforeEach(function () {
+  beforeEach(function() {
     instance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
   });
 
-  describe('(package)', function () {
-    describe('ScenarioConfigurationApi', function () {
-      describe('createScenario', function () {
-        it('should call createScenario successfully', function (done) {
+  describe('(package)', function() {
+    describe('ScenarioConfigurationApi', function() {
+      describe('createScenario', function() {
+        it('should call createScenario successfully', function(done) {
           // TODO: uncomment, update parameter values for createScenario call
           /*
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
-          scenario.version = "";          
+          scenario.version = "";
           scenario.name = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
@@ -82,7 +82,7 @@
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
           scenario.deployment.domains[0].zones[0].type = "ZONE";
-          scenario.deployment.domains[0].zones[0].netChar = new MeepControllerRestApi.NetworkCharacteristics();
+          scenario.deployment.domains[0].zones[0].netChar = new AdvantEdgePlatformControllerRestApi.NetworkCharacteristics();
           scenario.deployment.domains[0].zones[0].netChar.latency = 0;
           scenario.deployment.domains[0].zones[0].netChar.latencyVariation = 0;
           scenario.deployment.domains[0].zones[0].netChar.throughput = 0;
@@ -179,8 +179,8 @@
           done();
         });
       });
-      describe('deleteScenario', function () {
-        it('should call deleteScenario successfully', function (done) {
+      describe('deleteScenario', function() {
+        it('should call deleteScenario successfully', function(done) {
           // TODO: uncomment, update parameter values for deleteScenario call
           /*
           var name = "name_example";
@@ -198,8 +198,8 @@
           done();
         });
       });
-      describe('deleteScenarioList', function () {
-        it('should call deleteScenarioList successfully', function (done) {
+      describe('deleteScenarioList', function() {
+        it('should call deleteScenarioList successfully', function(done) {
           // TODO: uncomment deleteScenarioList call
           /*
 
@@ -216,8 +216,8 @@
           done();
         });
       });
-      describe('getScenario', function () {
-        it('should call getScenario successfully', function (done) {
+      describe('getScenario', function() {
+        it('should call getScenario successfully', function(done) {
           // TODO: uncomment, update parameter values for getScenario call and complete the assertions
           /*
           var name = "name_example";
@@ -321,7 +321,7 @@
                       expect(data.name).to.be("");
                       expect(data.type).to.be.a('string');
                       expect(data.type).to.be("ZONE");
-                      expect(data.netChar).to.be.a(MeepControllerRestApi.NetworkCharacteristics);
+                      expect(data.netChar).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
                             expect(data.netChar.latency).to.be.a('number');
                         expect(data.netChar.latency).to.be(0);
                         expect(data.netChar.latencyVariation).to.be.a('number');
@@ -609,8 +609,8 @@
           done();
         });
       });
-      describe('getScenarioList', function () {
-        it('should call getScenarioList successfully', function (done) {
+      describe('getScenarioList', function() {
+        it('should call getScenarioList successfully', function(done) {
           // TODO: uncomment getScenarioList call and complete the assertions
           /*
 
@@ -720,7 +720,7 @@
                           expect(data.name).to.be("");
                           expect(data.type).to.be.a('string');
                           expect(data.type).to.be("ZONE");
-                          expect(data.netChar).to.be.a(MeepControllerRestApi.NetworkCharacteristics);
+                          expect(data.netChar).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
                                 expect(data.netChar.latency).to.be.a('number');
                             expect(data.netChar.latency).to.be(0);
                             expect(data.netChar.latencyVariation).to.be.a('number');
@@ -1010,8 +1010,8 @@
           done();
         });
       });
-      describe('setScenario', function () {
-        it('should call setScenario successfully', function (done) {
+      describe('setScenario', function() {
+        it('should call setScenario successfully', function(done) {
           // TODO: uncomment, update parameter values for setScenario call
           /*
           var name = "name_example";
@@ -1042,7 +1042,7 @@
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
           scenario.deployment.domains[0].zones[0].type = "ZONE";
-          scenario.deployment.domains[0].zones[0].netChar = new MeepControllerRestApi.NetworkCharacteristics();
+          scenario.deployment.domains[0].zones[0].netChar = new AdvantEdgePlatformControllerRestApi.NetworkCharacteristics();
           scenario.deployment.domains[0].zones[0].netChar.latency = 0;
           scenario.deployment.domains[0].zones[0].netChar.latencyVariation = 0;
           scenario.deployment.domains[0].zones[0].netChar.throughput = 0;

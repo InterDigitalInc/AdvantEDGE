@@ -28,7 +28,7 @@
  *
  */
 
-(function (root, factory) {
+(function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
     define(['ApiClient', 'model/NetworkCharacteristics', 'model/NetworkLocation'], factory);
@@ -42,7 +42,7 @@
     }
     root.AdvantEdgePlatformControllerRestApi.Zone = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.NetworkLocation);
   }
-}(this, function (ApiClient, NetworkCharacteristics, NetworkLocation) {
+}(this, function(ApiClient, NetworkCharacteristics, NetworkLocation) {
   'use strict';
 
   /**
@@ -57,7 +57,7 @@
    * @alias module:model/Zone
    * @class
    */
-  var exports = function () {
+  var exports = function() {
   };
 
   /**
@@ -67,7 +67,7 @@
    * @param {module:model/Zone} obj Optional instance to populate.
    * @return {module:model/Zone} The populated <code>Zone</code> instance.
    */
-  exports.constructFromObject = function (data, obj) {
+  exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('id'))
@@ -103,9 +103,9 @@
       if (data.hasOwnProperty('edgeFogPacketLoss'))
         obj.edgeFogPacketLoss = ApiClient.convertToType(data['edgeFogPacketLoss'], 'Number');
       if (data.hasOwnProperty('meta'))
-        obj.meta = ApiClient.convertToType(data['meta'], { 'String': 'String' });
+        obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
-        obj.userMeta = ApiClient.convertToType(data['userMeta'], { 'String': 'String' });
+        obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       if (data.hasOwnProperty('networkLocations'))
         obj.networkLocations = ApiClient.convertToType(data['networkLocations'], [NetworkLocation]);
     }
