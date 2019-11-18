@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EgressService
+# AdvantEdgePlatformControllerRestApi.EgressService
 
 ## Properties
 Name | Type | Description | Notes

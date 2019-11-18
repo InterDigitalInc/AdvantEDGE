@@ -1,4 +1,4 @@
-# MeepControllerRestApi.ServiceConfig
+# AdvantEdgePlatformControllerRestApi.ServiceConfig
 
 ## Properties
 Name | Type | Description | Notes

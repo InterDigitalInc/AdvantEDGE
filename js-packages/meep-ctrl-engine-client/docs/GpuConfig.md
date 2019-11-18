@@ -1,4 +1,4 @@
-# MeepControllerRestApi.GpuConfig
+# AdvantEdgePlatformControllerRestApi.GpuConfig
 
 ## Properties
 Name | Type | Description | Notes

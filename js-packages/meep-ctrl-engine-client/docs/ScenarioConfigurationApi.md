@@ -1,34 +1,34 @@
-# MeepControllerRestApi.ScenarioConfigurationApi
+# AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi
 
 All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createScenario**](ScenarioConfigurationApi.md#createScenario) | **POST** /scenarios/{name} | Add new scenario to MEEP store
-[**deleteScenario**](ScenarioConfigurationApi.md#deleteScenario) | **DELETE** /scenarios/{name} | Delete scenario from MEEP store
-[**deleteScenarioList**](ScenarioConfigurationApi.md#deleteScenarioList) | **DELETE** /scenarios | Delete all scenarios in MEEP store
-[**getScenario**](ScenarioConfigurationApi.md#getScenario) | **GET** /scenarios/{name} | Retrieve scenario from MEEP store
-[**getScenarioList**](ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Retrieve list of scenarios in MEEP store
-[**setScenario**](ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update scenario in MEEP store
+[**createScenario**](ScenarioConfigurationApi.md#createScenario) | **POST** /scenarios/{name} | Add a scenario
+[**deleteScenario**](ScenarioConfigurationApi.md#deleteScenario) | **DELETE** /scenarios/{name} | Delete a scenario
+[**deleteScenarioList**](ScenarioConfigurationApi.md#deleteScenarioList) | **DELETE** /scenarios | Delete all scenarios
+[**getScenario**](ScenarioConfigurationApi.md#getScenario) | **GET** /scenarios/{name} | Get a specific scenario
+[**getScenarioList**](ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Get all scenarios
+[**setScenario**](ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
 
 
 <a name="createScenario"></a>
 # **createScenario**
 > createScenario(name, scenario)
 
-Add new scenario to MEEP store
+Add a scenario
 
-
+Add a scenario to the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var name = "name_example"; // String | Scenario name
 
-var scenario = new MeepControllerRestApi.Scenario(); // Scenario | Scenario to add to MEEP store
+var scenario = new AdvantEdgePlatformControllerRestApi.Scenario(); // Scenario | Scenario to add to MEEP store
 
 
 var callback = function(error, data, response) {
@@ -58,22 +58,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="deleteScenario"></a>
 # **deleteScenario**
 > deleteScenario(name)
 
-Delete scenario from MEEP store
+Delete a scenario
 
-
+Delete a scenario by name from the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var name = "name_example"; // String | Scenario name
 
@@ -104,22 +104,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="deleteScenarioList"></a>
 # **deleteScenarioList**
 > deleteScenarioList()
 
-Delete all scenarios in MEEP store
+Delete all scenarios
 
-
+Delete all scenarios present in the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var callback = function(error, data, response) {
   if (error) {
@@ -144,22 +144,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="getScenario"></a>
 # **getScenario**
 > Scenario getScenario(name)
 
-Retrieve scenario from MEEP store
+Get a specific scenario
 
-
+Get a scenario by name from the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var name = "name_example"; // String | Scenario name
 
@@ -190,22 +190,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="getScenarioList"></a>
 # **getScenarioList**
 > ScenarioList getScenarioList()
 
-Retrieve list of scenarios in MEEP store
+Get all scenarios
 
-
+Returns all scenarios from the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var callback = function(error, data, response) {
   if (error) {
@@ -230,26 +230,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="setScenario"></a>
 # **setScenario**
 > setScenario(name, scenario)
 
-Update scenario in MEEP store
+Update a scenario
 
-
+Update a scenario by name in the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioConfigurationApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi();
 
 var name = "name_example"; // String | Scenario name
 
-var scenario = new MeepControllerRestApi.Scenario(); // Scenario | Scenario to add to MEEP store
+var scenario = new AdvantEdgePlatformControllerRestApi.Scenario(); // Scenario | Scenario to add to MEEP store
 
 
 var callback = function(error, data, response) {
@@ -279,6 +279,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 

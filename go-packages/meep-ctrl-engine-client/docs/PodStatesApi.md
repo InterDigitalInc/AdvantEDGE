@@ -4,14 +4,14 @@ All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**GetStates**](PodStatesApi.md#GetStates) | **Get** /states | This operation returns status information for pods
+[**GetStates**](PodStatesApi.md#GetStates) | **Get** /states | Get pods states
 
 
 # **GetStates**
 > PodsStatus GetStates(ctx, optional)
-This operation returns status information for pods
+Get pods states
 
-Returns pod status info for a list of pods
+Get status information of Core micro-services pods and Scenario pods
 
 ### Required Parameters
 
@@ -38,7 +38,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

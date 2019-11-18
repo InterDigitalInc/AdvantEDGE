@@ -1,4 +1,4 @@
-# MeepControllerRestApi.NodeServiceMaps
+# AdvantEdgePlatformControllerRestApi.NodeServiceMaps
 
 ## Properties
 Name | Type | Description | Notes
