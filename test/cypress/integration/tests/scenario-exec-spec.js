@@ -46,18 +46,10 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
@@ -70,7 +62,7 @@ import {
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
 
 // Scenario Execution Tests
-describe('Scenario Execution', function() {
+describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
@@ -91,7 +83,7 @@ describe('Scenario Execution', function() {
   // ------------------------------
 
   // Demo1 scenario testing (Virt-Engine)
-  it('Deploy & Test DEMO1 scenario', function() {
+  it('Deploy & Test DEMO1 scenario', function () {
     let scenario = 'demo1';
 
     // Deploy demo scenario
@@ -107,7 +99,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo2 scenario testing (User Charts)
-  it('Deploy & Test DEMO2 scenario', function() {
+  it('Deploy & Test DEMO2 scenario', function () {
     let scenario = 'demo2';
 
     // Deploy demo scenario
@@ -264,44 +256,32 @@ describe('Scenario Execution', function() {
       assert.isNotNull(entry);
 
       switch (elemType) {
-      case 'SCENARIO':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
-        break;
-      case 'OPERATOR':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
-        break;
-      case 'ZONE-INTER-EDGE':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_THROUGPUT), tp);
-        break;
-      case 'ZONE-INTER-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_THROUGPUT), tp);
-        break;
-      case 'ZONE-EDGE-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_THROUGPUT), tp);
-        break;
-      case 'POA':
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
-        break;
-      default:
-        assert.isOk(false, 'Unsupported element type');
+        case 'SCENARIO':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
+          break;
+        case 'OPERATOR':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
+          break;
+        case 'ZONE':
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGPUT), tp);
+          break;
+        case 'POA':
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
+          break;
+        default:
+          assert.isOk(false, 'Unsupported element type');
       }
     });
   }

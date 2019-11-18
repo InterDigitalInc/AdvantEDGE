@@ -49,18 +49,10 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
@@ -100,18 +92,10 @@ import {
   DEFAULT_LATENCY_JITTER_INTER_ZONE,
   DEFAULT_THROUGHPUT_INTER_ZONE,
   DEFAULT_PACKET_LOSS_INTER_ZONE,
-  DEFAULT_LATENCY_INTER_EDGE,
-  DEFAULT_LATENCY_JITTER_INTER_EDGE,
-  DEFAULT_THROUGHPUT_INTER_EDGE,
-  DEFAULT_PACKET_LOSS_INTER_EDGE,
-  DEFAULT_LATENCY_INTER_FOG,
-  DEFAULT_LATENCY_JITTER_INTER_FOG,
-  DEFAULT_THROUGHPUT_INTER_FOG,
-  DEFAULT_PACKET_LOSS_INTER_FOG,
-  DEFAULT_LATENCY_EDGE_FOG,
-  DEFAULT_LATENCY_JITTER_EDGE_FOG,
-  DEFAULT_THROUGHPUT_EDGE_FOG,
-  DEFAULT_PACKET_LOSS_EDGE_FOG,
+  DEFAULT_LATENCY_INTRA_ZONE,
+  DEFAULT_LATENCY_JITTER_INTRA_ZONE,
+  DEFAULT_THROUGHPUT_INTRA_ZONE,
+  DEFAULT_PACKET_LOSS_INTRA_ZONE,
   DEFAULT_LATENCY_TERMINAL_LINK,
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
   DEFAULT_THROUGHPUT_TERMINAL_LINK,
@@ -278,10 +262,10 @@ export function addElementToScenario(scenario, element) {
       element,
       FIELD_PARENT,
       PUBLIC_DOMAIN_TYPE_STR +
-          '-' +
-          COMMON_ZONE_TYPE_STR +
-          '-' +
-          DEFAULT_NL_TYPE_STR
+        '-' +
+        COMMON_ZONE_TYPE_STR +
+        '-' +
+        DEFAULT_NL_TYPE_STR
     );
     scenarioElement = createPL(name, DC_TYPE_STR, element);
     break;
@@ -439,48 +423,21 @@ export function updateElementInScenario(scenario, element) {
     for (var j in domain.zones) {
       var zone = domain.zones[j];
       if (zone.name === name) {
-        zone.interEdgeLatency = getElemFieldVal(
-          element,
-          FIELD_INT_EDGE_LATENCY
-        );
-        zone.interEdgeLatencyVariation = getElemFieldVal(
-          element,
-          FIELD_INT_EDGE_LATENCY_VAR
-        );
-        zone.interEdgeThroughput = getElemFieldVal(
-          element,
-          FIELD_INT_EDGE_THROUGPUT
-        );
-        zone.interEdgePacketLoss = getElemFieldVal(
-          element,
-          FIELD_INT_EDGE_PKT_LOSS
-        );
-        zone.interFogLatency = getElemFieldVal(element, FIELD_INT_FOG_LATENCY);
-        zone.interFogLatencyVariation = getElemFieldVal(
-          element,
-          FIELD_INT_FOG_LATENCY_VAR
-        );
-        zone.interFogThroughput = getElemFieldVal(
-          element,
-          FIELD_INT_FOG_THROUGPUT
-        );
-        zone.interFogPacketLoss = getElemFieldVal(
-          element,
-          FIELD_INT_FOG_PKT_LOSS
-        );
-        zone.edgeFogLatency = getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY);
-        zone.edgeFogLatencyVariation = getElemFieldVal(
-          element,
-          FIELD_EDGE_FOG_LATENCY_VAR
-        );
-        zone.edgeFogThroughput = getElemFieldVal(
-          element,
-          FIELD_EDGE_FOG_THROUGPUT
-        );
-        zone.edgeFogPacketLoss = getElemFieldVal(
-          element,
-          FIELD_EDGE_FOG_PKT_LOSS
-        );
+        if (zone.netChar) {
+          zone.netChar.latency = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY);
+          zone.netChar.latencyVariation = getElemFieldVal(
+            element,
+            FIELD_INTRA_ZONE_LATENCY_VAR
+          );
+          zone.netChar.throughput = getElemFieldVal(
+            element,
+            FIELD_INTRA_ZONE_THROUGPUT
+          );
+          zone.netChar.packetLoss = getElemFieldVal(
+            element,
+            FIELD_INTRA_ZONE_PKT_LOSS
+          );
+        }
         return;
       }
 
@@ -657,17 +614,17 @@ export function createProcess(name, type, element) {
           ports: [
             {
               protocol:
-                  getElemFieldVal(element, FIELD_PROTOCOL) === ''
-                    ? null
-                    : getElemFieldVal(element, FIELD_PROTOCOL).toUpperCase(),
+                getElemFieldVal(element, FIELD_PROTOCOL) === ''
+                  ? null
+                  : getElemFieldVal(element, FIELD_PROTOCOL).toUpperCase(),
               port:
-                  getElemFieldVal(element, FIELD_PORT) === ''
-                    ? null
-                    : getElemFieldVal(element, FIELD_PORT),
+                getElemFieldVal(element, FIELD_PORT) === ''
+                  ? null
+                  : getElemFieldVal(element, FIELD_PORT),
               externalPort:
-                  getElemFieldVal(element, FIELD_EXT_PORT) === ''
-                    ? null
-                    : getElemFieldVal(element, FIELD_EXT_PORT)
+                getElemFieldVal(element, FIELD_EXT_PORT) === ''
+                  ? null
+                  : getElemFieldVal(element, FIELD_EXT_PORT)
             }
           ]
         };
@@ -676,9 +633,9 @@ export function createProcess(name, type, element) {
         ? null
         : {
           type:
-              getElemFieldVal(element, FIELD_GPU_TYPE) === ''
-                ? null
-                : getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
+            getElemFieldVal(element, FIELD_GPU_TYPE) === ''
+              ? null
+              : getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
           count: gpuCount
         };
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
@@ -873,27 +830,12 @@ export function createZone(name, element) {
     id: name,
     name: name,
     type: ZONE_TYPE_STR,
-    interEdgeLatency: getElemFieldVal(element, FIELD_INT_EDGE_LATENCY),
-    interEdgeLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_INT_EDGE_LATENCY_VAR
-    ),
-    interEdgeThroughput: getElemFieldVal(element, FIELD_INT_EDGE_THROUGPUT),
-    interEdgePacketLoss: getElemFieldVal(element, FIELD_INT_EDGE_PKT_LOSS),
-    interFogLatency: getElemFieldVal(element, FIELD_INT_FOG_LATENCY),
-    interFogLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_INT_FOG_LATENCY_VAR
-    ),
-    interFogThroughput: getElemFieldVal(element, FIELD_INT_FOG_THROUGPUT),
-    interFogPacketLoss: getElemFieldVal(element, FIELD_INT_FOG_PKT_LOSS),
-    edgeFogLatency: getElemFieldVal(element, FIELD_EDGE_FOG_LATENCY),
-    edgeFogLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_EDGE_FOG_LATENCY_VAR
-    ),
-    edgeFogThroughput: getElemFieldVal(element, FIELD_EDGE_FOG_THROUGPUT),
-    edgeFogPacketLoss: getElemFieldVal(element, FIELD_EDGE_FOG_PKT_LOSS),
+    netChar: {
+      latency: getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY),
+      latencyVariation: getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY_VAR),
+      throughput: getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGPUT),
+      packetLoss: getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS)
+    },
     networkLocations: [createDefaultNL(name)]
   };
   return zone;
@@ -905,18 +847,12 @@ export function createDefaultZone(domainName) {
     id: zoneName,
     name: zoneName,
     type: COMMON_ZONE_TYPE_STR,
-    interEdgeLatency: parseInt(DEFAULT_LATENCY_INTER_EDGE),
-    interEdgeLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTER_EDGE),
-    interEdgeThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_EDGE),
-    interEdgePacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_EDGE),
-    interFogLatency: parseInt(DEFAULT_LATENCY_INTER_FOG),
-    interFogLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTER_FOG),
-    interFogThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_FOG),
-    interFogPacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_FOG),
-    edgeFogLatency: parseInt(DEFAULT_LATENCY_EDGE_FOG),
-    edgeFogLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_EDGE_FOG),
-    edgeFogThroughput: parseInt(DEFAULT_THROUGHPUT_EDGE_FOG),
-    edgeFogPacketLoss: parseInt(DEFAULT_PACKET_LOSS_EDGE_FOG),
+    netChar: {
+      latency: parseInt(DEFAULT_LATENCY_INTRA_ZONE),
+      latencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTRA_ZONE),
+      throughput: parseInt(DEFAULT_THROUGHPUT_INTRA_ZONE),
+      packetLoss: parseInt(DEFAULT_PACKET_LOSS_INTRA_ZONE)
+    },
     networkLocations: [createDefaultNL(zoneName)]
   };
   return zone;
@@ -991,58 +927,25 @@ export function getElementFromScenario(scenario, elementName) {
           FIELD_PARENT,
           domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name : domain.name
         );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_EDGE_LATENCY,
-          zone.interEdgeLatency || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_EDGE_LATENCY_VAR,
-          zone.interEdgeLatencyVariation || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_EDGE_THROUGPUT,
-          zone.interEdgeThroughput || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_EDGE_PKT_LOSS,
-          zone.interEdgePacketLoss || 0
-        );
-        setElemFieldVal(elem, FIELD_INT_FOG_LATENCY, zone.interFogLatency || 0);
-        setElemFieldVal(
-          elem,
-          FIELD_INT_FOG_LATENCY_VAR,
-          zone.interFogLatencyVariation || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_FOG_THROUGPUT,
-          zone.interFogThroughput || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_INT_FOG_PKT_LOSS,
-          zone.interFogPacketLoss || 0
-        );
-        setElemFieldVal(elem, FIELD_EDGE_FOG_LATENCY, zone.edgeFogLatency || 0);
-        setElemFieldVal(
-          elem,
-          FIELD_EDGE_FOG_LATENCY_VAR,
-          zone.edgeFogLatencyVariation || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_EDGE_FOG_THROUGPUT,
-          zone.edgeFogThroughput || 0
-        );
-        setElemFieldVal(
-          elem,
-          FIELD_EDGE_FOG_PKT_LOSS,
-          zone.edgeFogPacketLoss || 0
-        );
+
+        if (zone.netChar) {
+          setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY, zone.netChar.latency || 0);
+          setElemFieldVal(
+            elem,
+            FIELD_INTRA_ZONE_LATENCY_VAR,
+            zone.netChar.latencyVariation || 0
+          );
+          setElemFieldVal(
+            elem,
+            FIELD_INTRA_ZONE_THROUGPUT,
+            zone.netChar.throughput || 0
+          );
+          setElemFieldVal(
+            elem,
+            FIELD_INTRA_ZONE_PKT_LOSS,
+            zone.netChar.packetLoss || 0
+          );
+        }
         return elem;
       }
 
@@ -1386,7 +1289,7 @@ export function addNlNode(nl, parent, nodes, edges) {
     n['group'] = 'nLocPoa';
   }
 
-  var latency = parent.edgeFogLatency;
+  var latency = (parent.netChar) ? parent.netChar.latency : 0;
   if (latency) {
     e['label'] = latency + ' ms';
   }

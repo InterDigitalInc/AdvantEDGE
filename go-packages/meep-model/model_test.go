@@ -349,57 +349,23 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1"
-	nc.ElementType = "ZONE-INTER-EDGE"
+	nc.ElementType = "ZONE"
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	z := n.object.(*ceModel.Zone)
-	if z.InterEdgeLatency != 1 {
+	if z.NetChar.Latency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
-	if z.InterEdgeLatencyVariation != 2 {
+	if z.NetChar.LatencyVariation != 2 {
 		t.Errorf("Update " + nc.ElementType + " jitter failed")
 	}
-	if z.InterEdgeThroughput != 3 {
+	if z.NetChar.Throughput != 3 {
 		t.Errorf("Update " + nc.ElementType + " throughput failed")
 	}
-	if z.InterEdgePacketLoss != 4 {
-		t.Errorf("Update " + nc.ElementType + " packet loss failed")
-	}
-	nc.ElementType = "ZONE-INTER-FOG"
-	err = m.UpdateNetChar(&nc)
-	if err != nil {
-		t.Errorf("Update " + nc.ElementType + " failed")
-	}
-	if z.InterFogLatency != 1 {
-		t.Errorf("Update " + nc.ElementType + " latency failed")
-	}
-	if z.InterFogLatencyVariation != 2 {
-		t.Errorf("Update " + nc.ElementType + " jitter failed")
-	}
-	if z.InterFogThroughput != 3 {
-		t.Errorf("Update " + nc.ElementType + " throughput failed")
-	}
-	if z.InterFogPacketLoss != 4 {
-		t.Errorf("Update " + nc.ElementType + " packet loss failed")
-	}
-	nc.ElementType = "ZONE-EDGE-FOG"
-	err = m.UpdateNetChar(&nc)
-	if err != nil {
-		t.Errorf("Update " + nc.ElementType + " failed")
-	}
-	if z.EdgeFogLatency != 1 {
-		t.Errorf("Update " + nc.ElementType + " latency failed")
-	}
-	if z.EdgeFogLatencyVariation != 2 {
-		t.Errorf("Update " + nc.ElementType + " jitter failed")
-	}
-	if z.EdgeFogThroughput != 3 {
-		t.Errorf("Update " + nc.ElementType + " throughput failed")
-	}
-	if z.EdgeFogPacketLoss != 4 {
+	if z.NetChar.PacketLoss != 4 {
 		t.Errorf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -581,8 +547,8 @@ func TestUpdateNetChar(t *testing.T) {
 	nc.ElementName = "ue1"
 	nc.ElementType = "Not-a-Type"
 	err = m.UpdateNetChar(&nc)
-	if err != nil {
-		t.Errorf("Unsupported type should not fail")
+	if err == nil {
+		t.Errorf("Unsupported type should fail")
 	}
 
 }
