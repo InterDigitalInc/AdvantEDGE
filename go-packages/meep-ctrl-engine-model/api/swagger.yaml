@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 1.3.0
+  version: 1.0.0
   title: MEEP Model
   license:
     name: "Apache 2.0"
