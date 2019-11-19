@@ -89,6 +89,7 @@ type SegAlgoFlow struct {
 	CurrentThroughput             float64 //measured
 	CurrentThroughputEgress       float64 //measured
 	Path                          *SegAlgoPath
+	NewPath                       bool
 }
 
 // SegAlgoPath -
@@ -403,7 +404,27 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 	flow.ConfiguredNetChar.Jitter = 0
 	flow.ConfiguredNetChar.PacketLoss = 0
 	// Create a new path for this flow
+	oldPath := flow.Path
 	flow.Path = algo.createPath(flowName, srcElement, destElement, model)
+	diffPath := algo.comparePath(oldPath, flow.Path)
+	flow.NewPath = diffPath
+}
+
+func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgoPath) bool {
+
+	if oldPath == nil {
+		return true
+	}
+	if len(oldPath) != len(newPath) {
+		return true
+	}
+
+        for index, newSegment  := range newPath.Segments {
+                if newSegment.Name != oldPath.Segments[index].Name {
+			return true
+		}
+        }
+        return false
 }
 
 // createPath -
@@ -714,6 +735,7 @@ func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string,
 		// Retrieve max throughput from model using model scenario element name
 		nc := getNetChars(elemName, model)
 		segment.ConfiguredNetChar = nc
+
 		maxThroughput := nc.Throughput
 		// Initialize segment-specific BW attributes from Algo config
 		if algo.Config.IsPercentage {
@@ -938,8 +960,7 @@ func needToReevaluate(segment *SegAlgoSegment) (unusedBw float64, list []*SegAlg
 
 	//how many active connections that needs to be taken into account
 	for _, flow := range segment.Flows {
-		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound || flow.CurrentThroughput > flow.AllocatedThroughputUpperBound || flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow {
-			//			resetFlowMaxPlannedThroughput(flow)
+		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound || flow.CurrentThroughput > flow.AllocatedThroughputUpperBound || flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow || flow.NewPath {
 			list = append(list, flow)
 		} else {
 			//no need to reevalute algo one, so removing its allocated bw from the available one
