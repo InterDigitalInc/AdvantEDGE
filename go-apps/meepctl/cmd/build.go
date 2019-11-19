@@ -217,6 +217,7 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
 	nodeIp := viper.GetString("node.ip")
+	ctrlEnginePort := utils.RepoCfg.GetString("repo.core.meep-ctrl-engine.nodeport")
 
 	// remove old binDir if exists
 	if _, err := os.Stat(binDir); !os.IsNotExist(err) {
@@ -244,25 +245,21 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 	urls := " [ "
 	urlStringToReplace := `url: "https:\/\/petstore.swagger.io\/v2\/swagger.json",`
 
+	apiBundle := utils.RepoCfg.GetStringSlice("repo.core.meep-swagger-ui.api-bundle")
 	//find all the apis and copy them at the location above
-	for _, targetArg := range cobraCmd.ValidArgs {
-		if targetArg == "all" {
+	for _, target := range apiBundle {
+		apiSrcFile := utils.RepoCfg.GetString("repo.core." + target + ".api")
+		if apiSrcFile == "" {
 			continue
 		}
-		apiLocationEntry := utils.RepoCfg.GetString("repo.core." + targetArg + ".api")
-		if apiLocationEntry == "" {
-			continue
-		}
-		apiLocationFile := gitDir + "/" + apiLocationEntry
-		nodePort := utils.RepoCfg.GetString("repo.core." + targetArg + ".nodeport")
-
-		if apiLocationFile != "" {
-			dstTargetApiFile := binDir + "/" + targetArg + "-api.yaml"
+		apiSrcPath := gitDir + "/" + apiSrcFile
+		if apiSrcPath != "" {
+			apiDstPath := binDir + "/" + target + "-api.yaml"
 			if verbose {
-				fmt.Println("    Copying: " + apiLocationFile + " --> " + dstTargetApiFile)
+				fmt.Println("    Copying: " + apiSrcPath + " --> " + apiDstPath)
 			}
 
-			cmd = exec.Command("cp", apiLocationFile, dstTargetApiFile)
+			cmd = exec.Command("cp", apiSrcPath, apiDstPath)
 			_, err = utils.ExecuteCmd(cmd, cobraCmd)
 			if err != nil {
 				fmt.Println("Failed to copy: ", err)
@@ -270,13 +267,14 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 			}
 
 			//find which format style version (standard) it is based on
-			switch findFormatStyle(dstTargetApiFile, cobraCmd) {
+			nodePort := utils.RepoCfg.GetString("repo.core." + target + ".nodeport")
+			switch findFormatStyle(apiDstPath, cobraCmd) {
 			case "openapi":
-				_ = replaceOpenApiStyle(dstTargetApiFile, nodeIp, nodePort, cobraCmd)
+				_ = replaceOpenApiStyle(apiDstPath, nodeIp, nodePort, cobraCmd)
 				fmt.Println("Failed to parse/update an openapi yaml file")
 				return
 			case "swagger":
-				err = replaceSwaggerStyle(dstTargetApiFile, nodeIp, nodePort, cobraCmd)
+				err = replaceSwaggerStyle(apiDstPath, nodeIp, nodePort, cobraCmd)
 				if err != nil {
 					fmt.Println("Failed to parse/update a swagger yaml file")
 					return
@@ -286,7 +284,7 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 			}
 
 			//update the string to update the drop-down menu in the index.html file of /api
-			cmd = exec.Command("grep", "title:", dstTargetApiFile)
+			cmd = exec.Command("grep", "title:", apiDstPath)
 			title, err := utils.ExecuteCmd(cmd, cobraCmd)
 			if err != nil {
 				fmt.Println("Failed to move: ", err)
@@ -304,7 +302,8 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 			}
 
 			//update urls for swagger-ui index file
-			urls = urls + `{"name": "` + title + `", "url": "` + targetArg + `-api.yaml"},`
+			//urls = urls + `{"name": "` + title + `", "url": "` + target + `-api.yaml"},`
+			urls = urls + `{"name": "` + title + `", "url": "http:\/\/` + nodeIp + `:` + ctrlEnginePort + `\/api\/` + target + `-api.yaml"},`
 		}
 	}
 
@@ -319,16 +318,16 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 	}
 }
 
-func findFormatStyle(dstTargetApiFile string, cobraCmd *cobra.Command) string {
+func findFormatStyle(apiPath string, cobraCmd *cobra.Command) string {
 
-	cmd := exec.Command("grep", "openapi: ", dstTargetApiFile)
+	cmd := exec.Command("grep", "openapi: ", apiPath)
 	linePresent, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	if linePresent != "" {
 		//no need to check for openApi version, we handle all the same for now
 		return "openapi"
 	}
 
-	cmd = exec.Command("grep", "swagger: ", dstTargetApiFile)
+	cmd = exec.Command("grep", "swagger: ", apiPath)
 	linePresent, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	if linePresent != "" {
 		//no need to check for swagger version, we handle all the same for now
@@ -337,19 +336,19 @@ func findFormatStyle(dstTargetApiFile string, cobraCmd *cobra.Command) string {
 	return ""
 }
 
-func replaceOpenApiStyle(dstTargetApiFile string, nodeIp string, nodePort string, cobraCmd *cobra.Command) error {
+func replaceOpenApiStyle(apiPath string, nodeIp string, nodePort string, cobraCmd *cobra.Command) error {
 	fmt.Println("No support for openApi files yet!")
 	return nil
 }
 
-func replaceSwaggerStyle(dstTargetApiFile string, nodeIp string, nodePort string, cobraCmd *cobra.Command) error {
+func replaceSwaggerStyle(apiPath string, nodeIp string, nodePort string, cobraCmd *cobra.Command) error {
 	//find if host line already exist in the file, if it does, remove it
-	cmd := exec.Command("grep", "host: ", dstTargetApiFile)
+	cmd := exec.Command("grep", "host: ", apiPath)
 	hostLine, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	if hostLine != "" {
 		hostLine = strings.TrimSpace(hostLine)
 		sedHostLine := "/" + hostLine + "/d"
-		cmd = exec.Command("sed", "-i", sedHostLine, dstTargetApiFile)
+		cmd = exec.Command("sed", "-i", sedHostLine, apiPath)
 		_, err := utils.ExecuteCmd(cmd, cobraCmd)
 		if err != nil {
 			fmt.Println("Failed to sed: ", err)
@@ -357,31 +356,34 @@ func replaceSwaggerStyle(dstTargetApiFile string, nodeIp string, nodePort string
 		}
 	}
 
-	//find the basepath line in the file and append the host line
-	cmd = exec.Command("grep", "basePath: ", dstTargetApiFile)
-	basePath, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Failed to grep: ", err)
-		return err
+	// If there is both a node IP & port - fix basepath so Try It Out works
+	if nodeIp != "" && nodePort != "" {
+		//find the basepath line in the file and append the host line
+		cmd = exec.Command("grep", "basePath: ", apiPath)
+		basePath, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Failed to grep: ", err)
+			return err
+		}
+
+		if basePath == "" {
+			fmt.Println("Error: basePath shouldn't be empty")
+			return err
+		}
+		newHostLine := "host: " + nodeIp + ":" + nodePort
+		newBasePath := strings.Replace(basePath, `/`, `\/`, -1)
+		//removing the CR/LF at end of line
+		newBasePath = newBasePath[:len(newBasePath)-1]
+
+		sedBasePathLine := "/" + newBasePath + "/a" + newHostLine
+		cmd = exec.Command("sed", "-i", sedBasePathLine, apiPath)
+		_, err = utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Failed to sed: ", err)
+			return err
+		}
 	}
 
-	if basePath == "" {
-		fmt.Println("Error: basePath shouldn't be empty")
-		return err
-	}
-
-	newHostLine := "host: " + nodeIp + ":" + nodePort
-	newBasePath := strings.Replace(basePath, `/`, `\/`, -1)
-	//removing the CR/LF at end of line
-	newBasePath = newBasePath[:len(newBasePath)-1]
-
-	sedBasePathLine := "/" + newBasePath + "/a" + newHostLine
-	cmd = exec.Command("sed", "-i", sedBasePathLine, dstTargetApiFile)
-	_, err = utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Failed to sed: ", err)
-		return err
-	}
 	return nil
 }
 

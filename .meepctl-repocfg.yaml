@@ -44,6 +44,13 @@ repo:
       bin: bin/meep-swagger-ui
       codecov: false
       lint: false
+      api-bundle:
+        - meep-ctrl-engine
+        - meep-metrics-engine
+        - meep-mg-manager
+        - meep-mg-app-notification
+        - meep-loc-serv
+        - meep-loc-serv-notification
     meep-webhook:
       src: go-apps/meep-webhook
       bin: bin/meep-webhook
@@ -106,6 +113,10 @@ repo:
       template: charts/meep-virt-engine/virt-templates
       codecov: true
       lint: true
+    meep-loc-serv-notification:
+      api: go-packages/meep-loc-serv-notification-client/api/swagger.yaml
+    meep-mg-app-notification:
+      api: go-packages/meep-mg-app-client/api/swagger.yaml
   dep:
     docker-registry:
       chart: charts/docker-registry
