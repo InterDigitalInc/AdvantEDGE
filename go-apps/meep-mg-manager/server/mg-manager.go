@@ -1318,3 +1318,67 @@ func mgTransferAppState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
+
+// func mgmDebug(str string) {
+// 	log.Debug("+++++ " + str + " +++++")
+// 	log.Debug("+++ netLocList:")
+// 	for _, netLoc := range mgm.netLocList {
+// 		log.Debug("   " + netLoc)
+// 	}
+// 	log.Debug("+++ svcInfoMap:")
+// 	for svcName, svcInfo := range mgm.svcInfoMap {
+// 		log.Debug("   " + svcName + ":" + svcInfo.name + ":" + svcInfo.node)
+// 	}
+// 	log.Debug("+++ mgSvcInfoMap:")
+// 	for mgSvcName, mgSvcInfo := range mgm.mgSvcInfoMap {
+// 		log.Debug("   " + mgSvcName + ":")
+// 		log.Debug("      services:")
+// 		for k := range mgSvcInfo.services {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// 	log.Debug("+++ svcToElemMap:")
+// 	for k, v := range mgm.svcToElemMap {
+// 		log.Debug("   " + k + ":" + v)
+// 	}
+// 	log.Debug("+++ elemToSvcMap:")
+// 	for k, v := range mgm.elemToSvcMap {
+// 		log.Debug("   " + k + ":" + v)
+// 	}
+// 	log.Debug("+++ netElemInfoMap:")
+// 	for netElemName, netElemInfo := range mgm.netElemInfoMap {
+// 		log.Debug("   " + netElemName + ":")
+// 		log.Debug("      name: " + netElemInfo.name)
+// 		log.Debug("      phyLoc: " + netElemInfo.phyLoc)
+// 		log.Debug("      netLoc: " + netElemInfo.netLoc)
+// 		log.Debug("      netLocsInRange:")
+// 		for k := range netElemInfo.netLocsInRange {
+// 			log.Debug("         " + k)
+// 		}
+// 		log.Debug("      mgSvcMap:")
+// 		for k := range netElemInfo.mgSvcMap {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// 	log.Debug("+++ mgInfoMap:")
+// 	for mgInfoName, mgInfo := range mgm.mgInfoMap {
+// 		log.Debug("   " + mgInfoName + ":")
+// 		log.Debug("      netLocAppMap:")
+// 		for k, v := range mgInfo.netLocAppMap {
+// 			log.Debug("         " + k + ":" + v)
+// 		}
+// 		log.Debug("      defaultNetLocAppMap:")
+// 		for k, v := range mgInfo.defaultNetLocAppMap {
+// 			log.Debug("         " + k + ":" + v)
+// 		}
+// 		log.Debug("      appInfoMap:")
+// 		for k := range mgInfo.appInfoMap {
+// 			log.Debug("         " + k)
+
+// 		}
+// 		log.Debug("      ueInfoMap:")
+// 		for k := range mgInfo.ueInfoMap {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// }
