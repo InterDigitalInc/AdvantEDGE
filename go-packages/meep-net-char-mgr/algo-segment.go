@@ -415,7 +415,7 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 	if oldPath == nil {
 		return true
 	}
-	if len(oldPath) != len(newPath) {
+	if len(oldPath.Segments) != len(newPath.Segments) {
 		return true
 	}
 
