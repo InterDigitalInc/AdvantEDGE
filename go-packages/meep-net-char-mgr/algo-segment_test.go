@@ -91,8 +91,8 @@ func TestSegAlgoSegmentation(t *testing.T) {
 	// Validate algorithm Calculations
 	fmt.Println("Test algo calculation with some flows updated with metrics")
 	updatedNetCharList = algo.CalculateNetChar()
-	if len(updatedNetCharList) != 58 {
-		t.Errorf("Updated net char list not partially filled")
+	if len(updatedNetCharList) != 90 {
+		t.Errorf("Updated net char list not fully filled")
 	}
 
 	fmt.Println("Test algo calculation without changes in metrics")
@@ -251,8 +251,8 @@ func TestSegAlgoCalculation(t *testing.T) {
 	// Validate algorithm Calculations
 	fmt.Println("Test algorithm calculations with & without metrics")
 	updatedNetCharList := algo.CalculateNetChar()
-	if len(updatedNetCharList) != 58 {
-		t.Errorf("Updated net char list not filled properly")
+	if len(updatedNetCharList) != 90 {
+		t.Errorf("Updated net char list not fully filled")
 	}
 
 	// Update metrics & recalculate
@@ -335,7 +335,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 		t.Errorf("Error updating metrics")
 	}
 	updatedNetCharList = algo.CalculateNetChar()
-	if len(updatedNetCharList) != 15 {
+	if len(updatedNetCharList) != 19 {
 		t.Errorf("Invalid net char update list")
 	}
 	if !validateNetCharUpdate(updatedNetCharList, "zone1-fog1-iperf", "ue1-iperf", 41, 9, 0, 10) {
@@ -394,7 +394,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 		t.Errorf("Error updating metrics")
 	}
 	updatedNetCharList = algo.CalculateNetChar()
-	if len(updatedNetCharList) != 15 {
+	if len(updatedNetCharList) != 19 {
 		t.Errorf("Invalid net char update list")
 	}
 	if !validateNetCharUpdate(updatedNetCharList, "zone2-edge1-iperf", "ue1-iperf", 41, 9, 0, 23) {
