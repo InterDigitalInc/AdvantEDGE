@@ -41,6 +41,20 @@ const (
 	EventUpdate    = "UPDATE"
 )
 
+const (
+	NetCharScenario = "SCENARIO"
+	NetCharOperator = "OPERATOR"
+	NetCharZone     = "ZONE"
+	NetCharPoa      = "POA"
+	NetCharDC       = "DISTANT CLOUD"
+	NetCharEdge     = "EDGE"
+	NetCharFog      = "FOG"
+	NetCharUE       = "UE"
+	NetCharCloudApp = "CLOUD APPLICATION"
+	NetCharEdgeApp  = "EDGE APPLICATION"
+	NetCharUEApp    = "UE APPLICATION"
+)
+
 // Model - Implements a Meep Model
 type Model struct {
 	name          string
@@ -267,13 +281,14 @@ func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
 
 //UpdateNetChar - Update network characteristics for a node
 func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (err error) {
+	err = nil
 	updated := false
 
 	ncName := nc.ElementName
 	ncType := strings.ToUpper(nc.ElementType)
 
 	// Find the element
-	if ncType == "SCENARIO" {
+	if ncType == NetCharScenario {
 		m.scenario.Deployment.InterDomainLatency = nc.Latency
 		m.scenario.Deployment.InterDomainLatencyVariation = nc.LatencyVariation
 		m.scenario.Deployment.InterDomainThroughput = nc.Throughput
@@ -285,65 +300,63 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == "OPERATOR" {
+		if ncType == NetCharOperator {
 			domain := n.object.(*ceModel.Domain)
 			domain.InterZoneLatency = nc.Latency
 			domain.InterZoneLatencyVariation = nc.LatencyVariation
 			domain.InterZoneThroughput = nc.Throughput
 			domain.InterZonePacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == "ZONE-INTER-EDGE" {
+		} else if ncType == NetCharZone {
 			zone := n.object.(*ceModel.Zone)
-			zone.InterEdgeLatency = nc.Latency
-			zone.InterEdgeLatencyVariation = nc.LatencyVariation
-			zone.InterEdgeThroughput = nc.Throughput
-			zone.InterEdgePacketLoss = nc.PacketLoss
+			if zone.NetChar == nil {
+				zone.NetChar = new(ceModel.NetworkCharacteristics)
+			}
+			zone.NetChar.Latency = nc.Latency
+			zone.NetChar.LatencyVariation = nc.LatencyVariation
+			zone.NetChar.Throughput = nc.Throughput
+			zone.NetChar.PacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == "ZONE-INTER-FOG" {
-			zone := n.object.(*ceModel.Zone)
-			zone.InterFogLatency = nc.Latency
-			zone.InterFogLatencyVariation = nc.LatencyVariation
-			zone.InterFogThroughput = nc.Throughput
-			zone.InterFogPacketLoss = nc.PacketLoss
-			updated = true
-		} else if ncType == "ZONE-EDGE-FOG" {
-			zone := n.object.(*ceModel.Zone)
-			zone.EdgeFogLatency = nc.Latency
-			zone.EdgeFogLatencyVariation = nc.LatencyVariation
-			zone.EdgeFogThroughput = nc.Throughput
-			zone.EdgeFogPacketLoss = nc.PacketLoss
-			updated = true
-		} else if ncType == "POA" {
+		} else if ncType == NetCharPoa {
 			nl := n.object.(*ceModel.NetworkLocation)
 			nl.TerminalLinkLatency = nc.Latency
 			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
 			nl.TerminalLinkThroughput = nc.Throughput
 			nl.TerminalLinkPacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == "DISTANT CLOUD" || ncType == "EDGE" || ncType == "FOG" || ncType == "UE" {
+		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
 			pl := n.object.(*ceModel.PhysicalLocation)
 			pl.LinkLatency = nc.Latency
 			pl.LinkLatencyVariation = nc.LatencyVariation
 			pl.LinkThroughput = nc.Throughput
 			pl.LinkPacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == "CLOUD APPLICATION" || ncType == "EDGE APPLICATION" || ncType == "UE APPLICATION" {
+		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
 			proc := n.object.(*ceModel.Process)
 			proc.AppLatency = nc.Latency
 			proc.AppLatencyVariation = nc.LatencyVariation
 			proc.AppThroughput = nc.Throughput
 			proc.AppPacketLoss = nc.PacketLoss
 			updated = true
+		} else {
+			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
+				NetCharScenario + ", " +
+				NetCharOperator + ", " +
+				NetCharZone + ", " +
+				NetCharPoa + ", " +
+				NetCharDC + ", " +
+				NetCharEdge + ", " +
+				NetCharFog + ", " +
+				NetCharUE + ", " +
+				NetCharCloudApp + ", " +
+				NetCharEdgeApp + ", " +
+				NetCharUEApp)
 		}
-
 	}
 	if updated {
 		err = m.refresh()
-		if err != nil {
-			return err
-		}
 	}
-	return nil
+	return err
 }
 
 //GetScenarioName - Get the scenario name

@@ -149,6 +149,8 @@
             }
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
+            expect(data.version).to.be.a('string');
+            expect(data.version).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -239,6 +241,15 @@
                       expect(data.name).to.be("");
                       expect(data.type).to.be.a('string');
                       expect(data.type).to.be("ZONE");
+                      expect(data.netChar).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
+                            expect(data.netChar.latency).to.be.a('number');
+                        expect(data.netChar.latency).to.be(0);
+                        expect(data.netChar.latencyVariation).to.be.a('number');
+                        expect(data.netChar.latencyVariation).to.be(0);
+                        expect(data.netChar.throughput).to.be.a('number');
+                        expect(data.netChar.throughput).to.be(0);
+                        expect(data.netChar.packetLoss).to.be.a('number');
+                        expect(data.netChar.packetLoss).to.be(0.0);
                       expect(data.interFogLatency).to.be.a('number');
                       expect(data.interFogLatency).to.be(0);
                       expect(data.interFogLatencyVariation).to.be.a('number');
@@ -528,7 +539,7 @@
           event.type = "NETWORK-CHARACTERISTICS-UPDATE";
           event.eventNetworkCharacteristicsUpdate = new AdvantEdgePlatformControllerRestApi.EventNetworkCharacteristicsUpdate();
           event.eventNetworkCharacteristicsUpdate.elementName = "";
-          event.eventNetworkCharacteristicsUpdate.elementType = "OPERATOR";
+          event.eventNetworkCharacteristicsUpdate.elementType = "SCENARIO";
           event.eventNetworkCharacteristicsUpdate.latency = 0;
           event.eventNetworkCharacteristicsUpdate.latencyVariation = 0;
           event.eventNetworkCharacteristicsUpdate.throughput = 0;

@@ -45,38 +45,38 @@
   var instance;
 
   describe('(package)', function() {
-    describe('Scenario', function() {
+    describe('NetworkCharacteristics', function() {
       beforeEach(function() {
-        instance = new AdvantEdgePlatformControllerRestApi.Scenario();
+        instance = new AdvantEdgePlatformControllerRestApi.NetworkCharacteristics();
       });
 
-      it('should create an instance of Scenario', function() {
-        // TODO: update the code to test Scenario
-        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
+      it('should create an instance of NetworkCharacteristics', function() {
+        // TODO: update the code to test NetworkCharacteristics
+        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
       });
 
-      it('should have the property version (base name: "version")', function() {
-        // TODO: update the code to test the property version
-        expect(instance).to.have.property('version');
-        // expect(instance.version).to.be(expectedValueLiteral);
+      it('should have the property latency (base name: "latency")', function() {
+        // TODO: update the code to test the property latency
+        expect(instance).to.have.property('latency');
+        // expect(instance.latency).to.be(expectedValueLiteral);
       });
 
-      it('should have the property name (base name: "name")', function() {
-        // TODO: update the code to test the property name
-        expect(instance).to.have.property('name');
-        // expect(instance.name).to.be(expectedValueLiteral);
+      it('should have the property latencyVariation (base name: "latencyVariation")', function() {
+        // TODO: update the code to test the property latencyVariation
+        expect(instance).to.have.property('latencyVariation');
+        // expect(instance.latencyVariation).to.be(expectedValueLiteral);
       });
 
-      it('should have the property config (base name: "config")', function() {
-        // TODO: update the code to test the property config
-        expect(instance).to.have.property('config');
-        // expect(instance.config).to.be(expectedValueLiteral);
+      it('should have the property throughput (base name: "throughput")', function() {
+        // TODO: update the code to test the property throughput
+        expect(instance).to.have.property('throughput');
+        // expect(instance.throughput).to.be(expectedValueLiteral);
       });
 
-      it('should have the property deployment (base name: "deployment")', function() {
-        // TODO: update the code to test the property deployment
-        expect(instance).to.have.property('deployment');
-        // expect(instance.deployment).to.be(expectedValueLiteral);
+      it('should have the property packetLoss (base name: "packetLoss")', function() {
+        // TODO: update the code to test the property packetLoss
+        expect(instance).to.have.property('packetLoss');
+        // expect(instance.packetLoss).to.be(expectedValueLiteral);
       });
 
     });

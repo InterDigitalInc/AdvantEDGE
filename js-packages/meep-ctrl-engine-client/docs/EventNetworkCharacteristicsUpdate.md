@@ -15,17 +15,13 @@ Name | Type | Description | Notes
 ## Enum: ElementTypeEnum
 
 
-* `OPERATOR` (value: `"OPERATOR"`)
-
-* `POA` (value: `"POA"`)
-
 * `SCENARIO` (value: `"SCENARIO"`)
 
-* `ZONE_INTER_EDGE` (value: `"ZONE-INTER-EDGE"`)
+* `OPERATOR` (value: `"OPERATOR"`)
 
-* `ZONE_INTER_FOG` (value: `"ZONE-INTER-FOG"`)
+* `ZONE` (value: `"ZONE"`)
 
-* `ZONE_EDGE_FOG` (value: `"ZONE-EDGE-FOG"`)
+* `POA` (value: `"POA"`)
 
 * `EDGE` (value: `"EDGE"`)
 

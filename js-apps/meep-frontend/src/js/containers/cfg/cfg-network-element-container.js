@@ -82,9 +82,7 @@ import {
   // NC Group Prefixes
   PREFIX_INT_DOM,
   PREFIX_INT_ZONE,
-  PREFIX_INT_EDGE,
-  PREFIX_INT_FOG,
-  PREFIX_EDGE_FOG,
+  PREFIX_INTRA_ZONE,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
   PREFIX_APP,
@@ -596,7 +594,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
       <NCGroups
         onUpdate={onUpdate}
         element={element}
-        prefixes={[PREFIX_INT_EDGE, PREFIX_INT_FOG, PREFIX_EDGE_FOG]}
+        prefixes={[PREFIX_INTRA_ZONE]}
       />
     );
   case ELEMENT_TYPE_POA:
@@ -647,49 +645,49 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
               />
             </>
           ) : (
-            <>
-              <Checkbox
-                checked={chartEnabled}
-                onChange={e =>
-                  onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
-                }
-                data-cy={CFG_ELEM_CHART_CHECK}
-              >
-                User-Defined Chart
-              </Checkbox>
+              <>
+                <Checkbox
+                  checked={chartEnabled}
+                  onChange={e =>
+                    onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
+                  }
+                  data-cy={CFG_ELEM_CHART_CHECK}
+                >
+                  User-Defined Chart
+                </Checkbox>
 
-              {chartEnabled ? (
-                <UserChartFields onUpdate={onUpdate} element={element} />
-              ) : (
-                <>
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Container Image Name"
-                    validate={validatePath}
-                    fieldName={FIELD_IMAGE}
-                    cydata={CFG_ELEM_IMG}
-                  />
-                  <GpuGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Environment variables"
-                    validate={validateEnvironmentVariables}
-                    fieldName={FIELD_ENV_VAR}
-                    cydata={CFG_ELEM_ENV}
-                  />
-                  <CommandGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Placement Identifier"
-                    fieldName={FIELD_PLACEMENT_ID}
-                    cydata={CFG_ELEM_PLACEMENT_ID}
-                  />
-                </>
-              )}
-            </>
+                {chartEnabled ? (
+                  <UserChartFields onUpdate={onUpdate} element={element} />
+                ) : (
+                    <>
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Container Image Name"
+                        validate={validatePath}
+                        fieldName={FIELD_IMAGE}
+                        cydata={CFG_ELEM_IMG}
+                      />
+                      <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Environment variables"
+                        validate={validateEnvironmentVariables}
+                        fieldName={FIELD_ENV_VAR}
+                        cydata={CFG_ELEM_ENV}
+                      />
+                      <CommandGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Placement Identifier"
+                        fieldName={FIELD_PLACEMENT_ID}
+                        cydata={CFG_ELEM_PLACEMENT_ID}
+                      />
+                    </>
+                )}
+              </>
           )}
         </>
     );
@@ -723,50 +721,50 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
               />
             </>
           ) : (
-            <>
-              <Checkbox
-                checked={chartEnabled}
-                onChange={e =>
-                  onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
-                }
-                data-cy={CFG_ELEM_CHART_CHECK}
-              >
-                User-Defined Chart
-              </Checkbox>
+              <>
+                <Checkbox
+                  checked={chartEnabled}
+                  onChange={e =>
+                    onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
+                  }
+                  data-cy={CFG_ELEM_CHART_CHECK}
+                >
+                  User-Defined Chart
+                </Checkbox>
 
-              {chartEnabled ? (
-                <UserChartFields onUpdate={onUpdate} element={element} />
-              ) : (
-                <>
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Container Image Name"
-                    validate={validatePath}
-                    fieldName={FIELD_IMAGE}
-                    cydata={CFG_ELEM_IMG}
-                  />
-                  <PortProtocolGroup onUpdate={onUpdate} element={element} />
-                  <GpuGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Environment variables"
-                    validate={validateEnvironmentVariables}
-                    fieldName={FIELD_ENV_VAR}
-                    cydata={CFG_ELEM_ENV}
-                  />
-                  <CommandGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Placement Identifier"
-                    fieldName={FIELD_PLACEMENT_ID}
-                    cydata={CFG_ELEM_PLACEMENT_ID}
-                  />
-                </>
-              )}
-            </>
+                {chartEnabled ? (
+                  <UserChartFields onUpdate={onUpdate} element={element} />
+                ) : (
+                    <>
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Container Image Name"
+                        validate={validatePath}
+                        fieldName={FIELD_IMAGE}
+                        cydata={CFG_ELEM_IMG}
+                      />
+                      <PortProtocolGroup onUpdate={onUpdate} element={element} />
+                      <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Environment variables"
+                        validate={validateEnvironmentVariables}
+                        fieldName={FIELD_ENV_VAR}
+                        cydata={CFG_ELEM_ENV}
+                      />
+                      <CommandGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Placement Identifier"
+                        fieldName={FIELD_PLACEMENT_ID}
+                        cydata={CFG_ELEM_PLACEMENT_ID}
+                      />
+                    </>
+                )}
+              </>
           )}
         </>
     );
@@ -799,58 +797,58 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
               />
             </>
           ) : (
-            <>
-              <Checkbox
-                checked={chartEnabled}
-                onChange={e =>
-                  onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
-                }
-                data-cy={CFG_ELEM_CHART_CHECK}
-              >
-                User-Defined Chart
-              </Checkbox>
+              <>
+                <Checkbox
+                  checked={chartEnabled}
+                  onChange={e =>
+                    onUpdate(FIELD_CHART_ENABLED, e.target.checked, null)
+                  }
+                  data-cy={CFG_ELEM_CHART_CHECK}
+                >
+                  User-Defined Chart
+                </Checkbox>
 
-              {chartEnabled ? (
-                <UserChartFields onUpdate={onUpdate} element={element} />
-              ) : (
-                <>
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Container Image Name"
-                    validate={validatePath}
-                    fieldName={FIELD_IMAGE}
-                    cydata={CFG_ELEM_IMG}
-                  />
-                  <PortProtocolGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Group Service Name"
-                    validate={validateName}
-                    fieldName={FIELD_GROUP}
-                    cydata={CFG_ELEM_GROUP}
-                  />
-                  <GpuGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Environment variables"
-                    validate={validateEnvironmentVariables}
-                    fieldName={FIELD_ENV_VAR}
-                    cydata={CFG_ELEM_ENV}
-                  />
-                  <CommandGroup onUpdate={onUpdate} element={element} />
-                  <CfgTextField
-                    onUpdate={onUpdate}
-                    element={element}
-                    label="Placement Identifier"
-                    fieldName={FIELD_PLACEMENT_ID}
-                    cydata={CFG_ELEM_PLACEMENT_ID}
-                  />
-                </>
-              )}
-            </>
+                {chartEnabled ? (
+                  <UserChartFields onUpdate={onUpdate} element={element} />
+                ) : (
+                    <>
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Container Image Name"
+                        validate={validatePath}
+                        fieldName={FIELD_IMAGE}
+                        cydata={CFG_ELEM_IMG}
+                      />
+                      <PortProtocolGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Group Service Name"
+                        validate={validateName}
+                        fieldName={FIELD_GROUP}
+                        cydata={CFG_ELEM_GROUP}
+                      />
+                      <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Environment variables"
+                        validate={validateEnvironmentVariables}
+                        fieldName={FIELD_ENV_VAR}
+                        cydata={CFG_ELEM_ENV}
+                      />
+                      <CommandGroup onUpdate={onUpdate} element={element} />
+                      <CfgTextField
+                        onUpdate={onUpdate}
+                        element={element}
+                        label="Placement Identifier"
+                        fieldName={FIELD_PLACEMENT_ID}
+                        cydata={CFG_ELEM_PLACEMENT_ID}
+                      />
+                    </>
+                )}
+              </>
           )}
         </>
     );

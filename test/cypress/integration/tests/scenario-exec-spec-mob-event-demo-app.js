@@ -46,18 +46,10 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
@@ -70,7 +62,7 @@ import {
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
 
 // Scenario Execution Tests
-describe('Scenario Execution', function() {
+describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
@@ -85,7 +77,7 @@ describe('Scenario Execution', function() {
   // Best workaround: using different tests
 
   // Demo1 scenario testing for mobility event on the demo app output
-  it('Deploy DEMO1 scenario - mobility event #1', function() {
+  it('Deploy DEMO1 scenario - mobility event #1', function () {
 
     let scenario = 'demo1';
 
@@ -102,7 +94,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -115,7 +107,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario testing  mobility event #2
-  it('DEMO1 scenario - mobility event #2', function() {
+  it('DEMO1 scenario - mobility event #2', function () {
 
     openDefaultMeepUrl("");
     click(meep.MEEP_TAB_EXEC);
@@ -126,7 +118,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -137,7 +129,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario testing  mobility event #3
-  it('DEMO1 scenario - mobility event #3', function() {
+  it('DEMO1 scenario - mobility event #3', function () {
 
     openDefaultMeepUrl("");
     click(meep.MEEP_TAB_EXEC);
@@ -148,7 +140,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -159,7 +151,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario testing  mobility event #4
-  it('DEMO1 scenario - mobility event #4', function() {
+  it('DEMO1 scenario - mobility event #4', function () {
 
     openDefaultMeepUrl("");
     click(meep.MEEP_TAB_EXEC);
@@ -170,7 +162,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -181,7 +173,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario testing  mobility event #5
-  it('DEMO1 scenario - mobility event #5', function() {
+  it('DEMO1 scenario - mobility event #5', function () {
 
     openDefaultMeepUrl("");
     click(meep.MEEP_TAB_EXEC);
@@ -192,7 +184,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -203,7 +195,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario testing  mobility event #6
-  it('DEMO1 scenario - mobility event #6', function() {
+  it('DEMO1 scenario - mobility event #6', function () {
 
     openDefaultMeepUrl("");
     click(meep.MEEP_TAB_EXEC);
@@ -214,7 +206,7 @@ describe('Scenario Execution', function() {
 
   });
 
-  it('DEMO1 scenario - validate mobility event in demo-app frontend', function() {
+  it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
     openDefaultMeepUrl("31111");
@@ -225,7 +217,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo1 scenario terminate
-  it('DEMO1 scenario - terminate', function() {
+  it('DEMO1 scenario - terminate', function () {
 
     let scenario = 'demo1';
 
@@ -251,7 +243,7 @@ describe('Scenario Execution', function() {
     if (port != "") {
       meepUrl = meepUrl.replace("30000", port);
     }
- 
+
     cy.viewport(1920, 1080);
     cy.visit(meepUrl);
 
@@ -311,12 +303,8 @@ describe('Scenario Execution', function() {
     cy.log('Create & Validate Network Characteristic event');
     createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
     createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('INTER-EDGE', 'zone1', 5, 0, 1, 80000);
-    createNetCharEvent('INTER-FOG', 'zone1', 3, 2, 1, 75000);
-    createNetCharEvent('EDGE-FOG', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('INTER-EDGE', 'zone2', 5, 0, 1, 80000);
-    createNetCharEvent('INTER-FOG', 'zone2', 3, 2, 1, 75000);
-    createNetCharEvent('EDGE-FOG', 'zone2', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000);
     createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
     createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
     createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
@@ -384,44 +372,32 @@ describe('Scenario Execution', function() {
       assert.isNotNull(entry);
 
       switch (elemType) {
-      case 'SCENARIO':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
-        break;
-      case 'DOMAIN':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
-        break;
-      case 'INTER-EDGE':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_THROUGPUT), tp);
-        break;
-      case 'INTER-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_THROUGPUT), tp);
-        break;
-      case 'EDGE-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_THROUGPUT), tp);
-        break;
-      case 'POA':
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
-        break;
-      default:
-        assert.isOk(false, 'Unsupported element type');
+        case 'SCENARIO':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
+          break;
+        case 'DOMAIN':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
+          break;
+        case 'ZONE':
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGPUT), tp);
+          break;
+        case 'POA':
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
+          break;
+        default:
+          assert.isOk(false, 'Unsupported element type');
       }
     });
   }
@@ -443,7 +419,7 @@ describe('Scenario Execution', function() {
       ueAddressLabel = 'span[id="demo-svc-loc-serv-address-2"]';
       ueLocationLabel = 'span[id="demo-svc-loc-serv-location-2"]';
     }
-    
+
     if (dest == 'zone1-poa1') {
       ueAppLocation = 'zone1 / zone1-poa1';
     } else if (dest == 'zone1-poa2') {

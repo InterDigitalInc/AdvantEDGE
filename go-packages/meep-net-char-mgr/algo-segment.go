@@ -996,10 +996,10 @@ func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
 		jitter = float64(nl.TerminalLinkLatencyVariation)
 		packetLoss = float64(nl.TerminalLinkPacketLoss)
 	} else if zone, ok := node.(*ceModel.Zone); ok {
-		maxThroughput = float64(zone.EdgeFogThroughput)
-		latency = float64(zone.EdgeFogLatency)
-		jitter = float64(zone.EdgeFogLatencyVariation)
-		packetLoss = float64(zone.EdgeFogPacketLoss)
+		maxThroughput = float64(zone.NetChar.Throughput)
+		latency = float64(zone.NetChar.Latency)
+		jitter = float64(zone.NetChar.LatencyVariation)
+		packetLoss = float64(zone.NetChar.PacketLoss)
 	} else if domain, ok := node.(*ceModel.Domain); ok {
 		maxThroughput = float64(domain.InterZoneThroughput)
 		latency = float64(domain.InterZoneLatency)

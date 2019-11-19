@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/NetworkLocation'], factory);
+    define(['ApiClient', 'model/NetworkCharacteristics', 'model/NetworkLocation'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./NetworkLocation'));
+    module.exports = factory(require('../ApiClient'), require('./NetworkCharacteristics'), require('./NetworkLocation'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Zone = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.NetworkLocation);
+    root.AdvantEdgePlatformControllerRestApi.Zone = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.NetworkLocation);
   }
-}(this, function(ApiClient, NetworkLocation) {
+}(this, function(ApiClient, NetworkCharacteristics, NetworkLocation) {
   'use strict';
 
   /**
@@ -76,6 +76,8 @@
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('interFogLatency'))
         obj.interFogLatency = ApiClient.convertToType(data['interFogLatency'], 'Number');
       if (data.hasOwnProperty('interFogLatencyVariation'))
@@ -129,73 +131,78 @@
   exports.prototype.type = undefined;
 
   /**
-   * Latency in ms between fog nodes (or PoAs) within zone
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interFogLatency
    */
   exports.prototype.interFogLatency = undefined;
 
   /**
-   * Latency variation in ms between fog nodes (or PoAs) within zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interFogLatencyVariation
    */
   exports.prototype.interFogLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between fog nodes (or PoAs) within the zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interFogThroughput
    */
   exports.prototype.interFogThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between fog nodes (or PoAs) within the zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interFogPacketLoss
    */
   exports.prototype.interFogPacketLoss = undefined;
 
   /**
-   * Latency in ms between edge nodes within zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interEdgeLatency
    */
   exports.prototype.interEdgeLatency = undefined;
 
   /**
-   * Latency variation in ms between edge nodes within zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interEdgeLatencyVariation
    */
   exports.prototype.interEdgeLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between edge nodes within the zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interEdgeThroughput
    */
   exports.prototype.interEdgeThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between edge nodes within the zone
+   * **DEPRECATED** As of release 1.3.0, no longer supported
    * @member {Number} interEdgePacketLoss
    */
   exports.prototype.interEdgePacketLoss = undefined;
 
   /**
-   * Latency in ms between fog nodes (or PoAs) and edge nodes within zone
+   * **DEPRECATED** As of release 1.3.0, replaced by netChar latency
    * @member {Number} edgeFogLatency
    */
   exports.prototype.edgeFogLatency = undefined;
 
   /**
-   * Latency variation in ms between fog nodes (or PoAs) and edge nodes within zone
+   * **DEPRECATED** As of release 1.3.0, replaced by netChar latencyVariation
    * @member {Number} edgeFogLatencyVariation
    */
   exports.prototype.edgeFogLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between fog nodes (or PoAs) and edge nodes within the zone
+   * **DEPRECATED** As of release 1.3.0, replaced by netChar throughput
    * @member {Number} edgeFogThroughput
    */
   exports.prototype.edgeFogThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
+   * **DEPRECATED** As of release 1.3.0, replaced by netChar packetLoss
    * @member {Number} edgeFogPacketLoss
    */
   exports.prototype.edgeFogPacketLoss = undefined;

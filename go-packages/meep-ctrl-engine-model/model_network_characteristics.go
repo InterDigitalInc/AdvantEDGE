@@ -23,12 +23,14 @@
 
 package model
 
-// Scenario object
-type Scenario struct {
-	// Scenario version
-	Version string `json:"version,omitempty"`
-	// Unique scenario name
-	Name       string          `json:"name,omitempty"`
-	Config     *ScenarioConfig `json:"config,omitempty"`
-	Deployment *Deployment     `json:"deployment,omitempty"`
+// Network characteristics object
+type NetworkCharacteristics struct {
+	// Latency in ms
+	Latency int32 `json:"latency,omitempty"`
+	// Latency variation in ms
+	LatencyVariation int32 `json:"latencyVariation,omitempty"`
+	// Throughput limit in Mbps
+	Throughput int32 `json:"throughput,omitempty"`
+	// Packet loss percentage
+	PacketLoss float64 `json:"packetLoss,omitempty"`
 }

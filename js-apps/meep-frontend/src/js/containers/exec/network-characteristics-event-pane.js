@@ -35,7 +35,7 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
-  //ELEMENT_TYPE_ZONE,
+  ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_DC,
   //ELEMENT_TYPE_CN,
@@ -51,9 +51,7 @@ import {
   // NC Group Prefixes
   PREFIX_INT_DOM,
   PREFIX_INT_ZONE,
-  PREFIX_INT_EDGE,
-  PREFIX_INT_FOG,
-  PREFIX_EDGE_FOG,
+  PREFIX_INTRA_ZONE,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
   PREFIX_APP,
@@ -74,18 +72,10 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
@@ -106,9 +96,7 @@ import {
 const ncApplicableTypes = [
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
-  'ZONE-INTER-EDGE',
-  'ZONE-INTER-FOG',
-  'ZONE-EDGE-FOG',
+  ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_EDGE,
@@ -191,12 +179,8 @@ class NetworkCharacteristicsEventPane extends Component {
       return PREFIX_INT_DOM;
     case ELEMENT_TYPE_OPERATOR:
       return PREFIX_INT_ZONE;
-    case 'ZONE-INTER-EDGE':
-      return PREFIX_INT_EDGE;
-    case 'ZONE-INTER-FOG':
-      return PREFIX_INT_FOG;
-    case 'ZONE-EDGE-FOG':
-      return PREFIX_EDGE_FOG;
+    case ELEMENT_TYPE_ZONE:
+      return PREFIX_INTRA_ZONE;
     case ELEMENT_TYPE_POA:
       return PREFIX_TERM_LINK;
     case ELEMENT_TYPE_EDGE:
@@ -237,23 +221,11 @@ class NetworkCharacteristicsEventPane extends Component {
       throughputFieldName = FIELD_INT_ZONE_THROUGPUT;
       packetLossFieldName = FIELD_INT_ZONE_PKT_LOSS;
       break;
-    case PREFIX_INT_EDGE:
-      latencyFieldName = FIELD_INT_EDGE_LATENCY;
-      latencyVarFieldName = FIELD_INT_EDGE_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_EDGE_THROUGPUT;
-      packetLossFieldName = FIELD_INT_EDGE_PKT_LOSS;
-      break;
-    case PREFIX_INT_FOG:
-      latencyFieldName = FIELD_INT_FOG_LATENCY;
-      latencyVarFieldName = FIELD_INT_FOG_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_FOG_THROUGPUT;
-      packetLossFieldName = FIELD_INT_FOG_PKT_LOSS;
-      break;
-    case PREFIX_EDGE_FOG:
-      latencyFieldName = FIELD_EDGE_FOG_LATENCY;
-      latencyVarFieldName = FIELD_EDGE_FOG_LATENCY_VAR;
-      throughputFieldName = FIELD_EDGE_FOG_THROUGPUT;
-      packetLossFieldName = FIELD_EDGE_FOG_PKT_LOSS;
+    case PREFIX_INTRA_ZONE:
+      latencyFieldName = FIELD_INTRA_ZONE_LATENCY;
+      latencyVarFieldName = FIELD_INTRA_ZONE_LATENCY_VAR;
+      throughputFieldName = FIELD_INTRA_ZONE_THROUGPUT;
+      packetLossFieldName = FIELD_INTRA_ZONE_PKT_LOSS;
       break;
     case PREFIX_TERM_LINK:
       latencyFieldName = FIELD_TERM_LINK_LATENCY;

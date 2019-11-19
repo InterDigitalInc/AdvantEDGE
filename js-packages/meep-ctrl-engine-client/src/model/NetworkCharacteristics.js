@@ -40,40 +40,36 @@
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.EventNetworkCharacteristicsUpdate = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient);
+    root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
 
   /**
-   * The EventNetworkCharacteristicsUpdate model module.
-   * @module model/EventNetworkCharacteristicsUpdate
+   * The NetworkCharacteristics model module.
+   * @module model/NetworkCharacteristics
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>EventNetworkCharacteristicsUpdate</code>.
-   * Network Characteristics update Event object
-   * @alias module:model/EventNetworkCharacteristicsUpdate
+   * Constructs a new <code>NetworkCharacteristics</code>.
+   * Network characteristics object
+   * @alias module:model/NetworkCharacteristics
    * @class
    */
   var exports = function() {
   };
 
   /**
-   * Constructs a <code>EventNetworkCharacteristicsUpdate</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>NetworkCharacteristics</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/EventNetworkCharacteristicsUpdate} obj Optional instance to populate.
-   * @return {module:model/EventNetworkCharacteristicsUpdate} The populated <code>EventNetworkCharacteristicsUpdate</code> instance.
+   * @param {module:model/NetworkCharacteristics} obj Optional instance to populate.
+   * @return {module:model/NetworkCharacteristics} The populated <code>NetworkCharacteristics</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('elementName'))
-        obj.elementName = ApiClient.convertToType(data['elementName'], 'String');
-      if (data.hasOwnProperty('elementType'))
-        obj.elementType = ApiClient.convertToType(data['elementType'], 'String');
       if (data.hasOwnProperty('latency'))
         obj.latency = ApiClient.convertToType(data['latency'], 'Number');
       if (data.hasOwnProperty('latencyVariation'))
@@ -85,18 +81,6 @@
     }
     return obj;
   }
-
-  /**
-   * Name of the network element to be updated
-   * @member {String} elementName
-   */
-  exports.prototype.elementName = undefined;
-
-  /**
-   * Type of the network element to be updated
-   * @member {module:model/EventNetworkCharacteristicsUpdate.ElementTypeEnum} elementType
-   */
-  exports.prototype.elementType = undefined;
 
   /**
    * Latency in ms
@@ -111,7 +95,7 @@
   exports.prototype.latencyVariation = undefined;
 
   /**
-   * Throughput limit
+   * Throughput limit in Mbps
    * @member {Number} throughput
    */
   exports.prototype.throughput = undefined;
@@ -121,80 +105,6 @@
    * @member {Number} packetLoss
    */
   exports.prototype.packetLoss = undefined;
-
-
-  /**
-   * Allowed values for the <code>elementType</code> property.
-   * @enum {String}
-   * @readonly
-   */
-  exports.ElementTypeEnum = {
-    /**
-     * value: "SCENARIO"
-     * @const
-     */
-    SCENARIO: "SCENARIO",
-
-    /**
-     * value: "OPERATOR"
-     * @const
-     */
-    OPERATOR: "OPERATOR",
-
-    /**
-     * value: "ZONE"
-     * @const
-     */
-    ZONE: "ZONE",
-
-    /**
-     * value: "POA"
-     * @const
-     */
-    POA: "POA",
-
-    /**
-     * value: "EDGE"
-     * @const
-     */
-    EDGE: "EDGE",
-
-    /**
-     * value: "FOG"
-     * @const
-     */
-    FOG: "FOG",
-
-    /**
-     * value: "UE"
-     * @const
-     */
-    UE: "UE",
-
-    /**
-     * value: "DISTANT-CLOUD"
-     * @const
-     */
-    DISTANT_CLOUD: "DISTANT-CLOUD",
-
-    /**
-     * value: "UE-APP"
-     * @const
-     */
-    UE_APP: "UE-APP",
-
-    /**
-     * value: "EDGE-APP"
-     * @const
-     */
-    EDGE_APP: "EDGE-APP",
-
-    /**
-     * value: "CLOUD-APP"
-     * @const
-     */
-    CLOUD_APP: "CLOUD-APP"
-  };
 
   return exports;
 

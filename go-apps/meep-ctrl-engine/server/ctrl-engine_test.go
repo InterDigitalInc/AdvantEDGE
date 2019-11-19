@@ -354,7 +354,7 @@ func testSendEvent(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	fmt.Println(string(j))
-	err = sendRequest(http.MethodPost, "/events", bytes.NewBuffer(j), vars, nil, http.StatusOK, ceSendEvent)
+	err = sendRequest(http.MethodPost, "/events", bytes.NewBuffer(j), vars, nil, http.StatusInternalServerError, ceSendEvent)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

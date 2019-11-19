@@ -30,30 +30,31 @@ type Zone struct {
 	// Zone name
 	Name string `json:"name,omitempty"`
 	// Zone type
-	Type_ string `json:"type,omitempty"`
-	// Latency in ms between fog nodes (or PoAs) within zone
+	Type_   string                  `json:"type,omitempty"`
+	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterFogLatency int32 `json:"interFogLatency,omitempty"`
-	// Latency variation in ms between fog nodes (or PoAs) within zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterFogLatencyVariation int32 `json:"interFogLatencyVariation,omitempty"`
-	// The limit of the traffic supported between fog nodes (or PoAs) within the zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterFogThroughput int32 `json:"interFogThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between fog nodes (or PoAs) within the zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterFogPacketLoss float64 `json:"interFogPacketLoss,omitempty"`
-	// Latency in ms between edge nodes within zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterEdgeLatency int32 `json:"interEdgeLatency,omitempty"`
-	// Latency variation in ms between edge nodes within zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterEdgeLatencyVariation int32 `json:"interEdgeLatencyVariation,omitempty"`
-	// The limit of the traffic supported between edge nodes within the zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterEdgeThroughput int32 `json:"interEdgeThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between edge nodes within the zone
+	// **DEPRECATED** As of release 1.3.0, no longer supported
 	InterEdgePacketLoss float64 `json:"interEdgePacketLoss,omitempty"`
-	// Latency in ms between fog nodes (or PoAs) and edge nodes within zone
+	// **DEPRECATED** As of release 1.3.0, replaced by netChar latency
 	EdgeFogLatency int32 `json:"edgeFogLatency,omitempty"`
-	// Latency variation in ms between fog nodes (or PoAs) and edge nodes within zone
+	// **DEPRECATED** As of release 1.3.0, replaced by netChar latencyVariation
 	EdgeFogLatencyVariation int32 `json:"edgeFogLatencyVariation,omitempty"`
-	// The limit of the traffic supported between fog nodes (or PoAs) and edge nodes within the zone
+	// **DEPRECATED** As of release 1.3.0, replaced by netChar throughput
 	EdgeFogThroughput int32 `json:"edgeFogThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between fog nodes (or PoAs) and edge nodes within the zone
+	// **DEPRECATED** As of release 1.3.0, replaced by netChar packetLoss
 	EdgeFogPacketLoss float64 `json:"edgeFogPacketLoss,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`

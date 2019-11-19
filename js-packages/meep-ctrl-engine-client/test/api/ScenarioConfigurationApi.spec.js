@@ -56,6 +56,7 @@
           /*
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
+          scenario.version = "";
           scenario.name = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
@@ -81,6 +82,11 @@
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
           scenario.deployment.domains[0].zones[0].type = "ZONE";
+          scenario.deployment.domains[0].zones[0].netChar = new AdvantEdgePlatformControllerRestApi.NetworkCharacteristics();
+          scenario.deployment.domains[0].zones[0].netChar.latency = 0;
+          scenario.deployment.domains[0].zones[0].netChar.latencyVariation = 0;
+          scenario.deployment.domains[0].zones[0].netChar.throughput = 0;
+          scenario.deployment.domains[0].zones[0].netChar.packetLoss = 0.0;
           scenario.deployment.domains[0].zones[0].interFogLatency = 0;
           scenario.deployment.domains[0].zones[0].interFogLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].interFogThroughput = 0;
@@ -223,6 +229,8 @@
             }
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
+            expect(data.version).to.be.a('string');
+            expect(data.version).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -313,6 +321,15 @@
                       expect(data.name).to.be("");
                       expect(data.type).to.be.a('string');
                       expect(data.type).to.be("ZONE");
+                      expect(data.netChar).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
+                            expect(data.netChar.latency).to.be.a('number');
+                        expect(data.netChar.latency).to.be(0);
+                        expect(data.netChar.latencyVariation).to.be.a('number');
+                        expect(data.netChar.latencyVariation).to.be(0);
+                        expect(data.netChar.throughput).to.be.a('number');
+                        expect(data.netChar.throughput).to.be(0);
+                        expect(data.netChar.packetLoss).to.be.a('number');
+                        expect(data.netChar.packetLoss).to.be(0.0);
                       expect(data.interFogLatency).to.be.a('number');
                       expect(data.interFogLatency).to.be(0);
                       expect(data.interFogLatencyVariation).to.be.a('number');
@@ -611,6 +628,8 @@
               for (let p in dataCtr) {
                 let data = dataCtr[p];
                 expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
+                expect(data.version).to.be.a('string');
+                expect(data.version).to.be("");
                 expect(data.name).to.be.a('string');
                 expect(data.name).to.be("");
                 expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -701,6 +720,15 @@
                           expect(data.name).to.be("");
                           expect(data.type).to.be.a('string');
                           expect(data.type).to.be("ZONE");
+                          expect(data.netChar).to.be.a(AdvantEdgePlatformControllerRestApi.NetworkCharacteristics);
+                                expect(data.netChar.latency).to.be.a('number');
+                            expect(data.netChar.latency).to.be(0);
+                            expect(data.netChar.latencyVariation).to.be.a('number');
+                            expect(data.netChar.latencyVariation).to.be(0);
+                            expect(data.netChar.throughput).to.be.a('number');
+                            expect(data.netChar.throughput).to.be(0);
+                            expect(data.netChar.packetLoss).to.be.a('number');
+                            expect(data.netChar.packetLoss).to.be(0.0);
                           expect(data.interFogLatency).to.be.a('number');
                           expect(data.interFogLatency).to.be(0);
                           expect(data.interFogLatencyVariation).to.be.a('number');
@@ -988,6 +1016,7 @@
           /*
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
+          scenario.version = "";
           scenario.name = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
@@ -1013,6 +1042,11 @@
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
           scenario.deployment.domains[0].zones[0].type = "ZONE";
+          scenario.deployment.domains[0].zones[0].netChar = new AdvantEdgePlatformControllerRestApi.NetworkCharacteristics();
+          scenario.deployment.domains[0].zones[0].netChar.latency = 0;
+          scenario.deployment.domains[0].zones[0].netChar.latencyVariation = 0;
+          scenario.deployment.domains[0].zones[0].netChar.throughput = 0;
+          scenario.deployment.domains[0].zones[0].netChar.packetLoss = 0.0;
           scenario.deployment.domains[0].zones[0].interFogLatency = 0;
           scenario.deployment.domains[0].zones[0].interFogLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].interFogThroughput = 0;

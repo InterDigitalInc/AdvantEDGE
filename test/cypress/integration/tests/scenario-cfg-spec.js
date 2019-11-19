@@ -48,18 +48,10 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
   FIELD_TERM_LINK_THROUGPUT,
@@ -80,7 +72,7 @@ import {
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
 
 // Scenario Configuration Tests
-describe('Scenario Configuration', function() {
+describe('Scenario Configuration', function () {
 
   // Test Variables
   let defaultScenario = 'None';
@@ -97,7 +89,7 @@ describe('Scenario Configuration', function() {
     cy.visit(meepUrl);
   });
 
-  it('Create, Save, & Delete Scenario', function() {
+  it('Create, Save, & Delete Scenario', function () {
     // Go to configuration page
     cy.log('Go to configuration page');
     click(meep.MEEP_TAB_CFG);
@@ -167,7 +159,7 @@ describe('Scenario Configuration', function() {
     verifyEnabled(meep.CFG_BTN_EXP_SCENARIO, false);
   });
 
-  it('Create Full Scenario', function() {
+  it('Create Full Scenario', function () {
     let operatorName = 'operator1';
     let zoneName = 'zone1';
     let edgeName = 'edge1';
@@ -516,7 +508,7 @@ describe('Scenario Configuration', function() {
   // ==============================
   // POA
   // ==============================
-    
+
   let termLinkLatency = '2';
   let termLinkLatencyVar = '3';
   let termLinkPktLoss = '4';
@@ -851,7 +843,7 @@ describe('Scenario Configuration', function() {
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
   }
-    
+
   function validateCloudApp(name, parent) {
     cy.window().then((win) => {
       var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
