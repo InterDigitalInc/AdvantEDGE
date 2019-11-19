@@ -89,7 +89,7 @@ type SegAlgoFlow struct {
 	CurrentThroughput             float64 //measured
 	CurrentThroughputEgress       float64 //measured
 	Path                          *SegAlgoPath
-	NewPath                       bool
+	UpdateRequired                bool
 }
 
 // SegAlgoPath -
@@ -406,8 +406,7 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 	// Create a new path for this flow
 	oldPath := flow.Path
 	flow.Path = algo.createPath(flowName, srcElement, destElement, model)
-	diffPath := algo.comparePath(oldPath, flow.Path)
-	flow.NewPath = diffPath
+	flow.UpdateRequired = algo.comparePath(oldPath, flow.Path)
 }
 
 func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgoPath) bool {
@@ -415,16 +414,17 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 	if oldPath == nil {
 		return true
 	}
+
 	if len(oldPath.Segments) != len(newPath.Segments) {
 		return true
 	}
 
-        for index, newSegment  := range newPath.Segments {
-                if newSegment.Name != oldPath.Segments[index].Name {
+	for index, newSegment := range newPath.Segments {
+		if newSegment.Name != oldPath.Segments[index].Name {
 			return true
 		}
-        }
-        return false
+	}
+	return false
 }
 
 // createPath -
@@ -960,7 +960,7 @@ func needToReevaluate(segment *SegAlgoSegment) (unusedBw float64, list []*SegAlg
 
 	//how many active connections that needs to be taken into account
 	for _, flow := range segment.Flows {
-		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound || flow.CurrentThroughput > flow.AllocatedThroughputUpperBound || flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow || flow.NewPath {
+		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound || flow.CurrentThroughput > flow.AllocatedThroughputUpperBound || flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow || flow.UpdateRequired {
 			list = append(list, flow)
 		} else {
 			//no need to reevalute algo one, so removing its allocated bw from the available one
