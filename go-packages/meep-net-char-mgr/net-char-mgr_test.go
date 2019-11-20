@@ -19,6 +19,7 @@ package netchar
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
@@ -64,8 +65,8 @@ func TestNetCharBasic(t *testing.T) {
 		t.Errorf("NetChar not running")
 	}
 
-	// fmt.Println("Run NetChar for 1 second")
-	// time.Sleep(1000 * time.Millisecond)
+	fmt.Println("Run NetChar for 100 ms")
+	time.Sleep(100 * time.Millisecond)
 
 	fmt.Println("Stop NetCharMgr")
 	netCharMgr.Stop()

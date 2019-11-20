@@ -155,6 +155,8 @@ func (ncm *NetCharManager) Register(netCharUpdateCb NetCharUpdateCb, updateCompl
 func (ncm *NetCharManager) Start() error {
 	if !ncm.isStarted {
 		ncm.isStarted = true
+
+		// Process current controls
 		ncm.updateControls()
 
 		// Process current scenario
@@ -164,11 +166,11 @@ func (ncm *NetCharManager) Start() error {
 		ncm.ticker = time.NewTicker(time.Duration(ncm.config.RecalculationPeriod) * time.Millisecond)
 		go func() {
 			for range ncm.ticker.C {
+				ncm.mutex.Lock()
 				if ncm.isStarted {
-					ncm.mutex.Lock()
 					ncm.updateNetChars()
-					ncm.mutex.Unlock()
 				}
+				ncm.mutex.Unlock()
 			}
 		}()
 		log.Debug("Network Characteristics Manager started: ", ncm.name)
@@ -213,6 +215,7 @@ func (ncm *NetCharManager) processActiveScenarioUpdate() {
 		err := ncm.algo.ProcessScenario(ncm.activeModel)
 		if err != nil {
 			log.Error("Failed to process active model with error: ", err)
+			ncm.mutex.Unlock()
 			return
 		}
 
@@ -230,9 +233,13 @@ func (ncm *NetCharManager) updateNetChars() {
 	// Apply updates, if any
 	if len(updatedNetCharList) != 0 {
 		for _, flowNetChar := range updatedNetCharList {
-			ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.PacketLoss)
+			if ncm.netCharUpdateCb != nil {
+				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.PacketLoss)
+			}
 		}
-		ncm.updateCompleteCb()
+		if ncm.updateCompleteCb != nil {
+			ncm.updateCompleteCb()
+		}
 	}
 }
 

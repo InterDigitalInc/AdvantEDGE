@@ -1017,10 +1017,12 @@ func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
 		jitter = float64(nl.TerminalLinkLatencyVariation)
 		packetLoss = float64(nl.TerminalLinkPacketLoss)
 	} else if zone, ok := node.(*ceModel.Zone); ok {
-		maxThroughput = float64(zone.NetChar.Throughput)
-		latency = float64(zone.NetChar.Latency)
-		jitter = float64(zone.NetChar.LatencyVariation)
-		packetLoss = float64(zone.NetChar.PacketLoss)
+		if zone.NetChar != nil {
+			maxThroughput = float64(zone.NetChar.Throughput)
+			latency = float64(zone.NetChar.Latency)
+			jitter = float64(zone.NetChar.LatencyVariation)
+			packetLoss = float64(zone.NetChar.PacketLoss)
+		}
 	} else if domain, ok := node.(*ceModel.Domain); ok {
 		maxThroughput = float64(domain.InterZoneThroughput)
 		latency = float64(domain.InterZoneLatency)
@@ -1113,8 +1115,8 @@ func printPath(path *SegAlgoPath) string {
 	return str
 }
 
-// printElement -
-func printElement(elem *SegAlgoNetElem) string {
-	str := elem.Name + "-" + elem.Type + "-" + elem.PhyLocName + "-" + elem.PoaName + "-" + elem.ZoneName + "-" + elem.DomainName
-	return str
-}
+// // printElement -
+// func printElement(elem *SegAlgoNetElem) string {
+// 	str := elem.Name + "-" + elem.Type + "-" + elem.PhyLocName + "-" + elem.PoaName + "-" + elem.ZoneName + "-" + elem.DomainName
+// 	return str
+// }
