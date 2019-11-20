@@ -1,4 +1,4 @@
-# MeepControllerRestApi.Event
+# AdvantEdgePlatformControllerRestApi.Event
 
 ## Properties
 Name | Type | Description | Notes
@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 **name** | **String** | Event name | [optional] 
 **type** | **String** | Event type | [optional] 
 **eventNetworkCharacteristicsUpdate** | [**EventNetworkCharacteristicsUpdate**](EventNetworkCharacteristicsUpdate.md) |  | [optional] 
-**eventUeMobility** | [**EventUeMobility**](EventUeMobility.md) |  | [optional] 
+**eventMobility** | [**EventMobility**](EventMobility.md) |  | [optional] 
 **eventPoasInRange** | [**EventPoasInRange**](EventPoasInRange.md) |  | [optional] 
 **eventOther** | [**EventOther**](EventOther.md) |  | [optional] 
 
@@ -15,11 +15,11 @@ Name | Type | Description | Notes
 ## Enum: TypeEnum
 
 
-* `NETWORK-CHARACTERISTICS-UPDATE` (value: `"NETWORK-CHARACTERISTICS-UPDATE"`)
+* `NETWORK_CHARACTERISTICS_UPDATE` (value: `"NETWORK-CHARACTERISTICS-UPDATE"`)
 
-* `UE-MOBILITY` (value: `"UE-MOBILITY"`)
+* `MOBILITY` (value: `"MOBILITY"`)
 
-* `POAS-IN-RANGE` (value: `"POAS-IN-RANGE"`)
+* `POAS_IN_RANGE` (value: `"POAS-IN-RANGE"`)
 
 * `OTHER` (value: `"OTHER"`)
 

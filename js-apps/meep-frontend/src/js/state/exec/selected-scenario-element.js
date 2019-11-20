@@ -17,7 +17,8 @@
 import { updateObject } from '../../util/object-util';
 import { createElem } from '../../util/elem-utils';
 
-const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT = 'EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT';
+const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT =
+  'EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT';
 
 // CFG_SET_EDITED_ELEMENT
 function execChangeSelectedScenarioElement(element) {
@@ -27,9 +28,7 @@ function execChangeSelectedScenarioElement(element) {
   };
 }
 
-export {
-  execChangeSelectedScenarioElement
-};
+export { execChangeSelectedScenarioElement };
 
 const initialState = createElem('dummy');
 

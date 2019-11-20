@@ -1,4 +1,4 @@
-# MeepMetricsEngineServiceRestApi.LogResponse
+# AdvantEdgeMetricsServiceRestApi.LogResponse
 
 ## Properties
 Name | Type | Description | Notes

@@ -1,4 +1,4 @@
-# MeepControllerRestApi.PodStatus
+# AdvantEdgePlatformControllerRestApi.PodStatus
 
 ## Properties
 Name | Type | Description | Notes

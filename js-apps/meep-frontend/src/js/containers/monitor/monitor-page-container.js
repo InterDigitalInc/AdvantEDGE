@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import _ from 'lodash';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Select } from '@rmwc/select';
@@ -26,23 +26,13 @@ import HeadlineBar from '../../components/headline-bar';
 import { ListEditPane } from './list-edit-pane';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 
-import {
-  IDC_DIALOG_CONFIRM,
-  uiChangeCurrentDialog
-} from '../../state/ui';
+import { IDC_DIALOG_CONFIRM, uiChangeCurrentDialog } from '../../state/ui';
 
-import {
-  uiSetAutomaticRefresh
-} from '../../state/ui';
+import { uiSetAutomaticRefresh } from '../../state/ui';
 
-import {
-  deepCopy
-} from '../../util/object-util';
+import { deepCopy } from '../../util/object-util';
 
-import {
-  pipe,
-  filter
-} from '../../util/functional';
+import { pipe, filter } from '../../util/functional';
 
 import {
   changeDashboardUrl,
@@ -50,31 +40,42 @@ import {
   changeEditedDashboardOptions
 } from '../../state/monitor';
 
-import { 
+import {
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME
 } from '../../meep-constants';
 
-const kibanaDashboardUrl = 'http://' + location.hostname + ':32003/app/kibana#/dashboard';
+const kibanaDashboardUrl =
+  'http://' + location.hostname + ':32003/app/kibana#/dashboard';
 
-const DashboardContainer = (props) => {
+const DashboardContainer = props => {
   if (!props.dashboardUrl) {
     return null;
   }
   return (
-    <Grid style={{width: '100%', height: '100%'}} >
-      <GridInner style={{width: '100%', height: '100%'}}>
+    <Grid style={{ width: '100%', height: '100%' }}>
+      <GridInner style={{ width: '100%', height: '100%' }}>
         <GridCell span={12} style={styles.inner}>
-          <Elevation className="component-style" z={2} style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>                
-            <div style={{flex: 1, padding: 10}}>
-              <div data-cy={MON_DASHBOARD_IFRAME} style={{height: '100%'}}>
+          <Elevation
+            className="component-style"
+            z={2}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ flex: 1, padding: 10 }}>
+              <div data-cy={MON_DASHBOARD_IFRAME} style={{ height: '100%' }}>
                 <Iframe
                   url={props.dashboardUrl}
                   id="myId"
                   display="initial"
                   position="relative"
                   allowFullScreen
-                  styles={{width: '100%', height: '100%'}}
+                  width='100%'
+                  height='100%'
                 />
               </div>
             </div>
@@ -85,20 +86,17 @@ const DashboardContainer = (props) => {
   );
 };
 
-const EditModeButton = ({isEditMode, startEditMode}) => {
+const EditModeButton = ({ isEditMode, startEditMode }) => {
   return !isEditMode() ? (
-    <Button raised
-      style={styles.button}
-      onClick={startEditMode}
-    >
-        EDIT
+    <Button raised style={styles.button} onClick={startEditMode}>
+      EDIT
     </Button>
   ) : null;
 };
 
-const MonitorPageHeadlineBar = (props) => {
-  return(
-    <div style={{width: '100%'}}>   
+const MonitorPageHeadlineBar = props => {
+  return (
+    <div style={{ width: '100%' }}>
       <Grid style={styles.headlineGrid}>
         <GridCell span={12}>
           <Elevation className="component-style" z={2} style={styles.headline}>
@@ -111,8 +109,8 @@ const MonitorPageHeadlineBar = (props) => {
               </GridCell>
               <GridCell span={3}>
                 <Select
-                  style={{width: '100%'}}
-                  label='Dashboard'
+                  style={{ width: '100%' }}
+                  label="Dashboard"
                   disabled={props.dashboardSelectDisabled}
                   outlined
                   options={props.dashboardOptions}
@@ -120,12 +118,13 @@ const MonitorPageHeadlineBar = (props) => {
                   data-cy={MON_DASHBOARD_SELECT}
                 />
               </GridCell>
-              <GridCell span={4} style={{paddingTop: 8}}>
-                <Button raised
+              <GridCell span={4} style={{ paddingTop: 8 }}>
+                <Button
+                  raised
                   style={styles.button}
                   onClick={() => window.open(kibanaDashboardUrl, '_blank')}
                 >
-                    OPEN KIBANA
+                  OPEN KIBANA
                 </Button>
                 <EditModeButton
                   isEditMode={props.isEditMode}
@@ -141,10 +140,10 @@ const MonitorPageHeadlineBar = (props) => {
   );
 };
 
-const MainPane = (props) => {
+const MainPane = props => {
   if (props.editedDashboardOptions) {
     return (
-      <Elevation z={4} style={{marginBottom: 10, padding: 10}}>
+      <Elevation z={4} style={{ marginBottom: 10, padding: 10 }}>
         <ListEditPane
           items={props.editedDashboardOptions}
           cancelEditMode={props.cancelEditMode}
@@ -161,9 +160,7 @@ const MainPane = (props) => {
       </Elevation>
     );
   } else {
-    return (
-      <DashboardContainer dashboardUrl={props.currentDashboardUrl}/>
-    );
+    return <DashboardContainer dashboardUrl={props.currentDashboardUrl} />;
   }
 };
 
@@ -177,8 +174,8 @@ class MonitorPageContainer extends Component {
   }
 
   removeSelectedFlags() {
-    const options = _.map(this.props.editedDashboardOptions, (op) => {
-      return {label: op.label, value: op.value};
+    const options = _.map(this.props.editedDashboardOptions, op => {
+      return { label: op.label, value: op.value };
     });
     return options;
   }
@@ -186,7 +183,7 @@ class MonitorPageContainer extends Component {
   startEditMode() {
     const opts = JSON.parse(JSON.stringify(this.props.dashboardOptions));
     const options = _.map(opts, (op, index) => {
-      return {...op, data: {selected: false}, index: index};
+      return { ...op, data: { selected: false }, index: index };
     });
     this.props.changeEditedDashboardOptions(options);
   }
@@ -200,24 +197,27 @@ class MonitorPageContainer extends Component {
   }
 
   addOption() {
-    const newOptions = [...this.props.editedDashboardOptions, {
-      label: '',
-      value: '',
-      data: {selected: false},
-      index: this.props.editedDashboardOptions.length
-    }];
+    const newOptions = [
+      ...this.props.editedDashboardOptions,
+      {
+        label: '',
+        value: '',
+        data: { selected: false },
+        index: this.props.editedDashboardOptions.length
+      }
+    ];
     this.props.changeEditedDashboardOptions(newOptions);
   }
 
   updateOptionAttribute(index, attribute, value) {
     let options = deepCopy(this.props.editedDashboardOptions);
-    let option = {...options[index], [attribute]: value};
+    let option = { ...options[index], [attribute]: value };
     options[index] = option;
     this.props.changeEditedDashboardOptions(options);
   }
 
   performDeleteOptions() {
-    const isNotSelected = (option) => !option.data.selected;
+    const isNotSelected = option => !option.data.selected;
 
     const options = pipe(
       filter(isNotSelected),
@@ -240,7 +240,10 @@ class MonitorPageContainer extends Component {
       return false;
     }
 
-    let someSelected = _.reduce(this.props.editedDashboardOptions, (acc, option) => acc || option.data.selected);
+    let someSelected = _.reduce(
+      this.props.editedDashboardOptions,
+      (acc, option) => acc || option.data.selected
+    );
 
     return someSelected;
   }
@@ -261,16 +264,18 @@ class MonitorPageContainer extends Component {
 
   render() {
     return (
-      <div style={{width: '100%', height: '100%'}}>
+      <div style={{ width: '100%', height: '100%' }}>
         <IDConfirmDialog
-          title='Delete selected dashboards'
-          open={this.props.currentDialog===IDC_DIALOG_CONFIRM}
-          onClose={() => {this.closeDialog();}}
+          title="Delete selected dashboards"
+          open={this.props.currentDialog === IDC_DIALOG_CONFIRM}
+          onClose={() => {
+            this.closeDialog();
+          }}
           onSubmit={() => this.performDeleteOptions()}
         />
         <MonitorPageHeadlineBar
           scenarioName={this.props.scenarioName}
-          onChangeDashboard={(e) => this.handleSelectionChange(e)}
+          onChangeDashboard={e => this.handleSelectionChange(e)}
           dashboardSelectDisabled={this.props.editedDashboardOptions !== null}
           dashboardOptions={this.props.dashboardOptions}
           isEditMode={() => this.isEditMode()}
@@ -283,9 +288,15 @@ class MonitorPageContainer extends Component {
           saveDashboards={() => this.saveDashboards()}
           addOption={() => this.addOption()}
           deleteOptions={() => this.deleteSelectedOptions()}
-          updateOptionLabel={(index, value) => this.updateOptionAttribute(index,'label', value)}
-          updateOptionValue={(index, value) => this.updateOptionAttribute(index, 'value', value)}
-          updateOptionSelection={(index, value) => this.updateOptionAttribute(index, 'data', {selected: value})}
+          updateOptionLabel={(index, value) =>
+            this.updateOptionAttribute(index, 'label', value)
+          }
+          updateOptionValue={(index, value) =>
+            this.updateOptionAttribute(index, 'value', value)
+          }
+          updateOptionSelection={(index, value) =>
+            this.updateOptionAttribute(index, 'data', { selected: value })
+          }
           canDelete={() => this.canDelete()}
         />
       </div>
@@ -326,7 +337,7 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    automaticRefresh: state.ui.automaticRefresh, 
+    automaticRefresh: state.ui.automaticRefresh,
     devMode: state.ui.devMode,
     page: state.ui.page,
     scenarioName: state.exec.scenario.name,
@@ -339,11 +350,12 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    setAutomaticRefresh: (val) => dispatch(uiSetAutomaticRefresh(val)),
-    changeDashboardUrl: (url) => dispatch(changeDashboardUrl(url)),
-    changeEditedDashboardOptions: (mode) => dispatch(changeEditedDashboardOptions(mode)),
-    changeDashboardOptions: (mode) => dispatch(changeDashboardOptions(mode)),
-    showDialog: (type) => dispatch(uiChangeCurrentDialog(type))
+    setAutomaticRefresh: val => dispatch(uiSetAutomaticRefresh(val)),
+    changeDashboardUrl: url => dispatch(changeDashboardUrl(url)),
+    changeEditedDashboardOptions: mode =>
+      dispatch(changeEditedDashboardOptions(mode)),
+    changeDashboardOptions: mode => dispatch(changeDashboardOptions(mode)),
+    showDialog: type => dispatch(uiChangeCurrentDialog(type))
   };
 };
 

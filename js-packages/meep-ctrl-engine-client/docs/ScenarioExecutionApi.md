@@ -1,30 +1,29 @@
-# MeepControllerRestApi.ScenarioExecutionApi
+# AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi
 
 All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**activateScenario**](ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Activate (deploy) scenario
-[**getActiveNodeServiceMaps**](ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Retrieve list of active external node service mappings
-[**getActiveScenario**](ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Retrieve active (deployed) scenario
-[**getEventList**](ScenarioExecutionApi.md#getEventList) | **GET** /events | Retrieve list of supported event types for active (deployed) scenario
-[**sendEvent**](ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send event to active (deployed) scenario
-[**terminateScenario**](ScenarioExecutionApi.md#terminateScenario) | **DELETE** /active | Terminate active (deployed) scenario
+[**activateScenario**](ScenarioExecutionApi.md#activateScenario) | **POST** /active/{name} | Deploy a scenario
+[**getActiveNodeServiceMaps**](ScenarioExecutionApi.md#getActiveNodeServiceMaps) | **GET** /active/serviceMaps | Get deployed scenario's port mapping
+[**getActiveScenario**](ScenarioExecutionApi.md#getActiveScenario) | **GET** /active | Get the deployed scenario
+[**sendEvent**](ScenarioExecutionApi.md#sendEvent) | **POST** /events/{type} | Send events to the deployed scenario
+[**terminateScenario**](ScenarioExecutionApi.md#terminateScenario) | **DELETE** /active | Terminate the deployed scenario
 
 
 <a name="activateScenario"></a>
 # **activateScenario**
 > activateScenario(name)
 
-Activate (deploy) scenario
+Deploy a scenario
 
-
+Deploy a scenario present in the platform scenario store
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
 
 var name = "name_example"; // String | Scenario name
 
@@ -55,22 +54,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="getActiveNodeServiceMaps"></a>
 # **getActiveNodeServiceMaps**
 > [NodeServiceMaps] getActiveNodeServiceMaps(opts)
 
-Retrieve list of active external node service mappings
+Get deployed scenario's port mapping
 
-
+Returns the deployed scenario's port mapping<p> <li>Ports are used by external nodes to access services internal to the platform <li>Port mapping concept for external nodes is available [here](https://github.com/InterDigitalInc/AdvantEDGE/wiki/external-ue#port-mapping)
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
 
 var opts = { 
   'node': "node_example", // String | Unique node identifier
@@ -106,22 +105,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="getActiveScenario"></a>
 # **getActiveScenario**
 > Scenario getActiveScenario()
 
-Retrieve active (deployed) scenario
+Get the deployed scenario
 
-
+Get the scenario currently deployed on the platform
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
 
 var callback = function(error, data, response) {
   if (error) {
@@ -146,66 +145,26 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-<a name="getEventList"></a>
-# **getEventList**
-> EventList getEventList()
-
-Retrieve list of supported event types for active (deployed) scenario
-
-
-
-### Example
-```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
-
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
-
-var callback = function(error, data, response) {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log('API called successfully. Returned data: ' + data);
-  }
-};
-apiInstance.getEventList(callback);
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**EventList**](EventList.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="sendEvent"></a>
 # **sendEvent**
 > sendEvent(type, event)
 
-Send event to active (deployed) scenario
+Send events to the deployed scenario
 
-
+Generate events towards the deployed scenario. <p><p>Events: <li>Mobility: move a node in the emulated network <li>Network Characteristic: change network characteristics dynamically <li>PoAs-In-Range: provide PoAs in range of a UE (used with Application State Transfer)
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
 
 var type = "type_example"; // String | Event type
 
-var event = new MeepControllerRestApi.Event(); // Event | Event to send to active scenario
+var event = new AdvantEdgePlatformControllerRestApi.Event(); // Event | Event to send to active scenario
 
 
 var callback = function(error, data, response) {
@@ -235,22 +194,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 <a name="terminateScenario"></a>
 # **terminateScenario**
 > terminateScenario()
 
-Terminate active (deployed) scenario
+Terminate the deployed scenario
 
-
+Terminate the scenario currently deployed on the platform
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.ScenarioExecutionApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi();
 
 var callback = function(error, data, response) {
   if (error) {
@@ -275,6 +234,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 

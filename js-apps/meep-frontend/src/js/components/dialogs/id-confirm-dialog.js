@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 
 import IDDialog from './id-dialog';
 import { MEEP_DLG_CONFIRM } from '../../meep-constants';
 
 class IDConfirmDialog extends Component {
-
   constructor(props) {
     super(props);
-    this.state={};
+    this.state = {};
   }
 
   render() {
@@ -35,7 +34,9 @@ class IDConfirmDialog extends Component {
         onSubmit={() => this.props.onSubmit()}
         cydata={MEEP_DLG_CONFIRM}
       >
-        <span style={styles.text}>{`Are you sure you want to ${this.props.title.toLowerCase()}?`}</span>
+        <span
+          style={styles.text}
+        >{`Are you sure you want to ${this.props.title.toLowerCase()}?`}</span>
       </IDDialog>
     );
   }

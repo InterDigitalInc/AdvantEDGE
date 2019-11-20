@@ -16,7 +16,7 @@ module.exports = {
   ],
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist')
   },
   node: {
     fs: 'empty'
@@ -77,7 +77,7 @@ module.exports = {
               name: '[name].[ext]',
               outputPath: 'img',
               publicPath: 'img'
-            },
+            }
           }]
       },
       {
@@ -89,7 +89,7 @@ module.exports = {
               name: '[name].[ext]',
               outputPath: 'icons',
               publicPath: 'icons'
-            },
+            }
           }]
       },
       {

@@ -17,7 +17,7 @@
 import * as cfgTable from '../../../src/js/state/cfg/table-reducer';
 import * as execTable from '../../../src/js/state/exec/table-reducer';
 import * as ui from '../../../src/js/state/ui';
-import * as exec from  '../../../src/js/state/exec';
+import * as exec from '../../../src/js/state/exec';
 import uiReducer from '../../../src/js/state/ui';
 
 import {
@@ -30,10 +30,10 @@ describe('Reducers', () => {
   const testTable = [1, 2, 3, 4];
 
   it('should change exec table properly', () => {
-    
+
     const action = {
       type: execTable.EXEC_CHANGE_TABLE,
-      payload: {data: [1, 2, 3]}
+      payload: { data: [1, 2, 3] }
     };
 
     var state = testTable;
@@ -47,10 +47,10 @@ describe('Reducers', () => {
   });
 
   it('should change cfg table properly', () => {
-    
+
     const action = {
       type: cfgTable.CFG_CHANGE_TABLE,
-      payload: {data: [1, 2, 3]}
+      payload: { data: [1, 2, 3] }
     };
 
     var state = testTable;
@@ -129,40 +129,40 @@ describe('Reducers', () => {
   });
 
   it('should change vis data correctly', () => {
-    
+
     const action = {
       type: exec.EXEC_CHANGE_VIS_DATA,
-      payload: {edges: [1, 2, 3], nodes: [4, 5, 6]}
+      payload: { edges: [1, 2, 3], nodes: [4, 5, 6] }
     };
 
     const state = {
       other: 'Unknown',
-      data: {edges: [1, 2], nodes: [1, 2]}
+      data: { edges: [1, 2], nodes: [1, 2] }
     };
 
     var newState = exec.execVisReducer(state, action);
 
     const expectedState = {
       other: 'Unknown',
-      data: {edges: [1, 2, 3], nodes: [4, 5, 6]}
+      data: { edges: [1, 2, 3], nodes: [4, 5, 6] }
     };
 
     expect(newState).toEqual(expectedState);
   });
 
   it('should calculate corePodsRunning selector value properly', () => {
-    
+
     const stateFalse = {
       exec: {
         state: {
-          corePodsPhases: [{phase: exec.CORE_PODS_PHASE_RUNNING}, {phase: exec.CORE_PODS_PHASE_PENDING}]
+          corePodsPhases: [{ phase: exec.CORE_PODS_PHASE_RUNNING }, { phase: exec.CORE_PODS_PHASE_PENDING }]
         }
       }
     };
     const stateTrue = {
       exec: {
         state: {
-          corePodsPhases: [{phase: exec.CORE_PODS_PHASE_RUNNING}, {phase: exec.CORE_PODS_PHASE_RUNNING}]
+          corePodsPhases: [{ phase: exec.CORE_PODS_PHASE_RUNNING }, { phase: exec.CORE_PODS_PHASE_RUNNING }]
         }
       }
     };
@@ -172,12 +172,12 @@ describe('Reducers', () => {
   });
 
   it('should calculate podsWithServiceMaps selector value properly', () => {
-    
+
     const state = {
       exec: {
         state: {
-          scenarioPodsPhases: [{name: 'ext-app', phase: exec.CORE_PODS_PHASE_RUNNING}, {name: 'name2', phase: exec.CORE_PODS_PHASE_PENDING}],
-          serviceMaps : [{
+          scenarioPodsPhases: [{ name: 'ext-app', phase: exec.CORE_PODS_PHASE_RUNNING }, { name: 'name2', phase: exec.CORE_PODS_PHASE_PENDING }],
+          serviceMaps: [{
             client: 'ext-app',
             serviceMap: [
               {
@@ -215,14 +215,14 @@ describe('Reducers', () => {
           protocol: 'TCP'
         }]
       },
-      {name: 'name2', phase: exec.CORE_PODS_PHASE_PENDING}
+      { name: 'name2', phase: exec.CORE_PODS_PHASE_PENDING }
     ];
 
     expect(exec.podsWithServiceMaps(state)).toEqual(expectedPodsWithServiceMaps);
   });
 
   it('should calculate scenario pods phases selectors', () => {
-    
+
     const state1 = {
       exec: {
         state: {

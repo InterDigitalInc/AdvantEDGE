@@ -11,6 +11,10 @@ Name | Type | Description | Notes
 **Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **UserMeta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **Processes** | [**[]Process**](Process.md) |  | [optional] [default to null]
+**LinkLatency** | **int32** | Latency in ms between the physical location and the network (wired interface, air interface) | [optional] [default to null]
+**LinkLatencyVariation** | **int32** | Latency variation in ms between the physical location and the network (wired interface, air interface) | [optional] [default to null]
+**LinkThroughput** | **int32** | The limit of the traffic supported between the physical location and the network (wired interface, air interface) | [optional] [default to null]
+**LinkPacketLoss** | **float64** | Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface) | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

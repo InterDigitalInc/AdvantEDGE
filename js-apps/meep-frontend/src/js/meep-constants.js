@@ -18,6 +18,11 @@
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
 
+export const PAGE_CONFIGURE = 'PAGE_CONFIGURE';
+export const PAGE_EXECUTE = 'PAGE_EXECUTE';
+export const PAGE_MONITOR = 'PAGE_MONITOR';
+export const PAGE_SETTINGS = 'PAGE_SETTINGS';
+
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
@@ -37,7 +42,8 @@ export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
 export const MEEP_DLG_INVALID_SCENARIO = 'meep-dlg-invalid-scenario';
 export const MEEP_DLG_EXPORT_SCENARIO = 'meep-dlg-export-scenario';
 export const MEEP_DLG_DEPLOY_SCENARIO = 'meep-dlg-deploy-scenario';
-export const MEEP_DLG_DEPLOY_SCENARIO_SELECT = 'meep-dlg-deploy-scenario-select';
+export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
+  'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
@@ -70,6 +76,7 @@ export const CFG_ELEM_EXT_PORT = 'cfg-elem-ext-port';
 export const CFG_ELEM_PROT = 'cfg-elem-prot';
 export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
 export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
+export const CFG_ELEM_PLACEMENT_ID = 'cfg-elem-placement-id';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
@@ -143,22 +150,22 @@ export const DEFAULT_LATENCY_INTER_ZONE = 6;
 export const DEFAULT_LATENCY_JITTER_INTER_ZONE = 2;
 export const DEFAULT_THROUGHPUT_INTER_ZONE = 1000;
 export const DEFAULT_PACKET_LOSS_INTER_ZONE = 0;
-export const DEFAULT_LATENCY_INTER_EDGE = 3;
-export const DEFAULT_LATENCY_JITTER_INTER_EDGE = 1;
-export const DEFAULT_THROUGHPUT_INTER_EDGE = 1000;
-export const DEFAULT_PACKET_LOSS_INTER_EDGE = 0;
-export const DEFAULT_LATENCY_INTER_FOG = 2;
-export const DEFAULT_LATENCY_JITTER_INTER_FOG = 1;
-export const DEFAULT_THROUGHPUT_INTER_FOG = 1000;
-export const DEFAULT_PACKET_LOSS_INTER_FOG = 0;
-export const DEFAULT_LATENCY_EDGE_FOG = 5;
-export const DEFAULT_LATENCY_JITTER_EDGE_FOG = 1;
-export const DEFAULT_THROUGHPUT_EDGE_FOG = 1000;
-export const DEFAULT_PACKET_LOSS_EDGE_FOG = 0;
+export const DEFAULT_LATENCY_INTRA_ZONE = 5;
+export const DEFAULT_LATENCY_JITTER_INTRA_ZONE = 1;
+export const DEFAULT_THROUGHPUT_INTRA_ZONE = 1000;
+export const DEFAULT_PACKET_LOSS_INTRA_ZONE = 0;
 export const DEFAULT_LATENCY_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
 export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 1;
+export const DEFAULT_LATENCY_LINK = 0;
+export const DEFAULT_LATENCY_JITTER_LINK = 0;
+export const DEFAULT_THROUGHPUT_LINK = 1000;
+export const DEFAULT_PACKET_LOSS_LINK = 0;
+export const DEFAULT_LATENCY_APP = 0;
+export const DEFAULT_LATENCY_JITTER_APP = 0;
+export const DEFAULT_THROUGHPUT_APP = 1000;
+export const DEFAULT_PACKET_LOSS_APP = 0;
 export const DEFAULT_LATENCY_DC = 0;
 
 // GPU Types
@@ -171,7 +178,10 @@ export const MON_DASHBOARD_IFRAME = 'mon-dashboard-iframe';
 // Settings Page IDs
 export const SET_EXEC_REFRESH_CHECKBOX = 'set-exec-refresh-checkbox';
 export const SET_EXEC_REFRESH_INT = 'set-exec-refresh-int';
-export const SET_DEV_MODE_CHECKBOX = 'set-dev-mode-checkbox';
+export const SET_VIS_CFG_CHECKBOX = 'set-vis-cfg-checkbox';
+export const SET_VIS_CFG_LABEL = 'VIS Configuration Mode';
+export const SET_DASHBOARD_CFG_CHECKBOX = 'set-dashboard-cfg-checkbox';
+export const SET_DASHBOARD_CFG_LABEL = 'Show Dashboard Config (Experimental)';
 
 // Logical Scenario types
 export const TYPE_SCENARIO = 0;
@@ -184,11 +194,40 @@ export const TYPE_PROCESS = 5;
 // NC Group Prefixes
 export const PREFIX_INT_DOM = 'Inter-Domain';
 export const PREFIX_INT_ZONE = 'Inter-Zone';
-export const PREFIX_INT_EDGE = 'Inter-Edge';
-export const PREFIX_INT_FOG = 'Inter-Fog';
-export const PREFIX_EDGE_FOG = 'Edge-Fog';
+export const PREFIX_INTRA_ZONE = 'Intra-Zone';
 export const PREFIX_TERM_LINK = 'Terminal Link';
+export const PREFIX_LINK = 'Link';
+export const PREFIX_APP = 'Application';
 
-export const id = (label) => {
+// Types of layout for components
+export const MEEP_COMPONENT_TABLE_LAYOUT = 'MEEP_COMPONENT_TABLE_LAYOUT';
+export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT =
+  'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
+
+export const id = label => {
   return '#' + label;
 };
+
+// Metrics engine data types
+export const ME_LATENCY_METRICS = 'latency';
+export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
+export const ME_MOBILITY_EVENT = 'mobilityEvent';
+
+export const VIEW_NAME_NONE = 'None';
+export const HIERARCHY_VIEW = 'Network Topology';
+export const APPS_VIEW = 'Applications';
+export const LATENCY_VIEW = 'Latency Graph';
+export const THROUGHPUT_VIEW = 'Throughput Graph';
+export const VIS_VIEW = 'Network Topology (vis)';
+
+export const MOBILITY_EVENT = 'MOBILITY';
+export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+
+export const DASHBOARD_VIEWS_LIST = [
+  VIEW_NAME_NONE,
+  VIS_VIEW,
+  APPS_VIEW,
+  LATENCY_VIEW,
+  THROUGHPUT_VIEW,
+  HIERARCHY_VIEW
+];

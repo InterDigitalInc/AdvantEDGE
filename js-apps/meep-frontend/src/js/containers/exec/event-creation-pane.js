@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
@@ -23,22 +23,28 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
-import { uiExecChangeCurrentEvent, UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT } from '../../state/ui';
+import { uiExecChangeCurrentEvent } from '../../state/ui';
+
+import {
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT
+} from '../../meep-constants';
+
 import {
   execChangeSelectedScenarioElement,
   execUEs,
-  execPOAs
+  execPOAs,
+  execMobTypes,
+  execEdges,
+  execEdgeApps,
+  execFogs,
+  execFogEdges,
+  execZones
 } from '../../state/exec';
 
-import {
-  PAGE_EXECUTE
-} from '../../state/ui';
+import { EXEC_EVT_TYPE, PAGE_EXECUTE } from '../../meep-constants';
 
-import {
-  EXEC_EVT_TYPE
-} from '../../meep-constants';
-
-const EventTypeSelect = (props) => {
+const EventTypeSelect = props => {
   return (
     <Grid style={styles.field}>
       <GridCell span={12}>
@@ -56,9 +62,9 @@ const EventTypeSelect = (props) => {
   );
 };
 
-const EventCreationFields = (props) => {
+const EventCreationFields = props => {
   switch (props.currentEvent) {
-  case UE_MOBILITY_EVENT:
+  case MOBILITY_EVENT:
     return (
       <MobilityEventPane
         element={props.element}
@@ -69,6 +75,12 @@ const EventCreationFields = (props) => {
         currentEvent={props.currentEvent}
         UEs={props.UEs}
         POAs={props.POAs}
+        EDGEs={props.EDGEs}
+        FOGs={props.FOGs}
+        ZONEs={props.ZONEs}
+        MobTypes={props.MobTypes}
+        FogEdges={props.FogEdges}
+        EdgeApps={props.EdgeApps}
       />
     );
   case NETWORK_CHARACTERISTICS_EVENT:
@@ -82,16 +94,14 @@ const EventCreationFields = (props) => {
         currentEvent={props.currentEvent}
         table={props.table}
         networkElements={props.networkElements}
-
       />
     );
   default:
-    return (<div>NO EVENT</div>);
+    return <div>NO EVENT</div>;
   }
 };
 
 class EventCreationPane extends Component {
-
   constructor(props) {
     super(props);
     this.state = {};
@@ -104,26 +114,38 @@ class EventCreationPane extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) { return null; }
+    if (this.props.page !== PAGE_EXECUTE) {
+      return null;
+    }
 
     return (
-      <div style={{padding: 10}}>
+      <div style={{ padding: 10 }}>
         <div style={styles.block}>
           <Typography use="headline6">Trigger Event</Typography>
         </div>
         <EventTypeSelect
           eventTypes={this.props.eventTypes}
-          onChange={(event)=>{this.props.changeEvent(event.target.value);}}
+          onChange={event => {
+            this.props.changeEvent(event.target.value);
+          }}
         />
         <EventCreationFields
           element={this.props.selectedScenarioElement}
           currentEvent={this.props.currentEvent}
           api={this.props.api}
-          updateElement={(element) => {this.updateElement(element);}}
+          updateElement={element => {
+            this.updateElement(element);
+          }}
           onSuccess={this.props.onSuccess}
           onClose={this.props.onClose}
           UEs={this.props.UEs}
           POAs={this.props.POAs}
+          EDGEs={this.props.EDGEs}
+          FOGs={this.props.FOGs}
+          ZONEs={this.props.ZONEs}
+          MobTypes={this.props.MobTypes}
+          EdgeApps={this.props.EdgeApps}
+          FogEdges={this.props.FogEdges}
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
@@ -151,6 +173,12 @@ const mapStateToProps = state => {
     page: state.ui.page,
     UEs: execUEs(state),
     POAs: execPOAs(state),
+    EDGEs: execEdges(state),
+    FOGs: execFogs(state),
+    ZONEs: execZones(state),
+    MobTypes: execMobTypes(state),
+    EdgeApps: execEdgeApps(state),
+    FogEdges: execFogEdges(state),
     table: state.exec.table,
     networkElements: state.exec.table.entries
   };
@@ -158,8 +186,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeEvent: (event) => dispatch(uiExecChangeCurrentEvent(event)),
-    changeSelectedScenarioElement: (element) => dispatch(execChangeSelectedScenarioElement(element))
+    changeEvent: event => dispatch(uiExecChangeCurrentEvent(event)),
+    changeSelectedScenarioElement: element =>
+      dispatch(execChangeSelectedScenarioElement(element))
   };
 };
 

@@ -17,7 +17,7 @@
 import { updateObject } from '../../util/object-util';
 
 // EXEC_CHANGE_SCENARIO
-const EXEC_CHANGE_SCENARIO = 'EXEC_CHANGE_SCENARIO';
+export const EXEC_CHANGE_SCENARIO = 'EXEC_CHANGE_SCENARIO';
 function execChangeScenario(scenario) {
   return {
     type: EXEC_CHANGE_SCENARIO,
@@ -54,7 +54,7 @@ const initialState = {
 export function scenarioReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SCENARIO_NAME:
-    return updateObject(state, {name: action.payload});
+    return updateObject(state, { name: action.payload });
   case EXEC_CHANGE_SCENARIO:
     return action.payload;
   default:

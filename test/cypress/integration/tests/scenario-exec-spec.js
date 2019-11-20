@@ -46,22 +46,14 @@ import {
   FIELD_INT_ZONE_LATENCY_VAR,
   FIELD_INT_ZONE_THROUGPUT,
   FIELD_INT_ZONE_PKT_LOSS,
-  FIELD_INT_EDGE_LATENCY,
-  FIELD_INT_EDGE_LATENCY_VAR,
-  FIELD_INT_EDGE_THROUGPUT,
-  FIELD_INT_EDGE_PKT_LOSS,
-  FIELD_INT_FOG_LATENCY,
-  FIELD_INT_FOG_LATENCY_VAR,
-  FIELD_INT_FOG_THROUGPUT,
-  FIELD_INT_FOG_PKT_LOSS,
-  FIELD_EDGE_FOG_LATENCY,
-  FIELD_EDGE_FOG_LATENCY_VAR,
-  FIELD_EDGE_FOG_THROUGPUT,
-  FIELD_EDGE_FOG_PKT_LOSS,
-  FIELD_LINK_LATENCY,
-  FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
-  FIELD_LINK_PKT_LOSS,
+  FIELD_INTRA_ZONE_LATENCY,
+  FIELD_INTRA_ZONE_LATENCY_VAR,
+  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_PKT_LOSS,
+  FIELD_TERM_LINK_LATENCY,
+  FIELD_TERM_LINK_LATENCY_VAR,
+  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_PKT_LOSS,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -70,7 +62,7 @@ import {
 import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
 
 // Scenario Execution Tests
-describe('Scenario Execution', function() {
+describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
@@ -91,7 +83,7 @@ describe('Scenario Execution', function() {
   // ------------------------------
 
   // Demo1 scenario testing (Virt-Engine)
-  it('Deploy & Test DEMO1 scenario', function() {
+  it('Deploy & Test DEMO1 scenario', function () {
     let scenario = 'demo1';
 
     // Deploy demo scenario
@@ -107,7 +99,7 @@ describe('Scenario Execution', function() {
   });
 
   // Demo2 scenario testing (User Charts)
-  it('Deploy & Test DEMO2 scenario', function() {
+  it('Deploy & Test DEMO2 scenario', function () {
     let scenario = 'demo2';
 
     // Deploy demo scenario
@@ -190,30 +182,26 @@ describe('Scenario Execution', function() {
   function testNetCharEvent(scenario) {
     cy.log('Create & Validate Network Characteristic event');
     createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
-    createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('ZONE-INTER-EDGE', 'zone1', 5, 0, 1, 80000);
-    createNetCharEvent('ZONE-INTER-FOG', 'zone1', 3, 2, 1, 75000);
-    createNetCharEvent('ZONE-EDGE-FOG', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('ZONE-INTER-EDGE', 'zone2', 5, 0, 1, 80000);
-    createNetCharEvent('ZONE-INTER-FOG', 'zone2', 3, 2, 1, 75000);
-    createNetCharEvent('ZONE-EDGE-FOG', 'zone2', 6, 2, 1, 70000);
+    createNetCharEvent('OPERATOR', 'operator1', 10, 3, 2, 90000);
+    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000);
+    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000);
     createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
     createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
     createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
   }
 
   // Create a Mobility event
-  function createMobilityEvent(ue, dest) {
-    cy.log('Moving ' + ue + ' --> ' + dest);
+  function createMobilityEvent(elem, dest) {
+    cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
-    select(meep.EXEC_EVT_TYPE, states.UE_MOBILITY_EVENT);
-    select(meep.EXEC_EVT_MOB_TARGET, ue);
+    select(meep.EXEC_EVT_TYPE, states.MOBILITY_EVENT);
+    select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
     click(meep.MEEP_BTN_APPLY);
 
     // Validate event
     cy.wait(1000);
-    validateMobilityEvent(ue, dest);
+    validateMobilityEvent(elem, dest);
   }
 
   // Create a Network Characteristic event
@@ -249,9 +237,9 @@ describe('Scenario Execution', function() {
   }
 
   // Validate that new UE parent matches destination
-  function validateMobilityEvent(ue, dest) {
+  function validateMobilityEvent(elem, dest) {
     cy.window().then((win) => {
-      var entry = getEntry(win.meepStore.getState().exec.table.entries, ue);
+      var entry = getEntry(win.meepStore.getState().exec.table.entries, elem);
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), dest);
     });
@@ -264,44 +252,32 @@ describe('Scenario Execution', function() {
       assert.isNotNull(entry);
 
       switch (elemType) {
-      case 'SCENARIO':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
-        break;
-      case 'DOMAIN':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
-        break;
-      case 'ZONE-INTER-EDGE':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_EDGE_THROUGPUT), tp);
-        break;
-      case 'ZONE-INTER-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_INT_FOG_THROUGPUT), tp);
-        break;
-      case 'ZONE-EDGE-FOG':
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_EDGE_FOG_THROUGPUT), tp);
-        break;
-      case 'POA':
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY), l);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_LATENCY_VAR), lv);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), pl);
-        assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGPUT), tp);
-        break;
-      default:
-        assert.isOk(false, 'Unsupported element type');
+        case 'SCENARIO':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
+          break;
+        case 'OPERATOR':
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
+          break;
+        case 'ZONE':
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGPUT), tp);
+          break;
+        case 'POA':
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
+          break;
+        default:
+          assert.isOk(false, 'Unsupported element type');
       }
     });
   }

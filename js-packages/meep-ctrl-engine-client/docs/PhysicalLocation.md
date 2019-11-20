@@ -1,4 +1,4 @@
-# MeepControllerRestApi.PhysicalLocation
+# AdvantEdgePlatformControllerRestApi.PhysicalLocation
 
 ## Properties
 Name | Type | Description | Notes
@@ -11,6 +11,10 @@ Name | Type | Description | Notes
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **processes** | [**[Process]**](Process.md) |  | [optional] 
+**linkLatency** | **Number** | Latency in ms between the physical location and the network (wired interface, air interface) | [optional] 
+**linkLatencyVariation** | **Number** | Latency variation in ms between the physical location and the network (wired interface, air interface) | [optional] 
+**linkThroughput** | **Number** | The limit of the traffic supported between the physical location and the network (wired interface, air interface) | [optional] 
+**linkPacketLoss** | **Number** | Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface) | [optional] 
 
 
 <a name="TypeEnum"></a>

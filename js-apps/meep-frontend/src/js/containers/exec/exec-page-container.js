@@ -16,10 +16,10 @@
 
 import _ from 'lodash';
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import IDCVis from '../idc-vis';
+import DashboardContainer from './dashboard-container';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
@@ -30,10 +30,7 @@ import IDDeployScenarioDialog from '../../components/dialogs/id-deploy-scenario-
 import IDTerminateScenarioDialog from '../../components/dialogs/id-terminate-scenario-dialog';
 import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dialog';
 
-import {
-  execChangeScenarioList,
-  execVisFilteredData
-} from '../../state/exec';
+import { execChangeScenarioList, execVisFilteredData } from '../../state/exec';
 
 import {
   uiChangeCurrentDialog,
@@ -45,9 +42,8 @@ import {
   IDC_DIALOG_SAVE_SCENARIO,
 
   // Event types
-  UE_MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT,
-  PAGE_EXECUTE
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT
 } from '../../state/ui';
 
 import {
@@ -58,12 +54,10 @@ import {
 } from '../../state/exec';
 
 import {
-  TYPE_EXEC,
-
   // States
-  EXEC_STATE_IDLE
+  EXEC_STATE_IDLE,
+  PAGE_EXECUTE
 } from '../../meep-constants';
-
 
 class ExecPageContainer extends Component {
   constructor(props) {
@@ -71,15 +65,15 @@ class ExecPageContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.changeCurrentEvent(UE_MOBILITY_EVENT);
+    this.props.changeCurrentEvent(MOBILITY_EVENT);
   }
 
   /**
-     * Callback function to receive the result of the getScenarioList operation.
-     * @callback module:api/ScenarioConfigurationApi~getScenarioListCallback
-     * @param {String} error Error message, if any.
-     * @param {module:model/ScenarioList} data The data returned by the service call.
-     */
+   * Callback function to receive the result of the getScenarioList operation.
+   * @callback module:api/ScenarioConfigurationApi~getScenarioListCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/ScenarioList} data The data returned by the service call.
+   */
   getScenarioListDeployCb(error, data) {
     if (error !== null) {
       // TODO: consider showing an alert/toast
@@ -90,10 +84,10 @@ class ExecPageContainer extends Component {
   }
 
   /**
-     * Callback function to receive the result of the activateScenario operation.
-     * @callback module:api/ScenarioExecutionApi~activateScenarioCallback
-     * @param {String} error Error message, if any.
-     */
+   * Callback function to receive the result of the activateScenario operation.
+   * @callback module:api/ScenarioExecutionApi~activateScenarioCallback
+   * @param {String} error Error message, if any.
+   */
   activateScenarioCb(error) {
     if (error) {
       // TODO: consider showing an alert/toast
@@ -104,10 +98,10 @@ class ExecPageContainer extends Component {
   }
 
   /**
-     * Callback function to receive the result of the terminateScenario operation.
-     * @callback module:api/ScenarioExecutionApi~terminateScenarioCallback
-     * @param {String} error Error message, if any.
-     */
+   * Callback function to receive the result of the terminateScenario operation.
+   * @callback module:api/ScenarioExecutionApi~terminateScenarioCallback
+   * @param {String} error Error message, if any.
+   */
   terminateScenarioCb(error) {
     if (error !== null) {
       // TODO consider showing an alert  (i.e. toast)
@@ -125,16 +119,20 @@ class ExecPageContainer extends Component {
     const scenarioCopy = JSON.parse(JSON.stringify(scenario));
     scenarioCopy.name = scenarioName;
 
-    this.props.cfgApi.createScenario(scenarioName, scenarioCopy, (error, data, response) => this.createScenarioCb(error, data, response));
+    this.props.cfgApi.createScenario(
+      scenarioName,
+      scenarioCopy,
+      (error, data, response) => this.createScenarioCb(error, data, response)
+    );
   }
 
   /**
-     * Callback function to receive the result of the createScenario operation.
-     * @callback module:api/ScenarioConfigurationApi~createScenarioCallback
-     * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
-     * @param {String} response The complete HTTP response.
-     */
+   * Callback function to receive the result of the createScenario operation.
+   * @callback module:api/ScenarioConfigurationApi~createScenarioCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
   createScenarioCb(/*error, data, response*/) {
     // if (error == null) {
     //   console.log('Scenario successfully created');
@@ -152,7 +150,9 @@ class ExecPageContainer extends Component {
   // DEPLOY DIALOG
   onDeployScenario() {
     // Retrieve list of available scenarios
-    this.props.cfgApi.getScenarioList((error, data, response) => {this.getScenarioListDeployCb(error, data, response);});
+    this.props.cfgApi.getScenarioList((error, data, response) => {
+      this.getScenarioListDeployCb(error, data, response);
+    });
     this.props.changeCurrentDialog(IDC_DIALOG_DEPLOY_SCENARIO);
   }
 
@@ -178,7 +178,9 @@ class ExecPageContainer extends Component {
 
   // Terminate Active scenario
   terminateScenario() {
-    this.props.api.terminateScenario((error, data, response) => this.terminateScenarioCb(error, data, response));
+    this.props.api.terminateScenario((error, data, response) =>
+      this.terminateScenarioCb(error, data, response)
+    );
   }
 
   showApps(show) {
@@ -191,31 +193,41 @@ class ExecPageContainer extends Component {
   renderDialogs() {
     return (
       <>
-          <IDDeployScenarioDialog
-            title='Open Scenario'
-            open={this.props.currentDialog===IDC_DIALOG_DEPLOY_SCENARIO}
-            options={this.props.scenarios}
-            onClose={() => {this.closeDialog();}}
-            api={this.props.api}
-            activateScenarioCb={(error, data, response) => this.activateScenarioCb(error, data, response)}
-          />
+        <IDDeployScenarioDialog
+          title="Open Scenario"
+          open={this.props.currentDialog === IDC_DIALOG_DEPLOY_SCENARIO}
+          options={this.props.scenarios}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          api={this.props.api}
+          activateScenarioCb={(error, data, response) =>
+            this.activateScenarioCb(error, data, response)
+          }
+        />
 
-          <IDSaveScenarioDialog
-            title='Save Scenario as ...'
-            open={this.props.currentDialog===IDC_DIALOG_SAVE_SCENARIO}
-            onClose={() => {this.closeDialog();}}
-            api={this.props.api}
-            saveScenario={(name) => this.saveScenario(name)}
-            scenarioNameRequired={true}
-          />
+        <IDSaveScenarioDialog
+          title="Save Scenario as ..."
+          open={this.props.currentDialog === IDC_DIALOG_SAVE_SCENARIO}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          api={this.props.api}
+          saveScenario={name => this.saveScenario(name)}
+          scenarioNameRequired={true}
+        />
 
-          <IDTerminateScenarioDialog
-            title='Terminate Scenario'
-            open={this.props.currentDialog===IDC_DIALOG_TERMINATE_SCENARIO}
-            scenario={this.props.scenario}
-            onClose={() => {this.closeDialog();}}
-            onSubmit={() => {this.terminateScenario();}}
-          />
+        <IDTerminateScenarioDialog
+          title="Terminate Scenario"
+          open={this.props.currentDialog === IDC_DIALOG_TERMINATE_SCENARIO}
+          scenario={this.props.scenario}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          onSubmit={() => {
+            this.terminateScenario();
+          }}
+        />
       </>
     );
   }
@@ -225,20 +237,25 @@ class ExecPageContainer extends Component {
       return null;
     }
 
-    const scenarioName = (this.props.page === PAGE_EXECUTE)
-      ? this.props.execScenarioName
-      : this.props.cfgScenarioName;
+    const scenarioName =
+      this.props.page === PAGE_EXECUTE
+        ? this.props.execScenarioName
+        : this.props.cfgScenarioName;
 
-    const spanLeft = this.props.eventCreationMode ? 8 : 12;
-    const spanRight = this.props.eventCreationMode ? 4 : 0;
+    const spanLeft = this.props.eventCreationMode ? 9 : 12;
+    const spanRight = this.props.eventCreationMode ? 3 : 0;
     return (
-      <div style={{width: '100%'}}>
+      <div style={{ width: '100%' }}>
         {this.renderDialogs()}
 
-        <div style={{width: '100%'}}>
+        <div style={{ width: '100%' }}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
-              <Elevation className="component-style" z={2} style={styles.headline}>
+              <Elevation
+                className="component-style"
+                z={2}
+                style={styles.headline}
+              >
                 <GridInner>
                   <GridCell align={'middle'} span={4}>
                     <HeadlineBar
@@ -255,7 +272,7 @@ class ExecPageContainer extends Component {
                           onTerminate={() => this.onTerminateScenario()}
                           onRefresh={this.props.refreshScenario}
                           onCreateEvent={() => this.onCreateEvent()}
-                          onShowAppsChanged={(show) => this.showApps(show)}
+                          onShowAppsChanged={show => this.showApps(show)}
                           showApps={this.props.showApps}
                         />
                       </GridCell>
@@ -267,31 +284,35 @@ class ExecPageContainer extends Component {
           </Grid>
         </div>
 
-        {this.props.exec.state.scenario !== EXEC_STATE_IDLE &&
+        {this.props.exec.state.scenario !== EXEC_STATE_IDLE && (
           <>
-              <Grid style={{width: '100%'}}>
-                <GridInner>
-                  <GridCell span={spanLeft}>
-                    <Elevation className="component-style" z={2}>
-                      <div style={{padding: 10}}>
-                        <IDCVis type={TYPE_EXEC}/>
-                      </div>
-                    </Elevation>
-                  </GridCell>
-                  <GridCell span={spanRight} hidden={!this.props.eventCreationMode} style={styles.inner}>
-                    <Elevation className="component-style" z={2}>
-                      <EventCreationPane
-                        eventTypes={[UE_MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
-                        api={this.props.api}
-                        onSuccess={() => {this.props.refreshScenario();}}
-                        onClose={() => this.onQuitEventCreationMode()}
-                      />
-                    </Elevation>
-                  </GridCell>
-                </GridInner>
-              </Grid>
+            <Grid style={{ width: '100%' }}>
+              <GridCell span={spanLeft}>
+                {/* <Elevation className="component-style" z={2}> */}
+                <div>
+                  <DashboardContainer showAppsView={true} />
+                </div>
+                {/* </Elevation> */}
+              </GridCell>
+              <GridCell
+                span={spanRight}
+                hidden={!this.props.eventCreationMode}
+                style={styles.inner}
+              >
+                <Elevation className="component-style" z={2}>
+                  <EventCreationPane
+                    eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
+                    api={this.props.api}
+                    onSuccess={() => {
+                      this.props.refreshScenario();
+                    }}
+                    onClose={() => this.onQuitEventCreationMode()}
+                  />
+                </Elevation>
+              </GridCell>
+            </Grid>
           </>
-        }
+        )}
         <ExecTable />
       </div>
     );
@@ -331,15 +352,17 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeCurrentDialog: (type) => dispatch(uiChangeCurrentDialog(type)),
-    changeScenario: (scenario) => dispatch(execChangeScenario(scenario)),
-    changeDeployScenarioList: (scenarios) => dispatch(execChangeScenarioList(scenarios)),
-    changeScenarioName: (name) => dispatch(execChangeScenarioName(name)),
-    changeState: (s) => dispatch(execChangeScenarioState(s)),
-    changeEventCreationMode: (val) => dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
-    changeCurrentEvent: (e) => dispatch(uiExecChangeCurrentEvent(e)),
-    execChangeOkToTerminate: (ok) => dispatch(execChangeOkToTerminate(ok)),
-    changeShowApps: (show) => dispatch(uiExecChangeShowApps(show))
+    changeCurrentDialog: type => dispatch(uiChangeCurrentDialog(type)),
+    changeScenario: scenario => dispatch(execChangeScenario(scenario)),
+    changeDeployScenarioList: scenarios =>
+      dispatch(execChangeScenarioList(scenarios)),
+    changeScenarioName: name => dispatch(execChangeScenarioName(name)),
+    changeState: s => dispatch(execChangeScenarioState(s)),
+    changeEventCreationMode: val =>
+      dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
+    changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
+    execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
+    changeShowApps: show => dispatch(uiExecChangeShowApps(show))
   };
 };
 

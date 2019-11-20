@@ -25,6 +25,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
 type history struct {
@@ -40,13 +41,14 @@ type historyRx struct {
 }
 
 type destination struct {
-	host       string
-	hostName   string
-	remote     *net.IPAddr
-	remoteName string
-	ifbNumber  string
-	history    *history
-	historyRx  *historyRx
+	host         string
+	hostName     string
+	remote       *net.IPAddr
+	remoteName   string
+	ifbNumber    string
+	history      *history
+	historyRx    *historyRx
+	historyLogRx *historyRx
 }
 
 type stat struct {
@@ -58,6 +60,8 @@ type stat struct {
 	mean    time.Duration
 	stddev  time.Duration
 }
+
+const moduleMetrics string = "metrics"
 
 func (u *destination) ping(pinger *Pinger) {
 	rtt, err := pinger.Ping(u.remote, opts.timeout)
@@ -79,7 +83,7 @@ func (u *destination) addResult(rtt time.Duration, err error) {
 	s.mtx.Unlock()
 }
 
-func (u *destination) compute() (st stat) {
+func (u *destination) compute(rc *redis.Connector) (st stat) {
 	s := u.history
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
@@ -138,8 +142,8 @@ func (u *destination) compute() (st stat) {
 	log.WithFields(log.Fields{
 		"meep.log.component":      "sidecar",
 		"meep.log.msgType":        "latency",
-		"meep.log.latency-latest": st.last / 1000000,
-		"meep.log.latency-avg":    st.mean / 1000000,
+		"meep.log.latency-latest": int(math.Round(float64(st.last) / 1000000.0)),
+		"meep.log.latency-avg":    int(math.Round(float64(st.mean) / 1000000.0)),
 		"meep.log.src":            u.hostName,
 		"meep.log.dest":           u.remoteName,
 	}).Info("Measurements log")
@@ -147,7 +151,7 @@ func (u *destination) compute() (st stat) {
 	return
 }
 
-func (u *destination) processRxTx() {
+func (u *destination) processRxTx(rc *redis.Connector) {
 
 	str := "tc -s qdisc show dev ifb" + u.ifbNumber
 	out, err := cmdExec(str)
@@ -190,41 +194,113 @@ func (u *destination) processRxTx() {
 	previousRcvedBytes := u.historyRx.rcvedBytes
 
 	var throughput float64
+	var diffInMs int
 	if previousRcvedBytes != 0 {
 
 		previousTime := u.historyRx.time
 
 		diff := currentTime.Sub(previousTime)
-		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diff.Seconds()
+		diffInSeconds := diff.Seconds()
+		diffInMs = int(diffInSeconds * 1000)
+		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diffInSeconds
 	}
 
-	var throughputStr, throughputVal string
-	/*
-		if throughput > 1000 {
-			if throughput > 1000000 {
-				throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-				throughputStr = throughputVal + " Mbps"
-			} else {
-				throughputVal = strconv.FormatFloat(throughput/1000, 'f', 3, 64)
-				throughputStr = throughputVal + " Kbps"
-			}
-		} else {
-			throughputVal = strconv.FormatFloat(throughput, 'f', 3, 64)
-			throughputStr = throughputVal + " bps"
-		}
-	*/
 	//all the throughput in Mbps
-	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
-	throughputStr = throughputVal + " Mbps"
+	throughputVal := strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
 
 	u.historyRx.time = currentTime
 	u.historyRx.rcvedBytes = rcvedBytes
 
+	var stats = make(map[string]interface{})
+	stats["uniqueName"] = PodName
+	stats["trafficFrom"] = u.remoteName
+	stats["totalReceivedPkts"] = rcvedPkts
+	stats["totalDroppedPkts"] = droppedPkts
+	stats["droppedPktRate"] = pktDroppedRateStr
+	stats["totalReceivedBytes"] = rcvedBytes
+	stats["receivedBytesDuringInterval"] = rcvedBytes - previousRcvedBytes
+	stats["intervalInMs"] = diffInMs
+	stats["throughput"] = throughputVal
+
+	var throughputStats = make(map[string]interface{})
+	throughputStats[u.remoteName] = throughputVal
+
+	//store statistics but only if the entry exists
+	key := moduleMetrics + ":" + PodName + ":" + u.remoteName
+	if rc.EntryExists(key) {
+		_ = rc.SetEntry(key, stats)
+	}
+	key = moduleMetrics + ":" + PodName + ":throughput"
+	if rc.EntryExists(key) {
+		_ = rc.SetEntry(moduleMetrics+":"+PodName+":throughput", throughputStats)
+	}
+}
+
+func (u *destination) logRxTx(rc *redis.Connector) {
+
+	str := "tc -s qdisc show dev ifb" + u.ifbNumber
+	out, err := cmdExec(str)
+	if err != nil {
+		log.Error("tc -s qdisc show dev ifb", u.ifbNumber)
+		log.Error(err)
+		return
+	}
+	//ex :qdisc netem 1: root refcnt 2 limit 1000 delay 100.0ms  10.0ms 50% loss 50% rate 2Mbit\n Sent 756 bytes 8 pkt (dropped 4, overlimits 0 requeues 0
+	allStr := strings.Split(out, " ")
+
+	//we have to read the allStr from the back since based on the results are always at the end but the characteristic may be different (no pkt loss, no normal distribution, etc)
+	var rcvedPkts int
+	var droppedPkts int
+	var rcvedBytes int
+	if len(allStr) > 20 {
+		rcvedPkts, _ = strconv.Atoi(allStr[len(allStr)-15])
+		droppedPkts, _ = strconv.Atoi(allStr[len(allStr)-12][:len(allStr[len(allStr)-12])-1])
+		rcvedBytes, _ = strconv.Atoi(allStr[len(allStr)-17])
+	} else {
+		log.Error("Error in the ifb statistics output: ", allStr)
+		rcvedPkts = 0
+		droppedPkts = 0
+		rcvedBytes = 0
+	}
+
+	//dropped rate in %
+	var pktDroppedRate float64
+	pktDroppedRateStr := "0"
+
+	totalPkts := rcvedPkts + droppedPkts
+	if totalPkts > 0 {
+		top := droppedPkts * 100
+		pktDroppedRate = (float64(top)) / float64(totalPkts)
+		pktDroppedRateStr = strconv.FormatFloat(pktDroppedRate, 'f', 3, 64)
+	}
+
+	currentTime := time.Now()
+
+	previousRcvedBytes := u.historyLogRx.rcvedBytes
+
+	var throughput float64
+	if previousRcvedBytes != 0 {
+
+		previousTime := u.historyLogRx.time
+
+		diff := currentTime.Sub(previousTime)
+		diffInSeconds := diff.Seconds()
+		throughput = 8 * (float64(rcvedBytes) - float64(previousRcvedBytes)) / diffInSeconds
+	}
+
+	var throughputStr, throughputVal string
+	//all the throughput in Mbps
+	throughputVal = strconv.FormatFloat(throughput/1000000, 'f', 3, 64)
+	throughputStr = throughputVal + " Mbps"
+
+	u.historyLogRx.time = currentTime
+	u.historyLogRx.rcvedBytes = rcvedBytes
+
 	log.WithFields(log.Fields{
 		"meep.log.component":     "sidecar",
 		"meep.log.msgType":       "ingressPacketStats",
-		"meep.log.src":           u.hostName,
-		"meep.log.dest":          u.remoteName,
+		"meep.log.src":           u.remoteName,
+		"meep.log.dest":          u.hostName,
 		"meep.log.rx":            rcvedPkts,
 		"meep.log.rxd":           droppedPkts,
 		"meep.log.rxBytes":       rcvedBytes,
@@ -232,5 +308,4 @@ func (u *destination) processRxTx() {
 		"meep.log.throughputStr": throughputStr,
 		"meep.log.packet-loss":   pktDroppedRateStr,
 	}).Info("Measurements log")
-
 }

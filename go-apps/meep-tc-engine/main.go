@@ -17,16 +17,12 @@
 package main
 
 import (
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-tc-engine/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-
-	"github.com/gorilla/handlers"
 )
 
 func init() {
@@ -36,9 +32,9 @@ func init() {
 
 func main() {
 	log.Info(os.Args)
-
 	log.Info("Starting TC Engine")
 
+	// Start signal handler
 	run := true
 	go func() {
 		sigchan := make(chan os.Signal, 10)
@@ -49,26 +45,24 @@ func main() {
 		run = false
 	}()
 
+	// Initialize & Start TC Engine
 	go func() {
-		// Initialize TC Engine
-		err := server.Init()
+		err := Init()
 		if err != nil {
 			log.Error("Failed to initialize TC Engine")
 			run = false
 			return
 		}
 
-		// Start TC Engine Event Handler thread
-		go server.Run()
-
-		// Start TC Engine REST API Server
-		router := server.NewRouter()
-		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
-		header := handlers.AllowedHeaders([]string{"content-type"})
-		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
-		run = false
+		err = Run()
+		if err != nil {
+			log.Error("Failed to start TC Engine")
+			run = false
+			return
+		}
 	}()
 
+	// Main loop
 	count := 0
 	for {
 		if !run {
@@ -78,5 +72,4 @@ func main() {
 		time.Sleep(time.Second)
 		count++
 	}
-
 }

@@ -23,9 +23,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/gorilla/handlers"
 )
@@ -55,6 +54,14 @@ func main() {
 		err := server.Init()
 		if err != nil {
 			log.Error("Failed to initialize Location Service")
+			run = false
+			return
+		}
+
+		// Start Location Service Event Handler thread
+		err = server.Run()
+		if err != nil {
+			log.Error("Failed to start Location Service")
 			run = false
 			return
 		}

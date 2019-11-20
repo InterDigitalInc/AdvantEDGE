@@ -4,25 +4,25 @@ All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**CreateScenario**](ScenarioConfigurationApi.md#CreateScenario) | **Post** /scenarios/{name} | Add new scenario to MEEP store
-[**DeleteScenario**](ScenarioConfigurationApi.md#DeleteScenario) | **Delete** /scenarios/{name} | Delete scenario from MEEP store
-[**DeleteScenarioList**](ScenarioConfigurationApi.md#DeleteScenarioList) | **Delete** /scenarios | Delete all scenarios in MEEP store
-[**GetScenario**](ScenarioConfigurationApi.md#GetScenario) | **Get** /scenarios/{name} | Retrieve scenario from MEEP store
-[**GetScenarioList**](ScenarioConfigurationApi.md#GetScenarioList) | **Get** /scenarios | Retrieve list of scenarios in MEEP store
-[**SetScenario**](ScenarioConfigurationApi.md#SetScenario) | **Put** /scenarios/{name} | Update scenario in MEEP store
+[**CreateScenario**](ScenarioConfigurationApi.md#CreateScenario) | **Post** /scenarios/{name} | Add a scenario
+[**DeleteScenario**](ScenarioConfigurationApi.md#DeleteScenario) | **Delete** /scenarios/{name} | Delete a scenario
+[**DeleteScenarioList**](ScenarioConfigurationApi.md#DeleteScenarioList) | **Delete** /scenarios | Delete all scenarios
+[**GetScenario**](ScenarioConfigurationApi.md#GetScenario) | **Get** /scenarios/{name} | Get a specific scenario
+[**GetScenarioList**](ScenarioConfigurationApi.md#GetScenarioList) | **Get** /scenarios | Get all scenarios
+[**SetScenario**](ScenarioConfigurationApi.md#SetScenario) | **Put** /scenarios/{name} | Update a scenario
 
 
 # **CreateScenario**
 > CreateScenario(ctx, name, scenario)
-Add new scenario to MEEP store
+Add a scenario
 
-
+Add a scenario to the platform scenario store
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
   **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
 
@@ -36,22 +36,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DeleteScenario**
 > DeleteScenario(ctx, name)
-Delete scenario from MEEP store
+Delete a scenario
 
-
+Delete a scenario by name from the platform scenario store
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
 
 ### Return type
@@ -64,16 +64,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DeleteScenarioList**
 > DeleteScenarioList(ctx, )
-Delete all scenarios in MEEP store
+Delete all scenarios
 
-
+Delete all scenarios present in the platform scenario store
 
 ### Required Parameters
 This endpoint does not need any parameter.
@@ -88,22 +88,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetScenario**
 > Scenario GetScenario(ctx, name)
-Retrieve scenario from MEEP store
+Get a specific scenario
 
-
+Get a scenario by name from the platform scenario store
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
 
 ### Return type
@@ -116,16 +116,16 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **GetScenarioList**
 > ScenarioList GetScenarioList(ctx, )
-Retrieve list of scenarios in MEEP store
+Get all scenarios
 
-
+Returns all scenarios from the platform scenario store
 
 ### Required Parameters
 This endpoint does not need any parameter.
@@ -140,22 +140,22 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SetScenario**
 > SetScenario(ctx, name, scenario)
-Update scenario in MEEP store
+Update a scenario
 
-
+Update a scenario by name in the platform scenario store
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for logging, tracing, authentication, etc.
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
   **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
 
@@ -169,7 +169,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

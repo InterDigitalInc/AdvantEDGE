@@ -1,25 +1,25 @@
-# MeepControllerRestApi.PodStatesApi
+# AdvantEdgePlatformControllerRestApi.PodStatesApi
 
 All URIs are relative to *http://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getStates**](PodStatesApi.md#getStates) | **GET** /states | This operation returns status information for pods
+[**getStates**](PodStatesApi.md#getStates) | **GET** /states | Get pods states
 
 
 <a name="getStates"></a>
 # **getStates**
 > PodsStatus getStates(opts)
 
-This operation returns status information for pods
+Get pods states
 
-Returns pod status info for a list of pods
+Get status information of Core micro-services pods and Scenario pods
 
 ### Example
 ```javascript
-var MeepControllerRestApi = require('meep_controller_rest_api');
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var apiInstance = new MeepControllerRestApi.PodStatesApi();
+var apiInstance = new AdvantEdgePlatformControllerRestApi.PodStatesApi();
 
 var opts = { 
   '_long': "_long_example", // String | Enables detailed stats if true
@@ -53,6 +53,6 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 

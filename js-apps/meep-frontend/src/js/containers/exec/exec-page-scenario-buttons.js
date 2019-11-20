@@ -15,7 +15,7 @@
  */
 
 import { connect } from 'react-redux';
-import React, { Component }  from 'react';
+import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
 import { Checkbox } from '@rmwc/checkbox';
 
@@ -35,32 +35,49 @@ import {
 } from '../../state/exec';
 
 class ExecPageScenarioButtons extends Component {
-
   constructor(props) {
     super(props);
     this.state = {};
   }
 
   canDeploy() {
-    return this.props.podsTerminated && (this.props.scenarioState.scenario !== EXEC_STATE_DEPLOYED);
+    return (
+      this.props.podsTerminated &&
+      this.props.scenarioState.scenario !== EXEC_STATE_DEPLOYED
+    );
   }
 
   canTerminate() {
-    return !this.props.podsTerminating
-            && (this.props.scenarioState.scenario === EXEC_STATE_DEPLOYED)
-            && this.props.okToTerminate;
+    return (
+      !this.props.podsTerminating &&
+      this.props.scenarioState.scenario === EXEC_STATE_DEPLOYED &&
+      this.props.okToTerminate
+    );
   }
 
   canSaveScenario() {
-    return !this.props.podsPending && !this.props.podsTerminating && !this.props.podsTerminated;
+    return (
+      !this.props.podsPending &&
+      !this.props.podsTerminating &&
+      !this.props.podsTerminated
+    );
   }
 
   canRefresh() {
-    return !this.props.podsPending && !this.props.podsTerminating && !this.props.podsTerminated;
+    return (
+      !this.props.podsPending &&
+      !this.props.podsTerminating &&
+      !this.props.podsTerminated
+    );
   }
 
   canCreateEvent() {
-    return !this.props.eventCreationMode && !this.props.podsPending && !this.props.podsTerminating && !this.props.podsTerminated;
+    return (
+      !this.props.eventCreationMode &&
+      !this.props.podsPending &&
+      !this.props.podsTerminating &&
+      !this.props.podsTerminated
+    );
   }
 
   checkboxChanged(checked) {
@@ -69,53 +86,58 @@ class ExecPageScenarioButtons extends Component {
 
   render() {
     return (
-      <div style={{marginTop: 10}}>
-        <Button raised
+      <div style={{ marginTop: 10 }}>
+        <Button
+          raised
           style={styles.section1}
           onClick={this.props.onDeploy}
           disabled={!this.canDeploy()}
           data-cy={EXEC_BTN_DEPLOY}
         >
-                    DEPLOY
+          DEPLOY
         </Button>
-        <Button raised
+        <Button
+          raised
           style={styles.section1}
           onClick={() => this.props.onSaveScenario()}
-          disabled = {!this.canSaveScenario()}
+          disabled={!this.canSaveScenario()}
           data-cy={EXEC_BTN_SAVE_SCENARIO}
         >
-                    SAVE
+          SAVE
         </Button>
-        <Button raised
+        <Button
+          raised
           style={styles.section1}
           onClick={this.props.onTerminate}
           disabled={!this.canTerminate()}
           data-cy={EXEC_BTN_TERMINATE}
         >
-                    TERMINATE
+          TERMINATE
         </Button>
-        <Button raised
+        <Button
+          raised
           style={styles.section1}
           onClick={this.props.onRefresh}
           disabled={!this.canRefresh()}
           data-cy={EXEC_BTN_REFRESH}
         >
-                    REFRESH
+          REFRESH
         </Button>
-        <Button raised
+        <Button
+          raised
           style={styles.section2}
           onClick={this.props.onCreateEvent}
           disabled={!this.canCreateEvent()}
           data-cy={EXEC_BTN_EVENT}
         >
-                    CREATE EVENT
+          CREATE EVENT
         </Button>
 
         <Checkbox
           checked={this.props.showApps}
           onChange={e => this.checkboxChanged(e.target.checked)}
         >
-                    Show Apps
+          Show Apps
         </Checkbox>
       </div>
     );

@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EventNetworkCharacteristicsUpdate
+# AdvantEdgePlatformControllerRestApi.EventNetworkCharacteristicsUpdate
 
 ## Properties
 Name | Type | Description | Notes
@@ -15,17 +15,27 @@ Name | Type | Description | Notes
 ## Enum: ElementTypeEnum
 
 
+* `SCENARIO` (value: `"SCENARIO"`)
+
 * `OPERATOR` (value: `"OPERATOR"`)
+
+* `ZONE` (value: `"ZONE"`)
 
 * `POA` (value: `"POA"`)
 
-* `SCENARIO` (value: `"SCENARIO"`)
+* `EDGE` (value: `"EDGE"`)
 
-* `ZONE-INTER-EDGE` (value: `"ZONE-INTER-EDGE"`)
+* `FOG` (value: `"FOG"`)
 
-* `ZONE-INTER-FOG` (value: `"ZONE-INTER-FOG"`)
+* `UE` (value: `"UE"`)
 
-* `ZONE-EDGE-FOG` (value: `"ZONE-EDGE-FOG"`)
+* `DISTANT_CLOUD` (value: `"DISTANT-CLOUD"`)
+
+* `UE_APP` (value: `"UE-APP"`)
+
+* `EDGE_APP` (value: `"EDGE-APP"`)
+
+* `CLOUD_APP` (value: `"CLOUD-APP"`)
 
 
 

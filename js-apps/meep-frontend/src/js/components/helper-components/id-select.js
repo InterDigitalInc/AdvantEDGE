@@ -18,12 +18,11 @@ import React from 'react';
 import { Select } from '@rmwc/select';
 import { GridCell } from '@rmwc/grid';
 
-
-const IDSelect = (props) => {
+const IDSelect = props => {
   return (
     <GridCell span={props.span}>
       <Select
-        style={{width: '100%'}}
+        style={{ width: '100%' }}
         label={props.label}
         outlined
         options={props.options}

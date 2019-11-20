@@ -78,15 +78,23 @@ const initialState = {
 export function cfgElementConfigurationReducer(state = initialState, action) {
   switch (action.type) {
   case CFG_ELEM_NEW:
-    return updateObject(state, {configuredElement: createElem(''), configurationMode: CFG_ELEM_MODE_NEW, errorMessage: ''});
+    return updateObject(state, {
+      configuredElement: createElem(''),
+      configurationMode: CFG_ELEM_MODE_NEW,
+      errorMessage: ''
+    });
   case CFG_ELEM_EDIT:
-    return updateObject(state, {configuredElement: action.payload, configurationMode: CFG_ELEM_MODE_EDIT, errorMessage: ''});
+    return updateObject(state, {
+      configuredElement: action.payload,
+      configurationMode: CFG_ELEM_MODE_EDIT,
+      errorMessage: ''
+    });
   case CFG_ELEM_CLEAR:
     return updateObject(state, initialState);
   case CFG_ELEM_UPDATE:
-    return updateObject(state, {configuredElement: action.payload});
+    return updateObject(state, { configuredElement: action.payload });
   case CFG_ELEM_SET_ERR_MSG:
-    return updateObject(state, {errorMessage: action.payload});
+    return updateObject(state, { errorMessage: action.payload });
   default:
     return state;
   }

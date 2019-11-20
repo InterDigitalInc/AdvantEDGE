@@ -22,11 +22,11 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
 	k8s_ct "k8s.io/kubernetes/pkg/util/conntrack"
@@ -53,7 +53,6 @@ const ingressSvcChain string = ingressPrefix + "SERVICES"
 const egressSvcChain string = egressPrefix + "SERVICES"
 const maxChainLen int = 25
 const capLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const dbMaxRetryCount = 5
 
 const fieldSvcType string = "svc-type"
 const fieldSvcName string = "svc-name"
@@ -72,40 +71,55 @@ type podShortElement struct {
 var sem = make(chan int, 1)
 
 var opts = struct {
-	timeout         time.Duration
-	interval        time.Duration
-	payloadSize     uint
-	statBufferSize  uint
-	bind4           string
-	bind6           string
-	dests           []*destination
-	resolverTimeout time.Duration
+	timeout                time.Duration
+	interval               time.Duration
+	trafficInterval        time.Duration
+	trafficIntervalsPerLog uint
+	payloadSize            uint
+	statBufferSize         uint
+	bind4                  string
+	bind6                  string
+	dests                  []*destination
+	resolverTimeout        time.Duration
 }{
-	timeout:         100000 * time.Millisecond,
-	interval:        1000 * time.Millisecond,
-	bind4:           "0.0.0.0",
-	bind6:           "::",
-	payloadSize:     56,
-	statBufferSize:  50,
-	resolverTimeout: 15000 * time.Millisecond,
+	timeout:                100000 * time.Millisecond,
+	interval:               1000 * time.Millisecond,
+	trafficInterval:        100 * time.Millisecond,
+	trafficIntervalsPerLog: 10, //set to 10 to have one log per second, in order to lower the impact on Elastic Search
+	bind4:                  "0.0.0.0",
+	bind6:                  "::",
+	payloadSize:            56,
+	statBufferSize:         50,
+	resolverTimeout:        15000 * time.Millisecond,
+}
+
+// NetChar
+type NetChar struct {
+	Latency    string
+	Jitter     string
+	PacketLoss string
+	Throughput string
 }
 
 var pinger *Pinger
-var podName string
+var PodName string
 var ipTbl *ipt.IPTables
 
 var letters = []rune(capLetters)
 var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
+var netcharMap = map[string]*NetChar{}
 
 var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
 
-var currentTransactionId = 0
-var dbTransactionId = 0
-var lastTransactionIdApplied = 0
+const redisAddr string = "meep-redis-master:6379"
+
+var rc *redis.Connector
+
+const DEFAULT_SIDECAR_DB = 0
 
 // Run - MEEP Sidecar execution
 func main() {
@@ -124,7 +138,7 @@ func main() {
 	refreshLbRules()
 
 	// Listen for subscribed events. Provide event handler method.
-	_ = Listen(eventHandler)
+	_ = rc.Listen(eventHandler)
 }
 
 // initMeepSidecar - MEEP Sidecar initialization
@@ -140,12 +154,12 @@ func initMeepSidecar() error {
 	// Initialize global variables
 
 	// Retrieve Environment variables
-	podName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
-	if podName == "" {
+	PodName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
+	if PodName == "" {
 		log.Error("MEEP_POD_NAME not set. Exiting.")
 		return errors.New("MEEP_POD_NAME not set")
 	}
-	log.Info("MEEP_POD_NAME: ", podName)
+	log.Info("MEEP_POD_NAME: ", PodName)
 
 	// Create IPtables client
 	ipTbl, err = ipt.New()
@@ -156,26 +170,21 @@ func initMeepSidecar() error {
 	log.Info("Successfully created new IPTables client")
 
 	// Connect to Redis DB
-	for retry := 0; retry <= dbMaxRetryCount; retry++ {
-		err = DBConnect()
-		if err != nil {
-			log.Warn("Failed to connect to DB. Retrying... Error: ", err)
-			continue
-		}
-	}
+	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
 	if err != nil {
-		log.Error("Failed to connect to DB. Error: ", err)
+		log.Error("Failed connection to Redis DB.  Error: ", err)
 		return err
 	}
-	log.Info("Successfully connected to DB")
+	log.Info("Connected to redis DB")
 
 	// Subscribe to Pub-Sub events for MEEP TC & LB
 	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = Subscribe(channelTcNet, channelTcLb)
+	err = rc.Subscribe(channelTcNet, channelTcLb)
 	if err != nil {
 		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
 		return err
 	}
+
 	log.Info("Successfully subscribed to Pub/Sub events")
 
 	return nil
@@ -199,11 +208,7 @@ func eventHandler(channel string, payload string) {
 }
 
 func processNetCharMsg(payload string) {
-	// NOTE: Payload contains only a transaction Id
-	currentTransactionId, _ = strconv.Atoi(payload)
-	_ = getTransactionIdApplied() //sets dbTransactionId and will apply it
 	refreshNetCharRules()
-	lastTransactionIdApplied = dbTransactionId
 }
 
 func processLbMsg(payload string) {
@@ -215,16 +220,25 @@ func refreshNetCharRules() {
 	// Create shape rules
 	_ = initializeOnFirstPass()
 
+	// moduleName := "sidecar"
+	// currentTime := time.Now()
+
 	_ = createIfbs()
 
-	// Create new filters (lower priority than the old one)
 	_ = createFilters()
 
-	// // Delete unused filters
+	// Delete unused filters
 	deleteUnusedFilters()
 
 	// Delete unused ifbs
 	deleteUnusedIfbs()
+
+	// elapsed := time.Since(currentTime)
+	// log.WithFields(log.Fields{
+	// 	"meep.log.component": moduleName,
+	// 	"meep.time.location": "refreshNetCharRules execution time",
+	// 	"meep.time.exec":     elapsed,
+	// }).Info("Measurements log")
 
 	// Start measurements
 	startMeasurementThreads()
@@ -310,8 +324,8 @@ func refreshLbRules() {
 
 	// Apply pod-specific LB rules stored in DB
 	flushRequired = false
-	keyName := moduleTcEngine + ":" + typeLb + ":" + podName + ":*"
-	err = DBForEachEntry(keyName, refreshLbRulesHandler, &chainMap)
+	keyName := moduleTcEngine + ":" + typeLb + ":" + PodName + ":*"
+	err = rc.ForEachEntry(keyName, refreshLbRulesHandler, &chainMap)
 	if err != nil {
 		log.Error("Failed to search and process pod-specific MEEP LB rules. Error: ", err)
 		return
@@ -456,6 +470,7 @@ func startMeasurementThreads() {
 		callPing()
 		go workLatency()
 		go workRxTxPackets()
+		go workLogRxTxData()
 		measurementsRunning = true
 	}
 }
@@ -479,7 +494,7 @@ func callPing() {
 			name := pod.name
 			dst := destination{
 				host:       pod.ipAddr,
-				hostName:   podName,
+				hostName:   PodName,
 				remote:     &ipaddr,
 				remoteName: name,
 				ifbNumber:  pod.IfbNumber,
@@ -487,6 +502,9 @@ func callPing() {
 					results: make([]time.Duration, opts.statBufferSize),
 				},
 				historyRx: &historyRx{
+					rcvedBytes: 0,
+				},
+				historyLogRx: &historyRx{
 					rcvedBytes: 0,
 				},
 			}
@@ -515,7 +533,7 @@ func workLatency() {
 				u.ping(pinger)
 			}(u, i)
 			go func(u *destination, i int) {
-				u.compute()
+				u.compute(rc)
 			}(u, i)
 		}
 
@@ -532,7 +550,25 @@ func workRxTxPackets() {
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
 			go func(u *destination, i int) {
-				u.processRxTx()
+				u.processRxTx(rc)
+			}(u, i)
+		}
+		<-sem
+
+		time.Sleep(opts.trafficInterval)
+	}
+}
+
+func workLogRxTxData() {
+	for {
+		//only this one affects the destinations based on info in the DB
+
+		sem <- 1
+
+		for i, u := range opts.dests {
+			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
+			go func(u *destination, i int) {
+				u.logRxTx(rc)
 			}(u, i)
 		}
 		<-sem
@@ -543,8 +579,8 @@ func workRxTxPackets() {
 
 func createPing() ([]podShortElement, error) {
 	var podsToPing []podShortElement
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter*"
-	err := DBForEachEntry(keyName, createPingHandler, &podsToPing)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	err := rc.ForEachEntry(keyName, createPingHandler, &podsToPing)
 	if err != nil {
 		return nil, err
 	}
@@ -563,24 +599,9 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 	return nil
 }
 
-func getTransactionIdApplied() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
-	err := DBForEachEntry(keyName, getDbStateHandler, nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getDbStateHandler(key string, fields map[string]string, userData interface{}) error {
-	var err error
-	dbTransactionId, err = strconv.Atoi(fields["transactionIdStored"])
-	return err
-}
-
 func createIfbs() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape*"
-	err := DBForEachEntry(keyName, createIfbsHandler, nil)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
+	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
 	}
@@ -589,46 +610,22 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-	// Update the rule
-	_, exists := filters[ifbNumber]
 
+	_, exists := ifbs[ifbNumber]
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
 		_ = cmdSetIfb(fields)
 	} else {
-		if lastTransactionIdApplied < currentTransactionId {
-			_ = cmdSetIfb(fields)
-			log.Info("Transactions processed on the TC-Engine quicker than they can be processed: current ", currentTransactionId, " and last applied ", lastTransactionIdApplied)
-		} else {
-			log.Info("Transactions processed on the TC-Engine already applied ", currentTransactionId, " vs last applied ", lastTransactionIdApplied)
-		}
+		_ = cmdSetIfb(fields)
 	}
 
 	return nil
 }
 
-/*
-func flushFilters() {
-
-	// NOTE: Flush does not work on kernel version 4.4
-	//       Workaround is to manually remove all installed filters
-
-	// err := cmdDeleteAllFilters()
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
-
-	for _, ifbNumber := range filters {
-		_ = cmdDeleteFilter(ifbNumber)
-	}
-	filters = map[string]string{}
-}
-*/
 func createFilters() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter*"
-	err := DBForEachEntry(keyName, createFiltersHandler, nil)
+	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	err := rc.ForEachEntry(keyName, createFiltersHandler, nil)
 	if err != nil {
 		return err
 	}
@@ -636,36 +633,26 @@ func createFilters() error {
 }
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
-	ifbNumber := fields["ifb_uniqueId"]
+	filterNumber := fields["filter_uniqueId"]
 
-	_, exists := filters[ifbNumber]
+	_, exists := filters[filterNumber]
 
 	if !exists {
 
 		ipSrc := fields["srcIp"]
 		ipSvcSrc := fields["srcSvcIp"]
-		srcName := fields["srcName"]
+		//              srcName := fields["srcName"]
+		ifbNumber := fields["ifb_uniqueId"]
 
-		err := cmdCreateFilter(ifbNumber, ipSrc)
+		err := cmdCreateFilter(filterNumber, ifbNumber, ipSrc)
 		if err == nil {
 
 			if ipSvcSrc != "" {
-				err = cmdCreateFilter(ifbNumber, ipSvcSrc)
+				err = cmdCreateFilter(filterNumber, ifbNumber, ipSvcSrc)
 			}
 		}
 		if err == nil {
-
-			filters[ifbNumber] = ifbNumber
-
-			// Loop through dests to update them
-			for _, u := range opts.dests {
-				if u.remoteName == srcName {
-					sem <- 1
-					u.ifbNumber = ifbNumber
-					<-sem
-					break
-				}
-			}
+			filters[filterNumber] = filterNumber
 		}
 	}
 
@@ -673,12 +660,12 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 }
 
 func deleteUnusedFilters() {
-	for index, ifbNumber := range filters {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":filter:" + ifbNumber
-		if !DBEntryExists(keyName) {
-			log.Debug("filter removed: ", ifbNumber)
+	for index, filterNumber := range filters {
+		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter:" + filterNumber
+		if !rc.EntryExists(keyName) {
+			log.Debug("filter removed: ", filterNumber)
 			// Remove old filter
-			_ = cmdDeleteFilter(ifbNumber)
+			_ = cmdDeleteFilter(filterNumber)
 			delete(filters, index)
 		}
 	}
@@ -686,8 +673,8 @@ func deleteUnusedFilters() {
 
 func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + podName + ":shape:" + ifbNumber
-		if !DBEntryExists(keyName) {
+		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape:" + ifbNumber
+		if !rc.EntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb
 			_ = cmdDeleteIfb(ifbNumber)
@@ -774,10 +761,29 @@ func cmdSetIfb(shape map[string]string) error {
 	if delayVariation != "0" {
 		normalDistributionStr = "distribution normal"
 	}
-	str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "% rate " + dataRate + "bit"
-	_, err := cmdExec(str)
-	if err != nil {
-		return err
+
+	nc := netcharMap[ifbNumber]
+	if nc == nil {
+		nc = new(NetChar)
+		netcharMap[ifbNumber] = nc
+	}
+	//only apply if an update is needed
+	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate {
+		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
+		if dataRate != "" && dataRate != "0" {
+			str = str + " rate " + dataRate + "bit"
+		}
+
+		_, err := cmdExec(str)
+		if err != nil {
+			return err
+		}
+
+		//store the new values
+		nc.Latency = delay
+		nc.Jitter = delayVariation
+		nc.PacketLoss = loss
+		nc.Throughput = dataRate
 	}
 
 	return nil
@@ -802,9 +808,9 @@ func cmdDeleteIfb(ifbNumber string) error {
 // 	return nil
 // }
 
-func cmdDeleteFilter(ifbNumber string) error {
-	//tc filter del dev eth0 parent ffff: pref $ifbNumber
-	str := "tc filter del dev eth0 parent ffff: pref " + ifbNumber
+func cmdDeleteFilter(filterNumber string) error {
+	//tc filter del dev eth0 parent ffff: pref $filterNumber
+	str := "tc filter del dev eth0 parent ffff: pref " + filterNumber
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -831,14 +837,14 @@ func initializeOnFirstPass() error {
 	return nil
 }
 
-func cmdCreateFilter(ifbNumber string, ipSrc string) error {
+func cmdCreateFilter(filterNumber string, ifbNumber string, ipSrc string) error {
 
-	//"tc filter add dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
-	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + ifbNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	//"tc filter add dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	str := "tc filter add dev eth0 parent ffff: protocol ip prio " + filterNumber + " u32 match ip src " + ipSrc + " match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 
 	//fonction must be a replace... a replace Adds if not there or replace if existing
-	//"tc filter replace dev eth0 parent ffff: protocol ip prio $ifbNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
-	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + ifbNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
+	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + filterNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("Error: ", err)

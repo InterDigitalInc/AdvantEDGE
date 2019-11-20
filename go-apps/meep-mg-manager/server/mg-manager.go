@@ -28,19 +28,18 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/RyanCarrier/dijkstra"
 	"github.com/gorilla/mux"
 )
 
-const moduleCtrlEngine string = "ctrl-engine"
 const moduleMgManager string = "mg-manager"
-
-const typeActive string = "active"
 const typeLb string = "lb"
-
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
+const redisAddr string = "meep-redis-master:6379"
+const DEFAULT_LB_RULES_DB = 0
 
 const eventTypeStateUpdate = "STATE-UPDATE"
 const eventTypeStateTransferStart = "STATE-TRANSFER-START"
@@ -113,51 +112,65 @@ type mgServiceInfo struct {
 	services map[string]*serviceInfo
 }
 
-// Mutex
-var mutex sync.Mutex
+type lbRulesStore struct {
+	rc *redis.Connector
+}
 
-// Scenario network graph
-var networkGraph *dijkstra.Graph
+type MgManager struct {
+	mutex        sync.Mutex
+	networkGraph *dijkstra.Graph
+	activeModel  *mod.Model
+	lbRulesStore *lbRulesStore
 
-// Scenario network location list
-var netLocList = []string{}
+	// Scenario network location list
+	netLocList []string
 
-// Scenario service mappings
-var svcInfoMap = map[string]*serviceInfo{}
-var mgSvcInfoMap = map[string]*mgServiceInfo{}
+	// Scenario service mappings
+	svcInfoMap   map[string]*serviceInfo
+	mgSvcInfoMap map[string]*mgServiceInfo
 
-// mapping from element name to svc name for usercharts
-var svcToElemMap = map[string]string{}
-var elemToSvcMap = map[string]string{}
+	// mapping from element name to svc name for usercharts
+	svcToElemMap map[string]string
+	elemToSvcMap map[string]string
 
-// Network Element Info mapping
-var netElemInfoMap = map[string]*netElemInfo{}
+	// Network Element Info mapping
+	netElemInfoMap map[string]*netElemInfo
 
-// Mobility Group Data Map
-var mgInfoMap = map[string]*mgInfo{}
+	// Mobility Group Data Map
+	mgInfoMap map[string]*mgInfo
+}
+
+var mgm *MgManager
 
 // Init - Mobility Group Manager Init
 func Init() (err error) {
+	mgm = new(MgManager)
+	mgm.netLocList = make([]string, 0)
+	mgm.svcInfoMap = make(map[string]*serviceInfo)
+	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
+	mgm.svcToElemMap = make(map[string]string)
+	mgm.elemToSvcMap = make(map[string]string)
+	mgm.netElemInfoMap = make(map[string]*netElemInfo)
+	mgm.mgInfoMap = make(map[string]*mgInfo)
 
-	// Connect to Redis DB
-	err = DBConnect()
+	// Open Load Balancing Rules Store
+	mgm.lbRulesStore = new(lbRulesStore)
+	mgm.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
 	if err != nil {
-		log.Error("Failed connection to Active DB. Error: ", err)
+		log.Error("Failed connection to LB Rules Store Redis DB.  Error: ", err)
 		return err
 	}
-	log.Info("Connected to Active DB")
+	log.Info("Connected to LB Rules Store redis DB")
 
-	// Subscribe to Pub-Sub events for MEEP Controller
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = Subscribe(channelCtrlActive)
+	// Create new Model
+	mgm.activeModel, err = mod.NewModel(redisAddr, moduleMgManager, "activeScenario")
 	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return
+		log.Error("Failed to create model: ", err.Error())
+		return err
 	}
-	log.Info("Subscribed to Pub/Sub events")
 
 	// Flush module data
-	DBFlush(moduleMgManager)
+	_ = mgm.lbRulesStore.rc.DBFlush(moduleMgManager)
 
 	// Initialize Edge-LB rules with current active scenario
 	processActiveScenarioUpdate()
@@ -166,10 +179,15 @@ func Init() (err error) {
 }
 
 // Run - MEEP MG Manager execution
-func Run() {
+func Run() (err error) {
 
-	// Listen for subscribed events. Provide event handler method.
-	_ = Listen(eventHandler)
+	// Listen for Model updates
+	err = mgm.activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listen for model updates: ", err.Error())
+		return err
+	}
+	return nil
 }
 
 func eventHandler(channel string, payload string) {
@@ -177,8 +195,8 @@ func eventHandler(channel string, payload string) {
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update Channel
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channelCtrlActive)
+	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
 		processActiveScenarioUpdate()
 
 	default:
@@ -187,25 +205,19 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := DBJsonGetEntry(moduleCtrlEngine+":"+typeActive, ".")
-	if err != nil {
-		log.Error(err.Error())
-		clearScenario()
-		return
-	}
 
-	// Unmarshal Active scenario
-	var scenario ceModel.Scenario
-	err = json.Unmarshal([]byte(jsonScenario), &scenario)
-	if err != nil {
-		log.Error(err.Error())
+	// Handle empty/missing scenario
+	if mgm.activeModel.GetScenarioName() == "" {
 		clearScenario()
 		return
 	}
 
 	// Parse scenario
-	parseScenario(scenario)
+	err := processScenario(mgm.activeModel)
+	if err != nil {
+		log.Error("Failed to process scenario with error: ", err.Error())
+		return
+	}
 
 	// Set Default Edge-LB mapping
 	setDefaultNetLocAppMaps()
@@ -220,89 +232,99 @@ func processActiveScenarioUpdate() {
 func clearScenario() {
 	log.Debug("clearScenario() -- Resetting all variables")
 
-	networkGraph = nil
-	netLocList = []string{}
-	svcInfoMap = map[string]*serviceInfo{}
-	mgSvcInfoMap = map[string]*mgServiceInfo{}
-	svcToElemMap = map[string]string{}
-	elemToSvcMap = map[string]string{}
-	netElemInfoMap = map[string]*netElemInfo{}
-	mgInfoMap = map[string]*mgInfo{}
+	mgm.networkGraph = nil
+	mgm.netLocList = make([]string, 0)
+	mgm.svcInfoMap = make(map[string]*serviceInfo)
+	mgm.mgSvcInfoMap = make(map[string]*mgServiceInfo)
+	mgm.svcToElemMap = make(map[string]string)
+	mgm.elemToSvcMap = make(map[string]string)
+	mgm.netElemInfoMap = make(map[string]*netElemInfo)
+	mgm.mgInfoMap = make(map[string]*mgInfo)
 
 	// Flush module data and send update
-	DBFlush(moduleMgManager)
-	_ = Publish(channelMgManagerLb, "")
+	_ = mgm.lbRulesStore.rc.DBFlush(moduleMgManager)
+	_ = mgm.lbRulesStore.rc.Publish(channelMgManagerLb, "")
 }
 
-func parseScenario(scenario ceModel.Scenario) {
-	log.Debug("parseScenario")
+func processScenario(model *mod.Model) error {
+	log.Debug("processScenario")
 
-	// Create new network graph
-	networkGraph = dijkstra.NewGraph()
+	// Populate net location list
+	mgm.netLocList = model.GetNodeNames("POA")
+	mgm.netLocList = append(mgm.netLocList, model.GetNodeNames("DEFAULT")...)
 
-	// Parse Domains
-	for _, domain := range scenario.Deployment.Domains {
-		addNode(networkGraph, domain.Name, "")
+	// Get list of processes
+	procNames := model.GetNodeNames("CLOUD-APP", "EDGE-APP", "UE-APP")
 
-		// Parse Zones
-		for _, zone := range domain.Zones {
-			addNode(networkGraph, zone.Name, domain.Name)
+	// Get network graph from model
+	mgm.networkGraph = model.GetNetworkGraph()
 
-			// Parse Network Locations
-			for _, nl := range zone.NetworkLocations {
-				addNode(networkGraph, nl.Name, zone.Name)
-				netLocList = append(netLocList, nl.Name)
+	// Create NetElem for each scenario process
+	for _, name := range procNames {
+		// Retrieve node & context from model
+		procNode := model.GetNode(name)
+		if procNode == nil {
+			err := errors.New("Error finding process: " + name)
+			return err
+		}
+		proc, ok := procNode.(*ceModel.Process)
+		if !ok {
+			err := errors.New("Error casting process: " + name)
+			return err
+		}
+		ctx := model.GetNodeContext(name)
+		if ctx == nil {
+			err := errors.New("Error getting context for process: " + name)
+			return err
+		}
+		nodeCtx, ok := ctx.(*mod.NodeContext)
+		if !ok {
+			err := errors.New("Error casting context for process: " + name)
+			return err
+		}
 
-				// Parse Physical locations
-				for _, pl := range nl.PhysicalLocations {
-					addNode(networkGraph, pl.Name, nl.Name)
+		// Get network element from list or create new one if it does not exist
+		netElem := getNetElem(proc.Name)
 
-					// Parse Processes
-					for _, proc := range pl.Processes {
-						addNode(networkGraph, proc.Name, pl.Name)
+		// Set current physical & network location and network locations in range
+		netElem.phyLoc = nodeCtx.Parents[mod.PhyLoc]
+		netElem.netLoc = nodeCtx.Parents[mod.NetLoc]
+		phyLocNode := model.GetNode(netElem.phyLoc)
+		if phyLocNode == nil {
+			err := errors.New("Error finding physical location: " + netElem.phyLoc)
+			return err
+		}
+		phyLoc, ok := phyLocNode.(*ceModel.PhysicalLocation)
+		if !ok {
+			err := errors.New("Error casting physical location: " + netElem.phyLoc)
+			return err
+		}
+		netElem.netLocsInRange = map[string]bool{}
+		for _, netLoc := range phyLoc.NetworkLocationsInRange {
+			netElem.netLocsInRange[netLoc] = true
+		}
 
-						// Get network element from list or create new one if it does not exist
-						netElem := getNetElem(proc.Name)
+		// Store service information from service config
+		if proc.ServiceConfig != nil {
+			addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.MeSvcName, proc.Name)
+		}
 
-						// Set current physical & network location and network locations in range
-						netElem.phyLoc = pl.Name
-						netElem.netLoc = nl.Name
-						netElem.netLocsInRange = map[string]bool{}
-						for _, netLoc := range pl.NetworkLocationsInRange {
-							netElem.netLocsInRange[netLoc] = true
-						}
+		// Store service information from user chart
+		// Format: <service instance name>:[group service name]:<port>:<protocol>
+		if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
+			userChartGroup := strings.Split(proc.UserChartGroup, ":")
+			addServiceInfo(userChartGroup[0], userChartGroup[1], proc.Name)
+		}
 
-						// Store service information from service config
-						if proc.ServiceConfig != nil {
-							addServiceInfo(proc.ServiceConfig.Name, proc.ServiceConfig.MeSvcName, proc.Name)
-						}
-
-						// Store service information from user chart
-						// Format: <service instance name>:[group service name]:<port>:<protocol>
-						if proc.UserChartLocation != "" && proc.UserChartGroup != "" {
-							userChartGroup := strings.Split(proc.UserChartGroup, ":")
-							addServiceInfo(userChartGroup[0], userChartGroup[1], proc.Name)
-						}
-
-						// Store information from external config
-						if proc.ExternalConfig != nil {
-							for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
-								addServiceInfo(svcMap.Name, svcMap.MeSvcName, proc.Name)
-							}
-						}
-					}
-				}
+		// Store information from external config
+		if proc.ExternalConfig != nil {
+			for _, svcMap := range proc.ExternalConfig.EgressServiceMap {
+				addServiceInfo(svcMap.Name, svcMap.MeSvcName, proc.Name)
 			}
 		}
 	}
-}
 
-func addNode(graph *dijkstra.Graph, node string, parent string) {
-	graph.AddMappedVertex(node)
-	if parent != "" {
-		_ = graph.AddMappedArc(parent, node, 1)
-		_ = graph.AddMappedArc(node, parent, 1)
-	}
+	return nil
 }
 
 // Create & store new service & MG service information
@@ -314,12 +336,12 @@ func addServiceInfo(svcName string, mgSvcName string, nodeName string) {
 	// Store MG Service info
 	if mgSvcName != "" {
 		// Add MG service to MG service info map if it does not exist yet
-		mgSvcInfo, found := mgSvcInfoMap[mgSvcName]
+		mgSvcInfo, found := mgm.mgSvcInfoMap[mgSvcName]
 		if !found {
 			mgSvcInfo = new(mgServiceInfo)
 			mgSvcInfo.services = make(map[string]*serviceInfo)
 			mgSvcInfo.name = mgSvcName
-			mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
+			mgm.mgSvcInfoMap[mgSvcInfo.name] = mgSvcInfo
 		}
 
 		// Add service instance reference to MG service list
@@ -340,14 +362,14 @@ func addServiceInfo(svcName string, mgSvcName string, nodeName string) {
 	}
 
 	// Add service instance to service info map
-	svcInfoMap[svcInfo.name] = svcInfo
-	svcToElemMap[svcInfo.name] = svcInfo.name
-	elemToSvcMap[svcInfo.name] = svcInfo.name
+	mgm.svcInfoMap[svcInfo.name] = svcInfo
+	mgm.svcToElemMap[svcInfo.name] = svcInfo.name
+	mgm.elemToSvcMap[svcInfo.name] = svcInfo.name
 }
 
 func getNetElem(name string) *netElemInfo {
 	// Get existing entry, if any
-	netElem := netElemInfoMap[name]
+	netElem := mgm.netElemInfoMap[name]
 	if netElem == nil {
 		// Create new net elem
 		netElem = new(netElemInfo)
@@ -355,7 +377,7 @@ func getNetElem(name string) *netElemInfo {
 		netElem.netLocsInRange = map[string]bool{}
 		netElem.mgSvcMap = map[string]*svcMapInfo{}
 		netElem.transferInProgress = false
-		netElemInfoMap[name] = netElem
+		mgm.netElemInfoMap[name] = netElem
 	}
 	return netElem
 }
@@ -365,11 +387,11 @@ func setDefaultNetLocAppMaps() {
 
 	// For each MG Service & net location in scenario, use Group App instances from scenario and
 	// default LB algorithm to determine which App instance is best for net location
-	for _, mgInfo := range mgInfoMap {
+	for _, mgInfo := range mgm.mgInfoMap {
 		// Only set on first pass
 		if len(mgInfo.defaultNetLocAppMap) == 0 {
-			for _, netLoc := range netLocList {
-				mgInfo.defaultNetLocAppMap[netLoc] = runLbAlgoHopCount(mgSvcInfoMap[mgInfo.mg.Name].services, netLoc)
+			for _, netLoc := range mgm.netLocList {
+				mgInfo.defaultNetLocAppMap[netLoc] = runLbAlgoHopCount(mgm.mgSvcInfoMap[mgInfo.mg.Name].services, netLoc)
 			}
 		}
 	}
@@ -384,16 +406,16 @@ func refreshNetLocAppMap(mgInfo *mgInfo) {
 	// Retrieve list of registered app services
 	var mgApps = map[string]*serviceInfo{}
 	for _, appInfo := range mgInfo.appInfoMap {
-		mgApps[appInfo.app.Id] = svcInfoMap[appInfo.app.Id]
+		mgApps[appInfo.app.Id] = mgm.svcInfoMap[appInfo.app.Id]
 		if mgApps[appInfo.app.Id] == nil {
 
-			mgApps[appInfo.app.Id] = svcInfoMap[svcToElemMap[appInfo.app.Id]]
+			mgApps[appInfo.app.Id] = mgm.svcInfoMap[mgm.svcToElemMap[appInfo.app.Id]]
 		}
 	}
 
 	// For each net location in scenario, use Group LB algorithm to determine which
 	// registered Group App is best for net location
-	for _, netLoc := range netLocList {
+	for _, netLoc := range mgm.netLocList {
 		if mgInfo.mg.LoadBalancingAlgorithm == lbAlgoHopCount {
 			mgInfo.netLocAppMap[netLoc] = runLbAlgoHopCount(mgApps, netLoc)
 		} else {
@@ -407,13 +429,13 @@ func refreshMgSvcMapping() {
 	log.Debug("refreshMgSvcMapping")
 
 	// For each network element, populate MG Service mapping
-	for _, netElemInfo := range netElemInfoMap {
+	for _, netElemInfo := range mgm.netElemInfoMap {
 
 		// For each MG Service, determine which instance to use
-		for _, mgSvcInfo := range mgSvcInfoMap {
+		for _, mgSvcInfo := range mgm.mgSvcInfoMap {
 
 			// Ignore if no mobility group exists
-			mgInfo := mgInfoMap[mgSvcInfo.name]
+			mgInfo := mgm.mgInfoMap[mgSvcInfo.name]
 			if mgInfo == nil {
 				log.Error("No MG for MG Service: ", mgSvcInfo.name)
 				continue
@@ -441,7 +463,7 @@ func refreshMgSvcMapping() {
 				// notification and update mapping
 				if bestApp != currentApp {
 					log.Info("Best App: " + bestApp + " != Current App: " + currentApp)
-					completeStateTransfer(mgInfo, netElemInfo, ueInfo, elemToSvcMap[currentApp])
+					completeStateTransfer(mgInfo, netElemInfo, ueInfo, mgm.elemToSvcMap[currentApp])
 					setSvcMap(netElemInfo, mgInfo.mg.Name, bestApp)
 				}
 
@@ -451,7 +473,7 @@ func refreshMgSvcMapping() {
 				var bestApp = mgInfo.netLocAppMap[netElemInfo.netLoc]
 
 				// Find all Group Apps in range based on Net Locations in range
-				mutex.Lock()
+				mgm.mutex.Lock()
 				ueInfo.appsInRange = map[string]bool{}
 				ueInfo.appsInRange[bestApp] = true
 				for netLoc := range netElemInfo.netLocsInRange {
@@ -459,13 +481,13 @@ func refreshMgSvcMapping() {
 						ueInfo.appsInRange[mgInfo.netLocAppMap[netLoc]] = true
 					}
 				}
-				mutex.Unlock()
+				mgm.mutex.Unlock()
 
 				// If new location requires a new Group App instance, send Transfer Complete
 				// notification and update mapping
 				if bestApp != currentApp {
 					log.Info("Best App: " + bestApp + " != Current App: " + currentApp)
-					completeStateTransfer(mgInfo, netElemInfo, ueInfo, elemToSvcMap[currentApp])
+					completeStateTransfer(mgInfo, netElemInfo, ueInfo, mgm.elemToSvcMap[currentApp])
 					setSvcMap(netElemInfo, mgInfo.mg.Name, bestApp)
 				}
 
@@ -510,9 +532,9 @@ func runLbAlgoHopCount(services map[string]*serviceInfo, elem string) string {
 
 	for _, svc := range services {
 		// Calculate shortest distance
-		src, _ := networkGraph.GetMapping(elem)
-		dst, _ := networkGraph.GetMapping(svc.node)
-		path, _ := networkGraph.Shortest(src, dst)
+		src, _ := mgm.networkGraph.GetMapping(elem)
+		dst, _ := mgm.networkGraph.GetMapping(svc.node)
+		path, _ := mgm.networkGraph.Shortest(src, dst)
 
 		// Store as LB service if closest service instance
 		if lbSvc == "" || path.Distance < minDist {
@@ -585,9 +607,9 @@ func applyMgSvcMapping() {
 
 	// Create network element list from network element map
 	var netElemList mgModel.NetworkElementList
-	netElemList.NetworkElements = make([]mgModel.NetworkElement, 0, len(netElemInfoMap))
+	netElemList.NetworkElements = make([]mgModel.NetworkElement, 0, len(mgm.netElemInfoMap))
 
-	for _, netElemInfo := range netElemInfoMap {
+	for _, netElemInfo := range mgm.netElemInfoMap {
 		var netElem mgModel.NetworkElement
 		netElem.Name = netElemInfo.name
 		netElem.ServiceMaps = make([]mgModel.MobilityGroupServiceMap, 0, len(netElemInfo.mgSvcMap))
@@ -611,19 +633,19 @@ func applyMgSvcMapping() {
 		log.Error(err.Error())
 		return
 	}
-	err = DBJsonSetEntry(moduleMgManager+":"+typeLb, ".", string(jsonNetElemList))
+	err = mgm.lbRulesStore.rc.JSONSetEntry(moduleMgManager+":"+typeLb, ".", string(jsonNetElemList))
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
 
 	// Publish Edge LB rules update
-	_ = Publish(channelMgManagerLb, "")
+	_ = mgm.lbRulesStore.rc.Publish(channelMgManagerLb, "")
 }
 
 func mgCreate(mg *mgModel.MobilityGroup) error {
 	// Make sure group does not already exist
-	if mgInfoMap[mg.Name] != nil {
+	if mgm.mgInfoMap[mg.Name] != nil {
 		log.Warn("Mobility group already exists: ", mg.Name)
 		err := errors.New("Mobility group already exists")
 		return err
@@ -638,7 +660,7 @@ func mgCreate(mg *mgModel.MobilityGroup) error {
 	mgInfo.defaultNetLocAppMap = make(map[string]string)
 
 	// Add to MG map
-	mgInfoMap[mg.Name] = mgInfo
+	mgm.mgInfoMap[mg.Name] = mgInfo
 
 	log.Info("Created MG: ", mg.Name)
 	return nil
@@ -646,7 +668,7 @@ func mgCreate(mg *mgModel.MobilityGroup) error {
 
 func mgUpdate(mg *mgModel.MobilityGroup) error {
 	// Make sure group exists
-	mgInfo := mgInfoMap[mg.Name]
+	mgInfo := mgm.mgInfoMap[mg.Name]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mg.Name)
 		err := errors.New("Mobility group does not exist")
@@ -662,14 +684,14 @@ func mgUpdate(mg *mgModel.MobilityGroup) error {
 
 func mgDelete(mgName string) error {
 	// Make sure group exists
-	if mgInfoMap[mgName] == nil {
+	if mgm.mgInfoMap[mgName] == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
 		return err
 	}
 
 	// Remove entry from map
-	delete(mgInfoMap, mgName)
+	delete(mgm.mgInfoMap, mgName)
 
 	log.Info("Deleted MG: ", mgName)
 	return nil
@@ -677,7 +699,7 @@ func mgDelete(mgName string) error {
 
 func mgAppCreate(mgName string, mgApp *mgModel.MobilityGroupApp) error {
 	// Make sure group exists
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
@@ -720,7 +742,7 @@ func mgAppCreate(mgName string, mgApp *mgModel.MobilityGroupApp) error {
 
 func mgAppUpdate(mgName string, mgApp *mgModel.MobilityGroupApp) error {
 	// Make sure group exists
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
@@ -753,7 +775,7 @@ func mgAppUpdate(mgName string, mgApp *mgModel.MobilityGroupApp) error {
 
 func mgAppDelete(mgName string, appID string) error {
 	// Make sure group exists
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
@@ -776,7 +798,7 @@ func mgAppDelete(mgName string, appID string) error {
 
 func mgUeCreate(mgName string, appID string, mgUe *mgModel.MobilityGroupUe) error {
 	// Make sure group exists
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
@@ -811,7 +833,7 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 	log.Info("Processing app state for UE: " + mgAppState.UeId + " from appID: " + appID + " in group: " + mgName)
 
 	// Retrieve MG info
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Mobility group does not exist: ", mgName)
 		err := errors.New("Mobility group does not exist")
@@ -841,9 +863,9 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 	appState.UeId = ueInfo.ue.Id
 	appState.UeState = ueInfo.state
 
-	mutex.Lock()
+	mgm.mutex.Lock()
 	for appName := range ueInfo.appsInRange {
-		appName = elemToSvcMap[appName]
+		appName = mgm.elemToSvcMap[appName]
 
 		if appName != appID {
 			appInfo := mgInfo.appInfoMap[appName]
@@ -866,7 +888,7 @@ func processAppState(mgName string, appID string, mgAppState *mgModel.MobilityGr
 			}()
 		}
 	}
-	mutex.Unlock()
+	mgm.mutex.Unlock()
 
 	return nil
 }
@@ -876,8 +898,8 @@ func mgGetMobilityGroupList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("mgGetMobilityGroupList")
 
 	// Make list from MG map
-	mgList := make([]mgModel.MobilityGroup, 0, len(mgInfoMap))
-	for _, value := range mgInfoMap {
+	mgList := make([]mgModel.MobilityGroup, 0, len(mgm.mgInfoMap))
+	for _, value := range mgm.mgInfoMap {
 		mgList = append(mgList, value.mg)
 	}
 
@@ -911,7 +933,7 @@ func mgGetMobilityGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve MG from map
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Failed to find MG")
 		http.Error(w, "Failed to find MG", http.StatusNotFound)
@@ -1027,7 +1049,7 @@ func mgGetMobilityGroupAppList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve MG from map
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Failed to find MG")
 		http.Error(w, "Failed to find MG", http.StatusNotFound)
@@ -1076,7 +1098,7 @@ func mgGetMobilityGroupApp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve MG from map
-	mgInfo := mgInfoMap[mgName]
+	mgInfo := mgm.mgInfoMap[mgName]
 	if mgInfo == nil {
 		log.Error("Failed to find MG")
 		http.Error(w, "Failed to find MG", http.StatusNotFound)
@@ -1296,3 +1318,67 @@ func mgTransferAppState(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
+
+// func mgmDebug(str string) {
+// 	log.Debug("+++++ " + str + " +++++")
+// 	log.Debug("+++ netLocList:")
+// 	for _, netLoc := range mgm.netLocList {
+// 		log.Debug("   " + netLoc)
+// 	}
+// 	log.Debug("+++ svcInfoMap:")
+// 	for svcName, svcInfo := range mgm.svcInfoMap {
+// 		log.Debug("   " + svcName + ":" + svcInfo.name + ":" + svcInfo.node)
+// 	}
+// 	log.Debug("+++ mgSvcInfoMap:")
+// 	for mgSvcName, mgSvcInfo := range mgm.mgSvcInfoMap {
+// 		log.Debug("   " + mgSvcName + ":")
+// 		log.Debug("      services:")
+// 		for k := range mgSvcInfo.services {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// 	log.Debug("+++ svcToElemMap:")
+// 	for k, v := range mgm.svcToElemMap {
+// 		log.Debug("   " + k + ":" + v)
+// 	}
+// 	log.Debug("+++ elemToSvcMap:")
+// 	for k, v := range mgm.elemToSvcMap {
+// 		log.Debug("   " + k + ":" + v)
+// 	}
+// 	log.Debug("+++ netElemInfoMap:")
+// 	for netElemName, netElemInfo := range mgm.netElemInfoMap {
+// 		log.Debug("   " + netElemName + ":")
+// 		log.Debug("      name: " + netElemInfo.name)
+// 		log.Debug("      phyLoc: " + netElemInfo.phyLoc)
+// 		log.Debug("      netLoc: " + netElemInfo.netLoc)
+// 		log.Debug("      netLocsInRange:")
+// 		for k := range netElemInfo.netLocsInRange {
+// 			log.Debug("         " + k)
+// 		}
+// 		log.Debug("      mgSvcMap:")
+// 		for k := range netElemInfo.mgSvcMap {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// 	log.Debug("+++ mgInfoMap:")
+// 	for mgInfoName, mgInfo := range mgm.mgInfoMap {
+// 		log.Debug("   " + mgInfoName + ":")
+// 		log.Debug("      netLocAppMap:")
+// 		for k, v := range mgInfo.netLocAppMap {
+// 			log.Debug("         " + k + ":" + v)
+// 		}
+// 		log.Debug("      defaultNetLocAppMap:")
+// 		for k, v := range mgInfo.defaultNetLocAppMap {
+// 			log.Debug("         " + k + ":" + v)
+// 		}
+// 		log.Debug("      appInfoMap:")
+// 		for k := range mgInfo.appInfoMap {
+// 			log.Debug("         " + k)
+
+// 		}
+// 		log.Debug("      ueInfoMap:")
+// 		for k := range mgInfo.ueInfoMap {
+// 			log.Debug("         " + k)
+// 		}
+// 	}
+// }

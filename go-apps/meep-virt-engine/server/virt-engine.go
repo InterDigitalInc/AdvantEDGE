@@ -17,47 +17,25 @@
 package server
 
 import (
-	"encoding/json"
 	"os"
 	"strings"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	model "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
-const moduleCtrlEngine string = "ctrl-engine"
-const typeActive string = "active"
-const channelCtrlActive string = moduleCtrlEngine + "-" + typeActive
-
-var activeScenarioName string = ""
-var watchdogClient *watchdog.Pingee
-var rc *redis.Connector
-
-const activeScenarioEventKey string = moduleCtrlEngine + ":" + typeActive
+const moduleName string = "meep-virt-engine"
 const redisAddr string = "localhost:30379"
+
+var watchdogClient *watchdog.Pingee
+var activeModel *mod.Model
+var activeScenarioName string
 
 // VirtEngineInit - Initialize virtualization engine
 func VirtEngineInit() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
-	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisAddr, 0)
-	if err != nil {
-		log.Error("Failed connection to Redis DB. Error: ", err)
-		return err
-	}
-	log.Info("Connected to Redis DB")
-
-	// Subscribe to Pub-Sub events for MEEP Controller
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = rc.Subscribe(channelCtrlActive)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return err
-	}
-	log.Info("Subscribed to Redis Events")
 
 	// Setup for liveness monitoring
 	watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
@@ -71,14 +49,18 @@ func VirtEngineInit() (err error) {
 		return err
 	}
 
+	// Listen for model updates
+	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+	err = activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listening for model updates: ", err.Error())
+	}
+
 	return nil
-}
-
-// ListenEvents - Redis DB event listener
-func ListenEvents() {
-	// Listen for subscribed events. Provide event handler method.
-	_ = rc.Listen(eventHandler)
-
 }
 
 func eventHandler(channel string, payload string) {
@@ -86,64 +68,39 @@ func eventHandler(channel string, payload string) {
 	switch channel {
 
 	// MEEP Ctrl Engine active scenario update event
-	case channelCtrlActive:
-		log.Debug("Event received on channel: ", channel)
-		processActiveScenarioUpdate()
+	case mod.ActiveScenarioEvents:
+		processActiveScenarioUpdate(payload)
 
 	default:
 		log.Warn("Unsupported channel event: ", channel)
 	}
 }
 
-func processActiveScenarioUpdate() {
-	// Retrieve active scenario from DB
-	jsonScenario, err := rc.JSONGetEntry(activeScenarioEventKey, ".")
-	log.Debug("Scenario Event:", jsonScenario)
-	if err != nil {
+func processActiveScenarioUpdate(event string) {
+	if event == mod.EventTerminate {
 		terminateScenario(activeScenarioName)
 		activeScenarioName = ""
+	} else if event == mod.EventActivate {
+		// Cache name for later deletion
+		activeScenarioName = activeModel.GetScenarioName()
+		activateScenario()
 	} else {
-		activateScenario(jsonScenario)
+		log.Debug("Reveived event: ", event, " - Do nothing")
 	}
 }
 
-func unmarshallScenario(jsonScenario string) (model.Scenario, error) {
-
-	log.Debug("unmarshallScenario")
-
-	var scenario model.Scenario
-
-	//readAndPrintRequest(r)
-	err := json.Unmarshal([]byte(jsonScenario), &scenario)
+func activateScenario() {
+	err := Deploy(activeModel)
 	if err != nil {
-		log.Error(err.Error())
-		return scenario, err
-	}
-	return scenario, nil
-}
-
-func activateScenario(jsonScenario string) {
-	scenario, err := unmarshallScenario(jsonScenario)
-	if err != nil {
-		log.Error("Error unmarshalling scenario: ", jsonScenario)
-		return
-	}
-
-	activeScenarioName = scenario.Name
-	err = CreateYamlScenarioFile(scenario)
-	if err != nil {
-		log.Error("Error creating scenario charts: ", err)
+		log.Error("Error creating charts: ", err)
 		return
 	}
 }
 
 func terminateScenario(name string) {
-	// Make sure scenario name is valid
 	if name == "" {
-		log.Warn("Trying to terminate empty scenario")
 		return
 	}
-
 	// Retrieve list of releases
 	rels, _ := helm.GetReleasesName()
 	var toDelete []helm.Chart

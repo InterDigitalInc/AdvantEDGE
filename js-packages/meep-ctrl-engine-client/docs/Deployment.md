@@ -1,4 +1,4 @@
-# MeepControllerRestApi.Deployment
+# AdvantEdgePlatformControllerRestApi.Deployment
 
 ## Properties
 Name | Type | Description | Notes

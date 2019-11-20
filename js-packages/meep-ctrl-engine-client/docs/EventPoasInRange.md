@@ -1,4 +1,4 @@
-# MeepControllerRestApi.EventPoasInRange
+# AdvantEdgePlatformControllerRestApi.EventPoasInRange
 
 ## Properties
 Name | Type | Description | Notes
