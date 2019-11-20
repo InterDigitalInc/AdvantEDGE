@@ -30,10 +30,14 @@ func NewNetworkGraph() (ng *NetworkGraph) {
 	return ng
 }
 
-func (ng *NetworkGraph) AddNode(node string, parent string) {
+func (ng *NetworkGraph) AddNode(node string, parent string, zeroDist bool) {
 	ng.graph.AddMappedVertex(node)
 	if parent != "" {
-		_ = ng.graph.AddMappedArc(parent, node, 1)
-		_ = ng.graph.AddMappedArc(node, parent, 1)
+		var distance int64 = 0
+		if !zeroDist {
+			distance = 1
+		}
+		_ = ng.graph.AddMappedArc(parent, node, distance)
+		_ = ng.graph.AddMappedArc(node, parent, distance)
 	}
 }

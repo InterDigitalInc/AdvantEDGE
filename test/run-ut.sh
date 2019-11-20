@@ -19,6 +19,6 @@ echo ""
 for pkg in "${GOPKGS[@]}" ; do
     echo "+ pkg: $pkg"
     cd $BASEDIR/../go-packages/$pkg
-    go test ./...
+    go test -count=1 ./...
     echo ""
 done

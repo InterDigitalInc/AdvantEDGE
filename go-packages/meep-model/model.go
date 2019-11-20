@@ -461,35 +461,35 @@ func (m *Model) parseNodes() (err error) {
 				domain := &m.scenario.Deployment.Domains[iDomain]
 				ctx := NewNodeContext(m.scenario.Name, domain.Name, "", "", "")
 				m.nodeMap.AddNode(NewNode(domain.Name, domain.Type_, domain, &domain.Zones, m.scenario.Deployment, ctx))
-				m.networkGraph.AddNode(domain.Name, "")
+				m.networkGraph.AddNode(domain.Name, "", false)
 
 				// Zones
 				for iZone := range domain.Zones {
 					zone := &domain.Zones[iZone]
 					ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, "", "")
 					m.nodeMap.AddNode(NewNode(zone.Name, zone.Type_, zone, &zone.NetworkLocations, domain, ctx))
-					m.networkGraph.AddNode(zone.Name, domain.Name)
+					m.networkGraph.AddNode(zone.Name, domain.Name, isDefaultZone(zone.Type_))
 
 					// Network Locations
 					for iNL := range zone.NetworkLocations {
 						nl := &zone.NetworkLocations[iNL]
 						ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, "")
 						m.nodeMap.AddNode(NewNode(nl.Name, nl.Type_, nl, &nl.PhysicalLocations, zone, ctx))
-						m.networkGraph.AddNode(nl.Name, zone.Name)
+						m.networkGraph.AddNode(nl.Name, zone.Name, isDefaultNetLoc(nl.Type_))
 
 						// Physical Locations
 						for iPL := range nl.PhysicalLocations {
 							pl := &nl.PhysicalLocations[iPL]
 							ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
 							m.nodeMap.AddNode(NewNode(pl.Name, pl.Type_, pl, &pl.Processes, nl, ctx))
-							m.networkGraph.AddNode(pl.Name, nl.Name)
+							m.networkGraph.AddNode(pl.Name, nl.Name, false)
 
 							// Processes
 							for iProc := range pl.Processes {
 								proc := &pl.Processes[iProc]
 								ctx := NewNodeContext(m.scenario.Name, domain.Name, zone.Name, nl.Name, pl.Name)
 								m.nodeMap.AddNode(NewNode(proc.Name, proc.Type_, proc, nil, pl, ctx))
-								m.networkGraph.AddNode(proc.Name, pl.Name)
+								m.networkGraph.AddNode(proc.Name, pl.Name, false)
 
 								// Update service map for external processes
 								if proc.IsExternal {
@@ -654,4 +654,18 @@ func (m *Model) internalListener(channel string, payload string) {
 
 	// external listener
 	m.listener(channel, payload)
+}
+
+func isDefaultZone(typ string) bool {
+	if typ == "COMMON" {
+		return true
+	}
+	return false
+}
+
+func isDefaultNetLoc(typ string) bool {
+	if typ == "DEFAULT" {
+		return true
+	}
+	return false
 }
