@@ -107,6 +107,7 @@ var corePodsNameMap = []string{
 	"filebeat",
 	"kibana",
 	"kube-state-metrics",
+	"influxdb",
 	"meep-ctrl-engine",
 	"meep-webhook",
 	"meep-mg-manager",

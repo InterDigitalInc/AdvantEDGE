@@ -154,6 +154,7 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, workdir+"es-data")
 	cmd.Args = append(cmd.Args, workdir+"es-master-0")
 	cmd.Args = append(cmd.Args, workdir+"es-master-1")
+	cmd.Args = append(cmd.Args, workdir+"influxdb")
 	cmd.Args = append(cmd.Args, workdir+"kibana")
 	cmd.Args = append(cmd.Args, workdir+"docker-registry")
 	cmd.Args = append(cmd.Args, workdir+"certs")
@@ -286,6 +287,11 @@ func deployDep(cobraCmd *cobra.Command) {
 	repo = "meep-redis"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.redis.chart")
 	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	//---
+	repo = "meep-influxdb"
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.influxdb.chart")
+	flags = utils.HelmFlags(nil, "--set", "persistence.location="+workdir+"influxdb/")
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"

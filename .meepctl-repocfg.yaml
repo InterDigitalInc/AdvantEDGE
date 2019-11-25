@@ -134,6 +134,8 @@ repo:
         chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
+    influxdb:
+      chart: charts/influxdb
     redis:
       chart: charts/redis
     k8s:
