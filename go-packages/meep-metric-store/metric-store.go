@@ -17,7 +17,9 @@
 package metricstore
 
 import (
+	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -43,7 +45,6 @@ type MetricStore struct {
 // NewMetricStore - Creates and initialize a Metric Store instance
 func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 	ms = new(MetricStore)
-	ms.name = name
 
 	// Connect to Influx DB
 	for retry := 0; !ms.connected && retry <= dbMaxRetryCount; retry++ {
@@ -56,13 +57,12 @@ func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 		return nil, err
 	}
 
-	// Create Store DB if it does not exist
-	q := influxclient.NewQuery("CREATE DATABASE "+name, "", "")
-	response, err := (*ms.client).Query(q)
+	// Set store to use
+	err = ms.SetStore(name)
 	if err != nil {
-		log.Error("Query failed with error: ", err.Error())
+		log.Error("Failed to set store: ", err.Error())
+		return nil, err
 	}
-	log.Info(response.Results)
 
 	log.Info("Successfully connected to Influx DB")
 	return ms, nil
@@ -95,8 +95,27 @@ func (ms *MetricStore) connectDB(addr string) error {
 	return nil
 }
 
+// SetStore -
+func (ms *MetricStore) SetStore(name string) error {
+	// Set current store. Create new DB if necessary.
+	if name != "" {
+		q := influxclient.NewQuery("CREATE DATABASE "+name, "", "")
+		_, err := (*ms.client).Query(q)
+		if err != nil {
+			log.Error("Query failed with error: ", err.Error())
+			return err
+		}
+		ms.name = name
+	}
+	return nil
+}
+
 // Flush
 func (ms *MetricStore) Flush() {
+	// Make sure we have set a store
+	if ms.name == "" {
+		return
+	}
 
 	// Create Store DB if it does not exist
 	q := influxclient.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
@@ -109,6 +128,12 @@ func (ms *MetricStore) Flush() {
 
 // SetMetric - Generic metric setter
 func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields map[string]interface{}) error {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return err
+	}
+
 	// Create a new point batch
 	bp, _ := influxclient.NewBatchPoints(influxclient.BatchPointsConfig{
 		Database:  ms.name,
@@ -133,13 +158,62 @@ func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields m
 }
 
 // GetMetric - Generic metric getter
-func (ms *MetricStore) GetMetric(metric string) {
-	q := influxclient.NewQuery("SELECT * FROM "+metric, ms.name, "")
+func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, count int) (values []map[string]interface{}, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return values, err
+	}
+
+	// Create query
+	fieldStr := ""
+	for _, field := range fields {
+		if fieldStr == "" {
+			fieldStr = field
+		} else {
+			fieldStr += "," + field
+		}
+	}
+	if fieldStr == "" {
+		fieldStr = "*"
+	}
+	tagStr := ""
+	for k, v := range tags {
+		if tagStr == "" {
+			tagStr = " WHERE " + k + "='" + v + "'"
+		} else {
+			tagStr += " AND " + k + "='" + v + "'"
+		}
+	}
+	query := "SELECT " + fieldStr + " FROM " + metric + " " + tagStr + " ORDER BY desc LIMIT " + strconv.Itoa(count)
+	log.Error("QUERY: ", query)
+
+	// Query store for metric
+	q := influxclient.NewQuery(query, ms.name, "")
 	response, err := (*ms.client).Query(q)
 	if err != nil {
 		log.Error("Query failed with error: ", err.Error())
+		return values, err
 	}
-	log.Error(response.Results)
+
+	// Process response
+	if len(response.Results) <= 0 || len(response.Results[0].Series) <= 0 {
+		err = errors.New("Query returned no results")
+		log.Error("Query failed with error: ", err.Error())
+		return values, err
+	}
+
+	// Read results
+	row := response.Results[0].Series[0]
+	for _, qValues := range row.Values {
+		rValues := make(map[string]interface{})
+		for index, qVal := range qValues {
+			rValues[row.Columns[index]] = qVal
+		}
+		values = append(values, rValues)
+	}
+
+	return values, nil
 }
 
 // SetNetMetric
@@ -158,23 +232,29 @@ func (ms *MetricStore) SetNetMetric(src string, dest string, lat int32, tput int
 
 // GetNetMetric
 func (ms *MetricStore) GetLastNetMetric(src string, dest string) (lat int32, tput int32, loss int64, err error) {
-	query := "SELECT lat,tput,loss FROM " + metricNet + " WHERE src='" + src + "' AND dest='" + dest + "' ORDER BY desc LIMIT 1"
-	q := influxclient.NewQuery(query, ms.name, "")
-	response, err := (*ms.client).Query(q)
+	// Make sure we have set a store
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return lat, tput, loss, err
+	}
+
+	// Get latest Net metric
+	tags := map[string]string{
+		"src":  src,
+		"dest": dest,
+	}
+	fields := []string{"lat", "tput", "loss"}
+	valuesArray, err := ms.GetMetric(metricNet, tags, fields, 1)
 	if err != nil {
-		log.Error("Query failed with error: ", err.Error())
-		return lat, tput, loss, err
-	}
-	log.Error(response.Results)
-
-	if len(response.Results[0].Series) == 0 {
-		err = errors.New("Query returned no results")
-		log.Error("Query failed with error: ", err.Error())
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return lat, tput, loss, err
 	}
 
-	// Read results
-	// response.Results[]
+	// Take first & only values
+	values := valuesArray[0]
+	lat = JsonNumToInt32(values["lat"].(json.Number))
+	tput = JsonNumToInt32(values["tput"].(json.Number))
+	loss = JsonNumToInt64(values["loss"].(json.Number))
 
 	return lat, tput, loss, nil
 }
