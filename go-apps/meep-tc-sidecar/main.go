@@ -172,7 +172,7 @@ func initMeepSidecar() error {
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
 	if err != nil {
-		log.Error("Failed connection to Redis DB.  Error: ", err)
+		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
 	log.Info("Connected to redis DB")

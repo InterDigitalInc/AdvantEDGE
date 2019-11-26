@@ -31,6 +31,7 @@ import (
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
@@ -49,9 +50,11 @@ var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
 var rc *redis.Connector
 var activeModel *mod.Model
+var metricStore *ms.MetricStore
 
 var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
 var redisDBAddr = "meep-redis-master:6379"
+var influxDBAddr = "http://influxdb:8086"
 
 func getCorePodsList() map[string]bool {
 
@@ -132,6 +135,13 @@ func CtrlEngineInit() (err error) {
 	err = virtWatchdog.Start(time.Second, 3*time.Second)
 	if err != nil {
 		log.Error("Failed to start virt-engine watchdog. Error: ", err)
+		return err
+	}
+
+	// Connect to Metric Store
+	metricStore, err = ms.NewMetricStore("", influxDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
 
@@ -360,6 +370,12 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set Metrics Store
+	err = metricStore.SetStore(scenarioName)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
 	// Activate scenario & publish
 	err = activeModel.SetScenario(scenario)
 	if err != nil {
@@ -512,6 +528,12 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set Metrics Store
+	err = metricStore.SetStore("")
+	if err != nil {
+		log.Error(err.Error())
+	}
+
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -550,23 +572,31 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Process Event
 	var httpStatus int
-	var error string
 	switch eventType {
 	case "MOBILITY":
-		error, httpStatus = sendEventMobility(event)
+		err, httpStatus = sendEventMobility(event)
 	case "NETWORK-CHARACTERISTICS-UPDATE":
-		error, httpStatus = sendEventNetworkCharacteristics(event)
+		err, httpStatus = sendEventNetworkCharacteristics(event)
 	case "POAS-IN-RANGE":
-		error, httpStatus = sendEventPoasInRange(event)
+		err, httpStatus = sendEventPoasInRange(event)
 	default:
-		error = "Unsupported event type"
+		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
 	}
 
-	if error != "" {
-		log.Error(error)
-		http.Error(w, error, httpStatus)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), httpStatus)
 		return
+	}
+
+	// Log successful event in metric store
+	eventStr, err := json.Marshal(event)
+	if err == nil {
+		err = metricStore.SetEventMetric(eventType, string(eventStr))
+	}
+	if err != nil {
+		log.Error("Failed to set event metric")
 	}
 
 	// Send response
@@ -669,9 +699,10 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 // ------------------
 
-func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
+func sendEventNetworkCharacteristics(event ceModel.Event) (error, int) {
 	if event.EventNetworkCharacteristicsUpdate == nil {
-		return "Malformed request: missing EventNetworkCharacteristicsUpdate", http.StatusBadRequest
+		err := errors.New("Malformed request: missing EventNetworkCharacteristicsUpdate")
+		return err, http.StatusBadRequest
 	}
 
 	// elementFound := false
@@ -679,14 +710,15 @@ func sendEventNetworkCharacteristics(event ceModel.Event) (string, int) {
 
 	err := activeModel.UpdateNetChar(netChar)
 	if err != nil {
-		return err.Error(), http.StatusInternalServerError
+		return err, http.StatusInternalServerError
 	}
-	return "", -1
+	return nil, -1
 }
 
-func sendEventMobility(event ceModel.Event) (string, int) {
+func sendEventMobility(event ceModel.Event) (error, int) {
 	if event.EventMobility == nil {
-		return "Malformed request: missing EventMobility", http.StatusBadRequest
+		err := errors.New("Malformed request: missing EventMobility")
+		return err, http.StatusBadRequest
 	}
 	// Retrieve target name (src) and destination parent name
 	elemName := event.EventMobility.ElementName
@@ -694,7 +726,7 @@ func sendEventMobility(event ceModel.Event) (string, int) {
 
 	oldNL, newNL, err := activeModel.MoveNode(elemName, destName)
 	if err != nil {
-		return err.Error(), http.StatusInternalServerError
+		return err, http.StatusInternalServerError
 	}
 	log.WithFields(log.Fields{
 		"meep.log.component": "ctrl-engine",
@@ -704,14 +736,14 @@ func sendEventMobility(event ceModel.Event) (string, int) {
 		"meep.log.src":       elemName,
 		"meep.log.dest":      elemName,
 	}).Info("Measurements log")
-	return "", -1
+	return nil, -1
 }
 
-func sendEventPoasInRange(event ceModel.Event) (string, int) {
+func sendEventPoasInRange(event ceModel.Event) (error, int) {
 	if event.EventPoasInRange == nil {
-		return "Malformed request: missing EventPoasInRange", http.StatusBadRequest
+		err := errors.New("Malformed request: missing EventPoasInRange")
+		return err, http.StatusBadRequest
 	}
-
 	var ue *ceModel.PhysicalLocation
 
 	// Retrieve UE name
@@ -725,7 +757,8 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 	log.Debug("Searching for UE in active scenario")
 	n := activeModel.GetNode(ueName)
 	if n == nil {
-		return ("Node not found " + ueName), http.StatusNotFound
+		err := errors.New("Node not found " + ueName)
+		return err, http.StatusNotFound
 	}
 	ue, ok := n.(*ceModel.PhysicalLocation)
 	if !ok {
@@ -746,7 +779,7 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 			//Publish updated scenario
 			err := activeModel.Activate()
 			if err != nil {
-				return err.Error(), http.StatusInternalServerError
+				return err, http.StatusInternalServerError
 			}
 
 			log.Debug("Active scenario updated")
@@ -754,10 +787,10 @@ func sendEventPoasInRange(event ceModel.Event) (string, int) {
 			log.Debug("POA list unchanged. Ignoring.")
 		}
 	} else {
-		err := "Failed to find UE"
+		err := errors.New("Failed to find UE")
 		return err, http.StatusNotFound
 	}
-	return "", -1
+	return nil, -1
 }
 
 func getPodDetails(key string, fields map[string]string, userData interface{}) error {

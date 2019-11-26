@@ -24,7 +24,7 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
-	_ "github.com/influxdata/influxdb1-client" // this is important because of the bug in go mod
+	_ "github.com/influxdata/influxdb1-client"
 	influxclient "github.com/influxdata/influxdb1-client/v2"
 )
 
@@ -260,13 +260,39 @@ func (ms *MetricStore) GetLastNetMetric(src string, dest string) (lat int32, tpu
 }
 
 // SetEventMetric
-func (ms *MetricStore) SetEventMetric(typ string, target string, desc string) error {
+func (ms *MetricStore) SetEventMetric(eventType string, eventStr string) error {
 	tags := map[string]string{
-		"type":   typ,
-		"target": target,
+		"type": eventType,
 	}
 	fields := map[string]interface{}{
-		"description": desc,
+		"event": eventStr,
 	}
 	return ms.SetMetric(metricEvent, tags, fields)
+}
+
+// GetLastEventMetric
+func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return event, err
+	}
+
+	// Get latest Net metric
+	tags := map[string]string{
+		"type": eventType,
+	}
+	fields := []string{"event"}
+	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, 1)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return event, err
+	}
+
+	// Take first & only values
+	values := valuesArray[0]
+	if val, ok := values["event"].(string); ok {
+		event = val
+	}
+	return event, nil
 }
