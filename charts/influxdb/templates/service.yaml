@@ -32,6 +32,9 @@ spec:
   - name: api
     port: {{ .Values.config.http.bind_address }}
     targetPort: {{ .Values.config.http.bind_address }}
+    {{- if .Values.service.apiNodePort }}
+    nodePort: {{ .Values.service.apiNodePort }}
+    {{- end }}
   {{- end }}
   {{- if .Values.config.admin.enabled }}
   - name: admin
@@ -62,6 +65,9 @@ spec:
   - name: rpc
     port: {{ .Values.config.rpc.bind_address }}
     targetPort: {{ .Values.config.rpc.bind_address }}
+    {{- if .Values.service.rpcNodePort }}
+    nodePort: {{ .Values.service.rpcNodePort }}
+    {{- end }}
   {{- end }}
   selector:
     app: {{ template "influxdb.fullname" . }}

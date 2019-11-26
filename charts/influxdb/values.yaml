@@ -30,7 +30,10 @@ startupProbe:
 service:
   ## Add annotations to service
   # annotations: {}
-  type: ClusterIP
+  # type: ClusterIP
+  type: NodePort
+  apiNodePort: 30086
+  rpcNodePort: 30088
   ## Add IP Cluster
   # clusterIP: ""
   ## Add external IPs that route to one or more cluster nodes
@@ -39,11 +42,6 @@ service:
   # loadBalancerIP: ""
   ## Allow source IPs to access on service (if empty, any access allow)
   # loadBalancerSourceRanges: []
-
-serviceNodePort:
-  name: influxdb-nodeport
-  type: NodePort
-  nodeport: 31333
 
 ## Persist data to a persistent volume
 ##
@@ -56,7 +54,7 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  storageClass: "meep-influxdb"
+  storageClass: "fullname"
   annotations:
   accessMode: ReadWriteOnce
   size: 8Gi
