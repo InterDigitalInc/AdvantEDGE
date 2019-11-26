@@ -151,6 +151,7 @@ func deleteDep(cobraCmd *cobra.Command) {
 	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
 	go k8sDelete("meep-metricbeat", cobraCmd, messages)
 	go k8sDelete("meep-couchdb", cobraCmd, messages)
+	go k8sDelete("meep-influxdb", cobraCmd, messages)
 	go k8sDelete("meep-kibana", cobraCmd, messages)
 	go k8sDelete("meep-filebeat", cobraCmd, messages)
 	go k8sDelete("meep-curator", cobraCmd, messages)
