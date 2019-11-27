@@ -52,9 +52,9 @@ var rc *redis.Connector
 var activeModel *mod.Model
 var metricStore *ms.MetricStore
 
-var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
-var redisDBAddr = "meep-redis-master:6379"
-var influxDBAddr = "http://influxdb:8086"
+var couchDBAddr string = "http://meep-couchdb-svc-couchdb:5984/"
+var redisDBAddr string = "meep-redis-master:6379"
+var influxDBAddr string = "http://meep-influxdb:8086"
 
 func getCorePodsList() map[string]bool {
 
@@ -370,11 +370,14 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Metrics Store
+	// Set Metrics Store & Flush entries
 	err = metricStore.SetStore(scenarioName)
 	if err != nil {
 		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	metricStore.Flush()
 
 	// Activate scenario & publish
 	err = activeModel.SetScenario(scenario)

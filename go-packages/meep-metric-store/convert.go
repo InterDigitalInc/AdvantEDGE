@@ -28,8 +28,8 @@ func JsonNumToInt32(num json.Number) (val int32) {
 	return val
 }
 
-func JsonNumToInt64(num json.Number) (val int64) {
-	if intVal, err := num.Int64(); err == nil {
+func JsonNumToFloat64(num json.Number) (val float64) {
+	if intVal, err := num.Float64(); err == nil {
 		val = intVal
 	}
 	return val

@@ -128,6 +128,9 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	envVar.Name = "MEEP_POD_NAME"
 	envVar.Value = meepAppName
 	envVars = append(envVars, envVar)
+	envVar.Name = "MEEP_SCENARIO_NAME"
+	envVar.Value = activeScenarioName
+	envVars = append(envVars, envVar)
 
 	var sidecarContainers []corev1.Container
 	for _, container := range sidecarConfig.Containers {

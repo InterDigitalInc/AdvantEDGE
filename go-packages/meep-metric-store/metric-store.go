@@ -30,8 +30,9 @@ import (
 
 const dbMaxRetryCount = 2
 const (
-	metricNet   = "netmet"
-	metricEvent = "events"
+	metricLatency = "latency"
+	metricTraffic = "traffic"
+	metricEvent   = "events"
 )
 
 // MetricStore - Implements a metric store
@@ -70,7 +71,7 @@ func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 
 func (ms *MetricStore) connectDB(addr string) error {
 	if addr == "" {
-		ms.addr = "http://influxdb:8086"
+		ms.addr = "http://meep-influxdb:8086"
 	} else {
 		ms.addr = addr
 	}
@@ -216,26 +217,67 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	return values, nil
 }
 
-// SetNetMetric
-func (ms *MetricStore) SetNetMetric(src string, dest string, lat int32, tput int32, loss int64) error {
+// SetLatencyMetric
+func (ms *MetricStore) SetLatencyMetric(src string, dest string, lat int32, mean int32) error {
 	tags := map[string]string{
 		"src":  src,
 		"dest": dest,
 	}
 	fields := map[string]interface{}{
 		"lat":  lat,
+		"mean": mean,
+	}
+	return ms.SetMetric(metricLatency, tags, fields)
+}
+
+// GetLastLatencyMetric
+func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32, mean int32, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
+
+	// Get latest Latency metric
+	tags := map[string]string{
+		"src":  src,
+		"dest": dest,
+	}
+	fields := []string{"lat", "mean"}
+
+	var valuesArray []map[string]interface{}
+	valuesArray, err = ms.GetMetric(metricLatency, tags, fields, 1)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return
+	}
+
+	// Take first & only values
+	values := valuesArray[0]
+	lat = JsonNumToInt32(values["lat"].(json.Number))
+	mean = JsonNumToInt32(values["mean"].(json.Number))
+	return
+}
+
+// SetTrafficMetric
+func (ms *MetricStore) SetTrafficMetric(src string, dest string, tput float64, loss float64) error {
+	tags := map[string]string{
+		"src":  src,
+		"dest": dest,
+	}
+	fields := map[string]interface{}{
 		"tput": tput,
 		"loss": loss,
 	}
-	return ms.SetMetric(metricNet, tags, fields)
+	return ms.SetMetric(metricTraffic, tags, fields)
 }
 
-// GetNetMetric
-func (ms *MetricStore) GetLastNetMetric(src string, dest string) (lat int32, tput int32, loss int64, err error) {
+// GetLastTrafficMetric
+func (ms *MetricStore) GetLastTrafficMetric(src string, dest string) (tput float64, loss float64, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return lat, tput, loss, err
+		err = errors.New("Store name not specified")
+		return
 	}
 
 	// Get latest Net metric
@@ -243,20 +285,20 @@ func (ms *MetricStore) GetLastNetMetric(src string, dest string) (lat int32, tpu
 		"src":  src,
 		"dest": dest,
 	}
-	fields := []string{"lat", "tput", "loss"}
-	valuesArray, err := ms.GetMetric(metricNet, tags, fields, 1)
+	fields := []string{"tput", "loss"}
+
+	var valuesArray []map[string]interface{}
+	valuesArray, err = ms.GetMetric(metricTraffic, tags, fields, 1)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
-		return lat, tput, loss, err
+		return
 	}
 
 	// Take first & only values
 	values := valuesArray[0]
-	lat = JsonNumToInt32(values["lat"].(json.Number))
-	tput = JsonNumToInt32(values["tput"].(json.Number))
-	loss = JsonNumToInt64(values["loss"].(json.Number))
-
-	return lat, tput, loss, nil
+	tput = JsonNumToFloat64(values["tput"].(json.Number))
+	loss = JsonNumToFloat64(values["loss"].(json.Number))
+	return
 }
 
 // SetEventMetric
