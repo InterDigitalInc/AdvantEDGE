@@ -74,14 +74,20 @@ func TestGetSetMetric(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
+	// start = time.Now()
+
 	fmt.Println("Create valid Metric Store")
 	ms, err := NewMetricStore(metricStore1Name, metricStoreAddr)
 	if err != nil {
 		t.Errorf("Unable to create Metric Store")
 	}
 
+	// logTimeLapse("Created Metric store: ")
+
 	fmt.Println("Flush store metrics")
 	ms.Flush()
+
+	// logTimeLapse("Flush: ")
 
 	fmt.Println("Get empty metric")
 	lat, mean, err := ms.GetLastLatencyMetric("node1", "node2")
@@ -89,8 +95,14 @@ func TestGetSetMetric(t *testing.T) {
 		t.Errorf("Net metric should not exist")
 	}
 
-	fmt.Println("Set latency metrics")
+	// logTimeLapse("Get empty metric: ")
+
+	fmt.Println("Set network metrics")
 	err = ms.SetLatencyMetric("node1", "node2", 0, 1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node1", "node2", 0.1, 1.1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -98,7 +110,15 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node1", "node3", 1.1, 2.1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 	err = ms.SetLatencyMetric("node2", "node1", 2, 3)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node2", "node1", 2.1, 3.1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -106,7 +126,15 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node2", "node3", 3.1, 4.1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 	err = ms.SetLatencyMetric("node3", "node1", 4, 5)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node3", "node1", 4.5, 5.5)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -114,7 +142,15 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node3", "node2", 5.5, 6.5)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 	err = ms.SetLatencyMetric("node1", "node2", 6, 7)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node1", "node2", 6.1, 7.1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -122,7 +158,15 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node1", "node3", 7.1, 8.1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 	err = ms.SetLatencyMetric("node2", "node1", 8, 9)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node2", "node1", 8.1, 9.1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -130,7 +174,15 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node2", "node3", 9.1, 0.1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 	err = ms.SetLatencyMetric("node3", "node1", 0, 1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node3", "node1", 0.1, 1.1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -138,12 +190,24 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
+	err = ms.SetTrafficMetric("node3", "node2", 1.1, 2.1)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 
-	fmt.Println("Get latency metrics")
+	// logTimeLapse("Set network metrics: ")
+
+	fmt.Println("Get network metrics")
 	lat, mean, err = ms.GetLastLatencyMetric("node1", "node2")
 	if err != nil {
 		t.Errorf("Net metric should exist")
 	} else if lat != 6 || mean != 7 {
+		t.Errorf("Invalid metric values")
+	}
+	tput, loss, err := ms.GetLastTrafficMetric("node1", "node2")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 6.1 || loss != 7.1 {
 		t.Errorf("Invalid metric values")
 	}
 	lat, mean, err = ms.GetLastLatencyMetric("node1", "node3")
@@ -152,10 +216,22 @@ func TestGetSetMetric(t *testing.T) {
 	} else if lat != 7 || mean != 8 {
 		t.Errorf("Invalid metric values")
 	}
+	tput, loss, err = ms.GetLastTrafficMetric("node1", "node3")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 7.1 || loss != 8.1 {
+		t.Errorf("Invalid metric values")
+	}
 	lat, mean, err = ms.GetLastLatencyMetric("node2", "node1")
 	if err != nil {
 		t.Errorf("Net metric should exist")
 	} else if lat != 8 || mean != 9 {
+		t.Errorf("Invalid metric values")
+	}
+	tput, loss, err = ms.GetLastTrafficMetric("node2", "node1")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 8.1 || loss != 9.1 {
 		t.Errorf("Invalid metric values")
 	}
 	lat, mean, err = ms.GetLastLatencyMetric("node2", "node3")
@@ -164,10 +240,22 @@ func TestGetSetMetric(t *testing.T) {
 	} else if lat != 9 || mean != 0 {
 		t.Errorf("Invalid metric values")
 	}
+	tput, loss, err = ms.GetLastTrafficMetric("node2", "node3")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 9.1 || loss != 0.1 {
+		t.Errorf("Invalid metric values")
+	}
 	lat, mean, err = ms.GetLastLatencyMetric("node3", "node1")
 	if err != nil {
 		t.Errorf("Net metric should exist")
 	} else if lat != 0 || mean != 1 {
+		t.Errorf("Invalid metric values")
+	}
+	tput, loss, err = ms.GetLastTrafficMetric("node3", "node1")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 0.1 || loss != 1.1 {
 		t.Errorf("Invalid metric values")
 	}
 	lat, mean, err = ms.GetLastLatencyMetric("node3", "node2")
@@ -176,6 +264,14 @@ func TestGetSetMetric(t *testing.T) {
 	} else if lat != 1 || mean != 2 {
 		t.Errorf("Invalid metric values")
 	}
+	tput, loss, err = ms.GetLastTrafficMetric("node3", "node2")
+	if err != nil {
+		t.Errorf("Net metric should exist")
+	} else if tput != 1.1 || loss != 2.1 {
+		t.Errorf("Invalid metric values")
+	}
+
+	// logTimeLapse("Get network metrics: ")
 
 	fmt.Println("Set event metric")
 	err = ms.SetEventMetric("MOBILITY", "event1")
@@ -190,6 +286,8 @@ func TestGetSetMetric(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
+
+	// logTimeLapse("Set event metrics: ")
 
 	fmt.Println("Get event metrics")
 	event, err := ms.GetLastEventMetric("MOBILITY")
@@ -210,6 +308,8 @@ func TestGetSetMetric(t *testing.T) {
 	} else if event != "event3" {
 		t.Errorf("Invalid metric values")
 	}
+
+	// logTimeLapse("Get event metrics: ")
 
 	// t.Errorf("DONE")
 }

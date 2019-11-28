@@ -17,7 +17,6 @@
 package metricstore
 
 import (
-	"encoding/json"
 	"errors"
 	"strconv"
 	"time"
@@ -28,12 +27,9 @@ import (
 	influxclient "github.com/influxdata/influxdb1-client/v2"
 )
 
+// var start time.Time
+
 const dbMaxRetryCount = 2
-const (
-	metricLatency = "latency"
-	metricTraffic = "traffic"
-	metricEvent   = "events"
-)
 
 // MetricStore - Implements a metric store
 type MetricStore struct {
@@ -149,17 +145,22 @@ func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields m
 	}
 	bp.AddPoint(pt)
 
+	// logTimeLapse("Created point: ")
+
 	// Write the batch
 	err = (*ms.client).Write(bp)
 	if err != nil {
 		log.Error("Failed to write point with error: ", err)
 		return err
 	}
+
+	// logTimeLapse("Write complete: ")
+
 	return nil
 }
 
 // GetMetric - Generic metric getter
-func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, count int) (values []map[string]interface{}, err error) {
+func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, startTime string, stopTime string, count int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
@@ -167,6 +168,8 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	}
 
 	// Create query
+
+	// Fields
 	fieldStr := ""
 	for _, field := range fields {
 		if fieldStr == "" {
@@ -178,6 +181,8 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	if fieldStr == "" {
 		fieldStr = "*"
 	}
+
+	// Tags
 	tagStr := ""
 	for k, v := range tags {
 		if tagStr == "" {
@@ -186,8 +191,29 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 			tagStr += " AND " + k + "='" + v + "'"
 		}
 	}
-	query := "SELECT " + fieldStr + " FROM " + metric + " " + tagStr + " ORDER BY desc LIMIT " + strconv.Itoa(count)
-	log.Error("QUERY: ", query)
+	if startTime != "" {
+		if tagStr == "" {
+			tagStr = " WHERE time > " + startTime
+		} else {
+			tagStr += " AND time > " + startTime
+		}
+	}
+	if stopTime != "" {
+		if tagStr == "" {
+			tagStr = " WHERE time < " + stopTime
+		} else {
+			tagStr += " AND time < " + stopTime
+		}
+	}
+
+	// Count
+	countStr := ""
+	if count != 0 {
+		countStr = " LIMIT " + strconv.Itoa(count)
+	}
+
+	query := "SELECT " + fieldStr + " FROM " + metric + " " + tagStr + " ORDER BY desc" + countStr
+	log.Debug("QUERY: ", query)
 
 	// Query store for metric
 	q := influxclient.NewQuery(query, ms.name, "")
@@ -217,124 +243,8 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	return values, nil
 }
 
-// SetLatencyMetric
-func (ms *MetricStore) SetLatencyMetric(src string, dest string, lat int32, mean int32) error {
-	tags := map[string]string{
-		"src":  src,
-		"dest": dest,
-	}
-	fields := map[string]interface{}{
-		"lat":  lat,
-		"mean": mean,
-	}
-	return ms.SetMetric(metricLatency, tags, fields)
-}
-
-// GetLastLatencyMetric
-func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32, mean int32, err error) {
-	// Make sure we have set a store
-	if ms.name == "" {
-		err = errors.New("Store name not specified")
-		return
-	}
-
-	// Get latest Latency metric
-	tags := map[string]string{
-		"src":  src,
-		"dest": dest,
-	}
-	fields := []string{"lat", "mean"}
-
-	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetMetric(metricLatency, tags, fields, 1)
-	if err != nil {
-		log.Error("Failed to retrieve metrics with error: ", err.Error())
-		return
-	}
-
-	// Take first & only values
-	values := valuesArray[0]
-	lat = JsonNumToInt32(values["lat"].(json.Number))
-	mean = JsonNumToInt32(values["mean"].(json.Number))
-	return
-}
-
-// SetTrafficMetric
-func (ms *MetricStore) SetTrafficMetric(src string, dest string, tput float64, loss float64) error {
-	tags := map[string]string{
-		"src":  src,
-		"dest": dest,
-	}
-	fields := map[string]interface{}{
-		"tput": tput,
-		"loss": loss,
-	}
-	return ms.SetMetric(metricTraffic, tags, fields)
-}
-
-// GetLastTrafficMetric
-func (ms *MetricStore) GetLastTrafficMetric(src string, dest string) (tput float64, loss float64, err error) {
-	// Make sure we have set a store
-	if ms.name == "" {
-		err = errors.New("Store name not specified")
-		return
-	}
-
-	// Get latest Net metric
-	tags := map[string]string{
-		"src":  src,
-		"dest": dest,
-	}
-	fields := []string{"tput", "loss"}
-
-	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetMetric(metricTraffic, tags, fields, 1)
-	if err != nil {
-		log.Error("Failed to retrieve metrics with error: ", err.Error())
-		return
-	}
-
-	// Take first & only values
-	values := valuesArray[0]
-	tput = JsonNumToFloat64(values["tput"].(json.Number))
-	loss = JsonNumToFloat64(values["loss"].(json.Number))
-	return
-}
-
-// SetEventMetric
-func (ms *MetricStore) SetEventMetric(eventType string, eventStr string) error {
-	tags := map[string]string{
-		"type": eventType,
-	}
-	fields := map[string]interface{}{
-		"event": eventStr,
-	}
-	return ms.SetMetric(metricEvent, tags, fields)
-}
-
-// GetLastEventMetric
-func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err error) {
-	// Make sure we have set a store
-	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return event, err
-	}
-
-	// Get latest Net metric
-	tags := map[string]string{
-		"type": eventType,
-	}
-	fields := []string{"event"}
-	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, 1)
-	if err != nil {
-		log.Error("Failed to retrieve metrics with error: ", err.Error())
-		return event, err
-	}
-
-	// Take first & only values
-	values := valuesArray[0]
-	if val, ok := values["event"].(string); ok {
-		event = val
-	}
-	return event, nil
-}
+// func logTimeLapse(logStr string) {
+// 	stop := time.Now()
+// 	fmt.Println(logStr + strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', -1, 64))
+// 	start = stop
+// }
