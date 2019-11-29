@@ -26,12 +26,8 @@ const metricEvent = "events"
 
 // SetEventMetric
 func (ms *MetricStore) SetEventMetric(eventType string, eventStr string) error {
-	tags := map[string]string{
-		"type": eventType,
-	}
-	fields := map[string]interface{}{
-		"event": eventStr,
-	}
+	tags := map[string]string{"type": eventType}
+	fields := map[string]interface{}{"event": eventStr}
 	return ms.SetMetric(metricEvent, tags, fields)
 }
 
@@ -44,9 +40,7 @@ func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err e
 	}
 
 	// Get latest Net metric
-	tags := map[string]string{
-		"type": eventType,
-	}
+	tags := map[string]string{"type": eventType}
 	fields := []string{"event"}
 	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, "", 1)
 	if err != nil {
@@ -60,4 +54,23 @@ func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err e
 		event = val
 	}
 	return event, nil
+}
+
+// GetLatencyMetrics
+func (ms *MetricStore) GetEventMetrics(eventType string, duration string, count int) (metrics []map[string]interface{}, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
+
+	// Get Traffic metrics
+	tags := map[string]string{"type": eventType}
+	fields := []string{"event"}
+	metrics, err = ms.GetMetric(metricEvent, tags, fields, duration, count)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return
+	}
+	return
 }

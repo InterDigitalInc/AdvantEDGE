@@ -17,6 +17,7 @@
 package metricstore
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -30,204 +31,180 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	// start = time.Now()
-
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(networkStoreName, networkStoreAddr)
+	ms, err := NewMetricStore("", networkStoreAddr)
 	if err != nil {
 		t.Errorf("Unable to create Metric Store")
 	}
+	fmt.Println("Invoke API before setting store")
+	_, err = ms.GetLastLatencyMetric("node1", "node2")
+	if err == nil {
+		t.Errorf("API call should fail if no store is set")
+	}
+	err = ms.SetLatencyMetric("node1", "node2", 1)
+	if err == nil {
+		t.Errorf("API call should fail if no store is set")
+	}
 
-	// logTimeLapse("Created Metric store: ")
+	fmt.Println("Set store")
+	err = ms.SetStore(networkStoreName)
+	if err != nil {
+		t.Errorf("Unable to set Store")
+	}
 
 	fmt.Println("Flush store metrics")
 	ms.Flush()
 
-	// logTimeLapse("Flush: ")
-
 	fmt.Println("Get empty metric")
-	lat, mean, err := ms.GetLastLatencyMetric("node1", "node2")
-	if err == nil || lat != 0 || mean != 0 {
+	lat, err := ms.GetLastLatencyMetric("node1", "node2")
+	if err == nil || lat != 0 {
 		t.Errorf("Net metric should not exist")
 	}
 
-	// logTimeLapse("Get empty metric: ")
-
 	fmt.Println("Set network metrics")
-	err = ms.SetLatencyMetric("node1", "node2", 0, 1)
+	err = ms.SetLatencyMetric("node1", "node2", 0)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetTrafficMetric("node1", "node2", 0.1, 1.1)
+	err = ms.SetTrafficMetric("node1", "node2", 0.1, 0.2)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetLatencyMetric("node1", "node3", 1, 2)
+	err = ms.SetLatencyMetric("node2", "node1", 1)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetTrafficMetric("node1", "node3", 1.1, 2.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node1", 2, 3)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node1", 2.1, 3.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node3", 3, 4)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node3", 3.1, 4.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node1", 4, 5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node1", 4.5, 5.5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node2", 5, 6)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node2", 5.5, 6.5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node1", "node2", 6, 7)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node2", 6.1, 7.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node1", "node3", 7, 8)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node3", 7.1, 8.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node1", 8, 9)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node1", 8.1, 9.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node3", 9, 0)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node3", 9.1, 0.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node1", 0, 1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node1", 0.1, 1.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node2", 1, 2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node2", 1.1, 2.1)
+	err = ms.SetTrafficMetric("node2", "node1", 1.1, 1.2)
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
 
-	// logTimeLapse("Set network metrics: ")
+	err = ms.SetLatencyMetric("node1", "node2", 2)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node1", "node2", 2.1, 2.2)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetLatencyMetric("node2", "node1", 3)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
+	err = ms.SetTrafficMetric("node2", "node1", 3.1, 3.2)
+	if err != nil {
+		t.Errorf("Unable to set net metric")
+	}
 
-	fmt.Println("Get network metrics")
-	lat, mean, err = ms.GetLastLatencyMetric("node1", "node2")
+	fmt.Println("Get network metrics (node1 -> node2)")
+	lat, err = ms.GetLastLatencyMetric("node1", "node2")
 	if err != nil {
 		t.Errorf("Net metric should exist")
-	} else if lat != 6 || mean != 7 {
+	} else if lat != 2 {
 		t.Errorf("Invalid metric values")
+	}
+	_, err = ms.GetLatencyMetrics("node1", "node2", "1ms", 0)
+	if err == nil {
+		t.Errorf("No metrics should be found in the last 1 ms")
+	}
+	result, err := ms.GetLatencyMetrics("node1", "node2", "", 1)
+	if err != nil || len(result) != 1 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateLatencyMetric(result[0], 2) {
+		t.Errorf("Invalid result")
+	}
+	result, err = ms.GetLatencyMetrics("node1", "node2", "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateLatencyMetric(result[0], 2) {
+		t.Errorf("Invalid result")
+	}
+	if !validateLatencyMetric(result[1], 0) {
+		t.Errorf("Invalid result")
 	}
 	tput, loss, err := ms.GetLastTrafficMetric("node1", "node2")
 	if err != nil {
 		t.Errorf("Net metric should exist")
-	} else if tput != 6.1 || loss != 7.1 {
+	} else if tput != 2.1 || loss != 2.2 {
 		t.Errorf("Invalid metric values")
 	}
-	lat, mean, err = ms.GetLastLatencyMetric("node1", "node3")
+	_, err = ms.GetTrafficMetrics("node1", "node2", "1ms", 0)
+	if err == nil {
+		t.Errorf("No metrics should be found in the last 1 ms")
+	}
+	result, err = ms.GetTrafficMetrics("node1", "node2", "", 1)
+	if err != nil || len(result) != 1 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateTrafficMetric(result[0], 2.1, 2.2) {
+		t.Errorf("Invalid result")
+	}
+	result, err = ms.GetTrafficMetrics("node1", "node2", "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateTrafficMetric(result[0], 2.1, 2.2) {
+		t.Errorf("Invalid result")
+	}
+	if !validateTrafficMetric(result[1], 0.1, 0.2) {
+		t.Errorf("Invalid result")
+	}
+
+	fmt.Println("Get network metrics (node2 -> node1)")
+	lat, err = ms.GetLastLatencyMetric("node2", "node1")
 	if err != nil {
 		t.Errorf("Net metric should exist")
-	} else if lat != 7 || mean != 8 {
+	} else if lat != 3 {
 		t.Errorf("Invalid metric values")
 	}
-	tput, loss, err = ms.GetLastTrafficMetric("node1", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 7.1 || loss != 8.1 {
-		t.Errorf("Invalid metric values")
+	result, err = ms.GetLatencyMetrics("node2", "node1", "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
 	}
-	lat, mean, err = ms.GetLastLatencyMetric("node2", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 8 || mean != 9 {
-		t.Errorf("Invalid metric values")
+	if !validateLatencyMetric(result[0], 3) {
+		t.Errorf("Invalid result")
+	}
+	if !validateLatencyMetric(result[1], 1) {
+		t.Errorf("Invalid result")
 	}
 	tput, loss, err = ms.GetLastTrafficMetric("node2", "node1")
 	if err != nil {
 		t.Errorf("Net metric should exist")
-	} else if tput != 8.1 || loss != 9.1 {
+	} else if tput != 3.1 || loss != 3.2 {
 		t.Errorf("Invalid metric values")
 	}
-	lat, mean, err = ms.GetLastLatencyMetric("node2", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 9 || mean != 0 {
-		t.Errorf("Invalid metric values")
+	result, err = ms.GetTrafficMetrics("node2", "node1", "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
 	}
-	tput, loss, err = ms.GetLastTrafficMetric("node2", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 9.1 || loss != 0.1 {
-		t.Errorf("Invalid metric values")
+	if !validateTrafficMetric(result[0], 3.1, 3.2) {
+		t.Errorf("Invalid result")
 	}
-	lat, mean, err = ms.GetLastLatencyMetric("node3", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 0 || mean != 1 {
-		t.Errorf("Invalid metric values")
+	if !validateTrafficMetric(result[1], 1.1, 1.2) {
+		t.Errorf("Invalid result")
 	}
-	tput, loss, err = ms.GetLastTrafficMetric("node3", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 0.1 || loss != 1.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node3", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 1 || mean != 2 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node3", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 1.1 || loss != 2.1 {
-		t.Errorf("Invalid metric values")
-	}
-
-	// logTimeLapse("Get network metrics: ")
 
 	// t.Errorf("DONE")
+}
+
+func validateLatencyMetric(result map[string]interface{}, v1 int32) bool {
+	if val, ok := result["lat"].(json.Number); !ok || JsonNumToInt32(val) != v1 {
+		fmt.Println("Invalid latency")
+		return false
+	}
+	return true
+}
+
+func validateTrafficMetric(result map[string]interface{}, v1 float64, v2 float64) bool {
+	if val, ok := result["tput"].(json.Number); !ok || JsonNumToFloat64(val) != v1 {
+		fmt.Println("Invalid tput")
+		return false
+	}
+	if val, ok := result["loss"].(json.Number); !ok || JsonNumToFloat64(val) != v2 {
+		fmt.Println("Invalid loss")
+		return false
+	}
+	return true
 }

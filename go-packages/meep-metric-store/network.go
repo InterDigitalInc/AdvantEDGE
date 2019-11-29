@@ -27,14 +27,14 @@ const metricLatency = "latency"
 const metricTraffic = "traffic"
 
 // SetLatencyMetric
-func (ms *MetricStore) SetLatencyMetric(src string, dest string, lat int32, mean int32) error {
+func (ms *MetricStore) SetLatencyMetric(src string, dest string, lat int32) error {
 	tags := map[string]string{"src": src, "dest": dest}
-	fields := map[string]interface{}{"lat": lat, "mean": mean}
+	fields := map[string]interface{}{"lat": lat}
 	return ms.SetMetric(metricLatency, tags, fields)
 }
 
 // GetLastLatencyMetric
-func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32, mean int32, err error) {
+func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err = errors.New("Store name not specified")
@@ -43,7 +43,7 @@ func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32,
 
 	// Get latest Latency metric
 	tags := map[string]string{"src": src, "dest": dest}
-	fields := []string{"lat", "mean"}
+	fields := []string{"lat"}
 	var valuesArray []map[string]interface{}
 	valuesArray, err = ms.GetMetric(metricLatency, tags, fields, "", 1)
 	if err != nil {
@@ -54,7 +54,6 @@ func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32,
 	// Take first & only values
 	values := valuesArray[0]
 	lat = JsonNumToInt32(values["lat"].(json.Number))
-	mean = JsonNumToInt32(values["mean"].(json.Number))
 	return
 }
 
@@ -68,7 +67,7 @@ func (ms *MetricStore) GetLatencyMetrics(src string, dest string, duration strin
 
 	// Get Latency metrics
 	tags := map[string]string{"src": src, "dest": dest}
-	fields := []string{"lat", "mean"}
+	fields := []string{"lat"}
 	metrics, err = ms.GetMetric(metricLatency, tags, fields, duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
@@ -106,5 +105,24 @@ func (ms *MetricStore) GetLastTrafficMetric(src string, dest string) (tput float
 	values := valuesArray[0]
 	tput = JsonNumToFloat64(values["tput"].(json.Number))
 	loss = JsonNumToFloat64(values["loss"].(json.Number))
+	return
+}
+
+// GetLatencyMetrics
+func (ms *MetricStore) GetTrafficMetrics(src string, dest string, duration string, count int) (metrics []map[string]interface{}, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
+
+	// Get Traffic metrics
+	tags := map[string]string{"src": src, "dest": dest}
+	fields := []string{"tput", "loss"}
+	metrics, err = ms.GetMetric(metricTraffic, tags, fields, duration, count)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return
+	}
 	return
 }

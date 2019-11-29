@@ -55,11 +55,15 @@ func TestMetricStoreNew(t *testing.T) {
 		t.Errorf("Unable to create Metric Store")
 	}
 	fmt.Println("Invoke API before setting store")
-	_, _, err = ms.GetLastLatencyMetric("node1", "node2")
+	getTags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields := []string{field1, field2, field3, field4}
+	_, err = ms.GetMetric(metric, getTags, getFields, "", 0)
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}
-	err = ms.SetLatencyMetric("node1", "node2", 1, 2)
+	setTags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	setFields := map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
+	err = ms.SetMetric(metric, setTags, setFields)
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}

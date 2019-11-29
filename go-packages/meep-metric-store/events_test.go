@@ -52,26 +52,66 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
+	err = ms.SetEventMetric("MOBILITY", "event4")
+	if err != nil {
+		t.Errorf("Unable to set event metric")
+	}
+	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", "event5")
+	if err != nil {
+		t.Errorf("Unable to set event metric")
+	}
+	err = ms.SetEventMetric("POAS-IN-RANGE", "event6")
+	if err != nil {
+		t.Errorf("Unable to set event metric")
+	}
 
 	fmt.Println("Get event metrics")
 	event, err := ms.GetLastEventMetric("MOBILITY")
 	if err != nil {
 		t.Errorf("Event metric should exist")
-	} else if event != "event1" {
+	} else if event != "event4" {
 		t.Errorf("Invalid metric values")
 	}
 	event, err = ms.GetLastEventMetric("NETWORK-CHARACTERISTIC-UPDATE")
 	if err != nil {
 		t.Errorf("Event metric should exist")
-	} else if event != "event2" {
+	} else if event != "event5" {
 		t.Errorf("Invalid metric values")
 	}
 	event, err = ms.GetLastEventMetric("POAS-IN-RANGE")
 	if err != nil {
 		t.Errorf("Event metric should exist")
-	} else if event != "event3" {
+	} else if event != "event6" {
 		t.Errorf("Invalid metric values")
 	}
 
+	fmt.Println("Get event metrics")
+
+	_, err = ms.GetEventMetrics("MOBILITY", "1ms", 0)
+	if err == nil {
+		t.Errorf("No metrics should be found in the last 1 ms")
+	}
+	result, err := ms.GetEventMetrics("MOBILITY", "", 1)
+	if err != nil || len(result) != 1 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateEventsMetric(result[0], "event4") {
+		t.Errorf("Invalid result")
+	}
+	result, err = ms.GetEventMetrics("MOBILITY", "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateEventsMetric(result[0], "event4") {
+		t.Errorf("Invalid result")
+	}
+	if !validateEventsMetric(result[1], "event1") {
+		t.Errorf("Invalid result")
+	}
+
 	// t.Errorf("DONE")
+}
+
+func validateEventsMetric(result map[string]interface{}, v1 string) bool {
+	return !(result["event"] != v1)
 }

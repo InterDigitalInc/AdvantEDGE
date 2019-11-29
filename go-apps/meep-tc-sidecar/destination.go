@@ -144,7 +144,7 @@ func (u *destination) compute() (st stat) {
 	mean := int32(math.Round(float64(st.mean) / 1000000.0))
 
 	// Store latency metric
-	err := metricStore.SetLatencyMetric(u.hostName, u.remoteName, lat, mean)
+	err := metricStore.SetLatencyMetric(u.hostName, u.remoteName, lat)
 	if err != nil {
 		log.Error("Failed to set latency metric")
 	}
