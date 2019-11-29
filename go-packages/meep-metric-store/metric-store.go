@@ -73,7 +73,7 @@ func (ms *MetricStore) connectDB(addr string) error {
 	}
 	log.Debug("InfluxDB Connector connecting to ", ms.addr)
 
-	client, err := influxclient.NewHTTPClient(influxclient.HTTPConfig{Addr: ms.addr})
+	client, err := influxclient.NewHTTPClient(influxclient.HTTPConfig{Addr: ms.addr, InsecureSkipVerify: true})
 	if err != nil {
 		log.Error("InfluxDB Connector unable to connect ", ms.addr)
 		return err
@@ -131,6 +131,8 @@ func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields m
 		return err
 	}
 
+	// start = time.Now()
+
 	// Create a new point batch
 	bp, _ := influxclient.NewBatchPoints(influxclient.BatchPointsConfig{
 		Database:  ms.name,
@@ -145,8 +147,6 @@ func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields m
 	}
 	bp.AddPoint(pt)
 
-	// logTimeLapse("Created point: ")
-
 	// Write the batch
 	err = (*ms.client).Write(bp)
 	if err != nil {
@@ -154,13 +154,13 @@ func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields m
 		return err
 	}
 
-	// logTimeLapse("Write complete: ")
+	// logTimeLapse("SetMetric duration: ")
 
 	return nil
 }
 
 // GetMetric - Generic metric getter
-func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, startTime string, stopTime string, count int) (values []map[string]interface{}, err error) {
+func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
@@ -191,18 +191,11 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 			tagStr += " AND " + k + "='" + v + "'"
 		}
 	}
-	if startTime != "" {
+	if duration != "" {
 		if tagStr == "" {
-			tagStr = " WHERE time > " + startTime
+			tagStr = " WHERE time > now() - " + duration
 		} else {
-			tagStr += " AND time > " + startTime
-		}
-	}
-	if stopTime != "" {
-		if tagStr == "" {
-			tagStr = " WHERE time < " + stopTime
-		} else {
-			tagStr += " AND time < " + stopTime
+			tagStr += " AND time > now() - " + duration
 		}
 	}
 
@@ -245,6 +238,6 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 
 // func logTimeLapse(logStr string) {
 // 	stop := time.Now()
-// 	fmt.Println(logStr + strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', -1, 64))
+// 	log.Debug(logStr, strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', 3, 64), " ms")
 // 	start = stop
 // }

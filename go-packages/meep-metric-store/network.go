@@ -45,7 +45,7 @@ func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32,
 	tags := map[string]string{"src": src, "dest": dest}
 	fields := []string{"lat", "mean"}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetMetric(metricLatency, tags, fields, "", "", 1)
+	valuesArray, err = ms.GetMetric(metricLatency, tags, fields, "", 1)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
@@ -55,6 +55,25 @@ func (ms *MetricStore) GetLastLatencyMetric(src string, dest string) (lat int32,
 	values := valuesArray[0]
 	lat = JsonNumToInt32(values["lat"].(json.Number))
 	mean = JsonNumToInt32(values["mean"].(json.Number))
+	return
+}
+
+// GetLatencyMetrics
+func (ms *MetricStore) GetLatencyMetrics(src string, dest string, duration string, count int) (metrics []map[string]interface{}, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
+
+	// Get Latency metrics
+	tags := map[string]string{"src": src, "dest": dest}
+	fields := []string{"lat", "mean"}
+	metrics, err = ms.GetMetric(metricLatency, tags, fields, duration, count)
+	if err != nil {
+		log.Error("Failed to retrieve metrics with error: ", err.Error())
+		return
+	}
 	return
 }
 
@@ -77,7 +96,7 @@ func (ms *MetricStore) GetLastTrafficMetric(src string, dest string) (tput float
 	tags := map[string]string{"src": src, "dest": dest}
 	fields := []string{"tput", "loss"}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetMetric(metricTraffic, tags, fields, "", "", 1)
+	valuesArray, err = ms.GetMetric(metricTraffic, tags, fields, "", 1)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return

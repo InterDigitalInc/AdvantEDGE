@@ -48,7 +48,7 @@ func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err e
 		"type": eventType,
 	}
 	fields := []string{"event"}
-	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, "", "", 1)
+	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, "", 1)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return event, err

@@ -17,6 +17,7 @@
 package metricstore
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,11 +28,18 @@ const metricStore1Name string = "metricStore1"
 const metricStore2Name string = "metricStore2"
 const metricStoreAddr string = "http://localhost:30986"
 
-func TestNewMetricStore(t *testing.T) {
+const metric = "metric1"
+const tag1 = "tag1"
+const tag2 = "tag2"
+const field1 = "field1"
+const field2 = "field2"
+const field3 = "field3"
+const field4 = "field4"
+
+func TestMetricStoreNew(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	// Keep this one first...
 	fmt.Println("Invalid Metric Store address")
 	ms, err := NewMetricStore("", "ExpectedFailure-InvalidStoreAddr")
 	if err == nil {
@@ -70,11 +78,9 @@ func TestNewMetricStore(t *testing.T) {
 	// t.Errorf("DONE")
 }
 
-func TestGetSetMetric(t *testing.T) {
+func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
-
-	// start = time.Now()
 
 	fmt.Println("Create valid Metric Store")
 	ms, err := NewMetricStore(metricStore1Name, metricStoreAddr)
@@ -82,234 +88,97 @@ func TestGetSetMetric(t *testing.T) {
 		t.Errorf("Unable to create Metric Store")
 	}
 
-	// logTimeLapse("Created Metric store: ")
-
 	fmt.Println("Flush store metrics")
 	ms.Flush()
 
-	// logTimeLapse("Flush: ")
-
 	fmt.Println("Get empty metric")
-	lat, mean, err := ms.GetLastLatencyMetric("node1", "node2")
-	if err == nil || lat != 0 || mean != 0 {
+	getTags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields := []string{field1, field2, field3, field4}
+	_, err = ms.GetMetric(metric, getTags, getFields, "", 1)
+	if err == nil {
 		t.Errorf("Net metric should not exist")
 	}
 
-	// logTimeLapse("Get empty metric: ")
-
-	fmt.Println("Set network metrics")
-	err = ms.SetLatencyMetric("node1", "node2", 0, 1)
+	fmt.Println("Set metrics")
+	setTags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	setFields := map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
+	err = ms.SetMetric(metric, setTags, setFields)
 	if err != nil {
-		t.Errorf("Unable to set net metric")
+		t.Errorf("Failed to set metric")
 	}
-	err = ms.SetTrafficMetric("node1", "node2", 0.1, 1.1)
+	setTags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	setFields = map[string]interface{}{field1: false, field2: "val2", field3: 1, field4: 1.1}
+	err = ms.SetMetric(metric, setTags, setFields)
 	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node1", "node3", 1, 2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node3", 1.1, 2.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node1", 2, 3)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node1", 2.1, 3.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node3", 3, 4)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node3", 3.1, 4.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node1", 4, 5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node1", 4.5, 5.5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node2", 5, 6)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node2", 5.5, 6.5)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node1", "node2", 6, 7)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node2", 6.1, 7.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node1", "node3", 7, 8)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node3", 7.1, 8.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node1", 8, 9)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node1", 8.1, 9.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node3", 9, 0)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node3", 9.1, 0.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node1", 0, 1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node1", 0.1, 1.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node3", "node2", 1, 2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node3", "node2", 1.1, 2.1)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
+		t.Errorf("Failed to set metric")
 	}
 
-	// logTimeLapse("Set network metrics: ")
-
-	fmt.Println("Get network metrics")
-	lat, mean, err = ms.GetLastLatencyMetric("node1", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 6 || mean != 7 {
-		t.Errorf("Invalid metric values")
+	fmt.Println("Get last metric")
+	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields = []string{field1, field2, field3, field4}
+	result, err := ms.GetMetric(metric, getTags, getFields, "", 1)
+	if err != nil || len(result) != 1 {
+		t.Errorf("Failed to get metric")
 	}
-	tput, loss, err := ms.GetLastTrafficMetric("node1", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 6.1 || loss != 7.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node1", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 7 || mean != 8 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node1", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 7.1 || loss != 8.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node2", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 8 || mean != 9 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node2", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 8.1 || loss != 9.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node2", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 9 || mean != 0 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node2", "node3")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 9.1 || loss != 0.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node3", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 0 || mean != 1 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node3", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 0.1 || loss != 1.1 {
-		t.Errorf("Invalid metric values")
-	}
-	lat, mean, err = ms.GetLastLatencyMetric("node3", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 1 || mean != 2 {
-		t.Errorf("Invalid metric values")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node3", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 1.1 || loss != 2.1 {
-		t.Errorf("Invalid metric values")
+	if !validateMetric(result[0], false, "val2", 1, 1.1) {
+		t.Errorf("Invalid result")
 	}
 
-	// logTimeLapse("Get network metrics: ")
-
-	fmt.Println("Set event metric")
-	err = ms.SetEventMetric("MOBILITY", "event1")
-	if err != nil {
-		t.Errorf("Unable to set event metric")
+	fmt.Println("Get all metrics")
+	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields = []string{field1, field2, field3, field4}
+	result, err = ms.GetMetric(metric, getTags, getFields, "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
 	}
-	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", "event2")
-	if err != nil {
-		t.Errorf("Unable to set event metric")
+	if !validateMetric(result[0], false, "val2", 1, 1.1) {
+		t.Errorf("Invalid result")
 	}
-	err = ms.SetEventMetric("POAS-IN-RANGE", "event3")
-	if err != nil {
-		t.Errorf("Unable to set event metric")
+	if !validateMetric(result[1], true, "val1", 0, 0.0) {
+		t.Errorf("Invalid result")
 	}
 
-	// logTimeLapse("Set event metrics: ")
-
-	fmt.Println("Get event metrics")
-	event, err := ms.GetLastEventMetric("MOBILITY")
-	if err != nil {
-		t.Errorf("Event metric should exist")
-	} else if event != "event1" {
-		t.Errorf("Invalid metric values")
+	fmt.Println("Get all metrics from the last 10 seconds")
+	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields = []string{field1, field2, field3, field4}
+	_, err = ms.GetMetric(metric, getTags, getFields, "10s", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
 	}
-	event, err = ms.GetLastEventMetric("NETWORK-CHARACTERISTIC-UPDATE")
-	if err != nil {
-		t.Errorf("Event metric should exist")
-	} else if event != "event2" {
-		t.Errorf("Invalid metric values")
+	if !validateMetric(result[0], false, "val2", 1, 1.1) {
+		t.Errorf("Invalid result")
 	}
-	event, err = ms.GetLastEventMetric("POAS-IN-RANGE")
-	if err != nil {
-		t.Errorf("Event metric should exist")
-	} else if event != "event3" {
-		t.Errorf("Invalid metric values")
+	if !validateMetric(result[1], true, "val1", 0, 0.0) {
+		t.Errorf("Invalid result")
 	}
 
-	// logTimeLapse("Get event metrics: ")
+	fmt.Println("Get all metrics from the last millisecond (none)")
+	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	getFields = []string{field1, field2, field3, field4}
+	_, err = ms.GetMetric(metric, getTags, getFields, "1ms", 0)
+	if err == nil {
+		t.Errorf("Net metric list should be empty")
+	}
 
 	// t.Errorf("DONE")
+}
+
+func validateMetric(result map[string]interface{}, v1 bool, v2 string, v3 int32, v4 float64) bool {
+	if result[field1] != v1 {
+		fmt.Println("Invalid " + field1)
+		return false
+	}
+	if result[field2] != v2 {
+		fmt.Println("Invalid " + field2)
+		return false
+	}
+	if val, ok := result[field3].(json.Number); !ok || JsonNumToInt32(val) != v3 {
+		fmt.Println("Invalid " + field3)
+		return false
+	}
+	if val, ok := result[field4].(json.Number); !ok || JsonNumToFloat64(val) != v4 {
+		fmt.Println("Invalid " + field4)
+		return false
+	}
+	return true
 }
