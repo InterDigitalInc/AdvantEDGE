@@ -185,8 +185,6 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	if !validateTrafficMetric(result[1], 1.1, 1.2) {
 		t.Errorf("Invalid result")
 	}
-
-	// t.Errorf("DONE")
 }
 
 func validateLatencyMetric(result map[string]interface{}, v1 int32) bool {

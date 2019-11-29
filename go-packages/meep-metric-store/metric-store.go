@@ -29,6 +29,7 @@ import (
 
 // var start time.Time
 
+const defaultInfluxDBAddr = "http://meep-influxdb:8086"
 const dbMaxRetryCount = 2
 
 // MetricStore - Implements a metric store
@@ -67,7 +68,7 @@ func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 
 func (ms *MetricStore) connectDB(addr string) error {
 	if addr == "" {
-		ms.addr = "http://meep-influxdb:8086"
+		ms.addr = defaultInfluxDBAddr
 	} else {
 		ms.addr = addr
 	}

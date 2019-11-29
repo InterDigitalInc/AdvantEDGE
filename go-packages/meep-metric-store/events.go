@@ -56,7 +56,7 @@ func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err e
 	return event, nil
 }
 
-// GetLatencyMetrics
+// GetEventMetrics
 func (ms *MetricStore) GetEventMetrics(eventType string, duration string, count int) (metrics []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {

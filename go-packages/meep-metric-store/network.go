@@ -108,7 +108,7 @@ func (ms *MetricStore) GetLastTrafficMetric(src string, dest string) (tput float
 	return
 }
 
-// GetLatencyMetrics
+// GetTrafficMetrics
 func (ms *MetricStore) GetTrafficMetrics(src string, dest string, duration string, count int) (metrics []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
