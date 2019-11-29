@@ -26,5 +26,4 @@ echo ">>> Installing influx DB for Unit Testing"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-helm install --name meep-ut-influxdb --set serviceNodePort.nodeport=30986 --set persistence.enabled=false $BASEDIR/../charts/influxdb/
-
+helm install --name meep-ut-influxdb --set service.apiNodePort=30986 --set service.rpcNodePort=30988 --set persistence.enabled=false $BASEDIR/../charts/influxdb/

@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/coreos/go-iptables v0.4.0
 	github.com/gogo/protobuf v1.2.1 // indirect
@@ -22,6 +23,8 @@ require (
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
-replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
-
-replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
+replace (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store => ../../go-packages/meep-metric-store
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
+)

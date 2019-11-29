@@ -26,6 +26,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
@@ -71,26 +72,24 @@ type podShortElement struct {
 var sem = make(chan int, 1)
 
 var opts = struct {
-	timeout                time.Duration
-	interval               time.Duration
-	trafficInterval        time.Duration
-	trafficIntervalsPerLog uint
-	payloadSize            uint
-	statBufferSize         uint
-	bind4                  string
-	bind6                  string
-	dests                  []*destination
-	resolverTimeout        time.Duration
+	timeout         time.Duration
+	interval        time.Duration
+	trafficInterval time.Duration
+	payloadSize     uint
+	statBufferSize  uint
+	bind4           string
+	bind6           string
+	dests           []*destination
+	resolverTimeout time.Duration
 }{
-	timeout:                100000 * time.Millisecond,
-	interval:               1000 * time.Millisecond,
-	trafficInterval:        100 * time.Millisecond,
-	trafficIntervalsPerLog: 10, //set to 10 to have one log per second, in order to lower the impact on Elastic Search
-	bind4:                  "0.0.0.0",
-	bind6:                  "::",
-	payloadSize:            56,
-	statBufferSize:         50,
-	resolverTimeout:        15000 * time.Millisecond,
+	timeout:         100000 * time.Millisecond,
+	interval:        1000 * time.Millisecond,
+	trafficInterval: 100 * time.Millisecond,
+	bind4:           "0.0.0.0",
+	bind6:           "::",
+	payloadSize:     56,
+	statBufferSize:  50,
+	resolverTimeout: 15000 * time.Millisecond,
 }
 
 // NetChar
@@ -115,9 +114,11 @@ var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
 
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr = "meep-redis-master:6379"
+const influxDBAddr = "http://meep-influxdb:8086"
 
 var rc *redis.Connector
+var metricStore *ms.MetricStore
 
 const DEFAULT_SIDECAR_DB = 0
 
@@ -161,6 +162,13 @@ func initMeepSidecar() error {
 	}
 	log.Info("MEEP_POD_NAME: ", PodName)
 
+	scenarioName := strings.TrimSpace(os.Getenv("MEEP_SCENARIO_NAME"))
+	if scenarioName == "" {
+		log.Error("MEEP_SCENARIO_NAME not set. Exiting.")
+		return errors.New("MEEP_SCENARIO_NAME not set")
+	}
+	log.Info("MEEP_SCENARIO_NAME: ", scenarioName)
+
 	// Create IPtables client
 	ipTbl, err = ipt.New()
 	if err != nil {
@@ -172,10 +180,17 @@ func initMeepSidecar() error {
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
 	if err != nil {
-		log.Error("Failed connection to Redis DB.  Error: ", err)
+		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
 	log.Info("Connected to redis DB")
+
+	// Connect to Metric Store
+	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
 
 	// Subscribe to Pub-Sub events for MEEP TC & LB
 	// NOTE: Current implementation is RedisDB Pub-Sub
@@ -501,11 +516,11 @@ func callPing() {
 				history: &history{
 					results: make([]time.Duration, opts.statBufferSize),
 				},
-				historyRx: &historyRx{
-					rcvedBytes: 0,
+				prevRx: &historyRx{
+					rxBytes: 0,
 				},
-				historyLogRx: &historyRx{
-					rcvedBytes: 0,
+				prevRxLog: &historyRx{
+					rxBytes: 0,
 				},
 			}
 
@@ -533,7 +548,7 @@ func workLatency() {
 				u.ping(pinger)
 			}(u, i)
 			go func(u *destination, i int) {
-				u.compute(rc)
+				u.compute()
 			}(u, i)
 		}
 
@@ -550,7 +565,7 @@ func workRxTxPackets() {
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
 			go func(u *destination, i int) {
-				u.processRxTx(rc)
+				u.processRxTx()
 			}(u, i)
 		}
 		<-sem
@@ -568,7 +583,7 @@ func workLogRxTxData() {
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
 			go func(u *destination, i int) {
-				u.logRxTx(rc)
+				u.logRxTx()
 			}(u, i)
 		}
 		<-sem

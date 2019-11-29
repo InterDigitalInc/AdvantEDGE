@@ -49,6 +49,7 @@ func TestCtrlEngine(t *testing.T) {
 
 	fmt.Println("CtrlEngineInit()")
 	couchDBAddr = "http://localhost:30985/"
+	influxDBAddr = "http://localhost:30986"
 	redisDBAddr = "localhost:30380"
 	mod.DbAddress = redisDBAddr
 	err := CtrlEngineInit()
