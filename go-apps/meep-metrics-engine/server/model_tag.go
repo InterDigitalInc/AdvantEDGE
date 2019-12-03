@@ -24,18 +24,12 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Filtering query parameter
+type Tag struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Tag name
+	Name string `json:"name,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
-
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	// Tag value
+	Value string `json:"value,omitempty"`
 }

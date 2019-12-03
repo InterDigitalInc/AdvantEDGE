@@ -24,18 +24,14 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Network metrics query response
+type NetworkQueryResponse struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Response name
+	Name string `json:"name,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
+	// columns included in response
+	Columns []Field `json:"columns,omitempty"`
 
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	Values []NetworkValue `json:"values,omitempty"`
 }

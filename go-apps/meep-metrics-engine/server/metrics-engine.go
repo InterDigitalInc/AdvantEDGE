@@ -19,14 +19,30 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+
 	"github.com/olivere/elastic"
 )
+
+const influxDBAddr = "http://meep-influxdb:8086"
+const metricEvent = "events"
+const metricLatency = "latency"
+const metricTraffic = "traffic"
+
+const moduleName string = "meep-metrics-engine"
+const redisAddr string = "meep-redis-master:6379"
+
+var activeModel *mod.Model
+var activeScenarioName string
+var metricStore *ms.MetricStore
 
 type ElasticFormatedLogResponse struct {
 	Msg       string `json:"msg"`
@@ -51,9 +67,67 @@ type ElasticFormatedLogResponse struct {
 	OldPoa string `json:"meep.log.oldPoa"`
 }
 
-// Init - Location Service initialization
+// Init - Metrics engine initialization
 func Init() (err error) {
+	// Listen for model updates
+	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+	err = activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listening for model updates: ", err.Error())
+	}
+
 	return nil
+}
+
+func eventHandler(channel string, payload string) {
+	// Handle Message according to Rx Channel
+	switch channel {
+
+	// MEEP Ctrl Engine active scenario update event
+	case mod.ActiveScenarioEvents:
+		processActiveScenarioUpdate(payload)
+
+	default:
+		log.Warn("Unsupported channel event: ", channel)
+	}
+}
+
+func processActiveScenarioUpdate(event string) {
+	if event == mod.EventTerminate {
+		terminateScenario(activeScenarioName)
+		activeScenarioName = ""
+	} else if event == mod.EventActivate {
+		// Cache name for later deletion
+		activeScenarioName = activeModel.GetScenarioName()
+		activateScenario()
+	} else {
+		log.Debug("Reveived event: ", event, " - Do nothing")
+	}
+}
+
+func activateScenario() {
+	// Connect to Metric Store
+	var err error
+	metricStore, err = ms.NewMetricStore(activeScenarioName, influxDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Influx: ", err)
+		return
+	}
+	if metricStore == nil {
+		log.Error("MetricStore creation error")
+		return
+	}
+}
+
+func terminateScenario(name string) {
+	if name == "" {
+		return
+	}
+	metricStore = nil
 }
 
 func metricsGet(w http.ResponseWriter, r *http.Request) {
@@ -194,4 +268,162 @@ func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogRespons
 	default:
 	}
 	return &resp
+}
+
+func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (metrics []map[string]interface{}, responseColumns []Field, err error) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	log.Debug("meGetMetrics")
+
+	// Retrieve scenario from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return nil, nil, err
+	}
+
+	params := new(NetworkQueryParams)
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil, nil, err
+	}
+
+	getTags := make(map[string]string)
+
+	for _, tag := range params.Tags {
+
+		//extracting name: and value: into a string
+		jsonInfo, err := json.Marshal(tag)
+		if err != nil {
+			log.Error(err.Error())
+			return nil, nil, err
+		}
+		var tmpTags map[string]string
+		//storing the tag in a temporary map to use the values
+		err = json.Unmarshal([]byte(jsonInfo), &tmpTags)
+		if err != nil {
+			log.Error(err.Error())
+			return nil, nil, err
+		}
+		getTags[tmpTags["name"]] = tmpTags["value"]
+	}
+
+	var getFields []string
+	for _, str := range params.Fields {
+		getFields = append(getFields, string(str))
+		//temporary code to differentiate looking at 2 different tables
+		if metricType != metricEvent {
+			if metricType == "tbd" {
+				//takes latency as soon as latency is part of the query
+				if string(str) == "lat" {
+					metricType = metricLatency
+				} else {
+					metricType = metricTraffic
+				}
+			}
+		}
+	}
+	if metricStore != nil {
+		metrics, err = metricStore.GetMetric(metricType, getTags, getFields, params.Scope.Duration, int(params.Scope.Limit))
+
+		responseColumns = params.Fields
+		responseColumns = append(responseColumns, "time")
+
+		return metrics, responseColumns, err
+	}
+
+	return nil, nil, nil
+}
+
+func meGetEventMetrics(w http.ResponseWriter, r *http.Request) {
+	metrics, respColumns, err := meGetMetrics(w, r, metricEvent)
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if metrics == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	//response
+	var response EventQueryResponse
+	response.Name = "event metrics"
+
+	response.Columns = respColumns
+	for _, metric := range metrics {
+		var value EventValue
+		value.Time = metric["time"].(string)
+
+		if metric["event"] != nil {
+			if val, ok := metric["event"].(string); ok {
+				value.Description = val
+			}
+		}
+		response.Values = append(response.Values, value)
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+
+}
+
+func meGetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
+	metrics, respColumns, err := meGetMetrics(w, r, "tbd")
+
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if metrics == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	//response
+	var response NetworkQueryResponse
+	response.Name = "network metrics"
+
+	response.Columns = respColumns
+	for _, metric := range metrics {
+		var value NetworkValue
+		value.Time = metric["time"].(string)
+
+		if metric["lat"] != nil {
+			valueLat, _ := metric["lat"].(json.Number).Float64()
+			value.Lat = float32(valueLat)
+		}
+		if metric["tput"] != nil {
+			valueTput, _ := metric["tput"].(json.Number).Float64()
+			value.Tput = float32(valueTput)
+		}
+		if metric["loss"] != nil {
+			valueLoss, _ := metric["loss"].(json.Number).Float64()
+			value.Loss = float32(valueLoss)
+		}
+		response.Values = append(response.Values, value)
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+
 }

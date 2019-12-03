@@ -24,18 +24,14 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Network metrics query parameters
+type NetworkQueryParams struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Tag array<br>combination of: src, dest, srcpl, dstpl
+	Tags []Tag `json:"tags,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
+	// Field array<br>combination of: lat, tput, loss
+	Fields []Field `json:"fields,omitempty"`
 
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	Scope *Scope `json:"scope,omitempty"`
 }

@@ -24,18 +24,9 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Notification callback definition.
+type EventsCallbackReference struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
-
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
-
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	// The URL of your own listener application.
+	NotifyURL string `json:"notifyURL"`
 }

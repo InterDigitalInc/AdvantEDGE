@@ -58,7 +58,11 @@ func NewRouter() *mux.Router {
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+	fmt.Fprintf(w, "Hello World! on v1")
+}
+
+func IndexV2(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello World! on v2")
 }
 
 var routes = Routes{
@@ -74,5 +78,82 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/v1/metrics",
 		MetricsGet,
+	},
+
+	Route{
+		"IndexV2",
+		"GET",
+		"/v2/",
+		Index,
+	},
+
+	Route{
+		"GetEventMetrics",
+		strings.ToUpper("Post"),
+		"/v2/metrics/event",
+		GetEventMetrics,
+	},
+
+	Route{
+		"GetNetworkMetrics",
+		strings.ToUpper("Post"),
+		"/v2/metrics/network",
+		GetNetworkMetrics,
+	},
+
+	Route{
+		"CreateEventsMetricsSubscription",
+		strings.ToUpper("Post"),
+		"/v2/subscriptions/event",
+		CreateEventsMetricsSubscription,
+	},
+
+	Route{
+		"CreateNetworkMetricsSubscription",
+		strings.ToUpper("Post"),
+		"/v2/subscriptions/network",
+		CreateNetworkMetricsSubscription,
+	},
+
+	Route{
+		"DeleteEventMetricSubscriptionById",
+		strings.ToUpper("Delete"),
+		"/v2/subscriptions/event/{subscriptionId}",
+		DeleteEventMetricSubscriptionById,
+	},
+
+	Route{
+		"DeleteNetworkMetricSubscriptionById",
+		strings.ToUpper("Delete"),
+		"/v2/subscriptions/network/{subscriptionId}",
+		DeleteNetworkMetricSubscriptionById,
+	},
+
+	Route{
+		"GetEventMetricSubscription",
+		strings.ToUpper("Get"),
+		"/v2/subscriptions/event",
+		GetEventMetricSubscription,
+	},
+
+	Route{
+		"GetEventMetricSubscriptionById",
+		strings.ToUpper("Get"),
+		"/v2/subscriptions/event/{subscriptionId}",
+		GetEventMetricSubscriptionById,
+	},
+
+	Route{
+		"GetNetworkMetricSubscription",
+		strings.ToUpper("Get"),
+		"/v2/subscriptions/network",
+		GetNetworkMetricSubscription,
+	},
+
+	Route{
+		"GetNetworkMetricSubscriptionById",
+		strings.ToUpper("Get"),
+		"/v2/subscriptions/network/{subscriptionId}",
+		GetNetworkMetricSubscriptionById,
 	},
 }

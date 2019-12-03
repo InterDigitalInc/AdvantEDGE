@@ -94,7 +94,7 @@ repo:
       codecov: true
       lint: true
       nodeport: 30008
-      api: go-apps/meep-metrics-engine/api/swagger.yaml
+      api: go-apps/meep-metrics-engine/api/swagger-v2.yaml
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine

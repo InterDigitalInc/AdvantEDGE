@@ -24,18 +24,6 @@
 
 package server
 
-import (
-	"net/http"
-)
-
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
-
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
-
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+// List of event metrics subscriptions
+type EventSubscriptionResponseList struct {
 }

@@ -24,18 +24,10 @@
 
 package server
 
-import (
-	"net/http"
-)
+type Field string
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
+/*
+// Queried value
+type Field struct {
 }
-
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
-
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
-}
+*/

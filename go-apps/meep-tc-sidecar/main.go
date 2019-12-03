@@ -70,6 +70,7 @@ type podShortElement struct {
 }
 
 var sem = make(chan int, 1)
+var semLatencyMap = make(chan int, 1)
 
 var opts = struct {
 	timeout         time.Duration
@@ -109,6 +110,7 @@ var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
 var netcharMap = map[string]*NetChar{}
+var latestLatencyResultsMap = map[string]int32{}
 
 var measurementsRunning = false
 var flushRequired = false
@@ -542,6 +544,7 @@ func callPing() {
 
 func workLatency() {
 	for {
+
 		for i, u := range opts.dests {
 			//starting 2 threads, one for the pings, one for the computing part
 			go func(u *destination, i int) {

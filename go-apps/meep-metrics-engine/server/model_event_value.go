@@ -24,18 +24,12 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Value of a single event metric
+type EventValue struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Time of event value
+	Time string `json:"time,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
-
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	// Event description
+	Description string `json:"description,omitempty"`
 }

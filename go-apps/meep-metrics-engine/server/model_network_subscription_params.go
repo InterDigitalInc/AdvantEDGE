@@ -24,18 +24,13 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Network metrics subscription parameters
+type NetworkSubscriptionParams struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Uniquely identifies this create subscription request. If there is a communication failure during the request, using the same clientCorrelator when retrying the request allows the operator to avoid creating a duplicate subscription.
+	ClientCorrelator string `json:"clientCorrelator,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
+	CallbackReference *NetworkCallbackReference `json:"callbackReference,omitempty"`
 
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	EventQueryParams *EventQueryParams `json:"eventQueryParams,omitempty"`
 }

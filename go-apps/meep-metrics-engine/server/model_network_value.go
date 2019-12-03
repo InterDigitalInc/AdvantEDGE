@@ -24,18 +24,18 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Value of a single network metric
+type NetworkValue struct {
 
-func MetricsGet(w http.ResponseWriter, r *http.Request) {
-	metricsGet(w, r)
-}
+	// Time of network value
+	Time string `json:"time,omitempty"`
 
-func GetEventMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetEventMetrics(w, r)
-}
+	// Network latency (ms)
+	Lat float32 `json:"lat,omitempty"`
 
-func GetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
-	meGetNetworkMetrics(w, r)
+	// Network throughput (Mbps)
+	Tput float32 `json:"tput,omitempty"`
+
+	// Network packet loss (%)
+	Loss float32 `json:"loss,omitempty"`
 }
