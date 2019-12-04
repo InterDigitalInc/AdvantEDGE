@@ -25,6 +25,8 @@ import (
 	"net/http"
 	"net/url"
 
+	v1 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v1"
+	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -185,7 +187,7 @@ func metricsGet(w http.ResponseWriter, r *http.Request) {
 	docs := 0
 	pages := 0
 	print := 0
-	var logResponseList LogResponseList
+	var logResponseList v1.LogResponseList
 	for {
 		res, err := searchQuery.Do(context.Background())
 		if err == io.EOF {
@@ -234,7 +236,7 @@ func metricsGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogResponse {
+func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *v1.LogResponse {
 
 	if esLogResponse == nil {
 		return nil
@@ -242,7 +244,7 @@ func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogRespons
 
 	msgType := esLogResponse.MsgType
 
-	var resp LogResponse
+	var resp v1.LogResponse
 	resp.DataType = msgType
 	resp.Src = esLogResponse.Src
 	resp.Dest = esLogResponse.Dest
@@ -250,18 +252,18 @@ func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogRespons
 
 	switch msgType {
 	case "latency":
-		var data LogResponseData
+		var data v1.LogResponseData
 		data.Latency = esLogResponse.Latency
 		resp.Data = &data
 	case "ingressPacketStats":
-		var data LogResponseData
+		var data v1.LogResponseData
 		data.Rx = esLogResponse.Rx
 		data.RxBytes = esLogResponse.RxBytes
 		data.Throughput = esLogResponse.Throughput
 		data.PacketLoss = esLogResponse.PacketLoss
 		resp.Data = &data
 	case "mobilityEvent":
-		var data LogResponseData
+		var data v1.LogResponseData
 		data.NewPoa = esLogResponse.NewPoa
 		data.OldPoa = esLogResponse.OldPoa
 		resp.Data = &data
@@ -270,7 +272,7 @@ func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogRespons
 	return &resp
 }
 
-func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (metrics []map[string]interface{}, responseColumns []Field, err error) {
+func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (metrics []map[string]interface{}, responseColumns []string, err error) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	log.Debug("meGetMetrics")
@@ -283,7 +285,7 @@ func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (me
 		return nil, nil, err
 	}
 
-	params := new(NetworkQueryParams)
+	params := new(v2.NetworkQueryParams)
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&params)
 	if err != nil {
@@ -313,13 +315,13 @@ func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (me
 	}
 
 	var getFields []string
-	for _, str := range params.Fields {
-		getFields = append(getFields, string(str))
+	for _, field := range params.Fields {
+		getFields = append(getFields, field)
 		//temporary code to differentiate looking at 2 different tables
 		if metricType != metricEvent {
 			if metricType == "tbd" {
 				//takes latency as soon as latency is part of the query
-				if string(str) == "lat" {
+				if field == "lat" {
 					metricType = metricLatency
 				} else {
 					metricType = metricTraffic
@@ -353,12 +355,12 @@ func meGetEventMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//response
-	var response EventQueryResponse
+	var response v2.EventQueryResponse
 	response.Name = "event metrics"
 
 	response.Columns = respColumns
 	for _, metric := range metrics {
-		var value EventValue
+		var value v2.EventValue
 		value.Time = metric["time"].(string)
 
 		if metric["event"] != nil {
@@ -394,12 +396,12 @@ func meGetNetworkMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//response
-	var response NetworkQueryResponse
+	var response v2.NetworkQueryResponse
 	response.Name = "network metrics"
 
 	response.Columns = respColumns
 	for _, metric := range metrics {
-		var value NetworkValue
+		var value v2.NetworkValue
 		value.Time = metric["time"].(string)
 
 		if metric["lat"] != nil {

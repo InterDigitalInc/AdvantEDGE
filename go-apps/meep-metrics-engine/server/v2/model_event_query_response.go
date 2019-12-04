@@ -24,14 +24,14 @@
 
 package server
 
-// Network metrics query parameters
-type NetworkQueryParams struct {
+// Event metrics query response
+type EventQueryResponse struct {
 
-	// Tag array<br>combination of: src, dest, srcpl, dstpl
-	Tags []Tag `json:"tags,omitempty"`
+	// Response name
+	Name string `json:"name,omitempty"`
 
-	// Field array<br>combination of: lat, tput, loss
-	Fields []Field `json:"fields,omitempty"`
+	// columns included in response based on queried values
+	Columns []string `json:"columns,omitempty"`
 
-	Scope *Scope `json:"scope,omitempty"`
+	Values []EventValue `json:"values,omitempty"`
 }

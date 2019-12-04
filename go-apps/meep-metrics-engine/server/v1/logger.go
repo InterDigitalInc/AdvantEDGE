@@ -24,14 +24,24 @@
 
 package server
 
-// Event metrics query parameters
-type EventQueryParams struct {
+import (
+	"log"
+	"net/http"
+	"time"
+)
 
-	// Tag array<br>combination of: target, type
-	Tags []Tag `json:"tags,omitempty"`
+func Logger(inner http.Handler, name string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-	// Field array<br>combination of: description
-	Fields []Field `json:"fields,omitempty"`
+		inner.ServeHTTP(w, r)
 
-	Scope *Scope `json:"scope,omitempty"`
+		log.Printf(
+			"%s %s %s %s",
+			r.Method,
+			r.RequestURI,
+			name,
+			time.Since(start),
+		)
+	})
 }

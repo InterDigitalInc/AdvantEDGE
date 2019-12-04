@@ -24,9 +24,14 @@
 
 package server
 
-type Field string
-/*
-// Queried value
-type Field struct {
+// Network metrics query response
+type NetworkQueryResponse struct {
+
+	// Response name
+	Name string `json:"name,omitempty"`
+
+	// columns included in response based on queried values
+	Columns []string `json:"columns,omitempty"`
+
+	Values []NetworkValue `json:"values,omitempty"`
 }
-*/

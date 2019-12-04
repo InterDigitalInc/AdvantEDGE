@@ -256,10 +256,6 @@ definitions:
     example:
       name: "src"
       value: "iperf-ue1"
-  Field:
-    type: "string"
-    description: "Queried value"
-    example: "lat,tput,loss"
   Scope:
     type: "object"
     properties:
@@ -316,7 +312,9 @@ definitions:
         type: "array"
         description: "Field array<br>combination of: lat, tput, loss"
         items:
-          $ref: "#/definitions/Field"
+          type: "string"
+          example: "lat,tput,loss"
+          description: "Queried value"
       scope:
         $ref: "#/definitions/Scope"
     description: "Network metrics query parameters"
@@ -325,7 +323,6 @@ definitions:
         duration: "10s"
         limit: 60
       fields:
-      - "lat,tput,loss"
       - "lat,tput,loss"
       tags:
       - name: "src"
@@ -342,9 +339,11 @@ definitions:
       columns:
         type: "array"
         example: "time,lat,tput,loss"
-        description: "columns included in response"
+        description: "columns included in response based on queried values"
         items:
-          $ref: "#/definitions/Field"
+          type: "string"
+          example: "lat,tput,loss"
+          description: "Queried value"
       values:
         type: "array"
         items:
@@ -372,9 +371,11 @@ definitions:
           $ref: "#/definitions/Tag"
       fields:
         type: "array"
-        description: "Field array<br>combination of: description"
+        description: "Field array<br>combination of: lat, tput, loss"
         items:
-          $ref: "#/definitions/Field"
+          type: "string"
+          example: "lat,tput,loss"
+          description: "Queried value"
       scope:
         $ref: "#/definitions/Scope"
     description: "Event metrics query parameters"
@@ -383,7 +384,6 @@ definitions:
         duration: "10s"
         limit: 60
       fields:
-      - "lat,tput,loss"
       - "lat,tput,loss"
       tags:
       - name: "src"
@@ -414,9 +414,11 @@ definitions:
         description: "Response name"
       columns:
         type: "array"
-        description: "columns included in response"
+        description: "columns included in response based on queried values"
         items:
-          $ref: "#/definitions/Field"
+          type: "string"
+          example: "lat,tput,loss"
+          description: "Queried value"
       values:
         type: "array"
         items:
@@ -424,7 +426,6 @@ definitions:
     description: "Event metrics query response"
     example:
       columns:
-      - "lat,tput,loss"
       - "lat,tput,loss"
       values:
       - description: "Mobility event ue1 to poa3"
@@ -487,7 +488,6 @@ definitions:
           duration: "10s"
           limit: 60
         fields:
-        - "lat,tput,loss"
         - "lat,tput,loss"
         tags:
         - name: "src"
@@ -574,7 +574,6 @@ definitions:
           duration: "10s"
           limit: 60
         fields:
-        - "lat,tput,loss"
         - "lat,tput,loss"
         tags:
         - name: "src"

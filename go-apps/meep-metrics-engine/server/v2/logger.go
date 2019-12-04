@@ -24,14 +24,24 @@
 
 package server
 
-// Event metrics query response
-type EventQueryResponse struct {
+import (
+	"log"
+	"net/http"
+	"time"
+)
 
-	// Response name
-	Name string `json:"name,omitempty"`
+func Logger(inner http.Handler, name string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 
-	// columns included in response
-	Columns []Field `json:"columns,omitempty"`
+		inner.ServeHTTP(w, r)
 
-	Values []EventValue `json:"values,omitempty"`
+		log.Printf(
+			"%s %s %s %s",
+			r.Method,
+			r.RequestURI,
+			name,
+			time.Since(start),
+		)
+	})
 }

@@ -24,10 +24,14 @@
 
 package server
 
-type Field string
+// Event metrics query parameters
+type EventQueryParams struct {
 
-/*
-// Queried value
-type Field struct {
+	// Tag array<br>combination of: target, type
+	Tags []Tag `json:"tags,omitempty"`
+
+	// Field array<br>combination of: lat, tput, loss
+	Fields []string `json:"fields,omitempty"`
+
+	Scope *Scope `json:"scope,omitempty"`
 }
-*/

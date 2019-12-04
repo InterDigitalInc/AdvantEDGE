@@ -24,14 +24,14 @@
 
 package server
 
-// Network metrics query response
-type NetworkQueryResponse struct {
+// Network metrics query parameters
+type NetworkQueryParams struct {
 
-	// Response name
-	Name string `json:"name,omitempty"`
+	// Tag array<br>combination of: src, dest, srcpl, dstpl
+	Tags []Tag `json:"tags,omitempty"`
 
-	// columns included in response
-	Columns []Field `json:"columns,omitempty"`
+	// Field array<br>combination of: lat, tput, loss
+	Fields []string `json:"fields,omitempty"`
 
-	Values []NetworkValue `json:"values,omitempty"`
+	Scope *Scope `json:"scope,omitempty"`
 }
