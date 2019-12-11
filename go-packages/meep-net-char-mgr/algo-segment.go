@@ -815,7 +815,9 @@ func (algo *SegmentAlgorithm) reCalculateNetChar() {
 				//first time it finds a value, it applies it directly
 				flow.ComputedPacketLoss = segment.ConfiguredNetChar.PacketLoss
 			} else {
-				flow.ComputedPacketLoss += (flow.ComputedPacketLoss * (1 - segment.ConfiguredNetChar.PacketLoss))
+				if segment.ConfiguredNetChar.PacketLoss != 0 {
+					flow.ComputedPacketLoss += (flow.ComputedPacketLoss * (1 - segment.ConfiguredNetChar.PacketLoss))
+				}
 			}
 		}
 		if algo.Config.LogVerbose {
