@@ -29,41 +29,33 @@ import (
 )
 
 func CreateEventsMetricsSubscription(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	createEventsMetricsSubscription(w, r)
 }
 
 func CreateNetworkMetricsSubscription(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	createNetworkMetricsSubscription(w, r)
 }
 
 func DeleteEventMetricSubscriptionById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	deleteEventMetricSubscriptionById(w, r)
 }
 
 func DeleteNetworkMetricSubscriptionById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	deleteNetworkMetricSubscriptionById(w, r)
 }
 
 func GetEventMetricSubscription(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	getEventMetricSubscription(w, r)
 }
 
 func GetEventMetricSubscriptionById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	getEventMetricSubscriptionById(w, r)
 }
 
 func GetNetworkMetricSubscription(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	getNetworkMetricSubscription(w, r)
 }
 
 func GetNetworkMetricSubscriptionById(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	getNetworkMetricSubscriptionById(w, r)
 }

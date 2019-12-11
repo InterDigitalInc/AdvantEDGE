@@ -38,5 +38,11 @@ type NetworkSubscriptionResponse struct {
 	// Self referring URL.
 	ResourceURL string `json:"resourceURL,omitempty"`
 
-	EventQueryParams *NetworkQueryParams `json:"eventQueryParams,omitempty"`
+	NetworkQueryParams *NetworkQueryParams `json:"networkQueryParams,omitempty"`
+
+	// Recurrence of recurring-time-based notifications
+	Recurrence int32 `json:"recurrence,omitempty"`
+
+	// Type of subscription triggering notifications
+	SubscriptionType string `json:"subscriptionType,omitempty"`
 }

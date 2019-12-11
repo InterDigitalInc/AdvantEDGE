@@ -1,0 +1,22 @@
+{
+  "name": "advant_edge_metrics_service_rest_api",
+  "version": "1.0.0",
+  "description": "Metrics_Service_provides_metrics_about_the_active_scenario_pMicro_servicebr_meep_metrics_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_metrics_engine_pType__UsagebrPlatform_Service_used_by_controlmonitoring_software_and_possibly_by_edge_applications_that_require_metrics_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_address30000api__pDefault_Portbr30005",
+  "license": "Apache 2.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "superagent": "3.7.0",
+    "querystring": "0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.3.4",
+    "sinon": "1.17.3",
+    "expect.js": "~0.3.1"
+  }
+}

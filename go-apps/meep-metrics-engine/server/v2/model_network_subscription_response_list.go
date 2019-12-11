@@ -24,6 +24,9 @@
 
 package server
 
-// List of network metrics subscriptions
 type NetworkSubscriptionResponseList struct {
+	NetworkSubscriptionResponse []NetworkSubscriptionResponse `json:"networkSubscriptionResponse,omitempty"`
+
+	// Self referring URL.
+	ResourceURL string `json:"resourceURL,omitempty"`
 }

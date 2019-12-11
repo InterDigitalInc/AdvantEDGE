@@ -24,6 +24,9 @@
 
 package server
 
-// List of event metrics subscriptions
 type EventSubscriptionResponseList struct {
+	EventSubscriptionResponse []EventSubscriptionResponse `json:"eventSubscriptionResponse,omitempty"`
+
+	// Self referring URL.
+	ResourceURL string `json:"resourceURL,omitempty"`
 }

@@ -33,4 +33,10 @@ type EventSubscriptionParams struct {
 	CallbackReference *EventsCallbackReference `json:"callbackReference,omitempty"`
 
 	EventQueryParams *EventQueryParams `json:"eventQueryParams,omitempty"`
+
+	// Recurrence of recurring-time-based notifications
+	Recurrence int32 `json:"recurrence,omitempty"`
+
+	// Type of subscription triggering notifications
+	SubscriptionType string `json:"subscriptionType,omitempty"`
 }

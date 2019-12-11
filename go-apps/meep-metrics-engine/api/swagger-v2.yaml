@@ -250,12 +250,12 @@ definitions:
         description: "Tag name"
       value:
         type: "string"
-        example: "iperf-ue1"
+        example: "ue1-iperf"
         description: "Tag value"
     description: "Filtering query parameter"
     example:
       name: "src"
-      value: "iperf-ue1"
+      value: "ue1-iperf"
   Scope:
     type: "object"
     properties:
@@ -323,12 +323,14 @@ definitions:
         duration: "10s"
         limit: 60
       fields:
-      - "lat,tput,loss"
+      - "lat"
+      - "tput"
+      - "loss"
       tags:
       - name: "src"
-        value: "iperf-ue1"
-      - name: "src"
-        value: "iperf-ue1"
+        value: "ue1-iperf"
+      - name: "dest"
+        value: "zone1-fog1-iperf"
   NetworkQueryResponse:
     type: "object"
     properties:
@@ -374,7 +376,7 @@ definitions:
         description: "Field array<br>combination of: lat, tput, loss"
         items:
           type: "string"
-          example: "lat,tput,loss"
+          example: "event"
           description: "Queried value"
       scope:
         $ref: "#/definitions/Scope"
@@ -384,12 +386,10 @@ definitions:
         duration: "10s"
         limit: 60
       fields:
-      - "lat,tput,loss"
+      - "event"
       tags:
-      - name: "src"
-        value: "iperf-ue1"
-      - name: "src"
-        value: "iperf-ue1"
+      - name: "type"
+        value: "MOBILITY"
   EventValue:
     type: "object"
     properties:
@@ -417,7 +417,7 @@ definitions:
         description: "columns included in response based on queried values"
         items:
           type: "string"
-          example: "lat,tput,loss"
+          example: "event"
           description: "Queried value"
       values:
         type: "array"
@@ -426,12 +426,12 @@ definitions:
     description: "Event metrics query response"
     example:
       columns:
-      - "lat,tput,loss"
+      - "event"
       values:
       - description: "Mobility event ue1 to poa3"
         time: "2019-11-24T12:45:00-5:00"
-      - description: "Mobility event ue1 to poa3"
-        time: "2019-11-24T12:45:00-5:00"
+      - description: "Mobility event ue1 to poa2"
+        time: "2019-11-24T12:44:00-5:00"
       name: "event metrics"
   EventSubscriptionParams:
     type: "object"
@@ -447,6 +447,16 @@ definitions:
         $ref: "#/definitions/Events_callbackReference"
       eventQueryParams:
         $ref: "#/definitions/EventQueryParams"
+      recurrence:
+        type: "integer"
+        example: 1
+        description: "Recurrence of recurring-time-based notifications"
+      subscriptionType:
+        type: "string"
+        example: "Recurring-time-based"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "Recurring-time-based"
     description: "Events subscription parameters"
     example:
       clientCorrelator: "0123"
@@ -454,9 +464,12 @@ definitions:
         notifyURL: "http://clientApp.example.com/metric_event_notifications/123456"
       eventQueryParams:
         tags:
-        - name: "src"
-          value: "iperf-ue1"
-        fields: "lat,tput,loss"
+        - name: "type"
+          value: "MOBILITY"
+        fields:
+        - "event"
+      recurrence: 1
+      subscriptionType: "Recurring-time-based"
   EventSubscriptionResponse:
     type: "object"
     properties:
@@ -476,33 +489,78 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://localhost:8291/v1/subscriptions/events/subscription123"
+        example: "http://localhost:8291/v2/subscriptions/events/subscription123"
         description: "Self referring URL."
       eventQueryParams:
         $ref: "#/definitions/EventQueryParams"
+      recurrence:
+        type: "integer"
+        example: 1
+        description: "Recurrence of recurring-time-based notifications"
+      subscriptionType:
+        type: "string"
+        example: "Recurring-time-based"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "Recurring-time-based"
     description: "Events metrics subscription response"
     example:
-      resourceURL: "http://localhost:8291/v1/subscriptions/events/subscription123"
+      resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
       eventQueryParams:
         scope:
           duration: "10s"
           limit: 60
         fields:
-        - "lat,tput,loss"
+        - "event"
         tags:
-        - name: "src"
-          value: "iperf-ue1"
-        - name: "src"
-          value: "iperf-ue1"
+        - name: "type"
+          value: "MOBILITY"
       callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
         }"
       clientCorrelator: "83"
       subscriptionId: "1.2556487E7"
   EventSubscriptionResponseList:
-    type: "array"
-    description: "List of event metrics subscriptions"
-    items:
-      $ref: "#/definitions/EventSubscriptionResponse"
+    properties:
+      eventSubscriptionResponse:
+        type: "array"
+        items:
+          $ref: "#/definitions/EventSubscriptionResponse"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/event/subscription123"
+        description: "Self referring URL."
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/event/subscription123"
+      eventSubscriptionResponse:
+      - resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "event"
+          tags:
+          - name: "type"
+            value: "MOBILITY"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+      - resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "event"
+          tags:
+          - name: "type"
+            value: "MOBILITY"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
   Events_callbackReference:
     type: "object"
     required:
@@ -528,8 +586,18 @@ definitions:
           \ subscription."
       callbackReference:
         $ref: "#/definitions/Network_callbackReference"
-      eventQueryParams:
-        $ref: "#/definitions/EventQueryParams"
+      networkQueryParams:
+        $ref: "#/definitions/NetworkQueryParams"
+      recurrence:
+        type: "integer"
+        example: 1
+        description: "Recurrence of recurring-time-based notifications"
+      subscriptionType:
+        type: "string"
+        example: "Recurring-time-based"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "Recurring-time-based"
     description: "Network metrics subscription parameters"
     example:
       clientCorrelator: "0123"
@@ -538,11 +606,15 @@ definitions:
       networkQueryParams:
         tags:
         - name: "src"
-          value: "iperf-ue1"
+          value: "ue1-iperf"
         fields:
-        - "lat,tput,loss"
+        - "lat"
+        - "tput"
+        - "loss"
         scope:
           limit: 60
+      recurrence: 1
+      subscriptionType: "Recurring-time-based"
   NetworkSubscriptionResponse:
     type: "object"
     properties:
@@ -562,33 +634,90 @@ definitions:
       resourceURL:
         type: "string"
         format: "uri"
-        example: "http://localhost:8291/v1/subscriptions/network/subscription123"
+        example: "http://localhost:8291/v2/subscriptions/network/subscription123"
         description: "Self referring URL."
-      eventQueryParams:
+      networkQueryParams:
         $ref: "#/definitions/NetworkQueryParams"
+      recurrence:
+        type: "integer"
+        example: 1
+        description: "Recurrence of recurring-time-based notifications"
+      subscriptionType:
+        type: "string"
+        example: "Recurring-time-based"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "Recurring-time-based"
     description: "Network metrics subscription response"
     example:
-      resourceURL: "http://localhost:8291/v1/subscriptions/network/subscription123"
+      resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
       eventQueryParams:
         scope:
           duration: "10s"
           limit: 60
         fields:
-        - "lat,tput,loss"
+        - "lat"
+        - "tput"
+        - "loss"
         tags:
         - name: "src"
-          value: "iperf-ue1"
-        - name: "src"
-          value: "iperf-ue1"
+          value: "ue1-iperf"
+        - name: "dest"
+          value: "zone1-fog1-iperf"
       callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
         }"
       clientCorrelator: "83"
       subscriptionId: "1.2556487E7"
   NetworkSubscriptionResponseList:
-    type: "array"
-    description: "List of network metrics subscriptions"
-    items:
-      $ref: "#/definitions/NetworkSubscriptionResponse"
+    properties:
+      networkSubscriptionResponse:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkSubscriptionResponse"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        description: "Self referring URL."
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+      networkSubscriptionResponse:
+      - resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "lat"
+          - "tput"
+          - "loss"
+          tags:
+          - name: "src"
+            value: "ue1-iperf"
+          - name: "dest"
+            value: "zone1-fog1-iperf"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+      - resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "lat"
+          - "tput"
+          - "loss"
+          tags:
+          - name: "src"
+            value: "ue1-iperf"
+          - name: "dest"
+            value: "zone1-fog1-iperf"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
   Network_callbackReference:
     type: "object"
     required:
@@ -649,7 +778,7 @@ responses:
   Std201:
     description: "Created"
   Std204:
-    description: "deleted"
+    description: "Deleted"
   Std400:
     description: "Bad request"
   Std404:
