@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30008`
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventSubscriptionParams', 'model/EventSubscriptionResponse', 'model/EventSubscriptionResponseList', 'model/NetworkSubscriptionParams', 'model/NetworkSubscriptionResponse', 'model/NetworkSubscriptionResponseList'], factory);
+    define(['ApiClient', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/EventSubscriptionParams'), require('../model/EventSubscriptionResponse'), require('../model/EventSubscriptionResponseList'), require('../model/NetworkSubscriptionParams'), require('../model/NetworkSubscriptionResponse'), require('../model/NetworkSubscriptionResponseList'));
+    module.exports = factory(require('../ApiClient'), require('../model/EventSubscription'), require('../model/EventSubscriptionList'), require('../model/EventSubscriptionParams'), require('../model/NetworkSubscription'), require('../model/NetworkSubscriptionList'), require('../model/NetworkSubscriptionParams'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeMetricsServiceRestApi) {
       root.AdvantEdgeMetricsServiceRestApi = {};
     }
-    root.AdvantEdgeMetricsServiceRestApi.SubscriptionsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.EventSubscriptionParams, root.AdvantEdgeMetricsServiceRestApi.EventSubscriptionResponse, root.AdvantEdgeMetricsServiceRestApi.EventSubscriptionResponseList, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionParams, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionResponse, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionResponseList);
+    root.AdvantEdgeMetricsServiceRestApi.SubscriptionsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.EventSubscription, root.AdvantEdgeMetricsServiceRestApi.EventSubscriptionList, root.AdvantEdgeMetricsServiceRestApi.EventSubscriptionParams, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscription, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionList, root.AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionParams);
   }
-}(this, function(ApiClient, EventSubscriptionParams, EventSubscriptionResponse, EventSubscriptionResponseList, NetworkSubscriptionParams, NetworkSubscriptionResponse, NetworkSubscriptionResponseList) {
+}(this, function(ApiClient, EventSubscription, EventSubscriptionList, EventSubscriptionParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams) {
   'use strict';
 
   /**
@@ -63,25 +63,25 @@
 
 
     /**
-     * Callback function to receive the result of the createEventsMetricsSubscription operation.
-     * @callback module:api/SubscriptionsApi~createEventsMetricsSubscriptionCallback
+     * Callback function to receive the result of the createEventSubscription operation.
+     * @callback module:api/SubscriptionsApi~createEventSubscriptionCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/EventSubscriptionResponse} data The data returned by the service call.
+     * @param {module:model/EventSubscription} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Create a Event Metric subscription
+     * Create an Event subscription
      * @param {module:model/EventSubscriptionParams} params Event subscription parameters
-     * @param {module:api/SubscriptionsApi~createEventsMetricsSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/EventSubscriptionResponse}
+     * @param {module:api/SubscriptionsApi~createEventSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/EventSubscription}
      */
-    this.createEventsMetricsSubscription = function(params, callback) {
+    this.createEventSubscription = function(params, callback) {
       var postBody = params;
 
       // verify the required parameter 'params' is set
       if (params === undefined || params === null) {
-        throw new Error("Missing the required parameter 'params' when calling createEventsMetricsSubscription");
+        throw new Error("Missing the required parameter 'params' when calling createEventSubscription");
       }
 
 
@@ -99,35 +99,35 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = EventSubscriptionResponse;
+      var returnType = EventSubscription;
 
       return this.apiClient.callApi(
-        '/subscriptions/event', 'POST',
+        '/metrics/subscriptions/event', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the createNetworkMetricsSubscription operation.
-     * @callback module:api/SubscriptionsApi~createNetworkMetricsSubscriptionCallback
+     * Callback function to receive the result of the createNetworkSubscription operation.
+     * @callback module:api/SubscriptionsApi~createNetworkSubscriptionCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/NetworkSubscriptionResponse} data The data returned by the service call.
+     * @param {module:model/NetworkSubscription} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Create a Network Metric subscription
+     * Create a Network subscription
      * @param {module:model/NetworkSubscriptionParams} params Network subscription parameters
-     * @param {module:api/SubscriptionsApi~createNetworkMetricsSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/NetworkSubscriptionResponse}
+     * @param {module:api/SubscriptionsApi~createNetworkSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/NetworkSubscription}
      */
-    this.createNetworkMetricsSubscription = function(params, callback) {
+    this.createNetworkSubscription = function(params, callback) {
       var postBody = params;
 
       // verify the required parameter 'params' is set
       if (params === undefined || params === null) {
-        throw new Error("Missing the required parameter 'params' when calling createNetworkMetricsSubscription");
+        throw new Error("Missing the required parameter 'params' when calling createNetworkSubscription");
       }
 
 
@@ -145,34 +145,34 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = NetworkSubscriptionResponse;
+      var returnType = NetworkSubscription;
 
       return this.apiClient.callApi(
-        '/subscriptions/network', 'POST',
+        '/metrics/subscriptions/network', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the deleteEventMetricSubscriptionById operation.
-     * @callback module:api/SubscriptionsApi~deleteEventMetricSubscriptionByIdCallback
+     * Callback function to receive the result of the deleteEventSubscriptionById operation.
+     * @callback module:api/SubscriptionsApi~deleteEventSubscriptionByIdCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns an Event Metric subscription
+     * Returns an Event subscription
      * @param {String} subscriptionId Subscription ID - returned when the subscription was created
-     * @param {module:api/SubscriptionsApi~deleteEventMetricSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/SubscriptionsApi~deleteEventSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.deleteEventMetricSubscriptionById = function(subscriptionId, callback) {
+    this.deleteEventSubscriptionById = function(subscriptionId, callback) {
       var postBody = null;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling deleteEventMetricSubscriptionById");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling deleteEventSubscriptionById");
       }
 
 
@@ -194,31 +194,31 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/subscriptions/event/{subscriptionId}', 'DELETE',
+        '/metrics/subscriptions/event/{subscriptionId}', 'DELETE',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the deleteNetworkMetricSubscriptionById operation.
-     * @callback module:api/SubscriptionsApi~deleteNetworkMetricSubscriptionByIdCallback
+     * Callback function to receive the result of the deleteNetworkSubscriptionById operation.
+     * @callback module:api/SubscriptionsApi~deleteNetworkSubscriptionByIdCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns a Network Metric subscription
+     * Returns a Network subscription
      * @param {String} subscriptionId Subscription ID - returned when the subscription was created
-     * @param {module:api/SubscriptionsApi~deleteNetworkMetricSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/SubscriptionsApi~deleteNetworkSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.deleteNetworkMetricSubscriptionById = function(subscriptionId, callback) {
+    this.deleteNetworkSubscriptionById = function(subscriptionId, callback) {
       var postBody = null;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling deleteNetworkMetricSubscriptionById");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling deleteNetworkSubscriptionById");
       }
 
 
@@ -240,26 +240,26 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/subscriptions/network/{subscriptionId}', 'DELETE',
+        '/metrics/subscriptions/network/{subscriptionId}', 'DELETE',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getEventMetricSubscription operation.
-     * @callback module:api/SubscriptionsApi~getEventMetricSubscriptionCallback
+     * Callback function to receive the result of the getEventSubscription operation.
+     * @callback module:api/SubscriptionsApi~getEventSubscriptionCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/EventSubscriptionResponseList} data The data returned by the service call.
+     * @param {module:model/EventSubscriptionList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns all Event Metric subscriptions
-     * @param {module:api/SubscriptionsApi~getEventMetricSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/EventSubscriptionResponseList}
+     * Returns all Event subscriptions
+     * @param {module:api/SubscriptionsApi~getEventSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/EventSubscriptionList}
      */
-    this.getEventMetricSubscription = function(callback) {
+    this.getEventSubscription = function(callback) {
       var postBody = null;
 
 
@@ -277,35 +277,35 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = EventSubscriptionResponseList;
+      var returnType = EventSubscriptionList;
 
       return this.apiClient.callApi(
-        '/subscriptions/event', 'GET',
+        '/metrics/subscriptions/event', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getEventMetricSubscriptionById operation.
-     * @callback module:api/SubscriptionsApi~getEventMetricSubscriptionByIdCallback
+     * Callback function to receive the result of the getEventSubscriptionById operation.
+     * @callback module:api/SubscriptionsApi~getEventSubscriptionByIdCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/EventSubscriptionResponse} data The data returned by the service call.
+     * @param {module:model/EventSubscription} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns an Event Metric subscription
+     * Returns an Event subscription
      * @param {String} subscriptionId Subscription ID - returned when the subscription was created
-     * @param {module:api/SubscriptionsApi~getEventMetricSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/EventSubscriptionResponse}
+     * @param {module:api/SubscriptionsApi~getEventSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/EventSubscription}
      */
-    this.getEventMetricSubscriptionById = function(subscriptionId, callback) {
+    this.getEventSubscriptionById = function(subscriptionId, callback) {
       var postBody = null;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling getEventMetricSubscriptionById");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling getEventSubscriptionById");
       }
 
 
@@ -324,29 +324,29 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = EventSubscriptionResponse;
+      var returnType = EventSubscription;
 
       return this.apiClient.callApi(
-        '/subscriptions/event/{subscriptionId}', 'GET',
+        '/metrics/subscriptions/event/{subscriptionId}', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getNetworkMetricSubscription operation.
-     * @callback module:api/SubscriptionsApi~getNetworkMetricSubscriptionCallback
+     * Callback function to receive the result of the getNetworkSubscription operation.
+     * @callback module:api/SubscriptionsApi~getNetworkSubscriptionCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/NetworkSubscriptionResponseList} data The data returned by the service call.
+     * @param {module:model/NetworkSubscriptionList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns all Network Metric subscriptions
-     * @param {module:api/SubscriptionsApi~getNetworkMetricSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/NetworkSubscriptionResponseList}
+     * Returns all Network subscriptions
+     * @param {module:api/SubscriptionsApi~getNetworkSubscriptionCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/NetworkSubscriptionList}
      */
-    this.getNetworkMetricSubscription = function(callback) {
+    this.getNetworkSubscription = function(callback) {
       var postBody = null;
 
 
@@ -364,35 +364,35 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = NetworkSubscriptionResponseList;
+      var returnType = NetworkSubscriptionList;
 
       return this.apiClient.callApi(
-        '/subscriptions/network', 'GET',
+        '/metrics/subscriptions/network', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );
     }
 
     /**
-     * Callback function to receive the result of the getNetworkMetricSubscriptionById operation.
-     * @callback module:api/SubscriptionsApi~getNetworkMetricSubscriptionByIdCallback
+     * Callback function to receive the result of the getNetworkSubscriptionById operation.
+     * @callback module:api/SubscriptionsApi~getNetworkSubscriptionByIdCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/NetworkSubscriptionResponse} data The data returned by the service call.
+     * @param {module:model/NetworkSubscription} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Returns a Network Metric subscription
+     * Returns a Network subscription
      * @param {String} subscriptionId Subscription ID - returned when the subscription was created
-     * @param {module:api/SubscriptionsApi~getNetworkMetricSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/NetworkSubscriptionResponse}
+     * @param {module:api/SubscriptionsApi~getNetworkSubscriptionByIdCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/NetworkSubscription}
      */
-    this.getNetworkMetricSubscriptionById = function(subscriptionId, callback) {
+    this.getNetworkSubscriptionById = function(subscriptionId, callback) {
       var postBody = null;
 
       // verify the required parameter 'subscriptionId' is set
       if (subscriptionId === undefined || subscriptionId === null) {
-        throw new Error("Missing the required parameter 'subscriptionId' when calling getNetworkMetricSubscriptionById");
+        throw new Error("Missing the required parameter 'subscriptionId' when calling getNetworkSubscriptionById");
       }
 
 
@@ -411,10 +411,10 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = NetworkSubscriptionResponse;
+      var returnType = NetworkSubscription;
 
       return this.apiClient.callApi(
-        '/subscriptions/network/{subscriptionId}', 'GET',
+        '/metrics/subscriptions/network/{subscriptionId}', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

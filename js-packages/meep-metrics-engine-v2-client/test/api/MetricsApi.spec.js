@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30008`
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -50,9 +50,9 @@
 
   describe('(package)', function() {
     describe('MetricsApi', function() {
-      describe('getEventMetrics', function() {
-        it('should call getEventMetrics successfully', function(done) {
-          // TODO: uncomment, update parameter values for getEventMetrics call and complete the assertions
+      describe('postEventQuery', function() {
+        it('should call postEventQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postEventQuery call and complete the assertions
           /*
           var params = new AdvantEdgeMetricsServiceRestApi.EventQueryParams();
           params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
@@ -63,13 +63,13 @@
           params.scope.limit = 60;
           params.scope.duration = "10s";
 
-          instance.getEventMetrics(params, function(error, data, response) {
+          instance.postEventQuery(params, function(error, data, response) {
             if (error) {
               done(error);
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventQueryResponse);
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetricsList);
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("event metrics");
             {
@@ -88,11 +88,11 @@
               expect(dataCtr).to.not.be.empty();
               for (let p in dataCtr) {
                 let data = dataCtr[p];
-                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventValue);
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetrics);
                 expect(data.time).to.be.a('string');
                 expect(data.time).to.be("2019-11-24T12:45:00-5:00");
-                expect(data.description).to.be.a('string');
-                expect(data.description).to.be("Mobility event ue1 to poa3");
+                expect(data.event).to.be.a('string');
+                expect(data.event).to.be("Mobility event ue1 to poa3");
               }
             }
 
@@ -103,9 +103,9 @@
           done();
         });
       });
-      describe('getNetworkMetrics', function() {
-        it('should call getNetworkMetrics successfully', function(done) {
-          // TODO: uncomment, update parameter values for getNetworkMetrics call and complete the assertions
+      describe('postNetworkQuery', function() {
+        it('should call postNetworkQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postNetworkQuery call and complete the assertions
           /*
           var params = new AdvantEdgeMetricsServiceRestApi.NetworkQueryParams();
           params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
@@ -116,13 +116,13 @@
           params.scope.limit = 60;
           params.scope.duration = "10s";
 
-          instance.getNetworkMetrics(params, function(error, data, response) {
+          instance.postNetworkQuery(params, function(error, data, response) {
             if (error) {
               done(error);
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkQueryResponse);
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetricsList);
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("network metrics");
             {
@@ -141,7 +141,7 @@
               expect(dataCtr).to.not.be.empty();
               for (let p in dataCtr) {
                 let data = dataCtr[p];
-                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkValue);
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetrics);
                 expect(data.time).to.be.a('string');
                 expect(data.time).to.be("2019-11-24T12:45:00-5:00");
                 expect(data.lat).to.be.a('number');

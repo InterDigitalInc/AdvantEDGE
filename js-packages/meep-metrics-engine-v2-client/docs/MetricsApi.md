@@ -4,13 +4,13 @@ All URIs are relative to *http://localhost/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**getEventMetrics**](MetricsApi.md#getEventMetrics) | **POST** /metrics/event | 
-[**getNetworkMetrics**](MetricsApi.md#getNetworkMetrics) | **POST** /metrics/network | 
+[**postEventQuery**](MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
+[**postNetworkQuery**](MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
 
 
-<a name="getEventMetrics"></a>
-# **getEventMetrics**
-> EventQueryResponse getEventMetrics(params)
+<a name="postEventQuery"></a>
+# **postEventQuery**
+> EventMetricsList postEventQuery(params)
 
 
 
@@ -32,7 +32,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getEventMetrics(params, callback);
+apiInstance.postEventQuery(params, callback);
 ```
 
 ### Parameters
@@ -43,7 +43,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**EventQueryResponse**](EventQueryResponse.md)
+[**EventMetricsList**](EventMetricsList.md)
 
 ### Authorization
 
@@ -54,9 +54,9 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getNetworkMetrics"></a>
-# **getNetworkMetrics**
-> NetworkQueryResponse getNetworkMetrics(params)
+<a name="postNetworkQuery"></a>
+# **postNetworkQuery**
+> NetworkMetricsList postNetworkQuery(params)
 
 
 
@@ -78,7 +78,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getNetworkMetrics(params, callback);
+apiInstance.postNetworkQuery(params, callback);
 ```
 
 ### Parameters
@@ -89,7 +89,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**NetworkQueryResponse**](NetworkQueryResponse.md)
+[**NetworkMetricsList**](NetworkMetricsList.md)
 
 ### Authorization
 

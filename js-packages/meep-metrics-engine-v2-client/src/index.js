@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30008`
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -31,16 +31,16 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventQueryParams', 'model/EventQueryResponse', 'model/EventSubscriptionParams', 'model/EventSubscriptionResponse', 'model/EventSubscriptionResponseList', 'model/EventValue', 'model/EventsCallbackReference', 'model/NetworkCallbackReference', 'model/NetworkQueryParams', 'model/NetworkQueryResponse', 'model/NetworkSubscriptionParams', 'model/NetworkSubscriptionResponse', 'model/NetworkSubscriptionResponseList', 'model/NetworkValue', 'model/Scope', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
+    define(['ApiClient', 'model/EventMetrics', 'model/EventMetricsList', 'model/EventQueryParams', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/EventsCallbackReference', 'model/NetworkCallbackReference', 'model/NetworkMetrics', 'model/NetworkMetricsList', 'model/NetworkQueryParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams', 'model/Scope', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/EventQueryParams'), require('./model/EventQueryResponse'), require('./model/EventSubscriptionParams'), require('./model/EventSubscriptionResponse'), require('./model/EventSubscriptionResponseList'), require('./model/EventValue'), require('./model/EventsCallbackReference'), require('./model/NetworkCallbackReference'), require('./model/NetworkQueryParams'), require('./model/NetworkQueryResponse'), require('./model/NetworkSubscriptionParams'), require('./model/NetworkSubscriptionResponse'), require('./model/NetworkSubscriptionResponseList'), require('./model/NetworkValue'), require('./model/Scope'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/EventMetrics'), require('./model/EventMetricsList'), require('./model/EventQueryParams'), require('./model/EventSubscription'), require('./model/EventSubscriptionList'), require('./model/EventSubscriptionParams'), require('./model/EventsCallbackReference'), require('./model/NetworkCallbackReference'), require('./model/NetworkMetrics'), require('./model/NetworkMetricsList'), require('./model/NetworkQueryParams'), require('./model/NetworkSubscription'), require('./model/NetworkSubscriptionList'), require('./model/NetworkSubscriptionParams'), require('./model/Scope'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
   }
-}(function(ApiClient, EventQueryParams, EventQueryResponse, EventSubscriptionParams, EventSubscriptionResponse, EventSubscriptionResponseList, EventValue, EventsCallbackReference, NetworkCallbackReference, NetworkQueryParams, NetworkQueryResponse, NetworkSubscriptionParams, NetworkSubscriptionResponse, NetworkSubscriptionResponseList, NetworkValue, Scope, Tag, MetricsApi, SubscriptionsApi) {
+}(function(ApiClient, EventMetrics, EventMetricsList, EventQueryParams, EventSubscription, EventSubscriptionList, EventSubscriptionParams, EventsCallbackReference, NetworkCallbackReference, NetworkMetrics, NetworkMetricsList, NetworkQueryParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams, Scope, Tag, MetricsApi, SubscriptionsApi) {
   'use strict';
 
   /**
-   * Metrics_Service_provides_metrics_about_the_active_scenario_pMicro_servicebr_meep_metrics_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_metrics_engine_pType__UsagebrPlatform_Service_used_by_controlmonitoring_software_and_possibly_by_edge_applications_that_require_metrics_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_address30000api__pDefault_Portbr30005.<br>
+   * Metrics_Service_provides_metrics_about_the_active_scenario_pMicro_servicebr_meep_metrics_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_metrics_engine_pType__UsagebrPlatform_Service_used_by_controlmonitoring_software_and_possibly_by_edge_applications_that_require_metrics_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_address30000api__pDefault_Portbr30008.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:
@@ -77,35 +77,35 @@
      */
     ApiClient: ApiClient,
     /**
+     * The EventMetrics model constructor.
+     * @property {module:model/EventMetrics}
+     */
+    EventMetrics: EventMetrics,
+    /**
+     * The EventMetricsList model constructor.
+     * @property {module:model/EventMetricsList}
+     */
+    EventMetricsList: EventMetricsList,
+    /**
      * The EventQueryParams model constructor.
      * @property {module:model/EventQueryParams}
      */
     EventQueryParams: EventQueryParams,
     /**
-     * The EventQueryResponse model constructor.
-     * @property {module:model/EventQueryResponse}
+     * The EventSubscription model constructor.
+     * @property {module:model/EventSubscription}
      */
-    EventQueryResponse: EventQueryResponse,
+    EventSubscription: EventSubscription,
+    /**
+     * The EventSubscriptionList model constructor.
+     * @property {module:model/EventSubscriptionList}
+     */
+    EventSubscriptionList: EventSubscriptionList,
     /**
      * The EventSubscriptionParams model constructor.
      * @property {module:model/EventSubscriptionParams}
      */
     EventSubscriptionParams: EventSubscriptionParams,
-    /**
-     * The EventSubscriptionResponse model constructor.
-     * @property {module:model/EventSubscriptionResponse}
-     */
-    EventSubscriptionResponse: EventSubscriptionResponse,
-    /**
-     * The EventSubscriptionResponseList model constructor.
-     * @property {module:model/EventSubscriptionResponseList}
-     */
-    EventSubscriptionResponseList: EventSubscriptionResponseList,
-    /**
-     * The EventValue model constructor.
-     * @property {module:model/EventValue}
-     */
-    EventValue: EventValue,
     /**
      * The EventsCallbackReference model constructor.
      * @property {module:model/EventsCallbackReference}
@@ -117,35 +117,35 @@
      */
     NetworkCallbackReference: NetworkCallbackReference,
     /**
+     * The NetworkMetrics model constructor.
+     * @property {module:model/NetworkMetrics}
+     */
+    NetworkMetrics: NetworkMetrics,
+    /**
+     * The NetworkMetricsList model constructor.
+     * @property {module:model/NetworkMetricsList}
+     */
+    NetworkMetricsList: NetworkMetricsList,
+    /**
      * The NetworkQueryParams model constructor.
      * @property {module:model/NetworkQueryParams}
      */
     NetworkQueryParams: NetworkQueryParams,
     /**
-     * The NetworkQueryResponse model constructor.
-     * @property {module:model/NetworkQueryResponse}
+     * The NetworkSubscription model constructor.
+     * @property {module:model/NetworkSubscription}
      */
-    NetworkQueryResponse: NetworkQueryResponse,
+    NetworkSubscription: NetworkSubscription,
+    /**
+     * The NetworkSubscriptionList model constructor.
+     * @property {module:model/NetworkSubscriptionList}
+     */
+    NetworkSubscriptionList: NetworkSubscriptionList,
     /**
      * The NetworkSubscriptionParams model constructor.
      * @property {module:model/NetworkSubscriptionParams}
      */
     NetworkSubscriptionParams: NetworkSubscriptionParams,
-    /**
-     * The NetworkSubscriptionResponse model constructor.
-     * @property {module:model/NetworkSubscriptionResponse}
-     */
-    NetworkSubscriptionResponse: NetworkSubscriptionResponse,
-    /**
-     * The NetworkSubscriptionResponseList model constructor.
-     * @property {module:model/NetworkSubscriptionResponseList}
-     */
-    NetworkSubscriptionResponseList: NetworkSubscriptionResponseList,
-    /**
-     * The NetworkValue model constructor.
-     * @property {module:model/NetworkValue}
-     */
-    NetworkValue: NetworkValue,
     /**
      * The Scope model constructor.
      * @property {module:model/Scope}

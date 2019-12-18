@@ -4,23 +4,23 @@ All URIs are relative to *http://localhost/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**createEventsMetricsSubscription**](SubscriptionsApi.md#createEventsMetricsSubscription) | **POST** /subscriptions/event | 
-[**createNetworkMetricsSubscription**](SubscriptionsApi.md#createNetworkMetricsSubscription) | **POST** /subscriptions/network | 
-[**deleteEventMetricSubscriptionById**](SubscriptionsApi.md#deleteEventMetricSubscriptionById) | **DELETE** /subscriptions/event/{subscriptionId} | 
-[**deleteNetworkMetricSubscriptionById**](SubscriptionsApi.md#deleteNetworkMetricSubscriptionById) | **DELETE** /subscriptions/network/{subscriptionId} | 
-[**getEventMetricSubscription**](SubscriptionsApi.md#getEventMetricSubscription) | **GET** /subscriptions/event | 
-[**getEventMetricSubscriptionById**](SubscriptionsApi.md#getEventMetricSubscriptionById) | **GET** /subscriptions/event/{subscriptionId} | 
-[**getNetworkMetricSubscription**](SubscriptionsApi.md#getNetworkMetricSubscription) | **GET** /subscriptions/network | 
-[**getNetworkMetricSubscriptionById**](SubscriptionsApi.md#getNetworkMetricSubscriptionById) | **GET** /subscriptions/network/{subscriptionId} | 
+[**createEventSubscription**](SubscriptionsApi.md#createEventSubscription) | **POST** /metrics/subscriptions/event | 
+[**createNetworkSubscription**](SubscriptionsApi.md#createNetworkSubscription) | **POST** /metrics/subscriptions/network | 
+[**deleteEventSubscriptionById**](SubscriptionsApi.md#deleteEventSubscriptionById) | **DELETE** /metrics/subscriptions/event/{subscriptionId} | 
+[**deleteNetworkSubscriptionById**](SubscriptionsApi.md#deleteNetworkSubscriptionById) | **DELETE** /metrics/subscriptions/network/{subscriptionId} | 
+[**getEventSubscription**](SubscriptionsApi.md#getEventSubscription) | **GET** /metrics/subscriptions/event | 
+[**getEventSubscriptionById**](SubscriptionsApi.md#getEventSubscriptionById) | **GET** /metrics/subscriptions/event/{subscriptionId} | 
+[**getNetworkSubscription**](SubscriptionsApi.md#getNetworkSubscription) | **GET** /metrics/subscriptions/network | 
+[**getNetworkSubscriptionById**](SubscriptionsApi.md#getNetworkSubscriptionById) | **GET** /metrics/subscriptions/network/{subscriptionId} | 
 
 
-<a name="createEventsMetricsSubscription"></a>
-# **createEventsMetricsSubscription**
-> EventSubscriptionResponse createEventsMetricsSubscription(params)
+<a name="createEventSubscription"></a>
+# **createEventSubscription**
+> EventSubscription createEventSubscription(params)
 
 
 
-Create a Event Metric subscription
+Create an Event subscription
 
 ### Example
 ```javascript
@@ -38,7 +38,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.createEventsMetricsSubscription(params, callback);
+apiInstance.createEventSubscription(params, callback);
 ```
 
 ### Parameters
@@ -49,7 +49,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**EventSubscriptionResponse**](EventSubscriptionResponse.md)
+[**EventSubscription**](EventSubscription.md)
 
 ### Authorization
 
@@ -60,13 +60,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="createNetworkMetricsSubscription"></a>
-# **createNetworkMetricsSubscription**
-> NetworkSubscriptionResponse createNetworkMetricsSubscription(params)
+<a name="createNetworkSubscription"></a>
+# **createNetworkSubscription**
+> NetworkSubscription createNetworkSubscription(params)
 
 
 
-Create a Network Metric subscription
+Create a Network subscription
 
 ### Example
 ```javascript
@@ -84,7 +84,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.createNetworkMetricsSubscription(params, callback);
+apiInstance.createNetworkSubscription(params, callback);
 ```
 
 ### Parameters
@@ -95,7 +95,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**NetworkSubscriptionResponse**](NetworkSubscriptionResponse.md)
+[**NetworkSubscription**](NetworkSubscription.md)
 
 ### Authorization
 
@@ -106,13 +106,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="deleteEventMetricSubscriptionById"></a>
-# **deleteEventMetricSubscriptionById**
-> deleteEventMetricSubscriptionById(subscriptionId)
+<a name="deleteEventSubscriptionById"></a>
+# **deleteEventSubscriptionById**
+> deleteEventSubscriptionById(subscriptionId)
 
 
 
-Returns an Event Metric subscription
+Returns an Event subscription
 
 ### Example
 ```javascript
@@ -130,7 +130,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.deleteEventMetricSubscriptionById(subscriptionId, callback);
+apiInstance.deleteEventSubscriptionById(subscriptionId, callback);
 ```
 
 ### Parameters
@@ -152,13 +152,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="deleteNetworkMetricSubscriptionById"></a>
-# **deleteNetworkMetricSubscriptionById**
-> deleteNetworkMetricSubscriptionById(subscriptionId)
+<a name="deleteNetworkSubscriptionById"></a>
+# **deleteNetworkSubscriptionById**
+> deleteNetworkSubscriptionById(subscriptionId)
 
 
 
-Returns a Network Metric subscription
+Returns a Network subscription
 
 ### Example
 ```javascript
@@ -176,7 +176,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.deleteNetworkMetricSubscriptionById(subscriptionId, callback);
+apiInstance.deleteNetworkSubscriptionById(subscriptionId, callback);
 ```
 
 ### Parameters
@@ -198,13 +198,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getEventMetricSubscription"></a>
-# **getEventMetricSubscription**
-> EventSubscriptionResponseList getEventMetricSubscription()
+<a name="getEventSubscription"></a>
+# **getEventSubscription**
+> EventSubscriptionList getEventSubscription()
 
 
 
-Returns all Event Metric subscriptions
+Returns all Event subscriptions
 
 ### Example
 ```javascript
@@ -219,7 +219,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getEventMetricSubscription(callback);
+apiInstance.getEventSubscription(callback);
 ```
 
 ### Parameters
@@ -227,7 +227,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**EventSubscriptionResponseList**](EventSubscriptionResponseList.md)
+[**EventSubscriptionList**](EventSubscriptionList.md)
 
 ### Authorization
 
@@ -238,13 +238,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getEventMetricSubscriptionById"></a>
-# **getEventMetricSubscriptionById**
-> EventSubscriptionResponse getEventMetricSubscriptionById(subscriptionId)
+<a name="getEventSubscriptionById"></a>
+# **getEventSubscriptionById**
+> EventSubscription getEventSubscriptionById(subscriptionId)
 
 
 
-Returns an Event Metric subscription
+Returns an Event subscription
 
 ### Example
 ```javascript
@@ -262,7 +262,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getEventMetricSubscriptionById(subscriptionId, callback);
+apiInstance.getEventSubscriptionById(subscriptionId, callback);
 ```
 
 ### Parameters
@@ -273,7 +273,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**EventSubscriptionResponse**](EventSubscriptionResponse.md)
+[**EventSubscription**](EventSubscription.md)
 
 ### Authorization
 
@@ -284,13 +284,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getNetworkMetricSubscription"></a>
-# **getNetworkMetricSubscription**
-> NetworkSubscriptionResponseList getNetworkMetricSubscription()
+<a name="getNetworkSubscription"></a>
+# **getNetworkSubscription**
+> NetworkSubscriptionList getNetworkSubscription()
 
 
 
-Returns all Network Metric subscriptions
+Returns all Network subscriptions
 
 ### Example
 ```javascript
@@ -305,7 +305,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getNetworkMetricSubscription(callback);
+apiInstance.getNetworkSubscription(callback);
 ```
 
 ### Parameters
@@ -313,7 +313,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**NetworkSubscriptionResponseList**](NetworkSubscriptionResponseList.md)
+[**NetworkSubscriptionList**](NetworkSubscriptionList.md)
 
 ### Authorization
 
@@ -324,13 +324,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="getNetworkMetricSubscriptionById"></a>
-# **getNetworkMetricSubscriptionById**
-> NetworkSubscriptionResponse getNetworkMetricSubscriptionById(subscriptionId)
+<a name="getNetworkSubscriptionById"></a>
+# **getNetworkSubscriptionById**
+> NetworkSubscription getNetworkSubscriptionById(subscriptionId)
 
 
 
-Returns a Network Metric subscription
+Returns a Network subscription
 
 ### Example
 ```javascript
@@ -348,7 +348,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getNetworkMetricSubscriptionById(subscriptionId, callback);
+apiInstance.getNetworkSubscriptionById(subscriptionId, callback);
 ```
 
 ### Parameters
@@ -359,7 +359,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**NetworkSubscriptionResponse**](NetworkSubscriptionResponse.md)
+[**NetworkSubscription**](NetworkSubscription.md)
 
 ### Authorization
 

@@ -88,72 +88,72 @@ var routes = Routes{
 	},
 
 	Route{
-		"GetEventMetrics",
+		"PostEventQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/event",
-		GetEventMetrics,
+		"/v2/metrics/query/event",
+		PostEventQuery,
 	},
 
 	Route{
-		"GetNetworkMetrics",
+		"PostNetworkQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/network",
-		GetNetworkMetrics,
+		"/v2/metrics/query/network",
+		PostNetworkQuery,
 	},
 
 	Route{
-		"CreateEventsMetricsSubscription",
+		"CreateEventSubscription",
 		strings.ToUpper("Post"),
-		"/v2/subscriptions/event",
-		CreateEventsMetricsSubscription,
+		"/v2/metrics/subscriptions/event",
+		CreateEventSubscription,
 	},
 
 	Route{
-		"CreateNetworkMetricsSubscription",
+		"CreateNetworkSubscription",
 		strings.ToUpper("Post"),
-		"/v2/subscriptions/network",
-		CreateNetworkMetricsSubscription,
+		"/v2/metrics/subscriptions/network",
+		CreateNetworkSubscription,
 	},
 
 	Route{
-		"DeleteEventMetricSubscriptionById",
+		"DeleteEventSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/subscriptions/event/{subscriptionId}",
-		DeleteEventMetricSubscriptionById,
+		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		DeleteEventSubscriptionById,
 	},
 
 	Route{
-		"DeleteNetworkMetricSubscriptionById",
+		"DeleteNetworkSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/subscriptions/network/{subscriptionId}",
-		DeleteNetworkMetricSubscriptionById,
+		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		DeleteNetworkSubscriptionById,
 	},
 
 	Route{
-		"GetEventMetricSubscription",
+		"GetEventSubscription",
 		strings.ToUpper("Get"),
-		"/v2/subscriptions/event",
-		GetEventMetricSubscription,
+		"/v2/metrics/subscriptions/event",
+		GetEventSubscription,
 	},
 
 	Route{
-		"GetEventMetricSubscriptionById",
+		"GetEventSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/subscriptions/event/{subscriptionId}",
-		GetEventMetricSubscriptionById,
+		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		GetEventSubscriptionById,
 	},
 
 	Route{
-		"GetNetworkMetricSubscription",
+		"GetNetworkSubscription",
 		strings.ToUpper("Get"),
-		"/v2/subscriptions/network",
-		GetNetworkMetricSubscription,
+		"/v2/metrics/subscriptions/network",
+		GetNetworkSubscription,
 	},
 
 	Route{
-		"GetNetworkMetricSubscriptionById",
+		"GetNetworkSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/subscriptions/network/{subscriptionId}",
-		GetNetworkMetricSubscriptionById,
+		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		GetNetworkSubscriptionById,
 	},
 }

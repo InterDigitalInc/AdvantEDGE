@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Metrics Service REST API
  *
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30008`
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -27,10 +27,10 @@ package server
 // Event metrics query parameters
 type EventQueryParams struct {
 
-	// Tag array<br>combination of: target, type
+	// Tag array<br>combination of: type
 	Tags []Tag `json:"tags,omitempty"`
 
-	// Field array<br>combination of: lat, tput, loss
+	// Field array<br>combination of: event
 	Fields []string `json:"fields,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`
