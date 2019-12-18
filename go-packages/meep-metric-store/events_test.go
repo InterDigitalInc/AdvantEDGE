@@ -113,5 +113,5 @@ func TestEventsMetricsGetSet(t *testing.T) {
 }
 
 func validateEventsMetric(em EventMetric, event string) bool {
-	return em.event == event
+	return em.Event == event
 }

@@ -27,14 +27,14 @@ const EvMetType = "type"
 const EvMetEvent = "event"
 
 type EventMetric struct {
-	time  interface{}
-	event string
+	Time  interface{}
+	Event string
 }
 
 // SetEventMetric
 func (ms *MetricStore) SetEventMetric(eventType string, metric EventMetric) error {
 	tags := map[string]string{EvMetType: eventType}
-	fields := map[string]interface{}{EvMetEvent: metric.event}
+	fields := map[string]interface{}{EvMetEvent: metric.Event}
 	return ms.SetInfluxMetric(EvMetName, tags, fields)
 }
 
@@ -59,9 +59,9 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 	// Format event metrics
 	metrics = make([]EventMetric, len(valuesArray))
 	for index, values := range valuesArray {
-		metrics[index].time = values[NetMetTime]
+		metrics[index].Time = values[NetMetTime]
 		if val, ok := values[EvMetEvent].(string); ok {
-			metrics[index].event = val
+			metrics[index].Event = val
 		}
 	}
 	return

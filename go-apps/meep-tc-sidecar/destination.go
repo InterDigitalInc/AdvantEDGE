@@ -25,6 +25,7 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 )
 
 const moduleMetrics string = "metrics"
@@ -266,20 +267,17 @@ func (u *destination) logRxTx() {
 	u.prevRxLog.rxPkt = curRxPkt
 	u.prevRxLog.rxPktDrop = curRxPktDrop
 
-	// Store traffic metric
-	err = metricStore.SetTrafficMetric(u.remoteName, PodName, tput, loss)
-	if err != nil {
-		log.Error("Failed to set traffic metric")
-	}
-	// Store latency metric
+	// Store network metric
 	srcDest := u.hostName + ":" + u.remoteName
-
+	var metric ms.NetworkMetric
 	semLatencyMap.Lock()
-	err = metricStore.SetLatencyMetric(u.hostName, u.remoteName, latestLatencyResultsMap[srcDest])
+	metric.Lat = latestLatencyResultsMap[srcDest]
 	semLatencyMap.Unlock()
-
+	metric.Tput = tput
+	metric.Loss = loss
+	err = metricStore.SetCachedNetworkMetric(u.remoteName, u.hostName, metric)
 	if err != nil {
-		log.Error("Failed to set latency metric")
+		log.Error("Failed to set network metric")
 	}
 
 	log.WithFields(log.Fields{

@@ -170,7 +170,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 }
 
 func validateNetworkMetric(nm NetworkMetric, lat int32, tput float64, loss float64) bool {
-	if nm.lat != lat || nm.tput != tput || nm.loss != loss {
+	if nm.Lat != lat || nm.Tput != tput || nm.Loss != loss {
 		return false
 	}
 	return true

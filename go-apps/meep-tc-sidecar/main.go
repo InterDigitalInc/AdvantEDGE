@@ -189,7 +189,7 @@ func initMeepSidecar() error {
 	log.Info("Connected to redis DB")
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr)
+	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err

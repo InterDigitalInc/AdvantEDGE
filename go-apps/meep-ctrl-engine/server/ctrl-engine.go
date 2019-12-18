@@ -139,7 +139,7 @@ func CtrlEngineInit() (err error) {
 	}
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore("", influxDBAddr)
+	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -596,7 +596,9 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	// Log successful event in metric store
 	eventStr, err := json.Marshal(event)
 	if err == nil {
-		err = metricStore.SetEventMetric(eventType, string(eventStr))
+		var metric ms.EventMetric
+		metric.Event = string(eventStr)
+		err = metricStore.SetEventMetric(eventType, metric)
 	}
 	if err != nil {
 		log.Error("Failed to set event metric")

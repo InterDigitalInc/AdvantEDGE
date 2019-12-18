@@ -32,16 +32,16 @@ const NetMetThroughput = "tput"
 const NetMetPktLoss = "loss"
 
 type NetworkMetric struct {
-	time interface{}
-	lat  int32
-	tput float64
-	loss float64
+	Time interface{}
+	Lat  int32
+	Tput float64
+	Loss float64
 }
 
 // SetCachedNetworkMetric
 func (ms *MetricStore) SetCachedNetworkMetric(src string, dest string, metric NetworkMetric) error {
 	tagStr := src + ":" + dest
-	fields := map[string]interface{}{NetMetLatency: metric.lat, NetMetThroughput: metric.tput, NetMetPktLoss: metric.loss}
+	fields := map[string]interface{}{NetMetLatency: metric.Lat, NetMetThroughput: metric.Tput, NetMetPktLoss: metric.Loss}
 	return ms.SetRedisMetric(NetMetName, tagStr, fields)
 }
 
@@ -68,16 +68,16 @@ func (ms *MetricStore) GetCachedNetworkMetric(src string, dest string) (metric N
 	}
 
 	// Parse data
-	metric.lat = StrToInt32(valuesArray[0][NetMetLatency].(string))
-	metric.tput = StrToFloat64(valuesArray[0][NetMetThroughput].(string))
-	metric.loss = StrToFloat64(valuesArray[0][NetMetPktLoss].(string))
+	metric.Lat = StrToInt32(valuesArray[0][NetMetLatency].(string))
+	metric.Tput = StrToFloat64(valuesArray[0][NetMetThroughput].(string))
+	metric.Loss = StrToFloat64(valuesArray[0][NetMetPktLoss].(string))
 	return
 }
 
 // SetNetworkMetric
 func (ms *MetricStore) SetNetworkMetric(src string, dest string, metric NetworkMetric) error {
 	tags := map[string]string{NetMetSrc: src, NetMetDst: dest}
-	fields := map[string]interface{}{NetMetLatency: metric.lat, NetMetThroughput: metric.tput, NetMetPktLoss: metric.loss}
+	fields := map[string]interface{}{NetMetLatency: metric.Lat, NetMetThroughput: metric.Tput, NetMetPktLoss: metric.Loss}
 	return ms.SetInfluxMetric(NetMetName, tags, fields)
 }
 
@@ -102,10 +102,10 @@ func (ms *MetricStore) GetNetworkMetric(src string, dest string, duration string
 	// Format network metrics
 	metrics = make([]NetworkMetric, len(valuesArray))
 	for index, values := range valuesArray {
-		metrics[index].time = values[NetMetTime]
-		metrics[index].lat = JsonNumToInt32(values[NetMetLatency].(json.Number))
-		metrics[index].tput = JsonNumToFloat64(values[NetMetThroughput].(json.Number))
-		metrics[index].loss = JsonNumToFloat64(values[NetMetPktLoss].(json.Number))
+		metrics[index].Time = values[NetMetTime]
+		metrics[index].Lat = JsonNumToInt32(values[NetMetLatency].(json.Number))
+		metrics[index].Tput = JsonNumToFloat64(values[NetMetThroughput].(json.Number))
+		metrics[index].Loss = JsonNumToFloat64(values[NetMetPktLoss].(json.Number))
 	}
 	return
 }

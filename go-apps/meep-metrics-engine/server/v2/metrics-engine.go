@@ -36,8 +36,7 @@ import (
 
 const influxDBAddr = "http://meep-influxdb:8086"
 const metricEvent = "events"
-const metricLatency = "latency"
-const metricTraffic = "traffic"
+const metricNetwork = "network"
 
 const moduleName string = "meep-metrics-engine"
 const redisAddr string = "meep-redis-master:6379"
@@ -132,7 +131,7 @@ func processActiveScenarioUpdate(event string) {
 func activateScenario() {
 	// Connect to Metric Store
 	var err error
-	metricStore, err = ms.NewMetricStore(activeScenarioName, influxDBAddr)
+	metricStore, err = ms.NewMetricStore(activeScenarioName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Influx: ", err)
 		return
@@ -192,23 +191,8 @@ func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (me
 		getTags[tmpTags["name"]] = tmpTags["value"]
 	}
 
-	//	var getFields []string
-	for _, field := range params.Fields {
-		//		getFields = append(getFields, field)
-		//temporary code to differentiate looking at 2 different tables
-		if metricType != metricEvent {
-			if metricType == "tbd" {
-				//takes latency as soon as latency is part of the query
-				if field == "lat" {
-					metricType = metricLatency
-				} else {
-					metricType = metricTraffic
-				}
-			}
-		}
-	}
 	if metricStore != nil {
-		metrics, err = metricStore.GetMetric(metricType, getTags, params.Fields, params.Scope.Duration, int(params.Scope.Limit))
+		metrics, err = metricStore.GetInfluxMetric(metricType, getTags, params.Fields, params.Scope.Duration, int(params.Scope.Limit))
 
 		responseColumns = params.Fields
 		responseColumns = append(responseColumns, "time")
@@ -261,7 +245,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	metrics, respColumns, err := meGetMetrics(w, r, "tbd")
+	metrics, respColumns, err := meGetMetrics(w, r, metricNetwork)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -500,7 +484,7 @@ func processEventNotification(subsId string) {
 
 		if metricStore != nil {
 
-			metrics, err := metricStore.GetMetric(metricEvent, eventRegistration.requestedTags, eventRegistration.params.EventQueryParams.Fields, eventRegistration.params.EventQueryParams.Scope.Duration, int(eventRegistration.params.EventQueryParams.Scope.Limit))
+			metrics, err := metricStore.GetInfluxMetric(metricEvent, eventRegistration.requestedTags, eventRegistration.params.EventQueryParams.Fields, eventRegistration.params.EventQueryParams.Scope.Duration, int(eventRegistration.params.EventQueryParams.Scope.Limit))
 
 			if err == nil {
 				response.Columns = eventRegistration.params.EventQueryParams.Fields
@@ -538,7 +522,7 @@ func processNetworkNotification(subsId string) {
 		response.Name = "network metrics"
 
 		if metricStore != nil {
-			metrics, err := metricStore.GetMetric(metricLatency, networkRegistration.requestedTags, networkRegistration.params.NetworkQueryParams.Fields, networkRegistration.params.NetworkQueryParams.Scope.Duration, int(networkRegistration.params.NetworkQueryParams.Scope.Limit))
+			metrics, err := metricStore.GetInfluxMetric(metricNetwork, networkRegistration.requestedTags, networkRegistration.params.NetworkQueryParams.Fields, networkRegistration.params.NetworkQueryParams.Scope.Duration, int(networkRegistration.params.NetworkQueryParams.Scope.Limit))
 
 			if err == nil {
 				response.Columns = networkRegistration.params.NetworkQueryParams.Fields
