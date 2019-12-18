@@ -29,8 +29,22 @@ func JsonNumToInt32(num json.Number) (val int32) {
 }
 
 func JsonNumToFloat64(num json.Number) (val float64) {
-	if intVal, err := num.Float64(); err == nil {
-		val = intVal
+	if floatVal, err := num.Float64(); err == nil {
+		val = floatVal
+	}
+	return val
+}
+
+func StrToInt32(str string) (val int32) {
+	if intVal, err := strconv.Atoi(str); err == nil {
+		val = int32(intVal)
+	}
+	return val
+}
+
+func StrToFloat64(str string) (val float64) {
+	if floatVal, err := strconv.ParseFloat(str, 64); err == nil {
+		val = floatVal
 	}
 	return val
 }

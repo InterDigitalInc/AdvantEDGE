@@ -26,7 +26,8 @@ import (
 
 const metricStore1Name string = "metricStore1"
 const metricStore2Name string = "metricStore2"
-const metricStoreAddr string = "http://localhost:30986"
+const metricStoreInfluxAddr string = "http://localhost:30986"
+const metricStoreRedisAddr string = "localhost:30380"
 
 const metric = "metric1"
 const tag1 = "tag1"
@@ -41,7 +42,7 @@ func TestMetricStoreNew(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Invalid Metric Store address")
-	ms, err := NewMetricStore("", "ExpectedFailure-InvalidStoreAddr")
+	ms, err := NewMetricStore("", "ExpectedFailure-InvalidStoreAddr", "")
 	if err == nil {
 		t.Errorf("Should report error on invalid store addr")
 	}
@@ -50,20 +51,20 @@ func TestMetricStoreNew(t *testing.T) {
 	}
 
 	fmt.Println("Create valid Metric Store")
-	ms, err = NewMetricStore("", metricStoreAddr)
+	ms, err = NewMetricStore("", metricStoreInfluxAddr, metricStoreRedisAddr)
 	if err != nil {
 		t.Errorf("Unable to create Metric Store")
 	}
 	fmt.Println("Invoke API before setting store")
 	getTags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields := []string{field1, field2, field3, field4}
-	_, err = ms.GetMetric(metric, getTags, getFields, "", 0)
+	_, err = ms.GetInfluxMetric(metric, getTags, getFields, "", 0)
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}
 	setTags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	setFields := map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
-	err = ms.SetMetric(metric, setTags, setFields)
+	err = ms.SetInfluxMetric(metric, setTags, setFields)
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}
@@ -82,12 +83,12 @@ func TestMetricStoreNew(t *testing.T) {
 	// t.Errorf("DONE")
 }
 
-func TestMetricStoreGetSet(t *testing.T) {
+func TestMetricStoreGetSetInflux(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(metricStore1Name, metricStoreAddr)
+	ms, err := NewMetricStore(metricStore1Name, metricStoreInfluxAddr, metricStoreRedisAddr)
 	if err != nil {
 		t.Errorf("Unable to create Metric Store")
 	}
@@ -98,7 +99,7 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Get empty metric")
 	getTags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields := []string{field1, field2, field3, field4}
-	_, err = ms.GetMetric(metric, getTags, getFields, "", 1)
+	_, err = ms.GetInfluxMetric(metric, getTags, getFields, "", 1)
 	if err == nil {
 		t.Errorf("Net metric should not exist")
 	}
@@ -106,13 +107,13 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Set metrics")
 	setTags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	setFields := map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
-	err = ms.SetMetric(metric, setTags, setFields)
+	err = ms.SetInfluxMetric(metric, setTags, setFields)
 	if err != nil {
 		t.Errorf("Failed to set metric")
 	}
 	setTags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	setFields = map[string]interface{}{field1: false, field2: "val2", field3: 1, field4: 1.1}
-	err = ms.SetMetric(metric, setTags, setFields)
+	err = ms.SetInfluxMetric(metric, setTags, setFields)
 	if err != nil {
 		t.Errorf("Failed to set metric")
 	}
@@ -120,7 +121,7 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Get last metric")
 	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields = []string{field1, field2, field3, field4}
-	result, err := ms.GetMetric(metric, getTags, getFields, "", 1)
+	result, err := ms.GetInfluxMetric(metric, getTags, getFields, "", 1)
 	if err != nil || len(result) != 1 {
 		t.Errorf("Failed to get metric")
 	}
@@ -131,7 +132,7 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Get all metrics")
 	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields = []string{field1, field2, field3, field4}
-	result, err = ms.GetMetric(metric, getTags, getFields, "", 0)
+	result, err = ms.GetInfluxMetric(metric, getTags, getFields, "", 0)
 	if err != nil || len(result) != 2 {
 		t.Errorf("Failed to get metric")
 	}
@@ -145,7 +146,7 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Get all metrics from the last 10 seconds")
 	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields = []string{field1, field2, field3, field4}
-	_, err = ms.GetMetric(metric, getTags, getFields, "10s", 0)
+	_, err = ms.GetInfluxMetric(metric, getTags, getFields, "10s", 0)
 	if err != nil || len(result) != 2 {
 		t.Errorf("Failed to get metric")
 	}
@@ -159,7 +160,7 @@ func TestMetricStoreGetSet(t *testing.T) {
 	fmt.Println("Get all metrics from the last millisecond (none)")
 	getTags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	getFields = []string{field1, field2, field3, field4}
-	_, err = ms.GetMetric(metric, getTags, getFields, "1ms", 0)
+	_, err = ms.GetInfluxMetric(metric, getTags, getFields, "1ms", 0)
 	if err == nil {
 		t.Errorf("Net metric list should be empty")
 	}

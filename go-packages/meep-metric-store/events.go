@@ -22,42 +22,24 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const metricEvent = "events"
+const EvMetName = "events"
+const EvMetType = "type"
+const EvMetEvent = "event"
+
+type EventMetric struct {
+	time  interface{}
+	event string
+}
 
 // SetEventMetric
-func (ms *MetricStore) SetEventMetric(eventType string, eventStr string) error {
-	tags := map[string]string{"type": eventType}
-	fields := map[string]interface{}{"event": eventStr}
-	return ms.SetMetric(metricEvent, tags, fields)
+func (ms *MetricStore) SetEventMetric(eventType string, metric EventMetric) error {
+	tags := map[string]string{EvMetType: eventType}
+	fields := map[string]interface{}{EvMetEvent: metric.event}
+	return ms.SetInfluxMetric(EvMetName, tags, fields)
 }
 
-// GetLastEventMetric
-func (ms *MetricStore) GetLastEventMetric(eventType string) (event string, err error) {
-	// Make sure we have set a store
-	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return event, err
-	}
-
-	// Get latest Net metric
-	tags := map[string]string{"type": eventType}
-	fields := []string{"event"}
-	valuesArray, err := ms.GetMetric(metricEvent, tags, fields, "", 1)
-	if err != nil {
-		log.Error("Failed to retrieve metrics with error: ", err.Error())
-		return event, err
-	}
-
-	// Take first & only values
-	values := valuesArray[0]
-	if val, ok := values["event"].(string); ok {
-		event = val
-	}
-	return event, nil
-}
-
-// GetEventMetrics
-func (ms *MetricStore) GetEventMetrics(eventType string, duration string, count int) (metrics []map[string]interface{}, err error) {
+// GetEventMetric
+func (ms *MetricStore) GetEventMetric(eventType string, duration string, count int) (metrics []EventMetric, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err = errors.New("Store name not specified")
@@ -65,12 +47,22 @@ func (ms *MetricStore) GetEventMetrics(eventType string, duration string, count 
 	}
 
 	// Get Traffic metrics
-	tags := map[string]string{"type": eventType}
-	fields := []string{"event"}
-	metrics, err = ms.GetMetric(metricEvent, tags, fields, duration, count)
+	tags := map[string]string{EvMetType: eventType}
+	fields := []string{EvMetEvent}
+	var valuesArray []map[string]interface{}
+	valuesArray, err = ms.GetInfluxMetric(EvMetName, tags, fields, duration, count)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
+	}
+
+	// Format event metrics
+	metrics = make([]EventMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metrics[index].time = values[NetMetTime]
+		if val, ok := values[EvMetEvent].(string); ok {
+			metrics[index].event = val
+		}
 	}
 	return
 }

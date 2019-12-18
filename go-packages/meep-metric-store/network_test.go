@@ -17,7 +17,6 @@
 package metricstore
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -25,23 +24,35 @@ import (
 )
 
 const networkStoreName string = "networkStore"
-const networkStoreAddr string = "http://localhost:30986"
+const networkStoreInfluxAddr string = "http://localhost:30986"
+const networkStoreRedisAddr string = "localhost:30380"
 
 func TestNetworkMetricGetSet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
+	// INIT
+
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore("", networkStoreAddr)
+	ms, err := NewMetricStore("", networkStoreInfluxAddr, networkStoreRedisAddr)
 	if err != nil {
 		t.Errorf("Unable to create Metric Store")
 	}
+
 	fmt.Println("Invoke API before setting store")
-	_, err = ms.GetLastLatencyMetric("node1", "node2")
+	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{})
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}
-	err = ms.SetLatencyMetric("node1", "node2", 1)
+	_, err = ms.GetCachedNetworkMetric("node1", "node2")
+	if err == nil {
+		t.Errorf("API call should fail if no store is set")
+	}
+	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{})
+	if err == nil {
+		t.Errorf("API call should fail if no store is set")
+	}
+	_, err = ms.GetNetworkMetric("node1", "node2", "", 1)
 	if err == nil {
 		t.Errorf("API call should fail if no store is set")
 	}
@@ -55,153 +66,111 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	fmt.Println("Flush store metrics")
 	ms.Flush()
 
+	// GET/SET CACHED METRICS
+
+	fmt.Println("Get empty cached metric")
+	_, err = ms.GetCachedNetworkMetric("node1", "node2")
+	if err == nil {
+		t.Errorf("Net metric should not exist")
+	}
+
+	fmt.Println("Set cached network metric")
+	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0.2})
+	if err != nil {
+		t.Errorf("Unable to set cached net metric")
+	}
+	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 1.2})
+	if err != nil {
+		t.Errorf("Unable to set cached net metric")
+	}
+	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 2.2})
+	if err != nil {
+		t.Errorf("Unable to set cached net metric")
+	}
+	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 3.2})
+	if err != nil {
+		t.Errorf("Unable to set cached net metric")
+	}
+
+	fmt.Println("Get cached network metrics (node1 -> node2)")
+	nm, err := ms.GetCachedNetworkMetric("node1", "node2")
+	if err != nil {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateNetworkMetric(nm, 2, 2.1, 2.2) {
+		t.Errorf("Invalid network metric")
+	}
+
+	fmt.Println("Get cached network metrics (node2 -> node1)")
+	nm, err = ms.GetCachedNetworkMetric("node2", "node1")
+	if err != nil {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateNetworkMetric(nm, 3, 3.1, 3.2) {
+		t.Errorf("Invalid network metric")
+	}
+
+	// GET/SET METRICS
+
 	fmt.Println("Get empty metric")
-	lat, err := ms.GetLastLatencyMetric("node1", "node2")
-	if err == nil || lat != 0 {
+	nml, err := ms.GetNetworkMetric("node1", "node2", "", 1)
+	if err == nil || len(nml) != 0 {
 		t.Errorf("Net metric should not exist")
 	}
 
 	fmt.Println("Set network metrics")
-	err = ms.SetLatencyMetric("node1", "node2", 0)
+	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0.2})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetTrafficMetric("node1", "node2", 0.1, 0.2)
+	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 1.2})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetLatencyMetric("node2", "node1", 1)
+	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 2.2})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetTrafficMetric("node2", "node1", 1.1, 1.2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-
-	err = ms.SetLatencyMetric("node1", "node2", 2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node1", "node2", 2.1, 2.2)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetLatencyMetric("node2", "node1", 3)
-	if err != nil {
-		t.Errorf("Unable to set net metric")
-	}
-	err = ms.SetTrafficMetric("node2", "node1", 3.1, 3.2)
+	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 3.2})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
 
 	fmt.Println("Get network metrics (node1 -> node2)")
-	lat, err = ms.GetLastLatencyMetric("node1", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 2 {
-		t.Errorf("Invalid metric values")
-	}
-	_, err = ms.GetLatencyMetrics("node1", "node2", "1ms", 0)
+	_, err = ms.GetNetworkMetric("node1", "node2", "1ms", 0)
 	if err == nil {
 		t.Errorf("No metrics should be found in the last 1 ms")
 	}
-	result, err := ms.GetLatencyMetrics("node1", "node2", "", 1)
-	if err != nil || len(result) != 1 {
+	nml, err = ms.GetNetworkMetric("node1", "node2", "", 0)
+	if err != nil || len(nml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateLatencyMetric(result[0], 2) {
-		t.Errorf("Invalid result")
+	if !validateNetworkMetric(nml[0], 2, 2.1, 2.2) {
+		t.Errorf("Invalid network metric")
 	}
-	result, err = ms.GetLatencyMetrics("node1", "node2", "", 0)
-	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
-	}
-	if !validateLatencyMetric(result[0], 2) {
-		t.Errorf("Invalid result")
-	}
-	if !validateLatencyMetric(result[1], 0) {
-		t.Errorf("Invalid result")
-	}
-	tput, loss, err := ms.GetLastTrafficMetric("node1", "node2")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 2.1 || loss != 2.2 {
-		t.Errorf("Invalid metric values")
-	}
-	_, err = ms.GetTrafficMetrics("node1", "node2", "1ms", 0)
-	if err == nil {
-		t.Errorf("No metrics should be found in the last 1 ms")
-	}
-	result, err = ms.GetTrafficMetrics("node1", "node2", "", 1)
-	if err != nil || len(result) != 1 {
-		t.Errorf("Failed to get metric")
-	}
-	if !validateTrafficMetric(result[0], 2.1, 2.2) {
-		t.Errorf("Invalid result")
-	}
-	result, err = ms.GetTrafficMetrics("node1", "node2", "", 0)
-	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
-	}
-	if !validateTrafficMetric(result[0], 2.1, 2.2) {
-		t.Errorf("Invalid result")
-	}
-	if !validateTrafficMetric(result[1], 0.1, 0.2) {
-		t.Errorf("Invalid result")
+	if !validateNetworkMetric(nml[1], 0, 0.1, 0.2) {
+		t.Errorf("Invalid network metric")
 	}
 
 	fmt.Println("Get network metrics (node2 -> node1)")
-	lat, err = ms.GetLastLatencyMetric("node2", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if lat != 3 {
-		t.Errorf("Invalid metric values")
+	_, err = ms.GetNetworkMetric("node2", "node1", "1ms", 0)
+	if err == nil {
+		t.Errorf("No metrics should be found in the last 1 ms")
 	}
-	result, err = ms.GetLatencyMetrics("node2", "node1", "", 0)
-	if err != nil || len(result) != 2 {
+	nml, err = ms.GetNetworkMetric("node2", "node1", "", 0)
+	if err != nil || len(nml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateLatencyMetric(result[0], 3) {
-		t.Errorf("Invalid result")
+	if !validateNetworkMetric(nml[0], 3, 3.1, 3.2) {
+		t.Errorf("Invalid network metric")
 	}
-	if !validateLatencyMetric(result[1], 1) {
-		t.Errorf("Invalid result")
-	}
-	tput, loss, err = ms.GetLastTrafficMetric("node2", "node1")
-	if err != nil {
-		t.Errorf("Net metric should exist")
-	} else if tput != 3.1 || loss != 3.2 {
-		t.Errorf("Invalid metric values")
-	}
-	result, err = ms.GetTrafficMetrics("node2", "node1", "", 0)
-	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
-	}
-	if !validateTrafficMetric(result[0], 3.1, 3.2) {
-		t.Errorf("Invalid result")
-	}
-	if !validateTrafficMetric(result[1], 1.1, 1.2) {
-		t.Errorf("Invalid result")
+	if !validateNetworkMetric(nml[1], 1, 1.1, 1.2) {
+		t.Errorf("Invalid network metric")
 	}
 }
 
-func validateLatencyMetric(result map[string]interface{}, v1 int32) bool {
-	if val, ok := result["lat"].(json.Number); !ok || JsonNumToInt32(val) != v1 {
-		fmt.Println("Invalid latency")
-		return false
-	}
-	return true
-}
-
-func validateTrafficMetric(result map[string]interface{}, v1 float64, v2 float64) bool {
-	if val, ok := result["tput"].(json.Number); !ok || JsonNumToFloat64(val) != v1 {
-		fmt.Println("Invalid tput")
-		return false
-	}
-	if val, ok := result["loss"].(json.Number); !ok || JsonNumToFloat64(val) != v2 {
-		fmt.Println("Invalid loss")
+func validateNetworkMetric(nm NetworkMetric, lat int32, tput float64, loss float64) bool {
+	if nm.lat != lat || nm.tput != tput || nm.loss != loss {
 		return false
 	}
 	return true
