@@ -25,6 +25,7 @@ import (
 	"net/url"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
 	"github.com/olivere/elastic"
 )
 
@@ -49,11 +50,6 @@ type ElasticFormatedLogResponse struct {
 	/*** mobilityEvent ***/
 	NewPoa string `json:"meep.log.newPoa"`
 	OldPoa string `json:"meep.log.oldPoa"`
-}
-
-// Init - Location Service initialization
-func Init() (err error) {
-	return nil
 }
 
 func metricsGet(w http.ResponseWriter, r *http.Request) {
@@ -158,40 +154,4 @@ func metricsGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(jsonResponse))
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-func convertToLogResponse(esLogResponse *ElasticFormatedLogResponse) *LogResponse {
-
-	if esLogResponse == nil {
-		return nil
-	}
-
-	msgType := esLogResponse.MsgType
-
-	var resp LogResponse
-	resp.DataType = msgType
-	resp.Src = esLogResponse.Src
-	resp.Dest = esLogResponse.Dest
-	resp.Timestamp = esLogResponse.Timestamp
-
-	switch msgType {
-	case "latency":
-		var data LogResponseData
-		data.Latency = esLogResponse.Latency
-		resp.Data = &data
-	case "ingressPacketStats":
-		var data LogResponseData
-		data.Rx = esLogResponse.Rx
-		data.RxBytes = esLogResponse.RxBytes
-		data.Throughput = esLogResponse.Throughput
-		data.PacketLoss = esLogResponse.PacketLoss
-		resp.Data = &data
-	case "mobilityEvent":
-		var data LogResponseData
-		data.NewPoa = esLogResponse.NewPoa
-		data.OldPoa = esLogResponse.OldPoa
-		resp.Data = &data
-	default:
-	}
-	return &resp
 }

@@ -47,6 +47,7 @@ repo:
       api-bundle:
         - meep-ctrl-engine
         - meep-metrics-engine
+        - meep-metrics-engine-notification
         - meep-mg-manager
         - meep-mg-app-notification
         - meep-loc-serv
@@ -94,7 +95,7 @@ repo:
       codecov: true
       lint: true
       nodeport: 30008
-      api: go-apps/meep-metrics-engine/api/swagger.yaml
+      api: go-apps/meep-metrics-engine/api/v2/swagger.yaml
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine
@@ -117,6 +118,8 @@ repo:
       api: go-packages/meep-loc-serv-notification-client/api/swagger.yaml
     meep-mg-app-notification:
       api: go-packages/meep-mg-app-client/api/swagger.yaml
+    meep-metrics-engine-notification:
+      api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
   dep:
     docker-registry:
       chart: charts/docker-registry
