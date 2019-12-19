@@ -37,6 +37,12 @@ const dbMaxRetryCount = 2
 const metricsDb = 0
 const moduleMetrics = "metric-store"
 
+type Metric struct {
+	Name   string
+	Tags   map[string]string
+	Fields map[string]interface{}
+}
+
 // MetricStore - Implements a metric store
 type MetricStore struct {
 	name         string
@@ -44,6 +50,7 @@ type MetricStore struct {
 	connected    bool
 	influxClient *influx.Client
 	redisClient  *redis.Connector
+	snapTicker   *time.Ticker
 }
 
 // NewMetricStore - Creates and initialize a Metric Store instance
@@ -115,7 +122,7 @@ func (ms *MetricStore) SetStore(name string) error {
 	// Remove dashes from name
 	storeName := strings.Replace(name, "-", "", -1)
 
-	// Set current store. Create new DB if necessary.
+	// Create new DB if necessary.
 	if storeName != "" {
 		q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
 		_, err := (*ms.influxClient).Query(q)
@@ -123,8 +130,10 @@ func (ms *MetricStore) SetStore(name string) error {
 			log.Error("Query failed with error: ", err.Error())
 			return err
 		}
-		ms.name = storeName
 	}
+
+	// Set current store
+	ms.name = storeName
 	return nil
 }
 
@@ -148,14 +157,12 @@ func (ms *MetricStore) Flush() {
 }
 
 // SetInfluxMetric - Generic metric setter
-func (ms *MetricStore) SetInfluxMetric(metric string, tags map[string]string, fields map[string]interface{}) error {
+func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
 		return err
 	}
-
-	// start = time.Now()
 
 	// Create a new point batch
 	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
@@ -163,23 +170,22 @@ func (ms *MetricStore) SetInfluxMetric(metric string, tags map[string]string, fi
 		Precision: "us",
 	})
 
-	// Create a point and add to batch
-	pt, err := influx.NewPoint(metric, tags, fields)
-	if err != nil {
-		log.Error("Failed to create point with error: ", err)
-		return err
+	// Create & add points to batch
+	for _, metric := range metricList {
+		pt, err := influx.NewPoint(metric.Name, metric.Tags, metric.Fields)
+		if err != nil {
+			log.Error("Failed to create point with error: ", err)
+			return err
+		}
+		bp.AddPoint(pt)
 	}
-	bp.AddPoint(pt)
 
 	// Write the batch
-	err = (*ms.influxClient).Write(bp)
+	err := (*ms.influxClient).Write(bp)
 	if err != nil {
 		log.Error("Failed to write point with error: ", err)
 		return err
 	}
-
-	// logTimeLapse("SetMetric duration: ")
-
 	return nil
 }
 
@@ -187,8 +193,7 @@ func (ms *MetricStore) SetInfluxMetric(metric string, tags map[string]string, fi
 func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return values, err
+		return values, errors.New("Store name not specified")
 	}
 
 	// Create query
@@ -304,6 +309,9 @@ func (ms *MetricStore) getMetricsEntryHandler(key string, fields map[string]stri
 		values[k] = v
 	}
 
+	// Add key to returned values
+	values["key"] = key
+
 	// Append values list to data
 	data := userData.(*[]map[string]interface{})
 	*data = append(*data, values)
@@ -311,8 +319,36 @@ func (ms *MetricStore) getMetricsEntryHandler(key string, fields map[string]stri
 	return nil
 }
 
+func (ms *MetricStore) StartSnapshotThread() error {
+	// Make sure we have set a store
+	if ms.name == "" {
+		return errors.New("Store name not specified")
+	}
+	// Make sure ticker is not already running
+	if ms.snapTicker != nil {
+		return errors.New("ticker already running")
+	}
+
+	// Create new ticker and start snapshot thread
+	ms.snapTicker = time.NewTicker(time.Second)
+	go func() {
+		for range ms.snapTicker.C {
+			ms.takeNetworkMetricSnapshot()
+		}
+	}()
+
+	return nil
+}
+
+func (ms *MetricStore) StopSnapshotThread() {
+	if ms.snapTicker != nil {
+		ms.snapTicker.Stop()
+		ms.snapTicker = nil
+	}
+}
+
 // func logTimeLapse(logStr string) {
 // 	stop := time.Now()
-// 	log.Debug(logStr, strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', 3, 64), " ms")
+// 	log.Debug("TIME: ", logStr, " ", strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', 3, 64), " ms")
 // 	start = stop
 // }

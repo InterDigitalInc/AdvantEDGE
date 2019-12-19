@@ -270,12 +270,14 @@ func (u *destination) logRxTx() {
 	// Store network metric
 	srcDest := u.hostName + ":" + u.remoteName
 	var metric ms.NetworkMetric
+	metric.Src = u.remoteName
+	metric.Dst = u.hostName
 	semLatencyMap.Lock()
 	metric.Lat = latestLatencyResultsMap[srcDest]
 	semLatencyMap.Unlock()
 	metric.UlTput = tput
 	metric.UlLoss = loss
-	err = metricStore.SetCachedNetworkMetric(u.remoteName, u.hostName, metric)
+	err = metricStore.SetCachedNetworkMetric(metric)
 	if err != nil {
 		log.Error("Failed to set network metric")
 	}

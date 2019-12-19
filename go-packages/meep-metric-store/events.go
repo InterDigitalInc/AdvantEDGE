@@ -32,10 +32,13 @@ type EventMetric struct {
 }
 
 // SetEventMetric
-func (ms *MetricStore) SetEventMetric(eventType string, metric EventMetric) error {
-	tags := map[string]string{EvMetType: eventType}
-	fields := map[string]interface{}{EvMetEvent: metric.Event}
-	return ms.SetInfluxMetric(EvMetName, tags, fields)
+func (ms *MetricStore) SetEventMetric(eventType string, em EventMetric) error {
+	metricList := make([]Metric, 1)
+	metric := &metricList[0]
+	metric.Name = EvMetName
+	metric.Tags = map[string]string{EvMetType: eventType}
+	metric.Fields = map[string]interface{}{EvMetEvent: em.Event}
+	return ms.SetInfluxMetric(metricList)
 }
 
 // GetEventMetric

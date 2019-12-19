@@ -370,14 +370,13 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Metrics Store & Flush entries
+	// Set Metrics Store
 	err = metricStore.SetStore(scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	metricStore.Flush()
 
 	// Activate scenario & publish
 	err = activeModel.SetScenario(scenario)

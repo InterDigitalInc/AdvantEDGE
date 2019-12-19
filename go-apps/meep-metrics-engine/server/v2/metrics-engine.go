@@ -75,6 +75,13 @@ type NetworkRegistration struct {
 
 // Init - Metrics engine initialization
 func Init() (err error) {
+	// Connect to Metric Store
+	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+
 	// Listen for model updates
 	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
 	if err != nil {
@@ -129,60 +136,32 @@ func processActiveScenarioUpdate(event string) {
 }
 
 func activateScenario() {
-	// Connect to Metric Store
-	var err error
-	metricStore, err = ms.NewMetricStore(activeScenarioName, influxDBAddr, redisAddr)
+	// Set Metrics Store
+	err := metricStore.SetStore(activeScenarioName)
 	if err != nil {
-		log.Error("Failed connection to Influx: ", err)
+		log.Error("Failed to set store with error: " + err.Error())
 		return
 	}
-	if metricStore == nil {
-		log.Error("MetricStore creation error")
+
+	// Flush metric store entries on activation
+	metricStore.Flush()
+
+	// Start snapshot thread
+	err = metricStore.StartSnapshotThread()
+	if err != nil {
+		log.Error("Failed to start snapshot thread: " + err.Error())
 		return
 	}
 }
 
 func terminateScenario(name string) {
-	if name != "" {
-		metricStore = nil
-	}
-}
+	// Terminate snapshot thread
+	metricStore.StopSnapshotThread()
 
-func formatEventMetrics(metricList []map[string]interface{}, eventMetricList interface{}) {
-	emList := eventMetricList.(*[]EventMetric)
-	*emList = make([]EventMetric, len(metricList))
-	for index, metric := range metricList {
-		em := &((*emList)[index])
-		em.Time = metric["time"].(string)
-		if metric[ms.EvMetEvent] != nil {
-			if val, ok := metric[ms.EvMetEvent].(string); ok {
-				em.Event = val
-			}
-		}
-	}
-}
-
-func formatNetworkMetrics(metricList []map[string]interface{}, networkMetricList interface{}) {
-	nmList := networkMetricList.(*[]NetworkMetric)
-	*nmList = make([]NetworkMetric, len(metricList))
-	for index, metric := range metricList {
-		nm := &((*nmList)[index])
-		nm.Time = metric["time"].(string)
-		if metric[ms.NetMetLatency] != nil {
-			nm.Lat = ms.JsonNumToInt32(metric[ms.NetMetLatency].(json.Number))
-		}
-		if metric[ms.NetMetULThroughput] != nil {
-			nm.Ul = ms.JsonNumToFloat64(metric[ms.NetMetULThroughput].(json.Number))
-		}
-		if metric[ms.NetMetDLThroughput] != nil {
-			nm.Dl = ms.JsonNumToFloat64(metric[ms.NetMetDLThroughput].(json.Number))
-		}
-		if metric[ms.NetMetULPktLoss] != nil {
-			nm.Ulos = ms.JsonNumToFloat64(metric[ms.NetMetULPktLoss].(json.Number))
-		}
-		if metric[ms.NetMetDLPktLoss] != nil {
-			nm.Dlos = ms.JsonNumToFloat64(metric[ms.NetMetDLPktLoss].(json.Number))
-		}
+	// Set Metrics Store
+	err := metricStore.SetStore("")
+	if err != nil {
+		log.Error(err.Error())
 	}
 }
 
@@ -246,7 +225,16 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	var response EventMetricList
 	response.Name = "event metrics"
 	response.Columns = append(params.Fields, "time")
-	formatEventMetrics(valuesArray, &response.Values)
+	response.Values = make([]EventMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metric := &response.Values[index]
+		metric.Time = values["time"].(string)
+		if values[ms.EvMetEvent] != nil {
+			if val, ok := values[ms.EvMetEvent].(string); ok {
+				metric.Event = val
+			}
+		}
+	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -318,7 +306,26 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	var response NetworkMetricList
 	response.Name = "network metrics"
 	response.Columns = append(params.Fields, "time")
-	formatNetworkMetrics(valuesArray, &response.Values)
+	response.Values = make([]NetworkMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metric := &response.Values[index]
+		metric.Time = values["time"].(string)
+		if values[ms.NetMetLatency] != nil {
+			metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+		}
+		if values[ms.NetMetULThroughput] != nil {
+			metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+		}
+		if values[ms.NetMetDLThroughput] != nil {
+			metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+		}
+		if values[ms.NetMetULPktLoss] != nil {
+			metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+		}
+		if values[ms.NetMetDLPktLoss] != nil {
+			metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+		}
+	}
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -528,7 +535,16 @@ func processEventNotification(subsId string) {
 
 		if err == nil {
 			response.Columns = append(eventRegistration.params.EventQueryParams.Fields, "time")
-			formatEventMetrics(valuesArray, &response.Values)
+			response.Values = make([]clientv2.EventMetric, len(valuesArray))
+			for index, values := range valuesArray {
+				metric := &response.Values[index]
+				metric.Time = values["time"].(string)
+				if values[ms.EvMetEvent] != nil {
+					if val, ok := values[ms.EvMetEvent].(string); ok {
+						metric.Event = val
+					}
+				}
+			}
 		}
 	}
 
@@ -559,7 +575,26 @@ func processNetworkNotification(subsId string) {
 
 		if err == nil {
 			response.Columns = append(networkRegistration.params.NetworkQueryParams.Fields, "time")
-			formatNetworkMetrics(valuesArray, &response.Values)
+			response.Values = make([]clientv2.NetworkMetric, len(valuesArray))
+			for index, values := range valuesArray {
+				metric := &response.Values[index]
+				metric.Time = values["time"].(string)
+				if values[ms.NetMetLatency] != nil {
+					metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+				}
+				if values[ms.NetMetULThroughput] != nil {
+					metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+				}
+				if values[ms.NetMetDLThroughput] != nil {
+					metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+				}
+				if values[ms.NetMetULPktLoss] != nil {
+					metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+				}
+				if values[ms.NetMetDLPktLoss] != nil {
+					metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+				}
+			}
 		}
 	}
 
