@@ -75,19 +75,19 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Set cached network metric")
-	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0.2})
+	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0, 0.2, 0})
 	if err != nil {
 		t.Errorf("Unable to set cached net metric")
 	}
-	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 1.2})
+	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 0, 1.2, 0})
 	if err != nil {
 		t.Errorf("Unable to set cached net metric")
 	}
-	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 2.2})
+	err = ms.SetCachedNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 0, 2.2, 0})
 	if err != nil {
 		t.Errorf("Unable to set cached net metric")
 	}
-	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 3.2})
+	err = ms.SetCachedNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 0, 3.2, 0})
 	if err != nil {
 		t.Errorf("Unable to set cached net metric")
 	}
@@ -97,7 +97,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateNetworkMetric(nm, 2, 2.1, 2.2) {
+	if !validateNetworkMetric(nm, 3, 2.1, 3.1, 2.2, 3.2) {
 		t.Errorf("Invalid network metric")
 	}
 
@@ -106,7 +106,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateNetworkMetric(nm, 3, 3.1, 3.2) {
+	if !validateNetworkMetric(nm, 2, 3.1, 2.1, 3.2, 2.2) {
 		t.Errorf("Invalid network metric")
 	}
 
@@ -119,19 +119,19 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Set network metrics")
-	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0.2})
+	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 0, 0.1, 0.2, 0.3, 0.4})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 1.2})
+	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 1, 1.1, 1.2, 1.3, 1.4})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 2.2})
+	err = ms.SetNetworkMetric("node1", "node2", NetworkMetric{nil, 2, 2.1, 2.2, 2.3, 2.4})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
-	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 3.2})
+	err = ms.SetNetworkMetric("node2", "node1", NetworkMetric{nil, 3, 3.1, 3.2, 3.3, 3.4})
 	if err != nil {
 		t.Errorf("Unable to set net metric")
 	}
@@ -145,10 +145,10 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	if err != nil || len(nml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateNetworkMetric(nml[0], 2, 2.1, 2.2) {
+	if !validateNetworkMetric(nml[0], 2, 2.1, 2.2, 2.3, 2.4) {
 		t.Errorf("Invalid network metric")
 	}
-	if !validateNetworkMetric(nml[1], 0, 0.1, 0.2) {
+	if !validateNetworkMetric(nml[1], 0, 0.1, 0.2, 0.3, 0.4) {
 		t.Errorf("Invalid network metric")
 	}
 
@@ -161,16 +161,16 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	if err != nil || len(nml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateNetworkMetric(nml[0], 3, 3.1, 3.2) {
+	if !validateNetworkMetric(nml[0], 3, 3.1, 3.2, 3.3, 3.4) {
 		t.Errorf("Invalid network metric")
 	}
-	if !validateNetworkMetric(nml[1], 1, 1.1, 1.2) {
+	if !validateNetworkMetric(nml[1], 1, 1.1, 1.2, 1.3, 1.4) {
 		t.Errorf("Invalid network metric")
 	}
 }
 
-func validateNetworkMetric(nm NetworkMetric, lat int32, tput float64, loss float64) bool {
-	if nm.Lat != lat || nm.Tput != tput || nm.Loss != loss {
+func validateNetworkMetric(nm NetworkMetric, lat int32, ul float64, dl float64, ulos float64, dlos float64) bool {
+	if nm.Lat != lat || nm.UlTput != ul || nm.DlTput != dl || nm.UlLoss != ulos || nm.DlLoss != dlos {
 		return false
 	}
 	return true

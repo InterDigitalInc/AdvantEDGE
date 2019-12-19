@@ -34,7 +34,7 @@ type NetworkSubscriptionParams struct {
 
 	NetworkQueryParams *NetworkQueryParams `json:"networkQueryParams,omitempty"`
 
-	// Notification interval in seconds, disabled if set to 0
+	// Notification interval in seconds
 	Period int32 `json:"period,omitempty"`
 
 	// Type of subscription triggering notifications

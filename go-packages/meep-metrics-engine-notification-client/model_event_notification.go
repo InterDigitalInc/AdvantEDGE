@@ -27,6 +27,6 @@ package client
 // Event notification - callback generated toward an ME app with an event subscription
 type EventNotification struct {
 	// CallBackData if passed by the application during the associated Event Subscription operation.
-	CallbackData     string            `json:"callbackData"`
-	EventMetricsList *EventMetricsList `json:"eventMetricsList,omitempty"`
+	CallbackData    string           `json:"callbackData"`
+	EventMetricList *EventMetricList `json:"eventMetricList,omitempty"`
 }

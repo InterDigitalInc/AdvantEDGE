@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventMetricsList', 'model/EventQueryParams', 'model/NetworkMetricsList', 'model/NetworkQueryParams'], factory);
+    define(['ApiClient', 'model/EventMetricList', 'model/EventQueryParams', 'model/NetworkMetricList', 'model/NetworkQueryParams'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/EventMetricsList'), require('../model/EventQueryParams'), require('../model/NetworkMetricsList'), require('../model/NetworkQueryParams'));
+    module.exports = factory(require('../ApiClient'), require('../model/EventMetricList'), require('../model/EventQueryParams'), require('../model/NetworkMetricList'), require('../model/NetworkQueryParams'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeMetricsServiceRestApi) {
       root.AdvantEdgeMetricsServiceRestApi = {};
     }
-    root.AdvantEdgeMetricsServiceRestApi.MetricsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.EventMetricsList, root.AdvantEdgeMetricsServiceRestApi.EventQueryParams, root.AdvantEdgeMetricsServiceRestApi.NetworkMetricsList, root.AdvantEdgeMetricsServiceRestApi.NetworkQueryParams);
+    root.AdvantEdgeMetricsServiceRestApi.MetricsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.EventMetricList, root.AdvantEdgeMetricsServiceRestApi.EventQueryParams, root.AdvantEdgeMetricsServiceRestApi.NetworkMetricList, root.AdvantEdgeMetricsServiceRestApi.NetworkQueryParams);
   }
-}(this, function(ApiClient, EventMetricsList, EventQueryParams, NetworkMetricsList, NetworkQueryParams) {
+}(this, function(ApiClient, EventMetricList, EventQueryParams, NetworkMetricList, NetworkQueryParams) {
   'use strict';
 
   /**
@@ -66,7 +66,7 @@
      * Callback function to receive the result of the postEventQuery operation.
      * @callback module:api/MetricsApi~postEventQueryCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/EventMetricsList} data The data returned by the service call.
+     * @param {module:model/EventMetricList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -74,7 +74,7 @@
      * Returns Event metrics according to specificed parameters
      * @param {module:model/EventQueryParams} params Query parameters
      * @param {module:api/MetricsApi~postEventQueryCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/EventMetricsList}
+     * data is of type: {@link module:model/EventMetricList}
      */
     this.postEventQuery = function(params, callback) {
       var postBody = params;
@@ -99,7 +99,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = EventMetricsList;
+      var returnType = EventMetricList;
 
       return this.apiClient.callApi(
         '/metrics/query/event', 'POST',
@@ -112,7 +112,7 @@
      * Callback function to receive the result of the postNetworkQuery operation.
      * @callback module:api/MetricsApi~postNetworkQueryCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/NetworkMetricsList} data The data returned by the service call.
+     * @param {module:model/NetworkMetricList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -120,7 +120,7 @@
      * Returns Network metrics according to specificed parameters
      * @param {module:model/NetworkQueryParams} params Query parameters
      * @param {module:api/MetricsApi~postNetworkQueryCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/NetworkMetricsList}
+     * data is of type: {@link module:model/NetworkMetricList}
      */
     this.postNetworkQuery = function(params, callback) {
       var postBody = params;
@@ -145,7 +145,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = NetworkMetricsList;
+      var returnType = NetworkMetricList;
 
       return this.apiClient.callApi(
         '/metrics/query/network', 'POST',

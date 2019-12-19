@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Enum: SubscriptionTypeEnum
 
 
-* `periodic` (value: `"Periodic"`)
+* `period` (value: `"period"`)
 
 
 

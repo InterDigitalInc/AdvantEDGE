@@ -81,14 +81,14 @@
   }
 
   /**
-   * Tag array<br>combination of: src, dest, srcpl, dstpl
+   * Tag names to match in query. Supported values:<br> <li>src: Source network element name <li>dest: Destination network element name
    * @member {Array.<module:model/Tag>} tags
    */
   exports.prototype.tags = undefined;
 
   /**
-   * Field array<br>combination of: lat, tput, loss
-   * @member {Array.<String>} fields
+   * Field names to return in query response. Supported values:<br> <li>lat: Round-trip latency (ms)<br> <li>ul: UL throughput from src to dest (Mbps) <li>dl: DL throughput from dest to src (Mbps) <li>ulos: UL packet loss from src to dest (%) <li>dlos: DL packet loss from dest to src (%)
+   * @member {Array.<module:model/NetworkQueryParams.FieldsEnum>} fields
    */
   exports.prototype.fields = undefined;
 
@@ -96,6 +96,44 @@
    * @member {module:model/Scope} scope
    */
   exports.prototype.scope = undefined;
+
+
+  /**
+   * Allowed values for the <code>fields</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.FieldsEnum = {
+    /**
+     * value: "lat"
+     * @const
+     */
+    lat: "lat",
+
+    /**
+     * value: "ul"
+     * @const
+     */
+    ul: "ul",
+
+    /**
+     * value: "dl"
+     * @const
+     */
+    dl: "dl",
+
+    /**
+     * value: "ulos"
+     * @const
+     */
+    ulos: "ulos",
+
+    /**
+     * value: "dlos"
+     * @const
+     */
+    dlos: "dlos"
+  };
 
   return exports;
 

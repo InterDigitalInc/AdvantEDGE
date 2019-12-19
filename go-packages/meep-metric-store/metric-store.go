@@ -19,6 +19,7 @@ package metricstore
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -111,15 +112,18 @@ func (ms *MetricStore) connectInfluxDB(addr string) error {
 
 // SetStore -
 func (ms *MetricStore) SetStore(name string) error {
+	// Remove dashes from name
+	storeName := strings.Replace(name, "-", "", -1)
+
 	// Set current store. Create new DB if necessary.
-	if name != "" {
-		q := influx.NewQuery("CREATE DATABASE "+name, "", "")
+	if storeName != "" {
+		q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
 		_, err := (*ms.influxClient).Query(q)
 		if err != nil {
 			log.Error("Query failed with error: ", err.Error())
 			return err
 		}
-		ms.name = name
+		ms.name = storeName
 	}
 	return nil
 }

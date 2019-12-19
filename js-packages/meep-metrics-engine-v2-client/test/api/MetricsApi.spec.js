@@ -58,7 +58,7 @@
           params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
           params.tags[0].name = "src";
           params.tags[0].value = "ue1-iperf";
-          params.fields = ["event"];
+          params.fields = ["event"]"event";
           params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
           params.scope.limit = 60;
           params.scope.duration = "10s";
@@ -69,7 +69,7 @@
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetricsList);
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetricList);
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("event metrics");
             {
@@ -79,7 +79,7 @@
               for (let p in dataCtr) {
                 let data = dataCtr[p];
                 expect(data).to.be.a('string');
-                expect(data).to.be("event");
+                expect(data).to.be("");
               }
             }
             {
@@ -88,11 +88,11 @@
               expect(dataCtr).to.not.be.empty();
               for (let p in dataCtr) {
                 let data = dataCtr[p];
-                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetrics);
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetric);
                 expect(data.time).to.be.a('string');
                 expect(data.time).to.be("2019-11-24T12:45:00-5:00");
                 expect(data.event).to.be.a('string');
-                expect(data.event).to.be("Mobility event ue1 to poa3");
+                expect(data.event).to.be("json-formatted mobility event ue1 to poa3");
               }
             }
 
@@ -111,7 +111,7 @@
           params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
           params.tags[0].name = "src";
           params.tags[0].value = "ue1-iperf";
-          params.fields = ["lat,tput,loss"];
+          params.fields = ["lat"]"lat";
           params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
           params.scope.limit = 60;
           params.scope.duration = "10s";
@@ -122,7 +122,7 @@
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetricsList);
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetricList);
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("network metrics");
             {
@@ -132,7 +132,7 @@
               for (let p in dataCtr) {
                 let data = dataCtr[p];
                 expect(data).to.be.a('string');
-                expect(data).to.be("lat,tput,loss");
+                expect(data).to.be("");
               }
             }
             {
@@ -141,15 +141,19 @@
               expect(dataCtr).to.not.be.empty();
               for (let p in dataCtr) {
                 let data = dataCtr[p];
-                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetrics);
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetric);
                 expect(data.time).to.be.a('string');
                 expect(data.time).to.be("2019-11-24T12:45:00-5:00");
                 expect(data.lat).to.be.a('number');
-                expect(data.lat).to.be(5.123);
-                expect(data.tput).to.be.a('number');
-                expect(data.tput).to.be(100000.0);
-                expect(data.loss).to.be.a('number');
-                expect(data.loss).to.be(0.003);
+                expect(data.lat).to.be(5);
+                expect(data.ul).to.be.a('number');
+                expect(data.ul).to.be(90.1);
+                expect(data.dl).to.be.a('number');
+                expect(data.dl).to.be(100.0);
+                expect(data.ulos).to.be.a('number');
+                expect(data.ulos).to.be(0.001);
+                expect(data.dlos).to.be.a('number');
+                expect(data.dlos).to.be(0.003);
               }
             }
 

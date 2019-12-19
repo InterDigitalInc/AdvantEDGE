@@ -62,12 +62,12 @@
           params.eventQueryParams.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
           params.eventQueryParams.tags[0].name = "src";
           params.eventQueryParams.tags[0].value = "ue1-iperf";
-          params.eventQueryParams.fields = ["event"];
+          params.eventQueryParams.fields = ["event"]"event";
           params.eventQueryParams.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
           params.eventQueryParams.scope.limit = 60;
           params.eventQueryParams.scope.duration = "10s";
           params.period = 1;
-          params.subscriptionType = "Periodic";
+          params.subscriptionType = "period";
 
           instance.createEventSubscription(params, function(error, data, response) {
             if (error) {
@@ -117,7 +117,7 @@
             expect(data.period).to.be.a('number');
             expect(data.period).to.be(1);
             expect(data.subscriptionType).to.be.a('string');
-            expect(data.subscriptionType).to.be("Periodic");
+            expect(data.subscriptionType).to.be("period");
 
             done();
           });
@@ -138,12 +138,12 @@
           params.networkQueryParams.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
           params.networkQueryParams.tags[0].name = "src";
           params.networkQueryParams.tags[0].value = "ue1-iperf";
-          params.networkQueryParams.fields = ["lat,tput,loss"];
+          params.networkQueryParams.fields = ["lat"]"lat";
           params.networkQueryParams.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
           params.networkQueryParams.scope.limit = 60;
           params.networkQueryParams.scope.duration = "10s";
           params.period = 1;
-          params.subscriptionType = "Periodic";
+          params.subscriptionType = "period";
 
           instance.createNetworkSubscription(params, function(error, data, response) {
             if (error) {
@@ -182,7 +182,7 @@
                 for (let p in dataCtr) {
                   let data = dataCtr[p];
                   expect(data).to.be.a('string');
-                  expect(data).to.be("lat,tput,loss");
+                  expect(data).to.be("lat");
                 }
               }
               expect(data.networkQueryParams.scope).to.be.a(AdvantEdgeMetricsServiceRestApi.Scope);
@@ -193,7 +193,7 @@
             expect(data.period).to.be.a('number');
             expect(data.period).to.be(1);
             expect(data.subscriptionType).to.be.a('string');
-            expect(data.subscriptionType).to.be("Periodic");
+            expect(data.subscriptionType).to.be("period");
 
             done();
           });
@@ -300,7 +300,7 @@
                 expect(data.period).to.be.a('number');
                 expect(data.period).to.be(1);
                 expect(data.subscriptionType).to.be.a('string');
-                expect(data.subscriptionType).to.be("Periodic");
+                expect(data.subscriptionType).to.be("period");
               }
             }
             expect(data.resourceURL).to.be.a('string');
@@ -367,7 +367,7 @@
             expect(data.period).to.be.a('number');
             expect(data.period).to.be(1);
             expect(data.subscriptionType).to.be.a('string');
-            expect(data.subscriptionType).to.be("Periodic");
+            expect(data.subscriptionType).to.be("period");
 
             done();
           });
@@ -425,7 +425,7 @@
                     for (let p in dataCtr) {
                       let data = dataCtr[p];
                       expect(data).to.be.a('string');
-                      expect(data).to.be("lat,tput,loss");
+                      expect(data).to.be("lat");
                     }
                   }
                   expect(data.networkQueryParams.scope).to.be.a(AdvantEdgeMetricsServiceRestApi.Scope);
@@ -436,7 +436,7 @@
                 expect(data.period).to.be.a('number');
                 expect(data.period).to.be(1);
                 expect(data.subscriptionType).to.be.a('string');
-                expect(data.subscriptionType).to.be("Periodic");
+                expect(data.subscriptionType).to.be("period");
               }
             }
             expect(data.resourceURL).to.be.a('string');
@@ -492,7 +492,7 @@
                 for (let p in dataCtr) {
                   let data = dataCtr[p];
                   expect(data).to.be.a('string');
-                  expect(data).to.be("lat,tput,loss");
+                  expect(data).to.be("lat");
                 }
               }
               expect(data.networkQueryParams.scope).to.be.a(AdvantEdgeMetricsServiceRestApi.Scope);
@@ -503,7 +503,7 @@
             expect(data.period).to.be.a('number');
             expect(data.period).to.be(1);
             expect(data.subscriptionType).to.be.a('string');
-            expect(data.subscriptionType).to.be("Periodic");
+            expect(data.subscriptionType).to.be("period");
 
             done();
           });

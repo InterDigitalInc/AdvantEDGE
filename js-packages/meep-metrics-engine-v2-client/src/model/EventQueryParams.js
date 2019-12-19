@@ -81,14 +81,14 @@
   }
 
   /**
-   * Tag array<br>combination of: type
+   * Tag names to match in query. Supported values:<br> <li>type: Destination network element name
    * @member {Array.<module:model/Tag>} tags
    */
   exports.prototype.tags = undefined;
 
   /**
-   * Field array<br>combination of: event
-   * @member {Array.<String>} fields
+   * Field names to return in query response. Supported values:<br> <li>event: DL packet loss from dest to src (%)
+   * @member {Array.<module:model/EventQueryParams.FieldsEnum>} fields
    */
   exports.prototype.fields = undefined;
 
@@ -96,6 +96,20 @@
    * @member {module:model/Scope} scope
    */
   exports.prototype.scope = undefined;
+
+
+  /**
+   * Allowed values for the <code>fields</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.FieldsEnum = {
+    /**
+     * value: "event"
+     * @const
+     */
+    event: "event"
+  };
 
   return exports;
 

@@ -120,10 +120,10 @@
    */
   exports.SubscriptionTypeEnum = {
     /**
-     * value: "Periodic"
+     * value: "period"
      * @const
      */
-    periodic: "Periodic"
+    period: "period"
   };
 
   return exports;

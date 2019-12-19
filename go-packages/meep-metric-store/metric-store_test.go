@@ -24,8 +24,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const metricStore1Name string = "metricStore1"
-const metricStore2Name string = "metricStore2"
+const metricStore1Name string = "metric-store-1"
+const metricStore2Name string = "metric-store-2"
 const metricStoreInfluxAddr string = "http://localhost:30986"
 const metricStoreRedisAddr string = "localhost:30380"
 

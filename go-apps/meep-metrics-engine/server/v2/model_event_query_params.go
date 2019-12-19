@@ -27,10 +27,10 @@ package server
 // Event metrics query parameters
 type EventQueryParams struct {
 
-	// Tag array<br>combination of: type
+	// Tag names to match in query. Supported values:<br> <li>type: Destination network element name
 	Tags []Tag `json:"tags,omitempty"`
 
-	// Field array<br>combination of: event
+	// Field names to return in query response. Supported values:<br> <li>event: DL packet loss from dest to src (%)
 	Fields []string `json:"fields,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`

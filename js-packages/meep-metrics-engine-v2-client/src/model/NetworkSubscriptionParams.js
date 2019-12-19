@@ -101,7 +101,7 @@
   exports.prototype.networkQueryParams = undefined;
 
   /**
-   * Notification interval in seconds, disabled if set to 0
+   * Notification interval in seconds
    * @member {Number} period
    */
   exports.prototype.period = undefined;
@@ -120,10 +120,10 @@
    */
   exports.SubscriptionTypeEnum = {
     /**
-     * value: "Periodic"
+     * value: "period"
      * @const
      */
-    periodic: "Periodic"
+    period: "period"
   };
 
   return exports;

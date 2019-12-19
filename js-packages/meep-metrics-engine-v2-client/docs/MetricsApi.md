@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="postEventQuery"></a>
 # **postEventQuery**
-> EventMetricsList postEventQuery(params)
+> EventMetricList postEventQuery(params)
 
 
 
@@ -43,7 +43,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**EventMetricsList**](EventMetricsList.md)
+[**EventMetricList**](EventMetricList.md)
 
 ### Authorization
 
@@ -56,7 +56,7 @@ No authorization required
 
 <a name="postNetworkQuery"></a>
 # **postNetworkQuery**
-> NetworkMetricsList postNetworkQuery(params)
+> NetworkMetricList postNetworkQuery(params)
 
 
 
@@ -89,7 +89,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**NetworkMetricsList**](NetworkMetricsList.md)
+[**NetworkMetricList**](NetworkMetricList.md)
 
 ### Authorization
 

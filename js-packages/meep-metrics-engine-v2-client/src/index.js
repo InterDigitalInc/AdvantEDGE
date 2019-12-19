@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventMetrics', 'model/EventMetricsList', 'model/EventQueryParams', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/EventsCallbackReference', 'model/NetworkCallbackReference', 'model/NetworkMetrics', 'model/NetworkMetricsList', 'model/NetworkQueryParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams', 'model/Scope', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
+    define(['ApiClient', 'model/EventMetric', 'model/EventMetricList', 'model/EventQueryParams', 'model/EventSubscription', 'model/EventSubscriptionList', 'model/EventSubscriptionParams', 'model/EventsCallbackReference', 'model/NetworkCallbackReference', 'model/NetworkMetric', 'model/NetworkMetricList', 'model/NetworkQueryParams', 'model/NetworkSubscription', 'model/NetworkSubscriptionList', 'model/NetworkSubscriptionParams', 'model/Scope', 'model/Tag', 'api/MetricsApi', 'api/SubscriptionsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/EventMetrics'), require('./model/EventMetricsList'), require('./model/EventQueryParams'), require('./model/EventSubscription'), require('./model/EventSubscriptionList'), require('./model/EventSubscriptionParams'), require('./model/EventsCallbackReference'), require('./model/NetworkCallbackReference'), require('./model/NetworkMetrics'), require('./model/NetworkMetricsList'), require('./model/NetworkQueryParams'), require('./model/NetworkSubscription'), require('./model/NetworkSubscriptionList'), require('./model/NetworkSubscriptionParams'), require('./model/Scope'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/EventMetric'), require('./model/EventMetricList'), require('./model/EventQueryParams'), require('./model/EventSubscription'), require('./model/EventSubscriptionList'), require('./model/EventSubscriptionParams'), require('./model/EventsCallbackReference'), require('./model/NetworkCallbackReference'), require('./model/NetworkMetric'), require('./model/NetworkMetricList'), require('./model/NetworkQueryParams'), require('./model/NetworkSubscription'), require('./model/NetworkSubscriptionList'), require('./model/NetworkSubscriptionParams'), require('./model/Scope'), require('./model/Tag'), require('./api/MetricsApi'), require('./api/SubscriptionsApi'));
   }
-}(function(ApiClient, EventMetrics, EventMetricsList, EventQueryParams, EventSubscription, EventSubscriptionList, EventSubscriptionParams, EventsCallbackReference, NetworkCallbackReference, NetworkMetrics, NetworkMetricsList, NetworkQueryParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams, Scope, Tag, MetricsApi, SubscriptionsApi) {
+}(function(ApiClient, EventMetric, EventMetricList, EventQueryParams, EventSubscription, EventSubscriptionList, EventSubscriptionParams, EventsCallbackReference, NetworkCallbackReference, NetworkMetric, NetworkMetricList, NetworkQueryParams, NetworkSubscription, NetworkSubscriptionList, NetworkSubscriptionParams, Scope, Tag, MetricsApi, SubscriptionsApi) {
   'use strict';
 
   /**
@@ -77,15 +77,15 @@
      */
     ApiClient: ApiClient,
     /**
-     * The EventMetrics model constructor.
-     * @property {module:model/EventMetrics}
+     * The EventMetric model constructor.
+     * @property {module:model/EventMetric}
      */
-    EventMetrics: EventMetrics,
+    EventMetric: EventMetric,
     /**
-     * The EventMetricsList model constructor.
-     * @property {module:model/EventMetricsList}
+     * The EventMetricList model constructor.
+     * @property {module:model/EventMetricList}
      */
-    EventMetricsList: EventMetricsList,
+    EventMetricList: EventMetricList,
     /**
      * The EventQueryParams model constructor.
      * @property {module:model/EventQueryParams}
@@ -117,15 +117,15 @@
      */
     NetworkCallbackReference: NetworkCallbackReference,
     /**
-     * The NetworkMetrics model constructor.
-     * @property {module:model/NetworkMetrics}
+     * The NetworkMetric model constructor.
+     * @property {module:model/NetworkMetric}
      */
-    NetworkMetrics: NetworkMetrics,
+    NetworkMetric: NetworkMetric,
     /**
-     * The NetworkMetricsList model constructor.
-     * @property {module:model/NetworkMetricsList}
+     * The NetworkMetricList model constructor.
+     * @property {module:model/NetworkMetricList}
      */
-    NetworkMetricsList: NetworkMetricsList,
+    NetworkMetricList: NetworkMetricList,
     /**
      * The NetworkQueryParams model constructor.
      * @property {module:model/NetworkQueryParams}

@@ -131,16 +131,16 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
- - [AdvantEdgeMetricsServiceRestApi.EventMetrics](docs/EventMetrics.md)
- - [AdvantEdgeMetricsServiceRestApi.EventMetricsList](docs/EventMetricsList.md)
+ - [AdvantEdgeMetricsServiceRestApi.EventMetric](docs/EventMetric.md)
+ - [AdvantEdgeMetricsServiceRestApi.EventMetricList](docs/EventMetricList.md)
  - [AdvantEdgeMetricsServiceRestApi.EventQueryParams](docs/EventQueryParams.md)
  - [AdvantEdgeMetricsServiceRestApi.EventSubscription](docs/EventSubscription.md)
  - [AdvantEdgeMetricsServiceRestApi.EventSubscriptionList](docs/EventSubscriptionList.md)
  - [AdvantEdgeMetricsServiceRestApi.EventSubscriptionParams](docs/EventSubscriptionParams.md)
  - [AdvantEdgeMetricsServiceRestApi.EventsCallbackReference](docs/EventsCallbackReference.md)
  - [AdvantEdgeMetricsServiceRestApi.NetworkCallbackReference](docs/NetworkCallbackReference.md)
- - [AdvantEdgeMetricsServiceRestApi.NetworkMetrics](docs/NetworkMetrics.md)
- - [AdvantEdgeMetricsServiceRestApi.NetworkMetricsList](docs/NetworkMetricsList.md)
+ - [AdvantEdgeMetricsServiceRestApi.NetworkMetric](docs/NetworkMetric.md)
+ - [AdvantEdgeMetricsServiceRestApi.NetworkMetricList](docs/NetworkMetricList.md)
  - [AdvantEdgeMetricsServiceRestApi.NetworkQueryParams](docs/NetworkQueryParams.md)
  - [AdvantEdgeMetricsServiceRestApi.NetworkSubscription](docs/NetworkSubscription.md)
  - [AdvantEdgeMetricsServiceRestApi.NetworkSubscriptionList](docs/NetworkSubscriptionList.md)

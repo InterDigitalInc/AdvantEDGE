@@ -273,8 +273,8 @@ func (u *destination) logRxTx() {
 	semLatencyMap.Lock()
 	metric.Lat = latestLatencyResultsMap[srcDest]
 	semLatencyMap.Unlock()
-	metric.Tput = tput
-	metric.Loss = loss
+	metric.UlTput = tput
+	metric.UlLoss = loss
 	err = metricStore.SetCachedNetworkMetric(u.remoteName, u.hostName, metric)
 	if err != nil {
 		log.Error("Failed to set network metric")
