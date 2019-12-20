@@ -531,7 +531,9 @@ func callPing() {
 				},
 			}
 
+			semOptsDests.Lock()
 			opts.dests = append(opts.dests, &dst)
+			semOptsDests.Unlock()
 		}
 	}
 
