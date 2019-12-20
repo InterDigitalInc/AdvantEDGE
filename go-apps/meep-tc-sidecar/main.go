@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -69,8 +70,8 @@ type podShortElement struct {
 	IfbNumber string
 }
 
-var sem = make(chan int, 1)
-var semLatencyMap = make(chan int, 1)
+var semOptsDests sync.Mutex
+var semLatencyMap sync.Mutex
 
 var opts = struct {
 	timeout         time.Duration
@@ -110,7 +111,7 @@ var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
 var netcharMap = map[string]*NetChar{}
-var latestLatencyResultsMap = map[string]int32{}
+var latestLatencyResultsMap map[string]int32
 
 var measurementsRunning = false
 var flushRequired = false
@@ -203,6 +204,10 @@ func initMeepSidecar() error {
 	}
 
 	log.Info("Successfully subscribed to Pub/Sub events")
+
+	semLatencyMap.Lock()
+	latestLatencyResultsMap = make(map[string]int32)
+	semLatencyMap.Unlock()
 
 	return nil
 }
@@ -545,6 +550,7 @@ func callPing() {
 func workLatency() {
 	for {
 
+		semOptsDests.Lock()
 		for i, u := range opts.dests {
 			//starting 2 threads, one for the pings, one for the computing part
 			go func(u *destination, i int) {
@@ -554,6 +560,7 @@ func workLatency() {
 				u.compute()
 			}(u, i)
 		}
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.interval)
 	}
@@ -563,7 +570,7 @@ func workRxTxPackets() {
 	for {
 		//only this one affects the destinations based on info in the DB
 
-		sem <- 1
+		semOptsDests.Lock()
 
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
@@ -571,7 +578,7 @@ func workRxTxPackets() {
 				u.processRxTx()
 			}(u, i)
 		}
-		<-sem
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.trafficInterval)
 	}
@@ -581,7 +588,7 @@ func workLogRxTxData() {
 	for {
 		//only this one affects the destinations based on info in the DB
 
-		sem <- 1
+		semOptsDests.Lock()
 
 		for i, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
@@ -589,7 +596,7 @@ func workLogRxTxData() {
 				u.logRxTx()
 			}(u, i)
 		}
-		<-sem
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.interval)
 	}

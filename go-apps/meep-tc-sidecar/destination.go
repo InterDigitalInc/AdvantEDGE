@@ -145,9 +145,9 @@ func (u *destination) compute() (st stat) {
 
 	//string for mapping src:dest
 	mapName := u.hostName + ":" + u.remoteName
-	semLatencyMap <- 1
+	semLatencyMap.Lock()
 	latestLatencyResultsMap[mapName] = lat
-	<-semLatencyMap
+	semLatencyMap.Unlock()
 
 	// Log measurment
 	log.WithFields(log.Fields{
@@ -273,7 +273,11 @@ func (u *destination) logRxTx() {
 	}
 	// Store latency metric
 	srcDest := u.hostName + ":" + u.remoteName
+
+	semLatencyMap.Lock()
 	err = metricStore.SetLatencyMetric(u.hostName, u.remoteName, latestLatencyResultsMap[srcDest])
+	semLatencyMap.Unlock()
+
 	if err != nil {
 		log.Error("Failed to set latency metric")
 	}
