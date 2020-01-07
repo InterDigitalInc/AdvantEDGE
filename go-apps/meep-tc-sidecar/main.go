@@ -558,9 +558,10 @@ func workLatency() {
 			go func(u *destination, i int) {
 				u.ping(pinger)
 			}(u, i)
-			go func(u *destination, i int) {
-				u.compute()
-			}(u, i)
+			//go func(u *destination, i int) {
+			u.compute()
+			//}(u, i)
+
 		}
 		semOptsDests.Unlock()
 
@@ -574,11 +575,39 @@ func workRxTxPackets() {
 
 		semOptsDests.Lock()
 
-		for i, u := range opts.dests {
+		str := "tc -s qdisc show"
+		out, err := cmdExec(str)
+		if err != nil {
+			log.Error("tc -s qdisc show")
+			log.Error(err)
+			return
+		}
+		//split line by line
+		lineStrings := strings.Split(out, "\n")
+
+		//store the mapping
+		qdiscResults := make(map[string]string)
+
+		lineIndex := 0
+		for lineIndex < (len(lineStrings) - 1) {
+			//each entry has 3 lines
+			//first line get the ifb
+			line1 := lineStrings[lineIndex]
+			//second line are the stats we need
+			line2 := lineStrings[lineIndex+1]
+			//third line is not useful stats for our application
+			//line3 := lineStrings[lineIndex+2]
+			ifb := strings.Split(line1, " ")
+			//store the mapping
+			qdiscResults[ifb[4]] = line2
+			lineIndex = lineIndex + 3
+		}
+
+		for _, u := range opts.dests {
+			//get the data for all, parse the output and transmit to each
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			go func(u *destination, i int) {
-				u.processRxTx()
-			}(u, i)
+			/*go*/
+			u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
 		}
 		semOptsDests.Unlock()
 
@@ -592,11 +621,38 @@ func workLogRxTxData() {
 
 		semOptsDests.Lock()
 
-		for i, u := range opts.dests {
+		str := "tc -s qdisc show"
+		out, err := cmdExec(str)
+		if err != nil {
+			log.Error("tc -s qdisc show")
+			log.Error(err)
+			return
+		}
+		//split line by line
+		lineStrings := strings.Split(out, "\n")
+
+		//store the mapping
+		qdiscResults := make(map[string]string)
+
+		lineIndex := 0
+		for lineIndex < (len(lineStrings) - 1) {
+			//each entry has 3 lines
+			//first line get the ifb
+			line1 := lineStrings[lineIndex]
+			//second line are the stats we need
+			line2 := lineStrings[lineIndex+1]
+			//third line is not useful stats for our application
+			//line3 := lineStrings[lineIndex+2]
+			ifb := strings.Split(line1, " ")
+			//store the mapping
+			qdiscResults[ifb[4]] = line2
+			lineIndex = lineIndex + 3
+		}
+
+		for _, u := range opts.dests {
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			go func(u *destination, i int) {
-				u.logRxTx()
-			}(u, i)
+			/*go*/
+			u.logRxTx(qdiscResults["ifb"+u.ifbNumber])
 		}
 		semOptsDests.Unlock()
 

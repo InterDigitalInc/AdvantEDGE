@@ -354,6 +354,16 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 	scenarioName := vars["name"]
 	log.Debug("Scenario name: ", scenarioName)
 
+	if activeModel == nil {
+		var err error
+		activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+		if err != nil {
+			log.Error("Failed to create model: ", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	// Make sure scenario is not already deployed
 	if activeModel.Active {
 		log.Error("Scenario already active")
@@ -402,7 +412,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("CEGetActiveScenario")
 
-	if !activeModel.Active {
+	if activeModel == nil || !activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
@@ -426,7 +436,7 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
 	var filteredList *[]ceModel.NodeServiceMaps
 
-	if !activeModel.Active {
+	if activeModel == nil || !activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
@@ -510,14 +520,14 @@ func ceGetActiveNodeServiceMaps(w http.ResponseWriter, r *http.Request) {
 func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceTerminateScenario")
 
-	if !activeModel.Active {
+	if activeModel == nil || !activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
 
 	err := activeModel.Deactivate()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to deactivate: ", err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -546,7 +556,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceSendEvent")
 
-	if !activeModel.Active {
+	if activeModel == nil || !activeModel.Active {
 		http.Error(w, "No scenario is active", http.StatusNotFound)
 		return
 	}
@@ -614,6 +624,8 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 	subKey := ""
 	var podsStatus ceModel.PodsStatus
+	var podsStatusInReply ceModel.PodsStatus
+
 	// Retrieve client ID & service name from query parameters
 	query := r.URL.Query()
 	longParam := query.Get("long")
@@ -661,18 +673,31 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 		podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
 		// ***** virt-engine running or not code END
 
-		//if some are missing... its because its coming up and as such... we cannot return a success yet... adding one entry that will be false
-
 		corePods := getCorePodsList()
+		uniqueCorePodsInReply := make(map[string]ceModel.PodStatus)
 
 		//loop through each of them by name
 		for _, statusPod := range podsStatus.PodStatus {
 			for corePod := range corePods {
 				if strings.Contains(statusPod.Name, corePod) {
 					corePods[corePod] = true
+					//filter for reporting one pod for each core pod type (we send the RUNNING one if any, otherwise we send whatever the failed one we have)
+					storedUniqueCorePod := uniqueCorePodsInReply[corePod]
+					if storedUniqueCorePod.Name != "" {
+						if storedUniqueCorePod.LogicalState != "Running" && storedUniqueCorePod.LogicalState != statusPod.LogicalState {
+							uniqueCorePodsInReply[corePod] = statusPod
+						}
+					} else {
+						uniqueCorePodsInReply[corePod] = statusPod
+					}
+
 					break
 				}
 			}
+		}
+
+		for _, uniqueCorePod := range uniqueCorePodsInReply {
+			podsStatusInReply.PodStatus = append(podsStatusInReply.PodStatus, uniqueCorePod)
 		}
 
 		//loop through the list of pods to see which one might be missing
@@ -681,7 +706,7 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 				var podStatus ceModel.PodStatus
 				podStatus.Name = corePod
 				podStatus.LogicalState = "NotAvailable"
-				podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
+				podsStatusInReply.PodStatus = append(podsStatusInReply.PodStatus, podStatus)
 			}
 		}
 	}

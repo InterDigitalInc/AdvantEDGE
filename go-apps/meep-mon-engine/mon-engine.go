@@ -256,7 +256,10 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = rc.SetEntry(key, fields)
+	err := rc.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Entry could not be updated in DB for ", monEngineInfo.MeepApp, ": ", err)
+	}
 }
 
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
@@ -265,7 +268,10 @@ func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = rc.DelEntry(key)
+	err := rc.DelEntry(key)
+	if err != nil {
+		log.Error("Entry could not be deleted in DB for ", monEngineInfo.MeepApp, ": ", err)
+	}
 }
 
 func k8sConnect() (err error) {
