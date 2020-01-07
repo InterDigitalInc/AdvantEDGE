@@ -24,9 +24,18 @@
 
 package client
 
-// Network notification - callback generated toward an ME app with a network subscription
-type NetworkNotification struct {
-	// CallBackData if passed by the application during the associated Network Subscription operation.
-	CallbackData      string             `json:"callbackData"`
-	NetworkMetricList *NetworkMetricList `json:"networkMetricList,omitempty"`
+// Value of a single network metric
+type NetworkMetric struct {
+	// Time of network metrics
+	Time string `json:"time,omitempty"`
+	// Round-trip latency (ms)
+	Lat int32 `json:"lat,omitempty"`
+	// Uplink throughput from src to dest (Mbps)
+	Ul float64 `json:"ul,omitempty"`
+	// Downlink throughput from dest to src (Mbps)
+	Dl float64 `json:"dl,omitempty"`
+	// Uplink packet loss from src to dest (%)
+	Ulos float64 `json:"ulos,omitempty"`
+	// Uplink packet loss from dest to src (%)
+	Dlos float64 `json:"dlos,omitempty"`
 }

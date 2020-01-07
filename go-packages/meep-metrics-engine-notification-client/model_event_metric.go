@@ -24,9 +24,10 @@
 
 package client
 
-// Network notification - callback generated toward an ME app with a network subscription
-type NetworkNotification struct {
-	// CallBackData if passed by the application during the associated Network Subscription operation.
-	CallbackData      string             `json:"callbackData"`
-	NetworkMetricList *NetworkMetricList `json:"networkMetricList,omitempty"`
+// Value of a single event metric
+type EventMetric struct {
+	// Time of event metrics
+	Time string `json:"time,omitempty"`
+	// JSON-fomatted event
+	Event string `json:"event,omitempty"`
 }

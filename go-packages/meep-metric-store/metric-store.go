@@ -19,12 +19,14 @@ package metricstore
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	_ "github.com/influxdata/influxdb1-client"
-	influxclient "github.com/influxdata/influxdb1-client/v2"
+	influx "github.com/influxdata/influxdb1-client/v2"
 )
 
 // var start time.Time
@@ -32,21 +34,42 @@ import (
 const defaultInfluxDBAddr = "http://meep-influxdb:8086"
 const dbMaxRetryCount = 2
 
+const metricsDb = 0
+const moduleMetrics = "metric-store"
+
+type Metric struct {
+	Name   string
+	Tags   map[string]string
+	Fields map[string]interface{}
+}
+
 // MetricStore - Implements a metric store
 type MetricStore struct {
-	name      string
-	addr      string
-	connected bool
-	client    *influxclient.Client
+	name           string
+	addr           string
+	connected      bool
+	influxClient   *influx.Client
+	redisClient    *redis.Connector
+	snapshotTicker *time.Ticker
 }
 
 // NewMetricStore - Creates and initialize a Metric Store instance
-func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
+func NewMetricStore(name string, influxAddr string, redisAddr string) (ms *MetricStore, err error) {
+
+	// Create new Metric Store instance
 	ms = new(MetricStore)
+
+	// Connect to Redis DB
+	ms.redisClient, err = redis.NewConnector(redisAddr, metricsDb)
+	if err != nil {
+		log.Error("Failed connection to Metrics redis DB. Error: ", err)
+		return nil, err
+	}
+	log.Info("Connected to Metrics Redis DB")
 
 	// Connect to Influx DB
 	for retry := 0; !ms.connected && retry <= dbMaxRetryCount; retry++ {
-		err = ms.connectDB(addr)
+		err = ms.connectInfluxDB(influxAddr)
 		if err != nil {
 			log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
 		}
@@ -54,6 +77,7 @@ func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Info("Connected to Metrics Influx DB")
 
 	// Set store to use
 	err = ms.SetStore(name)
@@ -66,7 +90,7 @@ func NewMetricStore(name string, addr string) (ms *MetricStore, err error) {
 	return ms, nil
 }
 
-func (ms *MetricStore) connectDB(addr string) error {
+func (ms *MetricStore) connectInfluxDB(addr string) error {
 	if addr == "" {
 		ms.addr = defaultInfluxDBAddr
 	} else {
@@ -74,7 +98,7 @@ func (ms *MetricStore) connectDB(addr string) error {
 	}
 	log.Debug("InfluxDB Connector connecting to ", ms.addr)
 
-	client, err := influxclient.NewHTTPClient(influxclient.HTTPConfig{Addr: ms.addr, InsecureSkipVerify: true})
+	client, err := influx.NewHTTPClient(influx.HTTPConfig{Addr: ms.addr, InsecureSkipVerify: true})
 	if err != nil {
 		log.Error("InfluxDB Connector unable to connect ", ms.addr)
 		return err
@@ -87,7 +111,7 @@ func (ms *MetricStore) connectDB(addr string) error {
 		return err
 	}
 
-	ms.client = &client
+	ms.influxClient = &client
 	ms.connected = true
 	log.Info("InfluxDB Connector connected to ", ms.addr, " version: ", version)
 	return nil
@@ -95,16 +119,21 @@ func (ms *MetricStore) connectDB(addr string) error {
 
 // SetStore -
 func (ms *MetricStore) SetStore(name string) error {
-	// Set current store. Create new DB if necessary.
-	if name != "" {
-		q := influxclient.NewQuery("CREATE DATABASE "+name, "", "")
-		_, err := (*ms.client).Query(q)
+	// Remove dashes from name
+	storeName := strings.Replace(name, "-", "", -1)
+
+	// Create new DB if necessary.
+	if storeName != "" {
+		q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
+		_, err := (*ms.influxClient).Query(q)
 		if err != nil {
 			log.Error("Query failed with error: ", err.Error())
 			return err
 		}
-		ms.name = name
 	}
+
+	// Set current store
+	ms.name = storeName
 	return nil
 }
 
@@ -115,57 +144,56 @@ func (ms *MetricStore) Flush() {
 		return
 	}
 
-	// Create Store DB if it does not exist
-	q := influxclient.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
-	response, err := (*ms.client).Query(q)
+	// Create Store Influx DB if it does not exist
+	q := influx.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
+	response, err := (*ms.influxClient).Query(q)
 	if err != nil {
 		log.Error("Query failed with error: ", err.Error())
 	}
 	log.Info(response.Results)
+
+	// Flush Redis DB
+	ms.redisClient.DBFlush(moduleMetrics + ":" + NetMetName)
 }
 
-// SetMetric - Generic metric setter
-func (ms *MetricStore) SetMetric(metric string, tags map[string]string, fields map[string]interface{}) error {
+// SetInfluxMetric - Generic metric setter
+func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
 		return err
 	}
 
-	// start = time.Now()
-
 	// Create a new point batch
-	bp, _ := influxclient.NewBatchPoints(influxclient.BatchPointsConfig{
+	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
 		Database:  ms.name,
 		Precision: "us",
 	})
 
-	// Create a point and add to batch
-	pt, err := influxclient.NewPoint(metric, tags, fields)
-	if err != nil {
-		log.Error("Failed to create point with error: ", err)
-		return err
+	// Create & add points to batch
+	for _, metric := range metricList {
+		pt, err := influx.NewPoint(metric.Name, metric.Tags, metric.Fields)
+		if err != nil {
+			log.Error("Failed to create point with error: ", err)
+			return err
+		}
+		bp.AddPoint(pt)
 	}
-	bp.AddPoint(pt)
 
 	// Write the batch
-	err = (*ms.client).Write(bp)
+	err := (*ms.influxClient).Write(bp)
 	if err != nil {
 		log.Error("Failed to write point with error: ", err)
 		return err
 	}
-
-	// logTimeLapse("SetMetric duration: ")
-
 	return nil
 }
 
-// GetMetric - Generic metric getter
-func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
+// GetInfluxMetric - Generic metric getter
+func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fields []string, duration string, count int) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return values, err
+		return values, errors.New("Store name not specified")
 	}
 
 	// Create query
@@ -210,8 +238,8 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	log.Debug("QUERY: ", query)
 
 	// Query store for metric
-	q := influxclient.NewQuery(query, ms.name, "")
-	response, err := (*ms.client).Query(q)
+	q := influx.NewQuery(query, ms.name, "")
+	response, err := (*ms.influxClient).Query(q)
 	if err != nil {
 		log.Error("Query failed with error: ", err.Error())
 		return values, err
@@ -237,8 +265,90 @@ func (ms *MetricStore) GetMetric(metric string, tags map[string]string, fields [
 	return values, nil
 }
 
+// SetRedisMetric - Generic metric setter
+func (ms *MetricStore) SetRedisMetric(metric string, tagStr string, fields map[string]interface{}) (err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err = errors.New("Store name not specified")
+		return
+	}
+
+	// Store data
+	key := moduleMetrics + ":" + metric + ":" + tagStr
+	err = ms.redisClient.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Failed to set entry with error: ", err.Error())
+		return
+	}
+
+	return nil
+}
+
+// GetRedisMetric - Generic metric getter
+func (ms *MetricStore) GetRedisMetric(metric string, tagStr string, fields []string) (values []map[string]interface{}, err error) {
+	// Make sure we have set a store
+	if ms.name == "" {
+		err := errors.New("Store name not specified")
+		return values, err
+	}
+
+	// Get latest metrics
+	key := moduleMetrics + ":" + metric + ":" + tagStr
+	err = ms.redisClient.ForEachEntry(key, ms.getMetricsEntryHandler, &values)
+	if err != nil {
+		log.Error("Failed to get entries: ", err)
+		return nil, err
+	}
+	return values, nil
+}
+
+func (ms *MetricStore) getMetricsEntryHandler(key string, fields map[string]string, userData interface{}) error {
+	// Retrieve field values
+	values := make(map[string]interface{})
+	for k, v := range fields {
+		values[k] = v
+	}
+
+	// Add key to returned values
+	values["key"] = key
+
+	// Append values list to data
+	data := userData.(*[]map[string]interface{})
+	*data = append(*data, values)
+
+	return nil
+}
+
+func (ms *MetricStore) StartSnapshotThread() error {
+	// Make sure we have set a store
+	if ms.name == "" {
+		return errors.New("Store name not specified")
+	}
+	// Make sure ticker is not already running
+	if ms.snapshotTicker != nil {
+		return errors.New("ticker already running")
+	}
+
+	// Create new ticker and start snapshot thread
+	ms.snapshotTicker = time.NewTicker(time.Second)
+	go func() {
+		for range ms.snapshotTicker.C {
+			ms.takeNetworkMetricSnapshot()
+		}
+	}()
+
+	return nil
+}
+
+func (ms *MetricStore) StopSnapshotThread() {
+	if ms.snapshotTicker != nil {
+		ms.snapshotTicker.Stop()
+		ms.snapshotTicker = nil
+	}
+}
+
 // func logTimeLapse(logStr string) {
 // 	stop := time.Now()
-// 	log.Debug(logStr, strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', 3, 64), " ms")
+// 	log.Debug("TIME: ", logStr, " ", strconv.Itoa(int(stop.Sub(start).Milliseconds())), " ms")
 // 	start = stop
 // }

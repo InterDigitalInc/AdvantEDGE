@@ -36,8 +36,7 @@ import (
 
 const influxDBAddr = "http://meep-influxdb:8086"
 const metricEvent = "events"
-const metricLatency = "latency"
-const metricTraffic = "traffic"
+const metricNetwork = "network"
 
 const moduleName string = "meep-metrics-engine"
 const redisAddr string = "meep-redis-master:6379"
@@ -76,6 +75,13 @@ type NetworkRegistration struct {
 
 // Init - Metrics engine initialization
 func Init() (err error) {
+	// Connect to Metric Store
+	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+
 	// Listen for model updates
 	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
 	if err != nil {
@@ -130,123 +136,104 @@ func processActiveScenarioUpdate(event string) {
 }
 
 func activateScenario() {
-	// Connect to Metric Store
-	var err error
-	metricStore, err = ms.NewMetricStore(activeScenarioName, influxDBAddr)
+	// Set Metrics Store
+	err := metricStore.SetStore(activeScenarioName)
 	if err != nil {
-		log.Error("Failed connection to Influx: ", err)
+		log.Error("Failed to set store with error: " + err.Error())
 		return
 	}
-	if metricStore == nil {
-		log.Error("MetricStore creation error")
+
+	// Flush metric store entries on activation
+	metricStore.Flush()
+
+	// Start snapshot thread
+	err = metricStore.StartSnapshotThread()
+	if err != nil {
+		log.Error("Failed to start snapshot thread: " + err.Error())
 		return
 	}
 }
 
 func terminateScenario(name string) {
-	if name == "" {
-		return
+	// Terminate snapshot thread
+	metricStore.StopSnapshotThread()
+
+	// Set Metrics Store
+	err := metricStore.SetStore("")
+	if err != nil {
+		log.Error(err.Error())
 	}
-	metricStore = nil
 }
 
-func meGetMetrics(w http.ResponseWriter, r *http.Request, metricType string) (metrics []map[string]interface{}, responseColumns []string, err error) {
+func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostEventQuery")
 
-	log.Debug("meGetMetrics")
-
-	// Retrieve scenario from request body
+	// Retrieve network metric query parameters from request body
+	var params EventQueryParams
 	if r.Body == nil {
 		err := errors.New("Request body is missing")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return nil, nil, err
+		return
 	}
-
-	params := new(NetworkQueryParams)
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&params)
+	err := decoder.Decode(&params)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil, nil, err
+		return
 	}
 
-	getTags := make(map[string]string)
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 
+	// Parse tags
+	tags := make(map[string]string)
 	for _, tag := range params.Tags {
-
-		//extracting name: and value: into a string
-		jsonInfo, err := json.Marshal(tag)
-		if err != nil {
-			log.Error(err.Error())
-			return nil, nil, err
-		}
-		var tmpTags map[string]string
-		//storing the tag in a temporary map to use the values
-		err = json.Unmarshal([]byte(jsonInfo), &tmpTags)
-		if err != nil {
-			log.Error(err.Error())
-			return nil, nil, err
-		}
-		getTags[tmpTags["name"]] = tmpTags["value"]
+		tags[tag.Name] = tag.Value
 	}
 
-	//	var getFields []string
-	for _, field := range params.Fields {
-		//		getFields = append(getFields, field)
-		//temporary code to differentiate looking at 2 different tables
-		if metricType != metricEvent {
-			if metricType == "tbd" {
-				//takes latency as soon as latency is part of the query
-				if field == "lat" {
-					metricType = metricLatency
-				} else {
-					metricType = metricTraffic
-				}
-			}
-		}
-	}
-	if metricStore != nil {
-		metrics, err = metricStore.GetMetric(metricType, getTags, params.Fields, params.Scope.Duration, int(params.Scope.Limit))
-
-		responseColumns = params.Fields
-		responseColumns = append(responseColumns, "time")
-
-		return metrics, responseColumns, err
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
 	}
 
-	return nil, nil, nil
-}
-
-func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
-	metrics, respColumns, err := meGetMetrics(w, r, metricEvent)
-
+	// Get metrics
+	valuesArray, err := metricStore.GetInfluxMetric(ms.EvMetName, tags, params.Fields, duration, limit)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if metrics == nil {
-		w.WriteHeader(http.StatusNotFound)
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	//response
-	var response EventMetricsList
+	// Prepare & send response
+	var response EventMetricList
 	response.Name = "event metrics"
-
-	response.Columns = respColumns
-	for _, metric := range metrics {
-		var value EventMetrics
-		value.Time = metric["time"].(string)
-
-		if metric["event"] != nil {
-			if val, ok := metric["event"].(string); ok {
-				value.Event = val
+	response.Columns = append(params.Fields, "time")
+	response.Values = make([]EventMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metric := &response.Values[index]
+		metric.Time = values["time"].(string)
+		if values[ms.EvMetEvent] != nil {
+			if val, ok := values[ms.EvMetEvent].(string); ok {
+				metric.Event = val
 			}
 		}
-		response.Values = append(response.Values, value)
 	}
 
 	jsonResponse, err := json.Marshal(response)
@@ -257,44 +244,87 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
-
 }
 
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	metrics, respColumns, err := meGetMetrics(w, r, "tbd")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostNetworkQuery")
 
+	// Retrieve network metric query parameters from request body
+	var params NetworkQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if metrics == nil {
-		w.WriteHeader(http.StatusNotFound)
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	//response
-	var response NetworkMetricsList
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+
+	// Get metrics
+	valuesArray, err := metricStore.GetInfluxMetric(ms.NetMetName, tags, params.Fields, duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Prepare & send response
+	var response NetworkMetricList
 	response.Name = "network metrics"
-
-	response.Columns = respColumns
-	for _, metric := range metrics {
-		var value NetworkMetrics
-		value.Time = metric["time"].(string)
-
-		if metric["lat"] != nil {
-			valueLat, _ := metric["lat"].(json.Number).Float64()
-			value.Lat = float32(valueLat)
+	response.Columns = append(params.Fields, "time")
+	response.Values = make([]NetworkMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metric := &response.Values[index]
+		metric.Time = values["time"].(string)
+		if values[ms.NetMetLatency] != nil {
+			metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
 		}
-		if metric["tput"] != nil {
-			valueTput, _ := metric["tput"].(json.Number).Float64()
-			value.Tput = float32(valueTput)
+		if values[ms.NetMetULThroughput] != nil {
+			metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
 		}
-		if metric["loss"] != nil {
-			valueLoss, _ := metric["loss"].(json.Number).Float64()
-			value.Loss = float32(valueLoss)
+		if values[ms.NetMetDLThroughput] != nil {
+			metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
 		}
-		response.Values = append(response.Values, value)
+		if values[ms.NetMetULPktLoss] != nil {
+			metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+		}
+		if values[ms.NetMetDLPktLoss] != nil {
+			metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
+		}
 	}
 
 	jsonResponse, err := json.Marshal(response)
@@ -305,12 +335,10 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
-
 }
 
 func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var response EventSubscription
 	eventSubscriptionParams := new(EventSubscriptionParams)
 
@@ -327,35 +355,35 @@ func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := strconv.Itoa(newSubsId)
 
 	err = registerEvent(eventSubscriptionParams, subsIdStr)
-	if err == nil {
-		response.ResourceURL = basepathURL + "subscriptions/event/" + subsIdStr
-		response.SubscriptionId = subsIdStr
-		response.SubscriptionType = eventSubscriptionParams.SubscriptionType
-		response.Period = eventSubscriptionParams.Period
-		response.ClientCorrelator = eventSubscriptionParams.ClientCorrelator
-		response.CallbackReference = eventSubscriptionParams.CallbackReference
-		response.EventQueryParams = eventSubscriptionParams.EventQueryParams
-
-		_ = rc.JSONSetEntry(moduleName+":"+typeEventSubscription+":"+subsIdStr, ".", convertEventSubscriptionToJson(&response))
-
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
+	if err != nil {
 		nextEventSubscriptionIdAvailable--
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	response.ResourceURL = basepathURL + "subscriptions/event/" + subsIdStr
+	response.SubscriptionId = subsIdStr
+	response.SubscriptionType = eventSubscriptionParams.SubscriptionType
+	response.Period = eventSubscriptionParams.Period
+	response.ClientCorrelator = eventSubscriptionParams.ClientCorrelator
+	response.CallbackReference = eventSubscriptionParams.CallbackReference
+	response.EventQueryParams = eventSubscriptionParams.EventQueryParams
+
+	_ = rc.JSONSetEntry(moduleName+":"+typeEventSubscription+":"+subsIdStr, ".", convertEventSubscriptionToJson(&response))
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var response NetworkSubscription
 	networkSubscriptionParams := new(NetworkSubscriptionParams)
 
@@ -372,34 +400,34 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := strconv.Itoa(newSubsId)
 
 	err = registerNetwork(networkSubscriptionParams, subsIdStr)
-	if err == nil {
-		response.ResourceURL = basepathURL + "metrics/subscriptions/network/" + subsIdStr
-		response.SubscriptionId = subsIdStr
-		response.SubscriptionType = networkSubscriptionParams.SubscriptionType
-		response.Period = networkSubscriptionParams.Period
-		response.ClientCorrelator = networkSubscriptionParams.ClientCorrelator
-		response.CallbackReference = networkSubscriptionParams.CallbackReference
-		response.NetworkQueryParams = networkSubscriptionParams.NetworkQueryParams
-
-		_ = rc.JSONSetEntry(moduleName+":"+typeNetworkSubscription+":"+subsIdStr, ".", convertNetworkSubscriptionToJson(&response))
-
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
+	if err != nil {
 		nextNetworkSubscriptionIdAvailable--
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	response.ResourceURL = basepathURL + "metrics/subscriptions/network/" + subsIdStr
+	response.SubscriptionId = subsIdStr
+	response.SubscriptionType = networkSubscriptionParams.SubscriptionType
+	response.Period = networkSubscriptionParams.Period
+	response.ClientCorrelator = networkSubscriptionParams.ClientCorrelator
+	response.CallbackReference = networkSubscriptionParams.CallbackReference
+	response.NetworkQueryParams = networkSubscriptionParams.NetworkQueryParams
+
+	_ = rc.JSONSetEntry(moduleName+":"+typeNetworkSubscription+":"+subsIdStr, ".", convertNetworkSubscriptionToJson(&response))
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func populateEventList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
-
 	subList := userData.(*EventSubscriptionList)
 	var subInfo EventSubscription
 
@@ -413,7 +441,6 @@ func populateEventList(key string, jsonInfo string, dummy1 string, dummy2 string
 }
 
 func populateNetworkList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
-
 	subList := userData.(*NetworkSubscriptionList)
 	var subInfo NetworkSubscription
 
@@ -427,26 +454,22 @@ func populateNetworkList(key string, jsonInfo string, dummy1 string, dummy2 stri
 }
 
 func deregisterEvent(subsId string) bool {
-
 	eventRegistration := eventSubscriptionMap[subsId]
-	if eventRegistration != nil {
-		eventRegistration.ticker.Stop()
-		eventSubscriptionMap[subsId] = nil
-	} else {
+	if eventRegistration == nil {
 		return false
 	}
+	eventRegistration.ticker.Stop()
+	eventSubscriptionMap[subsId] = nil
 	return true
 }
 
 func deregisterNetwork(subsId string) bool {
-
 	networkRegistration := networkSubscriptionMap[subsId]
-	if networkRegistration != nil {
-		networkRegistration.ticker.Stop()
-		networkSubscriptionMap[subsId] = nil
-	} else {
+	if networkRegistration == nil {
 		return false
 	}
+	networkRegistration.ticker.Stop()
+	networkSubscriptionMap[subsId] = nil
 	return true
 }
 
@@ -492,93 +515,96 @@ func sendNetworkNotification(notifyUrl string, ctx context.Context, subscription
 }
 
 func processEventNotification(subsId string) {
-
 	eventRegistration := eventSubscriptionMap[subsId]
-	if eventRegistration != nil {
-		var response clientv2.EventMetricsList
-		response.Name = "event metrics"
+	if eventRegistration == nil {
+		log.Error("Event registration not found for subscriptionId: ", subsId)
+		return
+	}
 
-		if metricStore != nil {
+	var response clientv2.EventMetricList
+	response.Name = "event metrics"
 
-			metrics, err := metricStore.GetMetric(metricEvent, eventRegistration.requestedTags, eventRegistration.params.EventQueryParams.Fields, eventRegistration.params.EventQueryParams.Scope.Duration, int(eventRegistration.params.EventQueryParams.Scope.Limit))
+	// Get metrics
+	if metricStore != nil {
+		valuesArray, err := metricStore.GetInfluxMetric(
+			metricEvent,
+			eventRegistration.requestedTags,
+			eventRegistration.params.EventQueryParams.Fields,
+			eventRegistration.params.EventQueryParams.Scope.Duration,
+			int(eventRegistration.params.EventQueryParams.Scope.Limit))
 
-			if err == nil {
-				response.Columns = eventRegistration.params.EventQueryParams.Fields
-				response.Columns = append(response.Columns, "time")
-
-				for _, metric := range metrics {
-					var value clientv2.EventMetrics
-					value.Time = metric["time"].(string)
-
-					if metric["event"] != nil {
-						if val, ok := metric["event"].(string); ok {
-							value.Event = val
-						}
+		if err == nil {
+			response.Columns = append(eventRegistration.params.EventQueryParams.Fields, "time")
+			response.Values = make([]clientv2.EventMetric, len(valuesArray))
+			for index, values := range valuesArray {
+				metric := &response.Values[index]
+				metric.Time = values["time"].(string)
+				if values[ms.EvMetEvent] != nil {
+					if val, ok := values[ms.EvMetEvent].(string); ok {
+						metric.Event = val
 					}
-					response.Values = append(response.Values, value)
 				}
 			}
 		}
-
-		var eventNotif clientv2.EventNotification
-		eventNotif.CallbackData = eventRegistration.params.ClientCorrelator
-		eventNotif.EventMetricsList = &response
-
-		go sendEventNotification(eventRegistration.params.CallbackReference.NotifyURL, context.TODO(), subsId, eventNotif)
-	} else {
-		log.Error("Event registration not found for subscriptionId: ", subsId)
 	}
+
+	var eventNotif clientv2.EventNotification
+	eventNotif.CallbackData = eventRegistration.params.ClientCorrelator
+	eventNotif.EventMetricList = &response
+	go sendEventNotification(eventRegistration.params.CallbackReference.NotifyURL, context.TODO(), subsId, eventNotif)
 }
 
 func processNetworkNotification(subsId string) {
-
 	networkRegistration := networkSubscriptionMap[subsId]
-	if networkRegistration != nil {
-		var response clientv2.NetworkMetricsList
-		response.Name = "network metrics"
+	if networkRegistration == nil {
+		log.Error("Network registration not found for subscriptionId: ", subsId)
+		return
+	}
 
-		if metricStore != nil {
-			metrics, err := metricStore.GetMetric(metricLatency, networkRegistration.requestedTags, networkRegistration.params.NetworkQueryParams.Fields, networkRegistration.params.NetworkQueryParams.Scope.Duration, int(networkRegistration.params.NetworkQueryParams.Scope.Limit))
+	var response clientv2.NetworkMetricList
+	response.Name = "network metrics"
 
-			if err == nil {
-				response.Columns = networkRegistration.params.NetworkQueryParams.Fields
-				response.Columns = append(response.Columns, "time")
+	// Get metrics
+	if metricStore != nil {
+		valuesArray, err := metricStore.GetInfluxMetric(
+			metricNetwork,
+			networkRegistration.requestedTags,
+			networkRegistration.params.NetworkQueryParams.Fields,
+			networkRegistration.params.NetworkQueryParams.Scope.Duration,
+			int(networkRegistration.params.NetworkQueryParams.Scope.Limit))
 
-				for _, metric := range metrics {
-					var value clientv2.NetworkMetrics
-					value.Time = metric["time"].(string)
-
-					if metric["lat"] != nil {
-						valueLat, _ := metric["lat"].(json.Number).Float64()
-						value.Lat = float32(valueLat)
-					}
-					if metric["tput"] != nil {
-						valueTput, _ := metric["tput"].(json.Number).Float64()
-						value.Tput = float32(valueTput)
-					}
-					if metric["loss"] != nil {
-						valueLoss, _ := metric["loss"].(json.Number).Float64()
-						value.Loss = float32(valueLoss)
-					}
-					response.Values = append(response.Values, value)
+		if err == nil {
+			response.Columns = append(networkRegistration.params.NetworkQueryParams.Fields, "time")
+			response.Values = make([]clientv2.NetworkMetric, len(valuesArray))
+			for index, values := range valuesArray {
+				metric := &response.Values[index]
+				metric.Time = values["time"].(string)
+				if values[ms.NetMetLatency] != nil {
+					metric.Lat = ms.JsonNumToInt32(values[ms.NetMetLatency].(json.Number))
+				}
+				if values[ms.NetMetULThroughput] != nil {
+					metric.Ul = ms.JsonNumToFloat64(values[ms.NetMetULThroughput].(json.Number))
+				}
+				if values[ms.NetMetDLThroughput] != nil {
+					metric.Dl = ms.JsonNumToFloat64(values[ms.NetMetDLThroughput].(json.Number))
+				}
+				if values[ms.NetMetULPktLoss] != nil {
+					metric.Ulos = ms.JsonNumToFloat64(values[ms.NetMetULPktLoss].(json.Number))
+				}
+				if values[ms.NetMetDLPktLoss] != nil {
+					metric.Dlos = ms.JsonNumToFloat64(values[ms.NetMetDLPktLoss].(json.Number))
 				}
 			}
 		}
-
-		var networkNotif clientv2.NetworkNotification
-		networkNotif.CallbackData = networkRegistration.params.ClientCorrelator
-		networkNotif.NetworkMetricsList = &response
-
-		go sendNetworkNotification(networkRegistration.params.CallbackReference.NotifyURL, context.TODO(), subsId, networkNotif)
-	} else {
-		log.Error("Network registration not found for subscriptionId: ", subsId)
 	}
+
+	var networkNotif clientv2.NetworkNotification
+	networkNotif.CallbackData = networkRegistration.params.ClientCorrelator
+	networkNotif.NetworkMetricList = &response
+	go sendNetworkNotification(networkRegistration.params.CallbackReference.NotifyURL, context.TODO(), subsId, networkNotif)
 }
 
-func registerEvent(params *EventSubscriptionParams, subsId string) error {
-
-	var err error
-
+func registerEvent(params *EventSubscriptionParams, subsId string) (err error) {
 	if params == nil {
 		err = errors.New("Nil parameters")
 		return err
@@ -586,8 +612,7 @@ func registerEvent(params *EventSubscriptionParams, subsId string) error {
 
 	//only support one type of registration for now
 	switch params.SubscriptionType {
-	case ("Periodic"):
-
+	case ("period"):
 		if params.EventQueryParams.Scope == nil {
 			var scope Scope
 			scope.Limit = defaultLimit
@@ -613,7 +638,6 @@ func registerEvent(params *EventSubscriptionParams, subsId string) error {
 		tags := make(map[string]string)
 
 		for _, tag := range params.EventQueryParams.Tags {
-
 			//extracting name: and value: into a string
 			jsonInfo, err := json.Marshal(tag)
 			if err != nil {
@@ -635,13 +659,10 @@ func registerEvent(params *EventSubscriptionParams, subsId string) error {
 		if params.Period != 0 {
 			go func() {
 				for range eventRegistration.ticker.C {
-
 					processEventNotification(subsId)
 				}
 			}()
-
 		}
-
 		return nil
 	default:
 	}
@@ -649,9 +670,7 @@ func registerEvent(params *EventSubscriptionParams, subsId string) error {
 	return err
 }
 
-func registerNetwork(params *NetworkSubscriptionParams, subsId string) error {
-
-	var err error
+func registerNetwork(params *NetworkSubscriptionParams, subsId string) (err error) {
 	if params == nil {
 		err = errors.New("Nil parameters")
 		return err
@@ -659,7 +678,7 @@ func registerNetwork(params *NetworkSubscriptionParams, subsId string) error {
 
 	//only support one type of registration for now
 	switch params.SubscriptionType {
-	case ("Periodic"):
+	case ("period"):
 
 		if params.NetworkQueryParams.Scope == nil {
 			var scope Scope
@@ -685,7 +704,6 @@ func registerNetwork(params *NetworkSubscriptionParams, subsId string) error {
 		tags := make(map[string]string)
 
 		for _, tag := range params.NetworkQueryParams.Tags {
-
 			//extracting name: and value: into a string
 			jsonInfo, err := json.Marshal(tag)
 			if err != nil {
@@ -702,18 +720,15 @@ func registerNetwork(params *NetworkSubscriptionParams, subsId string) error {
 			tags[tmpTags["name"]] = tmpTags["value"]
 		}
 		networkRegistration.requestedTags = tags
-
 		networkSubscriptionMap[subsId] = &networkRegistration
 
 		if params.Period != 0 {
 			go func() {
 				for range networkRegistration.ticker.C {
-
 					processNetworkNotification(subsId)
 				}
 			}()
 		}
-
 		return nil
 	default:
 	}
@@ -723,13 +738,11 @@ func registerNetwork(params *NetworkSubscriptionParams, subsId string) error {
 
 func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var response EventSubscriptionList
 
 	_ = rc.JSONGetList("", "", moduleName+":"+typeEventSubscription, populateEventList, &response)
 
 	response.ResourceURL = basepathURL + "metrics/subscriptions/event"
-
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -742,13 +755,11 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 
 func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var response NetworkSubscriptionList
 
 	_ = rc.JSONGetList("", "", moduleName+":"+typeNetworkSubscription, populateNetworkList, &response)
 
 	response.ResourceURL = basepathURL + "metrics/subscriptions/network"
-
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -824,7 +835,6 @@ func deleteNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
 }
 
 func networkSubscriptionReInit() {
-
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList NetworkSubscriptionList
 
@@ -832,9 +842,7 @@ func networkSubscriptionReInit() {
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.NetworkSubscription {
-
 		var networkSubscriptionParams NetworkSubscriptionParams
-
 		networkSubscriptionParams.ClientCorrelator = response.ClientCorrelator
 		networkSubscriptionParams.CallbackReference = response.CallbackReference
 		networkSubscriptionParams.NetworkQueryParams = response.NetworkQueryParams
@@ -844,20 +852,16 @@ func networkSubscriptionReInit() {
 		if err != nil {
 			log.Error(err)
 		} else {
-
 			if subscriptionId > maxSubscriptionId {
 				maxSubscriptionId = subscriptionId
 			}
-
 			_ = registerNetwork(&networkSubscriptionParams, response.SubscriptionId)
 		}
 	}
 	nextNetworkSubscriptionIdAvailable = maxSubscriptionId + 1
-
 }
 
 func eventSubscriptionReInit() {
-
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList EventSubscriptionList
 
@@ -865,9 +869,7 @@ func eventSubscriptionReInit() {
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.EventSubscription {
-
 		var eventSubscriptionParams EventSubscriptionParams
-
 		eventSubscriptionParams.ClientCorrelator = response.ClientCorrelator
 		eventSubscriptionParams.CallbackReference = response.CallbackReference
 		eventSubscriptionParams.EventQueryParams = response.EventQueryParams
@@ -877,14 +879,11 @@ func eventSubscriptionReInit() {
 		if err != nil {
 			log.Error(err)
 		} else {
-
 			if subscriptionId > maxSubscriptionId {
 				maxSubscriptionId = subscriptionId
 			}
-
 			_ = registerEvent(&eventSubscriptionParams, response.SubscriptionId)
 		}
 	}
 	nextEventSubscriptionIdAvailable = maxSubscriptionId + 1
-
 }

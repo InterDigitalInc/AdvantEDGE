@@ -27,13 +27,12 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [EventMetrics](docs/EventMetrics.md)
- - [EventMetricsList](docs/EventMetricsList.md)
+ - [EventMetric](docs/EventMetric.md)
+ - [EventMetricList](docs/EventMetricList.md)
  - [EventNotification](docs/EventNotification.md)
- - [NetworkMetrics](docs/NetworkMetrics.md)
- - [NetworkMetricsList](docs/NetworkMetricsList.md)
+ - [NetworkMetric](docs/NetworkMetric.md)
+ - [NetworkMetricList](docs/NetworkMetricList.md)
  - [NetworkNotification](docs/NetworkNotification.md)
- - [SubscriptionId](docs/SubscriptionId.md)
 
 
 ## Documentation For Authorization

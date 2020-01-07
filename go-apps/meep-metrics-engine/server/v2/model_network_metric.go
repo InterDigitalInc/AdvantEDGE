@@ -24,14 +24,24 @@
 
 package server
 
-// Event metrics query parameters
-type EventQueryParams struct {
+// Value of a single network metric
+type NetworkMetric struct {
 
-	// Tag names to match in query. Supported values:<br> <li>type: Destination network element name
-	Tags []Tag `json:"tags,omitempty"`
+	// Time of network metrics
+	Time string `json:"time,omitempty"`
 
-	// Field names to return in query response. Supported values:<br> <li>event: Downlink packet loss from dest to src (%)
-	Fields []string `json:"fields,omitempty"`
+	// Round-trip latency (ms)
+	Lat int32 `json:"lat,omitempty"`
 
-	Scope *Scope `json:"scope,omitempty"`
+	// Uplink throughput from src to dest (Mbps)
+	Ul float64 `json:"ul,omitempty"`
+
+	// Downlink throughput from dest to src (Mbps)
+	Dl float64 `json:"dl,omitempty"`
+
+	// Uplink packet loss from src to dest (%)
+	Ulos float64 `json:"ulos,omitempty"`
+
+	// Uplink packet loss from dest to src (%)
+	Dlos float64 `json:"dlos,omitempty"`
 }

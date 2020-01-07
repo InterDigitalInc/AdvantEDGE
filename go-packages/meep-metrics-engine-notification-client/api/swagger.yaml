@@ -78,22 +78,149 @@ paths:
         204:
           description: "No Content"
 definitions:
-  EventMetrics:
+  NetworkNotification:
+    type: "object"
+    required:
+    - "callbackData"
+    properties:
+      callbackData:
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ Network Subscription operation."
+      networkMetricList:
+        $ref: "#/definitions/NetworkMetricList"
+    description: "Network notification - callback generated toward an ME app with\
+      \ a network subscription"
+    example:
+      callbackData: "1234"
+      networkMetricList:
+        columns:
+        - "time"
+        - "lat"
+        - "ul"
+        - "dl"
+        - "ulos"
+        - "dlos"
+        values:
+        - time: "2019-11-24T12:45:00-5:00"
+          lat: 5
+          ul: 100000.0
+          dl: 90000.0
+          ulos: 0.001
+          dlos: 0.003
+        - time: "2019-11-24T12:45:01-5:00"
+          lat: 5
+          ul: 100000.0
+          dl: 90000.0
+          ulos: 0.001
+          dlos: 0.003
+        name: "network metrics"
+  NetworkMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "network metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkMetric"
+    description: "Network metrics query response"
+    example:
+      columns:
+      - "time"
+      - "lat"
+      - "ul"
+      - "dl"
+      - "ulos"
+      - "dlos"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        lat: 5
+        ul: 100000.0
+        dl: 90000.0
+        ulos: 0.001
+        dlos: 0.003
+      - time: "2019-11-24T12:45:01-5:00"
+        lat: 5
+        ul: 100000.0
+        dl: 90000.0
+        ulos: 0.001
+        dlos: 0.003
+      name: "network metrics"
+  NetworkMetric:
     type: "object"
     properties:
       time:
         type: "string"
         example: "2019-11-24T12:45:00-5:00"
-        description: "Time of event metrics"
-      event:
-        type: "string"
-        example: "Mobility event ue1 to poa3"
-        description: "Event description"
-    description: "Value of a single event metric"
+        description: "Time of network metrics"
+      lat:
+        type: "integer"
+        example: 5
+        description: "Round-trip latency (ms)"
+      ul:
+        type: "number"
+        format: "double"
+        example: 90.1
+        description: "Uplink throughput from src to dest (Mbps)"
+      dl:
+        type: "number"
+        format: "double"
+        example: 100.0
+        description: "Downlink throughput from dest to src (Mbps)"
+      ulos:
+        type: "number"
+        format: "double"
+        example: 0.001
+        description: "Uplink packet loss from src to dest (%)"
+      dlos:
+        type: "number"
+        format: "double"
+        example: 0.003
+        description: "Uplink packet loss from dest to src (%)"
+    description: "Value of a single network metric"
     example:
-      description: "Mobility event ue1 to poa3"
       time: "2019-11-24T12:45:00-5:00"
-  EventMetricsList:
+      lat: 5
+      ul: 100000.0
+      dl: 90000.0
+      ulos: 0.001
+      dlos: 0.003
+  EventNotification:
+    type: "object"
+    required:
+    - "callbackData"
+    properties:
+      callbackData:
+        type: "string"
+        example: "1234"
+        description: "CallBackData if passed by the application during the associated\
+          \ Event Subscription operation."
+      eventMetricList:
+        $ref: "#/definitions/EventMetricList"
+    description: "Event notification - callback generated toward an ME app with an\
+      \ event subscription"
+    example:
+      callbackData: "1234"
+      eventMetricList:
+        columns:
+        - "event"
+        values:
+        - event: "JSON-formatted mobility event ue1 to poa3"
+          time: "2019-11-24T12:45:00-5:00"
+        - event: "JSON-formatted mobility event ue1 to poa2"
+          time: "2019-11-24T12:44:01-5:00"
+        name: "event metrics"
+  EventMetricList:
     type: "object"
     properties:
       name:
@@ -105,140 +232,36 @@ definitions:
         description: "columns included in response based on queried values"
         items:
           type: "string"
-          example: "event"
           description: "Queried value"
       values:
         type: "array"
         items:
-          $ref: "#/definitions/EventMetrics"
+          $ref: "#/definitions/EventMetric"
     description: "Event metrics query response"
     example:
       columns:
-      - "lat,tput,loss"
+      - "event"
       values:
-      - event: "Mobility event ue1 to poa3"
+      - event: "JSON-formatted mobility event ue1 to poa3"
         time: "2019-11-24T12:45:00-5:00"
-      - event: "Mobility event ue1 to poa3"
-        time: "2019-11-24T12:45:00-5:00"
+      - event: "JSON-formatted mobility event ue1 to poa2"
+        time: "2019-11-24T12:44:01-5:00"
       name: "event metrics"
-  NetworkMetricsList:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        example: "network metrics"
-        description: "Response name"
-      columns:
-        type: "array"
-        example: "time,lat,tput,loss"
-        description: "columns included in response based on queried values"
-        items:
-          type: "string"
-          example: "lat,tput,loss"
-          description: "Queried value"
-      values:
-        type: "array"
-        items:
-          $ref: "#/definitions/NetworkMetrics"
-    description: "Network metrics query response"
-    example:
-      columns: "time,lat,tput,loss"
-      values:
-      - loss: 0.003
-        time: "2019-11-24T12:45:00-5:00"
-        tput: 100000.0
-        lat: 5.123
-      - loss: 0.003
-        time: "2019-11-24T12:45:00-5:00"
-        tput: 100000.0
-        lat: 5.123
-      name: "network metrics"
-  NetworkMetrics:
+  EventMetric:
     type: "object"
     properties:
       time:
         type: "string"
         example: "2019-11-24T12:45:00-5:00"
-        description: "Time of network value"
-      lat:
-        type: "number"
-        format: "float"
-        example: 5.123
-        description: "Network latency (ms)"
-      tput:
-        type: "number"
-        format: "float"
-        example: 100000.0
-        description: "Network throughput (Mbps)"
-      loss:
-        type: "number"
-        format: "float"
-        example: 0.003
-        description: "Network packet loss (%)"
-    description: "Value of a single network metric"
+        description: "Time of event metrics"
+      event:
+        type: "string"
+        example: "JSON-formatted mobility event ue1 to poa3"
+        description: "JSON-fomatted event"
+    description: "Value of a single event metric"
     example:
-      loss: 0.003
+      event: "JSON-formatted mobility event ue1 to poa3"
       time: "2019-11-24T12:45:00-5:00"
-      tput: 100000.0
-      lat: 5.123
-  SubscriptionId:
-    type: "string"
-    description: "Unique Identifier for a notification subscription.  Created by the\
-      \ MEC Metrics Service and used to reference an individual subscription"
-    example: "sub123"
-  EventNotification:
-    type: "object"
-    required:
-    - "callbackData"
-    properties:
-      callbackData:
-        type: "string"
-        example: "1234"
-        description: "CallBackData if passed by the application during the associated\
-          \ Event Subscription operation."
-      eventMetricsList:
-        $ref: "#/definitions/EventMetricsList"
-    description: "Event notification - callback generated toward an ME app with an\
-      \ event subscription"
-    example:
-      callbackData: "1234"
-      eventMetricsList:
-        columns:
-        - "time,event"
-        values:
-        - event: "Mobility event ue1 to poa3"
-          time: "2019-11-24T12:45:00-5:00"
-        - event: "Mobility event ue1 to poa3"
-          time: "2019-11-24T12:45:00-5:00"
-        name: "event metrics"
-  NetworkNotification:
-    type: "object"
-    required:
-    - "callbackData"
-    properties:
-      callbackData:
-        type: "string"
-        example: "1234"
-        description: "CallBackData if passed by the application during the associated\
-          \ Network Subscription operation."
-      networkMetricsList:
-        $ref: "#/definitions/NetworkMetricsList"
-    description: "Network notification - callback generated toward an ME app with\
-      \ a network subscription"
-    example:
-      callbackData: "1234"
-      networkMetricsList:
-        columns: "time,lat,tput,loss"
-        values:
-        - loss: 0.003
-          time: "2019-11-24T12:45:00-5:00"
-          tput: 100000.0
-          lat: 5.123
-        - loss: 0.003
-          time: "2019-11-24T12:45:00-5:00"
-          tput: 100000.0
-          lat: 5.123
-        name: "network metrics"
 parameters:
   Path.SubscriptionId:
     name: "subscriptionId"
@@ -253,7 +276,7 @@ parameters:
     description: "Network Metrics Notification"
     required: true
     schema:
-      $ref: "#/definitions/NetworkNotification"
+      $ref: "http://localhost:8291/meep-metrics-engine-model.yaml#/definitions/NetworkNotification"
     x-exportParamName: "Notification"
   Body.EventNotification:
     in: "body"
@@ -261,7 +284,7 @@ parameters:
     description: "Events Notification"
     required: true
     schema:
-      $ref: "#/definitions/EventNotification"
+      $ref: "http://localhost:8291/meep-metrics-engine-model.yaml#/definitions/EventNotification"
     x-exportParamName: "Notification"
 externalDocs:
   description: "GitHub Wiki"

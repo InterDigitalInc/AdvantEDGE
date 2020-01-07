@@ -220,7 +220,7 @@ func (rc *Connector) DelEntry(key string) error {
 	if !rc.connected {
 		return errors.New("Redis Connector is disconnected (DelEntry)")
 	}
-	// Update existing entry or create new entry if it does not exist
+	// Delete entry if it exists
 	_, err := rc.client.Del(key).Result()
 	if err != nil {
 		return err
@@ -233,7 +233,7 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 	if !rc.connected {
 		return "", errors.New("Redis Connector is disconnected (JSONGetEntry)")
 	}
-	// Update existing entry or create new entry if it does not exist
+	// Retreive JSON entry if it exists
 	json, err := rc.client.JsonGet(key, path).Result()
 	if err != nil {
 		return "", err

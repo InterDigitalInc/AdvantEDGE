@@ -27,10 +27,10 @@ package server
 // Network metrics query parameters
 type NetworkQueryParams struct {
 
-	// Tag array<br>combination of: src, dest, srcpl, dstpl
+	// Tag names to match in query. Supported values:<br> <li>src: Source network element name <li>dest: Destination network element name
 	Tags []Tag `json:"tags,omitempty"`
 
-	// Field array<br>combination of: lat, tput, loss
+	// Field names to return in query response. Supported values:<br> <li>lat: Round-trip latency (ms)<br> <li>ul: Uplink throughput from src to dest (Mbps) <li>dl: Downlink throughput from dest to src (Mbps) <li>ulos: Uplink packet loss from src to dest (%) <li>dlos: Downlink packet loss from dest to src (%)
 	Fields []string `json:"fields,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`
