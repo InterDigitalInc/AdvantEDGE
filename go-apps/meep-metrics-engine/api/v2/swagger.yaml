@@ -253,10 +253,10 @@ definitions:
       fields:
         type: "array"
         description: "Field names to return in query response. Supported values:<br>\
-          \ <li>lat: Round-trip latency (ms)<br> <li>ul: UL throughput from src to\
-          \ dest (Mbps) <li>dl: DL throughput from dest to src (Mbps) <li>ulos: UL\
-          \ packet loss from src to dest (%) <li>dlos: DL packet loss from dest to\
-          \ src (%)"
+          \ <li>lat: Round-trip latency (ms)<br> <li>ul: Uplink throughput from src\
+          \ to dest (Mbps) <li>dl: Downlink throughput from dest to src (Mbps) <li>ulos:\
+          \ Uplink packet loss from src to dest (%) <li>dlos: Downlink packet loss\
+          \ from dest to src (%)"
         items:
           type: "string"
           description: "Queried value"
@@ -370,22 +370,22 @@ definitions:
         type: "number"
         format: "double"
         example: 90.1
-        description: "UL throughput from src to dest (Mbps)"
+        description: "Uplink throughput from src to dest (Mbps)"
       dl:
         type: "number"
         format: "double"
         example: 100.0
-        description: "DL throughput from dest to src (Mbps)"
+        description: "Downlink throughput from dest to src (Mbps)"
       ulos:
         type: "number"
         format: "double"
         example: 0.001
-        description: "UL packet loss from src to dest (%)"
+        description: "Uplink packet loss from src to dest (%)"
       dlos:
         type: "number"
         format: "double"
         example: 0.003
-        description: "UL packet loss from dest to src (%)"
+        description: "Uplink packet loss from dest to src (%)"
     description: "Value of a single network metric"
     example:
       time: "2019-11-24T12:45:00-5:00"
@@ -571,7 +571,7 @@ definitions:
       fields:
         type: "array"
         description: "Field names to return in query response. Supported values:<br>\
-          \ <li>event: DL packet loss from dest to src (%)"
+          \ <li>event: Downlink packet loss from dest to src (%)"
         items:
           type: "string"
           description: "Queried value"
@@ -611,9 +611,9 @@ definitions:
       columns:
       - "event"
       values:
-      - event: "json-formatted mobility event ue1 to poa3"
+      - event: "JSON-formatted mobility event ue1 to poa3"
         time: "2019-11-24T12:45:00-5:00"
-      - event: "json-formatted mobility event ue1 to poa2"
+      - event: "JSON-formatted mobility event ue1 to poa2"
         time: "2019-11-24T12:44:01-5:00"
       name: "event metrics"
   EventMetric:
@@ -625,11 +625,11 @@ definitions:
         description: "Time of event metrics"
       event:
         type: "string"
-        example: "json-formatted mobility event ue1 to poa3"
+        example: "JSON-formatted mobility event ue1 to poa3"
         description: "JSON-fomatted event"
     description: "Value of a single event metric"
     example:
-      event: "json-formatted mobility event ue1 to poa3"
+      event: "JSON-formatted mobility event ue1 to poa3"
       time: "2019-11-24T12:45:00-5:00"
   EventSubscriptionList:
     properties:

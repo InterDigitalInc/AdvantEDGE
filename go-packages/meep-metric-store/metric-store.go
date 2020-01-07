@@ -45,12 +45,12 @@ type Metric struct {
 
 // MetricStore - Implements a metric store
 type MetricStore struct {
-	name         string
-	addr         string
-	connected    bool
-	influxClient *influx.Client
-	redisClient  *redis.Connector
-	snapTicker   *time.Ticker
+	name           string
+	addr           string
+	connected      bool
+	influxClient   *influx.Client
+	redisClient    *redis.Connector
+	snapshotTicker *time.Ticker
 }
 
 // NewMetricStore - Creates and initialize a Metric Store instance
@@ -325,14 +325,14 @@ func (ms *MetricStore) StartSnapshotThread() error {
 		return errors.New("Store name not specified")
 	}
 	// Make sure ticker is not already running
-	if ms.snapTicker != nil {
+	if ms.snapshotTicker != nil {
 		return errors.New("ticker already running")
 	}
 
 	// Create new ticker and start snapshot thread
-	ms.snapTicker = time.NewTicker(time.Second)
+	ms.snapshotTicker = time.NewTicker(time.Second)
 	go func() {
-		for range ms.snapTicker.C {
+		for range ms.snapshotTicker.C {
 			ms.takeNetworkMetricSnapshot()
 		}
 	}()
@@ -341,14 +341,14 @@ func (ms *MetricStore) StartSnapshotThread() error {
 }
 
 func (ms *MetricStore) StopSnapshotThread() {
-	if ms.snapTicker != nil {
-		ms.snapTicker.Stop()
-		ms.snapTicker = nil
+	if ms.snapshotTicker != nil {
+		ms.snapshotTicker.Stop()
+		ms.snapshotTicker = nil
 	}
 }
 
 // func logTimeLapse(logStr string) {
 // 	stop := time.Now()
-// 	log.Debug("TIME: ", logStr, " ", strconv.FormatFloat(stop.Sub(start).Seconds()*1000, 'f', 3, 64), " ms")
+// 	log.Debug("TIME: ", logStr, " ", strconv.Itoa(int(stop.Sub(start).Milliseconds())), " ms")
 // 	start = stop
 // }

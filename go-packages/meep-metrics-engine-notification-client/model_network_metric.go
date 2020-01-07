@@ -30,12 +30,12 @@ type NetworkMetric struct {
 	Time string `json:"time,omitempty"`
 	// Round-trip latency (ms)
 	Lat int32 `json:"lat,omitempty"`
-	// UL throughput from src to dest (Mbps)
+	// Uplink throughput from src to dest (Mbps)
 	Ul float64 `json:"ul,omitempty"`
-	// DL throughput from dest to src (Mbps)
+	// Downlink throughput from dest to src (Mbps)
 	Dl float64 `json:"dl,omitempty"`
-	// UL packet loss from src to dest (%)
+	// Uplink packet loss from src to dest (%)
 	Ulos float64 `json:"ulos,omitempty"`
-	// UL packet loss from dest to src (%)
+	// Uplink packet loss from dest to src (%)
 	Dlos float64 `json:"dlos,omitempty"`
 }

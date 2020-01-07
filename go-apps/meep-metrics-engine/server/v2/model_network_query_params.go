@@ -30,7 +30,7 @@ type NetworkQueryParams struct {
 	// Tag names to match in query. Supported values:<br> <li>src: Source network element name <li>dest: Destination network element name
 	Tags []Tag `json:"tags,omitempty"`
 
-	// Field names to return in query response. Supported values:<br> <li>lat: Round-trip latency (ms)<br> <li>ul: UL throughput from src to dest (Mbps) <li>dl: DL throughput from dest to src (Mbps) <li>ulos: UL packet loss from src to dest (%) <li>dlos: DL packet loss from dest to src (%)
+	// Field names to return in query response. Supported values:<br> <li>lat: Round-trip latency (ms)<br> <li>ul: Uplink throughput from src to dest (Mbps) <li>dl: Downlink throughput from dest to src (Mbps) <li>ulos: Uplink packet loss from src to dest (%) <li>dlos: Downlink packet loss from dest to src (%)
 	Fields []string `json:"fields,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`

@@ -69,7 +69,6 @@ func IndexV2(w http.ResponseWriter, r *http.Request) {
 }
 
 func Init() (err error) {
-	//no v1.Init()
 	err = v2.Init()
 	if err != nil {
 		return err

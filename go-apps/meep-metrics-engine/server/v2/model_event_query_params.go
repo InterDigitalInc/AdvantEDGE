@@ -30,7 +30,7 @@ type EventQueryParams struct {
 	// Tag names to match in query. Supported values:<br> <li>type: Destination network element name
 	Tags []Tag `json:"tags,omitempty"`
 
-	// Field names to return in query response. Supported values:<br> <li>event: DL packet loss from dest to src (%)
+	// Field names to return in query response. Supported values:<br> <li>event: Downlink packet loss from dest to src (%)
 	Fields []string `json:"fields,omitempty"`
 
 	Scope *Scope `json:"scope,omitempty"`
