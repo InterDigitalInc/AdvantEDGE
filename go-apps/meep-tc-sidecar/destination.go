@@ -24,7 +24,6 @@ import (
 	"sync"
 	"time"
 
-	//redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 )
