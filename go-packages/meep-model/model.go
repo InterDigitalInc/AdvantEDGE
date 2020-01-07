@@ -204,17 +204,18 @@ func (m *Model) Activate() (err error) {
 // Deactivate - Remove the active scenario
 func (m *Model) Deactivate() (err error) {
 	if m.Active {
-		m.Active = false
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
+
 		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to publish: ", err.Error())
 			return err
 		}
+		m.Active = false
 	}
 	return nil
 }

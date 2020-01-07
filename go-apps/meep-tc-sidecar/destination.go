@@ -163,26 +163,16 @@ func (u *destination) compute() (st stat) {
 	return
 }
 
-func (u *destination) processRxTx() {
+func (u *destination) processRxTx(ifbStatsStr string) {
 
-	// Retrieve ifb statistics
-	// ex :qdisc netem 1: root refcnt 2 limit 1000 delay 100.0ms 10.0ms 50% loss 50% rate 2Mbit\n
-	//                    Sent 756 bytes 8 pkt (dropped 4, overlimits 0 requeues 0)
-	str := "tc -s qdisc show dev ifb" + u.ifbNumber
-	out, err := cmdExec(str)
-	if err != nil {
-		log.Error("tc -s qdisc show dev ifb", u.ifbNumber)
-		log.Error(err)
-		return
-	}
-
-	// Parse ifb stats
+	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
 	//       the end but the characteristic may be different (no pkt loss, no normal distribution, etc)
-	ifbStats := strings.Split(out, " ")
+	ifbStats := strings.Split(ifbStatsStr, " ")
+
 	var curRxBytes int
-	if len(ifbStats) > 20 {
-		curRxBytes, _ = strconv.Atoi(ifbStats[len(ifbStats)-17])
+	if len(ifbStats) >= 13 {
+		curRxBytes, _ = strconv.Atoi(ifbStats[len(ifbStats)-11])
 	} else {
 		log.Error("Error in the ifb statistics output: ", ifbStats)
 	}
@@ -206,35 +196,25 @@ func (u *destination) processRxTx() {
 	var tputStats = make(map[string]interface{})
 	tputStats[u.remoteName] = tput
 	key := moduleMetrics + ":" + PodName + ":throughput"
+
 	if rc.EntryExists(key) {
 		_ = rc.SetEntry(key, tputStats)
 	}
 }
 
-func (u *destination) logRxTx() {
+func (u *destination) logRxTx(ifbStatsStr string) {
 
-	// Retrieve ifb statistics
-	// ex :qdisc netem 1: root refcnt 2 limit 1000 delay 100.0ms 10.0ms 50% loss 50% rate 2Mbit\n
-	//                    Sent 756 bytes 8 pkt (dropped 4, overlimits 0 requeues 0)
-	str := "tc -s qdisc show dev ifb" + u.ifbNumber
-	out, err := cmdExec(str)
-	if err != nil {
-		log.Error("tc -s qdisc show dev ifb", u.ifbNumber)
-		log.Error(err)
-		return
-	}
-
-	// Parse ifb stats
+	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
 	//       the end but the characteristic may be different (no pkt loss, no normal distribution, etc)
-	ifbStats := strings.Split(out, " ")
+	ifbStats := strings.Split(ifbStatsStr, " ")
 	var curRxPkt int
 	var curRxPktDrop int
 	var curRxBytes int
-	if len(ifbStats) > 20 {
-		curRxPkt, _ = strconv.Atoi(ifbStats[len(ifbStats)-15])
-		curRxPktDrop, _ = strconv.Atoi(ifbStats[len(ifbStats)-12][:len(ifbStats[len(ifbStats)-12])-1])
-		curRxBytes, _ = strconv.Atoi(ifbStats[len(ifbStats)-17])
+	if len(ifbStats) >= 13 {
+		curRxPkt, _ = strconv.Atoi(ifbStats[len(ifbStats)-9])
+		curRxPktDrop, _ = strconv.Atoi(ifbStats[len(ifbStats)-6][:len(ifbStats[len(ifbStats)-6])-1])
+		curRxBytes, _ = strconv.Atoi(ifbStats[len(ifbStats)-11])
 	} else {
 		log.Error("Error in the ifb statistics output: ", ifbStats)
 	}
@@ -277,7 +257,8 @@ func (u *destination) logRxTx() {
 	semLatencyMap.Unlock()
 	metric.UlTput = tput
 	metric.UlLoss = loss
-	err = metricStore.SetCachedNetworkMetric(metric)
+
+	err := metricStore.SetCachedNetworkMetric(metric)
 	if err != nil {
 		log.Error("Failed to set network metric")
 	}
