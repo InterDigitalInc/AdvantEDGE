@@ -399,6 +399,8 @@ grafana.ini:
   'auth.anonymous':
     enabled: true
     org_role: Admin
+  security:
+    allow_embedding: true
   paths:
     data: /var/lib/grafana/data
     logs: /var/log/grafana
