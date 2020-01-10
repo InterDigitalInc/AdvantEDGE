@@ -957,29 +957,78 @@ const ElementCfgButtons = ({
   );
 };
 
-const HeaderGroup = ({ element, onTypeChange, onUpdate, disabled }) => {
+const getSuggestedName = ( parent, type, elements ) => {
+  var suggestedPrefix = '';
+  if(parent) {
+    switch(type) {
+    case ELEMENT_TYPE_OPERATOR:
+      suggestedPrefix = type.toLowerCase();
+      break;
+    case ELEMENT_TYPE_UE_APP:
+    case ELEMENT_TYPE_EDGE_APP:
+    case ELEMENT_TYPE_CLOUD_APP:
+      suggestedPrefix = parent + '-app';
+      break;
+    case ELEMENT_TYPE_DC:
+      suggestedPrefix = 'cloud';
+      break;
+    default:
+      suggestedPrefix = parent + '-' + type.toLowerCase();
+    }
+  }
+
+  //return unique name
+  var increment = 0;
+  var found = true;
+  var suggestedName = suggestedPrefix;
+  while(found) { 
+    found = false;
+    for (var i = 0; i < elements.length; i++) {
+      if (getElemFieldVal(elements[i], FIELD_NAME) === suggestedName) {
+        found=true;
+        increment++;
+        suggestedName = suggestedPrefix + String(increment);
+        break;
+      }
+    }
+  }
+  return suggestedName;
+};
+
+const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, disabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
 
+  //swap both follwing lines to enable name editing
+  //var disabledOnScenarioElementUpdate = false;
+  var disabledOnScenarioElementUpdate = disabled;
+
+  if(type === 'SCENARIO') {
+    //no printing of the type or parents at the root
+    disabledOnScenarioElementUpdate = true;
+  }
+
   return (
     <>
       <Grid style={{ marginTop: 10 }}>
-        <IDSelect
-          label="Element Type"
-          span={6}
-          options={elementTypes}
-          onChange={elem => onTypeChange(elem.target.value)}
-          value={type}
-          disabled={disabled}
-          cydata={CFG_ELEM_TYPE}
-        />
-        {type && (
+        {type !== 'SCENARIO' && (
+          <IDSelect
+            label="Element Type"
+            span={6}
+            options={elementTypes}
+            onChange={elem => onTypeChange(elem.target.value)}
+            value={type}
+            disabled={disabled}
+            cydata={CFG_ELEM_TYPE}
+          />
+        )}
+        {type && type !== 'SCENARIO' && (
           <IDSelect
             label="Parent Node"
             span={6}
             options={parentElements}
-            onChange={elem => onUpdate(FIELD_PARENT, elem.target.value, null)}
+            onChange={elem => onParentChange(elem.target.value, type)}
             value={parent}
             disabled={disabled}
             cydata={CFG_ELEM_PARENT}
@@ -994,7 +1043,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, disabled }) => {
           validate={validateName}
           label="Unique Element Name"
           fieldName={FIELD_NAME}
-          disabled={disabled}
+          disabled={disabledOnScenarioElementUpdate}
           cydata={CFG_ELEM_NAME}
         />
       </Grid>
@@ -1041,6 +1090,16 @@ export class CfgNetworkElementContainer extends Component {
     this.props.cfgElemUpdate(elem);
   }
 
+  // Element configuration parent change handler
+  onElementParentChange(elementParent, elementType) {
+    var elem = updateObject({}, this.props.configuredElement);
+
+    setElemFieldVal(elem, FIELD_PARENT, elementParent);
+    setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementParent, elementType, this.props.tableData));
+
+    this.props.cfgElemUpdate(elem);
+  }
+
   render() {
     const element = this.props.configuredElement;
     return (
@@ -1073,6 +1132,9 @@ export class CfgNetworkElementContainer extends Component {
               element={element}
               onTypeChange={type => {
                 this.onElementTypeChange(type);
+              }}
+              onParentChange={(val, type) => {
+                this.onElementParentChange(val, type);
               }}
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);
