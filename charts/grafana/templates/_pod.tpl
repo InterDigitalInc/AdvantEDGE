@@ -37,7 +37,7 @@ initContainers:
     image: "{{ .Values.downloadDashboardsImage.repository }}:{{ .Values.downloadDashboardsImage.tag }}"
     imagePullPolicy: {{ .Values.downloadDashboardsImage.pullPolicy }}
     command: ["/bin/sh"]
-    args: [ "-c", "mkdir -p /var/lib/grafana/dashboards/default && /bin/sh /etc/grafana/download_dashboards.sh" ]
+    args: [ "-c", "mkdir -p /tmp/grafana/dashboards/default && /bin/sh /etc/grafana/download_dashboards.sh" ]
     env:
 {{- range $key, $value := .Values.downloadDashboards.env }}
       - name: "{{ $key }}"
@@ -154,7 +154,7 @@ containers:
 {{- range $key, $value := $dashboards }}
 {{- if (or (hasKey $value "json") (hasKey $value "file")) }}
       - name: dashboards-{{ $provider }}
-        mountPath: "/var/lib/grafana/dashboards/{{ $provider }}/{{ $key }}.json"
+        mountPath: "/tmp/grafana/dashboards/{{ $provider }}/{{ $key }}.json"
         subPath: "{{ $key }}.json"
 {{- end }}
 {{- end }}
@@ -163,7 +163,7 @@ containers:
 {{- if .Values.dashboardsConfigMaps }}
 {{- range keys .Values.dashboardsConfigMaps }}
       - name: dashboards-{{ . }}
-        mountPath: "/var/lib/grafana/dashboards/{{ . }}"
+        mountPath: "/tmp/grafana/dashboards/{{ . }}"
 {{- end }}
 {{- end }}
 {{- if .Values.datasources }}

@@ -311,15 +311,25 @@ plugins: []
 ## Configure grafana datasources
 ## ref: http://docs.grafana.org/administration/provisioning/#datasources
 ##
-datasources: {}
-#  datasources.yaml:
-#    apiVersion: 1
-#    datasources:
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
 #    - name: Prometheus
 #      type: prometheus
 #      url: http://prometheus-prometheus-server
 #      access: proxy
 #      isDefault: true
+    - name: meep-influxdb
+      type: influxdb
+      # access: proxy
+      database: demo1
+      # user: grafana
+      url: http://10.3.16.78:30086
+      jsonData:
+        timeInterval: "10s"
+      # secureJsonData:
+      #   password: grafana
 
 ## Configure notifiers
 ## ref: http://docs.grafana.org/administration/provisioning/#alert-notification-channels
@@ -342,20 +352,20 @@ notifiers: {}
 ## Configure grafana dashboard providers
 ## ref: http://docs.grafana.org/administration/provisioning/#dashboards
 ##
-## `path` must be /var/lib/grafana/dashboards/<provider_name>
+## `path` must be /tmp/grafana/dashboards/<provider_name>
 ##
-dashboardProviders: {}
-#  dashboardproviders.yaml:
-#    apiVersion: 1
-#    providers:
-#    - name: 'default'
-#      orgId: 1
-#      folder: ''
-#      type: file
-#      disableDeletion: false
-#      editable: true
-#      options:
-#        path: /var/lib/grafana/dashboards/default
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /tmp/grafana/dashboards/default
 
 ## Configure grafana dashboard to import
 ## NOTE: To use dashboards you must also enable/configure dashboardProviders
@@ -363,13 +373,13 @@ dashboardProviders: {}
 ##
 ## dashboards per provider, use provider name as key.
 ##
-dashboards: {}
-  # default:
+dashboards:
+  default:
+    custom-dashboard:
+      file: dashboards/custom-dashboard.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON
-  #   custom-dashboard:
-  #     file: dashboards/custom-dashboard.json
   #   prometheus-stats:
   #     gnetId: 2
   #     revision: 2
@@ -402,6 +412,7 @@ grafana.ini:
   security:
     allow_embedding: true
   paths:
+    # NOTE: These seem to be overriden by GF_ environment variables set in docker image 6.5.2
     data: /var/lib/grafana/data
     logs: /var/log/grafana
     plugins: /var/lib/grafana/plugins
