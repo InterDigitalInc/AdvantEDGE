@@ -265,7 +265,7 @@ class IDCVis extends Component {
         if (this.props.type === TYPE_CFG) {
           this.props.onEditElement(
             table.selected.length
-              ? this.getElementByName(table.entries, table.selected[0])
+              ? this.getElementById(table.entries, table.selected[0])
               : null
           );
         }
@@ -276,6 +276,15 @@ class IDCVis extends Component {
   getElementByName(entries, name) {
     for (var i = 0; i < entries.length; i++) {
       if (getElemFieldVal(entries[i], FIELD_NAME) === name) {
+        return entries[i];
+      }
+    }
+    return null;
+  }
+
+  getElementById(entries, id) {
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].id === id) {
         return entries[i];
       }
     }

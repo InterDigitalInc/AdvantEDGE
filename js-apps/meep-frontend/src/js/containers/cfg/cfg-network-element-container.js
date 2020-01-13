@@ -961,26 +961,27 @@ const getSuggestedName = ( parent, type, elements ) => {
   var suggestedPrefix = '';
   if(parent) {
     switch(type) {
-    case ELEMENT_TYPE_OPERATOR:
-      suggestedPrefix = type.toLowerCase();
-      break;
     case ELEMENT_TYPE_UE_APP:
+      suggestedPrefix = 'ue-app';
+      break;
     case ELEMENT_TYPE_EDGE_APP:
+      suggestedPrefix = 'edge-app';
+      break;
     case ELEMENT_TYPE_CLOUD_APP:
-      suggestedPrefix = parent + '-app';
+      suggestedPrefix = 'cloud-app';
       break;
     case ELEMENT_TYPE_DC:
       suggestedPrefix = 'cloud';
       break;
     default:
-      suggestedPrefix = parent + '-' + type.toLowerCase();
+      suggestedPrefix = type.toLowerCase();
     }
   }
 
   //return unique name
-  var increment = 0;
+  var increment = 1;
   var found = true;
-  var suggestedName = suggestedPrefix;
+  var suggestedName = suggestedPrefix + String(increment);
   while(found) { 
     found = false;
     for (var i = 0; i < elements.length; i++) {
@@ -1000,9 +1001,7 @@ const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, disabled
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
 
-  //swap both follwing lines to enable name editing
-  //var disabledOnScenarioElementUpdate = false;
-  var disabledOnScenarioElementUpdate = disabled;
+  var disabledOnScenarioElementUpdate = false;
 
   if(type === 'SCENARIO') {
     //no printing of the type or parents at the root
