@@ -325,7 +325,7 @@ datasources:
       # access: proxy
       database: demo1
       # user: grafana
-      url: http://10.3.16.78:30086
+      url: "http://<CLUSTERIP>:30086"
       jsonData:
         timeInterval: "10s"
       # secureJsonData:
@@ -376,7 +376,7 @@ dashboardProviders:
 dashboards:
   default:
     custom-dashboard:
-      file: dashboards/custom-dashboard.json
+      file: dashboards/metrics.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON

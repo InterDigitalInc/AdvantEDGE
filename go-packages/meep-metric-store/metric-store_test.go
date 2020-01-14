@@ -26,6 +26,7 @@ import (
 
 const metricStore1Name string = "metric-store-1"
 const metricStore2Name string = "metric-store-2"
+const metricStore3Name string = "metric-store-3"
 const metricStoreInfluxAddr string = "http://localhost:30986"
 const metricStoreRedisAddr string = "localhost:30380"
 
@@ -186,6 +187,74 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	}
 
 	// t.Errorf("DONE")
+}
+
+func TestMetricStoreCopyInflux(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	fmt.Println("Create valid Metric Store")
+	ms, err := NewMetricStore(metricStore1Name, metricStoreInfluxAddr, metricStoreRedisAddr)
+	if err != nil {
+		t.Errorf("Unable to create Metric Store")
+	}
+
+	fmt.Println("Flush store metrics")
+	ms.Flush()
+
+	fmt.Println("Set metrics")
+	metricList := make([]Metric, 1)
+	metric := &metricList[0]
+	metric.Name = metric1
+	metric.Tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	metric.Fields = map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
+	err = ms.SetInfluxMetric(metricList)
+	if err != nil {
+		t.Errorf("Failed to set metric")
+	}
+	metric.Tags = map[string]string{tag1: "tag1", tag2: "tag2"}
+	metric.Fields = map[string]interface{}{field1: false, field2: "val2", field3: 1, field4: 1.1}
+	err = ms.SetInfluxMetric(metricList)
+	if err != nil {
+		t.Errorf("Failed to set metric")
+	}
+
+	fmt.Println("Copy invalid")
+	err = ms.Copy("", metricStore3Name)
+	if err == nil {
+		t.Errorf("Database copy should fail")
+	}
+	err = ms.Copy(metricStore1Name, "")
+	if err == nil {
+		t.Errorf("Database copy should fail")
+	}
+
+	fmt.Println("Copy store")
+	err = ms.Copy(metricStore1Name, metricStore3Name)
+	if err != nil {
+		t.Errorf("Failed to copy database")
+	}
+
+	fmt.Println("Validate copied data")
+	fmt.Println("Set store")
+	err = ms.SetStore(metricStore3Name)
+	if err != nil {
+		t.Errorf("Unable to set Store")
+	}
+
+	fmt.Println("Get all metrics")
+	tags := map[string]string{tag1: "tag1", tag2: "tag2"}
+	fields := []string{field1, field2, field3, field4}
+	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 0)
+	if err != nil || len(result) != 2 {
+		t.Errorf("Failed to get metric")
+	}
+	if !validateMetric(result[0], false, "val2", 1, 1.1) {
+		t.Errorf("Invalid result")
+	}
+	if !validateMetric(result[1], true, "val1", 0, 0.0) {
+		t.Errorf("Invalid result")
+	}
 }
 
 func validateMetric(result map[string]interface{}, v1 bool, v2 string, v3 int32, v4 float64) bool {

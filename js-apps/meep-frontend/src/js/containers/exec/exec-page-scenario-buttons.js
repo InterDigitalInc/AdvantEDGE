@@ -17,7 +17,6 @@
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
-import { Checkbox } from '@rmwc/checkbox';
 
 import {
   EXEC_STATE_DEPLOYED,
@@ -25,7 +24,8 @@ import {
   EXEC_BTN_DEPLOY,
   EXEC_BTN_TERMINATE,
   EXEC_BTN_REFRESH,
-  EXEC_BTN_EVENT
+  EXEC_BTN_EVENT,
+  EXEC_BTN_CONFIG
 } from '../../meep-constants';
 
 import {
@@ -80,8 +80,12 @@ class ExecPageScenarioButtons extends Component {
     );
   }
 
-  checkboxChanged(checked) {
-    this.props.onShowAppsChanged(checked);
+  canOpenDashCfg() {
+    return (
+      !this.props.podsPending &&
+      !this.props.podsTerminating &&
+      !this.props.podsTerminated
+    );
   }
 
   render() {
@@ -132,13 +136,15 @@ class ExecPageScenarioButtons extends Component {
         >
           CREATE EVENT
         </Button>
-
-        <Checkbox
-          checked={this.props.showApps}
-          onChange={e => this.checkboxChanged(e.target.checked)}
+        <Button
+          raised
+          style={styles.section2}
+          onClick={this.props.onOpenDashCfg}
+          disabled={!this.canOpenDashCfg()}
+          data-cy={EXEC_BTN_CONFIG}
         >
-          Show Apps
-        </Checkbox>
+          DASHBOARD
+        </Button>
       </div>
     );
   }
