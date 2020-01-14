@@ -102,6 +102,7 @@ export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
+export const EXEC_BTN_CONFIG = 'exec-btn-config';
 
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
@@ -215,11 +216,11 @@ export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
 export const ME_MOBILITY_EVENT = 'mobilityEvent';
 
 export const VIEW_NAME_NONE = 'None';
-export const HIERARCHY_VIEW = 'Network Topology';
+export const VIS_VIEW = 'Network Topology';
 export const APPS_VIEW = 'Applications';
+export const METRICS_VIEW = 'Metrics Dashboard';
 export const LATENCY_VIEW = 'Latency Graph';
 export const THROUGHPUT_VIEW = 'Throughput Graph';
-export const VIS_VIEW = 'Network Topology (vis)';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
@@ -228,7 +229,7 @@ export const DASHBOARD_VIEWS_LIST = [
   VIEW_NAME_NONE,
   VIS_VIEW,
   APPS_VIEW,
+  METRICS_VIEW,
   LATENCY_VIEW,
-  THROUGHPUT_VIEW,
-  HIERARCHY_VIEW
+  THROUGHPUT_VIEW
 ];

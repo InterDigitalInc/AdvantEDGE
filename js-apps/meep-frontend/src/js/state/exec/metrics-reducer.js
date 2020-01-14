@@ -41,6 +41,15 @@ function execChangeSourceNodeSelected(node) {
   };
 }
 
+export const EXEC_CHANGE_DEST_NODE_SELECTED =
+  'EXEC_CHANGE_DEST_NODE_SELECTED';
+function execChangeDestNodeSelected(node) {
+  return {
+    type: EXEC_CHANGE_DEST_NODE_SELECTED,
+    payload: node
+  };
+}
+
 export const EXEC_CHANGE_DATA_TYPE_SELECTED = 'EXEC_CHANGE_DATA_TYPE_SELECTED';
 function execChangeDataTypeSelected(node) {
   return {
@@ -68,6 +77,7 @@ function execClearMetricsEpochs() {
 export {
   execAddMetricsEpoch,
   execChangeSourceNodeSelected,
+  execChangeDestNodeSelected,
   execChangeDataTypeSelected,
   execChangeMetricsTimeIntervalDuration,
   execClearMetricsEpochs
@@ -75,8 +85,11 @@ export {
 
 // const NB_EPOCHS_TO_KEEP = 25;
 export function metricsReducer(state = initialState, action) {
-  const currentId = state.sourceNodeSelected
+  const currentSourceNodeId = state.sourceNodeSelected
     ? state.sourceNodeSelected.data.id
+    : null;
+  const currentDestNodeId = state.destNodeSelected
+    ? state.destNodeSelected.data.id
     : null;
   switch (action.type) {
   case EXEC_ADD_METRICS_EPOCH:
@@ -86,10 +99,16 @@ export function metricsReducer(state = initialState, action) {
         .concat([action.payload])
     });
   case EXEC_CHANGE_SOURCE_NODE_SELECTED:
-    if (action.payload.data.id === currentId) {
+    if (action.payload.data.id === currentSourceNodeId) {
       return updateObject(state, { sourceNodeSelected: null });
     } else {
       return updateObject(state, { sourceNodeSelected: action.payload });
+    }
+  case EXEC_CHANGE_DEST_NODE_SELECTED:
+    if (action.payload.data.id === currentDestNodeId) {
+      return updateObject(state, { destNodeSelected: null });
+    } else {
+      return updateObject(state, { destNodeSelected: action.payload });
     }
   case EXEC_CHANGE_DATA_TYPE_SELECTED:
     return updateObject(state, { dataTypeSelected: action.payload });

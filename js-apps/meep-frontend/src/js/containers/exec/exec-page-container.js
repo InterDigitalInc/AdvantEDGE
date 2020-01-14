@@ -35,6 +35,7 @@ import { execChangeScenarioList, execVisFilteredData } from '../../state/exec';
 import {
   uiChangeCurrentDialog,
   uiExecChangeEventCreationMode,
+  uiExecChangeDashCfgMode,
   uiExecChangeCurrentEvent,
   uiExecChangeShowApps,
   IDC_DIALOG_DEPLOY_SCENARIO,
@@ -176,6 +177,16 @@ class ExecPageContainer extends Component {
     this.props.changeEventCreationMode(false);
   }
 
+  // CONFIGURE DASHBOARD
+  onOpenDashCfg() {
+    this.props.changeDashCfgMode(true);
+  }
+
+  // STOP CONFIGURE DASHBOARD
+  onCloseDashCfg() {
+    this.props.changeDashCfgMode(false);
+  }
+
   // Terminate Active scenario
   terminateScenario() {
     this.props.api.terminateScenario((error, data, response) =>
@@ -272,8 +283,7 @@ class ExecPageContainer extends Component {
                           onTerminate={() => this.onTerminateScenario()}
                           onRefresh={this.props.refreshScenario}
                           onCreateEvent={() => this.onCreateEvent()}
-                          onShowAppsChanged={show => this.showApps(show)}
-                          showApps={this.props.showApps}
+                          onOpenDashCfg={() => this.onOpenDashCfg()}
                         />
                       </GridCell>
                     </GridInner>
@@ -288,11 +298,15 @@ class ExecPageContainer extends Component {
           <>
             <Grid style={{ width: '100%' }}>
               <GridCell span={spanLeft}>
-                {/* <Elevation className="component-style" z={2}> */}
                 <div>
-                  <DashboardContainer showAppsView={true} />
+                  <DashboardContainer
+                    scenarioName={this.props.execScenarioName}
+                    onShowAppsChanged={show => this.showApps(show)}
+                    showApps={this.props.showApps}
+                    dashCfgMode={this.props.dashCfgMode}
+                    onCloseDashCfg={() => this.onCloseDashCfg()}
+                  />
                 </div>
-                {/* </Elevation> */}
               </GridCell>
               <GridCell
                 span={spanRight}
@@ -343,6 +357,7 @@ const mapStateToProps = state => {
     scenario: state.exec.scenario,
     scenarios: state.exec.apiResults.scenarios,
     eventCreationMode: state.ui.eventCreationMode,
+    dashCfgMode: state.ui.dashCfgMode,
     page: state.ui.page,
     execScenarioName: state.exec.scenario.name,
     cfgScenarioName: state.cfg.scenario.name,
@@ -360,6 +375,8 @@ const mapDispatchToProps = dispatch => {
     changeState: s => dispatch(execChangeScenarioState(s)),
     changeEventCreationMode: val =>
       dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
+    changeDashCfgMode: val =>
+      dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
     changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
     changeShowApps: show => dispatch(uiExecChangeShowApps(show))

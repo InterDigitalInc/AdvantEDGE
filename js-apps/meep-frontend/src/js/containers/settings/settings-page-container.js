@@ -24,8 +24,7 @@ import { Elevation } from '@rmwc/elevation';
 import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
-  uiChangeDevMode,
-  uiExecChangeShowDashboardConfig
+  uiChangeDevMode
 } from '../../state/ui';
 
 import {
@@ -33,9 +32,7 @@ import {
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
   SET_VIS_CFG_CHECKBOX,
-  SET_VIS_CFG_LABEL,
-  SET_DASHBOARD_CFG_CHECKBOX,
-  SET_DASHBOARD_CFG_LABEL
+  SET_VIS_CFG_LABEL
 } from '../../meep-constants';
 
 class SettingsPageContainer extends Component {
@@ -184,12 +181,6 @@ class SettingsPageContainer extends Component {
                   stateItemName={SET_VIS_CFG_LABEL}
                   cydata={SET_VIS_CFG_CHECKBOX}
                 />
-                <CheckableSettingItem
-                  stateItem={this.props.showDashboardConfig}
-                  changeStateItem={this.props.changeShowDashboardConfig}
-                  stateItemName={SET_DASHBOARD_CFG_LABEL}
-                  cydata={SET_DASHBOARD_CFG_CHECKBOX}
-                />
               </Elevation>
             </GridCell>
           </GridInner>
@@ -248,8 +239,7 @@ const mapStateToProps = state => {
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
-    page: state.ui.page,
-    showDashboardConfig: state.ui.showDashboardConfig
+    page: state.ui.page
   };
 };
 
@@ -257,9 +247,7 @@ const mapDispatchToProps = dispatch => {
   return {
     setAutomaticRefresh: val => dispatch(uiSetAutomaticRefresh(val)),
     changeRefreshInterval: val => dispatch(uiChangeRefreshInterval(val)),
-    changeDevMode: mode => dispatch(uiChangeDevMode(mode)),
-    changeShowDashboardConfig: show =>
-      dispatch(uiExecChangeShowDashboardConfig(show))
+    changeDevMode: mode => dispatch(uiChangeDevMode(mode))
   };
 };
 
