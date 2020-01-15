@@ -297,7 +297,7 @@ const ViewForName = ({
   const appIds = apps.map(app => app.data.id);
 
   // Remove '-' from scenario name
-  var scenario = scenarioName.replace('-', '');
+  var scenario = scenarioName.replace(/-/g, '');
 
   const dashboard = 'http://' + location.hostname + ':30009/d/100/metrics-dashboard?orgId=1';
   const datasource = '&var-datasource=meep-influxdb';
