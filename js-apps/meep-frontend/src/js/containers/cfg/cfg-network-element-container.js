@@ -25,8 +25,10 @@ import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
 
 import { updateObject } from '../../util/object-util';
+import { createUniqueName } from '../../util/elem-utils';
+
 import IDSelect from '../../components/helper-components/id-select';
-import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
+import CancelApplyTriplet from '../../components/helper-components/cancel-apply-triplet';
 import NCGroup from '../../components/helper-components/nc-group';
 
 import {
@@ -56,7 +58,12 @@ import {
   setElemFieldErr
 } from '../../util/elem-utils';
 
-import { CFG_ELEM_MODE_EDIT, cfgElemUpdate } from '../../state/cfg';
+import {
+  CFG_ELEM_MODE_EDIT,
+  CFG_ELEM_MODE_DUPLICATE,
+  cfgElemUpdate,
+  cfgElemDuplicate
+} from '../../state/cfg';
 
 import {
   TYPE_CFG,
@@ -1016,6 +1023,17 @@ export class CfgNetworkElementContainer extends Component {
     this.props.cfgElemUpdate(updatedElem);
   }
 
+  // Element duplicate handler
+  onDuplicateElement(newName) {
+    var duplicatedElem = updateObject({}, this.props.configuredElement);
+    setElemFieldVal(duplicatedElem, FIELD_NAME, newName);
+    setElemFieldVal(duplicatedElem, FIELD_PARENT, null);
+    var elementType = getElemFieldVal(duplicatedElem, FIELD_TYPE);
+    duplicatedElem.parentElements = this.elementsOfType(getParentTypes(elementType));
+
+    this.props.cfgElemDuplicate(duplicatedElem);
+  }
+
   // Retrieve names of elements with matching type
   elementsOfType(types) {
     return _.chain(this.props.tableData)
@@ -1094,11 +1112,21 @@ export class CfgNetworkElementContainer extends Component {
               {this.props.errorMessage}
             </div>
 
-            <CancelApplyPair
+            <CancelApplyTriplet
+              duplicateDisabled={
+                (element && this.props.configMode === CFG_ELEM_MODE_EDIT && this.props.isModified === false)
+                  ? false
+                  : true
+              }
+              saveDisabled={(this.props.isModified === false) ? true : false}
               onCancel={this.props.onCancelElement}
               onApply={() => {
-                this.props.onSaveElement(element);
+                (this.props.configMode === CFG_ELEM_MODE_DUPLICATE) ? this.props.onDuplicateElement(element) : this.props.onSaveElement(element);
               }}
+              onDuplicate={() => {
+                this.onDuplicateElement(createUniqueName(this.props.tableData, getElemFieldVal(element, FIELD_NAME) + '-copy'));
+              }}
+
             />
           </>
         )}
@@ -1131,13 +1159,15 @@ const mapStateToProps = state => {
     tableData: state.cfg.table.entries,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     configMode: state.cfg.elementConfiguration.configurationMode,
+    isModified: state.cfg.elementConfiguration.isModified,
     errorMessage: state.cfg.elementConfiguration.errorMessage
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    cfgElemUpdate: element => dispatch(cfgElemUpdate(element))
+    cfgElemUpdate: element => dispatch(cfgElemUpdate(element)),
+    cfgElemDuplicate: element => dispatch(cfgElemDuplicate(element))
   };
 };
 
