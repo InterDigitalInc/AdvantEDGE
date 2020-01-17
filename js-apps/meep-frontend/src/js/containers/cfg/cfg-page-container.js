@@ -161,9 +161,19 @@ class CfgPageContainer extends Component {
     return -1;
   }
 
+  findOtherThanSelfIndexByKeyValue(_array, key, value, exceptionId) {
+    for (var i = 0; i < _array.length; i++) {
+      if (getElemFieldVal(_array[i], key) === value) {
+        if (_array[i].id !== exceptionId) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
   // Validate new network element form field entries
   validateNetworkElement(element) {
-    var configMode = this.props.cfg.elementConfiguration.configurationMode;
     var data = this.props.cfg.table.entries;
 
     // Clear previous error message
@@ -193,10 +203,8 @@ class CfgPageContainer extends Component {
       this.props.cfgElemSetErrMsg('Missing element name');
       return false;
     }
-    if (
-      configMode === CFG_ELEM_MODE_NEW &&
-      this.findIndexByKeyValue(data, FIELD_NAME, name) !== -1
-    ) {
+
+    if (this.findOtherThanSelfIndexByKeyValue(data, FIELD_NAME, name, element.id) !== -1) {
       this.props.cfgElemSetErrMsg('Element name already exists');
       return false;
     }
