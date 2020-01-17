@@ -19,12 +19,14 @@ import { createElem } from '../../util/elem-utils';
 
 const CFG_ELEM_NEW = 'CFG_ELEM_NEW';
 const CFG_ELEM_EDIT = 'CFG_ELEM_EDIT';
+const CFG_ELEM_DUPLICATE = 'CFG_ELEM_DUPLICATE';
 const CFG_ELEM_CLEAR = 'CFG_ELEM_CLEAR';
 const CFG_ELEM_UPDATE = 'CFG_ELEM_UPDATE';
 const CFG_ELEM_SET_ERR_MSG = 'CFG_ELEM_SET_ERR_MSG';
 
 const CFG_ELEM_MODE_NEW = 'CFG_ELEM_MODE_NEW';
 const CFG_ELEM_MODE_EDIT = 'CFG_ELEM_MODE_EDIT';
+const CFG_ELEM_MODE_DUPLICATE = 'CFG_ELEM_MODE_DUPLICATE';
 
 function cfgElemNew() {
   return {
@@ -35,6 +37,13 @@ function cfgElemNew() {
 function cfgElemEdit(elem) {
   return {
     type: CFG_ELEM_EDIT,
+    payload: elem
+  };
+}
+
+function cfgElemDuplicate(elem) {
+  return {
+    type: CFG_ELEM_DUPLICATE,
     payload: elem
   };
 }
@@ -62,16 +71,19 @@ function cfgElemSetErrMsg(msg) {
 export {
   cfgElemNew,
   cfgElemEdit,
+  cfgElemDuplicate,
   cfgElemClear,
   cfgElemUpdate,
   cfgElemSetErrMsg,
   CFG_ELEM_MODE_NEW,
-  CFG_ELEM_MODE_EDIT
+  CFG_ELEM_MODE_EDIT,
+  CFG_ELEM_MODE_DUPLICATE
 };
 
 const initialState = {
   configuredElement: null,
   configurationMode: null,
+  isModified: false,
   errorMessage: ''
 };
 
@@ -87,12 +99,23 @@ export function cfgElementConfigurationReducer(state = initialState, action) {
     return updateObject(state, {
       configuredElement: action.payload,
       configurationMode: CFG_ELEM_MODE_EDIT,
-      errorMessage: ''
+      errorMessage: '',
+      isModified: false
+    });
+  case CFG_ELEM_DUPLICATE:
+    return updateObject(state, {
+      configuredElement: action.payload,
+      configurationMode: CFG_ELEM_MODE_DUPLICATE,
+      errorMessage: '',
+      isModified: true
     });
   case CFG_ELEM_CLEAR:
     return updateObject(state, initialState);
   case CFG_ELEM_UPDATE:
-    return updateObject(state, { configuredElement: action.payload });
+    return updateObject(state, { 
+      configuredElement: action.payload,
+      isModified: true
+    });
   case CFG_ELEM_SET_ERR_MSG:
     return updateObject(state, { errorMessage: action.payload });
   default:

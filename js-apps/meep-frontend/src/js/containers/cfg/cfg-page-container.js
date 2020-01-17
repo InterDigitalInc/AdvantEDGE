@@ -23,6 +23,8 @@ import { Elevation } from '@rmwc/elevation';
 import IDCVis from '../idc-vis';
 import CfgNetworkElementContainer from './cfg-network-element-container';
 import CfgPageScenarioButtons from './cfg-page-scenario-buttons';
+import { deepCopy } from '../../util/object-util';
+import { getElementFromScenario } from '../../util/scenario-utils';
 
 import HeadlineBar from '../../components/headline-bar';
 import CfgTable from './cfg-table';
@@ -40,7 +42,8 @@ import {
   cfgChangeScenario,
   cfgChangeScenarioList,
   cfgChangeState,
-  CFG_ELEM_MODE_NEW
+  CFG_ELEM_MODE_NEW,
+  CFG_ELEM_MODE_EDIT
 } from '../../state/cfg';
 
 import {
@@ -58,7 +61,9 @@ import {
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
   PAGE_CONFIGURE,
-  ELEMENT_TYPE_SCENARIO
+  ELEMENT_TYPE_SCENARIO,
+  COMMON_ZONE_TYPE_STR,
+  DEFAULT_NL_TYPE_STR
 } from '../../meep-constants';
 
 import {
@@ -69,7 +74,9 @@ import {
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  getElemFieldVal
+  getElemFieldVal,
+  setElemFieldVal,
+  createUniqueName
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -138,6 +145,125 @@ class CfgPageContainer extends Component {
     }
 
     // Reset Element configuration pane
+    this.props.cfgElemClear();
+  }
+
+  // DUPLICATE ELEMENT, return new element name
+  duplicateElement(element, newParentName, isRoot) {
+    let newElement = deepCopy(element);
+
+    var name = getElemFieldVal(element, FIELD_NAME);
+    if (isRoot === false) {
+      name = createUniqueName(this.props.cfg.table.entries, name + '-copy');
+      setElemFieldVal(newElement, FIELD_NAME, name);
+    }
+    setElemFieldVal(newElement, FIELD_PARENT, newParentName);
+
+    // add new element to scenario
+    // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
+    this.props.newScenarioElem(newElement);
+    return name;
+  }
+
+  // DUPLICATE
+  onDuplicateElement(element) {
+    // Validate network element
+    if (this.validateNetworkElement(element) === false) {
+      return;
+    }
+
+    // browse to find the root of the tree to duplicate
+
+    var inDuplicateBranch = false;
+    var newZoneRootParentName = '';
+    var newNlRootParentName = '';
+    var newPlRootParentName = '';
+    var newProcessRootParentName = '';
+    var elementFromScenario;
+
+    var scenario = this.props.cfg.scenario;
+    // Domains
+    for (var i in scenario.deployment.domains) {
+      var domain = scenario.deployment.domains[i];
+
+      // Add domain to graph and table (ignore public domain)
+      if (domain.id === element.id) {
+        newZoneRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT), true); 
+        inDuplicateBranch = true;
+      }
+
+      // Zones
+      for (var j in domain.zones) {
+        var zone = domain.zones[j];
+
+        if (inDuplicateBranch) {
+          if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
+            newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
+          } else {
+            elementFromScenario = getElementFromScenario(scenario, zone.name);
+            newNlRootParentName = this.duplicateElement(elementFromScenario, newZoneRootParentName, false);
+          }
+        } else {
+          if (zone.id === element.id) {
+            newNlRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT), true);
+            inDuplicateBranch = true;
+          }
+        }
+
+        // Network Locations
+        for (var k in zone.networkLocations) {
+          var nl = zone.networkLocations[k];
+
+          if (inDuplicateBranch) {
+            if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
+              newPlRootParentName = newNlRootParentName;
+            } else {
+              elementFromScenario = getElementFromScenario(scenario, nl.name);
+              newPlRootParentName = this.duplicateElement(elementFromScenario, newNlRootParentName, false);
+            }
+          } else {
+            if (nl.id === element.id) {
+              newPlRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+              inDuplicateBranch = true;
+            }
+          }
+
+          // Physical Locations
+          for (var l in nl.physicalLocations) {
+            var pl = nl.physicalLocations[l];
+
+            if (inDuplicateBranch) {
+              elementFromScenario = getElementFromScenario(scenario, pl.name);
+              newProcessRootParentName = this.duplicateElement(elementFromScenario, newPlRootParentName, false);
+            } else {
+              if (pl.id === element.id) {
+                newProcessRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                inDuplicateBranch = true;
+              }
+            }
+
+            // Processes
+            for (var m in pl.processes) {
+              var proc = pl.processes[m];
+
+              if (inDuplicateBranch) {
+                elementFromScenario = getElementFromScenario(scenario, proc.name);
+                this.duplicateElement(elementFromScenario, newProcessRootParentName, false);
+              } else {
+                if (proc.id === element.id) {
+                  this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if(inDuplicateBranch) {
+        break;
+      }
+    }
+
     this.props.cfgElemClear();
   }
 
@@ -622,6 +748,7 @@ class CfgPageContainer extends Component {
                       onNewElement={() => this.onNewElement()}
                       onSaveElement={elem => this.onSaveElement(elem)}
                       onDeleteElement={elem => this.onDeleteElement(elem)}
+                      onDuplicateElement={elem => this.onDuplicateElement(elem)}
                       onCancelElement={() => this.onCancelElement()}
                     />
                   </Elevation>

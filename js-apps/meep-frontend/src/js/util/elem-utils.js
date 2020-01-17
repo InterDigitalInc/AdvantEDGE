@@ -195,3 +195,22 @@ export const createElem = name => {
 
   return elem;
 };
+
+export const createUniqueName = (entries, namePrefix) => {
+  var increment = 1;
+  var found = true;
+  var suggestedName = namePrefix + String(increment);
+  while(found) {
+    found = false;
+    for (var i = 0; i < entries.length; i++) {
+      if (getElemFieldVal(entries[i], FIELD_NAME) === suggestedName) {
+        found=true;
+        increment++;
+        suggestedName = namePrefix + String(increment);
+        break;
+      }
+    }
+  }
+  return suggestedName;
+};
+
