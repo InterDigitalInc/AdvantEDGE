@@ -59,6 +59,7 @@ import {
 } from '../../util/elem-utils';
 
 import {
+  CFG_ELEM_MODE_NEW,
   CFG_ELEM_MODE_EDIT,
   CFG_ELEM_MODE_DUPLICATE,
   cfgElemUpdate,
@@ -1003,40 +1004,33 @@ const getSuggestedName = ( parent, type, elements ) => {
   return suggestedName;
 };
 
-const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, disabled }) => {
+const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
 
-  var disabledOnScenarioElementUpdate = false;
-
-  if(type === 'SCENARIO') {
-    //no printing of the type or parents at the root
-    disabledOnScenarioElementUpdate = true;
-  }
-
   return (
     <>
       <Grid style={{ marginTop: 10 }}>
-        {type !== 'SCENARIO' && (
+        {type && type !== 'SCENARIO' && (
           <IDSelect
             label="Element Type"
             span={6}
             options={elementTypes}
             onChange={elem => onTypeChange(elem.target.value)}
             value={type}
-            disabled={disabled}
+            disabled={typeDisabled}
             cydata={CFG_ELEM_TYPE}
           />
         )}
-        {type && type !== 'SCENARIO' && (
+        {type && (
           <IDSelect
             label="Parent Node"
             span={6}
             options={parentElements}
             onChange={elem => onParentChange(elem.target.value, type)}
             value={parent}
-            disabled={disabled}
+            disabled={parentDisabled}
             cydata={CFG_ELEM_PARENT}
           />
         )}
@@ -1049,7 +1043,7 @@ const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, disabled
           validate={validateName}
           label="Unique Element Name"
           fieldName={FIELD_NAME}
-          disabled={disabledOnScenarioElementUpdate}
+          disabled={nameDisabled}
           cydata={CFG_ELEM_NAME}
         />
       </Grid>
@@ -1156,7 +1150,9 @@ export class CfgNetworkElementContainer extends Component {
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);
               }}
-              disabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
+              typeDisabled={this.props.configMode === CFG_ELEM_MODE_DUPLICATE || this.props.configMode === CFG_ELEM_MODE_EDIT}
+              parentDisabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
+              nameDisabled={getElemFieldVal(element, FIELD_TYPE) === ELEMENT_TYPE_SCENARIO && this.props.configMode !== CFG_ELEM_MODE_NEW}
             />
 
             <TypeRelatedFormFields
@@ -1175,7 +1171,7 @@ export class CfgNetworkElementContainer extends Component {
 
             <CancelApplyTriplet
               duplicateDisabled={
-                (element && this.props.configMode === CFG_ELEM_MODE_EDIT && this.props.isModified === false)
+                (element && this.props.configMode === CFG_ELEM_MODE_EDIT && this.props.isModified === false && getElemFieldVal(element, FIELD_TYPE) !== ELEMENT_TYPE_SCENARIO)
                   ? false
                   : true
               }
