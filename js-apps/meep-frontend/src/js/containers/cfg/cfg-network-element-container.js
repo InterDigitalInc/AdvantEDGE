@@ -28,7 +28,7 @@ import { updateObject } from '../../util/object-util';
 import { createUniqueName } from '../../util/elem-utils';
 
 import IDSelect from '../../components/helper-components/id-select';
-import CancelApplyTriplet from '../../components/helper-components/cancel-apply-triplet';
+import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 import NCGroup from '../../components/helper-components/nc-group';
 
 import {
@@ -61,9 +61,9 @@ import {
 import {
   CFG_ELEM_MODE_NEW,
   CFG_ELEM_MODE_EDIT,
-  CFG_ELEM_MODE_DUPLICATE,
+  CFG_ELEM_MODE_CLONE,
   cfgElemUpdate,
-  cfgElemDuplicate
+  cfgElemClone
 } from '../../state/cfg';
 
 import {
@@ -119,6 +119,7 @@ import {
   CFG_ELEM_EGRESS_SVC_MAP,
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM,
+  CFG_BTN_CLONE_ELEM,
 
   // Layout type
   MEEP_COMPONENT_TABLE_LAYOUT
@@ -930,13 +931,14 @@ const ElementCfgButtons = ({
   configuredElement,
   configMode,
   onNewElement,
-  onDeleteElement
+  onDeleteElement,
+  onCloneElement
 }) => {
   const canCreateNewElement = () => {
     return !configuredElement;
   };
 
-  const canDeleteElement = () => {
+  const canDeleteOrCloneElement = () => {
     return configuredElement && configMode === CFG_ELEM_MODE_EDIT;
   };
 
@@ -957,10 +959,21 @@ const ElementCfgButtons = ({
         data-cy={CFG_BTN_DEL_ELEM}
         style={buttonStyles}
         onClick={() => onDeleteElement()}
-        disabled={!canDeleteElement()}
+        disabled={!canDeleteOrCloneElement()}
       >
         DELETE
       </Button>
+
+      <Button
+        outlined
+        data-cy={CFG_BTN_CLONE_ELEM}
+        style={buttonStyles}
+        onClick={() => onCloneElement()}
+        disabled={!canDeleteOrCloneElement()}
+      >
+        CLONE
+      </Button>
+
     </>
   );
 };
@@ -1024,15 +1037,15 @@ export class CfgNetworkElementContainer extends Component {
     this.props.cfgElemUpdate(updatedElem);
   }
 
-  // Element duplicate handler
-  onDuplicateElement(newName) {
-    var duplicatedElem = updateObject({}, this.props.configuredElement);
-    setElemFieldVal(duplicatedElem, FIELD_NAME, newName);
-    setElemFieldVal(duplicatedElem, FIELD_PARENT, null);
-    var elementType = getElemFieldVal(duplicatedElem, FIELD_TYPE);
-    duplicatedElem.parentElements = this.elementsOfType(getParentTypes(elementType));
+  // Element clone handler
+  onCloneElement(newName) {
+    var clonedElem = updateObject({}, this.props.configuredElement);
+    setElemFieldVal(clonedElem, FIELD_NAME, newName);
+    setElemFieldVal(clonedElem, FIELD_PARENT, null);
+    var elementType = getElemFieldVal(clonedElem, FIELD_TYPE);
+    clonedElem.parentElements = this.elementsOfType(getParentTypes(elementType));
 
-    this.props.cfgElemDuplicate(duplicatedElem);
+    this.props.cfgElemClone(clonedElem);
   }
 
   // Retrieve names of elements with matching type
@@ -1080,6 +1093,9 @@ export class CfgNetworkElementContainer extends Component {
                   onDeleteElement={() => {
                     this.props.onDeleteElement(element);
                   }}
+                  onCloneElement={() => {
+                    this.onCloneElement(createUniqueName(this.props.tableData, getElemFieldVal(element, FIELD_NAME) + '-copy'));
+                  }}
                 />
               </GridCell>
             </GridInner>
@@ -1096,7 +1112,7 @@ export class CfgNetworkElementContainer extends Component {
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);
               }}
-              typeDisabled={this.props.configMode === CFG_ELEM_MODE_DUPLICATE || this.props.configMode === CFG_ELEM_MODE_EDIT}
+              typeDisabled={this.props.configMode === CFG_ELEM_MODE_CLONE || this.props.configMode === CFG_ELEM_MODE_EDIT}
               parentDisabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
               nameDisabled={getElemFieldVal(element, FIELD_TYPE) === ELEMENT_TYPE_SCENARIO && this.props.configMode !== CFG_ELEM_MODE_NEW}
             />
@@ -1115,19 +1131,11 @@ export class CfgNetworkElementContainer extends Component {
               {this.props.errorMessage}
             </div>
 
-            <CancelApplyTriplet
-              duplicateDisabled={
-                (element && this.props.configMode === CFG_ELEM_MODE_EDIT && this.props.isModified === false && getElemFieldVal(element, FIELD_TYPE) !== ELEMENT_TYPE_SCENARIO)
-                  ? false
-                  : true
-              }
+            <CancelApplyPair
               saveDisabled={(this.props.isModified === false) ? true : false}
               onCancel={this.props.onCancelElement}
               onApply={() => {
-                (this.props.configMode === CFG_ELEM_MODE_DUPLICATE) ? this.props.onDuplicateElement(element) : this.props.onSaveElement(element);
-              }}
-              onDuplicate={() => {
-                this.onDuplicateElement(createUniqueName(this.props.tableData, getElemFieldVal(element, FIELD_NAME) + '-copy'));
+                (this.props.configMode === CFG_ELEM_MODE_CLONE) ? this.props.onApplyCloneElement(element) : this.props.onSaveElement(element);
               }}
 
             />
@@ -1170,7 +1178,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     cfgElemUpdate: element => dispatch(cfgElemUpdate(element)),
-    cfgElemDuplicate: element => dispatch(cfgElemDuplicate(element))
+    cfgElemClone: element => dispatch(cfgElemClone(element))
   };
 };
 
