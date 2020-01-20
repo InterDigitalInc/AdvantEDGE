@@ -209,17 +209,9 @@ export const id = label => {
   return '#' + label;
 };
 
-// Metrics engine data types
-export const ME_LATENCY_METRICS = 'latency';
-export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
-export const ME_MOBILITY_EVENT = 'mobilityEvent';
-
 export const VIEW_NAME_NONE = 'None';
 export const VIS_VIEW = 'Network Topology';
-export const APPS_VIEW = 'Applications';
 export const METRICS_VIEW = 'Metrics Dashboard';
-export const LATENCY_VIEW = 'Latency Graph';
-export const THROUGHPUT_VIEW = 'Throughput Graph';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
@@ -227,8 +219,5 @@ export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 export const DASHBOARD_VIEWS_LIST = [
   VIEW_NAME_NONE,
   VIS_VIEW,
-  APPS_VIEW,
-  METRICS_VIEW,
-  LATENCY_VIEW,
-  THROUGHPUT_VIEW
+  METRICS_VIEW
 ];
