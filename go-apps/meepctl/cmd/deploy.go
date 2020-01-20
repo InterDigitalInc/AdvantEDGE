@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -153,12 +152,8 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	// Local storage structure
 	cmd := exec.Command("mkdir", "-p", workdir)
 	cmd.Args = append(cmd.Args, workdir+"couchdb")
-	cmd.Args = append(cmd.Args, workdir+"es-data")
-	cmd.Args = append(cmd.Args, workdir+"es-master-0")
-	cmd.Args = append(cmd.Args, workdir+"es-master-1")
 	cmd.Args = append(cmd.Args, workdir+"influxdb")
 	cmd.Args = append(cmd.Args, workdir+"grafana")
-	cmd.Args = append(cmd.Args, workdir+"kibana")
 	cmd.Args = append(cmd.Args, workdir+"docker-registry")
 	cmd.Args = append(cmd.Args, workdir+"certs")
 
@@ -176,22 +171,6 @@ func ensureDepStorage(cobraCmd *cobra.Command) {
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	str := "s/<CLUSTERIP>/" + nodeIp + "/g"
 	cmd = exec.Command("sed", "-i", str, workdir+"tmp/grafana-values.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-
-	// EXCEPTION #2: Update work directory in ES PV
-	cmd = exec.Command("mkdir", "-p", workdir+"tmp")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	pvES := gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es.pv")
-	cmd = exec.Command("cp", pvES, workdir+"tmp/meep-pv-es.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	tmpStr := strings.Replace(workdir, "/", "\\/", -1)
-	str = "s/<WORKDIR>/" + tmpStr + "/g"
-	cmd = exec.Command("sed", "-i", str, workdir+"tmp/meep-pv-es.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-
-	// Local storage bindings
-	// @TODO move to respective chart
-	cmd = exec.Command("kubectl", "apply", "-f", workdir+"tmp/meep-pv-es.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
@@ -266,26 +245,6 @@ func deployDep(cobraCmd *cobra.Command) {
 	createRegistryCerts(chart, workdir+"certs", cobraCmd)
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
-	repo = "meep-elasticsearch"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es.chart")
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
-	repo = "meep-curator"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.es-curator.chart")
-	flags = nil
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
-	repo = "meep-kibana"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.kibana.chart")
-	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"kibana/")
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
-	// Value file is modified, use the tmp/ version
-	repo = "meep-filebeat"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.filebeat.chart")
-	flags = nil
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
 	repo = "meep-couchdb"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.couchdb.chart")
 	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"couchdb/")
@@ -309,11 +268,6 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	repo = "meep-kube-state-metrics"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
-	flags = nil
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
-	repo = "meep-metricbeat"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.elastic.metricbeat.chart")
 	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }

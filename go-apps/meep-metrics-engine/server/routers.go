@@ -31,7 +31,6 @@ import (
 
 	"github.com/gorilla/mux"
 
-	v1 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v1"
 	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
 )
 
@@ -60,10 +59,6 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World! on v1")
-}
-
 func IndexV2(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World! on v2")
 }
@@ -77,20 +72,6 @@ func Init() (err error) {
 }
 
 var routes = Routes{
-	Route{
-		"Index",
-		"GET",
-		"/v1/",
-		Index,
-	},
-
-	Route{
-		"MetricsGet",
-		strings.ToUpper("Get"),
-		"/v1/metrics",
-		v1.MetricsGet,
-	},
-
 	Route{
 		"IndexV2",
 		"GET",
