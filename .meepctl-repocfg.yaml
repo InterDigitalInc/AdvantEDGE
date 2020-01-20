@@ -123,18 +123,6 @@ repo:
   dep:
     docker-registry:
       chart: charts/docker-registry
-    elastic:
-      es:
-        chart: charts/elasticsearch
-        pv: charts/elasticsearch/meep-pv-es.yaml
-      es-curator:
-        chart: charts/elasticsearch-curator
-      kibana:
-        chart: charts/kibana
-      filebeat:
-        chart: charts/filebeat
-      metricbeat:
-        chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
     influxdb:
