@@ -19,14 +19,14 @@ import { createElem } from '../../util/elem-utils';
 
 const CFG_ELEM_NEW = 'CFG_ELEM_NEW';
 const CFG_ELEM_EDIT = 'CFG_ELEM_EDIT';
-const CFG_ELEM_DUPLICATE = 'CFG_ELEM_DUPLICATE';
+const CFG_ELEM_CLONE = 'CFG_ELEM_CLONE';
 const CFG_ELEM_CLEAR = 'CFG_ELEM_CLEAR';
 const CFG_ELEM_UPDATE = 'CFG_ELEM_UPDATE';
 const CFG_ELEM_SET_ERR_MSG = 'CFG_ELEM_SET_ERR_MSG';
 
 const CFG_ELEM_MODE_NEW = 'CFG_ELEM_MODE_NEW';
 const CFG_ELEM_MODE_EDIT = 'CFG_ELEM_MODE_EDIT';
-const CFG_ELEM_MODE_DUPLICATE = 'CFG_ELEM_MODE_DUPLICATE';
+const CFG_ELEM_MODE_CLONE = 'CFG_ELEM_MODE_CLONE';
 
 function cfgElemNew() {
   return {
@@ -41,9 +41,9 @@ function cfgElemEdit(elem) {
   };
 }
 
-function cfgElemDuplicate(elem) {
+function cfgElemClone(elem) {
   return {
-    type: CFG_ELEM_DUPLICATE,
+    type: CFG_ELEM_CLONE,
     payload: elem
   };
 }
@@ -71,13 +71,13 @@ function cfgElemSetErrMsg(msg) {
 export {
   cfgElemNew,
   cfgElemEdit,
-  cfgElemDuplicate,
+  cfgElemClone,
   cfgElemClear,
   cfgElemUpdate,
   cfgElemSetErrMsg,
   CFG_ELEM_MODE_NEW,
   CFG_ELEM_MODE_EDIT,
-  CFG_ELEM_MODE_DUPLICATE
+  CFG_ELEM_MODE_CLONE
 };
 
 const initialState = {
@@ -102,10 +102,10 @@ export function cfgElementConfigurationReducer(state = initialState, action) {
       errorMessage: '',
       isModified: false
     });
-  case CFG_ELEM_DUPLICATE:
+  case CFG_ELEM_CLONE:
     return updateObject(state, {
       configuredElement: action.payload,
-      configurationMode: CFG_ELEM_MODE_DUPLICATE,
+      configurationMode: CFG_ELEM_MODE_CLONE,
       errorMessage: '',
       isModified: true
     });

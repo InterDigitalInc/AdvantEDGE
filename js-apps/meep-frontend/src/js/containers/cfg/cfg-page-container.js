@@ -36,6 +36,7 @@ import IDExportScenarioDialog from '../../components/dialogs/id-export-scenario-
 
 import {
   cfgElemNew,
+  cfgElemClone,
   cfgElemEdit,
   cfgElemClear,
   cfgElemSetErrMsg,
@@ -138,7 +139,7 @@ class CfgPageContainer extends Component {
       this.props.cfg.elementConfiguration.configurationMode ===
       CFG_ELEM_MODE_NEW
     ) {
-      this.props.newScenarioElem(element);
+      this.props.newScenarioElem(element, true);
     } else {
       this.props.updateScenarioElem(element);
     }
@@ -147,8 +148,13 @@ class CfgPageContainer extends Component {
     this.props.cfgElemClear();
   }
 
-  // DUPLICATE ELEMENT, return new element name
-  duplicateElement(element, newParentName, isRoot) {
+  // CLONE
+  onCloneElement() {
+    this.props.cfgElemClone();
+  }
+
+  // CLONE ELEMENT, return new element name
+  cloneElement(element, newParentName, isRoot) {
     let newElement = deepCopy(element);
 
     var name = getElemFieldVal(element, FIELD_NAME);
@@ -160,20 +166,20 @@ class CfgPageContainer extends Component {
 
     // add new element to scenario
     // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
-    this.props.newScenarioElem(newElement);
+    this.props.newScenarioElem(newElement, false);
     return name;
   }
 
-  // DUPLICATE
-  onDuplicateElement(element) {
+  // CLONE
+  onApplyCloneElement(element) {
     // Validate network element
     if (this.validateNetworkElement(element) === false) {
       return;
     }
 
-    // browse to find the root of the tree to duplicate
+    // browse to find the root of the tree to clone
 
-    var inDuplicateBranch = false;
+    var inCloneBranch = false;
     var newZoneRootParentName = '';
     var newNlRootParentName = '';
     var newPlRootParentName = '';
@@ -187,25 +193,25 @@ class CfgPageContainer extends Component {
 
       // Add domain to graph and table (ignore public domain)
       if (domain.id === element.id) {
-        newZoneRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT), true); 
-        inDuplicateBranch = true;
+        newZoneRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true); 
+        inCloneBranch = true;
       }
 
       // Zones
       for (var j in domain.zones) {
         var zone = domain.zones[j];
 
-        if (inDuplicateBranch) {
+        if (inCloneBranch) {
           if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
             newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
           } else {
             elementFromScenario = getElementFromScenario(scenario, zone.name);
-            newNlRootParentName = this.duplicateElement(elementFromScenario, newZoneRootParentName, false);
+            newNlRootParentName = this.cloneElement(elementFromScenario, newZoneRootParentName, false);
           }
         } else {
           if (zone.id === element.id) {
-            newNlRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT), true);
-            inDuplicateBranch = true;
+            newNlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true);
+            inCloneBranch = true;
           }
         }
 
@@ -213,17 +219,17 @@ class CfgPageContainer extends Component {
         for (var k in zone.networkLocations) {
           var nl = zone.networkLocations[k];
 
-          if (inDuplicateBranch) {
+          if (inCloneBranch) {
             if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
               newPlRootParentName = newNlRootParentName;
             } else {
               elementFromScenario = getElementFromScenario(scenario, nl.name);
-              newPlRootParentName = this.duplicateElement(elementFromScenario, newNlRootParentName, false);
+              newPlRootParentName = this.cloneElement(elementFromScenario, newNlRootParentName, false);
             }
           } else {
             if (nl.id === element.id) {
-              newPlRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-              inDuplicateBranch = true;
+              newPlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+              inCloneBranch = true;
             }
           }
 
@@ -231,13 +237,13 @@ class CfgPageContainer extends Component {
           for (var l in nl.physicalLocations) {
             var pl = nl.physicalLocations[l];
 
-            if (inDuplicateBranch) {
+            if (inCloneBranch) {
               elementFromScenario = getElementFromScenario(scenario, pl.name);
-              newProcessRootParentName = this.duplicateElement(elementFromScenario, newPlRootParentName, false);
+              newProcessRootParentName = this.cloneElement(elementFromScenario, newPlRootParentName, false);
             } else {
               if (pl.id === element.id) {
-                newProcessRootParentName = this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-                inDuplicateBranch = true;
+                newProcessRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                inCloneBranch = true;
               }
             }
 
@@ -245,12 +251,12 @@ class CfgPageContainer extends Component {
             for (var m in pl.processes) {
               var proc = pl.processes[m];
 
-              if (inDuplicateBranch) {
+              if (inCloneBranch) {
                 elementFromScenario = getElementFromScenario(scenario, proc.name);
-                this.duplicateElement(elementFromScenario, newProcessRootParentName, false);
+                this.cloneElement(elementFromScenario, newProcessRootParentName, false);
               } else {
                 if (proc.id === element.id) {
-                  this.duplicateElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                  this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
                 }
               }
             }
@@ -258,10 +264,13 @@ class CfgPageContainer extends Component {
         }
       }
 
-      if(inDuplicateBranch) {
+      if(inCloneBranch) {
         break;
       }
     }
+
+    //force update on element to update the the visual aspect of the scenario
+    this.props.updateScenarioElem(element);
 
     this.props.cfgElemClear();
   }
@@ -747,7 +756,7 @@ class CfgPageContainer extends Component {
                       onNewElement={() => this.onNewElement()}
                       onSaveElement={elem => this.onSaveElement(elem)}
                       onDeleteElement={elem => this.onDeleteElement(elem)}
-                      onDuplicateElement={elem => this.onDuplicateElement(elem)}
+                      onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
                       onCancelElement={() => this.onCancelElement()}
                     />
                   </Elevation>
@@ -761,6 +770,7 @@ class CfgPageContainer extends Component {
                 onNewElement={() => this.onNewElement()}
                 onEditElement={elem => this.onEditElement(elem)}
                 onDeleteElement={() => this.onDeleteElement()}
+                onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
               />
             </div>
           </>
@@ -809,6 +819,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     cfgElemNew: elem => dispatch(cfgElemNew(elem)),
+    cfgElemClone: elem => dispatch(cfgElemClone(elem)),
     cfgElemEdit: elem => dispatch(cfgElemEdit(elem)),
     cfgElemClear: elem => dispatch(cfgElemClear(elem)),
     cfgElemSetErrMsg: msg => dispatch(cfgElemSetErrMsg(msg)),

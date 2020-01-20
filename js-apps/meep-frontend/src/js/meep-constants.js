@@ -31,7 +31,6 @@ export const MEEP_TAB_SET = 'meep-tab-set';
 export const MEEP_LBL_SCENARIO_NAME = 'meep-lbl-scenario-name';
 export const MEEP_BTN_CANCEL = 'meep-btn-cancel';
 export const MEEP_BTN_APPLY = 'meep-btn-apply';
-export const MEEP_BTN_DUPLICATE = 'meep-btn-duplicate';
 
 // Dialog IDs
 export const MEEP_DLG_NEW_SCENARIO = 'meep-dlg-new-scenario';
