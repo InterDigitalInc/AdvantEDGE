@@ -265,11 +265,6 @@ func deployDep(cobraCmd *cobra.Command) {
 	flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+workdir+"grafana/")
 	flags = utils.HelmFlags(flags, "--values", workdir+"tmp/grafana-values.yaml")
 	k8sDeploy(repo, chart, flags, cobraCmd)
-	//---
-	repo = "meep-kube-state-metrics"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
-	flags = nil
-	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 
 func k8sDeployCore(repo string, registry string, tag string, chart string, flags [][]string, cobraCmd *cobra.Command) {
