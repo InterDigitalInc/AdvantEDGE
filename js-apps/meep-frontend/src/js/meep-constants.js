@@ -63,6 +63,7 @@ export const CFG_BTN_IMP_SCENARIO = 'cfg-btn-imp-scenario';
 export const CFG_BTN_EXP_SCENARIO = 'cfg-btn-exp-scenario';
 export const CFG_BTN_NEW_ELEM = 'cfg-btn-new-elem';
 export const CFG_BTN_DEL_ELEM = 'cfg-btn-del-elem';
+export const CFG_BTN_CLONE_ELEM = 'cfg-btn-clone-elem';
 export const CFG_BTN_SAVE_ELEM = 'cfg-btn-save-elem';
 
 export const CFG_ELEM_TYPE = 'cfg-elem-type';
