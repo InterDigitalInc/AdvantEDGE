@@ -142,14 +142,13 @@ func deleteDep(cobraCmd *cobra.Command) {
 	// Run in separate threads in order to complete uninstall successfully
 	messages := make(chan string)
 	go k8sDelete("meep-redis", cobraCmd, messages)
-	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
 	go k8sDelete("meep-couchdb", cobraCmd, messages)
 	go k8sDelete("meep-grafana", cobraCmd, messages)
 	go k8sDelete("meep-influxdb", cobraCmd, messages)
 	go k8sDelete("meep-docker-registry", cobraCmd, messages)
 
 	// Wait for all pvc delete routines to complete
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 5; i++ {
 		fmt.Println(<-messages)
 	}
 }
