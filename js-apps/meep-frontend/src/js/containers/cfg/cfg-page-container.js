@@ -269,8 +269,8 @@ class CfgPageContainer extends Component {
       }
     }
 
-    //force update on element to update the the visual aspect of the scenario
-    this.props.updateScenarioElem(element);
+    //force update on the visual aspect of the scenario
+    this.props.updateScenario();
 
     this.props.cfgElemClear();
   }

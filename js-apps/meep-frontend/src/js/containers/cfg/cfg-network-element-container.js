@@ -978,46 +978,29 @@ const ElementCfgButtons = ({
   );
 };
 
-const getSuggestedName = ( parent, type, elements ) => {
+const getSuggestedName = ( type, elements ) => {
   var suggestedPrefix = '';
-  if(parent) {
-    switch(type) {
-    case ELEMENT_TYPE_UE_APP:
-      suggestedPrefix = 'ue-app';
-      break;
-    case ELEMENT_TYPE_EDGE_APP:
-      suggestedPrefix = 'edge-app';
-      break;
-    case ELEMENT_TYPE_CLOUD_APP:
-      suggestedPrefix = 'cloud-app';
-      break;
-    case ELEMENT_TYPE_DC:
-      suggestedPrefix = 'cloud';
-      break;
-    default:
-      suggestedPrefix = type.toLowerCase();
-    }
+  switch(type) {
+  case ELEMENT_TYPE_UE_APP:
+    suggestedPrefix = 'ue-app';
+    break;
+  case ELEMENT_TYPE_EDGE_APP:
+    suggestedPrefix = 'edge-app';
+    break;
+  case ELEMENT_TYPE_CLOUD_APP:
+    suggestedPrefix = 'cloud-app';
+    break;
+  case ELEMENT_TYPE_DC:
+    suggestedPrefix = 'cloud';
+    break;
+  default:
+    suggestedPrefix = type.toLowerCase();
   }
 
-  //return unique name
-  var increment = 1;
-  var found = true;
-  var suggestedName = suggestedPrefix + String(increment);
-  while(found) { 
-    found = false;
-    for (var i = 0; i < elements.length; i++) {
-      if (getElemFieldVal(elements[i], FIELD_NAME) === suggestedName) {
-        found=true;
-        increment++;
-        suggestedName = suggestedPrefix + String(increment);
-        break;
-      }
-    }
-  }
-  return suggestedName;
+  return createUniqueName(elements, suggestedPrefix);
 };
 
-const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
+const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
@@ -1025,7 +1008,7 @@ const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, typeDisa
   return (
     <>
       <Grid style={{ marginTop: 10 }}>
-        {type && type !== 'SCENARIO' && (
+        {type !== 'SCENARIO' && (
           <IDSelect
             label="Element Type"
             span={6}
@@ -1036,12 +1019,12 @@ const HeaderGroup = ({ element, onTypeChange, onParentChange, onUpdate, typeDisa
             cydata={CFG_ELEM_TYPE}
           />
         )}
-        {type && (
+        {type && type !== 'SCENARIO' && (
           <IDSelect
             label="Parent Node"
             span={6}
             options={parentElements}
-            onChange={elem => onParentChange(elem.target.value, type)}
+            onChange={elem => onUpdate(FIELD_PARENT, elem.target.value, null)}
             value={parent}
             disabled={parentDisabled}
             cydata={CFG_ELEM_PARENT}
@@ -1111,16 +1094,9 @@ export class CfgNetworkElementContainer extends Component {
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementType));
 
-    this.props.cfgElemUpdate(elem);
-  }
-
-  // Element configuration parent change handler
-  onElementParentChange(elementParent, elementType) {
-    var elem = updateObject({}, this.props.configuredElement);
-
-    setElemFieldVal(elem, FIELD_PARENT, elementParent);
-    setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementParent, elementType, this.props.tableData));
-
+    if (this.props.configMode !== CFG_ELEM_MODE_CLONE) { 
+      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementType, this.props.tableData));
+    } 
     this.props.cfgElemUpdate(elem);
   }
 
@@ -1159,9 +1135,6 @@ export class CfgNetworkElementContainer extends Component {
               element={element}
               onTypeChange={type => {
                 this.onElementTypeChange(type);
-              }}
-              onParentChange={(val, type) => {
-                this.onElementParentChange(val, type);
               }}
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);

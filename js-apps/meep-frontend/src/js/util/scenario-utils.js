@@ -243,7 +243,7 @@ export function addElementToScenario(scenario, element) {
   var type = getElemFieldVal(element, FIELD_TYPE);
   var name = getElemFieldVal(element, FIELD_NAME);
   var uniqueId = uuid();
-  //uniqueId = name;
+
   var parent = getElemFieldVal(element, FIELD_PARENT);
 
   // Prepare network element to be added to scenario
@@ -421,6 +421,24 @@ export function updateElementInScenario(scenario, element) {
         element,
         FIELD_INT_ZONE_PKT_LOSS
       );
+
+      //if domain name changed, other elements created based on that name must also be updated (default ones)
+      for (var i2 in domain.zones) {
+        var zoneCommon = domain.zones[i2];
+        if (zoneCommon.id === domain.name + '-' + COMMON_ZONE_TYPE_STR) {
+          for (var i3 in zoneCommon.networkLocations) {
+            var nlDomainCommon = zoneCommon.networkLocations[i3];
+            if (nlDomainCommon.id === zoneCommon.name + '-' + DEFAULT_NL_TYPE_STR) {
+              nlDomainCommon.id = name + '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR;
+              nlDomainCommon.name = name + '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR;
+              break;
+            }
+          }
+          zoneCommon.id = name + '-' + COMMON_ZONE_TYPE_STR;
+          zoneCommon.name = name + '-' + COMMON_ZONE_TYPE_STR;
+          break;
+        }
+      }
       domain.label = name;
       domain.name = name;
       return;
@@ -444,6 +462,16 @@ export function updateElementInScenario(scenario, element) {
             FIELD_INTRA_ZONE_PKT_LOSS
           );
         }
+
+        //if zone name changed, other elements created based on that name must also be updated (default ones)
+        for (var j2 in zone.networkLocations) {
+          var nlZoneCommon = zone.networkLocations[j2];
+          if (nlZoneCommon.id === zone.name + '-' + DEFAULT_NL_TYPE_STR) {
+            nlZoneCommon.id = name + '-' + DEFAULT_NL_TYPE_STR;
+            nlZoneCommon.name = name + '-' + DEFAULT_NL_TYPE_STR;
+          }
+        }
+
         zone.label = name;
         zone.name = name;
         return;
@@ -493,7 +521,7 @@ export function updateElementInScenario(scenario, element) {
             if (process.id === id) {
               pl.processes[m] = createProcess(
                 process.id,
-                process.name,
+                name,
                 process.type,
                 element
               );
@@ -574,7 +602,7 @@ export function createProcess(uniqueId, name, type, element) {
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
   var process = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: type,
     isExternal: isExternal,
