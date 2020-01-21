@@ -43,7 +43,8 @@ import {
   cfgChangeScenario,
   cfgChangeScenarioList,
   cfgChangeState,
-  CFG_ELEM_MODE_NEW
+  CFG_ELEM_MODE_NEW,
+  CFG_ELEM_MODE_EDIT
 } from '../../state/cfg';
 
 import {
