@@ -212,6 +212,11 @@ export const id = label => {
 export const VIEW_NAME_NONE = 'None';
 export const VIS_VIEW = 'Network Topology';
 export const METRICS_VIEW = 'Metrics Dashboard';
+export const PLAYER1_V1_VIEW = 'Player #1 Dashboard v1';
+export const PLAYER1_V2_VIEW = 'Player #1 Dashboard v2';
+export const COMBINED_V1_VIEW = 'Combined Dashboard v1';
+export const COMBINED_V2_VIEW = 'Combined Dashboard v2';
+
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
@@ -219,5 +224,9 @@ export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 export const DASHBOARD_VIEWS_LIST = [
   VIEW_NAME_NONE,
   VIS_VIEW,
-  METRICS_VIEW
+  METRICS_VIEW,
+  PLAYER1_V1_VIEW,
+  PLAYER1_V2_VIEW,
+  COMBINED_V1_VIEW,
+  COMBINED_V2_VIEW
 ];

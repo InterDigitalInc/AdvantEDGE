@@ -44,6 +44,10 @@ import {
   DASHBOARD_VIEWS_LIST,
   VIEW_NAME_NONE,
   METRICS_VIEW,
+  PLAYER1_V1_VIEW,
+  PLAYER1_V2_VIEW,
+  COMBINED_V1_VIEW,
+  COMBINED_V2_VIEW,
   VIS_VIEW
 } from '../../meep-constants';
 
@@ -143,7 +147,6 @@ const ViewForName = ({
   // Remove '-' from scenario name
   var scenario = scenarioName.replace(/-/g, '');
 
-  const dashboard = 'http://' + location.hostname + ':30009/d/100/metrics-dashboard?orgId=1';
   const datasource = '&var-datasource=meep-influxdb';
   const database = '&var-database=' + scenario;
   const refreshInterval = '&refresh=1s';
@@ -151,14 +154,84 @@ const ViewForName = ({
   const destApp = '&var-dest=' + selectedDest;
   const viewMode = '&kiosk';
   const theme = '&theme=light';
-  const dashboardUrl = dashboard + datasource + database + refreshInterval + srcApp + destApp + viewMode + theme;
+
+  const metricsDashboard = 'http://' + location.hostname + ':30009/d/100/metrics-dashboard?orgId=1';
+  const metricsDashboardUrl = metricsDashboard + datasource + database + refreshInterval + srcApp + destApp + viewMode + theme;
   
+  const player1Dashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P1M/player-1-metrics?orgId=1';
+  const player1DashboardUrl = player1Dashboard + datasource + database + refreshInterval + viewMode + theme;
+
+  const player1DashboardV2 = 'http://' + location.hostname + ':30009/d/MWC2020-P1M-2/player-1-metrics-2?orgId=1';
+  const player1DashboardV2Url = player1DashboardV2 + datasource + database + refreshInterval + viewMode + theme;
+  
+  const combinedDashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-1/player-1-2-metrics-1?orgId=1';
+  const combinedDashboardUrl = combinedDashboard + datasource + database + refreshInterval + viewMode + theme;
+
+  const combinedDashboardV2 = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-2/player-1-2-metrics-2?orgId=1';
+  const combinedDashboardV2Url = combinedDashboardV2 + datasource + database + refreshInterval + viewMode + theme;
+
   switch (viewName) {
   case METRICS_VIEW:
     return (
       <div style={{ height: '80vh' }}>
         <Iframe
-          url={dashboardUrl}
+          url={metricsDashboardUrl}
+          id="myId"
+          display="initial"
+          position="relative"
+          allowFullScreen
+          width='100%'
+          height='100%'
+        />
+      </div>
+    );
+  case PLAYER1_V1_VIEW:
+    return (
+      <div style={{ height: '80vh' }}>
+        <Iframe
+          url={player1DashboardUrl}
+          id="myId"
+          display="initial"
+          position="relative"
+          allowFullScreen
+          width='100%'
+          height='100%'
+        />
+      </div>
+    );
+  case PLAYER1_V2_VIEW:
+    return (
+      <div style={{ height: '80vh' }}>
+        <Iframe
+          url={player1DashboardV2Url}
+          id="myId"
+          display="initial"
+          position="relative"
+          allowFullScreen
+          width='100%'
+          height='100%'
+        />
+      </div>
+    );
+  case COMBINED_V1_VIEW:
+    return (
+      <div style={{ height: '80vh' }}>
+        <Iframe
+          url={combinedDashboardUrl}
+          id="myId"
+          display="initial"
+          position="relative"
+          allowFullScreen
+          width='100%'
+          height='100%'
+        />
+      </div>
+    );
+  case COMBINED_V2_VIEW:
+    return (
+      <div style={{ height: '80vh' }}>
+        <Iframe
+          url={combinedDashboardV2Url}
           id="myId"
           display="initial"
           position="relative"
