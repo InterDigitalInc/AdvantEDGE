@@ -205,7 +205,7 @@ class CfgPageContainer extends Component {
           if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
             newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
           } else {
-            elementFromScenario = getElementFromScenario(scenario, zone.name);
+            elementFromScenario = getElementFromScenario(scenario, zone.id);
             newNlRootParentName = this.cloneElement(elementFromScenario, newZoneRootParentName, false);
           }
         } else {
@@ -223,7 +223,7 @@ class CfgPageContainer extends Component {
             if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
               newPlRootParentName = newNlRootParentName;
             } else {
-              elementFromScenario = getElementFromScenario(scenario, nl.name);
+              elementFromScenario = getElementFromScenario(scenario, nl.id);
               newPlRootParentName = this.cloneElement(elementFromScenario, newNlRootParentName, false);
             }
           } else {
@@ -238,7 +238,7 @@ class CfgPageContainer extends Component {
             var pl = nl.physicalLocations[l];
 
             if (inCloneBranch) {
-              elementFromScenario = getElementFromScenario(scenario, pl.name);
+              elementFromScenario = getElementFromScenario(scenario, pl.id);
               newProcessRootParentName = this.cloneElement(elementFromScenario, newPlRootParentName, false);
             } else {
               if (pl.id === element.id) {

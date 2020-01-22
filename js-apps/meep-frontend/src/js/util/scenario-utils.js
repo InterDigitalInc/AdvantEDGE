@@ -237,12 +237,76 @@ export function parseScenario(scenario) {
   return { table: table, visData: visData };
 }
 
+function findIdInScenario(scenario, uniqueId) {
+
+  // Domains
+  for (var i in scenario.deployment.domains) {
+    var domain = scenario.deployment.domains[i];
+
+    // Add domain to graph and table (ignore public domain)
+    if (domain.id === uniqueId) {
+      return true;
+    }
+
+    // Zones
+    for (var j in domain.zones) {
+      var zone = domain.zones[j];
+
+      if (zone.id === uniqueId) {
+        return true;
+      }
+
+      // Network Locations
+      for (var k in zone.networkLocations) {
+        var nl = zone.networkLocations[k];
+
+        if (nl.id === uniqueId) {
+          return true;
+        }
+
+        // Physical Locations
+        for (var l in nl.physicalLocations) {
+          var pl = nl.physicalLocations[l];
+
+          if (pl.id === uniqueId) {
+            return true;
+          }
+
+          // Processes
+          for (var m in pl.processes) {
+            var proc = pl.processes[m];
+
+            if (proc.id === uniqueId) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+
+function getUniqueId(scenario) {
+  var uniqueId = uuid();
+  var isUniqueId = false;
+  while(!isUniqueId) {
+    isUniqueId = true;
+    if (findIdInScenario(scenario, uniqueId)) {
+      uniqueId = uuid();
+      isUniqueId = false;
+    }
+  }
+  return uniqueId;
+}
+
 // Add network element to scenario
 export function addElementToScenario(scenario, element) {
   var scenarioElement;
   var type = getElemFieldVal(element, FIELD_TYPE);
   var name = getElemFieldVal(element, FIELD_NAME);
-  var uniqueId = uuid();
+  var uniqueId = getUniqueId(scenario);
 
   var parent = getElemFieldVal(element, FIELD_PARENT);
 
