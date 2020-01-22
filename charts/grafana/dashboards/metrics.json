@@ -9,7 +9,7 @@
         "iconColor": "rgba(0, 211, 255, 1)",
         "limit": 100,
         "name": "Annotations & Alerts",
-        "query": "SELECT event from events WHERE $timeFilter ORDER BY time ASC",
+        "query": "SELECT event from events WHERE $timeFilter ORDER BY time desc LIMIT 100",
         "showIn": 0,
         "tagsColumn": "type",
         "textColumn": "",
@@ -20,8 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 8,
-  "iteration": 1579009964547,
+  "iteration": 1579714692210,
   "links": [],
   "panels": [
     {
@@ -654,7 +653,7 @@
       "datasource": "$datasource",
       "fontSize": "100%",
       "gridPos": {
-        "h": 5,
+        "h": 6,
         "w": 24,
         "x": 0,
         "y": 12
@@ -693,17 +692,17 @@
           "unit": "short",
           "valueMaps": [
             {
-              "text": "Net Char Update",
+              "text": "Net Char",
               "value": "NETWORK-CHARACTERISTICS-UPDATE"
             },
             {
-              "text": "Mobility Event",
+              "text": "Mobility",
               "value": "MOBILITY"
             }
           ]
         },
         {
-          "alias": "Event",
+          "alias": "Description",
           "colorMode": null,
           "colors": [
             "rgba(245, 54, 54, 0.9)",
@@ -712,7 +711,7 @@
           ],
           "decimals": 2,
           "mappingType": 1,
-          "pattern": "events.event",
+          "pattern": "events.description",
           "thresholds": [],
           "type": "string",
           "unit": "short",
@@ -726,7 +725,7 @@
           "measurement": "events",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT type,event FROM $database.autogen.events WHERE $timeFilter",
+          "query": "SELECT type,description FROM $database.autogen.events WHERE $timeFilter ORDER BY time desc LIMIT 100",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -776,7 +775,6 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "demo1",
           "value": "demo1"
         },
@@ -802,7 +800,6 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "ue1-iperf",
           "value": "ue1-iperf"
         },
@@ -828,7 +825,6 @@
       {
         "allValue": null,
         "current": {
-          "tags": [],
           "text": "zone1-fog1-iperf",
           "value": "zone1-fog1-iperf"
         },
@@ -854,7 +850,7 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {
@@ -876,5 +872,5 @@
   "timezone": "",
   "title": "Metrics Dashboard",
   "uid": "100",
-  "version": 14
+  "version": 8
 }

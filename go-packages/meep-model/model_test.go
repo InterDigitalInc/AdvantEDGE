@@ -611,6 +611,7 @@ func TestListenModel(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to listen for events")
 	}
+	time.Sleep(50 * time.Millisecond)
 	if eventCount != testCount {
 		t.Errorf("No event received for SetScenario")
 	}
