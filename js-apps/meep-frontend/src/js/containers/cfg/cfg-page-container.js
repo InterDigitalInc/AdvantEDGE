@@ -179,7 +179,7 @@ class CfgPageContainer extends Component {
 
     // browse to find the root of the tree to clone
 
-    var inCloneBranch = false;
+    var inDomainCloneBranch = false, inZoneCloneBranch = false, inNlCloneBranch = false, inPlCloneBranch = false;
     var newZoneRootParentName = '';
     var newNlRootParentName = '';
     var newPlRootParentName = '';
@@ -194,14 +194,16 @@ class CfgPageContainer extends Component {
       // Add domain to graph and table (ignore public domain)
       if (domain.id === element.id) {
         newZoneRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true); 
-        inCloneBranch = true;
+        inDomainCloneBranch = true;
+      } else {
+        inDomainCloneBranch = false;
       }
 
       // Zones
       for (var j in domain.zones) {
         var zone = domain.zones[j];
 
-        if (inCloneBranch) {
+        if (inDomainCloneBranch) {
           if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
             newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
           } else {
@@ -211,7 +213,9 @@ class CfgPageContainer extends Component {
         } else {
           if (zone.id === element.id) {
             newNlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true);
-            inCloneBranch = true;
+            inZoneCloneBranch = true;
+          } else {
+            inZoneCloneBranch = false;
           }
         }
 
@@ -219,7 +223,7 @@ class CfgPageContainer extends Component {
         for (var k in zone.networkLocations) {
           var nl = zone.networkLocations[k];
 
-          if (inCloneBranch) {
+          if (inDomainCloneBranch || inZoneCloneBranch) {
             if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
               newPlRootParentName = newNlRootParentName;
             } else {
@@ -229,7 +233,9 @@ class CfgPageContainer extends Component {
           } else {
             if (nl.id === element.id) {
               newPlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-              inCloneBranch = true;
+              inNlCloneBranch = true;
+            } else {
+              inNlCloneBranch = false;
             }
           }
 
@@ -237,13 +243,15 @@ class CfgPageContainer extends Component {
           for (var l in nl.physicalLocations) {
             var pl = nl.physicalLocations[l];
 
-            if (inCloneBranch) {
+            if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch) {
               elementFromScenario = getElementFromScenario(scenario, pl.id);
               newProcessRootParentName = this.cloneElement(elementFromScenario, newPlRootParentName, false);
             } else {
               if (pl.id === element.id) {
                 newProcessRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-                inCloneBranch = true;
+                inPlCloneBranch = true;
+              } else {
+                inPlCloneBranch = false;
               }
             }
 
@@ -251,8 +259,8 @@ class CfgPageContainer extends Component {
             for (var m in pl.processes) {
               var proc = pl.processes[m];
 
-              if (inCloneBranch) {
-                elementFromScenario = getElementFromScenario(scenario, proc.name);
+              if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+                elementFromScenario = getElementFromScenario(scenario, proc.id);
                 this.cloneElement(elementFromScenario, newProcessRootParentName, false);
               } else {
                 if (proc.id === element.id) {
@@ -264,7 +272,7 @@ class CfgPageContainer extends Component {
         }
       }
 
-      if(inCloneBranch) {
+      if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
         break;
       }
     }
