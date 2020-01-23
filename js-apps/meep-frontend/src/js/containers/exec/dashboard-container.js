@@ -156,7 +156,7 @@ const ViewForName = ({
   switch (viewName) {
   case METRICS_VIEW:
     return (
-      <div style={{ height: '70vh' }}>
+      <div style={{ height: '80vh' }}>
         <Iframe
           url={dashboardUrl}
           id="myId"
@@ -170,12 +170,14 @@ const ViewForName = ({
     );
   case VIS_VIEW:
     return (
-      <IDCVis
-        type={TYPE_EXEC}
-        width='100%'
-        height='100%'
-        onEditElement={() => { }}
-      />
+      <div style={{ height: '80vh' }}>
+        <IDCVis
+          type={TYPE_EXEC}
+          width='100%'
+          height='100%'
+          onEditElement={() => { }}
+        />
+      </div>
     );
   default:
     return null;

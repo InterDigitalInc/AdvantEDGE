@@ -111,7 +111,7 @@ const MonitorPageHeadlineBar = props => {
                   scenarioName={props.scenarioName}
                 />
               </GridCell>
-              <GridCell span={3}>
+              <GridCell span={4} align={'middle'}>
                 <Select
                   style={{ width: '100%' }}
                   label="Dashboard"
@@ -122,19 +122,21 @@ const MonitorPageHeadlineBar = props => {
                   data-cy={MON_DASHBOARD_SELECT}
                 />
               </GridCell>
-              <GridCell span={4} style={{ paddingTop: 8 }}>
-                <EditModeButton
-                  isEditMode={props.isEditMode}
-                  startEditMode={props.startEditMode}
-                  cancelEditMode={props.cancelEditMode}
-                />
-                <Button
-                  raised
-                  style={styles.button}
-                  onClick={() => window.open(grafanaUrl, '_blank')}
-                >
+              <GridCell span={3} align={'middle'}>
+                <div align={'right'}>
+                  <EditModeButton
+                    isEditMode={props.isEditMode}
+                    startEditMode={props.startEditMode}
+                    cancelEditMode={props.cancelEditMode}
+                  />
+                  <Button
+                    raised
+                    style={styles.button}
+                    onClick={() => window.open(grafanaUrl, '_blank')}
+                  >
                   OPEN GRAFANA
-                </Button>
+                  </Button>
+                </div>
               </GridCell>
             </GridInner>
           </Elevation>
