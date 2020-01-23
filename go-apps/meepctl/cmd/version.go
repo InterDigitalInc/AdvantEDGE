@@ -111,6 +111,7 @@ var corePodsNameMap = []string{
 	"meep-grafana",
 	"meep-influxdb",
 	"meep-couchdb",
+	"meep-kube-state-metrics",
 	"meep-docker-registry",
 }
 
