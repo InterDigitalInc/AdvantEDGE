@@ -5,24 +5,452 @@
         "builtIn": 1,
         "datasource": "$datasource",
         "enable": true,
-        "hide": true,
+        "hide": false,
         "iconColor": "rgba(0, 211, 255, 1)",
         "limit": 100,
-        "name": "Annotations & Alerts",
-        "query": "SELECT event from events WHERE $timeFilter ORDER BY time desc LIMIT 100",
+        "name": "Mobility Events",
+        "query": "SELECT type,description from $database.autogen.events WHERE type='MOBILITY' AND $timeFilter ORDER BY time ASC LIMIT 100",
         "showIn": 0,
         "tagsColumn": "type",
         "textColumn": "",
         "type": "dashboard"
+      },
+      {
+        "datasource": "$datasource",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#FF9830",
+        "name": "Net Char Events",
+        "query": "SELECT type,description from $database.autogen.events WHERE type='NETWORK-CHARACTERISTICS-UPDATE' AND $timeFilter ORDER BY time ASC LIMIT 100",
+        "showIn": 0,
+        "tagsColumn": "type"
       }
     ]
   },
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1579714692210,
+  "iteration": 1579876961492,
   "links": [],
   "panels": [
+    {
+      "content": "\n\n",
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 14,
+      "mode": "markdown",
+      "options": {},
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Latency",
+      "type": "text"
+    },
+    {
+      "content": "",
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 16,
+        "x": 8,
+        "y": 0
+      },
+      "id": 12,
+      "mode": "markdown",
+      "options": {},
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Throughput",
+      "type": "text"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#F2495C"
+      ],
+      "datasource": "$datasource",
+      "decimals": null,
+      "description": "",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 8,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "pluginVersion": "6.5.2",
+      "postfix": " ms",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "network",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT \"lat\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "lat"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "RTT",
+      "type": "singlestat",
+      "valueFontSize": "100%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#F2495C"
+      ],
+      "datasource": "$datasource",
+      "decimals": 2,
+      "description": "",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 10,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "pluginVersion": "6.5.2",
+      "postfix": " Mbps",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "network",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT \"ul\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "lat"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "UL",
+      "type": "singlestat",
+      "valueFontSize": "100%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#F2495C"
+      ],
+      "datasource": "$datasource",
+      "decimals": 2,
+      "description": "",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "id": 9,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "options": {},
+      "pluginVersion": "6.5.2",
+      "postfix": " Mbps",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false,
+        "ymax": null,
+        "ymin": null
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$__interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "null"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "network",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT \"dl\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "lat"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "src",
+              "operator": "=~",
+              "value": "/^$src$/"
+            },
+            {
+              "condition": "AND",
+              "key": "dest",
+              "operator": "=~",
+              "value": "/^$dest$/"
+            }
+          ]
+        }
+      ],
+      "thresholds": "",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "DL",
+      "type": "singlestat",
+      "valueFontSize": "100%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
     {
       "aliasColors": {},
       "bars": false,
@@ -34,10 +462,10 @@
       "fill": 2,
       "fillGradient": 4,
       "gridPos": {
-        "h": 12,
-        "w": 16,
+        "h": 11,
+        "w": 24,
         "x": 0,
-        "y": 0
+        "y": 4
       },
       "hiddenSeries": false,
       "id": 2,
@@ -246,7 +674,7 @@
           "label": "Latency (ms)",
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -254,7 +682,7 @@
           "label": "Throughput (Mbps)",
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         }
       ],
@@ -265,390 +693,6 @@
     },
     {
       "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#F2495C"
-      ],
-      "datasource": "$datasource",
-      "decimals": null,
-      "description": "",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "id": 8,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "options": {},
-      "pluginVersion": "6.5.2",
-      "postfix": " ms",
-      "postfixFontSize": "80%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "network",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT \"lat\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
-          "rawQuery": true,
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "lat"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "src",
-              "operator": "=~",
-              "value": "/^$src$/"
-            },
-            {
-              "condition": "AND",
-              "key": "dest",
-              "operator": "=~",
-              "value": "/^$dest$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": "",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Latency",
-      "type": "singlestat",
-      "valueFontSize": "110%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#F2495C"
-      ],
-      "datasource": "$datasource",
-      "decimals": 2,
-      "description": "",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 4
-      },
-      "id": 10,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "options": {},
-      "pluginVersion": "6.5.2",
-      "postfix": " Mbps",
-      "postfixFontSize": "80%",
-      "prefix": "",
-      "prefixFontSize": "150%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "network",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT \"ul\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
-          "rawQuery": true,
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "lat"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "src",
-              "operator": "=~",
-              "value": "/^$src$/"
-            },
-            {
-              "condition": "AND",
-              "key": "dest",
-              "operator": "=~",
-              "value": "/^$dest$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": "",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "UL Throughput",
-      "type": "singlestat",
-      "valueFontSize": "110%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#F2495C"
-      ],
-      "datasource": "$datasource",
-      "decimals": 2,
-      "description": "",
-      "format": "none",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": false,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
-      "id": 9,
-      "interval": null,
-      "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
-      "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "options": {},
-      "pluginVersion": "6.5.2",
-      "postfix": " Mbps",
-      "postfixFontSize": "80%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": false,
-        "ymax": null,
-        "ymin": null
-      },
-      "tableColumn": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "network",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT \"dl\" FROM $database.autogen.network WHERE (\"src\" =~ /^$src$/ AND \"dest\" =~ /^$dest$/) AND $timeFilter",
-          "rawQuery": true,
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "lat"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "src",
-              "operator": "=~",
-              "value": "/^$src$/"
-            },
-            {
-              "condition": "AND",
-              "key": "dest",
-              "operator": "=~",
-              "value": "/^$dest$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": "",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "DL Throughput",
-      "type": "singlestat",
-      "valueFontSize": "110%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
-    },
-    {
-      "cacheTimeout": null,
       "columns": [],
       "datasource": "$datasource",
       "fontSize": "100%",
@@ -656,7 +700,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 15
       },
       "id": 4,
       "links": [],
@@ -872,5 +916,5 @@
   "timezone": "",
   "title": "Metrics Dashboard",
   "uid": "100",
-  "version": 8
+  "version": 4
 }
