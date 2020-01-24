@@ -30,7 +30,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1579884786510,
+  "iteration": 1579895161356,
   "links": [],
   "panels": [
     {
@@ -1840,7 +1840,7 @@
           "measurement": "events",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT type,description FROM $database.autogen.events WHERE $timeFilter ORDER BY time desc LIMIT 100",
+          "query": "SELECT type,description FROM $database.autogen.events WHERE type='MOBILITY' AND $timeFilter ORDER BY time desc LIMIT 100",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
@@ -2079,5 +2079,5 @@
   "timezone": "",
   "title": "Players-Metrics-2",
   "uid": "MWC2020-P12M-2",
-  "version": 36
+  "version": 37
 }
