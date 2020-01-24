@@ -18,7 +18,6 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import axios from 'axios';
-import moment from 'moment';
 import { updateObject } from '../util/object-util';
 
 // Import JS dependencies
@@ -35,9 +34,7 @@ import {
   TYPE_CFG,
   TYPE_EXEC,
   EXEC_STATE_DEPLOYED,
-  NO_SCENARIO_NAME,
-  VIS_VIEW,
-  VIEW_NAME_NONE
+  NO_SCENARIO_NAME
 } from '../meep-constants';
 
 import {
@@ -65,8 +62,7 @@ import {
   execChangeOkToTerminate,
   corePodsRunning,
   corePodsErrors,
-  execVisFilteredData,
-  execAddMetricsEpoch
+  execVisFilteredData
 } from '../state/exec';
 
 import {
@@ -82,16 +78,9 @@ import {
   PAGE_SETTINGS
 } from '../meep-constants';
 
-import { idlog } from '../util/functional';
-
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.137:30000/v1';
-
-const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
-// const metricsBasePath = 'http://10.3.16.137:30008/v1';
-
-const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
+// const basepath = 'http://10.3.16.78:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
@@ -105,7 +94,6 @@ class MeepContainer extends Component {
     this.refreshIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
-    this.metricsPollingEnabled = false;
   }
 
   componentDidMount() {
@@ -116,7 +104,6 @@ class MeepContainer extends Component {
       this.startAutomaticRefresh();
     }
     this.startRefreshCycle();
-    this.setMetricsPolling();
   }
 
   startRefreshCycle() {
@@ -176,61 +163,6 @@ class MeepContainer extends Component {
         handleVisibilityChange,
         false
       );
-    }
-  }
-
-  fetchMetrics() {
-    const delta = -7;
-    const startTime = moment()
-      .utc()
-      .add(delta, 'seconds')
-      .format(TIME_FORMAT);
-    const stopTime = moment()
-      .utc()
-      .add(delta + 1, 'seconds')
-      .format(TIME_FORMAT);
-    return axios
-      .get(
-        `${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`
-      )
-      .then(res => {
-        let epoch = {
-          data: res.data.logResponse || [],
-          startTime: startTime
-        };
-
-        this.props.addMetricsEpoch(epoch);
-      })
-      .catch(e => {
-        idlog('Error while fetching metrics')(e);
-      });
-  }
-
-  setMetricsPolling() {
-    if (
-      this.props.dashboardView1 === VIS_VIEW &&
-      this.props.dashboardView2 === VIEW_NAME_NONE
-    ) {
-      this.stopMetricsPolling();
-    } else {
-      this.startMetricsPolling();
-    }
-  }
-  stopMetricsPolling() {
-    if (this.metricsPollingEnabled) {
-      clearInterval(this.dataTimer);
-      this.metricsPollingEnabled = false;
-    }
-  }
-  startMetricsPolling() {
-    if (!this.metricsPollingEnabled) {
-      this.epochCount = 0;
-      const nextData = () => {
-        this.epochCount += 1;
-        this.fetchMetrics();
-      };
-      this.dataTimer = setInterval(nextData, 1000);
-      this.metricsPollingEnabled = true;
     }
   }
 
@@ -481,7 +413,6 @@ class MeepContainer extends Component {
 
   render() {
     const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
-    this.setMetricsPolling();
 
     return (
       <div style={{ width: '100%' }}>
@@ -542,8 +473,7 @@ const mapDispatchToProps = dispatch => {
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer()),
-    addMetricsEpoch: epoch => dispatch(execAddMetricsEpoch(epoch))
+    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
   };
 };
 

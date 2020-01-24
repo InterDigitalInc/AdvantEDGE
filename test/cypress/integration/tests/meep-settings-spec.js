@@ -64,12 +64,6 @@ describe('MEEP Settings', function() {
     verify(meep.SET_VIS_CFG_CHECKBOX, 'be.checked');
     check(meep.SET_VIS_CFG_CHECKBOX, false);
     verify(meep.SET_VIS_CFG_CHECKBOX, 'not.be.checked');
-
-    // Enable & disable dashboard config mode
-    check(meep.SET_DASHBOARD_CFG_CHECKBOX, true);
-    verify(meep.SET_DASHBOARD_CFG_CHECKBOX, 'be.checked');
-    check(meep.SET_DASHBOARD_CFG_CHECKBOX, false);
-    verify(meep.SET_DASHBOARD_CFG_CHECKBOX, 'not.be.checked');
   });
 
 });

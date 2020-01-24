@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.3.0
+version: 1.3.1
 repo:
   name: AdvantEDGE
   core:
@@ -123,18 +123,6 @@ repo:
   dep:
     docker-registry:
       chart: charts/docker-registry
-    elastic:
-      es:
-        chart: charts/elasticsearch
-        pv: charts/elasticsearch/meep-pv-es.yaml
-      es-curator:
-        chart: charts/elasticsearch-curator
-      kibana:
-        chart: charts/kibana
-      filebeat:
-        chart: charts/filebeat
-      metricbeat:
-        chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
     influxdb:
@@ -144,3 +132,5 @@ repo:
     k8s:
       kube-state-metrics:
         chart: charts/kube-state-metrics
+    grafana:
+      chart: charts/grafana

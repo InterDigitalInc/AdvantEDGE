@@ -146,12 +146,34 @@ func (ms *MetricStore) GetNetworkMetric(src string, dst string, duration string,
 }
 
 func (ms *MetricStore) formatCachedNetworkMetric(values map[string]interface{}) (metric NetworkMetric, err error) {
+	var ok bool
+	var val interface{}
+
 	// Process field values
-	metric.Lat = StrToInt32(values[NetMetLatency].(string))
-	metric.UlTput = StrToFloat64(values[NetMetULThroughput].(string))
-	metric.DlTput = StrToFloat64(values[NetMetDLThroughput].(string))
-	metric.UlLoss = StrToFloat64(values[NetMetULPktLoss].(string))
-	metric.DlLoss = StrToFloat64(values[NetMetDLPktLoss].(string))
+	if val, ok = values[NetMetLatency]; !ok {
+		val = ""
+	}
+	metric.Lat = StrToInt32(val.(string))
+
+	if val, ok = values[NetMetULThroughput]; !ok {
+		val = ""
+	}
+	metric.UlTput = StrToFloat64(val.(string))
+
+	if val, ok = values[NetMetDLThroughput]; !ok {
+		val = ""
+	}
+	metric.DlTput = StrToFloat64(val.(string))
+
+	if val, ok = values[NetMetULPktLoss]; !ok {
+		val = ""
+	}
+	metric.UlLoss = StrToFloat64(val.(string))
+
+	if val, ok = values[NetMetDLPktLoss]; !ok {
+		val = ""
+	}
+	metric.DlLoss = StrToFloat64(val.(string))
 
 	// Retrieve Src & Dst from key
 	if key, ok := values[NetMetKey]; ok {

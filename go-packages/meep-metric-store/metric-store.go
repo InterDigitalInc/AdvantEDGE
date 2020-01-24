@@ -144,7 +144,7 @@ func (ms *MetricStore) Flush() {
 		return
 	}
 
-	// Create Store Influx DB if it does not exist
+	// Flush Influx DB
 	q := influx.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
 	response, err := (*ms.influxClient).Query(q)
 	if err != nil {
@@ -156,12 +156,50 @@ func (ms *MetricStore) Flush() {
 	ms.redisClient.DBFlush(moduleMetrics + ":" + NetMetName)
 }
 
+// Copy
+func (ms *MetricStore) Copy(src string, dst string) error {
+	// Remove dashes from names
+	srcStoreName := strings.Replace(src, "-", "", -1)
+	dstStoreName := strings.Replace(dst, "-", "", -1)
+
+	// Validate input params
+	if srcStoreName == "" || dstStoreName == "" {
+		err := errors.New("Invalid params: " + src + ", " + dst)
+		log.Error("Error: ", err.Error())
+		return err
+	}
+
+	// Flush destination DB, if any
+	q := influx.NewQuery("DROP SERIES FROM /.*/", dstStoreName, "")
+	_, err := (*ms.influxClient).Query(q)
+	if err != nil {
+		log.Warn("Query failed with error: ", err.Error())
+	}
+
+	// Create destination DB
+	q = influx.NewQuery("CREATE DATABASE "+dstStoreName, "", "")
+	_, err = (*ms.influxClient).Query(q)
+	if err != nil {
+		log.Error("Query failed with error: ", err.Error())
+		return err
+	}
+
+	// Copy database
+	q = influx.NewQuery("SELECT * INTO \""+dstStoreName+"\".\"autogen\".:MEASUREMENT FROM \""+srcStoreName+"\".\"autogen\"./.*/ GROUP BY *", "", "")
+	response, err := (*ms.influxClient).Query(q)
+	if err != nil {
+		log.Error("Query failed with error: ", err.Error())
+	}
+	log.Info(response.Results)
+
+	return nil
+}
+
 // SetInfluxMetric - Generic metric setter
 func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 	// Make sure we have set a store
 	if ms.name == "" {
-		err := errors.New("Store name not specified")
-		return err
+		return errors.New("Store name not specified")
 	}
 
 	// Create a new point batch

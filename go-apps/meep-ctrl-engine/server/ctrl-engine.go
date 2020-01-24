@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,6 +46,10 @@ const scenarioDBName = "scenarios"
 const activeScenarioName = "active"
 const moduleName string = "meep-ctrl-engine"
 const moduleMonEngine string = "mon-engine"
+
+const eventTypeMobility = "MOBILITY"
+const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
+const eventTypePoasInRange = "POAS-IN-RANGE"
 
 var db *kivik.DB
 var virtWatchdog *watchdog.Watchdog
@@ -584,13 +589,14 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Process Event
 	var httpStatus int
+	var description string
 	switch eventType {
-	case "MOBILITY":
-		err, httpStatus = sendEventMobility(event)
-	case "NETWORK-CHARACTERISTICS-UPDATE":
-		err, httpStatus = sendEventNetworkCharacteristics(event)
-	case "POAS-IN-RANGE":
-		err, httpStatus = sendEventPoasInRange(event)
+	case eventTypeMobility:
+		err, httpStatus, description = sendEventMobility(event)
+	case eventTypeNetCharUpdate:
+		err, httpStatus, description = sendEventNetworkCharacteristics(event)
+	case eventTypePoasInRange:
+		err, httpStatus, description = sendEventPoasInRange(event)
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -603,10 +609,11 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log successful event in metric store
-	eventStr, err := json.Marshal(event)
+	eventJSONStr, err := json.Marshal(event)
 	if err == nil {
 		var metric ms.EventMetric
-		metric.Event = string(eventStr)
+		metric.Event = string(eventJSONStr)
+		metric.Description = description
 		err = metricStore.SetEventMetric(eventType, metric)
 	}
 	if err != nil {
@@ -728,34 +735,39 @@ func ceGetStates(w http.ResponseWriter, r *http.Request) {
 
 // ------------------
 
-func sendEventNetworkCharacteristics(event ceModel.Event) (error, int) {
+func sendEventNetworkCharacteristics(event ceModel.Event) (error, int, string) {
 	if event.EventNetworkCharacteristicsUpdate == nil {
 		err := errors.New("Malformed request: missing EventNetworkCharacteristicsUpdate")
-		return err, http.StatusBadRequest
+		return err, http.StatusBadRequest, ""
 	}
 
-	// elementFound := false
 	netChar := event.EventNetworkCharacteristicsUpdate
+	description := "[" + netChar.ElementName + "] update " +
+		"latency=" + strconv.Itoa(int(netChar.Latency)) + "ms " +
+		"jitter=" + strconv.Itoa(int(netChar.LatencyVariation)) + "ms " +
+		"throughput=" + strconv.Itoa(int(netChar.Throughput)) + "Mbps " +
+		"packet-loss=" + strconv.FormatFloat(netChar.PacketLoss, 'f', -1, 64) + "% "
 
 	err := activeModel.UpdateNetChar(netChar)
 	if err != nil {
-		return err, http.StatusInternalServerError
+		return err, http.StatusInternalServerError, ""
 	}
-	return nil, -1
+	return nil, -1, description
 }
 
-func sendEventMobility(event ceModel.Event) (error, int) {
+func sendEventMobility(event ceModel.Event) (error, int, string) {
 	if event.EventMobility == nil {
 		err := errors.New("Malformed request: missing EventMobility")
-		return err, http.StatusBadRequest
+		return err, http.StatusBadRequest, ""
 	}
 	// Retrieve target name (src) and destination parent name
 	elemName := event.EventMobility.ElementName
 	destName := event.EventMobility.Dest
+	description := "[" + elemName + "] move to " + destName
 
 	oldNL, newNL, err := activeModel.MoveNode(elemName, destName)
 	if err != nil {
-		return err, http.StatusInternalServerError
+		return err, http.StatusInternalServerError, ""
 	}
 	log.WithFields(log.Fields{
 		"meep.log.component": "ctrl-engine",
@@ -765,13 +777,14 @@ func sendEventMobility(event ceModel.Event) (error, int) {
 		"meep.log.src":       elemName,
 		"meep.log.dest":      elemName,
 	}).Info("Measurements log")
-	return nil, -1
+
+	return nil, -1, description
 }
 
-func sendEventPoasInRange(event ceModel.Event) (error, int) {
+func sendEventPoasInRange(event ceModel.Event) (error, int, string) {
 	if event.EventPoasInRange == nil {
 		err := errors.New("Malformed request: missing EventPoasInRange")
-		return err, http.StatusBadRequest
+		return err, http.StatusBadRequest, ""
 	}
 	var ue *ceModel.PhysicalLocation
 
@@ -787,7 +800,7 @@ func sendEventPoasInRange(event ceModel.Event) (error, int) {
 	n := activeModel.GetNode(ueName)
 	if n == nil {
 		err := errors.New("Node not found " + ueName)
-		return err, http.StatusNotFound
+		return err, http.StatusNotFound, ""
 	}
 	ue, ok := n.(*ceModel.PhysicalLocation)
 	if !ok {
@@ -808,7 +821,7 @@ func sendEventPoasInRange(event ceModel.Event) (error, int) {
 			//Publish updated scenario
 			err := activeModel.Activate()
 			if err != nil {
-				return err, http.StatusInternalServerError
+				return err, http.StatusInternalServerError, ""
 			}
 
 			log.Debug("Active scenario updated")
@@ -817,9 +830,9 @@ func sendEventPoasInRange(event ceModel.Event) (error, int) {
 		}
 	} else {
 		err := errors.New("Failed to find UE")
-		return err, http.StatusNotFound
+		return err, http.StatusNotFound, ""
 	}
-	return nil, -1
+	return nil, -1, ""
 }
 
 func getPodDetails(key string, fields map[string]string, userData interface{}) error {

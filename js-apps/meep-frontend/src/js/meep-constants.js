@@ -101,6 +101,7 @@ export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
+export const EXEC_BTN_CONFIG = 'exec-btn-config';
 
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
@@ -208,17 +209,13 @@ export const id = label => {
   return '#' + label;
 };
 
-// Metrics engine data types
-export const ME_LATENCY_METRICS = 'latency';
-export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
-export const ME_MOBILITY_EVENT = 'mobilityEvent';
-
 export const VIEW_NAME_NONE = 'None';
-export const HIERARCHY_VIEW = 'Network Topology';
-export const APPS_VIEW = 'Applications';
-export const LATENCY_VIEW = 'Latency Graph';
-export const THROUGHPUT_VIEW = 'Throughput Graph';
-export const VIS_VIEW = 'Network Topology (vis)';
+export const VIS_VIEW = 'Network Topology';
+export const METRICS_VIEW = 'Metrics Dashboard';
+export const PLAYER_METRICS_1_VIEW = 'Player Metrics Dashboard';
+export const PLAYER_METRICS_1_NOFPS_VIEW = 'Player Metrics Dashboard (no FPS)';
+export const PLAYER_METRICS_2_VIEW = 'Player Metrics Dashboard v2';
+export const PLAYER_METRICS_2_NOFPS_VIEW = 'Player Metrics Dashboard (no FPS) v2';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
@@ -226,8 +223,9 @@ export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 export const DASHBOARD_VIEWS_LIST = [
   VIEW_NAME_NONE,
   VIS_VIEW,
-  APPS_VIEW,
-  LATENCY_VIEW,
-  THROUGHPUT_VIEW,
-  HIERARCHY_VIEW
+  METRICS_VIEW,
+  PLAYER_METRICS_1_VIEW,
+  PLAYER_METRICS_1_NOFPS_VIEW,
+  PLAYER_METRICS_2_VIEW,
+  PLAYER_METRICS_2_NOFPS_VIEW
 ];

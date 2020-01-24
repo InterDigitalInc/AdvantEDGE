@@ -41,27 +41,27 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	ms.Flush()
 
 	fmt.Println("Set event metric")
-	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event1"})
+	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event1", "event1 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event2"})
+	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event2", "event2 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event3"})
+	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event3", "event3 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event4"})
+	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event4", "event4 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event5"})
+	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event5", "event5 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
-	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event6"})
+	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event6", "event6 description"})
 	if err != nil {
 		t.Errorf("Unable to set event metric")
 	}
@@ -75,43 +75,43 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	if err != nil || len(eml) != 1 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateEventsMetric(eml[0], "event4") {
+	if !validateEventsMetric(eml[0], "event4", "event4 description") {
 		t.Errorf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("MOBILITY", "", 0)
 	if err != nil || len(eml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateEventsMetric(eml[0], "event4") {
+	if !validateEventsMetric(eml[0], "event4", "event4 description") {
 		t.Errorf("Invalid event metric")
 	}
-	if !validateEventsMetric(eml[1], "event1") {
+	if !validateEventsMetric(eml[1], "event1", "event1 description") {
 		t.Errorf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", "", 0)
 	if err != nil || len(eml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateEventsMetric(eml[0], "event5") {
+	if !validateEventsMetric(eml[0], "event5", "event5 description") {
 		t.Errorf("Invalid event metric")
 	}
-	if !validateEventsMetric(eml[1], "event2") {
+	if !validateEventsMetric(eml[1], "event2", "event2 description") {
 		t.Errorf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("POAS-IN-RANGE", "", 0)
 	if err != nil || len(eml) != 2 {
 		t.Errorf("Failed to get metric")
 	}
-	if !validateEventsMetric(eml[0], "event6") {
+	if !validateEventsMetric(eml[0], "event6", "event6 description") {
 		t.Errorf("Invalid event metric")
 	}
-	if !validateEventsMetric(eml[1], "event3") {
+	if !validateEventsMetric(eml[1], "event3", "event3 description") {
 		t.Errorf("Invalid event metric")
 	}
 
 	// t.Errorf("DONE")
 }
 
-func validateEventsMetric(em EventMetric, event string) bool {
-	return em.Event == event
+func validateEventsMetric(em EventMetric, event string, description string) bool {
+	return em.Event == event && em.Description == description
 }

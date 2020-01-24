@@ -45,8 +45,7 @@ import {
   MON_DASHBOARD_IFRAME
 } from '../../meep-constants';
 
-const kibanaDashboardUrl =
-  'http://' + location.hostname + ':32003/app/kibana#/dashboard';
+const grafanaUrl = 'http://' + location.hostname + ':30009';
 
 const DashboardContainer = props => {
   if (!props.dashboardUrl) {
@@ -87,11 +86,16 @@ const DashboardContainer = props => {
 };
 
 const EditModeButton = ({ isEditMode, startEditMode }) => {
-  return !isEditMode() ? (
-    <Button raised style={styles.button} onClick={startEditMode}>
+  return (
+    <Button
+      raised
+      disabled={isEditMode()}
+      style={styles.button}
+      onClick={startEditMode}
+    >
       EDIT
     </Button>
-  ) : null;
+  );
 };
 
 const MonitorPageHeadlineBar = props => {
@@ -107,7 +111,7 @@ const MonitorPageHeadlineBar = props => {
                   scenarioName={props.scenarioName}
                 />
               </GridCell>
-              <GridCell span={3}>
+              <GridCell span={4} align={'middle'}>
                 <Select
                   style={{ width: '100%' }}
                   label="Dashboard"
@@ -118,19 +122,21 @@ const MonitorPageHeadlineBar = props => {
                   data-cy={MON_DASHBOARD_SELECT}
                 />
               </GridCell>
-              <GridCell span={4} style={{ paddingTop: 8 }}>
-                <Button
-                  raised
-                  style={styles.button}
-                  onClick={() => window.open(kibanaDashboardUrl, '_blank')}
-                >
-                  OPEN KIBANA
-                </Button>
-                <EditModeButton
-                  isEditMode={props.isEditMode}
-                  startEditMode={props.startEditMode}
-                  cancelEditMode={props.cancelEditMode}
-                />
+              <GridCell span={3} align={'middle'}>
+                <div align={'right'}>
+                  <EditModeButton
+                    isEditMode={props.isEditMode}
+                    startEditMode={props.startEditMode}
+                    cancelEditMode={props.cancelEditMode}
+                  />
+                  <Button
+                    raised
+                    style={styles.button}
+                    onClick={() => window.open(grafanaUrl, '_blank')}
+                  >
+                  OPEN GRAFANA
+                  </Button>
+                </div>
               </GridCell>
             </GridInner>
           </Elevation>

@@ -1,0 +1,33 @@
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) (eq .Values.persistence.type "pvc")}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "grafana.fullname" . }}
+  namespace: {{ template "grafana.namespace" . }}
+  labels:
+    app: {{ template "grafana.name" . }}
+    chart: {{ template "grafana.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  {{- with .Values.persistence.annotations  }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- with .Values.persistence.finalizers  }}
+  finalizers:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- range .Values.persistence.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size | quote }}
+{{- if (eq "fullname" .Values.persistence.storageClassName) }}
+  storageClassName: "{{ template "grafana.fullname" . }}"
+{{- else }}
+  storageClassName: "{{ .Values.persistence.storageClassName }}"
+{{- end }}
+{{- end -}}

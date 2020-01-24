@@ -25,10 +25,12 @@ import (
 const EvMetName = "events"
 const EvMetType = "type"
 const EvMetEvent = "event"
+const EvMetDescription = "description"
 
 type EventMetric struct {
-	Time  interface{}
-	Event string
+	Time        interface{}
+	Event       string
+	Description string
 }
 
 // SetEventMetric
@@ -37,7 +39,10 @@ func (ms *MetricStore) SetEventMetric(eventType string, em EventMetric) error {
 	metric := &metricList[0]
 	metric.Name = EvMetName
 	metric.Tags = map[string]string{EvMetType: eventType}
-	metric.Fields = map[string]interface{}{EvMetEvent: em.Event}
+	metric.Fields = map[string]interface{}{
+		EvMetEvent:       em.Event,
+		EvMetDescription: em.Description,
+	}
 	return ms.SetInfluxMetric(metricList)
 }
 
@@ -51,7 +56,7 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 
 	// Get Traffic metrics
 	tags := map[string]string{EvMetType: eventType}
-	fields := []string{EvMetEvent}
+	fields := []string{EvMetEvent, EvMetDescription}
 	var valuesArray []map[string]interface{}
 	valuesArray, err = ms.GetInfluxMetric(EvMetName, tags, fields, duration, count)
 	if err != nil {
@@ -65,6 +70,9 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 		metrics[index].Time = values[NetMetTime]
 		if val, ok := values[EvMetEvent].(string); ok {
 			metrics[index].Event = val
+		}
+		if val, ok := values[EvMetDescription].(string); ok {
+			metrics[index].Description = val
 		}
 	}
 	return
