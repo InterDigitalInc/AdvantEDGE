@@ -44,10 +44,10 @@ import {
   DASHBOARD_VIEWS_LIST,
   VIEW_NAME_NONE,
   METRICS_VIEW,
-  PLAYER1_V1_VIEW,
-  PLAYER1_V2_VIEW,
-  COMBINED_V1_VIEW,
-  COMBINED_V2_VIEW,
+  PLAYER_METRICS_1_VIEW,
+  PLAYER_METRICS_1_NOFPS_VIEW,
+  PLAYER_METRICS_2_VIEW,
+  PLAYER_METRICS_2_NOFPS_VIEW,
   VIS_VIEW
 } from '../../meep-constants';
 
@@ -158,17 +158,17 @@ const ViewForName = ({
   const metricsDashboard = 'http://' + location.hostname + ':30009/d/100/metrics-dashboard?orgId=1';
   const metricsDashboardUrl = metricsDashboard + datasource + database + refreshInterval + srcApp + destApp + viewMode + theme;
   
-  const player1Dashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P1M/player-1-metrics?orgId=1';
-  const player1DashboardUrl = player1Dashboard + datasource + database + refreshInterval + viewMode + theme;
+  const playerMetrics1Dashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-1/player-metrics-1?orgId=1';
+  const playerMetrics1DashboardUrl = playerMetrics1Dashboard + datasource + database + refreshInterval + viewMode + theme;
 
-  const player1DashboardV2 = 'http://' + location.hostname + ':30009/d/MWC2020-P1M-2/player-1-metrics-2?orgId=1';
-  const player1DashboardV2Url = player1DashboardV2 + datasource + database + refreshInterval + viewMode + theme;
+  const playerMetrics1NoFpsDashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-1-nofps/player-metrics-1-nofps?orgId=1';
+  const playerMetrics1NoFpsDashboardUrl = playerMetrics1NoFpsDashboard + datasource + database + refreshInterval + viewMode + theme;
   
-  const combinedDashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-1/player-1-2-metrics-1?orgId=1';
-  const combinedDashboardUrl = combinedDashboard + datasource + database + refreshInterval + viewMode + theme;
+  const playerMetrics2Dashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-2/player-metrics-2?orgId=1';
+  const playerMetrics2DashboardUrl = playerMetrics2Dashboard + datasource + database + refreshInterval + viewMode + theme;
 
-  const combinedDashboardV2 = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-2/player-1-2-metrics-2?orgId=1';
-  const combinedDashboardV2Url = combinedDashboardV2 + datasource + database + refreshInterval + viewMode + theme;
+  const playerMetrics2NoFpsDashboard = 'http://' + location.hostname + ':30009/d/MWC2020-P12M-2nofps/player-metrics-2-nofps?orgId=1';
+  const playerMetrics2NoFpsDashboardUrl = playerMetrics2NoFpsDashboard + datasource + database + refreshInterval + viewMode + theme;
 
   switch (viewName) {
   case METRICS_VIEW:
@@ -185,11 +185,11 @@ const ViewForName = ({
         />
       </div>
     );
-  case PLAYER1_V1_VIEW:
+  case PLAYER_METRICS_1_VIEW:
     return (
       <div style={{ height: '80vh' }}>
         <Iframe
-          url={player1DashboardUrl}
+          url={playerMetrics1DashboardUrl}
           id="myId"
           display="initial"
           position="relative"
@@ -199,11 +199,11 @@ const ViewForName = ({
         />
       </div>
     );
-  case PLAYER1_V2_VIEW:
+  case PLAYER_METRICS_1_NOFPS_VIEW:
     return (
       <div style={{ height: '80vh' }}>
         <Iframe
-          url={player1DashboardV2Url}
+          url={playerMetrics1NoFpsDashboardUrl}
           id="myId"
           display="initial"
           position="relative"
@@ -213,11 +213,11 @@ const ViewForName = ({
         />
       </div>
     );
-  case COMBINED_V1_VIEW:
+  case PLAYER_METRICS_2_VIEW:
     return (
       <div style={{ height: '80vh' }}>
         <Iframe
-          url={combinedDashboardUrl}
+          url={playerMetrics2DashboardUrl}
           id="myId"
           display="initial"
           position="relative"
@@ -227,11 +227,11 @@ const ViewForName = ({
         />
       </div>
     );
-  case COMBINED_V2_VIEW:
+  case PLAYER_METRICS_2_NOFPS_VIEW:
     return (
       <div style={{ height: '80vh' }}>
         <Iframe
-          url={combinedDashboardV2Url}
+          url={playerMetrics2NoFpsDashboardUrl}
           id="myId"
           display="initial"
           position="relative"
