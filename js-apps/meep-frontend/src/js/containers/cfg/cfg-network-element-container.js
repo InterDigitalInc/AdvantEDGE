@@ -924,7 +924,8 @@ const getParentTypes = type => {
 };
 
 const buttonStyles = {
-  marginRight: 5
+  marginRight: 5,
+  width: 100
 };
 
 const ElementCfgButtons = ({
@@ -973,7 +974,6 @@ const ElementCfgButtons = ({
       >
         CLONE
       </Button>
-
     </>
   );
 };
@@ -1094,9 +1094,9 @@ export class CfgNetworkElementContainer extends Component {
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementType));
 
-    if (this.props.configMode !== CFG_ELEM_MODE_CLONE) { 
+    if (this.props.configMode !== CFG_ELEM_MODE_CLONE) {
       setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementType, this.props.tableData));
-    } 
+    }
     this.props.cfgElemUpdate(elem);
   }
 
@@ -1105,13 +1105,13 @@ export class CfgNetworkElementContainer extends Component {
     return (
       <div className="cfg-network-element-div" style={styles.outer}>
         <Grid>
-          <GridCell span={7}>
+          <GridCell span={12}>
             <div style={styles.block}>
               <Typography use="headline6">Element Configuration</Typography>
             </div>
           </GridCell>
-          <GridCell span={5}>
-            <GridInner align={'right'}>
+          <GridCell span={12}>
+            <GridInner align={'left'}>
               <GridCell span={12}>
                 <ElementCfgButtons
                   configuredElement={element}

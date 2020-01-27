@@ -162,6 +162,10 @@ class IDCVis extends Component {
 
     var groups = vis.options.groups;
 
+    //vis.network.on("configChange", function() {
+    //  console.log(network.getOptionsFromConfigurator());
+    //});
+
     // Scenario
     createBoxGroup(groups, 'scenario', '#ffffff');
     groups.scenario.borderWidth = 4;
@@ -349,6 +353,34 @@ class IDCVis extends Component {
       vis.showConfig = !vis.showConfig;
     }
     vis.options.configure.enabled = vis.showConfig;
+    var subOptions;
+    switch(vis.options.configure.filter) {
+    case 'physics':
+      subOptions = vis.network.getOptionsFromConfigurator(); 
+      vis.options.physics = subOptions.physics;
+      break;
+    case 'manipulation':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.manipulation = subOptions.manipulation;
+      break;
+    case 'interaction':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.interaction = subOptions.interaction;
+      break;
+    case 'nodes':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.nodes = subOptions.nodes;
+      break;
+    case 'edges':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.edges = subOptions.edges;
+      break;
+    case 'layout':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.layout = subOptions.layout;
+      break;   
+    default:
+    }
     vis.options.configure.filter = filterStr;
     vis.network.setOptions(vis.options);
   }
@@ -362,7 +394,7 @@ class IDCVis extends Component {
   }
 
   render() {
-    this.updateConfigVisibility();
+    //this.updateConfigVisibility();
     return (
       <>
         <div
