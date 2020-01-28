@@ -11,9 +11,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 	github.com/flimzy/diff v0.1.5 // indirect
-	github.com/flimzy/kivik v1.8.1
 	github.com/flimzy/testy v0.1.16 // indirect
-	github.com/go-kivik/couchdb v1.8.1
 	github.com/gopherjs/gopherjs v0.0.0-20190411002643-bd77b112433e // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3

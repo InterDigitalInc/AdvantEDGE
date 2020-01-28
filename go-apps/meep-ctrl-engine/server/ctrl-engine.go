@@ -42,7 +42,6 @@ type Scenario struct {
 }
 
 const scenarioDBName = "scenarios"
-const activeScenarioName = "active"
 const moduleName string = "meep-ctrl-engine"
 const moduleMonEngine string = "mon-engine"
 
