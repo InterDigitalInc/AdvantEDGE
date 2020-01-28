@@ -78,7 +78,7 @@ func NewConnector(addr string, dbName string) (rc *Connector, err error) {
 }
 
 // getDocument - Get document from DB
-func (dbCon *Connector) getDoc(returnNilOnNotFound bool, docName string) (doc []byte, err error) {
+func (dbCon *Connector) GetDoc(returnNilOnNotFound bool, docName string) (doc []byte, err error) {
 	log.Debug("Get document from DB: " + docName)
 	row, err := dbCon.dbHandle.Get(context.TODO(), docName)
 	if err != nil {
@@ -95,7 +95,7 @@ func (dbCon *Connector) getDoc(returnNilOnNotFound bool, docName string) (doc []
 }
 
 // getDocList - Get document list from DB
-func (dbCon *Connector) getDocList() (docList [][]byte, err error) {
+func (dbCon *Connector) GetDocList() (docList [][]byte, err error) {
 	log.Debug("Get all docs from DB")
 	rows, err := dbCon.dbHandle.AllDocs(context.TODO())
 	if err != nil {
@@ -106,7 +106,7 @@ func (dbCon *Connector) getDocList() (docList [][]byte, err error) {
 	log.Debug("Loop through docs")
 	for rows.Next() {
 		var doc []byte
-		doc, err = dbCon.getDoc(false, rows.ID())
+		doc, err = dbCon.GetDoc(false, rows.ID())
 		if err == nil {
 			// Append to list
 			docList = append(docList, doc)
@@ -117,7 +117,7 @@ func (dbCon *Connector) getDocList() (docList [][]byte, err error) {
 }
 
 // addDoc - Add scenario to DB
-func (dbCon *Connector) addDoc(docName string, doc []byte) (string, error) {
+func (dbCon *Connector) AddDoc(docName string, doc []byte) (string, error) {
 	log.Debug("Add new doc to DB: " + docName)
 	rev, err := dbCon.dbHandle.Put(context.TODO(), docName, doc)
 	if err != nil {
@@ -128,16 +128,16 @@ func (dbCon *Connector) addDoc(docName string, doc []byte) (string, error) {
 }
 
 // updateDoc - Update a document in DB
-func (dbCon *Connector) updateDoc(docName string, doc []byte) (string, error) {
+func (dbCon *Connector) UpdateDoc(docName string, doc []byte) (string, error) {
 	log.Debug("Update doc from DB: " + docName)
 	// Remove previous version
-	err := dbCon.deleteDoc(docName)
+	err := dbCon.DeleteDoc(docName)
 	if err != nil {
 		return "", err
 	}
 
 	// Add updated version
-	rev, err := dbCon.addDoc(docName, doc)
+	rev, err := dbCon.AddDoc(docName, doc)
 	if err != nil {
 		return "", err
 	}
@@ -146,7 +146,7 @@ func (dbCon *Connector) updateDoc(docName string, doc []byte) (string, error) {
 }
 
 // deleteDoc - Remove a document from DB
-func (dbCon *Connector) deleteDoc(docName string) error {
+func (dbCon *Connector) DeleteDoc(docName string) error {
 	log.Debug("Delete doc from DB: " + docName)
 	// Get latest Rev of stored document
 	rev, err := dbCon.dbHandle.Rev(context.TODO(), docName)
@@ -164,7 +164,7 @@ func (dbCon *Connector) deleteDoc(docName string) error {
 }
 
 // deleteAllDocs - Remove all documents from DB
-func (dbCon *Connector) deleteAllDocs() error {
+func (dbCon *Connector) DeleteAllDocs() error {
 	log.Debug("Delete all docs from DB")
 	// Retrieve all scenarios from DB
 	rows, err := dbCon.dbHandle.AllDocs(context.TODO())
@@ -174,7 +174,7 @@ func (dbCon *Connector) deleteAllDocs() error {
 
 	// Loop through docs and remove each one
 	for rows.Next() {
-		_ = dbCon.deleteDoc(rows.ID())
+		_ = dbCon.DeleteDoc(rows.ID())
 	}
 
 	return nil

@@ -50,11 +50,11 @@ func TestCouchDB(t *testing.T) {
 
 	testDb(t, con2)
 
-	err = con1.deleteAllDocs()
+	err = con1.DeleteAllDocs()
 	if err != nil {
 		t.Errorf("Deleting all docs returned an error (con1)")
 	}
-	err = con2.deleteAllDocs()
+	err = con2.DeleteAllDocs()
 	if err != nil {
 		t.Errorf("Deleting all docs returned an error (con2)")
 	}
@@ -63,14 +63,14 @@ func TestCouchDB(t *testing.T) {
 
 func testDb(t *testing.T, c *Connector) {
 	//Empty DB
-	err := c.deleteAllDocs()
+	err := c.DeleteAllDocs()
 	if err != nil {
 		log.Debug(err)
 		t.Errorf("deleteAllDocs shouls not return an error")
 	}
 
 	// Get inexistent doc
-	doc, err := c.getDoc(false, "not-a-document")
+	doc, err := c.GetDoc(false, "not-a-document")
 	if err == nil {
 		t.Errorf("getDoc should return an error (inexistent doc)")
 	} else if doc != nil {
@@ -78,7 +78,7 @@ func testDb(t *testing.T, c *Connector) {
 	}
 
 	// Get inexistent doc
-	doc, err = c.getDoc(true, "not-a-document")
+	doc, err = c.GetDoc(true, "not-a-document")
 	if err != nil {
 		t.Errorf("getDoc error should be suppressed (inexistent doc)")
 	} else if doc != nil {
@@ -86,7 +86,7 @@ func testDb(t *testing.T, c *Connector) {
 	}
 
 	// Get doc list
-	docList, err := c.getDocList()
+	docList, err := c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (empty doc list)")
 	} else if len(docList) != 0 {
@@ -98,19 +98,19 @@ func testDb(t *testing.T, c *Connector) {
 	doc2 := []byte(`{"data":"This is document #2"}`)
 	doc3 := []byte(`{"data":"This is document #3"}`)
 
-	rev1, err := c.addDoc("doc1", doc1)
+	rev1, err := c.AddDoc("doc1", doc1)
 	if err != nil {
 		log.Debug(err)
 		t.Errorf("addDoc returned an error")
 	}
 	log.Debug(rev1)
-	rev2, err := c.addDoc("doc2", doc2)
+	rev2, err := c.AddDoc("doc2", doc2)
 	if err != nil {
 		log.Debug(err)
 		t.Errorf("addDoc returned an error")
 	}
 	log.Debug(rev2)
-	rev3, err := c.addDoc("doc3", doc3)
+	rev3, err := c.AddDoc("doc3", doc3)
 	if err != nil {
 		log.Debug(err)
 		t.Errorf("addDoc returned an error")
@@ -118,14 +118,14 @@ func testDb(t *testing.T, c *Connector) {
 	log.Debug(rev3)
 
 	// Get doc list
-	docList, err = c.getDocList()
+	docList, err = c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (3 doc list)")
 	} else if len(docList) != 3 {
 		t.Errorf("getDocList should return a 3 document list (3 doc list)")
 	}
 
-	rev1, err = c.updateDoc("doc1", doc1Update)
+	rev1, err = c.UpdateDoc("doc1", doc1Update)
 	if err != nil {
 		log.Debug(err)
 		t.Errorf("updateDoc returned an error")
@@ -133,7 +133,7 @@ func testDb(t *testing.T, c *Connector) {
 	log.Debug(rev1)
 
 	// Get doc list
-	docList, err = c.getDocList()
+	docList, err = c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (3 doc list)")
 	} else if len(docList) != 3 {

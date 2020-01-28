@@ -26,9 +26,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/flimzy/kivik"
 	"github.com/gorilla/mux"
 
+	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
@@ -46,7 +46,7 @@ const activeScenarioName = "active"
 const moduleName string = "meep-ctrl-engine"
 const moduleMonEngine string = "mon-engine"
 
-var db *kivik.DB
+var scenarioStore *couch.Connector
 var virtWatchdog *watchdog.Watchdog
 var rc *redis.Connector
 var activeModel *mod.Model
@@ -78,7 +78,7 @@ func CtrlEngineInit() (err error) {
 	log.Debug("CtrlEngineInit")
 
 	// Make Scenario DB connection
-	db, err = connectDb(scenarioDBName)
+	scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
 	if err != nil {
 		log.Error("Failed connection to Scenario DB. Error: ", err)
 		return err
@@ -86,7 +86,7 @@ func CtrlEngineInit() (err error) {
 	log.Info("Connected to Scenario DB")
 
 	// Retrieve scenario list from DB
-	scenarioList, err := getScenarioList(db)
+	scenarioList, err := scenarioStore.GetDocList()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -104,7 +104,7 @@ func CtrlEngineInit() (err error) {
 			}
 
 			// Update scenario in DB
-			rev, err := setScenario(db, s.Name, validScenario)
+			rev, err := scenarioStore.UpdateDoc(s.Name, validScenario)
 			if err != nil {
 				return errors.New("Failed to update scenario with error: " + err.Error())
 			}
@@ -181,7 +181,7 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add new scenario to DB
-	rev, err := addScenario(db, scenarioName, validScenario)
+	rev, err := scenarioStore.AddDoc(scenarioName, validScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -205,7 +205,7 @@ func ceDeleteScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Scenario name: ", scenarioName)
 
 	// Remove scenario from DB
-	err := removeScenario(db, scenarioName)
+	err := scenarioStore.DeleteDoc(scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -223,7 +223,7 @@ func ceDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceDeleteScenarioList")
 
 	// Remove all scenario from DB
-	err := removeAllScenarios(db)
+	err := scenarioStore.DeleteAllDocs()
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -253,7 +253,7 @@ func ceGetScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve scenario from DB
 	var scenario []byte
-	scenario, err := getScenario(false, db, scenarioName)
+	scenario, err := scenarioStore.GetDoc(false, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -279,7 +279,7 @@ func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceGetScenarioList")
 
 	// Retrieve scenario list from DB
-	scenarioList, err := getScenarioList(db)
+	scenarioList, err := scenarioStore.GetDocList()
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -331,7 +331,7 @@ func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update scenario in DB
-	rev, err := setScenario(db, scenarioName, validScenario)
+	rev, err := scenarioStore.UpdateDoc(scenarioName, validScenario)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -373,7 +373,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve scenario to activate from DB
 	var scenario []byte
-	scenario, err := getScenario(false, db, scenarioName)
+	scenario, err := scenarioStore.GetDoc(false, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
