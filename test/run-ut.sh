@@ -9,6 +9,7 @@ GOPKGS=(
     meep-net-char-mgr
     meep-metric-store
     meep-watchdog
+    meep-couch
 )
 
 echo ""
