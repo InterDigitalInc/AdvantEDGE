@@ -337,7 +337,7 @@ func (rc *Connector) Listen(handler func(string, string)) error {
 			case *redis.Message:
 				channel = m.Channel
 				payload = m.Payload
-				log.Info("RX-MSG [", channel, "] ", payload)
+				log.Trace("RX-MSG [", channel, "] ", payload)
 				handler(channel, payload)
 			}
 		}
@@ -366,7 +366,7 @@ func (rc *Connector) Publish(channel string, message string) error {
 		return errors.New("Redis Connector is disconnected (Publish)")
 	}
 
-	log.Info("TX-MSG [", channel, "] ", message)
+	log.Trace("TX-MSG [", channel, "] ", message)
 	_, err := rc.client.Publish(channel, message).Result()
 	return err
 }

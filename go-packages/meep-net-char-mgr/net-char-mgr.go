@@ -197,10 +197,10 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
 	switch channel {
 	case NetCharControlChannel:
-		log.Debug("Event received on channel: ", NetCharControlChannel)
+		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		ncm.updateControls()
 	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
+		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		ncm.processActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")

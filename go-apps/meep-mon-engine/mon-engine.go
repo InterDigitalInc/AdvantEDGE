@@ -113,23 +113,23 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 func printfMonEngineInfo(monEngineInfo MonEngineInfo, reason int) {
 
 	log.Debug("Monitoring Engine info *** ", pod_event_str[reason], " *** ",
-		"pod name : ", monEngineInfo.PodName,
-		"namespace : ", monEngineInfo.Namespace,
-		"meepApp : ", monEngineInfo.MeepApp,
-		"meepOrigin : ", monEngineInfo.MeepOrigin,
-		"meepScenario : ", monEngineInfo.MeepScenario,
-		"phase : ", monEngineInfo.Phase,
-		"podInitialized : ", monEngineInfo.PodInitialized,
-		"podUnschedulable : ", monEngineInfo.PodUnschedulable,
-		"podScheduled : ", monEngineInfo.PodScheduled,
-		"podReady : ", monEngineInfo.PodReady,
-		"podConditionError : ", monEngineInfo.PodConditionError,
-		"ContainerStatusesMsg : ", monEngineInfo.ContainerStatusesMsg,
-		"NbOkContainers : ", monEngineInfo.NbOkContainers,
-		"NbTotalContainers : ", monEngineInfo.NbTotalContainers,
-		"NbPodRestart : ", monEngineInfo.NbPodRestart,
-		"LogicalState : ", monEngineInfo.LogicalState,
-		"StartTime : ", monEngineInfo.StartTime)
+		" pod name : ", monEngineInfo.PodName,
+		" namespace : ", monEngineInfo.Namespace,
+		" meepApp : ", monEngineInfo.MeepApp,
+		" meepOrigin : ", monEngineInfo.MeepOrigin,
+		" meepScenario : ", monEngineInfo.MeepScenario,
+		" phase : ", monEngineInfo.Phase,
+		" podInitialized : ", monEngineInfo.PodInitialized,
+		" podUnschedulable : ", monEngineInfo.PodUnschedulable,
+		" podScheduled : ", monEngineInfo.PodScheduled,
+		" podReady : ", monEngineInfo.PodReady,
+		" podConditionError : ", monEngineInfo.PodConditionError,
+		" ContainerStatusesMsg : ", monEngineInfo.ContainerStatusesMsg,
+		" NbOkContainers : ", monEngineInfo.NbOkContainers,
+		" NbTotalContainers : ", monEngineInfo.NbTotalContainers,
+		" NbPodRestart : ", monEngineInfo.NbPodRestart,
+		" LogicalState : ", monEngineInfo.LogicalState,
+		" StartTime : ", monEngineInfo.StartTime)
 }
 
 func processEvent(obj interface{}, reason int) {

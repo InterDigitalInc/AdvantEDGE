@@ -125,6 +125,8 @@ var metricStore *ms.MetricStore
 
 const DEFAULT_SIDECAR_DB = 0
 
+var nbAppliedSetIfbs = 0
+
 // Run - MEEP Sidecar execution
 func main() {
 	// Initialize MEEP Sidecar
@@ -150,7 +152,7 @@ func initMeepSidecar() error {
 	var err error
 
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit("meep-tc-sidecar")
+	log.MeepTextLogInit("meep-tc-sidecar")
 
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
@@ -218,14 +220,14 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP TC Network Characteristic Channel
 	case channelTcNet:
+		log.Debug("Event received on channel: ", channelTcNet, " payload: ", payload)
 		processNetCharMsg(payload)
-
 	// MEEP TC LB Channel
 	case channelTcLb:
+		log.Debug("Event received on channel: ", channelTcLb, " payload: ", payload)
 		processLbMsg(payload)
-
 	default:
-		log.Warn("Unsupported channel")
+		log.Warn("Unsupported channel", " payload: ", payload)
 	}
 }
 
@@ -242,11 +244,10 @@ func refreshNetCharRules() {
 	// Create shape rules
 	_ = initializeOnFirstPass()
 
-	// moduleName := "sidecar"
-	// currentTime := time.Now()
+	currentTime := time.Now()
+	nbAppliedSetIfbs = 0
 
 	_ = createIfbs()
-
 	_ = createFilters()
 
 	// Delete unused filters
@@ -255,12 +256,9 @@ func refreshNetCharRules() {
 	// Delete unused ifbs
 	deleteUnusedIfbs()
 
-	// elapsed := time.Since(currentTime)
-	// log.WithFields(log.Fields{
-	// 	"meep.log.component": moduleName,
-	// 	"meep.time.location": "refreshNetCharRules execution time",
-	// 	"meep.time.exec":     elapsed,
-	// }).Info("Measurements log")
+	elapsed := time.Since(currentTime)
+
+	log.Debug("RefreshNetCharRules execution time for ", nbAppliedSetIfbs, " updates, elapsed time: ", elapsed)
 
 	// Start measurements
 	startMeasurementThreads()
@@ -684,6 +682,7 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 
 func createIfbs() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
+	nbAppliedSetIfbs = 0
 	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
@@ -693,16 +692,19 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-
+	applied := false
 	_, exists := ifbs[ifbNumber]
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
-		_ = cmdSetIfb(fields)
+		applied, _ = cmdSetIfb(fields)
 	} else {
-		_ = cmdSetIfb(fields)
+		applied, _ = cmdSetIfb(fields)
 	}
 
+	if applied {
+		nbAppliedSetIfbs++
+	}
 	return nil
 }
 
@@ -717,7 +719,6 @@ func createFilters() error {
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	filterNumber := fields["filter_uniqueId"]
-
 	_, exists := filters[filterNumber]
 
 	if !exists {
@@ -816,7 +817,7 @@ func cmdCreateIfb(shape map[string]string) error {
 	return nil
 }
 
-func cmdSetIfb(shape map[string]string) error {
+func cmdSetIfb(shape map[string]string) (bool, error) {
 	ifbNumber := shape["ifb_uniqueId"]
 	delay := shape["delay"]
 	delayVariation := shape["delayVariation"]
@@ -859,7 +860,7 @@ func cmdSetIfb(shape map[string]string) error {
 
 		_, err := cmdExec(str)
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		//store the new values
@@ -867,9 +868,10 @@ func cmdSetIfb(shape map[string]string) error {
 		nc.Jitter = delayVariation
 		nc.PacketLoss = loss
 		nc.Throughput = dataRate
+		return true, nil
 	}
 
-	return nil
+	return false, nil
 }
 
 func cmdDeleteIfb(ifbNumber string) error {
