@@ -30,14 +30,15 @@ var componentName string
 type Fields map[string]interface{}
 
 func MeepTextLogInit(name string) {
-	logrus.SetLevel(logrus.DebugLevel)
-	//SetSetReportCaller(true)
+	//logrus.SetLevel(logrus.TraceLevel)
+        logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
 func MeepJSONLogInit(name string) {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetLevel(logrus.DebugLevel)
+	//logrus.SetLevel(logrus.TraceLevel)
+        logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
@@ -80,6 +81,7 @@ func Warn(args ...interface{}) {
 		"meep.time": time.Now().String(),
 	}).Warn(args...)
 }
+
 func Error(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
@@ -87,6 +89,7 @@ func Error(args ...interface{}) {
 		"meep.time": time.Now().String(),
 	}).Error(args...)
 }
+
 func Panic(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
