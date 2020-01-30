@@ -125,7 +125,6 @@ var metricStore *ms.MetricStore
 
 const DEFAULT_SIDECAR_DB = 0
 
-var nbAppliedSetIfbs = 0
 var nbAppliedOperations = 0
 
 // Run - MEEP Sidecar execution
@@ -693,7 +692,6 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 
 func createIfbs() error {
 	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
-	nbAppliedSetIfbs = 0
 	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
@@ -703,19 +701,15 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-	applied := false
 	_, exists := ifbs[ifbNumber]
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
-		applied, _ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	} else {
-		applied, _ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	}
 
-	if applied {
-		nbAppliedSetIfbs++
-	}
 	return nil
 }
 
