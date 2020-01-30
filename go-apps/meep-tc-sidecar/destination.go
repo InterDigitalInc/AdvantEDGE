@@ -152,7 +152,7 @@ func (u *destination) compute() (st stat) {
 	return
 }
 
-func (u *destination) processRxTx(ifbStatsStr string) {
+func (u *destination) processRxTx(ifbStatsStr string) float64 {
 
 	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
@@ -181,14 +181,7 @@ func (u *destination) processRxTx(ifbStatsStr string) {
 	u.prevRx.time = curTime
 	u.prevRx.rxBytes = curRxBytes
 
-	// Store throughput metric if entry exists
-	var tputStats = make(map[string]interface{})
-	tputStats[u.remoteName] = tput
-	key := moduleMetrics + ":" + PodName + ":throughput"
-
-	if rc.EntryExists(key) {
-		_ = rc.SetEntry(key, tputStats)
-	}
+	return tput
 }
 
 func (u *destination) logRxTx(ifbStatsStr string) {

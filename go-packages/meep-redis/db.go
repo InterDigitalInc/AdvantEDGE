@@ -250,7 +250,7 @@ func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string,
 	keyName := elementPath + "*"
 	err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("keyName: ", keyName, ": ", err.Error())
 		return err
 	}
 	return nil
@@ -264,7 +264,7 @@ func (rc *Connector) JSONSetEntry(key string, path string, json string) error {
 	// Update existing entry or create new entry if it does not exist
 	_, err := rc.client.JsonSet(key, path, json).Result()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("key: ", key, ": ", err.Error())
 		return err
 	}
 	return nil
