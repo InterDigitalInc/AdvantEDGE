@@ -340,20 +340,41 @@ class IDCVis extends Component {
       vis.showConfig = !vis.showConfig;
     }
     vis.options.configure.enabled = vis.showConfig;
+
+    var subOptions;
+    switch (vis.options.configure.filter) {
+    case 'physics':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.physics = subOptions.physics;
+      break;
+    case 'manipulation':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.manipulation = subOptions.manipulation;
+      break;
+    case 'interaction':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.interaction = subOptions.interaction;
+      break;
+    case 'nodes':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.nodes = subOptions.nodes;
+      break;
+    case 'edges':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.edges = subOptions.edges;
+      break;
+    case 'layout':
+      subOptions = vis.network.getOptionsFromConfigurator();
+      vis.options.layout = subOptions.layout;
+      break;
+    default:
+    }
+
     vis.options.configure.filter = filterStr;
     vis.network.setOptions(vis.options);
   }
 
-  updateConfigVisibility() {
-    var vis = this.getVis();
-    if (vis.options.configure) {
-      vis.options.configure.enabled = this.props.devMode;
-      vis.network.setOptions(vis.options);
-    }
-  }
-
   render() {
-    this.updateConfigVisibility();
     return (
       <>
         <div

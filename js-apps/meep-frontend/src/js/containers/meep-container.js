@@ -18,7 +18,7 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import axios from 'axios';
-import { updateObject } from '../util/object-util';
+import { updateObject, deepCopy } from '../util/object-util';
 
 // Import JS dependencies
 import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
@@ -257,6 +257,10 @@ class MeepContainer extends Component {
 
   // Change & process scenario
   changeScenario(pageType, scenario) {
+    this.updateScenario(pageType, scenario, false);
+  }
+
+  updateScenario(pageType, scenario, reInitVisView) {
     // Change scenario state
     if (pageType === TYPE_CFG) {
       this.props.cfgChangeScenario(scenario);
@@ -277,7 +281,16 @@ class MeepContainer extends Component {
 
       const vis = this.props.cfgVis;
       if (vis && vis.network && vis.network.setData) {
+        //save the canvas position and scale level in vis
+        var view;
+        if (!reInitVisView) {
+          view = deepCopy(vis.network.canvas.body.view);
+        }
         vis.network.setData(updatedVisData);
+        if (view) {
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
+        }
       }
     } else {
       this.props.execChangeVisData(updatedVisData);
@@ -286,7 +299,11 @@ class MeepContainer extends Component {
       const vis = this.props.execVis;
       if (vis && vis.network && vis.network.setData) {
         _.defer(() => {
+          //save the canvas position and scale level in vis
+          const view = deepCopy(vis.network.canvas.body.view);
           vis.network.setData(this.props.execVisData);
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
         });
       }
     }
@@ -295,18 +312,18 @@ class MeepContainer extends Component {
   // Create, store & process new scenario
   createScenario(pageType, name) {
     var scenario = createNewScenario(name);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Set & process scenario
   setScenario(pageType, scenario) {
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Delete & process scenario
   deleteScenario(pageType) {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Refresh Active scenario
