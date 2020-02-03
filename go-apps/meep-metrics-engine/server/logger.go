@@ -25,9 +25,10 @@
 package server
 
 import (
-	"log"
 	"net/http"
 	"time"
+
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
 func Logger(inner http.Handler, name string) http.Handler {
@@ -36,11 +37,10 @@ func Logger(inner http.Handler, name string) http.Handler {
 
 		inner.ServeHTTP(w, r)
 
-		log.Printf(
-			"%s %s %s %s",
-			r.Method,
-			r.RequestURI,
-			name,
+		log.Debug(
+			r.Method, " ",
+			r.RequestURI, " ",
+			name, " ",
 			time.Since(start),
 		)
 	})

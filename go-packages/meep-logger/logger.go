@@ -17,11 +17,10 @@
 package logger
 
 import (
-	"net/http"
-	"time"
-	"runtime"
-	"path"
 	"fmt"
+	"path"
+	"runtime"
+
 	logrus "github.com/sirupsen/logrus"
 )
 
@@ -30,15 +29,19 @@ var componentName string
 type Fields map[string]interface{}
 
 func MeepTextLogInit(name string) {
+	Formatter := new(logrus.TextFormatter)
+	Formatter.TimestampFormat = "2006-01-02T15:04:05.999999999Z07:00"
+	Formatter.FullTimestamp = true
+	logrus.SetFormatter(Formatter)
 	//logrus.SetLevel(logrus.TraceLevel)
-        logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
 func MeepJSONLogInit(name string) {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	//logrus.SetLevel(logrus.TraceLevel)
-        logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
@@ -47,87 +50,58 @@ func MeepJSONLogInit(name string) {
 func getLogCaller() string {
 	_, file, line, _ := runtime.Caller(2)
 
-        location := fmt.Sprintf("%v:%v", path.Base(file), line)
+	location := fmt.Sprintf("%v:%v", path.Base(file), line)
 	return location
 }
 
 func Info(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.time": time.Now().String(),
 	}).Info(args...)
 }
 
 func Debug(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.from": getLogCaller(),
-		"meep.time": time.Now().String(),
+		"meep.from":      getLogCaller(),
 	}).Debug(args...)
 }
 
 func Trace(args ...interface{}) {
-        logrus.WithFields(logrus.Fields{
-                "meep.component": componentName,
-                "meep.from": getLogCaller(),
-                "meep.time": time.Now().String(),
-        }).Trace(args...)
+	logrus.WithFields(logrus.Fields{
+		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
+	}).Trace(args...)
 }
 
 func Warn(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.from": getLogCaller(),
-		"meep.time": time.Now().String(),
+		"meep.from":      getLogCaller(),
 	}).Warn(args...)
 }
 
 func Error(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.from": getLogCaller(),
-		"meep.time": time.Now().String(),
+		"meep.from":      getLogCaller(),
 	}).Error(args...)
 }
 
 func Panic(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.from": getLogCaller(),
-		"meep.time": time.Now().String(),
+		"meep.from":      getLogCaller(),
 	}).Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
-		"meep.from": getLogCaller(),
-		"meep.time": time.Now().String(),
+		"meep.from":      getLogCaller(),
 	}).Fatal(args...)
 }
 
 func WithFields(fields Fields) *logrus.Entry {
 	return logrus.WithFields(logrus.Fields(fields))
-}
-
-func httpLog(args ...interface{}) {
-        logrus.WithFields(logrus.Fields{
-                "meep.component": componentName,
-                "meep.from": getLogCaller(),
-                "meep.time": time.Now().String(),
-        }).Debug(args...)
-}
-
-func HTTP(inner http.Handler, name string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		inner.ServeHTTP(w, r)
-
-		httpLog(
-			r.Method,
-			" ", r.RequestURI,
-			" apiFct: ", name,
-			" execTime: ", time.Since(start))
-	})
 }
