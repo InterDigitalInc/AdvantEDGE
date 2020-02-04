@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import axios from 'axios';
 import moment from 'moment';
-import { updateObject } from '../util/object-util';
+import { updateObject, deepCopy } from '../util/object-util';
 
 // Import JS dependencies
 import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
@@ -37,7 +37,11 @@ import {
   EXEC_STATE_DEPLOYED,
   NO_SCENARIO_NAME,
   VIS_VIEW,
-  VIEW_NAME_NONE
+  VIEW_NAME_NONE,
+  PAGE_CONFIGURE,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS
 } from '../meep-constants';
 
 import {
@@ -45,6 +49,7 @@ import {
   createNewScenario,
   addElementToScenario,
   updateElementInScenario,
+  cloneElementInScenario,
   removeElementFromScenario
 } from '../util/scenario-utils';
 
@@ -74,13 +79,6 @@ import {
   cfgChangeVisData,
   cfgChangeTable
 } from '../state/cfg';
-
-import {
-  PAGE_CONFIGURE,
-  PAGE_EXECUTE,
-  PAGE_MONITOR,
-  PAGE_SETTINGS
-} from '../meep-constants';
 
 import { idlog } from '../util/functional';
 
@@ -323,8 +321,12 @@ class MeepContainer extends Component {
     }, 2000);
   }
 
-  // Change & process scenario
   changeScenario(pageType, scenario) {
+    this.updateScenario(pageType, scenario, false);
+  }
+
+  // Change & process scenario
+  updateScenario(pageType, scenario, reInitVisView) {
     // Change scenario state
     if (pageType === TYPE_CFG) {
       this.props.cfgChangeScenario(scenario);
@@ -345,7 +347,16 @@ class MeepContainer extends Component {
 
       const vis = this.props.cfgVis;
       if (vis && vis.network && vis.network.setData) {
+        //save the canvas position and scale level in vis
+        var view;
+        if (!reInitVisView) {
+          view = deepCopy(vis.network.canvas.body.view);
+        }
         vis.network.setData(updatedVisData);
+        if (view) {
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
+        }
       }
     } else {
       this.props.execChangeVisData(updatedVisData);
@@ -354,7 +365,11 @@ class MeepContainer extends Component {
       const vis = this.props.execVis;
       if (vis && vis.network && vis.network.setData) {
         _.defer(() => {
+          //save the canvas position and scale level in vis
+          const view = deepCopy(vis.network.canvas.body.view);
           vis.network.setData(this.props.execVisData);
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
         });
       }
     }
@@ -363,18 +378,18 @@ class MeepContainer extends Component {
   // Create, store & process new scenario
   createScenario(pageType, name) {
     var scenario = createNewScenario(name);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Set & process scenario
   setScenario(pageType, scenario) {
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Delete & process scenario
   deleteScenario(pageType) {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Refresh Active scenario
@@ -385,14 +400,16 @@ class MeepContainer extends Component {
   }
 
   // Add new element to scenario
-  newScenarioElem(pageType, element) {
+  newScenarioElem(pageType, element, scenarioUpdate) {
     var scenario =
       pageType === TYPE_CFG
         ? this.props.cfg.scenario
         : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
-    this.changeScenario(pageType, updatedScenario);
+    if (scenarioUpdate) {
+      this.changeScenario(pageType, updatedScenario);
+    }
   }
 
   // Update element in scenario
@@ -417,6 +434,13 @@ class MeepContainer extends Component {
     this.changeScenario(pageType, updatedScenario);
   }
 
+  // Clone element in scenario
+  cloneScenarioElem(element) {
+    var updatedScenario = updateObject({}, this.props.cfg.scenario);
+    cloneElementInScenario(updatedScenario, element, this.props.cfg.table);
+    this.changeScenario(TYPE_CFG, updatedScenario);
+  }
+
   renderPage() {
     switch (this.props.page) {
     case PAGE_CONFIGURE:
@@ -433,8 +457,11 @@ class MeepContainer extends Component {
           deleteScenario={() => {
             this.deleteScenario(TYPE_CFG);
           }}
-          newScenarioElem={elem => {
-            this.newScenarioElem(TYPE_CFG, elem);
+          newScenarioElem={(elem, update) => {
+            this.newScenarioElem(TYPE_CFG, elem, update);
+          }}
+          cloneScenarioElem={elem => {
+            this.cloneScenarioElem(elem);
           }}
           updateScenarioElem={elem => {
             this.updateScenarioElem(TYPE_CFG, elem);

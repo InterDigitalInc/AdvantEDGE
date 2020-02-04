@@ -34,6 +34,7 @@ import IDExportScenarioDialog from '../../components/dialogs/id-export-scenario-
 
 import {
   cfgElemNew,
+  cfgElemClone,
   cfgElemEdit,
   cfgElemClear,
   cfgElemSetErrMsg,
@@ -132,12 +133,32 @@ class CfgPageContainer extends Component {
       this.props.cfg.elementConfiguration.configurationMode ===
       CFG_ELEM_MODE_NEW
     ) {
-      this.props.newScenarioElem(element);
+      this.props.newScenarioElem(element, true);
     } else {
       this.props.updateScenarioElem(element);
     }
 
     // Reset Element configuration pane
+    this.props.cfgElemClear();
+  }
+
+  // CLONE
+  onCloneElement() {
+    this.props.cfgElemClone();
+  }
+
+  // CLONE
+  onApplyCloneElement(element) {
+    // Validate network element
+    if (this.validateNetworkElement(element) === false) {
+      return;
+    }
+
+    this.props.cloneScenarioElem(element);
+
+    //force update on the visual aspect of the scenario
+    //this.props.updateScenario();
+
     this.props.cfgElemClear();
   }
 
@@ -161,9 +182,19 @@ class CfgPageContainer extends Component {
     return -1;
   }
 
+  findOtherThanSelfIndexByKeyValue(_array, key, value, exceptionId) {
+    for (var i = 0; i < _array.length; i++) {
+      if (getElemFieldVal(_array[i], key) === value) {
+        if (_array[i].id !== exceptionId) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
   // Validate new network element form field entries
   validateNetworkElement(element) {
-    var configMode = this.props.cfg.elementConfiguration.configurationMode;
     var data = this.props.cfg.table.entries;
 
     // Clear previous error message
@@ -193,10 +224,8 @@ class CfgPageContainer extends Component {
       this.props.cfgElemSetErrMsg('Missing element name');
       return false;
     }
-    if (
-      configMode === CFG_ELEM_MODE_NEW &&
-      this.findIndexByKeyValue(data, FIELD_NAME, name) !== -1
-    ) {
+
+    if (this.findOtherThanSelfIndexByKeyValue(data, FIELD_NAME, name, element.id) !== -1) {
       this.props.cfgElemSetErrMsg('Element name already exists');
       return false;
     }
@@ -614,6 +643,7 @@ class CfgPageContainer extends Component {
                       onNewElement={() => this.onNewElement()}
                       onSaveElement={elem => this.onSaveElement(elem)}
                       onDeleteElement={elem => this.onDeleteElement(elem)}
+                      onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
                       onCancelElement={() => this.onCancelElement()}
                     />
                   </Elevation>
@@ -627,6 +657,7 @@ class CfgPageContainer extends Component {
                 onNewElement={() => this.onNewElement()}
                 onEditElement={elem => this.onEditElement(elem)}
                 onDeleteElement={() => this.onDeleteElement()}
+                onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
               />
             </div>
           </>
@@ -675,6 +706,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     cfgElemNew: elem => dispatch(cfgElemNew(elem)),
+    cfgElemClone: elem => dispatch(cfgElemClone(elem)),
     cfgElemEdit: elem => dispatch(cfgElemEdit(elem)),
     cfgElemClear: elem => dispatch(cfgElemClear(elem)),
     cfgElemSetErrMsg: msg => dispatch(cfgElemSetErrMsg(msg)),

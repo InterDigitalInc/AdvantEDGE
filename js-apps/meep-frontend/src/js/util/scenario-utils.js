@@ -16,7 +16,8 @@
 
 import _ from 'lodash';
 import * as vis from 'vis';
-import { updateObject } from './object-util';
+import { updateObject, deepCopy } from './object-util';
+import uuid from 'uuid';
 
 import {
   // Element Fields
@@ -67,7 +68,8 @@ import {
   FIELD_APP_PKT_LOSS,
   createElem,
   getElemFieldVal,
-  setElemFieldVal
+  setElemFieldVal,
+  createUniqueName
 } from './elem-utils';
 
 import {
@@ -236,25 +238,91 @@ export function parseScenario(scenario) {
   return { table: table, visData: visData };
 }
 
+function findIdInScenario(scenario, uniqueId) {
+
+  // Domains
+  for (var i in scenario.deployment.domains) {
+    var domain = scenario.deployment.domains[i];
+
+    // Add domain to graph and table (ignore public domain)
+    if (domain.id === uniqueId) {
+      return true;
+    }
+
+    // Zones
+    for (var j in domain.zones) {
+      var zone = domain.zones[j];
+
+      if (zone.id === uniqueId) {
+        return true;
+      }
+
+      // Network Locations
+      for (var k in zone.networkLocations) {
+        var nl = zone.networkLocations[k];
+
+        if (nl.id === uniqueId) {
+          return true;
+        }
+
+        // Physical Locations
+        for (var l in nl.physicalLocations) {
+          var pl = nl.physicalLocations[l];
+
+          if (pl.id === uniqueId) {
+            return true;
+          }
+
+          // Processes
+          for (var m in pl.processes) {
+            var proc = pl.processes[m];
+
+            if (proc.id === uniqueId) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+
+function getUniqueId(scenario) {
+  var uniqueId = uuid();
+  var isUniqueId = false;
+  while(!isUniqueId) {
+    isUniqueId = true;
+    if (findIdInScenario(scenario, uniqueId)) {
+      uniqueId = uuid();
+      isUniqueId = false;
+    }
+  }
+  return uniqueId;
+}
+
 // Add network element to scenario
 export function addElementToScenario(scenario, element) {
   var scenarioElement;
   var type = getElemFieldVal(element, FIELD_TYPE);
   var name = getElemFieldVal(element, FIELD_NAME);
+  var uniqueId = getUniqueId(scenario);
+
   var parent = getElemFieldVal(element, FIELD_PARENT);
 
   // Prepare network element to be added to scenario
   switch (type) {
   case ELEMENT_TYPE_OPERATOR: {
-    scenarioElement = createDomain(name, element);
+    scenarioElement = createDomain(uniqueId, name, element);
     break;
   }
   case ELEMENT_TYPE_ZONE: {
-    scenarioElement = createZone(name, element);
+    scenarioElement = createZone(uniqueId, name, element);
     break;
   }
   case ELEMENT_TYPE_POA: {
-    scenarioElement = createNL(name, element);
+    scenarioElement = createNL(uniqueId, name, element);
     break;
   }
   case ELEMENT_TYPE_DC: {
@@ -267,7 +335,7 @@ export function addElementToScenario(scenario, element) {
         '-' +
         DEFAULT_NL_TYPE_STR
     );
-    scenarioElement = createPL(name, DC_TYPE_STR, element);
+    scenarioElement = createPL(uniqueId, name, DC_TYPE_STR, element);
     break;
   }
   case ELEMENT_TYPE_CN: {
@@ -276,7 +344,7 @@ export function addElementToScenario(scenario, element) {
       FIELD_PARENT,
       (parent += '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR)
     );
-    scenarioElement = createPL(name, CN_TYPE_STR, element);
+    scenarioElement = createPL(uniqueId, name, CN_TYPE_STR, element);
     break;
   }
   case ELEMENT_TYPE_EDGE: {
@@ -285,35 +353,35 @@ export function addElementToScenario(scenario, element) {
       FIELD_PARENT,
       (parent += '-' + DEFAULT_NL_TYPE_STR)
     );
-    scenarioElement = createPL(name, EDGE_TYPE_STR, element);
+    scenarioElement = createPL(uniqueId, name, EDGE_TYPE_STR, element);
     break;
   }
   case ELEMENT_TYPE_FOG: {
-    scenarioElement = createPL(name, FOG_TYPE_STR, element);
+    scenarioElement = createPL(uniqueId, name, FOG_TYPE_STR, element);
     break;
   }
   case ELEMENT_TYPE_UE: {
-    scenarioElement = createPL(name, UE_TYPE_STR, element);
+    scenarioElement = createPL(uniqueId, name, UE_TYPE_STR, element);
     break;
   }
 
   case ELEMENT_TYPE_MECSVC: {
-    scenarioElement = createProcess(name, MEC_SVC_TYPE_STR, element);
+    scenarioElement = createProcess(uniqueId, name, MEC_SVC_TYPE_STR, element);
     break;
   }
 
   case ELEMENT_TYPE_UE_APP: {
-    scenarioElement = createProcess(name, UE_APP_TYPE_STR, element);
+    scenarioElement = createProcess(uniqueId, name, UE_APP_TYPE_STR, element);
     break;
   }
 
   case ELEMENT_TYPE_EDGE_APP: {
-    scenarioElement = createProcess(name, EDGE_APP_TYPE_STR, element);
+    scenarioElement = createProcess(uniqueId, name, EDGE_APP_TYPE_STR, element);
     break;
   }
 
   case ELEMENT_TYPE_CLOUD_APP: {
-    scenarioElement = createProcess(name, CLOUD_APP_TYPE_STR, element);
+    scenarioElement = createProcess(uniqueId, name, CLOUD_APP_TYPE_STR, element);
     break;
   }
   default: {
@@ -376,6 +444,7 @@ export function addElementToScenario(scenario, element) {
 // Update network element in scenario
 export function updateElementInScenario(scenario, element) {
   var name = getElemFieldVal(element, FIELD_NAME);
+  var id = element.id;
 
   // Find element in scenario
   if (scenario.name === name) {
@@ -400,7 +469,7 @@ export function updateElementInScenario(scenario, element) {
 
   for (var i in scenario.deployment.domains) {
     var domain = scenario.deployment.domains[i];
-    if (domain.name === name) {
+    if (domain.id === id) {
       domain.interZoneLatency = getElemFieldVal(
         element,
         FIELD_INT_ZONE_LATENCY
@@ -417,12 +486,32 @@ export function updateElementInScenario(scenario, element) {
         element,
         FIELD_INT_ZONE_PKT_LOSS
       );
+
+      //if domain name changed, other elements created based on that name must also be updated (default ones)
+      for (var i2 in domain.zones) {
+        var zoneCommon = domain.zones[i2];
+        if (zoneCommon.id === domain.name + '-' + COMMON_ZONE_TYPE_STR) {
+          for (var i3 in zoneCommon.networkLocations) {
+            var nlDomainCommon = zoneCommon.networkLocations[i3];
+            if (nlDomainCommon.id === zoneCommon.name + '-' + DEFAULT_NL_TYPE_STR) {
+              nlDomainCommon.id = name + '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR;
+              nlDomainCommon.name = name + '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR;
+              break;
+            }
+          }
+          zoneCommon.id = name + '-' + COMMON_ZONE_TYPE_STR;
+          zoneCommon.name = name + '-' + COMMON_ZONE_TYPE_STR;
+          break;
+        }
+      }
+      domain.label = name;
+      domain.name = name;
       return;
     }
 
     for (var j in domain.zones) {
       var zone = domain.zones[j];
-      if (zone.name === name) {
+      if (zone.id === id) {
         if (zone.netChar) {
           zone.netChar.latency = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY);
           zone.netChar.latencyVariation = getElemFieldVal(
@@ -438,12 +527,24 @@ export function updateElementInScenario(scenario, element) {
             FIELD_INTRA_ZONE_PKT_LOSS
           );
         }
+
+        //if zone name changed, other elements created based on that name must also be updated (default ones)
+        for (var j2 in zone.networkLocations) {
+          var nlZoneCommon = zone.networkLocations[j2];
+          if (nlZoneCommon.id === zone.name + '-' + DEFAULT_NL_TYPE_STR) {
+            nlZoneCommon.id = name + '-' + DEFAULT_NL_TYPE_STR;
+            nlZoneCommon.name = name + '-' + DEFAULT_NL_TYPE_STR;
+          }
+        }
+
+        zone.label = name;
+        zone.name = name;
         return;
       }
 
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
-        if (nl.name === name) {
+        if (nl.id === id) {
           nl.terminalLinkLatency = getElemFieldVal(
             element,
             FIELD_TERM_LINK_LATENCY
@@ -460,12 +561,14 @@ export function updateElementInScenario(scenario, element) {
             element,
             FIELD_TERM_LINK_PKT_LOSS
           );
+          nl.label = name;
+          nl.name = name;
           return;
         }
 
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
-          if (pl.name === name) {
+          if (pl.id === id) {
             pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
             pl.linkLatencyVariation = getElemFieldVal(
               element,
@@ -473,14 +576,17 @@ export function updateElementInScenario(scenario, element) {
             );
             pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
             pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+            pl.label = name;
+            pl.name = name;
             return;
           }
 
           for (var m in pl.processes) {
             var process = pl.processes[m];
-            if (process.name === name) {
+            if (process.id === id) {
               pl.processes[m] = createProcess(
-                process.name,
+                process.id,
+                name,
                 process.type,
                 element
               );
@@ -491,6 +597,123 @@ export function updateElementInScenario(scenario, element) {
       }
     }
   }
+}
+
+// Clone network element in scenario
+export function cloneElementInScenario(scenario, element, table) {
+  var inDomainCloneBranch = false, inZoneCloneBranch = false, inNlCloneBranch = false, inPlCloneBranch = false;
+  var newZoneRootParentName = '';
+  var newNlRootParentName = '';
+  var newPlRootParentName = '';
+  var newProcessRootParentName = '';
+  var elementFromScenario;
+
+  // Domains
+  for (var i in scenario.deployment.domains) {
+    var domain = scenario.deployment.domains[i];
+
+    // Add domain to graph and table (ignore public domain)
+    if (domain.id === element.id) {
+      newZoneRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+      inDomainCloneBranch = true;
+    } else {
+      inDomainCloneBranch = false;
+    }
+
+    // Zones
+    for (var j in domain.zones) {
+      var zone = domain.zones[j];
+
+      if (inDomainCloneBranch) {
+        if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
+          newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
+        } else {
+          elementFromScenario = getElementFromScenario(scenario, zone.id);
+          newNlRootParentName = cloneElement(scenario, elementFromScenario, newZoneRootParentName, false, table);
+        }
+      } else {
+        if (zone.id === element.id) {
+          newNlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+          inZoneCloneBranch = true;
+        } else {
+          inZoneCloneBranch = false;
+        }
+      }
+
+      // Network Locations
+      for (var k in zone.networkLocations) {
+        var nl = zone.networkLocations[k];
+
+        if (inDomainCloneBranch || inZoneCloneBranch) {
+          if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
+            newPlRootParentName = newNlRootParentName;
+          } else {
+            elementFromScenario = getElementFromScenario(scenario, nl.id);
+            newPlRootParentName = cloneElement(scenario, elementFromScenario, newNlRootParentName, false, table);
+          }
+        } else {
+          if (nl.id === element.id) {
+            newPlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+            inNlCloneBranch = true;
+          } else {
+            inNlCloneBranch = false;
+          }
+        }
+
+        // Physical Locations
+        for (var l in nl.physicalLocations) {
+          var pl = nl.physicalLocations[l];
+
+          if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch) {
+            elementFromScenario = getElementFromScenario(scenario, pl.id);
+            newProcessRootParentName = cloneElement(scenario, elementFromScenario, newPlRootParentName, false, table);
+          } else {
+            if (pl.id === element.id) {
+              newProcessRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+              inPlCloneBranch = true;
+            } else {
+              inPlCloneBranch = false;
+            }
+          }
+
+          // Processes
+          for (var m in pl.processes) {
+            var proc = pl.processes[m];
+
+            if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+              elementFromScenario = getElementFromScenario(scenario, proc.id);
+              cloneElement(scenario, elementFromScenario, newProcessRootParentName, false, table);
+            } else {
+              if (proc.id === element.id) {
+                cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+      break;
+    }
+  }
+}
+
+// CLONE ELEMENT, return new element name
+function cloneElement(scenario, element, newParentName, isRoot, table) {
+  let newElement = deepCopy(element);
+
+  var name = getElemFieldVal(element, FIELD_NAME);
+  if (isRoot === false) {
+    name = createUniqueName(table.entries, name + '-copy');
+    setElemFieldVal(newElement, FIELD_NAME, name);
+  }
+  setElemFieldVal(newElement, FIELD_PARENT, newParentName);
+
+  // add new element to scenario
+  // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
+  addElementToScenario(scenario, newElement);
+  return name;
 }
 
 // Remove the specific element and its children from the scenario
@@ -556,12 +779,12 @@ export function createNewScenario(name) {
   return scenario;
 }
 
-export function createProcess(name, type, element) {
+export function createProcess(uniqueId, name, type, element) {
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
   var process = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: type,
     isExternal: isExternal,
@@ -740,9 +963,9 @@ export function getEgressServiceMapArray(egressServiceMapStr) {
   return egressServiceMapArray;
 }
 
-export function createDomain(name, element) {
+export function createDomain(uniqueId, name, element) {
   var domain = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: DOMAIN_TYPE_STR,
     interZoneLatency: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY),
@@ -771,9 +994,9 @@ export function createDefaultDomain() {
   return domain;
 }
 
-export function createNL(name, element) {
+export function createNL(uniqueId, name, element) {
   var nl = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: NL_TYPE_STR,
     terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
@@ -805,9 +1028,9 @@ export function createDefaultNL(zoneName) {
   return nl;
 }
 
-export function createPL(name, type, element) {
+export function createPL(uniqueId, name, type, element) {
   var pl = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
@@ -825,9 +1048,9 @@ export function createPL(name, type, element) {
   return pl;
 }
 
-export function createZone(name, element) {
+export function createZone(uniqueId, name, element) {
   var zone = {
-    id: name,
+    id: uniqueId,
     name: name,
     type: ZONE_TYPE_STR,
     netChar: {
@@ -859,12 +1082,12 @@ export function createDefaultZone(domainName) {
 }
 
 // Find the provided element in the scenario
-export function getElementFromScenario(scenario, elementName) {
+export function getElementFromScenario(scenario, elementId) {
   // Create new element to be populated with scenario data
-  var elem = createElem(elementName);
+  var elem = createElem(elementId);
 
   // Check if scenario deployment is being requested
-  if (scenario.name === elementName) {
+  if (scenario.name === elementId) {
     setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_SCENARIO);
     setElemFieldVal(
       elem,
@@ -892,8 +1115,9 @@ export function getElementFromScenario(scenario, elementName) {
   // Loop through scenario until element is found
   for (var i in scenario.deployment.domains) {
     var domain = scenario.deployment.domains[i];
-    if (domain.name === elementName) {
+    if (domain.id === elementId) {
       setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_OPERATOR);
+      setElemFieldVal(elem, FIELD_NAME, domain.name);
       setElemFieldVal(elem, FIELD_PARENT, scenario.name);
       setElemFieldVal(
         elem,
@@ -920,8 +1144,9 @@ export function getElementFromScenario(scenario, elementName) {
 
     for (var j in domain.zones) {
       var zone = domain.zones[j];
-      if (zone.name === elementName) {
+      if (zone.id === elementId) {
         setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_ZONE);
+        setElemFieldVal(elem, FIELD_NAME, zone.name);
         setElemFieldVal(
           elem,
           FIELD_PARENT,
@@ -951,8 +1176,9 @@ export function getElementFromScenario(scenario, elementName) {
 
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
-        if (nl.name === elementName) {
+        if (nl.id === elementId) {
           setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
+          setElemFieldVal(elem, FIELD_NAME, nl.name);
           setElemFieldVal(
             elem,
             FIELD_PARENT,
@@ -987,7 +1213,7 @@ export function getElementFromScenario(scenario, elementName) {
 
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
-          if (pl.name === elementName) {
+          if (pl.id === elementId) {
             switch (pl.type) {
             case UE_TYPE_STR:
               setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_UE);
@@ -1007,6 +1233,7 @@ export function getElementFromScenario(scenario, elementName) {
             default:
               break;
             }
+            setElemFieldVal(elem, FIELD_NAME, pl.name);
             setElemFieldVal(
               elem,
               FIELD_PARENT,
@@ -1036,7 +1263,7 @@ export function getElementFromScenario(scenario, elementName) {
 
           for (var m in pl.processes) {
             var process = pl.processes[m];
-            if (process.name === elementName) {
+            if (process.id === elementId) {
               switch (process.type) {
               case MEC_SVC_TYPE_STR:
                 setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_MECSVC);
@@ -1054,6 +1281,7 @@ export function getElementFromScenario(scenario, elementName) {
                 break;
               }
               setElemFieldVal(elem, FIELD_PARENT, pl.name);
+              setElemFieldVal(elem, FIELD_NAME, process.name);
 
               setElemFieldVal(elem, FIELD_APP_LATENCY, process.appLatency || 0);
               setElemFieldVal(
@@ -1184,6 +1412,7 @@ export function getElementFromScenario(scenario, elementName) {
 export function addScenarioNode(scenario, nodes) {
   var n = {
     id: scenario.name,
+    name: scenario.name,
     label: 'Internet',
     level: 0
   };
@@ -1204,6 +1433,7 @@ export function addScenarioNode(scenario, nodes) {
 export function addDomainNode(domain, parent, nodes, edges) {
   var n = {
     id: domain.id,
+    name: domain.name,
     label: domain.name,
     level: 1
   };
@@ -1235,6 +1465,7 @@ export function addDomainNode(domain, parent, nodes, edges) {
 export function addZoneNode(zone, parent, nodes, edges) {
   var n = {
     id: zone.id,
+    name: zone.name,
     label: zone.name,
     level: 2
   };
@@ -1271,6 +1502,7 @@ export function addZoneNode(zone, parent, nodes, edges) {
 export function addNlNode(nl, parent, nodes, edges) {
   var n = {
     id: nl.id,
+    name: nl.name,
     label: nl.name,
     level: 3
   };
@@ -1302,13 +1534,19 @@ export function addNlNode(nl, parent, nodes, edges) {
 export function addPlNode(pl, parent, nodes, edges) {
   var n = {
     id: pl.id,
+    name: pl.name,
     label: pl.name
   };
 
   var e = {
-    from: parent.name,
+    from: parent.id,
     to: pl.id
   };
+
+  //the parent of a distant cloud is the scenario, which has no id, only a name
+  if(pl.type === DC_TYPE_STR) {
+    e.from = parent.name;
+  }
 
   var latency = null;
 
@@ -1434,11 +1672,12 @@ export function addPlNode(pl, parent, nodes, edges) {
 export function addProcessNode(proc, parent, nodes, edges) {
   var n = {
     id: proc.id,
+    name: proc.name,
     label: proc.name
   };
 
   var e = {
-    from: parent.name,
+    from: parent.id,
     to: proc.id,
     color: {
       color: '#C0C0C0',
