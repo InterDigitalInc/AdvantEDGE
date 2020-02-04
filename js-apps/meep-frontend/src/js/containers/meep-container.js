@@ -422,16 +422,6 @@ class MeepContainer extends Component {
     }
   }
 
-  // Update scenario
-  //updateScenario(pageType) {
-  //  var scenario =
-  //    pageType === TYPE_CFG
-  //      ? this.props.cfg.scenario
-  //      : this.props.exec.scenario;
-  //  var updatedScenario = updateObject({}, scenario);
-  //  this.changeScenario(pageType, updatedScenario);
-  //}
-
   // Update element in scenario
   updateScenarioElem(pageType, element) {
     var scenario =
@@ -594,9 +584,6 @@ class MeepContainer extends Component {
           newScenarioElem={(elem, update) => {
             this.newScenarioElem(TYPE_CFG, elem, update);
           }}
-          //updateScenario={() => {
-          //  this.updateScenario(TYPE_CFG);
-          //}}
           cloneScenarioElem={elem => {
             this.cloneScenarioElem(elem);
           }}
