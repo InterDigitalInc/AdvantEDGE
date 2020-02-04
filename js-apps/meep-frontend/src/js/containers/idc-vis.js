@@ -385,16 +385,7 @@ class IDCVis extends Component {
     vis.network.setOptions(vis.options);
   }
 
-  updateConfigVisibility() {
-    var vis = this.getVis();
-    if (vis.options.configure) {
-      vis.options.configure.enabled = this.props.devMode;
-      vis.network.setOptions(vis.options);
-    }
-  }
-
   render() {
-    //this.updateConfigVisibility();
     return (
       <>
         <div

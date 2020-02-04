@@ -23,8 +23,6 @@ import { Elevation } from '@rmwc/elevation';
 import IDCVis from '../idc-vis';
 import CfgNetworkElementContainer from './cfg-network-element-container';
 import CfgPageScenarioButtons from './cfg-page-scenario-buttons';
-import { deepCopy } from '../../util/object-util';
-import { getElementFromScenario } from '../../util/scenario-utils';
 
 import HeadlineBar from '../../components/headline-bar';
 import CfgTable from './cfg-table';
@@ -61,9 +59,7 @@ import {
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
   PAGE_CONFIGURE,
-  ELEMENT_TYPE_SCENARIO,
-  COMMON_ZONE_TYPE_STR,
-  DEFAULT_NL_TYPE_STR
+  ELEMENT_TYPE_SCENARIO
 } from '../../meep-constants';
 
 import {
@@ -74,9 +70,7 @@ import {
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  getElemFieldVal,
-  setElemFieldVal,
-  createUniqueName
+  getElemFieldVal
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -153,23 +147,6 @@ class CfgPageContainer extends Component {
     this.props.cfgElemClone();
   }
 
-  // CLONE ELEMENT, return new element name
-  cloneElement(element, newParentName, isRoot) {
-    let newElement = deepCopy(element);
-
-    var name = getElemFieldVal(element, FIELD_NAME);
-    if (isRoot === false) {
-      name = createUniqueName(this.props.cfg.table.entries, name + '-copy');
-      setElemFieldVal(newElement, FIELD_NAME, name);
-    }
-    setElemFieldVal(newElement, FIELD_PARENT, newParentName);
-
-    // add new element to scenario
-    // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
-    this.props.newScenarioElem(newElement, false);
-    return name;
-  }
-
   // CLONE
   onApplyCloneElement(element) {
     // Validate network element
@@ -177,108 +154,10 @@ class CfgPageContainer extends Component {
       return;
     }
 
-    // browse to find the root of the tree to clone
-
-    var inDomainCloneBranch = false, inZoneCloneBranch = false, inNlCloneBranch = false, inPlCloneBranch = false;
-    var newZoneRootParentName = '';
-    var newNlRootParentName = '';
-    var newPlRootParentName = '';
-    var newProcessRootParentName = '';
-    var elementFromScenario;
-
-    var scenario = this.props.cfg.scenario;
-    // Domains
-    for (var i in scenario.deployment.domains) {
-      var domain = scenario.deployment.domains[i];
-
-      // Add domain to graph and table (ignore public domain)
-      if (domain.id === element.id) {
-        newZoneRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true); 
-        inDomainCloneBranch = true;
-      } else {
-        inDomainCloneBranch = false;
-      }
-
-      // Zones
-      for (var j in domain.zones) {
-        var zone = domain.zones[j];
-
-        if (inDomainCloneBranch) {
-          if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
-            newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
-          } else {
-            elementFromScenario = getElementFromScenario(scenario, zone.id);
-            newNlRootParentName = this.cloneElement(elementFromScenario, newZoneRootParentName, false);
-          }
-        } else {
-          if (zone.id === element.id) {
-            newNlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true);
-            inZoneCloneBranch = true;
-          } else {
-            inZoneCloneBranch = false;
-          }
-        }
-
-        // Network Locations
-        for (var k in zone.networkLocations) {
-          var nl = zone.networkLocations[k];
-
-          if (inDomainCloneBranch || inZoneCloneBranch) {
-            if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
-              newPlRootParentName = newNlRootParentName;
-            } else {
-              elementFromScenario = getElementFromScenario(scenario, nl.id);
-              newPlRootParentName = this.cloneElement(elementFromScenario, newNlRootParentName, false);
-            }
-          } else {
-            if (nl.id === element.id) {
-              newPlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-              inNlCloneBranch = true;
-            } else {
-              inNlCloneBranch = false;
-            }
-          }
-
-          // Physical Locations
-          for (var l in nl.physicalLocations) {
-            var pl = nl.physicalLocations[l];
-
-            if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch) {
-              elementFromScenario = getElementFromScenario(scenario, pl.id);
-              newProcessRootParentName = this.cloneElement(elementFromScenario, newPlRootParentName, false);
-            } else {
-              if (pl.id === element.id) {
-                newProcessRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-                inPlCloneBranch = true;
-              } else {
-                inPlCloneBranch = false;
-              }
-            }
-
-            // Processes
-            for (var m in pl.processes) {
-              var proc = pl.processes[m];
-
-              if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
-                elementFromScenario = getElementFromScenario(scenario, proc.id);
-                this.cloneElement(elementFromScenario, newProcessRootParentName, false);
-              } else {
-                if (proc.id === element.id) {
-                  this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
-        break;
-      }
-    }
+    this.props.cloneScenarioElem(element);
 
     //force update on the visual aspect of the scenario
-    this.props.updateScenario();
+    //this.props.updateScenario();
 
     this.props.cfgElemClear();
   }

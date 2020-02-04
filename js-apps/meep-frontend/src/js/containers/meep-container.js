@@ -32,12 +32,26 @@ import SettingsPageContainer from './settings/settings-page-container';
 import MonitorPageContainer from './monitor/monitor-page-container';
 
 import {
+  FIELD_PARENT,
+  FIELD_NAME,
+  getElemFieldVal,
+  setElemFieldVal,
+  createUniqueName
+} from '../util/elem-utils';
+
+import {
   TYPE_CFG,
   TYPE_EXEC,
   EXEC_STATE_DEPLOYED,
   NO_SCENARIO_NAME,
   VIS_VIEW,
-  VIEW_NAME_NONE
+  VIEW_NAME_NONE,
+  PAGE_CONFIGURE,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS,
+  COMMON_ZONE_TYPE_STR,
+  DEFAULT_NL_TYPE_STR
 } from '../meep-constants';
 
 import {
@@ -45,7 +59,8 @@ import {
   createNewScenario,
   addElementToScenario,
   updateElementInScenario,
-  removeElementFromScenario
+  removeElementFromScenario,
+  getElementFromScenario
 } from '../util/scenario-utils';
 
 import {
@@ -74,13 +89,6 @@ import {
   cfgChangeVisData,
   cfgChangeTable
 } from '../state/cfg';
-
-import {
-  PAGE_CONFIGURE,
-  PAGE_EXECUTE,
-  PAGE_MONITOR,
-  PAGE_SETTINGS
-} from '../meep-constants';
 
 import { idlog } from '../util/functional';
 
@@ -324,11 +332,11 @@ class MeepContainer extends Component {
   }
 
   changeScenario(pageType, scenario) {
-    changeScenario(pageType, scenario, false);
+    this.updateScenario(pageType, scenario, false);
   }
 
   // Change & process scenario
-  changeScenario(pageType, scenario, reInitVisView) {
+  updateScenario(pageType, scenario, reInitVisView) {
     // Change scenario state
     if (pageType === TYPE_CFG) {
       this.props.cfgChangeScenario(scenario);
@@ -380,18 +388,18 @@ class MeepContainer extends Component {
   // Create, store & process new scenario
   createScenario(pageType, name) {
     var scenario = createNewScenario(name);
-    this.changeScenario(pageType, scenario, true);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Set & process scenario
   setScenario(pageType, scenario) {
-    this.changeScenario(pageType, scenario, true);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Delete & process scenario
   deleteScenario(pageType) {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
-    this.changeScenario(pageType, scenario, true);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Refresh Active scenario
@@ -415,14 +423,14 @@ class MeepContainer extends Component {
   }
 
   // Update scenario
-  updateScenario(pageType) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
-    var updatedScenario = updateObject({}, scenario);
-    this.changeScenario(pageType, updatedScenario);
-  }
+  //updateScenario(pageType) {
+  //  var scenario =
+  //    pageType === TYPE_CFG
+  //      ? this.props.cfg.scenario
+  //      : this.props.exec.scenario;
+  //  var updatedScenario = updateObject({}, scenario);
+  //  this.changeScenario(pageType, updatedScenario);
+  //}
 
   // Update element in scenario
   updateScenarioElem(pageType, element) {
@@ -446,6 +454,127 @@ class MeepContainer extends Component {
     this.changeScenario(pageType, updatedScenario);
   }
 
+  // Clone element in scenario
+  cloneScenarioElem(element) {
+
+    var inDomainCloneBranch = false, inZoneCloneBranch = false, inNlCloneBranch = false, inPlCloneBranch = false;
+    var newZoneRootParentName = '';
+    var newNlRootParentName = '';
+    var newPlRootParentName = '';
+    var newProcessRootParentName = '';
+    var elementFromScenario;
+
+    var scenario = this.props.cfg.scenario;
+    // Domains
+    for (var i in scenario.deployment.domains) {
+      var domain = scenario.deployment.domains[i];
+
+      // Add domain to graph and table (ignore public domain)
+      if (domain.id === element.id) {
+        newZoneRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true);
+        inDomainCloneBranch = true;
+      } else {
+        inDomainCloneBranch = false;
+      }
+
+      // Zones
+      for (var j in domain.zones) {
+        var zone = domain.zones[j];
+
+        if (inDomainCloneBranch) {
+          if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
+            newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
+          } else {
+            elementFromScenario = getElementFromScenario(scenario, zone.id);
+            newNlRootParentName = this.cloneElement(elementFromScenario, newZoneRootParentName, false);
+          }
+        } else {
+          if (zone.id === element.id) {
+            newNlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT), true);
+            inZoneCloneBranch = true;
+          } else {
+            inZoneCloneBranch = false;
+          }
+        }
+
+        // Network Locations
+        for (var k in zone.networkLocations) {
+          var nl = zone.networkLocations[k];
+
+          if (inDomainCloneBranch || inZoneCloneBranch) {
+            if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
+              newPlRootParentName = newNlRootParentName;
+            } else {
+              elementFromScenario = getElementFromScenario(scenario, nl.id);
+              newPlRootParentName = this.cloneElement(elementFromScenario, newNlRootParentName, false);
+            }
+          } else {
+            if (nl.id === element.id) {
+              newPlRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+              inNlCloneBranch = true;
+            } else {
+              inNlCloneBranch = false;
+            }
+          }
+
+          // Physical Locations
+          for (var l in nl.physicalLocations) {
+            var pl = nl.physicalLocations[l];
+
+            if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch) {
+              elementFromScenario = getElementFromScenario(scenario, pl.id);
+              newProcessRootParentName = this.cloneElement(elementFromScenario, newPlRootParentName, false);
+            } else {
+              if (pl.id === element.id) {
+                newProcessRootParentName = this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                inPlCloneBranch = true;
+              } else {
+                inPlCloneBranch = false;
+              }
+            }
+
+            // Processes
+            for (var m in pl.processes) {
+              var proc = pl.processes[m];
+
+              if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+                elementFromScenario = getElementFromScenario(scenario, proc.id);
+                this.cloneElement(elementFromScenario, newProcessRootParentName, false);
+              } else {
+                if (proc.id === element.id) {
+                  this.cloneElement(element, getElemFieldVal(element, FIELD_PARENT, true));
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+        this.changeScenario(TYPE_CFG, scenario);
+        break;
+      }
+    }
+
+  }
+
+  // CLONE ELEMENT, return new element name
+  cloneElement(element, newParentName, isRoot) {
+    let newElement = deepCopy(element);
+
+    var name = getElemFieldVal(element, FIELD_NAME);
+    if (isRoot === false) {
+      name = createUniqueName(this.props.cfg.table.entries, name + '-copy');
+      setElemFieldVal(newElement, FIELD_NAME, name);
+    }
+    setElemFieldVal(newElement, FIELD_PARENT, newParentName);
+
+    // add new element to scenario
+    // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
+    this.newScenarioElem(TYPE_CFG, newElement, false);
+    return name;
+  }
+
   renderPage() {
     switch (this.props.page) {
     case PAGE_CONFIGURE:
@@ -465,8 +594,11 @@ class MeepContainer extends Component {
           newScenarioElem={(elem, update) => {
             this.newScenarioElem(TYPE_CFG, elem, update);
           }}
-          updateScenario={() => {
-            this.updateScenario(TYPE_CFG);
+          //updateScenario={() => {
+          //  this.updateScenario(TYPE_CFG);
+          //}}
+          cloneScenarioElem={elem => {
+            this.cloneScenarioElem(elem);
           }}
           updateScenarioElem={elem => {
             this.updateScenarioElem(TYPE_CFG, elem);
