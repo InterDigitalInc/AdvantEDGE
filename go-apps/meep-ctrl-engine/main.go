@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	log.MeepJSONLogInit("meep-ctrl-engine")
+	log.MeepTextLogInit("meep-ctrl-engine")
 }
 
 func main() {

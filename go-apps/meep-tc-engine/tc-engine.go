@@ -275,10 +275,10 @@ func eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
 	switch channel {
 	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
 		processActiveScenarioUpdate()
 	case channelMgManagerLb:
-		log.Debug("Event received on channel: ", channelMgManagerLb)
+		log.Debug("Event received on channel: ", channelMgManagerLb, " payload: ", payload)
 		processMgSvcMapUpdate()
 	default:
 		log.Warn("Unsupported channel")
@@ -347,6 +347,7 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Publish update to TC Sidecars for enforcement
+	log.Debug("TX-MSG [", channelTcLb, "] ", "")
 	_ = tce.netCharStore.rc.Publish(channelTcLb, "")
 }
 
@@ -570,6 +571,7 @@ func updateComplete() {
 
 	// Publish update to TC Sidecars for enforcement
 	transactionIdStr := strconv.Itoa(tce.nextTransactionId)
+	log.Debug("TX-MSG [", channelTcNet, "] ", transactionIdStr)
 	_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
 	tce.nextTransactionId++
 	mutex.Unlock()

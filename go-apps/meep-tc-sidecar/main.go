@@ -125,6 +125,8 @@ var metricStore *ms.MetricStore
 
 const DEFAULT_SIDECAR_DB = 0
 
+var nbAppliedOperations = 0
+
 // Run - MEEP Sidecar execution
 func main() {
 	// Initialize MEEP Sidecar
@@ -150,7 +152,7 @@ func initMeepSidecar() error {
 	var err error
 
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit("meep-tc-sidecar")
+	log.MeepTextLogInit("meep-tc-sidecar")
 
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
@@ -218,14 +220,14 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP TC Network Characteristic Channel
 	case channelTcNet:
+		log.Debug("Event received on channel: ", channelTcNet, " payload: ", payload)
 		processNetCharMsg(payload)
-
 	// MEEP TC LB Channel
 	case channelTcLb:
+		log.Debug("Event received on channel: ", channelTcLb, " payload: ", payload)
 		processLbMsg(payload)
-
 	default:
-		log.Warn("Unsupported channel")
+		log.Warn("Unsupported channel", " payload: ", payload)
 	}
 }
 
@@ -242,8 +244,8 @@ func refreshNetCharRules() {
 	// Create shape rules
 	_ = initializeOnFirstPass()
 
-	// moduleName := "sidecar"
-	// currentTime := time.Now()
+	currentTime := time.Now()
+	nbAppliedOperations = 0
 
 	_ = createIfbs()
 
@@ -255,12 +257,8 @@ func refreshNetCharRules() {
 	// Delete unused ifbs
 	deleteUnusedIfbs()
 
-	// elapsed := time.Since(currentTime)
-	// log.WithFields(log.Fields{
-	// 	"meep.log.component": moduleName,
-	// 	"meep.time.location": "refreshNetCharRules execution time",
-	// 	"meep.time.exec":     elapsed,
-	// }).Info("Measurements log")
+	elapsed := time.Since(currentTime)
+	log.Debug("RefreshNetCharRules execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
 
 	// Start measurements
 	startMeasurementThreads()
@@ -603,12 +601,22 @@ func workRxTxPackets() {
 			lineIndex = lineIndex + 3
 		}
 
+		// Store throughput metric if entry exists
+		var tputStats = make(map[string]interface{})
+
 		for _, u := range opts.dests {
 			//get the data for all, parse the output and transmit to each
 			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
 			/*go*/
-			u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
+			tputStats[u.remoteName] = u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
 		}
+
+		key := moduleMetrics + ":" + PodName + ":throughput"
+
+		if rc.EntryExists(key) {
+			_ = rc.SetEntry(key, tputStats)
+		}
+
 		semOptsDests.Unlock()
 
 		time.Sleep(opts.trafficInterval)
@@ -693,14 +701,13 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-
 	_, exists := ifbs[ifbNumber]
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
-		_ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	} else {
-		_ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	}
 
 	return nil
@@ -717,7 +724,6 @@ func createFilters() error {
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	filterNumber := fields["filter_uniqueId"]
-
 	_, exists := filters[filterNumber]
 
 	if !exists {
@@ -793,6 +799,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"ip link add $ifb$ifbnumber type ifb"
 	str := "ip link add ifb" + ifbNumber + " type ifb"
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("ERROR ifb" + ifbNumber + " already exist in sidecar")
@@ -801,6 +808,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"ip link set $ifb$ifbnumber up"
 	str = "ip link set ifb" + ifbNumber + " up"
+	nbAppliedOperations++
 	_, err = cmdExec(str)
 	if err != nil {
 		return err
@@ -808,6 +816,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"tc qdisc replace dev $ifb$ifbnumber handle 1:0 root netem"
 	str = "tc qdisc replace dev ifb" + ifbNumber + " handle 1:0 root netem"
+	nbAppliedOperations++
 	_, err = cmdExec(str)
 	if err != nil {
 		return err
@@ -816,7 +825,7 @@ func cmdCreateIfb(shape map[string]string) error {
 	return nil
 }
 
-func cmdSetIfb(shape map[string]string) error {
+func cmdSetIfb(shape map[string]string) (bool, error) {
 	ifbNumber := shape["ifb_uniqueId"]
 	delay := shape["delay"]
 	delayVariation := shape["delayVariation"]
@@ -856,10 +865,10 @@ func cmdSetIfb(shape map[string]string) error {
 		if dataRate != "" && dataRate != "0" {
 			str = str + " rate " + dataRate + "bit"
 		}
-
+		nbAppliedOperations++
 		_, err := cmdExec(str)
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		//store the new values
@@ -867,14 +876,16 @@ func cmdSetIfb(shape map[string]string) error {
 		nc.Jitter = delayVariation
 		nc.PacketLoss = loss
 		nc.Throughput = dataRate
+		return true, nil
 	}
 
-	return nil
+	return false, nil
 }
 
 func cmdDeleteIfb(ifbNumber string) error {
 	//"ip link delete ifb$ifbNumber"
 	str := "ip link delete ifb" + ifbNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -894,6 +905,7 @@ func cmdDeleteIfb(ifbNumber string) error {
 func cmdDeleteFilter(filterNumber string) error {
 	//tc filter del dev eth0 parent ffff: pref $filterNumber
 	str := "tc filter del dev eth0 parent ffff: pref " + filterNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -904,12 +916,13 @@ func cmdDeleteFilter(filterNumber string) error {
 func initializeOnFirstPass() error {
 
 	if firstTimePass {
+		nbAppliedOperations++
 		_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
 		if err != nil {
 			log.Info("Error: ", err)
 			return err
 		}
-
+		nbAppliedOperations++
 		_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
 		if err != nil {
 			log.Info("Error: ", err)
@@ -928,6 +941,7 @@ func cmdCreateFilter(filterNumber string, ifbNumber string, ipSrc string) error 
 	//fonction must be a replace... a replace Adds if not there or replace if existing
 	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + filterNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("Error: ", err)

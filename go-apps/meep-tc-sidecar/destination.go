@@ -142,7 +142,6 @@ func (u *destination) compute() (st stat) {
 
 	// Format latency measurement
 	lat := int32(math.Round(float64(st.last) / 1000000.0))
-	mean := int32(math.Round(float64(st.mean) / 1000000.0))
 
 	//string for mapping src:dest
 	mapName := u.hostName + ":" + u.remoteName
@@ -150,20 +149,10 @@ func (u *destination) compute() (st stat) {
 	latestLatencyResultsMap[mapName] = lat
 	semLatencyMap.Unlock()
 
-	// Log measurment
-	log.WithFields(log.Fields{
-		"meep.log.component":      "sidecar",
-		"meep.log.msgType":        "latency",
-		"meep.log.latency-latest": lat,
-		"meep.log.latency-avg":    mean,
-		"meep.log.src":            u.hostName,
-		"meep.log.dest":           u.remoteName,
-	}).Info("Measurements log")
-
 	return
 }
 
-func (u *destination) processRxTx(ifbStatsStr string) {
+func (u *destination) processRxTx(ifbStatsStr string) float64 {
 
 	// Retrieve ifb statistics from passed string
 	// NOTE: we have to read the ifbStats from the back since based on the results are always at
@@ -192,14 +181,7 @@ func (u *destination) processRxTx(ifbStatsStr string) {
 	u.prevRx.time = curTime
 	u.prevRx.rxBytes = curRxBytes
 
-	// Store throughput metric if entry exists
-	var tputStats = make(map[string]interface{})
-	tputStats[u.remoteName] = tput
-	key := moduleMetrics + ":" + PodName + ":throughput"
-
-	if rc.EntryExists(key) {
-		_ = rc.SetEntry(key, tputStats)
-	}
+	return tput
 }
 
 func (u *destination) logRxTx(ifbStatsStr string) {
@@ -230,7 +212,6 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 	if totalRxPkt > 0 {
 		loss = (float64(rxPktDrop) / float64(totalRxPkt)) * 100
 	}
-	lossStr := strconv.FormatFloat(loss, 'f', 3, 64)
 
 	// Calculate throughput in Mbps
 	var tput float64
@@ -239,7 +220,6 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 		timeDiff := curTime.Sub(u.prevRxLog.time).Seconds()
 		tput = (8 * float64(rxBytes) / timeDiff) / 1000000
 	}
-	tputStr := strconv.FormatFloat(tput, 'f', 3, 64) + " Mbps"
 
 	// Store latest values for next calculation
 	u.prevRxLog.time = curTime
@@ -263,16 +243,4 @@ func (u *destination) logRxTx(ifbStatsStr string) {
 		log.Error("Failed to set network metric")
 	}
 
-	log.WithFields(log.Fields{
-		"meep.log.component":     "sidecar",
-		"meep.log.msgType":       "ingressPacketStats",
-		"meep.log.src":           u.remoteName,
-		"meep.log.dest":          u.hostName,
-		"meep.log.rx":            rxPkt,
-		"meep.log.rxd":           rxPktDrop,
-		"meep.log.rxBytes":       rxBytes,
-		"meep.log.throughput":    tput,
-		"meep.log.throughputStr": tputStr,
-		"meep.log.packet-loss":   lossStr,
-	}).Info("Measurements log")
 }

@@ -17,7 +17,11 @@
 package logger
 
 import (
-	log "github.com/sirupsen/logrus"
+	"fmt"
+	"path"
+	"runtime"
+
+	logrus "github.com/sirupsen/logrus"
 )
 
 var componentName string
@@ -25,51 +29,79 @@ var componentName string
 type Fields map[string]interface{}
 
 func MeepTextLogInit(name string) {
-	log.SetFormatter(&log.TextFormatter{})
-	log.SetLevel(log.DebugLevel)
+	Formatter := new(logrus.TextFormatter)
+	Formatter.TimestampFormat = "2006-01-02T15:04:05.999Z07:00"
+	Formatter.FullTimestamp = true
+	logrus.SetFormatter(Formatter)
+	//logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
 func MeepJSONLogInit(name string) {
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	//logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	componentName = name
 }
 
+// getLogCaller
+// setReportCaller cannot ignore caller levels, so cannot work in a wrapper. Fix not merged in github, so doing it manually
+func getLogCaller() string {
+	_, file, line, _ := runtime.Caller(2)
+
+	location := fmt.Sprintf("%v:%v", path.Base(file), line)
+	return location
+}
+
 func Info(args ...interface{}) {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
 	}).Info(args...)
 }
 
 func Debug(args ...interface{}) {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
 	}).Debug(args...)
 }
 
-func Warn(args ...interface{}) {
-	log.WithFields(log.Fields{
+func Trace(args ...interface{}) {
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
+	}).Trace(args...)
+}
+
+func Warn(args ...interface{}) {
+	logrus.WithFields(logrus.Fields{
+		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
 	}).Warn(args...)
 }
+
 func Error(args ...interface{}) {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
 	}).Error(args...)
 }
+
 func Panic(args ...interface{}) {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
 	}).Panic(args...)
 }
 
 func Fatal(args ...interface{}) {
-	log.WithFields(log.Fields{
+	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,
+		"meep.from":      getLogCaller(),
 	}).Fatal(args...)
 }
 
-func WithFields(fields Fields) *log.Entry {
-	return log.WithFields(log.Fields(fields))
+func WithFields(fields Fields) *logrus.Entry {
+	return logrus.WithFields(logrus.Fields(fields))
 }

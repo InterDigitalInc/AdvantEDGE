@@ -27,7 +27,8 @@ import (
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit("meep-tc-engine")
+	//log.MeepJSONLogInit("meep-tc-engine")
+	log.MeepTextLogInit("meep-tc-engine")
 }
 
 func main() {

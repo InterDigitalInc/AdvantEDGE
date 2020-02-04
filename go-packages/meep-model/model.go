@@ -192,6 +192,7 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
+	log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventActivate)
 	err = m.rc.Publish(m.ActiveChannel, EventActivate)
 	if err != nil {
 		log.Error(err.Error())
@@ -209,7 +210,7 @@ func (m *Model) Deactivate() (err error) {
 			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
-
+	        log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
 		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
 		if err != nil {
 			log.Error("Failed to publish: ", err.Error())
@@ -522,6 +523,7 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
+	        log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
 		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
 		if err != nil {
 			log.Error(err.Error())

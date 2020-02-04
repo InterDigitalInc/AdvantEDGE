@@ -71,10 +71,10 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP Ctrl Engine active scenario update event
 	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		processActiveScenarioUpdate(payload)
-
 	default:
-		log.Warn("Unsupported channel event: ", channel)
+		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
 	}
 }
 
