@@ -541,11 +541,10 @@ class MeepContainer extends Component {
       }
 
       if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
-        this.changeScenario(TYPE_CFG, scenario);
         break;
       }
     }
-
+    this.changeScenario(TYPE_CFG, scenario);
   }
 
   // CLONE ELEMENT, return new element name
