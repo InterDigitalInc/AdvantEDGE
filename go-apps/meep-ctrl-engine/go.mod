@@ -3,6 +3,7 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
@@ -10,18 +11,15 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 	github.com/flimzy/diff v0.1.5 // indirect
-	github.com/flimzy/kivik v1.8.1
 	github.com/flimzy/testy v0.1.16 // indirect
-	github.com/go-kivik/couchdb v1.8.1
 	github.com/gopherjs/gopherjs v0.0.0-20190411002643-bd77b112433e // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3
-	github.com/imdario/mergo v0.3.8 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
 	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
 
 replace (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch => ../../go-packages/meep-couch
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store => ../../go-packages/meep-metric-store
