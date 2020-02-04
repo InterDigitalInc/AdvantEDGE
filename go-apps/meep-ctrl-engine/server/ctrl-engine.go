@@ -794,6 +794,8 @@ func sendEventPoasInRange(event ceModel.Event) (error, int, string) {
 	poasInRange := event.EventPoasInRange.PoasInRange
 	sort.Strings(poasInRange)
 
+	description := "[" + ueName + "] poas in range: " + strings.Join(poasInRange, ", ")
+
 	// Find UE
 	log.Debug("Searching for UE in active scenario")
 	n := activeModel.GetNode(ueName)
@@ -831,7 +833,7 @@ func sendEventPoasInRange(event ceModel.Event) (error, int, string) {
 		err := errors.New("Failed to find UE")
 		return err, http.StatusNotFound, ""
 	}
-	return nil, -1, ""
+	return nil, -1, description
 }
 
 func getPodDetails(key string, fields map[string]string, userData interface{}) error {
