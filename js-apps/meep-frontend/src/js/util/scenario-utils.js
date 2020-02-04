@@ -16,7 +16,7 @@
 
 import _ from 'lodash';
 import * as vis from 'vis';
-import { updateObject } from './object-util';
+import { updateObject, deepCopy } from './object-util';
 import uuid from 'uuid';
 
 import {
@@ -68,7 +68,8 @@ import {
   FIELD_APP_PKT_LOSS,
   createElem,
   getElemFieldVal,
-  setElemFieldVal
+  setElemFieldVal,
+  createUniqueName
 } from './elem-utils';
 
 import {
@@ -596,6 +597,123 @@ export function updateElementInScenario(scenario, element) {
       }
     }
   }
+}
+
+// Clone network element in scenario
+export function cloneElementInScenario(scenario, element, table) {
+  var inDomainCloneBranch = false, inZoneCloneBranch = false, inNlCloneBranch = false, inPlCloneBranch = false;
+  var newZoneRootParentName = '';
+  var newNlRootParentName = '';
+  var newPlRootParentName = '';
+  var newProcessRootParentName = '';
+  var elementFromScenario;
+
+  // Domains
+  for (var i in scenario.deployment.domains) {
+    var domain = scenario.deployment.domains[i];
+
+    // Add domain to graph and table (ignore public domain)
+    if (domain.id === element.id) {
+      newZoneRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+      inDomainCloneBranch = true;
+    } else {
+      inDomainCloneBranch = false;
+    }
+
+    // Zones
+    for (var j in domain.zones) {
+      var zone = domain.zones[j];
+
+      if (inDomainCloneBranch) {
+        if (zone.name.indexOf(COMMON_ZONE_TYPE_STR) !== -1) {
+          newNlRootParentName = newZoneRootParentName + COMMON_ZONE_TYPE_STR;
+        } else {
+          elementFromScenario = getElementFromScenario(scenario, zone.id);
+          newNlRootParentName = cloneElement(scenario, elementFromScenario, newZoneRootParentName, false, table);
+        }
+      } else {
+        if (zone.id === element.id) {
+          newNlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+          inZoneCloneBranch = true;
+        } else {
+          inZoneCloneBranch = false;
+        }
+      }
+
+      // Network Locations
+      for (var k in zone.networkLocations) {
+        var nl = zone.networkLocations[k];
+
+        if (inDomainCloneBranch || inZoneCloneBranch) {
+          if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) !== -1) {
+            newPlRootParentName = newNlRootParentName;
+          } else {
+            elementFromScenario = getElementFromScenario(scenario, nl.id);
+            newPlRootParentName = cloneElement(scenario, elementFromScenario, newNlRootParentName, false, table);
+          }
+        } else {
+          if (nl.id === element.id) {
+            newPlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+            inNlCloneBranch = true;
+          } else {
+            inNlCloneBranch = false;
+          }
+        }
+
+        // Physical Locations
+        for (var l in nl.physicalLocations) {
+          var pl = nl.physicalLocations[l];
+
+          if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch) {
+            elementFromScenario = getElementFromScenario(scenario, pl.id);
+            newProcessRootParentName = cloneElement(scenario, elementFromScenario, newPlRootParentName, false, table);
+          } else {
+            if (pl.id === element.id) {
+              newProcessRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+              inPlCloneBranch = true;
+            } else {
+              inPlCloneBranch = false;
+            }
+          }
+
+          // Processes
+          for (var m in pl.processes) {
+            var proc = pl.processes[m];
+
+            if (inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+              elementFromScenario = getElementFromScenario(scenario, proc.id);
+              cloneElement(scenario, elementFromScenario, newProcessRootParentName, false, table);
+            } else {
+              if (proc.id === element.id) {
+                cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if(inDomainCloneBranch || inZoneCloneBranch || inNlCloneBranch || inPlCloneBranch) {
+      break;
+    }
+  }
+}
+
+// CLONE ELEMENT, return new element name
+function cloneElement(scenario, element, newParentName, isRoot, table) {
+  let newElement = deepCopy(element);
+
+  var name = getElemFieldVal(element, FIELD_NAME);
+  if (isRoot === false) {
+    name = createUniqueName(table.entries, name + '-copy');
+    setElemFieldVal(newElement, FIELD_NAME, name);
+  }
+  setElemFieldVal(newElement, FIELD_PARENT, newParentName);
+
+  // add new element to scenario
+  // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem
+  addElementToScenario(scenario, newElement);
+  return name;
 }
 
 // Remove the specific element and its children from the scenario
