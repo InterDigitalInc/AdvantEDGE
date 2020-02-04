@@ -28,7 +28,6 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import meepReducer from './state/meep-reducer';
 import { execDisplayedScenarioMiddleware } from './middlewares/exec-displayed-scenario-middleware';
-import { fixMetricsValuesMiddleware } from './middlewares/fix-metrics-values-middleware';
 
 import { saveUIState, loadUIState } from './util/persist';
 
@@ -53,8 +52,7 @@ const meepStore = createStore(
   meepState,
   applyMiddleware(
     thunk,
-    execDisplayedScenarioMiddleware,
-    fixMetricsValuesMiddleware
+    execDisplayedScenarioMiddleware
   )
 );
 window.meepStore = meepStore;

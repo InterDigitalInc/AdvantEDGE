@@ -97,17 +97,10 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-const meepctlVersion = "1.3.0"
+const meepctlVersion = "1.3.1"
 const na = "NA"
 
 var corePodsNameMap = []string{
-	"couchdb",
-	"elasticsearch-curator",
-	"elasticsearch",
-	"filebeat",
-	"kibana",
-	"kube-state-metrics",
-	"influxdb",
 	"meep-ctrl-engine",
 	"meep-webhook",
 	"meep-mg-manager",
@@ -115,7 +108,11 @@ var corePodsNameMap = []string{
 	"meep-redis",
 	"meep-tc-engine",
 	"meep-loc-serv",
-	"metricbeat",
+	"meep-grafana",
+	"meep-influxdb",
+	"meep-couchdb",
+	"meep-kube-state-metrics",
+	"meep-docker-registry",
 }
 
 var depPodsNameMap = []string{"weave"}

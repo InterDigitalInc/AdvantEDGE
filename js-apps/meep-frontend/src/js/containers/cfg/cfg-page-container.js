@@ -624,13 +624,15 @@ class CfgPageContainer extends Component {
 
         {this.props.cfgState !== CFG_STATE_IDLE && (
           <>
-            <Grid style={{ width: '100%' }}>
+            <Grid style={{ width: '100%'}}>
               <GridInner>
                 <GridCell span={8}>
                   <Elevation className="component-style" z={2}>
-                    <div style={{ padding: 10 }}>
+                    <div style={{ padding: 10, height: '70vh' }}>
                       <IDCVis
                         type={TYPE_CFG}
+                        width='100%'
+                        height='100%'
                         onEditElement={elem => this.onEditElement(elem)}
                       />
                     </div>

@@ -137,40 +137,20 @@ func deleteMeepUserAccount(cobraCmd *cobra.Command) {
 }
 
 func deleteDep(cobraCmd *cobra.Command) {
-	gitdir := viper.GetString("meep.gitdir") + "/"
-
 	// Local storage bindings
 	// NOTE: Helm charts don't remove pvc for statefulsets because helm did not create them
 	// Run in separate threads in order to complete uninstall successfully
 	messages := make(chan string)
-	go k8sDeletePvc("data-meep-elasticsearch-data-0", cobraCmd, messages)
-	go k8sDeletePvc("data-meep-elasticsearch-master-0", cobraCmd, messages)
-	go k8sDeletePvc("data-meep-elasticsearch-master-1", cobraCmd, messages)
-
 	go k8sDelete("meep-redis", cobraCmd, messages)
-	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
-	go k8sDelete("meep-metricbeat", cobraCmd, messages)
 	go k8sDelete("meep-couchdb", cobraCmd, messages)
+	go k8sDelete("meep-grafana", cobraCmd, messages)
 	go k8sDelete("meep-influxdb", cobraCmd, messages)
-	go k8sDelete("meep-kibana", cobraCmd, messages)
-	go k8sDelete("meep-filebeat", cobraCmd, messages)
-	go k8sDelete("meep-curator", cobraCmd, messages)
-	go k8sDelete("meep-elasticsearch", cobraCmd, messages)
+	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
 	go k8sDelete("meep-docker-registry", cobraCmd, messages)
 
 	// Wait for all pvc delete routines to complete
-	// NOTE: Must be checked after deleting elastic
-	for i := 0; i < 12; i++ {
+	for i := 0; i < 6; i++ {
 		fmt.Println(<-messages)
-	}
-
-	// Local storage bindings
-	// @TODO move to respective charts
-	cmd := exec.Command("kubectl", "delete", "-f", gitdir+utils.RepoCfg.GetString("repo.dep.elastic.es.pv"))
-	out, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
 	}
 }
 
@@ -201,14 +181,4 @@ func k8sDelete(component string, cobraCmd *cobra.Command, messages chan string) 
 	} else {
 		messages <- "Missing " + component
 	}
-}
-
-func k8sDeletePvc(pvc string, cobraCmd *cobra.Command, messages chan string) {
-	cmd := exec.Command("kubectl", "delete", "pvc", pvc)
-	out, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
-	}
-	messages <- "Deleted pvc: " + pvc
 }

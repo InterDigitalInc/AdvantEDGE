@@ -63,20 +63,6 @@ spec:
 {{- end }}
             - name: ERL_FLAGS
               value: "{{ range $k, $v := .Values.erlangFlags }} -{{ $k }} {{ $v }} {{ end }}"
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 5984
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 10
-          readinessProbe:
-            httpGet:
-              path: /_up
-              port: 5984
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 10
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:

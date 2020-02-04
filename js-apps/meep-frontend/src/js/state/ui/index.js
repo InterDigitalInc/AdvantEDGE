@@ -59,6 +59,14 @@ function uiExecChangeEventCreationMode(val) {
   };
 }
 
+const EXEC_CHANGE_DASH_CFG_MODE = 'EXEC_CHANGE_DASH_CFG_MODE';
+function uiExecChangeDashCfgMode(val) {
+  return {
+    type: EXEC_CHANGE_DASH_CFG_MODE,
+    payload: val
+  };
+}
+
 const UI_CHANGE_DEV_MODE = 'UI_CHANGE_DEV_MODE';
 function uiChangeDevMode(mode) {
   return {
@@ -112,24 +120,6 @@ const uiExecChangeShowApps = show => {
   };
 };
 
-const UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG =
-  'UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG';
-const uiExecChangeShowDashboardConfig = show => {
-  return {
-    type: UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
-    payload: show
-  };
-};
-
-const UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG =
-  'UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG';
-const uiExecExpandDashboardConfig = show => {
-  return {
-    type: UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG,
-    payload: show
-  };
-};
-
 const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
 const uiExecChangeDashboardView1 = name => {
   return {
@@ -152,7 +142,6 @@ export {
   NETWORK_CHARACTERISTICS_EVENT,
   // Action types
   EXEC_CHANGE_CURRENT_EVENT,
-  UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
   UI_EXEC_CHANGE_DASHBOARD_VIEW1,
   UI_EXEC_CHANGE_DASHBOARD_VIEW2,
   // Dialogs types
@@ -168,14 +157,13 @@ export {
   uiChangeCurrentPage,
   uiToggleMainDrawer,
   uiExecChangeEventCreationMode,
+  uiExecChangeDashCfgMode,
   uiExecChangeCurrentEvent,
   uiChangeDevMode,
   uiChangeCurrentDialog,
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
   uiExecChangeShowApps,
-  uiExecChangeShowDashboardConfig,
-  uiExecExpandDashboardConfig,
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2
 };
@@ -212,16 +200,14 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { currentDialog: action.payload });
   case EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+  case EXEC_CHANGE_DASH_CFG_MODE:
+    return updateObject(state, { dashCfgMode: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
     return updateObject(state, { refreshInterval: action.payload });
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, { execShowApps: action.payload });
-  case UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG:
-    return updateObject(state, { dashboardConfigExpanded: action.payload });
-  case UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG:
-    return updateObject(state, { showDashboardConfig: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:

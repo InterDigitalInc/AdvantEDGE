@@ -26,7 +26,6 @@ import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
 import { execApiResultsReducer } from './api-results';
-import { fakeDataReducer } from './fake-data-reducer';
 import { metricsReducer } from './metrics-reducer';
 import {
   getElemFieldVal,
@@ -42,7 +41,6 @@ export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';
 export * from './api-results';
-export * from './fake-data-reducer';
 export * from './metrics-reducer';
 
 const execTableElements = state => state.exec.table.entries;
@@ -144,7 +142,6 @@ const execReducer = combineReducers({
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,
   apiResults: execApiResultsReducer,
-  fakeData: fakeDataReducer,
   metrics: metricsReducer
 });
 

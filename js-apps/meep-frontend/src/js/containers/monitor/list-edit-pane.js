@@ -83,26 +83,26 @@ export const ListEditPane = props => {
       })}
 
       <Grid style={{ marginTop: 20, marginBottom: 10 }}>
-        <GridCell span={7}></GridCell>
-
-        <GridCell span={5}>
-          <Button raised style={styles.button} onClick={props.cancelEditMode}>
-            CANCEL
-          </Button>
-          <Button
-            raised
-            style={styles.button}
-            onClick={props.deleteItems}
-            disabled={!props.canDelete()}
-          >
-            DELETE
-          </Button>
-          <Button raised style={styles.button} onClick={props.addItem}>
-            ADD
-          </Button>
-          <Button raised style={styles.button} onClick={props.saveItems}>
-            SAVE
-          </Button>
+        <GridCell span={12}>
+          <div align={'right'}>
+            <Button raised style={styles.button} onClick={props.cancelEditMode}>
+              CANCEL
+            </Button>
+            <Button
+              raised
+              style={styles.button}
+              onClick={props.deleteItems}
+              disabled={!props.canDelete()}
+            >
+              DELETE
+            </Button>
+            <Button raised style={styles.button} onClick={props.addItem}>
+              ADD
+            </Button>
+            <Button raised style={styles.button} onClick={props.saveItems}>
+              SAVE
+            </Button>
+          </div>
         </GridCell>
       </Grid>
     </div>
