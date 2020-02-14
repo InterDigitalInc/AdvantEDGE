@@ -95,21 +95,21 @@ Please follow the [installation](#installation) instruction and execute the foll
 ```javascript
 var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
 
-var api = new AdvantEdgePlatformControllerRestApi.PodStatesApi()
+var api = new AdvantEdgePlatformControllerRestApi.EventReplayApi()
 
-var opts = { 
-  '_long': "_long_example", // {String} Enables detailed stats if true
-  'type': "type_example" // {String} Pod type
-};
+var name = "name_example"; // {String} Replay file name
+
+var replayFile = new AdvantEdgePlatformControllerRestApi.Replay(); // {Replay} Replay-file
+
 
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
-api.getStates(opts, callback);
+api.createReplayFile(name, replayFile, callback);
 
 ```
 
@@ -119,6 +119,15 @@ All URIs are relative to *http://localhost/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**createReplayFile**](docs/EventReplayApi.md#createReplayFile) | **POST** /replay/{name} | Add a replay file
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**createReplayFileFromScenarioExec**](docs/EventReplayApi.md#createReplayFileFromScenarioExec) | **POST** /replay/{name}/generate | Generate a replay file from scenario execution events
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**deleteReplayFile**](docs/EventReplayApi.md#deleteReplayFile) | **DELETE** /replay/{name} | Delete a replay file
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**deleteReplayFileList**](docs/EventReplayApi.md#deleteReplayFileList) | **DELETE** /replay | Delete all replay files
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**getReplayFile**](docs/EventReplayApi.md#getReplayFile) | **GET** /replay/{name} | Get a specific replay file
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**getReplayFileList**](docs/EventReplayApi.md#getReplayFileList) | **GET** /replay | Get all replay file names
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**loopReplay**](docs/EventReplayApi.md#loopReplay) | **POST** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**playReplayFile**](docs/EventReplayApi.md#playReplayFile) | **POST** /replay/{name}/play | Execute a replay file present in the platform store
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**stopReplayFile**](docs/EventReplayApi.md#stopReplayFile) | **POST** /replay/{name}/stop | Stop execution of a replay file
 *AdvantEdgePlatformControllerRestApi.PodStatesApi* | [**getStates**](docs/PodStatesApi.md#getStates) | **GET** /states | Get pods states
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**createScenario**](docs/ScenarioConfigurationApi.md#createScenario) | **POST** /scenarios/{name} | Add a scenario
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**deleteScenario**](docs/ScenarioConfigurationApi.md#deleteScenario) | **DELETE** /scenarios/{name} | Delete a scenario
@@ -153,9 +162,13 @@ Class | Method | HTTP request | Description
  - [AdvantEdgePlatformControllerRestApi.PodStatus](docs/PodStatus.md)
  - [AdvantEdgePlatformControllerRestApi.PodsStatus](docs/PodsStatus.md)
  - [AdvantEdgePlatformControllerRestApi.Process](docs/Process.md)
+ - [AdvantEdgePlatformControllerRestApi.Replay](docs/Replay.md)
+ - [AdvantEdgePlatformControllerRestApi.ReplayEvent](docs/ReplayEvent.md)
+ - [AdvantEdgePlatformControllerRestApi.ReplayFileList](docs/ReplayFileList.md)
  - [AdvantEdgePlatformControllerRestApi.Scenario](docs/Scenario.md)
  - [AdvantEdgePlatformControllerRestApi.ScenarioConfig](docs/ScenarioConfig.md)
  - [AdvantEdgePlatformControllerRestApi.ScenarioList](docs/ScenarioList.md)
+ - [AdvantEdgePlatformControllerRestApi.ScenarioName](docs/ScenarioName.md)
  - [AdvantEdgePlatformControllerRestApi.ServiceConfig](docs/ServiceConfig.md)
  - [AdvantEdgePlatformControllerRestApi.ServicePort](docs/ServicePort.md)
  - [AdvantEdgePlatformControllerRestApi.Zone](docs/Zone.md)

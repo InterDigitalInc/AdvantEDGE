@@ -57,6 +57,7 @@
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
           scenario.version = "";
+          scenario.id = "";
           scenario.name = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
@@ -231,6 +232,8 @@
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
             expect(data.version).to.be.a('string');
             expect(data.version).to.be("");
+            expect(data.id).to.be.a('string');
+            expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -630,6 +633,8 @@
                 expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
                 expect(data.version).to.be.a('string');
                 expect(data.version).to.be("");
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
                 expect(data.name).to.be.a('string');
                 expect(data.name).to.be("");
                 expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
@@ -1017,6 +1022,7 @@
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
           scenario.version = "";
+          scenario.id = "";
           scenario.name = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";

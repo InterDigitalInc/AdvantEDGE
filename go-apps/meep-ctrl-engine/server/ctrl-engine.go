@@ -43,6 +43,7 @@ type Scenario struct {
 }
 
 const scenarioDBName = "scenarios"
+const replayDBName = "replays"
 const moduleName string = "meep-ctrl-engine"
 const moduleMonEngine string = "mon-engine"
 
@@ -51,10 +52,13 @@ const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
 
 var scenarioStore *couch.Connector
+var replayStore *couch.Connector
+
 var virtWatchdog *watchdog.Watchdog
 var rc *redis.Connector
 var activeModel *mod.Model
 var metricStore *ms.MetricStore
+var replayMgr *ReplayMgr
 
 var couchDBAddr string = "http://meep-couchdb-svc-couchdb:5984/"
 var redisDBAddr string = "meep-redis-master:6379"
@@ -90,7 +94,7 @@ func CtrlEngineInit() (err error) {
 	log.Info("Connected to Scenario DB")
 
 	// Retrieve scenario list from DB
-	scenarioList, err := scenarioStore.GetDocList()
+	_, scenarioList, err := scenarioStore.GetDocList()
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -123,6 +127,14 @@ func CtrlEngineInit() (err error) {
 		return err
 	}
 
+	// Make Replay DB connection
+	replayStore, err = couch.NewConnector(couchDBAddr, replayDBName)
+	if err != nil {
+		log.Error("Failed connection to Replay DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Replay DB")
+
 	// Connect to Redis DB - This one used for Pod status
 	rc, err = redis.NewConnector(redisDBAddr, 0)
 	if err != nil {
@@ -146,6 +158,13 @@ func CtrlEngineInit() (err error) {
 	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+
+	// Setup for replay manager
+	replayMgr, err = NewReplayMgr("meep-ctrl-engine-replay")
+	if err != nil {
+		log.Error("Failed to initialize replay manager. Error: ", err)
 		return err
 	}
 
@@ -283,7 +302,7 @@ func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("ceGetScenarioList")
 
 	// Retrieve scenario list from DB
-	scenarioList, err := scenarioStore.GetDocList()
+	_, scenarioList, err := scenarioStore.GetDocList()
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -548,6 +567,11 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	err = metricStore.SetStore("")
 	if err != nil {
 		log.Error(err.Error())
+	}
+
+	//force stop replay manager
+	if replayMgr.isStarted {
+		_ = replayMgr.ForceStop()
 	}
 
 	// Send response
@@ -893,4 +917,286 @@ func equal(a, b []string) bool {
 		}
 	}
 	return true
+}
+
+func ceCreateReplayFile(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceCreateReplayFile")
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+	log.Debug("Replay name: ", replayFileName)
+
+	// Retrieve replay from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var replay ceModel.Replay
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&replay)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//replay.Name = replayFileName
+	err = storeReplay(replay, replayFileName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func storeReplay(replay ceModel.Replay, replayFileName string) error {
+
+	validJsonReplay, err := json.Marshal(replay)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Add new replay file to DB
+	rev, err := replayStore.AddDoc(replayFileName, validJsonReplay)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Debug("Replay added with rev: ", rev)
+	return nil
+}
+
+func loadReplay(replayFileName string) (ceModel.Replay, error) {
+
+	var replay []byte
+	var events ceModel.Replay
+
+	replay, err := replayStore.GetDoc(false, replayFileName)
+	if err != nil {
+		log.Error(err.Error())
+		return events, err
+	}
+
+	err = json.Unmarshal([]byte(replay), &events)
+	if err != nil {
+		return events, errors.New("Failed to get events name from valid replay file")
+	}
+
+	return events, nil
+}
+
+func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceCreateReplayFileFromScenarioExecution")
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+	log.Debug("Replay name: ", replayFileName)
+
+	// Retrieve replay from request body
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	scenarioName := ""
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&scenarioName)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Debug("body: ", scenarioName)
+
+	eml, err := metricStore.GetEventMetric("", "", 0)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var replay ceModel.Replay
+	var time0 time.Time
+	var nbEvents int32 = 0
+
+	for index := range eml {
+		//browsing through the list in reverse (end first (oldest element))
+		index = len(eml) - 1 - index
+		metricStoreEntry := eml[index]
+
+		var replayEvent ceModel.ReplayEvent
+		eventTime, _ := time.Parse(log.LoggerTimeStampFormat, metricStoreEntry.Time.(string))
+		var currentRelativeTime int32
+		if nbEvents == 0 {
+			time0 = eventTime
+			currentRelativeTime = 0
+		} else {
+			interval := eventTime.Sub(time0)
+			currentRelativeTime = int32(time.Duration(interval) / time.Millisecond)
+		}
+		nbEvents++
+
+		var event ceModel.Event
+		err = json.Unmarshal([]byte(metricStoreEntry.Event), &event)
+
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		replayEvent.Time = currentRelativeTime
+		replayEvent.Event = &event
+		replayEvent.Index = nbEvents
+		replay.Events = append(replay.Events, replayEvent)
+	}
+
+	err = storeReplay(replay, replayFileName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Debug("Replay file ", replayFileName, " created with ", nbEvents, " events")
+	// Send response
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func ceDeleteReplayFile(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceDeleteReplayFile")
+
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+	log.Debug("Replay name: ", replayFileName)
+
+	// Remove replay file from DB
+	err := replayStore.DeleteDoc(replayFileName)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// OK
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func ceDeleteReplayFileList(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceDeleteReplayFileList")
+
+	// Remove all scenario from DB
+	err := replayStore.DeleteAllDocs()
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// OK
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func ceGetReplayFile(w http.ResponseWriter, r *http.Request) {
+	log.Debug("ceGetReplayFile")
+
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+	log.Debug("Replay name: ", replayFileName)
+
+	// Retrieve replay from DB
+	var b []byte
+	b, err := replayStore.GetDoc(false, replayFileName)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	replay, err := mod.JSONMarshallReplay(b)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, replay)
+}
+
+func ceGetReplayFileList(w http.ResponseWriter, r *http.Request) {
+	// Retrieve replay file names list from DB
+	//var replayFileNameList []string
+	replayFileNameList, _, err := replayStore.GetDocList()
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	replayFileList, err := mod.JSONMarshallReplayFileList(replayFileNameList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, replayFileList)
+}
+
+func ceLoopReplay(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+
+	events, err := loadReplay(replayFileName)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	_ = replayMgr.Start(replayFileName, events, true)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func cePlayReplayFile(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+
+	events, err := loadReplay(replayFileName)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	_ = replayMgr.Start(replayFileName, events, false)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	replayFileName := vars["name"]
+
+	success := replayMgr.Stop(replayFileName)
+
+	if success {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 }

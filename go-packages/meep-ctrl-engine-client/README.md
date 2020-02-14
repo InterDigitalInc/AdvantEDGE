@@ -21,6 +21,15 @@ All URIs are relative to *http://localhost/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*EventReplayApi* | [**CreateReplayFile**](docs/EventReplayApi.md#createreplayfile) | **Post** /replay/{name} | Add a replay file
+*EventReplayApi* | [**CreateReplayFileFromScenarioExec**](docs/EventReplayApi.md#createreplayfilefromscenarioexec) | **Post** /replay/{name}/generate | Generate a replay file from scenario execution events
+*EventReplayApi* | [**DeleteReplayFile**](docs/EventReplayApi.md#deletereplayfile) | **Delete** /replay/{name} | Delete a replay file
+*EventReplayApi* | [**DeleteReplayFileList**](docs/EventReplayApi.md#deletereplayfilelist) | **Delete** /replay | Delete all replay files
+*EventReplayApi* | [**GetReplayFile**](docs/EventReplayApi.md#getreplayfile) | **Get** /replay/{name} | Get a specific replay file
+*EventReplayApi* | [**GetReplayFileList**](docs/EventReplayApi.md#getreplayfilelist) | **Get** /replay | Get all replay file names
+*EventReplayApi* | [**LoopReplay**](docs/EventReplayApi.md#loopreplay) | **Post** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
+*EventReplayApi* | [**PlayReplayFile**](docs/EventReplayApi.md#playreplayfile) | **Post** /replay/{name}/play | Execute a replay file present in the platform store
+*EventReplayApi* | [**StopReplayFile**](docs/EventReplayApi.md#stopreplayfile) | **Post** /replay/{name}/stop | Stop execution of a replay file
 *PodStatesApi* | [**GetStates**](docs/PodStatesApi.md#getstates) | **Get** /states | Get pods states
 *ScenarioConfigurationApi* | [**CreateScenario**](docs/ScenarioConfigurationApi.md#createscenario) | **Post** /scenarios/{name} | Add a scenario
 *ScenarioConfigurationApi* | [**DeleteScenario**](docs/ScenarioConfigurationApi.md#deletescenario) | **Delete** /scenarios/{name} | Delete a scenario
@@ -55,9 +64,13 @@ Class | Method | HTTP request | Description
  - [PodStatus](docs/PodStatus.md)
  - [PodsStatus](docs/PodsStatus.md)
  - [Process](docs/Process.md)
+ - [Replay](docs/Replay.md)
+ - [ReplayEvent](docs/ReplayEvent.md)
+ - [ReplayFileList](docs/ReplayFileList.md)
  - [Scenario](docs/Scenario.md)
  - [ScenarioConfig](docs/ScenarioConfig.md)
  - [ScenarioList](docs/ScenarioList.md)
+ - [ScenarioName](docs/ScenarioName.md)
  - [ServiceConfig](docs/ServiceConfig.md)
  - [ServicePort](docs/ServicePort.md)
  - [Zone](docs/Zone.md)

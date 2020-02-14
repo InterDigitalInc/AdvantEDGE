@@ -86,11 +86,13 @@ func testDb(t *testing.T, c *Connector) {
 	}
 
 	// Get doc list
-	docList, err := c.GetDocList()
+	docNameList, docList, err := c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (empty doc list)")
 	} else if len(docList) != 0 {
 		t.Errorf("getDocList should return an empty list (empty doc list)")
+	} else if len(docList) != len(docNameList) {
+		t.Errorf("getDocList should return a list of doc names and docs to be of the same length")
 	}
 
 	doc1 := []byte(`{"data":"This is document #1"}`)
@@ -118,11 +120,13 @@ func testDb(t *testing.T, c *Connector) {
 	log.Debug(rev3)
 
 	// Get doc list
-	docList, err = c.GetDocList()
+	docNameList, docList, err = c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (3 doc list)")
 	} else if len(docList) != 3 {
 		t.Errorf("getDocList should return a 3 document list (3 doc list)")
+	} else if len(docList) != len(docNameList) {
+		t.Errorf("getDocList should return a list of doc names and docs to be of the same length")
 	}
 
 	rev1, err = c.UpdateDoc("doc1", doc1Update)
@@ -133,11 +137,13 @@ func testDb(t *testing.T, c *Connector) {
 	log.Debug(rev1)
 
 	// Get doc list
-	docList, err = c.GetDocList()
+	docNameList, docList, err = c.GetDocList()
 	if err != nil {
 		t.Errorf("getDocList should not return an error (3 doc list)")
 	} else if len(docList) != 3 {
 		t.Errorf("getDocList should return a 3 document list (3 doc list)")
+	} else if len(docList) != len(docNameList) {
+		t.Errorf("getDocList should return a list of doc names and docs to be of the same length")
 	}
 
 }

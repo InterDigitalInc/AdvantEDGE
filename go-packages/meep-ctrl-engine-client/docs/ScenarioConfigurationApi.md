@@ -24,7 +24,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
-  **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
+  **scenario** | [**Scenario**](Scenario.md)| Scenario | 
 
 ### Return type
 

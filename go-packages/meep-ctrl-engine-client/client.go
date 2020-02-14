@@ -60,6 +60,8 @@ type APIClient struct {
 
 	// API Services
 
+	EventReplayApi *EventReplayApiService
+
 	PodStatesApi *PodStatesApiService
 
 	ScenarioConfigurationApi *ScenarioConfigurationApiService
@@ -83,6 +85,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.common.client = c
 
 	// API Services
+	c.EventReplayApi = (*EventReplayApiService)(&c.common)
 	c.PodStatesApi = (*PodStatesApiService)(&c.common)
 	c.ScenarioConfigurationApi = (*ScenarioConfigurationApiService)(&c.common)
 	c.ScenarioExecutionApi = (*ScenarioExecutionApiService)(&c.common)

@@ -72,6 +72,8 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('version'))
         obj.version = ApiClient.convertToType(data['version'], 'String');
+      if (data.hasOwnProperty('id'))
+        obj.id = ApiClient.convertToType(data['id'], 'String');
       if (data.hasOwnProperty('name'))
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('config'))
@@ -87,6 +89,12 @@
    * @member {String} version
    */
   exports.prototype.version = undefined;
+
+  /**
+   * Unique scenario ID
+   * @member {String} id
+   */
+  exports.prototype.id = undefined;
 
   /**
    * Unique scenario name

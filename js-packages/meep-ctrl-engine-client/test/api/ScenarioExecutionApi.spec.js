@@ -151,6 +151,8 @@
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
             expect(data.version).to.be.a('string');
             expect(data.version).to.be("");
+            expect(data.id).to.be.a('string');
+            expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);

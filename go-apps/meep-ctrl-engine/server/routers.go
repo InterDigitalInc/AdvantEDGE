@@ -71,6 +71,69 @@ var routes = Routes{
 	},
 
 	Route{
+		"CreateReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}",
+		CreateReplayFile,
+	},
+
+	Route{
+		"CreateReplayFileFromScenarioExec",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/generate",
+		CreateReplayFileFromScenarioExec,
+	},
+
+	Route{
+		"DeleteReplayFile",
+		strings.ToUpper("Delete"),
+		"/v1/replay/{name}",
+		DeleteReplayFile,
+	},
+
+	Route{
+		"DeleteReplayFileList",
+		strings.ToUpper("Delete"),
+		"/v1/replay",
+		DeleteReplayFileList,
+	},
+
+	Route{
+		"GetReplayFile",
+		strings.ToUpper("Get"),
+		"/v1/replay/{name}",
+		GetReplayFile,
+	},
+
+	Route{
+		"GetReplayFileList",
+		strings.ToUpper("Get"),
+		"/v1/replay",
+		GetReplayFileList,
+	},
+
+	Route{
+		"LoopReplay",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/loop",
+		LoopReplay,
+	},
+
+	Route{
+		"PlayReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/play",
+		PlayReplayFile,
+	},
+
+	Route{
+		"StopReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/stop",
+		StopReplayFile,
+	},
+
+	Route{
 		"GetStates",
 		strings.ToUpper("Get"),
 		"/v1/states",

@@ -55,7 +55,11 @@ func (ms *MetricStore) GetEventMetric(eventType string, duration string, count i
 	}
 
 	// Get Traffic metrics
-	tags := map[string]string{EvMetType: eventType}
+	//tags := map[string]string{EvMetType: eventType}
+	tags := map[string]string{}
+	if eventType != "" {
+		tags[EvMetType] = eventType
+	}
 	fields := []string{EvMetEvent, EvMetDescription}
 	var valuesArray []map[string]interface{}
 	valuesArray, err = ms.GetInfluxMetric(EvMetName, tags, fields, duration, count)

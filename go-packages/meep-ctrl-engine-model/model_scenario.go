@@ -27,6 +27,8 @@ package model
 type Scenario struct {
 	// Scenario version
 	Version string `json:"version,omitempty"`
+	// Unique scenario ID
+	Id string `json:"id,omitempty"`
 	// Unique scenario name
 	Name       string          `json:"name,omitempty"`
 	Config     *ScenarioConfig `json:"config,omitempty"`
