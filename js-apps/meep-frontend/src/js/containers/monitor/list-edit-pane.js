@@ -20,6 +20,7 @@ import { Grid, GridCell } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Button } from '@rmwc/button';
+import { Typography } from '@rmwc/typography';
 
 export const ListEditPaneRow = ({
   item,
@@ -53,7 +54,7 @@ export const ListEditPaneRow = ({
           }}
         />
       </GridCell>
-      <GridCell span={1} style={{ ...styles.editListItemCell, paddingTop: 30 }}>
+      <GridCell span={1} style={{ ...styles.editListItemCell, paddingTop: 25 }}>
         <Checkbox
           checked={item.selected}
           onChange={e => {
@@ -68,39 +69,52 @@ export const ListEditPaneRow = ({
 export const ListEditPane = props => {
   return (
     <div>
-      {_.map(props.items, (item, index) => {
-        return (
-          <ListEditPaneRow
-            item={item}
-            key={index}
-            itemLabelLabel={props.itemLabelLabel}
-            itemValueLabel={props.itemValueLabel}
-            updateItemLabel={props.updateItemLabel}
-            updateItemValue={props.updateItemValue}
-            updateItemSelection={props.updateItemSelection}
-          />
-        );
-      })}
+      <Grid>
+        <GridCell span={4}>
+          <div style={styles.block}>
+            <Typography use="headline6">Dashboard List</Typography>
+          </div>
+        </GridCell>
+      </Grid>
+
+      <div style={{ marginTop: 20 }}>
+        {_.map(props.items, (item, index) => {
+          return (
+            <ListEditPaneRow
+              item={item}
+              key={index}
+              itemLabelLabel={props.itemLabelLabel}
+              itemValueLabel={props.itemValueLabel}
+              updateItemLabel={props.updateItemLabel}
+              updateItemValue={props.updateItemValue}
+              updateItemSelection={props.updateItemSelection}
+            />
+          );
+        })}
+      </div>
 
       <Grid style={{ marginTop: 20, marginBottom: 10 }}>
         <GridCell span={12}>
           <div align={'right'}>
-            <Button raised style={styles.button} onClick={props.cancelEditMode}>
-              CANCEL
+            <Button outlined style={styles.button} onClick={props.addItem}>
+                NEW
             </Button>
             <Button
-              raised
+              outlined
               style={styles.button}
               onClick={props.deleteItems}
               disabled={!props.canDelete()}
             >
-              DELETE
+                DELETE
             </Button>
-            <Button raised style={styles.button} onClick={props.addItem}>
-              ADD
+            <Button outlined style={styles.button} onClick={props.cancelEditMode}>
+              CANCEL
             </Button>
-            <Button raised style={styles.button} onClick={props.saveItems}>
-              SAVE
+            <Button outlined style={styles.button} onClick={props.saveItems}>
+              APPLY
+            </Button>
+            <Button outlined style={styles.button} onClick={props.resetItems}>
+              RESET
             </Button>
           </div>
         </GridCell>
@@ -111,10 +125,9 @@ export const ListEditPane = props => {
 
 const styles = {
   button: {
-    color: 'white',
-    marginRight: 5
+    marginRight: 10
   },
   editListItemCell: {
-    padding: 5
+    padding: 0
   }
 };

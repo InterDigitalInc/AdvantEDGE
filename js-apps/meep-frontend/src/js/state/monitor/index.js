@@ -15,14 +15,18 @@
  */
 
 const initialState = {
-  currentDashboardUrl: '',
+  currentDashboard: '',
   dashboardOptions: [
+    {
+      label: 'None',
+      value: ''
+    },
     {
       label: 'Metrics Dashboard',
       value:
         'http://' +
         location.hostname +
-        ':30009/d/100/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light'
+        ':30009/d/100/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
     }
   ],
   editedDashboardOptions: null
@@ -36,11 +40,11 @@ export const addDashboardOption = option => {
   };
 };
 
-const CHANGE_DASHBOARD_URL = 'CHANGE_DASHBOARD_URL';
-export function changeDashboardUrl(url) {
+const CHANGE_DASHBOARD = 'CHANGE_DASHBOARD';
+export function changeDashboard(label) {
   return {
-    type: CHANGE_DASHBOARD_URL,
-    payload: url
+    type: CHANGE_DASHBOARD,
+    payload: label
   };
 }
 
@@ -60,10 +64,18 @@ export function changeDashboardOptions(mode) {
   };
 }
 
+const RESET_DASHBOARD_OPTIONS = 'RESET_DASHBOARD_OPTIONS';
+export function resetDashboardOptions() {
+  return {
+    type: RESET_DASHBOARD_OPTIONS,
+    payload: null
+  };
+}
+
 export default function settingsReducer(state = initialState, action) {
   switch (action.type) {
-  case CHANGE_DASHBOARD_URL:
-    return { ...state, currentDashboardUrl: action.payload };
+  case CHANGE_DASHBOARD:
+    return { ...state, currentDashboard: action.payload };
   case ADD_DASHBOARD_OPTION:
     return {
       ...state,
@@ -73,6 +85,8 @@ export default function settingsReducer(state = initialState, action) {
     return { ...state, editedDashboardOptions: action.payload };
   case CHANGE_DASHBOARD_OPTIONS:
     return { ...state, dashboardOptions: action.payload };
+  case RESET_DASHBOARD_OPTIONS:
+    return initialState;
   default:
     return state;
   }

@@ -41,10 +41,8 @@ import {
 
 import {
   TYPE_EXEC,
-  DASHBOARD_VIEWS_LIST,
   VIEW_NAME_NONE,
-  METRICS_VIEW,
-  VIS_VIEW
+  NET_TOPOLOGY_VIEW
 } from '../../meep-constants';
 
 const greyColor = 'grey';
@@ -67,6 +65,9 @@ const styles = {
     }
   }
 };
+
+const showInExecStr = '<exec>';
+const passVarsStr = '<vars>';
 
 const ConfigurationView = props => {
   return (
@@ -137,38 +138,12 @@ const ViewForName = ({
   scenarioName,
   selectedSource,
   selectedDest,
-  viewName
+  viewName,
+  dashboardOptions
 }) => {
 
-  // Remove '-' from scenario name
-  var scenario = scenarioName.replace(/-/g, '');
-
-  const dashboard = 'http://' + location.hostname + ':30009/d/100/metrics-dashboard?orgId=1';
-  const datasource = '&var-datasource=meep-influxdb';
-  const database = '&var-database=' + scenario;
-  const refreshInterval = '&refresh=1s';
-  const srcApp = '&var-src=' + selectedSource;
-  const destApp = '&var-dest=' + selectedDest;
-  const viewMode = '&kiosk';
-  const theme = '&theme=light';
-  const dashboardUrl = dashboard + datasource + database + refreshInterval + srcApp + destApp + viewMode + theme;
-  
-  switch (viewName) {
-  case METRICS_VIEW:
-    return (
-      <div style={{ height: '80vh' }}>
-        <Iframe
-          url={dashboardUrl}
-          id="myId"
-          display="initial"
-          position="relative"
-          allowFullScreen
-          width='100%'
-          height='100%'
-        />
-      </div>
-    );
-  case VIS_VIEW:
+  // Handle Network Topology view
+  if (viewName === NET_TOPOLOGY_VIEW) {
     return (
       <div style={{ height: '80vh' }}>
         <IDCVis
@@ -179,9 +154,51 @@ const ViewForName = ({
         />
       </div>
     );
-  default:
-    return null;
   }
+
+  // Get URL from Monitoring page dashboard options
+  var selectedUrl = null;
+  for (var i = 0; i < dashboardOptions.length; i++) {
+    var dashboard = dashboardOptions[i];
+    if (dashboard.label === viewName) {
+      selectedUrl = dashboard.value;
+      selectedUrl = selectedUrl.replace(showInExecStr, '');
+      break;
+    }
+  }
+
+  if (selectedUrl) {
+
+    // Add variables if requested
+    if (selectedUrl.indexOf(passVarsStr) !== -1) {
+      selectedUrl = selectedUrl.replace(passVarsStr, '');
+      
+      // Remove '-' from scenario name
+      var scenario = scenarioName.replace(/-/g, '');
+
+      var url = new URL(selectedUrl);
+      url.searchParams.append('var-database', scenario);
+      url.searchParams.append('var-src', selectedSource);
+      url.searchParams.append('var-dest', selectedDest);
+      selectedUrl = url.href + '&kiosk';
+    }
+
+    return (
+      <div style={{ height: '80vh' }}>
+        <Iframe
+          url={selectedUrl}
+          id="myId"
+          display="initial"
+          position="relative"
+          allowFullScreen
+          width='100%'
+          height='100%'
+        />
+      </div>
+    );
+  }
+
+  return null;
 };
 
 const DashboardConfiguration = props => {
@@ -258,6 +275,15 @@ class DashboardContainer extends Component {
     this.props.onShowAppsChanged(checked);
   }
 
+  populateDashboardList(dashboardViewsList, dashboardOptions) {
+    for (var i = 0; i < dashboardOptions.length; i++) {
+      var dashboard = dashboardOptions[i];
+      if ((dashboard.label !== '') && (dashboard.value !== '') && (dashboard.value.indexOf(showInExecStr) !== -1)) {
+        dashboardViewsList.push(dashboard.label);
+      }
+    }
+  }
+
   render() {
     this.keyForSvg++;
     const root = this.getRoot();
@@ -308,6 +334,7 @@ class DashboardContainer extends Component {
         selectedSource={selectedSource}
         selectedDest={selectedDest}
         viewName={view1Name}
+        dashboardOptions={this.props.dashboardOptions}
       />
     );
 
@@ -317,8 +344,16 @@ class DashboardContainer extends Component {
         selectedSource={selectedSource}
         selectedDest={selectedDest}
         viewName={view2Name}
+        dashboardOptions={this.props.dashboardOptions}
       />
     );
+
+    // Populate Dashboard view list using links from monitoring tab
+    var dashboardViewsList = [
+      VIEW_NAME_NONE,
+      NET_TOPOLOGY_VIEW
+    ];
+    this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
 
     return (
       <>
@@ -336,7 +371,7 @@ class DashboardContainer extends Component {
           changeDestNodeSelected={nodeId =>
             this.props.changeDestNodeSelected(appMap[nodeId])
           }
-          dashboardViewsList={DASHBOARD_VIEWS_LIST}
+          dashboardViewsList={dashboardViewsList}
           changeView1={viewName => this.props.changeView1(viewName)}
           changeView2={viewName => this.props.changeView2(viewName)}
           changeShowApps={checked => this.changeShowApps(checked)}
@@ -385,7 +420,8 @@ const mapStateToProps = state => {
     eventCreationMode: state.exec.eventCreationMode,
     scenarioState: state.exec.state.scenario,
     view1Name: state.ui.dashboardView1,
-    view2Name: state.ui.dashboardView2
+    view2Name: state.ui.dashboardView2,
+    dashboardOptions: state.monitor.dashboardOptions
   };
 };
 

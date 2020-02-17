@@ -15,20 +15,33 @@
  */
 
 import { updateObject } from '../../util/object-util';
-
-// export const PAGE_CONFIGURE = 'page-configure-link';
-// export const PAGE_EXECUTE = 'page-execute-link';
-// export const PAGE_MONITOR = 'page-monitor-link';
-// export const PAGE_SETTINGS = 'page-settings-link';
-
 import {
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  PAGE_CONFIGURE,
+  VIEW_NAME_NONE,
+  NET_TOPOLOGY_VIEW,
+  MOBILITY_EVENT
 } from '../../meep-constants';
+
+const initialState = {
+  page: PAGE_CONFIGURE,
+  mainDrawerOpen: true,
+  eventCreationMode: false,
+  execCurrentEvent: null,
+  currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
+  devMode: false,
+  currentDialog: '',
+  automaticRefresh: false,
+  refreshInterval: 1000,
+  execShowApps: false,
+  showDashboardConfig: false,
+  dashboardConfigExpanded: false,
+  dashboardView1: NET_TOPOLOGY_VIEW,
+  dashboardView2: VIEW_NAME_NONE
+};
 
 // Change the current page
 const CHANGE_CURRENT_PAGE = 'CHANGE_CURRENT_PAGE';
-function uiChangeCurrentPage(page) {
+export function uiChangeCurrentPage(page) {
   return {
     type: CHANGE_CURRENT_PAGE,
     payload: page
@@ -36,7 +49,7 @@ function uiChangeCurrentPage(page) {
 }
 
 const TOGGLE_MAIN_DRAWER = 'TOGGLE_MAIN_DRAWER';
-function uiToggleMainDrawer() {
+export function uiToggleMainDrawer() {
   return {
     type: TOGGLE_MAIN_DRAWER,
     payload: null
@@ -44,7 +57,7 @@ function uiToggleMainDrawer() {
 }
 
 const EXEC_CHANGE_CURRENT_EVENT = 'EXEC_CHANGE_CURRENT_EVENT';
-function uiExecChangeCurrentEvent(event) {
+export function uiExecChangeCurrentEvent(event) {
   return {
     type: EXEC_CHANGE_CURRENT_EVENT,
     payload: event
@@ -52,7 +65,7 @@ function uiExecChangeCurrentEvent(event) {
 }
 
 const EXEC_CHANGE_EVENT_CREATION_MODE = 'EXEC_CHANGE_EVENT_CREATION_MODE';
-function uiExecChangeEventCreationMode(val) {
+export function uiExecChangeEventCreationMode(val) {
   return {
     type: EXEC_CHANGE_EVENT_CREATION_MODE,
     payload: val
@@ -60,7 +73,7 @@ function uiExecChangeEventCreationMode(val) {
 }
 
 const EXEC_CHANGE_DASH_CFG_MODE = 'EXEC_CHANGE_DASH_CFG_MODE';
-function uiExecChangeDashCfgMode(val) {
+export function uiExecChangeDashCfgMode(val) {
   return {
     type: EXEC_CHANGE_DASH_CFG_MODE,
     payload: val
@@ -68,123 +81,60 @@ function uiExecChangeDashCfgMode(val) {
 }
 
 const UI_CHANGE_DEV_MODE = 'UI_CHANGE_DEV_MODE';
-function uiChangeDevMode(mode) {
+export function uiChangeDevMode(mode) {
   return {
     type: UI_CHANGE_DEV_MODE,
     payload: mode
   };
 }
 
-// Dialog Types
-// CFG
-const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
-const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
-const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
-const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
-const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
-const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
-const IDC_DIALOG_CONFIRM = 'IDC_DIALOG_CONFIRM';
-
-// EXEC
-const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
-
 const UI_CHANGE_CURRENT_DIALOG = 'UI_CHANGE_CURRENT_DIALOG';
-const uiChangeCurrentDialog = type => {
+export function uiChangeCurrentDialog(type) {
   return {
     type: UI_CHANGE_CURRENT_DIALOG,
     payload: type
   };
-};
+}
 
 const UI_SET_AUTOMATIC_REFRESH = 'UI_SET_AUTOMATIC_REFRESH';
-const uiSetAutomaticRefresh = val => {
+export function uiSetAutomaticRefresh(val) {
   return {
     type: UI_SET_AUTOMATIC_REFRESH,
     payload: val
   };
-};
+}
 
 const UI_CHANGE_REFRESH_INTERVAL = 'UI_CHANGE_REFRESH_INTERVAL';
-const uiChangeRefreshInterval = val => {
+export function uiChangeRefreshInterval(val) {
   return {
     type: UI_CHANGE_REFRESH_INTERVAL,
     payload: val
   };
-};
+}
 
 const UI_EXEC_CHANGE_SHOW_APPS = 'UI_EXEC_CHANGE_SHOW_APPS';
-const uiExecChangeShowApps = show => {
+export function uiExecChangeShowApps(show) {
   return {
     type: UI_EXEC_CHANGE_SHOW_APPS,
     payload: show
   };
-};
+}
 
 const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
-const uiExecChangeDashboardView1 = name => {
+export function uiExecChangeDashboardView1(name) {
   return {
     type: UI_EXEC_CHANGE_DASHBOARD_VIEW1,
     payload: name
   };
-};
+}
 
 const UI_EXEC_CHANGE_DASHBOARD_VIEW2 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW2';
-const uiExecChangeDashboardView2 = name => {
+export function uiExecChangeDashboardView2(name) {
   return {
     type: UI_EXEC_CHANGE_DASHBOARD_VIEW2,
     payload: name
   };
-};
-
-export {
-  // Event types
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT,
-  // Action types
-  EXEC_CHANGE_CURRENT_EVENT,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW1,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW2,
-  // Dialogs types
-  IDC_DIALOG_OPEN_SCENARIO,
-  IDC_DIALOG_NEW_SCENARIO,
-  IDC_DIALOG_SAVE_SCENARIO,
-  IDC_DIALOG_DELETE_SCENARIO,
-  IDC_DIALOG_EXPORT_SCENARIO,
-  IDC_DIALOG_DEPLOY_SCENARIO,
-  IDC_DIALOG_TERMINATE_SCENARIO,
-  IDC_DIALOG_CONFIRM,
-  // Action creators
-  uiChangeCurrentPage,
-  uiToggleMainDrawer,
-  uiExecChangeEventCreationMode,
-  uiExecChangeDashCfgMode,
-  uiExecChangeCurrentEvent,
-  uiChangeDevMode,
-  uiChangeCurrentDialog,
-  uiSetAutomaticRefresh,
-  uiChangeRefreshInterval,
-  uiExecChangeShowApps,
-  uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2
-};
-
-const initialState = {}; //createMeepState();
-
-// {
-//   page: PAGE_CONFIGURE,
-//   mainDrawerOpen: true,
-//   eventCreationMode: false,
-//   execCurrentEvent: null,
-//   currentEventType: MOBILITY_EVENT,
-//   devMode: false,
-//   currentDialog: '',
-//   automaticRefresh: false,
-//   refreshInterval: 1000,
-//   execShowApps: false,
-//   showDashboardConfig: false,
-//   dashboardView1: VIS_VIEW,
-//   dashboardView2: VIEW_NAME_NONE
-// };
+}
 
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
