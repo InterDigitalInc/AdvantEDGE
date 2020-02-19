@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ScenarioName', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/EventReplayApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
+    define(['ApiClient', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioInfo', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/EventReplayApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ScenarioName'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/EventReplayApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioInfo'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/EventReplayApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
   }
-}(function(ApiClient, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, NodeServiceMaps, PhysicalLocation, PodStatus, PodsStatus, Process, Replay, ReplayEvent, ReplayFileList, Scenario, ScenarioConfig, ScenarioList, ScenarioName, ServiceConfig, ServicePort, Zone, EventReplayApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
+}(function(ApiClient, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, NodeServiceMaps, PhysicalLocation, PodStatus, PodsStatus, Process, Replay, ReplayEvent, ReplayFileList, Scenario, ScenarioConfig, ScenarioInfo, ScenarioList, ServiceConfig, ServicePort, Zone, EventReplayApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
   'use strict';
 
   /**
@@ -192,15 +192,15 @@
      */
     ScenarioConfig: ScenarioConfig,
     /**
+     * The ScenarioInfo model constructor.
+     * @property {module:model/ScenarioInfo}
+     */
+    ScenarioInfo: ScenarioInfo,
+    /**
      * The ScenarioList model constructor.
      * @property {module:model/ScenarioList}
      */
     ScenarioList: ScenarioList,
-    /**
-     * The ScenarioName model constructor.
-     * @property {module:model/ScenarioName}
-     */
-    ScenarioName: ScenarioName,
     /**
      * The ServiceConfig model constructor.
      * @property {module:model/ServiceConfig}

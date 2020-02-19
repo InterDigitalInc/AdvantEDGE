@@ -117,11 +117,11 @@ EventReplayApiService Generate a replay file from scenario execution events
 Generate a replay file using events from the latest execution of a scenario
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param name Replay file name
- * @param scenarioName Scenario name
+ * @param scenarioInfo Scenario information
 
 
 */
-func (a *EventReplayApiService) CreateReplayFileFromScenarioExec(ctx context.Context, name string, scenarioName ScenarioName) (*http.Response, error) {
+func (a *EventReplayApiService) CreateReplayFileFromScenarioExec(ctx context.Context, name string, scenarioInfo ScenarioInfo) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -155,7 +155,7 @@ func (a *EventReplayApiService) CreateReplayFileFromScenarioExec(ctx context.Con
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
 	// body params
-	localVarPostBody = &scenarioName
+	localVarPostBody = &scenarioInfo
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return nil, err

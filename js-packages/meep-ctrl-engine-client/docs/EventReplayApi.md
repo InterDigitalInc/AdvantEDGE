@@ -66,7 +66,7 @@ No authorization required
 
 <a name="createReplayFileFromScenarioExec"></a>
 # **createReplayFileFromScenarioExec**
-> createReplayFileFromScenarioExec(name, scenarioName)
+> createReplayFileFromScenarioExec(name, scenarioInfo)
 
 Generate a replay file from scenario execution events
 
@@ -80,7 +80,7 @@ var apiInstance = new AdvantEdgePlatformControllerRestApi.EventReplayApi();
 
 var name = "name_example"; // String | Replay file name
 
-var scenarioName = new AdvantEdgePlatformControllerRestApi.ScenarioName(); // ScenarioName | Scenario name
+var scenarioInfo = new AdvantEdgePlatformControllerRestApi.ScenarioInfo(); // ScenarioInfo | Scenario information
 
 
 var callback = function(error, data, response) {
@@ -90,7 +90,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.createReplayFileFromScenarioExec(name, scenarioName, callback);
+apiInstance.createReplayFileFromScenarioExec(name, scenarioInfo, callback);
 ```
 
 ### Parameters
@@ -98,7 +98,7 @@ apiInstance.createReplayFileFromScenarioExec(name, scenarioName, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**| Replay file name | 
- **scenarioName** | [**ScenarioName**](ScenarioName.md)| Scenario name | 
+ **scenarioInfo** | [**ScenarioInfo**](ScenarioInfo.md)| Scenario information | 
 
 ### Return type
 

@@ -45,7 +45,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **CreateReplayFileFromScenarioExec**
-> CreateReplayFileFromScenarioExec(ctx, name, scenarioName)
+> CreateReplayFileFromScenarioExec(ctx, name, scenarioInfo)
 Generate a replay file from scenario execution events
 
 Generate a replay file using events from the latest execution of a scenario
@@ -56,7 +56,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Replay file name | 
-  **scenarioName** | [**ScenarioName**](ScenarioName.md)| Scenario name | 
+  **scenarioInfo** | [**ScenarioInfo**](ScenarioInfo.md)| Scenario information | 
 
 ### Return type
 

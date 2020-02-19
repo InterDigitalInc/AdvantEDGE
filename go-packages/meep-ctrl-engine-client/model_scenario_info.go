@@ -24,6 +24,8 @@
 
 package client
 
-// Scenario name
-type ScenarioName struct {
+// Scenario information
+type ScenarioInfo struct {
+	// Scenario name
+	Name string `json:"name,omitempty"`
 }

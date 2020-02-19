@@ -408,12 +408,12 @@ paths:
         type: "string"
         x-exportParamName: "Name"
       - in: "body"
-        name: "scenarioName"
-        description: "Scenario name"
+        name: "scenarioInfo"
+        description: "Scenario information"
         required: true
         schema:
-          $ref: "#/definitions/ScenarioName"
-        x-exportParamName: "ScenarioName"
+          $ref: "#/definitions/ScenarioInfo"
+        x-exportParamName: "ScenarioInfo"
       responses:
         200:
           description: "OK"
@@ -1174,9 +1174,13 @@ definitions:
         $ref: "#/definitions/Event"
     description: "Replay event object"
     example: {}
-  ScenarioName:
-    type: "string"
-    description: "Scenario name"
+  ScenarioInfo:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Scenario name"
+    description: "Scenario information"
     example: {}
   PodsStatus:
     type: "object"
@@ -1266,14 +1270,14 @@ parameters:
     required: true
     type: "string"
     x-exportParamName: "Name"
-  ScenarioName:
+  ScenarioInfo:
     in: "body"
-    name: "name"
-    description: "Scenario name"
+    name: "scenarioInfo"
+    description: "Scenario information"
     required: true
     schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ScenarioName"
-    x-exportParamName: "ScenarioName"
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ScenarioInfo"
+    x-exportParamName: "ScenarioInfo"
   Replay:
     name: "replay"
     in: "path"

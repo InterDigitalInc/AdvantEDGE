@@ -129,6 +129,8 @@ func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool) err
 		r.currentFileName = fileName
 		//executing the events
 		_ = r.PlayEventByIndex()
+	} else {
+		return errors.New("Replay already running, filename: " + r.currentFileName)
 	}
 	return nil
 }

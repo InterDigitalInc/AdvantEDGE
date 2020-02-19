@@ -95,9 +95,10 @@
           // TODO: uncomment, update parameter values for createReplayFileFromScenarioExec call
           /*
           var name = "name_example";
-          var scenarioName = new AdvantEdgePlatformControllerRestApi.ScenarioName();
+          var scenarioInfo = new AdvantEdgePlatformControllerRestApi.ScenarioInfo();
+          scenarioInfo.name = "";
 
-          instance.createReplayFileFromScenarioExec(name, scenarioName, function(error, data, response) {
+          instance.createReplayFileFromScenarioExec(name, scenarioInfo, function(error, data, response) {
             if (error) {
               done(error);
               return;

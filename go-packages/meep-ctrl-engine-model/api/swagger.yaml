@@ -642,9 +642,13 @@ definitions:
     example:
       visualization: visualization
       other: other
-  ScenarioName:
-    type: string
-    description: Scenario name
+  ScenarioInfo:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Scenario name
+    description: Scenario information
     example: {}
   ScenarioList:
     type: object

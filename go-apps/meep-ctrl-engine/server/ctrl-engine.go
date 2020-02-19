@@ -941,7 +941,6 @@ func ceCreateReplayFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//replay.Name = replayFileName
 	err = storeReplay(replay, replayFileName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -960,12 +959,23 @@ func storeReplay(replay ceModel.Replay, replayFileName string) error {
 		return err
 	}
 
-	// Add new replay file to DB
-	rev, err := replayStore.AddDoc(replayFileName, validJsonReplay)
+	//check if file exists and either update/overwrite or create
+	rev := ""
+	_, err = replayStore.GetDoc(false, replayFileName)
 	if err != nil {
-		log.Error(err.Error())
-		return err
+		rev, err = replayStore.AddDoc(replayFileName, validJsonReplay)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	} else {
+		rev, err = replayStore.UpdateDoc(replayFileName, validJsonReplay)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
 	}
+
 	log.Debug("Replay added with rev: ", rev)
 	return nil
 }
@@ -1002,18 +1012,27 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	scenarioName := ""
+	var scenarioInfo ceModel.ScenarioInfo
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&scenarioName)
+	err := decoder.Decode(&scenarioInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Debug("body: ", scenarioName)
+	log.Debug("body: ", scenarioInfo)
+	log.Debug("scenarioName: ", scenarioInfo.Name)
 
-	eml, err := metricStore.GetEventMetric("", "", 0)
+	var tmpMetricStore *ms.MetricStore
+	tmpMetricStore, err = ms.NewMetricStore(scenarioInfo.Name, influxDBAddr, redisDBAddr)
 	if err != nil {
+		log.Error("Failed creating tmp metricStore: ", err)
+		return
+	}
+
+	eml, err := tmpMetricStore.GetEventMetric("", "", 0)
+	if err != nil {
+		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -1162,10 +1181,13 @@ func ceLoopReplay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = replayMgr.Start(replayFileName, events, true)
-
+	err = replayMgr.Start(replayFileName, events, true)
+	if err == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 }
 
 func cePlayReplayFile(w http.ResponseWriter, r *http.Request) {
@@ -1180,10 +1202,14 @@ func cePlayReplayFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = replayMgr.Start(replayFileName, events, false)
+	err = replayMgr.Start(replayFileName, events, false)
 
+	if err == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 }
 
 func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
