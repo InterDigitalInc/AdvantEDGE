@@ -337,6 +337,7 @@ class MonitorPageContainer extends Component {
           currentDashboard={this.props.currentDashboard}
           isEditMode={() => this.isEditMode()}
           startEditMode={() => this.startEditMode()}
+          open={this.props.mainDrawerOpen}
         />
         <MainPane
           editedDashboardOptions={this.props.editedDashboardOptions}
