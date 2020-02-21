@@ -44,7 +44,6 @@ import {
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME,
   IDC_DIALOG_DELETE_DASHBOARD_LIST,
-  IDC_DIALOG_RESET_DASHBOARD_LIST,
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
@@ -174,7 +173,6 @@ const MainPane = props => {
           items={props.editedDashboardOptions}
           cancelEditMode={props.cancelEditMode}
           saveItems={props.saveDashboards}
-          resetItems={props.resetDashboards}
           addItem={props.addOption}
           deleteItems={props.deleteOptions}
           itemLabelLabel={'Dashboard Name'}
@@ -254,10 +252,6 @@ class MonitorPageContainer extends Component {
     this.props.changeEditedDashboardOptions(options);
   }
 
-  performResetOptions() {
-    this.props.resetDashboardOptions();
-  }
-
   isOptionSelected(option) {
     return _.includes(this.state.selectedIndices, option.index);
   }
@@ -327,14 +321,6 @@ class MonitorPageContainer extends Component {
           }}
           onSubmit={() => this.performDeleteOptions()}
         />
-        <IDConfirmDialog
-          title="Reset default dashboards"
-          open={this.props.currentDialog === IDC_DIALOG_RESET_DASHBOARD_LIST}
-          onClose={() => {
-            this.closeDialog();
-          }}
-          onSubmit={() => this.performResetOptions()}
-        />
         <MonitorPageHeadlineBar
           scenarioName={this.props.scenarioName}
           onChangeDashboard={e => this.handleSelectionChange(e)}
@@ -350,7 +336,6 @@ class MonitorPageContainer extends Component {
           currentDashboardUrl={currentDashboardUrl}
           cancelEditMode={() => this.cancelEditMode()}
           saveDashboards={() => this.saveDashboards()}
-          resetDashboards={() => this.showDialog(IDC_DIALOG_RESET_DASHBOARD_LIST)}
           addOption={() => this.addOption()}
           deleteOptions={() => this.showDialog(IDC_DIALOG_DELETE_DASHBOARD_LIST)}
           updateOptionLabel={(index, value) =>
