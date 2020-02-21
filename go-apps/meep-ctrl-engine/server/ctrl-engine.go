@@ -1012,19 +1012,17 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	var scenarioInfo ceModel.ScenarioInfo
+	var replayInfo ceModel.ReplayInfo
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&scenarioInfo)
+	err := decoder.Decode(&replayInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Debug("body: ", scenarioInfo)
-	log.Debug("scenarioName: ", scenarioInfo.Name)
 
 	var tmpMetricStore *ms.MetricStore
-	tmpMetricStore, err = ms.NewMetricStore(scenarioInfo.Name, influxDBAddr, redisDBAddr)
+	tmpMetricStore, err = ms.NewMetricStore(replayInfo.ScenarioName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed creating tmp metricStore: ", err)
 		return
@@ -1038,6 +1036,8 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var replay ceModel.Replay
+	replay.Description = replayInfo.Description
+
 	var time0 time.Time
 	var nbEvents int32 = 0
 

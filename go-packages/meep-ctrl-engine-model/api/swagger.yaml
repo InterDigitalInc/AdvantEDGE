@@ -596,6 +596,9 @@ definitions:
   Replay:
     type: object
     properties:
+      description:
+        type: string
+        description: User description of the content of the replay file. 
       events:
         type: array
         items:
@@ -623,6 +626,9 @@ definitions:
       name:
         type: string
         description: Unique scenario name
+      description:
+        type: string
+        description: User description of the scenario.
       config:
         $ref: '#/definitions/ScenarioConfig'
       deployment:
@@ -642,12 +648,15 @@ definitions:
     example:
       visualization: visualization
       other: other
-  ScenarioInfo:
+  ReplayInfo:
     type: object
     properties:
-      name:
+      scenarioName:
         type: string
         description: Scenario name
+      description:
+        type: string
+        description: User description of the replay file
     description: Scenario information
     example: {}
   ScenarioList:

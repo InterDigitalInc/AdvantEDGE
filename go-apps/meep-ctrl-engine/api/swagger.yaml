@@ -408,12 +408,12 @@ paths:
         type: "string"
         x-exportParamName: "Name"
       - in: "body"
-        name: "scenarioInfo"
-        description: "Scenario information"
+        name: "replayInfo"
+        description: "Replay information"
         required: true
         schema:
-          $ref: "#/definitions/ScenarioInfo"
-        x-exportParamName: "ScenarioInfo"
+          $ref: "#/definitions/ReplayInfo"
+        x-exportParamName: "ReplayInfo"
       responses:
         200:
           description: "OK"
@@ -555,6 +555,9 @@ definitions:
       name:
         type: "string"
         description: "Unique scenario name"
+      description:
+        type: "string"
+        description: "User description of the scenario."
       config:
         $ref: "#/definitions/ScenarioConfig"
       deployment:
@@ -1153,6 +1156,9 @@ definitions:
   Replay:
     type: "object"
     properties:
+      description:
+        type: "string"
+        description: "User description of the content of the replay file."
       events:
         type: "array"
         items:
@@ -1174,12 +1180,15 @@ definitions:
         $ref: "#/definitions/Event"
     description: "Replay event object"
     example: {}
-  ScenarioInfo:
+  ReplayInfo:
     type: "object"
     properties:
-      name:
+      scenarioName:
         type: "string"
         description: "Scenario name"
+      description:
+        type: "string"
+        description: "User description of the replay file"
     description: "Scenario information"
     example: {}
   PodsStatus:
@@ -1270,14 +1279,14 @@ parameters:
     required: true
     type: "string"
     x-exportParamName: "Name"
-  ScenarioInfo:
+  ReplayInfo:
     in: "body"
-    name: "scenarioInfo"
-    description: "Scenario information"
+    name: "replayInfo"
+    description: "Replay information"
     required: true
     schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ScenarioInfo"
-    x-exportParamName: "ScenarioInfo"
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ReplayInfo"
+    x-exportParamName: "ReplayInfo"
   Replay:
     name: "replay"
     in: "path"

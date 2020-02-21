@@ -25,5 +25,7 @@ package model
 
 // ReplayEvents from the Replay-file
 type Replay struct {
-	Events []ReplayEvent `json:"events,omitempty"`
+	// User description of the content of the replay file.
+	Description string        `json:"description,omitempty"`
+	Events      []ReplayEvent `json:"events,omitempty"`
 }

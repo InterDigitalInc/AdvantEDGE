@@ -70,11 +70,19 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      if (data.hasOwnProperty('description'))
+        obj.description = ApiClient.convertToType(data['description'], 'String');
       if (data.hasOwnProperty('events'))
         obj.events = ApiClient.convertToType(data['events'], [ReplayEvent]);
     }
     return obj;
   }
+
+  /**
+   * User description of the content of the replay file.
+   * @member {String} description
+   */
+  exports.prototype.description = undefined;
 
   /**
    * @member {Array.<module:model/ReplayEvent>} events

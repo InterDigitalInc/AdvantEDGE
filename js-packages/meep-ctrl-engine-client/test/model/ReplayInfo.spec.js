@@ -45,26 +45,26 @@
   var instance;
 
   describe('(package)', function() {
-    describe('Replay', function() {
+    describe('ReplayInfo', function() {
       beforeEach(function() {
-        instance = new AdvantEdgePlatformControllerRestApi.Replay();
+        instance = new AdvantEdgePlatformControllerRestApi.ReplayInfo();
       });
 
-      it('should create an instance of Replay', function() {
-        // TODO: update the code to test Replay
-        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Replay);
+      it('should create an instance of ReplayInfo', function() {
+        // TODO: update the code to test ReplayInfo
+        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.ReplayInfo);
+      });
+
+      it('should have the property scenarioName (base name: "scenarioName")', function() {
+        // TODO: update the code to test the property scenarioName
+        expect(instance).to.have.property('scenarioName');
+        // expect(instance.scenarioName).to.be(expectedValueLiteral);
       });
 
       it('should have the property description (base name: "description")', function() {
         // TODO: update the code to test the property description
         expect(instance).to.have.property('description');
         // expect(instance.description).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property events (base name: "events")', function() {
-        // TODO: update the code to test the property events
-        expect(instance).to.have.property('events');
-        // expect(instance.events).to.be(expectedValueLiteral);
       });
 
     });

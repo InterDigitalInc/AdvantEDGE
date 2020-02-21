@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Replay', 'model/ReplayFileList', 'model/ScenarioInfo'], factory);
+    define(['ApiClient', 'model/Replay', 'model/ReplayFileList', 'model/ReplayInfo'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/Replay'), require('../model/ReplayFileList'), require('../model/ScenarioInfo'));
+    module.exports = factory(require('../ApiClient'), require('../model/Replay'), require('../model/ReplayFileList'), require('../model/ReplayInfo'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.EventReplayApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Replay, root.AdvantEdgePlatformControllerRestApi.ReplayFileList, root.AdvantEdgePlatformControllerRestApi.ScenarioInfo);
+    root.AdvantEdgePlatformControllerRestApi.EventReplayApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Replay, root.AdvantEdgePlatformControllerRestApi.ReplayFileList, root.AdvantEdgePlatformControllerRestApi.ReplayInfo);
   }
-}(this, function(ApiClient, Replay, ReplayFileList, ScenarioInfo) {
+}(this, function(ApiClient, Replay, ReplayFileList, ReplayInfo) {
   'use strict';
 
   /**
@@ -127,20 +127,20 @@
      * Generate a replay file from scenario execution events
      * Generate a replay file using events from the latest execution of a scenario
      * @param {String} name Replay file name
-     * @param {module:model/ScenarioInfo} scenarioInfo Scenario information
+     * @param {module:model/ReplayInfo} replayInfo Replay information
      * @param {module:api/EventReplayApi~createReplayFileFromScenarioExecCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.createReplayFileFromScenarioExec = function(name, scenarioInfo, callback) {
-      var postBody = scenarioInfo;
+    this.createReplayFileFromScenarioExec = function(name, replayInfo, callback) {
+      var postBody = replayInfo;
 
       // verify the required parameter 'name' is set
       if (name === undefined || name === null) {
         throw new Error("Missing the required parameter 'name' when calling createReplayFileFromScenarioExec");
       }
 
-      // verify the required parameter 'scenarioInfo' is set
-      if (scenarioInfo === undefined || scenarioInfo === null) {
-        throw new Error("Missing the required parameter 'scenarioInfo' when calling createReplayFileFromScenarioExec");
+      // verify the required parameter 'replayInfo' is set
+      if (replayInfo === undefined || replayInfo === null) {
+        throw new Error("Missing the required parameter 'replayInfo' when calling createReplayFileFromScenarioExec");
       }
 
 

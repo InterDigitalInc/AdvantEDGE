@@ -23,6 +23,10 @@
 
 package model
 
-// Scenario name
-type ScenarioName struct {
+// Scenario information
+type ReplayInfo struct {
+	// Scenario name
+	ScenarioName string `json:"scenarioName,omitempty"`
+	// User description of the replay file
+	Description string `json:"description,omitempty"`
 }

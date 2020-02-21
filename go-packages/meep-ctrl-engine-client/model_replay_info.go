@@ -25,7 +25,9 @@
 package client
 
 // Scenario information
-type ScenarioInfo struct {
+type ReplayInfo struct {
 	// Scenario name
-	Name string `json:"name,omitempty"`
+	ScenarioName string `json:"scenarioName,omitempty"`
+	// User description of the replay file
+	Description string `json:"description,omitempty"`
 }

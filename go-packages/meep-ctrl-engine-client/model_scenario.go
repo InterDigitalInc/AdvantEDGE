@@ -31,7 +31,9 @@ type Scenario struct {
 	// Unique scenario ID
 	Id string `json:"id,omitempty"`
 	// Unique scenario name
-	Name       string          `json:"name,omitempty"`
-	Config     *ScenarioConfig `json:"config,omitempty"`
-	Deployment *Deployment     `json:"deployment,omitempty"`
+	Name string `json:"name,omitempty"`
+	// User description of the scenario.
+	Description string          `json:"description,omitempty"`
+	Config      *ScenarioConfig `json:"config,omitempty"`
+	Deployment  *Deployment     `json:"deployment,omitempty"`
 }

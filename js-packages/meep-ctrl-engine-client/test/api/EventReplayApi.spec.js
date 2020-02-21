@@ -56,6 +56,7 @@
           /*
           var name = "name_example";
           var replayFile = new AdvantEdgePlatformControllerRestApi.Replay();
+          replayFile.description = "";
           replayFile.events = [new AdvantEdgePlatformControllerRestApi.ReplayEvent()];
           replayFile.events[0].time = 0;
           replayFile.events[0].event = new AdvantEdgePlatformControllerRestApi.Event();
@@ -95,10 +96,11 @@
           // TODO: uncomment, update parameter values for createReplayFileFromScenarioExec call
           /*
           var name = "name_example";
-          var scenarioInfo = new AdvantEdgePlatformControllerRestApi.ScenarioInfo();
-          scenarioInfo.name = "";
+          var replayInfo = new AdvantEdgePlatformControllerRestApi.ReplayInfo();
+          replayInfo.scenarioName = "";
+          replayInfo.description = "";
 
-          instance.createReplayFileFromScenarioExec(name, scenarioInfo, function(error, data, response) {
+          instance.createReplayFileFromScenarioExec(name, replayInfo, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -161,6 +163,8 @@
             }
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Replay);
+            expect(data.description).to.be.a('string');
+            expect(data.description).to.be("");
             {
               let dataCtr = data.events;
               expect(dataCtr).to.be.an(Array);

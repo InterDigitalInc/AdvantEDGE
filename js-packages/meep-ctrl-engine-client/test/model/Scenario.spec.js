@@ -73,6 +73,12 @@
         // expect(instance.name).to.be(expectedValueLiteral);
       });
 
+      it('should have the property description (base name: "description")', function() {
+        // TODO: update the code to test the property description
+        expect(instance).to.have.property('description');
+        // expect(instance.description).to.be(expectedValueLiteral);
+      });
+
       it('should have the property config (base name: "config")', function() {
         // TODO: update the code to test the property config
         expect(instance).to.have.property('config');
