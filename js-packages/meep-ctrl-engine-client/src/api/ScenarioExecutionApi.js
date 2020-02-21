@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Event', 'model/NodeServiceMaps', 'model/Scenario'], factory);
+    define(['ApiClient', 'model/ActivationInfo', 'model/Event', 'model/NodeServiceMaps', 'model/Scenario'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/Event'), require('../model/NodeServiceMaps'), require('../model/Scenario'));
+    module.exports = factory(require('../ApiClient'), require('../model/ActivationInfo'), require('../model/Event'), require('../model/NodeServiceMaps'), require('../model/Scenario'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Event, root.AdvantEdgePlatformControllerRestApi.NodeServiceMaps, root.AdvantEdgePlatformControllerRestApi.Scenario);
+    root.AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.ActivationInfo, root.AdvantEdgePlatformControllerRestApi.Event, root.AdvantEdgePlatformControllerRestApi.NodeServiceMaps, root.AdvantEdgePlatformControllerRestApi.Scenario);
   }
-}(this, function(ApiClient, Event, NodeServiceMaps, Scenario) {
+}(this, function(ApiClient, ActivationInfo, Event, NodeServiceMaps, Scenario) {
   'use strict';
 
   /**
@@ -74,14 +74,20 @@
      * Deploy a scenario
      * Deploy a scenario present in the platform scenario store
      * @param {String} name Scenario name
+     * @param {module:model/ActivationInfo} activationInfo Activation information
      * @param {module:api/ScenarioExecutionApi~activateScenarioCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.activateScenario = function(name, callback) {
-      var postBody = null;
+    this.activateScenario = function(name, activationInfo, callback) {
+      var postBody = activationInfo;
 
       // verify the required parameter 'name' is set
       if (name === undefined || name === null) {
         throw new Error("Missing the required parameter 'name' when calling activateScenario");
+      }
+
+      // verify the required parameter 'activationInfo' is set
+      if (activationInfo === undefined || activationInfo === null) {
+        throw new Error("Missing the required parameter 'activationInfo' when calling activateScenario");
       }
 
 

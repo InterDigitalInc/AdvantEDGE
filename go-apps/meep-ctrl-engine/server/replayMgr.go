@@ -59,7 +59,7 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	return r, nil
 }
 
-func (r *ReplayMgr) PlayEventByIndex() error {
+func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 
 	index := r.currentEventIndex
 	nextIndex := 0
@@ -69,6 +69,17 @@ func (r *ReplayMgr) PlayEventByIndex() error {
 	if err != nil {
 		log.Error(err)
 		return err
+	}
+
+	if replayEvent.Event.Type_ == "OTHER" && ignoreOtherEvents {
+		index = index + 1
+		replayEvent = r.replayEventsList.Events[index]
+
+		j, err = json.Marshal(&replayEvent.Event)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
 	}
 
 	vars := make(map[string]string)
@@ -108,7 +119,7 @@ func (r *ReplayMgr) PlayEventByIndex() error {
 		go func() {
 			for range r.ticker.C {
 				r.ticker.Stop()
-				_ = r.PlayEventByIndex()
+				_ = r.PlayEventByIndex(ignoreOtherEvents)
 			}
 		}()
 	} else {
@@ -119,7 +130,7 @@ func (r *ReplayMgr) PlayEventByIndex() error {
 }
 
 // Start - starts replay execution
-func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool) error {
+func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreOtherEvents bool) error {
 	if !r.isStarted {
 		r.isStarted = true
 		r.currentEventIndex = 0
@@ -128,7 +139,7 @@ func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool) err
 		r.loop = loop
 		r.currentFileName = fileName
 		//executing the events
-		_ = r.PlayEventByIndex()
+		_ = r.PlayEventByIndex(ignoreOtherEvents)
 	} else {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
 	}

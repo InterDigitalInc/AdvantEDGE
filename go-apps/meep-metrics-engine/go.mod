@@ -3,6 +3,7 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client v0.0.0

@@ -55,8 +55,10 @@
           // TODO: uncomment, update parameter values for activateScenario call
           /*
           var name = "name_example";
+          var activationInfo = new AdvantEdgePlatformControllerRestApi.ActivationInfo();
+          activationInfo.replayFileName = "";
 
-          instance.activateScenario(name, function(error, data, response) {
+          instance.activateScenario(name, activationInfo, function(error, data, response) {
             if (error) {
               done(error);
               return;

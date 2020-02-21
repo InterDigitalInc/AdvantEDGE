@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 
 # **ActivateScenario**
-> ActivateScenario(ctx, name)
+> ActivateScenario(ctx, name, activationInfo)
 Deploy a scenario
 
 Deploy a scenario present in the platform scenario store
@@ -23,6 +23,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
+  **activationInfo** | [**ActivationInfo**](ActivationInfo.md)| Activation information | 
 
 ### Return type
 

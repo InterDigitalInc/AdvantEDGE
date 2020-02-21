@@ -208,6 +208,13 @@ paths:
         required: true
         type: "string"
         x-exportParamName: "Name"
+      - in: "body"
+        name: "activationInfo"
+        description: "Activation information"
+        required: true
+        schema:
+          $ref: "#/definitions/ActivationInfo"
+        x-exportParamName: "ActivationInfo"
       responses:
         200:
           description: "OK"
@@ -1024,6 +1031,14 @@ definitions:
         type: "string"
         description: "Service protocol (TCP or UDP)"
     description: "External service exposed internally via specific port"
+  ActivationInfo:
+    type: "object"
+    properties:
+      replayFileName:
+        type: "string"
+        description: "Replay-file name to execute at deployment time"
+    description: "Activation information"
+    example: {}
   NodeServiceMaps:
     type: "object"
     properties:
@@ -1308,6 +1323,14 @@ parameters:
     schema:
       $ref: "http://localhost:8291/meep-model.yaml#/definitions/Scenario"
     x-exportParamName: "Scenario"
+  ActivationInfo:
+    in: "body"
+    name: "activationInfo"
+    description: "Activation information"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ActivationInfo"
+    x-exportParamName: "ActivationInfo"
   EventType:
     name: "type"
     in: "path"

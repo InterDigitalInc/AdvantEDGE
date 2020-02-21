@@ -144,6 +144,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [AdvantEdgePlatformControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgePlatformControllerRestApi.EgressService](docs/EgressService.md)

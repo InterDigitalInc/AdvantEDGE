@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"time"
 
+	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
@@ -145,6 +146,17 @@ func activateScenario() {
 
 	// Flush metric store entries on activation
 	metricStore.Flush()
+
+	//inserting an INIT event at T0
+	var ev ceModel.Event
+	ev.Name = "Init"
+	ev.Type_ = "OTHER"
+	j, _ := json.Marshal(ev)
+
+	var em ms.EventMetric
+	em.Event = string(j)
+	em.Description = "scenario deployed"
+	_ = metricStore.SetEventMetric("OTHER", em)
 
 	// Start snapshot thread
 	err = metricStore.StartSnapshotThread()

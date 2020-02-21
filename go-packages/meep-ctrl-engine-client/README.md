@@ -46,6 +46,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [ActivationInfo](docs/ActivationInfo.md)
  - [Deployment](docs/Deployment.md)
  - [Domain](docs/Domain.md)
  - [EgressService](docs/EgressService.md)

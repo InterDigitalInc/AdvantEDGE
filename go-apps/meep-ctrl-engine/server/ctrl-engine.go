@@ -50,6 +50,7 @@ const moduleMonEngine string = "mon-engine"
 const eventTypeMobility = "MOBILITY"
 const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
+const eventTypeOther = "OTHER"
 
 var scenarioStore *couch.Connector
 var replayStore *couch.Connector
@@ -425,6 +426,32 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Body != nil {
+		var actInfo ceModel.ActivationInfo
+		decoder := json.NewDecoder(r.Body)
+		err = decoder.Decode(&actInfo)
+		if err != nil {
+			log.Error(err.Error())
+			//we do not prevent normal proceeding if actInfo is nil
+		} else {
+
+			events, err := loadReplay(actInfo.ReplayFileName)
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+
+			err = replayMgr.Start(actInfo.ReplayFileName, events, false, false)
+
+			if err != nil {
+				log.Error(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
 	// Return response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -620,6 +647,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventNetworkCharacteristics(event)
 	case eventTypePoasInRange:
 		err, httpStatus, description = sendEventPoasInRange(event)
+	case eventTypeOther:
+		//ignore the event
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -1181,7 +1210,7 @@ func ceLoopReplay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = replayMgr.Start(replayFileName, events, true)
+	err = replayMgr.Start(replayFileName, events, true, true)
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
 	} else {
@@ -1202,7 +1231,7 @@ func cePlayReplayFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = replayMgr.Start(replayFileName, events, false)
+	err = replayMgr.Start(replayFileName, events, false, true)
 
 	if err == nil {
 		w.WriteHeader(http.StatusOK)
