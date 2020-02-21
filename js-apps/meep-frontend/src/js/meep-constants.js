@@ -232,3 +232,25 @@ export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
+
+// Default Dashboard list
+export const DEFAULT_DASHBOARD_OPTIONS = [
+  {
+    label: 'None',
+    value: ''
+  },
+  {
+    label: 'Network Metrics Point-to-Point',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Network Metrics Aggregation',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  }
+];

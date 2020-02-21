@@ -18,8 +18,9 @@
 // import * as stringify from 'json-stringify-safe';
 // import {version} from './package.json';
 
+// /*global __VERSION__*/
+// const STATE_KEY = 'IDCC-meep-frontend' + (__VERSION__ ? ':' + __VERSION__ : '') + ':state';
 const STATE_KEY = 'IDCC-meep-frontend:state';
-// const STATE_KEY = (version > )
 
 export function saveState(state) {
   try {

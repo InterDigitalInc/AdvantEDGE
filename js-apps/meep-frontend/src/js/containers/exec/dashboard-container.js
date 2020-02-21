@@ -42,7 +42,8 @@ import {
 import {
   TYPE_EXEC,
   VIEW_NAME_NONE,
-  NET_TOPOLOGY_VIEW
+  NET_TOPOLOGY_VIEW,
+  DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
 const greyColor = 'grey';
@@ -134,6 +135,21 @@ const ConfigurationView = props => {
   );
 };
 
+const getUrl = (dashboardName, dashboardOptions) => {
+  var url = '';
+  if (dashboardOptions) {
+    for (var i = 0; i < dashboardOptions.length; i++) {
+      var dashboard = dashboardOptions[i];
+      if (dashboard.label === dashboardName) {
+        url = dashboard.value;
+        url = url.replace(showInExecStr, '');
+        break;
+      }
+    }
+  }
+  return url;
+};
+
 const ViewForName = ({
   scenarioName,
   selectedSource,
@@ -157,19 +173,13 @@ const ViewForName = ({
   }
 
   // Get URL from Monitoring page dashboard options
-  var selectedUrl = null;
-  for (var i = 0; i < dashboardOptions.length; i++) {
-    var dashboard = dashboardOptions[i];
-    if (dashboard.label === viewName) {
-      selectedUrl = dashboard.value;
-      selectedUrl = selectedUrl.replace(showInExecStr, '');
-      break;
-    }
+  var selectedUrl = getUrl(viewName, DEFAULT_DASHBOARD_OPTIONS);
+  if (selectedUrl === '') {
+    selectedUrl = getUrl(viewName, dashboardOptions);
   }
 
-  if (selectedUrl) {
-
-    // Add variables if requested
+  // Add variables if requested
+  if (selectedUrl !== '') {
     if (selectedUrl.indexOf(passVarsStr) !== -1) {
       selectedUrl = selectedUrl.replace(passVarsStr, '');
       
@@ -353,6 +363,7 @@ class DashboardContainer extends Component {
       VIEW_NAME_NONE,
       NET_TOPOLOGY_VIEW
     ];
+    this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);
     this.populateDashboardList(dashboardViewsList, this.props.dashboardOptions);
 
     return (

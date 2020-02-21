@@ -37,15 +37,15 @@ import { pipe, filter } from '../../util/functional';
 import {
   changeDashboard,
   changeDashboardOptions,
-  changeEditedDashboardOptions,
-  resetDashboardOptions
+  changeEditedDashboardOptions
 } from '../../state/monitor';
 
 import {
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME,
   IDC_DIALOG_DELETE_DASHBOARD_LIST,
-  IDC_DIALOG_RESET_DASHBOARD_LIST
+  IDC_DIALOG_RESET_DASHBOARD_LIST,
+  DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
 const grafanaUrl = 'http://' + location.hostname + ':30009';
@@ -55,7 +55,7 @@ const DashboardContainer = props => {
     return null;
   }
   return (
-    <Grid style={{ width: '100%', height: '100%' }}>
+    <Grid style={{ width: '100%', height: '80vh' }}>
       <GridInner style={{ width: '100%', height: '100%' }}>
         <GridCell span={12} style={styles.inner}>
           <Elevation
@@ -101,20 +101,22 @@ const EditModeButton = ({ isEditMode, startEditMode }) => {
   );
 };
 
-const MonitorPageHeadlineBar = props => {
-
-  const dashboardViewList = ((dashboardOptions) =>  {
-    var dashboardList = [];
-    if (dashboardOptions) {
-      for (var i = 0; i < dashboardOptions.length; i++) {
-        var dashboard = dashboardOptions[i];
-        if (dashboard.label !== '') {
-          dashboardList.push(dashboard.label);
-        }
+const getDashboardLabels = (dashboardOptions) => {
+  var dashboardList = [];
+  if (dashboardOptions) {
+    for (var i = 0; i < dashboardOptions.length; i++) {
+      var dashboard = dashboardOptions[i];
+      if (dashboard.label !== '') {
+        dashboardList.push(dashboard.label);
       }
     }
-    return dashboardList;
-  })(props.dashboardOptions);
+  }
+  return dashboardList;
+};
+
+const MonitorPageHeadlineBar = props => {
+
+  const dashboardViewList = getDashboardLabels(DEFAULT_DASHBOARD_OPTIONS).concat(getDashboardLabels(props.dashboardOptions));
 
   return (
     <div style={{ width: '100%' }}>
@@ -152,7 +154,7 @@ const MonitorPageHeadlineBar = props => {
                     style={styles.button}
                     onClick={() => window.open(grafanaUrl, '_blank')}
                   >
-                  OPEN GRAFANA
+                    OPEN GRAFANA
                   </Button>
                 </div>
               </GridCell>
@@ -288,28 +290,32 @@ class MonitorPageContainer extends Component {
     this.props.changeEditedDashboardOptions(null);
   }
 
-
-
-  render() {
+  getUrl(currentDashboard, dashboardOptions) {
     const showInExecStr = '<exec>';
     const passVarsStr = '<vars>';
-
-    // Retrieve dashboard URL
-    const currentDashboardUrl = (() => {
-      var url = '';
-      if (this.props.dashboardOptions) {
-        for (var i=0; i < this.props.dashboardOptions.length; i++) {
-          var dashboard = this.props.dashboardOptions[i];
-          if (dashboard.label === this.props.currentDashboard) {
-            url = dashboard.value;
-            url = url.replace(showInExecStr, '');
-            url = url.replace(passVarsStr, '');
-            break;
-          }
+    var url = '';
+    
+    if (dashboardOptions) {
+      for (var i = 0; i < dashboardOptions.length; i++) {
+        var dashboard = dashboardOptions[i];
+        if (dashboard.label === currentDashboard) {
+          url = dashboard.value;
+          url = url.replace(showInExecStr, '');
+          url = url.replace(passVarsStr, '');
+          break;
         }
       }
-      return url;
-    })();
+    }
+    return url;
+  }
+
+  render() {
+    
+    // Retrieve dashboard URL
+    var currentDashboardUrl = this.getUrl(this.props.currentDashboard, DEFAULT_DASHBOARD_OPTIONS);
+    if (currentDashboardUrl === '') {
+      currentDashboardUrl = this.getUrl(this.props.currentDashboard, this.props.dashboardOptions);
+    }
 
     return (
       <div style={{ width: '100%', height: '100%' }}>
@@ -412,7 +418,6 @@ const mapDispatchToProps = dispatch => {
     changeDashboard: label => dispatch(changeDashboard(label)),
     changeEditedDashboardOptions: mode => dispatch(changeEditedDashboardOptions(mode)),
     changeDashboardOptions: mode => dispatch(changeDashboardOptions(mode)),
-    resetDashboardOptions: () => dispatch(resetDashboardOptions()),
     showDialog: type => dispatch(uiChangeCurrentDialog(type))
   };
 };

@@ -44,6 +44,8 @@ import {
   IDC_DIALOG_CLEAR_UI_CACHE
 } from '../../meep-constants';
 
+/*global __VERSION__*/
+
 class SettingsPageContainer extends Component {
   constructor(props) {
     super(props);
@@ -81,7 +83,8 @@ class SettingsPageContainer extends Component {
 
   styles() {
     var styles = {
-      interval: {},
+      interval: {
+      },
       errorText: {
         display: 'none'
       },
@@ -127,113 +130,115 @@ class SettingsPageContainer extends Component {
         <div style={{ width: '100%' }}>
           <Grid style={{ width: '100%' }}>
             <GridInner>
-              <GridCell span={12} style={styles.inner}>
+              <GridCell span={12}>
                 <Elevation
                   className="component-style"
                   z={2}
-                  style={{ paddingBottom: 10, marginBottom: 10 }}
+                  style={styles.elevation}
                 >
-                  <Grid>
-                    <GridCell
-                      span={12}
-                      style={{ paddingLeft: 10, paddingTop: 10 }}
-                    >
-                      <div>
-                        <span className="mdc-typography--headline6">
-                        Execution:{' '}
-                        </span>
-                      </div>
-                    </GridCell>
-                  </Grid>
-                  <Grid span={12}>
-                    <GridCell span={2}>
-                      <div style={{ marginTop: 20 }}>
-                        <Checkbox
-                          checked={this.props.automaticRefresh}
-                          onChange={e =>
-                            this.handleCheckboxChange(e.target.checked)
-                          }
-                          data-cy={SET_EXEC_REFRESH_CHECKBOX}
-                        >
-                        Automatic refresh:
-                        </Checkbox>
-                      </div>
-                    </GridCell>
-                    <GridCell span={2}>
-                      <TextField
-                        outlined
-                        style={this.styles().interval}
-                        label="Interval (ms)"
-                        onChange={e => this.handleIntervalChange(e.target.value)}
-                        value={this.props.refreshInterval}
-                        disabled={!this.props.automaticRefresh}
-                        data-cy={SET_EXEC_REFRESH_INT}
-                      />
-                    </GridCell>
-                    <GridCell span={8}></GridCell>
-                  </Grid>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Execution:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Grid span={12}>
+                      <GridCell span={2}>
+                        <div style={{ marginTop: 20 }}>
+                          <Checkbox
+                            checked={this.props.automaticRefresh}
+                            onChange={e =>
+                              this.handleCheckboxChange(e.target.checked)
+                            }
+                            data-cy={SET_EXEC_REFRESH_CHECKBOX}
+                          >
+                            Automatic refresh:
+                          </Checkbox>
+                        </div>
+                      </GridCell>
+                      <GridCell span={10}>
+                        <TextField
+                          outlined
+                          style={this.styles().interval}
+                          label="Interval (ms)"
+                          onChange={e => this.handleIntervalChange(e.target.value)}
+                          value={this.props.refreshInterval}
+                          disabled={!this.props.automaticRefresh}
+                          data-cy={SET_EXEC_REFRESH_INT}
+                        />
+                      </GridCell>
+                    </Grid>
 
-                  <Grid>
-                    <GridCell span={2}></GridCell>
-                    <GridCell span={2} style={this.styles().errorGridCell}>
-                      <p style={this.styles().errorText}>
-                      500 &lt; value &lt; 60000
-                      </p>
-                    </GridCell>
-                    <GridCell span={8}></GridCell>
-                  </Grid>
+                    <Grid>
+                      <GridCell span={2}></GridCell>
+                      <GridCell span={10} style={this.styles().errorGridCell}>
+                        <p style={this.styles().errorText}>
+                          500 &lt; value &lt; 60000
+                        </p>
+                      </GridCell>
+                    </Grid>
+                  </div>
                 </Elevation>
 
                 <Elevation
                   className="component-style"
                   z={2}
-                  style={{ paddingBottom: 10, marginBottom: 10 }}
+                  style={styles.elevation}
                 >
-                  <Grid>
-                    <GridCell
-                      span={12}
-                      style={{ paddingLeft: 10, paddingTop: 10 }}
-                    >
-                      <div>
-                        <span className="mdc-typography--headline6">
-                        Development:{' '}
-                        </span>
-                      </div>
-                    </GridCell>
-                  </Grid>
-                  <CheckableSettingItem
-                    stateItem={this.props.devMode}
-                    changeStateItem={this.props.changeDevMode}
-                    stateItemName={SET_VIS_CFG_LABEL}
-                    cydata={SET_VIS_CFG_CHECKBOX}
-                  />
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Development:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <CheckableSettingItem
+                      stateItem={this.props.devMode}
+                      changeStateItem={this.props.changeDevMode}
+                      stateItemName={SET_VIS_CFG_LABEL}
+                      cydata={SET_VIS_CFG_CHECKBOX}
+                    />
+                  </div>
                 </Elevation>
 
                 <Elevation
                   className="component-style"
                   z={2}
-                  style={{ paddingBottom: 10, marginBottom: 10 }}
+                  style={styles.elevation}
                 >
-                  <Grid>
-                    <GridCell
-                      span={12}
-                      style={{ paddingLeft: 10, paddingTop: 10 }}
-                    >
-                      <div>
-                        <span className="mdc-typography--headline6">
-                        General:{' '}
-                        </span>
-                      </div>
-                    </GridCell>
-                  </Grid>
-                  <Button
-                    raised
-                    style={ styles.button }
-                    onClick={() => this.showDialog(IDC_DIALOG_CLEAR_UI_CACHE)}
-                    cydata={SET_RESET_SETTINGS_BUTTON}>
-                    CLEAR UI CACHE
-                  </Button>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Local Storage:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Button
+                      raised
+                      style={styles.button}
+                      onClick={() => this.showDialog(IDC_DIALOG_CLEAR_UI_CACHE)}
+                      cydata={SET_RESET_SETTINGS_BUTTON}>
+                      CLEAR UI CACHE
+                    </Button>
+                  </div>
                 </Elevation>
+
+                <Elevation
+                  className="component-style"
+                  z={2}
+                  style={styles.elevation}
+                >
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      About:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Grid>
+                      <GridCell span={2}>UI Version:</GridCell>
+                      <GridCell span={10}>{__VERSION__}</GridCell>
+                    </Grid>
+                  </div>
+                </Elevation>
+
               </GridCell>
             </GridInner>
           </Grid>
@@ -250,7 +255,7 @@ const CheckableSettingItem = ({
   cydata
 }) => {
   return (
-    <Grid span={12} style={{ marginTop: 10 }}>
+    <Grid span={12}>
       <GridCell span={12}>
         <div>
           <Checkbox
@@ -267,26 +272,17 @@ const CheckableSettingItem = ({
 };
 
 const styles = {
-  headlineGrid: {
+  elevation: {
+    padding: 15,
     marginBottom: 10
   },
   headline: {
-    padding: 10,
-    marginBotton: 25
-  },
-  inner: {
-    height: '100%'
-  },
-  page: {
-    height: 1500,
     marginBottom: 10
   },
-  cfgTable: {
-    marginTop: 20,
-    padding: 10
+  content: {
+    marginBottom: 10
   },
   button: {
-    margin: 10,
     color: 'white'
   }
 };

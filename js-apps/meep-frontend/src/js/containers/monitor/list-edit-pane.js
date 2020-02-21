@@ -21,8 +21,10 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Button } from '@rmwc/button';
 import { Typography } from '@rmwc/typography';
+import { DEFAULT_DASHBOARD_OPTIONS } from '../../meep-constants';
 
 export const ListEditPaneRow = ({
+  disabled,
   item,
   itemLabelLabel,
   itemValueLabel,
@@ -60,6 +62,7 @@ export const ListEditPaneRow = ({
           onChange={e => {
             updateItemSelection(item.index, e.target.checked);
           }}
+          disabled={disabled} 
         />
       </GridCell>
     </Grid>
@@ -72,17 +75,32 @@ export const ListEditPane = props => {
       <Grid>
         <GridCell span={4}>
           <div style={styles.block}>
-            <Typography use="headline6">Dashboard List</Typography>
+            <Typography use="headline6">User Dashboard List:</Typography>
           </div>
         </GridCell>
       </Grid>
 
       <div style={{ marginTop: 20 }}>
+        {_.map(DEFAULT_DASHBOARD_OPTIONS, (item, index) => {
+          return (
+            <ListEditPaneRow
+              key={index}
+              disabled={true}
+              item={item}
+              itemLabelLabel={props.itemLabelLabel}
+              itemValueLabel={props.itemValueLabel}
+              updateItemLabel={props.updateItemLabel}
+              updateItemValue={props.updateItemValue}
+              updateItemSelection={props.updateItemSelection}
+            />
+          );
+        })}
         {_.map(props.items, (item, index) => {
           return (
             <ListEditPaneRow
-              item={item}
               key={index}
+              disabled={false}
+              item={item}
               itemLabelLabel={props.itemLabelLabel}
               itemValueLabel={props.itemValueLabel}
               updateItemLabel={props.updateItemLabel}
@@ -97,7 +115,7 @@ export const ListEditPane = props => {
         <GridCell span={12}>
           <div align={'right'}>
             <Button outlined style={styles.button} onClick={props.addItem}>
-                NEW
+              NEW
             </Button>
             <Button
               outlined
@@ -105,16 +123,13 @@ export const ListEditPane = props => {
               onClick={props.deleteItems}
               disabled={!props.canDelete()}
             >
-                DELETE
+              DELETE
             </Button>
             <Button outlined style={styles.button} onClick={props.cancelEditMode}>
               CANCEL
             </Button>
             <Button outlined style={styles.button} onClick={props.saveItems}>
               APPLY
-            </Button>
-            <Button outlined style={styles.button} onClick={props.resetItems}>
-              RESET
             </Button>
           </div>
         </GridCell>

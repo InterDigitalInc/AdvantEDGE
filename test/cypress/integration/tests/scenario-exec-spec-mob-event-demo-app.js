@@ -16,7 +16,6 @@
 
 // Import MEEP Contstants
 import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
-import * as states from '../../../../js-apps/meep-frontend/src/js/state/ui/index';
 
 // Import element utils
 import {
@@ -314,7 +313,7 @@ describe('Scenario Execution', function () {
   function createMobilityEvent(elem, dest) {
     cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
-    select(meep.EXEC_EVT_TYPE, states.MOBILITY_EVENT);
+    select(meep.EXEC_EVT_TYPE, meep.MOBILITY_EVENT);
     select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
     click(meep.MEEP_BTN_APPLY);
@@ -329,7 +328,7 @@ describe('Scenario Execution', function () {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
-    select(meep.EXEC_EVT_TYPE, states.NETWORK_CHARACTERISTICS_EVENT);
+    select(meep.EXEC_EVT_TYPE, meep.NETWORK_CHARACTERISTICS_EVENT);
     select(meep.EXEC_EVT_NC_TYPE, elemType);
     select(meep.EXEC_EVT_NC_NAME, name);
     cy.wait(1000);
