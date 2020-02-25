@@ -78,7 +78,7 @@ import {
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.78:30000/v1';
+// const basepath = 'http://10.3.16.105:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
@@ -442,22 +442,25 @@ class MeepContainer extends Component {
     const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
 
     return (
-      <div style={{ width: '100%' }}>
-        <MeepTopBar
-          title=""
-          toggleMainDrawer={() => this.props.toggleMainDrawer()}
-          corePodsRunning={this.props.corePodsRunning}
-          corePodsErrors={this.props.corePodsErrors}
-        />
-
-        <div style={{ display: 'flex' }}>
-          <div
-            className="component-style"
-            style={{ overflow: 'hidden', flex: flexString, marginTop: '5px' }}
-          >
-            <MeepDrawer open={this.props.mainDrawerOpen} style={{ flex: 1 }} />
+      <div style={{ display: 'table', width: '100%', height: '100%' }}>
+        <div style={{ display: 'table-row' }}>
+          <MeepTopBar
+            title=""
+            toggleMainDrawer={() => this.props.toggleMainDrawer()}
+            corePodsRunning={this.props.corePodsRunning}
+            corePodsErrors={this.props.corePodsErrors}
+          />
+        </div>
+        <div style={{ display: 'table-row', height: '100%' }}>
+          <div style={{ display: 'flex', height: '100%' }}>
+            <div
+              className="component-style"
+              style={{ flex: flexString, borderRight: '1px solid #e4e4e4', overflow: 'hidden' }}
+            >
+              <MeepDrawer open={this.props.mainDrawerOpen} />
+            </div>
+            <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
           </div>
-          <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
         </div>
       </div>
     );

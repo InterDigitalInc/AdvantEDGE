@@ -375,8 +375,10 @@ dashboardProviders:
 ##
 dashboards:
   default:
-    custom-dashboard:
-      file: dashboards/metrics.json
+    network-metrics-point-to-point:
+      file: dashboards/network-metrics-point-to-point.json
+    network-metrics-aggregation:
+      file: dashboards/network-metrics-aggregation.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON

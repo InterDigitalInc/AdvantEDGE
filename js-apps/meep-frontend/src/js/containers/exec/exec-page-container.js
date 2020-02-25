@@ -37,14 +37,7 @@ import {
   uiExecChangeEventCreationMode,
   uiExecChangeDashCfgMode,
   uiExecChangeCurrentEvent,
-  uiExecChangeShowApps,
-  IDC_DIALOG_DEPLOY_SCENARIO,
-  IDC_DIALOG_TERMINATE_SCENARIO,
-  IDC_DIALOG_SAVE_SCENARIO,
-
-  // Event types
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  uiExecChangeShowApps
 } from '../../state/ui';
 
 import {
@@ -57,7 +50,12 @@ import {
 import {
   // States
   EXEC_STATE_IDLE,
-  PAGE_EXECUTE
+  PAGE_EXECUTE,
+  IDC_DIALOG_DEPLOY_SCENARIO,
+  IDC_DIALOG_TERMINATE_SCENARIO,
+  IDC_DIALOG_SAVE_SCENARIO,
+  MOBILITY_EVENT,
+  NETWORK_CHARACTERISTICS_EVENT
 } from '../../meep-constants';
 
 class ExecPageContainer extends Component {

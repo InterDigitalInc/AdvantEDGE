@@ -924,8 +924,8 @@ const getParentTypes = type => {
 };
 
 const buttonStyles = {
-  marginRight: 5,
-  width: 100
+  marginRight: 10,
+  marginBottom: 5
 };
 
 const ElementCfgButtons = ({
@@ -1007,7 +1007,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisa
 
   return (
     <>
-      <Grid style={{ marginTop: 10 }}>
+      <Grid style={{ marginTop: 20 }}>
         {type !== 'SCENARIO' && (
           <IDSelect
             label="Element Type"
@@ -1179,7 +1179,7 @@ const styles = {
     height: '100%'
   },
   block: {
-    marginBottom: 20
+    marginBottom: 10
   },
   field: {
     marginBottom: 10

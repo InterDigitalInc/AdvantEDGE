@@ -22,12 +22,29 @@ import execReducer from './exec';
 import settingsReducer from './settings';
 import monitorReducer from './monitor';
 
-const meepReducer = combineReducers({
+const appReducer = combineReducers({
   ui: uiReducer,
   cfg: cfgReducer,
   exec: execReducer,
   monitor: monitorReducer,
   settings: settingsReducer
 });
+
+const UI_SET_DEFAULT_STATE = 'UI_SET_DEFAULT_STATE';
+export function meepSetDefaultState() {
+  return {
+    type: UI_SET_DEFAULT_STATE,
+    payload: ''
+  };
+}
+
+const meepReducer = (state, action) => {
+  switch (action.type) {
+  case UI_SET_DEFAULT_STATE:
+    return appReducer(undefined, action);
+  default:
+    return appReducer(state, action);
+  }
+};
 
 export default meepReducer;

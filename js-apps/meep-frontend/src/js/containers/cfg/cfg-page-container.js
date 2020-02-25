@@ -45,12 +45,7 @@ import {
 } from '../../state/cfg';
 
 import {
-  uiChangeCurrentDialog,
-  IDC_DIALOG_OPEN_SCENARIO,
-  IDC_DIALOG_NEW_SCENARIO,
-  IDC_DIALOG_SAVE_SCENARIO,
-  IDC_DIALOG_DELETE_SCENARIO,
-  IDC_DIALOG_EXPORT_SCENARIO
+  uiChangeCurrentDialog
 } from '../../state/ui';
 
 import {
@@ -59,7 +54,12 @@ import {
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
   PAGE_CONFIGURE,
-  ELEMENT_TYPE_SCENARIO
+  ELEMENT_TYPE_SCENARIO,
+  IDC_DIALOG_OPEN_SCENARIO,
+  IDC_DIALOG_NEW_SCENARIO,
+  IDC_DIALOG_SAVE_SCENARIO,
+  IDC_DIALOG_DELETE_SCENARIO,
+  IDC_DIALOG_EXPORT_SCENARIO
 } from '../../meep-constants';
 
 import {

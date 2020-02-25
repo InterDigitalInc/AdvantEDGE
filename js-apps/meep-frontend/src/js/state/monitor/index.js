@@ -15,16 +15,8 @@
  */
 
 const initialState = {
-  currentDashboardUrl: '',
-  dashboardOptions: [
-    {
-      label: 'Metrics Dashboard',
-      value:
-        'http://' +
-        location.hostname +
-        ':30009/d/100/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light'
-    }
-  ],
+  currentDashboard: '',
+  dashboardOptions: [],
   editedDashboardOptions: null
 };
 
@@ -36,11 +28,11 @@ export const addDashboardOption = option => {
   };
 };
 
-const CHANGE_DASHBOARD_URL = 'CHANGE_DASHBOARD_URL';
-export function changeDashboardUrl(url) {
+const CHANGE_DASHBOARD = 'CHANGE_DASHBOARD';
+export function changeDashboard(label) {
   return {
-    type: CHANGE_DASHBOARD_URL,
-    payload: url
+    type: CHANGE_DASHBOARD,
+    payload: label
   };
 }
 
@@ -62,8 +54,8 @@ export function changeDashboardOptions(mode) {
 
 export default function settingsReducer(state = initialState, action) {
   switch (action.type) {
-  case CHANGE_DASHBOARD_URL:
-    return { ...state, currentDashboardUrl: action.payload };
+  case CHANGE_DASHBOARD:
+    return { ...state, currentDashboard: action.payload };
   case ADD_DASHBOARD_OPTION:
     return {
       ...state,

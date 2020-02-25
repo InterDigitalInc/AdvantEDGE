@@ -89,7 +89,7 @@ const MeepTopBar = props => {
             />
             <img id='AdvantEdgeLogo' height={50} src={advantEdge} alt='' />
             <ToolbarTitle>
-              <span style={titleStyle}>{props.title}</span>
+              <span style={styles.title}>{props.title}</span>
             </ToolbarTitle>
           </ToolbarSection>
           <ToolbarSection alignEnd>
@@ -104,10 +104,12 @@ const MeepTopBar = props => {
   );
 };
 
-const titleStyle = {
-  color: 'white',
-  fontFamily: 'Gill Sans, Gill Sans MT, Calibri, Trebuchet MS, sans-serif',
-  fontSize: 22
+const styles = {
+  title: {
+    color: 'white',
+    fontFamily: 'Gill Sans, Gill Sans MT, Calibri, Trebuchet MS, sans-serif',
+    fontSize: 22
+  }
 };
 
 export default MeepTopBar;

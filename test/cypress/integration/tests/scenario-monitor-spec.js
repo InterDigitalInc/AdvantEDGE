@@ -35,10 +35,9 @@ describe('Scenario Monitoring', function() {
   });
 
   it('Monitor Scenario', function() {
-    // let latencyDashboard = 'Latency Dashboard';
-    // let demoSvcIntUeDashboard = 'Demo Service Internal UE (ue1)';
-    // let demoSvcExtUeDashboard = 'Demo Service External UE (ue2-ext)';
-    let metricsDashboard = 'Metrics Dashboard';
+    let noneStr = 'None';
+    let networkMetricsPointToPointStr = 'Network Metrics Point-to-Point';
+    let networkMetricsAggregationStr = 'Network Metrics Aggregation';
 
     // Go to monitoring page
     cy.log('Go to monitoring page');
@@ -46,25 +45,16 @@ describe('Scenario Monitoring', function() {
 
     // Verify available dashboards
     cy.log('Verify available dashboards');
-    // verify(meep.MON_DASHBOARD_SELECT, 'contain', latencyDashboard);
-    // verify(meep.MON_DASHBOARD_SELECT, 'contain', demoSvcIntUeDashboard);
-    // verify(meep.MON_DASHBOARD_SELECT, 'contain', demoSvcExtUeDashboard);
-    verify(meep.MON_DASHBOARD_SELECT, 'contain', metricsDashboard);
-
-    // // Open Latency Dashboard
-    // select(meep.MON_DASHBOARD_SELECT, latencyDashboard);
-    // verifyIframe(meep.MON_DASHBOARD_IFRAME, 'have.attr', 'src');
-
-    // // Open Demo Service Internal UE Dashboard
-    // select(meep.MON_DASHBOARD_SELECT, demoSvcIntUeDashboard);
-    // verifyIframe(meep.MON_DASHBOARD_IFRAME, 'have.attr', 'src');
-
-    // // Open Demo Service External UE Dashboard
-    // select(meep.MON_DASHBOARD_SELECT, demoSvcExtUeDashboard);
-    // verifyIframe(meep.MON_DASHBOARD_IFRAME, 'have.attr', 'src');
+    verify(meep.MON_DASHBOARD_SELECT, 'contain', noneStr);
+    verify(meep.MON_DASHBOARD_SELECT, 'contain', networkMetricsPointToPointStr);
+    verify(meep.MON_DASHBOARD_SELECT, 'contain', networkMetricsAggregationStr);
 
     // Open Metrics Dashboard
-    select(meep.MON_DASHBOARD_SELECT, metricsDashboard);
+    select(meep.MON_DASHBOARD_SELECT, networkMetricsPointToPointStr);
+    verifyIframe(meep.MON_DASHBOARD_IFRAME, 'have.attr', 'src');
+
+    // Open Metrics Dashboard
+    select(meep.MON_DASHBOARD_SELECT, networkMetricsAggregationStr);
     verifyIframe(meep.MON_DASHBOARD_IFRAME, 'have.attr', 'src');
   });
 

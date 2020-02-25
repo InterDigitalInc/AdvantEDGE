@@ -22,7 +22,8 @@ import * as vis from 'vis';
 import {
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
-  ELEMENT_TYPE_CLOUD_APP
+  ELEMENT_TYPE_CLOUD_APP,
+  TYPE_EXEC
 } from '../../meep-constants';
 
 import { getElemFieldVal, FIELD_NAME, FIELD_TYPE } from '../../util/elem-utils';
@@ -101,6 +102,7 @@ const execVisFilteredData = createSelector(
 export { execVisFilteredData };
 
 const initialState = {
+  type: TYPE_EXEC,
   network: {},
   options: {},
   data: {

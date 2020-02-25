@@ -22,7 +22,8 @@ const initialState = {
   order: 'asc',
   orderBy: 'name',
   rowsPerPage: 10,
-  page: 0
+  page: 0,
+  refresh: () => {}
 };
 
 const CFG_CHANGE_TABLE = 'CFG_CHANGE_TABLE';

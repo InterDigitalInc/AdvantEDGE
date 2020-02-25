@@ -15,6 +15,10 @@
  */
 
 import { updateObject } from '../../util/object-util';
+import { createNewScenario } from '../../util/scenario-utils';
+import {
+  NO_SCENARIO_NAME
+} from '../../meep-constants';
 
 // CHANGE_SCENARIO
 const CFG_CHANGE_SCENARIO = 'CFG_CHANGE_SCENARIO';
@@ -36,16 +40,7 @@ function cfgChangeScenarioName(name) {
 
 export { cfgChangeScenario, cfgChangeScenarioName };
 
-const initialState = {
-  name: 'none',
-  deployment: {
-    domains: [],
-    interDomainLatency: 50,
-    interDomainLatencyVariation: 10,
-    interDomainPacketLoss: 0,
-    interDomainThroughput: 1000000
-  }
-};
+const initialState = createNewScenario(NO_SCENARIO_NAME);
 
 export function scenarioReducer(state = initialState, action) {
   switch (action.type) {

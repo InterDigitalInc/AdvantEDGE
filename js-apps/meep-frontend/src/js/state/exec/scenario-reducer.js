@@ -15,6 +15,7 @@
  */
 
 import { updateObject } from '../../util/object-util';
+import { NO_SCENARIO_NAME } from '../../meep-constants';
 
 // EXEC_CHANGE_SCENARIO
 export const EXEC_CHANGE_SCENARIO = 'EXEC_CHANGE_SCENARIO';
@@ -41,14 +42,7 @@ export {
 };
 
 const initialState = {
-  name: 'none',
-  deployment: {
-    domains: [],
-    interDomainLatency: 50,
-    interDomainLatencyVariation: 10,
-    interDomainPacketLoss: 0,
-    interDomainThroughput: 1000000
-  }
+  name: NO_SCENARIO_NAME
 };
 
 export function scenarioReducer(state = initialState, action) {

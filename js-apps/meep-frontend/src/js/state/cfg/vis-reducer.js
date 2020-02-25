@@ -15,6 +15,7 @@
  */
 
 import { updateObject } from '../../util/object-util';
+import { TYPE_CFG } from '../../meep-constants';
 
 // CHANGE_VIS
 const CFG_CHANGE_VIS = 'CFG_CHANGE_VIS';
@@ -42,6 +43,7 @@ export {
 };
 
 const initialState = {
+  type: TYPE_CFG,
   network: {},
   options: {},
   data: {

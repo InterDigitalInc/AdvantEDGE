@@ -47,6 +47,21 @@ export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
 
+// Dialog Types
+// CFG
+export const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
+export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
+export const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
+export const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
+export const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
+export const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
+// EXEC
+export const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
+// MONITORING
+export const IDC_DIALOG_DELETE_DASHBOARD_LIST = 'IDC_DIALOG_DELETE_DASHBOARD_LIST';
+// SETTINGS
+export const IDC_DIALOG_CLEAR_UI_CACHE = 'IDC_DIALOG_CLEAR_UI_CACHE';
+
 // Configuration page states
 export const CFG_STATE_IDLE = 'IDLE';
 export const CFG_STATE_NEW = 'NEW';
@@ -184,6 +199,7 @@ export const SET_VIS_CFG_CHECKBOX = 'set-vis-cfg-checkbox';
 export const SET_VIS_CFG_LABEL = 'VIS Configuration Mode';
 export const SET_DASHBOARD_CFG_CHECKBOX = 'set-dashboard-cfg-checkbox';
 export const SET_DASHBOARD_CFG_LABEL = 'Show Dashboard Config (Experimental)';
+export const SET_RESET_SETTINGS_BUTTON = 'set-reset-settings-btn';
 
 // Logical Scenario types
 export const TYPE_SCENARIO = 0;
@@ -211,14 +227,29 @@ export const id = label => {
 };
 
 export const VIEW_NAME_NONE = 'None';
-export const VIS_VIEW = 'Network Topology';
-export const METRICS_VIEW = 'Metrics Dashboard';
+export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
-export const DASHBOARD_VIEWS_LIST = [
-  VIEW_NAME_NONE,
-  VIS_VIEW,
-  METRICS_VIEW
+// Default Dashboard list
+export const DEFAULT_DASHBOARD_OPTIONS = [
+  {
+    label: 'None',
+    value: ''
+  },
+  {
+    label: 'Network Metrics Point-to-Point',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Network Metrics Aggregation',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  }
 ];
