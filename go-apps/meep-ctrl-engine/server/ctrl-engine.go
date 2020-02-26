@@ -663,7 +663,7 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 
 	// Log successful event in metric store
 	eventJSONStr, err := json.Marshal(event)
-	if err == nil {
+	if err == nil && description != "" {
 		var metric ms.EventMetric
 		metric.Event = string(eventJSONStr)
 		metric.Description = description
@@ -831,6 +831,9 @@ func sendEventMobility(event ceModel.Event) (error, int, string) {
 		"meep.log.dest":      elemName,
 	}).Info("Measurements log")
 
+	if newNL == oldNL {
+		description = ""
+	}
 	return nil, -1, description
 }
 

@@ -379,6 +379,14 @@ dashboards:
       file: dashboards/network-metrics-point-to-point.json
     network-metrics-aggregation:
       file: dashboards/network-metrics-aggregation.json
+    player-metrics-1-dashboard:
+      file: dashboards/player-metrics-1.json
+    player-metrics-1-nofps-dashboard:
+      file: dashboards/player-metrics-1-nofps.json
+    player-metrics-2-dashboard:
+      file: dashboards/player-metrics-2.json
+    player-metrics-2-nofps-dashboard:
+      file: dashboards/player-metrics-2-nofps.json
   #   some-dashboard:
   #     json: |
   #       $RAW_JSON

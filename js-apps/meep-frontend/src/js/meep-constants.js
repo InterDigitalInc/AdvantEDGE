@@ -265,5 +265,33 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
       'http://' +
       location.hostname +
       ':30009/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Player Metrics Dashboard',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/MWC2020-P12M-1/player-metrics-1?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Player Metrics Dashboard (no FPS)',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/MWC2020-P12M-1-nofps/player-metrics-1-nofps?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Player Metrics Dashboard v2',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/MWC2020-P12M-2/player-metrics-2?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Player Metrics Dashboard (no FPS) v2',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/MWC2020-P12M-2nofps/player-metrics-2-nofps?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   }
 ];
