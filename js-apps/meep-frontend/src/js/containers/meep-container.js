@@ -53,6 +53,7 @@ import {
 import {
   uiChangeCurrentPage,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventReplayMode,
   uiToggleMainDrawer
 } from '../state/ui';
 
@@ -78,7 +79,7 @@ import {
 
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.105:30000/v1';
+// const basepath = 'http://10.3.16.150:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
@@ -92,11 +93,13 @@ class MeepContainer extends Component {
     this.refreshIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
+    this.meepReplayApi = new meepCtrlRestApiClient.EventReplayApi();
   }
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
     this.props.changeEventCreationMode(false);
+    this.props.changeEventReplayMode(false);
     this.refreshScenario();
     if (this.props.automaticRefresh) {
       this.startAutomaticRefresh();
@@ -410,6 +413,7 @@ class MeepContainer extends Component {
             <ExecPageContainer
               style={{ width: '100%' }}
               api={this.meepExecApi}
+              replayApi={this.meepReplayApi}
               cfgApi={this.meepCfgApi}
               refreshScenario={() => {
                 this.refreshScenario();
@@ -491,6 +495,8 @@ const mapDispatchToProps = dispatch => {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
     changeEventCreationMode: mode =>
       dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventReplayMode: mode =>
+      dispatch(uiExecChangeEventReplayMode(mode)),
     cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
     execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
     execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),

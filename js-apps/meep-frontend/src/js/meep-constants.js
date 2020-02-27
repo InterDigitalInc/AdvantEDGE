@@ -36,6 +36,7 @@ export const MEEP_BTN_APPLY = 'meep-btn-apply';
 export const MEEP_DLG_NEW_SCENARIO = 'meep-dlg-new-scenario';
 export const MEEP_DLG_NEW_SCENARIO_NAME = 'meep-dlg-new-scenario-name';
 export const MEEP_DLG_SAVE_SCENARIO = 'meep-dlg-save-scenario';
+export const MEEP_DLG_SAVE_REPLAY = 'meep-dlg-save-replay';
 export const MEEP_DLG_OPEN_SCENARIO = 'meep-dlg-open-scenario';
 export const MEEP_DLG_OPEN_SCENARIO_SELECT = 'meep-dlg-open-scenario-select';
 export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
@@ -54,9 +55,10 @@ export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
 export const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
 export const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
 export const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
-export const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
 // EXEC
 export const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
+export const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
+export const IDC_DIALOG_SAVE_REPLAY = 'IDC_DIALOG_SAVE_REPLAY';
 // MONITORING
 export const IDC_DIALOG_DELETE_DASHBOARD_LIST = 'IDC_DIALOG_DELETE_DASHBOARD_LIST';
 // SETTINGS
@@ -118,12 +120,18 @@ export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
 export const EXEC_BTN_CONFIG = 'exec-btn-config';
+export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
+export const EXEC_BTN_AUTO_REPLAY = 'exec-btn-auto-replay';
+export const EXEC_BTN_SAVE_REPLAY = 'exec-btn-save-replay';
+export const EXEC_BTN_REPLAY_START = 'exec-btn-replay-start';
+export const EXEC_BTN_REPLAY_STOP = 'exec-btn-replay-stop';
 
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
 export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
+export const EXEC_EVT_REPLAY_FILES = 'exec-evt-replay-files';
 
 // Trivia
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';

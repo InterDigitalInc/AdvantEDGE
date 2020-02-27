@@ -36,7 +36,10 @@ const initialState = {
   showDashboardConfig: false,
   dashboardConfigExpanded: false,
   dashboardView1: NET_TOPOLOGY_VIEW,
-  dashboardView2: VIEW_NAME_NONE
+  dashboardView2: VIEW_NAME_NONE,
+  execReplayFileSelected: '',
+  eventReplayMode: false,
+  eventReplayLoop: false
 };
 
 // Change the current page
@@ -64,6 +67,14 @@ export function uiExecChangeCurrentEvent(event) {
   };
 }
 
+const EXEC_CHANGE_REPLAY_FILE_SELECTED = 'EXEC_CHANGE_REPLAY_FILE_SELECTED';
+export function uiExecChangeReplayFileSelected(name) {
+  return {
+    type: EXEC_CHANGE_REPLAY_FILE_SELECTED,
+    payload: name
+  };
+}
+
 const EXEC_CHANGE_EVENT_CREATION_MODE = 'EXEC_CHANGE_EVENT_CREATION_MODE';
 export function uiExecChangeEventCreationMode(val) {
   return {
@@ -72,10 +83,26 @@ export function uiExecChangeEventCreationMode(val) {
   };
 }
 
+const EXEC_CHANGE_EVENT_REPLAY_MODE = 'EXEC_CHANGE_EVENT_REPLAY_MODE';
+export function uiExecChangeEventReplayMode(val) {
+  return {
+    type: EXEC_CHANGE_EVENT_REPLAY_MODE,
+    payload: val
+  };
+}
+
 const EXEC_CHANGE_DASH_CFG_MODE = 'EXEC_CHANGE_DASH_CFG_MODE';
 export function uiExecChangeDashCfgMode(val) {
   return {
     type: EXEC_CHANGE_DASH_CFG_MODE,
+    payload: val
+  };
+}
+
+const EXEC_CHANGE_EVENT_CFG_MODE = 'EXEC_CHANGE_EVENT_CFG_MODE';
+export function uiExecChangeEventCfgMode(val) {
+  return {
+    type: EXEC_CHANGE_EVENT_CFG_MODE,
     payload: val
   };
 }
@@ -120,6 +147,15 @@ export function uiExecChangeShowApps(show) {
   };
 }
 
+const UI_EXEC_CHANGE_REPLAY_LOOP = 'UI_EXEC_CHANGE_REPLAY_LOOP';
+export const uiExecChangeReplayLoop = val => {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_LOOP,
+    payload: val
+  };
+};
+
+
 const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
 export function uiExecChangeDashboardView1(name) {
   return {
@@ -144,20 +180,28 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
   case EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
+  case EXEC_CHANGE_REPLAY_FILE_SELECTED:
+    return updateObject(state, { execReplayFileSelected: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:
     return updateObject(state, { currentDialog: action.payload });
   case EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+  case EXEC_CHANGE_EVENT_REPLAY_MODE:
+    return updateObject(state, { eventReplayMode: action.payload });
   case EXEC_CHANGE_DASH_CFG_MODE:
     return updateObject(state, { dashCfgMode: action.payload });
+  case EXEC_CHANGE_EVENT_CFG_MODE:
+    return updateObject(state, { eventCfgMode: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
     return updateObject(state, { refreshInterval: action.payload });
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, { execShowApps: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_LOOP:
+    return updateObject(state, { eventReplayLoop: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:

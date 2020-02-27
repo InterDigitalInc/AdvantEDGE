@@ -24,16 +24,28 @@ function execChangeScenarioList(scenarios) {
   };
 }
 
-export { EXEC_CHANGE_SCENARIO_LIST, execChangeScenarioList };
+const EXEC_CHANGE_REPLAY_FILES_LIST = 'EXEC_CHANGE_REPLAY_FILES_LIST';
+function execChangeReplayFilesList(replayFiles) {
+  return {
+    type: EXEC_CHANGE_REPLAY_FILES_LIST,
+    payload: replayFiles
+  };
+}
+
+export { EXEC_CHANGE_SCENARIO_LIST, execChangeScenarioList,
+         EXEC_CHANGE_REPLAY_FILES_LIST, execChangeReplayFilesList };
 
 const initialState = {
-  scenarios: []
+  scenarios: [],
+  replayFiles: []
 };
 
 export function execApiResultsReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SCENARIO_LIST:
     return updateObject(state, { scenarios: action.payload });
+  case EXEC_CHANGE_REPLAY_FILES_LIST:
+    return updateObject(state, { replayFiles: action.payload });
   default:
     return state;
   }
