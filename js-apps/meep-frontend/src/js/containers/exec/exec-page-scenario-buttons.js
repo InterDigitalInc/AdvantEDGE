@@ -71,16 +71,15 @@ class ExecPageScenarioButtons extends Component {
     );
   }
 
-  canCreateEvent() {
+  canOpenDashCfg() {
     return (
-      !this.props.eventCreationMode &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
       !this.props.podsTerminated
     );
   }
 
-  canOpenDashCfg() {
+  canOpenEventCfg() {
     return (
       !this.props.podsPending &&
       !this.props.podsTerminating &&
@@ -130,11 +129,11 @@ class ExecPageScenarioButtons extends Component {
         <Button
           raised
           style={styles.section2}
-          onClick={this.props.onCreateEvent}
-          disabled={!this.canCreateEvent()}
+          onClick={this.props.onOpenEventCfg}
+          disabled={!this.canOpenEventCfg()}
           data-cy={EXEC_BTN_EVENT}
         >
-          CREATE EVENT
+          EVENT
         </Button>
         <Button
           raised

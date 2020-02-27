@@ -51,6 +51,14 @@ function uiExecChangeCurrentEvent(event) {
   };
 }
 
+const EXEC_CHANGE_REPLAY_FILE_SELECTED = 'EXEC_CHANGE_REPLAY_FILE_SELECTED';
+function uiExecChangeReplayFileSelected(name) {
+  return {
+    type: EXEC_CHANGE_REPLAY_FILE_SELECTED,
+    payload: name
+  };
+}
+
 const EXEC_CHANGE_EVENT_CREATION_MODE = 'EXEC_CHANGE_EVENT_CREATION_MODE';
 function uiExecChangeEventCreationMode(val) {
   return {
@@ -59,10 +67,26 @@ function uiExecChangeEventCreationMode(val) {
   };
 }
 
+const EXEC_CHANGE_EVENT_REPLAY_MODE = 'EXEC_CHANGE_EVENT_REPLAY_MODE';
+function uiExecChangeEventReplayMode(val) {
+  return {
+    type: EXEC_CHANGE_EVENT_REPLAY_MODE,
+    payload: val
+  };
+}
+
 const EXEC_CHANGE_DASH_CFG_MODE = 'EXEC_CHANGE_DASH_CFG_MODE';
 function uiExecChangeDashCfgMode(val) {
   return {
     type: EXEC_CHANGE_DASH_CFG_MODE,
+    payload: val
+  };
+}
+
+const EXEC_CHANGE_EVENT_CFG_MODE = 'EXEC_CHANGE_EVENT_CFG_MODE';
+function uiExecChangeEventCfgMode(val) {
+  return {
+    type: EXEC_CHANGE_EVENT_CFG_MODE,
     payload: val
   };
 }
@@ -80,6 +104,7 @@ function uiChangeDevMode(mode) {
 const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
 const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
 const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
+const IDC_DIALOG_SAVE_REPLAY = 'IDC_DIALOG_SAVE_REPLAY';
 const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
 const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
 const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
@@ -120,6 +145,15 @@ const uiExecChangeShowApps = show => {
   };
 };
 
+const UI_EXEC_CHANGE_REPLAY_LOOP = 'UI_EXEC_CHANGE_REPLAY_LOOP';
+const uiExecChangeReplayLoop = val => {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_LOOP,
+    payload: val
+  };
+};
+
+
 const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
 const uiExecChangeDashboardView1 = name => {
   return {
@@ -148,6 +182,7 @@ export {
   IDC_DIALOG_OPEN_SCENARIO,
   IDC_DIALOG_NEW_SCENARIO,
   IDC_DIALOG_SAVE_SCENARIO,
+  IDC_DIALOG_SAVE_REPLAY,
   IDC_DIALOG_DELETE_SCENARIO,
   IDC_DIALOG_EXPORT_SCENARIO,
   IDC_DIALOG_DEPLOY_SCENARIO,
@@ -157,13 +192,17 @@ export {
   uiChangeCurrentPage,
   uiToggleMainDrawer,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventReplayMode,
   uiExecChangeDashCfgMode,
+  uiExecChangeEventCfgMode,
   uiExecChangeCurrentEvent,
+  uiExecChangeReplayFileSelected,
   uiChangeDevMode,
   uiChangeCurrentDialog,
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
   uiExecChangeShowApps,
+  uiExecChangeReplayLoop,
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2
 };
@@ -194,20 +233,28 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
   case EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
+  case EXEC_CHANGE_REPLAY_FILE_SELECTED:
+    return updateObject(state, { execReplayFileSelected: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:
     return updateObject(state, { currentDialog: action.payload });
   case EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+ case EXEC_CHANGE_EVENT_REPLAY_MODE:
+    return updateObject(state, { eventReplayMode: action.payload });
   case EXEC_CHANGE_DASH_CFG_MODE:
     return updateObject(state, { dashCfgMode: action.payload });
+  case EXEC_CHANGE_EVENT_CFG_MODE:
+    return updateObject(state, { eventCfgMode: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
     return updateObject(state, { refreshInterval: action.payload });
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, { execShowApps: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_LOOP:
+    return updateObject(state, { eventReplayLoop: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
