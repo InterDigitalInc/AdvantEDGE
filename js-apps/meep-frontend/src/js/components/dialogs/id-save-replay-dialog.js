@@ -95,7 +95,7 @@ class IDSaveReplayDialog extends Component {
           onChange={e => this.changeReplayName(e.target.value)}
           value={this.replayName}
         />
-       <TextField
+        <TextField
           outlined
           style={{ width: '100%' }}
           label={'Replay Description'}

@@ -145,9 +145,10 @@ class ExecPageContainer extends Component {
     replayInfo.scenarioName = scenarioName;
     replayInfo.description = state.description;
 
-    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error, data, response) => {
+    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error) => {
       if (error) {
-        console.log(error);
+        // TODO consider showing an alert
+        // console.log(error);
       }
     });
   }

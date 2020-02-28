@@ -19,7 +19,6 @@ import React, { Component } from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
-import { Checkbox } from '@rmwc/checkbox';
 
 import {
   uiExecChangeEventCreationMode,
