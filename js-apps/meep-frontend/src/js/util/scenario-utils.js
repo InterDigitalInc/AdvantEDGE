@@ -288,7 +288,6 @@ function findIdInScenario(scenario, uniqueId) {
   return false;
 }
 
-
 function getUniqueId(scenario) {
   var uniqueId = uuid();
   var isUniqueId = false;
@@ -307,9 +306,8 @@ export function addElementToScenario(scenario, element) {
   var scenarioElement;
   var type = getElemFieldVal(element, FIELD_TYPE);
   var name = getElemFieldVal(element, FIELD_NAME);
-  var uniqueId = getUniqueId(scenario);
-
   var parent = getElemFieldVal(element, FIELD_PARENT);
+  var uniqueId = getUniqueId(scenario);
 
   // Prepare network element to be added to scenario
   switch (type) {
@@ -607,6 +605,7 @@ export function cloneElementInScenario(scenario, element, table) {
   var newPlRootParentName = '';
   var newProcessRootParentName = '';
   var elementFromScenario;
+  var parent = getElemFieldVal(element, FIELD_PARENT);
 
   // Domains
   for (var i in scenario.deployment.domains) {
@@ -614,7 +613,7 @@ export function cloneElementInScenario(scenario, element, table) {
 
     // Add domain to graph and table (ignore public domain)
     if (domain.id === element.id) {
-      newZoneRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+      newZoneRootParentName = cloneElement(scenario, element, parent, true, table);
       inDomainCloneBranch = true;
     } else {
       inDomainCloneBranch = false;
@@ -633,7 +632,7 @@ export function cloneElementInScenario(scenario, element, table) {
         }
       } else {
         if (zone.id === element.id) {
-          newNlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT), true, table);
+          newNlRootParentName = cloneElement(scenario, element, parent, true, table);
           inZoneCloneBranch = true;
         } else {
           inZoneCloneBranch = false;
@@ -653,7 +652,7 @@ export function cloneElementInScenario(scenario, element, table) {
           }
         } else {
           if (nl.id === element.id) {
-            newPlRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+            newPlRootParentName = cloneElement(scenario, element, parent, true, table);
             inNlCloneBranch = true;
           } else {
             inNlCloneBranch = false;
@@ -669,7 +668,7 @@ export function cloneElementInScenario(scenario, element, table) {
             newProcessRootParentName = cloneElement(scenario, elementFromScenario, newPlRootParentName, false, table);
           } else {
             if (pl.id === element.id) {
-              newProcessRootParentName = cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+              newProcessRootParentName = cloneElement(scenario, element, parent, true, table);
               inPlCloneBranch = true;
             } else {
               inPlCloneBranch = false;
@@ -685,7 +684,7 @@ export function cloneElementInScenario(scenario, element, table) {
               cloneElement(scenario, elementFromScenario, newProcessRootParentName, false, table);
             } else {
               if (proc.id === element.id) {
-                cloneElement(scenario, element, getElemFieldVal(element, FIELD_PARENT, true, table));
+                cloneElement(scenario, element, parent, true, table);
               }
             }
           }
@@ -709,6 +708,19 @@ function cloneElement(scenario, element, newParentName, isRoot, table) {
     setElemFieldVal(newElement, FIELD_NAME, name);
   }
   setElemFieldVal(newElement, FIELD_PARENT, newParentName);
+
+  // The following element fields cause issues when duplicated in the scenario
+  // For now, set these values to null when cloning
+  // TODO -- Improve frontend cloning or move scenario configuration to brackend
+  if (getElemFieldVal(element, FIELD_EXT_PORT)) {
+    setElemFieldVal(newElement, FIELD_EXT_PORT, null);
+  }
+  if (getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)) {
+    setElemFieldVal(newElement, FIELD_INGRESS_SVC_MAP, null);
+  }
+  if (getElemFieldVal(element, FIELD_EGRESS_SVC_MAP)) {
+    setElemFieldVal(newElement, FIELD_EGRESS_SVC_MAP, null);
+  }
 
   // add new element to scenario
   // new id and label will be created as part of the addNewElementToScenario called by newScenarioElem

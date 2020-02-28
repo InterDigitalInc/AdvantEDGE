@@ -26,7 +26,10 @@ import {
   TYPE_EXEC
 } from '../../meep-constants';
 
-import { getElemFieldVal, FIELD_NAME, FIELD_TYPE } from '../../util/elem-utils';
+import {
+  getElemFieldVal,
+  FIELD_TYPE
+} from '../../util/elem-utils';
 
 // CHANGE_VIS
 const EXEC_CHANGE_VIS = 'EXEC_CHANGE_VIS';
@@ -68,10 +71,7 @@ const execVisFilteredData = createSelector(
 
     var types = {};
     _.each(table.entries, entry => {
-      types[getElemFieldVal(entry, FIELD_NAME)] = getElemFieldVal(
-        entry,
-        FIELD_TYPE
-      );
+      types[entry.id] = getElemFieldVal(entry,FIELD_TYPE);
     });
 
     if (showApps) {
