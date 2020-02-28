@@ -147,11 +147,12 @@ class ExecPageContainer extends Component {
     replayInfo.scenarioName = scenarioName;
     replayInfo.description = state.description;
 
-    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error, data, response) => {
-          if (error) {
-            console.log(error)
-          }
-        });
+    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error) => {
+      if (error) {
+        // TODO consider showing an alert
+        // console.log(error);
+      }
+    });
   }
 
   /**
@@ -384,7 +385,7 @@ class ExecPageContainer extends Component {
                 hidden={!this.props.eventCreationMode && !this.props.eventReplayMode}
                 style={styles.inner}
               >
-               <Elevation className="component-style" z={2}>
+                <Elevation className="component-style" z={2}>
                   <EventReplayPane
                     replayFiles={this.props.replayFiles}
                     replayFileSelected={this.props.replayFileSelected}

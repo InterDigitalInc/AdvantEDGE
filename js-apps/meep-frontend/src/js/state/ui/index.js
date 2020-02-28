@@ -241,7 +241,7 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { currentDialog: action.payload });
   case EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
- case EXEC_CHANGE_EVENT_REPLAY_MODE:
+  case EXEC_CHANGE_EVENT_REPLAY_MODE:
     return updateObject(state, { eventReplayMode: action.payload });
   case EXEC_CHANGE_DASH_CFG_MODE:
     return updateObject(state, { dashCfgMode: action.payload });

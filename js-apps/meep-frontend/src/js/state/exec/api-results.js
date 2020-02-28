@@ -32,8 +32,10 @@ function execChangeReplayFilesList(replayFiles) {
   };
 }
 
-export { EXEC_CHANGE_SCENARIO_LIST, execChangeScenarioList,
-         EXEC_CHANGE_REPLAY_FILES_LIST, execChangeReplayFilesList };
+export { 
+  EXEC_CHANGE_SCENARIO_LIST, execChangeScenarioList,
+  EXEC_CHANGE_REPLAY_FILES_LIST, execChangeReplayFilesList
+};
 
 const initialState = {
   scenarios: [],

@@ -21,7 +21,6 @@ import { Checkbox } from '@rmwc/checkbox';
 import { Select } from '@rmwc/select';
 import { Grid, GridInner, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
-import { updateObject } from '../../util/object-util';
 
 import { uiExecChangeReplayFileSelected } from '../../state/ui';
 
@@ -35,7 +34,7 @@ import {
   execChangeReplayFilesList
 } from '../../state/exec';
 
-import { EXEC_EVT_TYPE, PAGE_EXECUTE } from '../../meep-constants';
+import { PAGE_EXECUTE } from '../../meep-constants';
 
 const ReplayFileSelect = props => {
   return (
@@ -66,25 +65,27 @@ class EventReplayPane extends Component {
   }
 
   triggerReplay(play) {
-
     if (play) {
       if (this.props.replayLoop) {
-        this.props.api.loopReplay(this.props.replayFileSelected, (error, data, response) => {
-            if (error) {
-            console.log(error)
+        this.props.api.loopReplay(this.props.replayFileSelected, (error) => {
+          if (error) {
+            // TODO consider showing an alert
+            // console.log(error);
           }
         });
       } else {
-        this.props.api.playReplayFile(this.props.replayFileSelected, (error, data, response) => {
+        this.props.api.playReplayFile(this.props.replayFileSelected, (error) => {
           if (error) {
-            console.log(error)
+            // TODO consider showing an alert
+            // console.log(error);
           }
         });
       }
     } else { //stop
-     this.props.api.stopReplayFile(this.props.replayFileSelected, (error, data, response) => {
-          if (error) {
-          console.log(error)
+      this.props.api.stopReplayFile(this.props.replayFileSelected, (error) => {
+        if (error) {
+          // TODO consider showing an alert
+          // console.log(error);
         }
       });
     }
