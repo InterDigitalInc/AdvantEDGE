@@ -35,6 +35,7 @@ import (
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -59,7 +60,7 @@ var virtWatchdog *watchdog.Watchdog
 var rc *redis.Connector
 var activeModel *mod.Model
 var metricStore *ms.MetricStore
-var replayMgr *ReplayMgr
+var replayMgr *replay.ReplayMgr
 
 var couchDBAddr string = "http://meep-couchdb-svc-couchdb:5984/"
 var redisDBAddr string = "meep-redis-master:6379"
@@ -163,7 +164,7 @@ func CtrlEngineInit() (err error) {
 	}
 
 	// Setup for replay manager
-	replayMgr, err = NewReplayMgr("meep-ctrl-engine-replay")
+	replayMgr, err = replay.NewReplayMgr("meep-ctrl-engine-replay")
 	if err != nil {
 		log.Error("Failed to initialize replay manager. Error: ", err)
 		return err
@@ -597,7 +598,7 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//force stop replay manager
-	if replayMgr.isStarted {
+	if replayMgr.IsStarted() {
 		_ = replayMgr.ForceStop()
 	}
 
@@ -1070,10 +1071,9 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 	var time0 time.Time
 	var nbEvents int32 = 0
 
-	for index := range eml {
+	for i := len(eml) - 1; i >= 0; i-- {
 		//browsing through the list in reverse (end first (oldest element))
-		index = len(eml) - 1 - index
-		metricStoreEntry := eml[index]
+		metricStoreEntry := eml[i]
 
 		var replayEvent ceModel.ReplayEvent
 		eventTime, _ := time.Parse(log.LoggerTimeStampFormat, metricStoreEntry.Time.(string))

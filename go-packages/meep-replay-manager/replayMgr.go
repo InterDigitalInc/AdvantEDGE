@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package server
+package replay
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"time"
+	"context"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	"github.com/gorilla/mux"
 )
 
 const defaultLoopInterval = 1000 //in ms
+const basepath = "http://meep-ctrl-engine/v1"
 
 type ReplayMgr struct {
 	name              string
@@ -41,6 +39,23 @@ type ReplayMgr struct {
 	eventIndexMax     int
 	replayEventsList  ceModel.Replay
 	loop              bool
+        client            *ce.APIClient
+}
+
+func createClient(path string) (*ce.APIClient, error) {
+        // Create & store client for App REST API
+        ceClientCfg := ce.NewConfiguration()
+        ceClientCfg.BasePath = path
+        ceClient := ce.NewAPIClient(ceClientCfg)
+        if ceClient == nil {
+                err := errors.New("Failed to create ctrl-engine REST API client")
+                return nil, err
+        }
+        return ceClient, nil
+}
+
+func (r *ReplayMgr) IsStarted() bool {
+	return r.isStarted
 }
 
 // NewReplayMgr - Create, Initialize and connect the replay manager
@@ -54,6 +69,13 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	r = new(ReplayMgr)
 	r.name = name
 	r.isStarted = false
+
+        client, err := createClient(basepath)
+        if err != nil {
+                log.Error("Error creating client: ", err)
+                return
+        }
+	r.client = client
 
 	log.Debug("ReplayMgr created ", r.name)
 	return r, nil
@@ -82,13 +104,25 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		}
 	}
 
-	vars := make(map[string]string)
+	//only send events that mean something for the scenario
+	if replayEvent.Event.Type_ != "OTHER" {
 
-	vars["type"] = replayEvent.Event.Type_
+		vars := make(map[string]string)
 
-	err = r.sendRequest(http.MethodPost, "/events", bytes.NewBuffer(j), vars, nil, ceSendEvent)
-	if err != nil {
-		log.Error(err)
+		vars["type"] = replayEvent.Event.Type_
+
+		var validEvent ce.Event
+
+		err = json.Unmarshal(j, &validEvent)
+	        if err != nil {
+	         	log.Error(err)
+			return err
+	        }
+
+	        _, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	//see if we have a next event, if we are done or if we loop
@@ -102,6 +136,7 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		}
 	}
 
+	//sending the ticker prior to processing the current event to minimize time lost
 	if nextIndex != -1 {
 		nextReplayEvent := r.replayEventsList.Events[nextIndex]
 		//durations are all relative to event0.... need to be updated based on current time
@@ -122,7 +157,30 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 				_ = r.PlayEventByIndex(ignoreOtherEvents)
 			}
 		}()
-	} else {
+	}
+
+        //only send events that mean something for the scenario
+        if replayEvent.Event.Type_ != "OTHER" {
+
+                vars := make(map[string]string)
+
+                vars["type"] = replayEvent.Event.Type_
+
+                var validEvent ce.Event
+
+                err = json.Unmarshal(j, &validEvent)
+                if err != nil {
+                        log.Error(err)
+                        return err
+                }
+
+                _, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
+                if err != nil {
+                        log.Error(err)
+                }
+        }
+
+	if index == -1 {
 		r.Completed()
 	}
 
@@ -170,34 +228,4 @@ func (r *ReplayMgr) Stop(replayFileName string) bool {
 func (r *ReplayMgr) Completed() {
 	r.isStarted = false
 	log.Debug("replay completed execution")
-}
-
-func (r *ReplayMgr) sendRequest(method string, url string, body io.Reader, vars map[string]string, query map[string]string, f http.HandlerFunc) error {
-	req, err := http.NewRequest(method, url, body)
-	if err != nil || req == nil {
-		return err
-	}
-	if vars != nil {
-		req = mux.SetURLVars(req, vars)
-	}
-	if query != nil {
-		q := req.URL.Query()
-		for k, v := range query {
-			q.Add(k, v)
-		}
-		req.URL.RawQuery = q.Encode()
-	}
-
-	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(f)
-
-	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
-	// directly and pass in our Request and ResponseRecorder.
-	handler.ServeHTTP(rr, req)
-
-	_ = rr.Result()
-	// Check the status code if needed
-
-	return nil
 }
