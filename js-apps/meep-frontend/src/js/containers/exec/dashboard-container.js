@@ -244,7 +244,7 @@ const DashboardConfiguration = props => {
         <GridCell span={11}>
           <div style={{ marginBottom: 10 }}>
             <span className="mdc-typography--headline6">
-              Dashboard Configuration
+              Dashboard
             </span>
           </div>
         </GridCell>

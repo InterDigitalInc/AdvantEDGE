@@ -120,7 +120,7 @@ const EventConfiguration = props => {
         <GridCell span={11}>
           <div style={{ marginBottom: 10 }}>
             <span className="mdc-typography--headline6">
-              Event Configuration
+              Event
             </span>
           </div>
         </GridCell>
