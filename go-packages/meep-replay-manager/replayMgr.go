@@ -81,7 +81,7 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	return r, nil
 }
 
-func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
+func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 
 	index := r.currentEventIndex
 	nextIndex := 0
@@ -93,7 +93,12 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		return err
 	}
 
-	if replayEvent.Event.Type_ == "OTHER" && ignoreOtherEvents {
+	isInitEvent := false
+	if (replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" ) {
+		isInitEvent = true
+	}
+
+	if isInitEvent && ignoreInitEvent {
 		index = index + 1
 		replayEvent = r.replayEventsList.Events[index]
 
@@ -105,7 +110,7 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 	}
 
 	//only send events that mean something for the scenario
-	if replayEvent.Event.Type_ != "OTHER" {
+	if !isInitEvent {
 
 		vars := make(map[string]string)
 
@@ -154,13 +159,13 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		go func() {
 			for range r.ticker.C {
 				r.ticker.Stop()
-				_ = r.PlayEventByIndex(ignoreOtherEvents)
+				_ = r.playEventByIndex(ignoreInitEvent)
 			}
 		}()
 	}
 
         //only send events that mean something for the scenario
-        if replayEvent.Event.Type_ != "OTHER" {
+        if replayEvent.Event.Type_ != "INIT" {
 
                 vars := make(map[string]string)
 
@@ -180,7 +185,7 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
                 }
         }
 
-	if index == -1 {
+	if nextIndex == -1 {
 		r.Completed()
 	}
 
@@ -188,7 +193,7 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 }
 
 // Start - starts replay execution
-func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreOtherEvents bool) error {
+func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreInitEvent bool) error {
 	if !r.isStarted {
 		r.isStarted = true
 		r.currentEventIndex = 0
@@ -197,7 +202,7 @@ func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ign
 		r.loop = loop
 		r.currentFileName = fileName
 		//executing the events
-		_ = r.PlayEventByIndex(ignoreOtherEvents)
+		_ = r.playEventByIndex(ignoreInitEvent)
 	} else {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
 	}

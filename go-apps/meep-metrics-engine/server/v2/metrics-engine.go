@@ -156,7 +156,7 @@ func activateScenario() {
 	var em ms.EventMetric
 	em.Event = string(j)
 	em.Description = "scenario deployed"
-	err = metricStore.SetEventMetric("OTHER", em)
+	err = metricStore.SetEventMetric(ev.Type_, em)
 	if err != nil {
 		log.Error("Failed to sent init event: " + err.Error())
 		//do not return on this error, continue processing
