@@ -25,12 +25,13 @@ import (
 )
 
 var componentName string
+const LoggerTimeStampFormat = "2006-01-02T15:04:05.999Z07:00"
 
 type Fields map[string]interface{}
 
 func MeepTextLogInit(name string) {
 	Formatter := new(logrus.TextFormatter)
-	Formatter.TimestampFormat = "2006-01-02T15:04:05.999Z07:00"
+	Formatter.TimestampFormat = LoggerTimeStampFormat
 	Formatter.FullTimestamp = true
 	logrus.SetFormatter(Formatter)
 	//logrus.SetLevel(logrus.TraceLevel)

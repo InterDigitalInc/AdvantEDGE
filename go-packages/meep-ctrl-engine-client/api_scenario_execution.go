@@ -47,10 +47,11 @@ ScenarioExecutionApiService Deploy a scenario
 Deploy a scenario present in the platform scenario store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param name Scenario name
+ * @param activationInfo Activation information
 
 
 */
-func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name string) (*http.Response, error) {
+func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name string, activationInfo ActivationInfo) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -83,6 +84,8 @@ func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name
 	if localVarHttpHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
 	}
+	// body params
+	localVarPostBody = &activationInfo
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
 		return nil, err

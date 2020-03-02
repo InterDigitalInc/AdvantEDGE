@@ -74,7 +74,7 @@
      * Add a scenario
      * Add a scenario to the platform scenario store
      * @param {String} name Scenario name
-     * @param {module:model/Scenario} scenario Scenario to add to MEEP store
+     * @param {module:model/Scenario} scenario Scenario
      * @param {module:api/ScenarioConfigurationApi~createScenarioCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.createScenario = function(name, scenario, callback) {

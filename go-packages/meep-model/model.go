@@ -151,6 +151,34 @@ func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
 	return string(json), nil
 }
 
+// JSONMarshallReplayFileList - Convert ReplayFileList to JSON string
+func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err error) {
+	var rl ceModel.ReplayFileList
+	rl.ReplayFiles = replayFileNameList
+	json, err := json.Marshal(rl)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
+// JSONMarshallReplay - Convert Replay to JSON string
+func JSONMarshallReplay(replay []byte) (rStr string, err error) {
+	var r ceModel.Replay
+	err = json.Unmarshal(replay, &r)
+	if err != nil {
+		return "", err
+	}
+
+	json, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
 // SetScenario - Initialize model from JSON string
 func (m *Model) SetScenario(j []byte) (err error) {
 	m.lock.Lock()
@@ -224,7 +252,7 @@ func (m *Model) Deactivate() (err error) {
 			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
-	        log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
+		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
 		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
 		if err != nil {
 			log.Error("Failed to publish: ", err.Error())
@@ -572,7 +600,7 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-	        log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
+		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
 		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
 		if err != nil {
 			log.Error(err.Error())

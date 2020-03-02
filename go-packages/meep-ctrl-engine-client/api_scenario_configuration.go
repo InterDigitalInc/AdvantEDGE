@@ -45,7 +45,7 @@ ScenarioConfigurationApiService Add a scenario
 Add a scenario to the platform scenario store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param name Scenario name
- * @param scenario Scenario to add to MEEP store
+ * @param scenario Scenario
 
 
 */

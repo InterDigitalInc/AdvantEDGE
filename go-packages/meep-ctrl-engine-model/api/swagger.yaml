@@ -3,9 +3,17 @@ info:
   version: 1.0.0
   title: MEEP Model
   license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0"
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0'
 definitions:
+  ActivationInfo:
+    type: object
+    properties:
+      replayFileName:
+        type: string
+        description: Replay-file name to execute at deployment time
+    description: Activation information
+    example: {}
   NodeServiceMaps:
     type: object
     properties:
@@ -40,12 +48,12 @@ definitions:
         description: Packet lost (in terms of percentage) between domains
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       domains:
@@ -84,12 +92,12 @@ definitions:
         description: Packet lost (in terms of percentage) between zones within the domain
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       zones:
@@ -106,7 +114,7 @@ definitions:
         description: Service name
       meSvcName:
         type: string
-        description: Multi-Edge service name, if any
+        description: 'Multi-Edge service name, if any'
       ip:
         type: string
         description: External node IP address
@@ -312,19 +320,23 @@ definitions:
         description: Latency variation in ms for all terminal links within network location
       terminalLinkThroughput:
         type: integer
-        description: The limit of the traffic supported for all terminal links within the network location
+        description: >-
+          The limit of the traffic supported for all terminal links within the
+          network location
       terminalLinkPacketLoss:
         type: number
         format: double
-        description: Packet lost (in terms of percentage) for all terminal links within the network location
+        description: >-
+          Packet lost (in terms of percentage) for all terminal links within the
+          network location
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       physicalLocations:
@@ -363,12 +375,12 @@ definitions:
           description: Names of network locations within range of physical location
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       processes:
@@ -377,17 +389,25 @@ definitions:
           $ref: '#/definitions/Process'
       linkLatency:
         type: integer
-        description: Latency in ms between the physical location and the network (wired interface, air interface)
+        description: >-
+          Latency in ms between the physical location and the network (wired
+          interface, air interface)
       linkLatencyVariation:
         type: integer
-        description: Latency variation in ms between the physical location and the network (wired interface, air interface)
+        description: >-
+          Latency variation in ms between the physical location and the network
+          (wired interface, air interface)
       linkThroughput:
         type: integer
-        description: The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+        description: >-
+          The limit of the traffic supported between the physical location and
+          the network (wired interface, air interface)
       linkPacketLoss:
         type: number
         format: double
-        description: Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
+        description: >-
+          Packet lost (in terms of percentage) between the physical location and
+          the network (wired interface, air interface)
     description: Physical location object
     example: {}
   PodStatus:
@@ -498,7 +518,9 @@ definitions:
         description: Docker image to deploy inside MEEP
       environment:
         type: string
-        description: 'Environment variables using the format NAME="value",NAME="value",NAME="value"'
+        description: >-
+          Environment variables using the format
+          NAME="value",NAME="value",NAME="value"
       commandArguments:
         type: string
         description: Arguments to command executable
@@ -519,18 +541,20 @@ definitions:
         description: Chart location for the deployment of the chart provided by the user
       userChartAlternateValues:
         type: string
-        description: Chart values.yaml file location for the deployment of the chart provided by the user
+        description: >-
+          Chart values.yaml file location for the deployment of the chart
+          provided by the user
       userChartGroup:
         type: string
         description: Chart supplemental information related to the group (service)
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       appLatency:
@@ -563,15 +587,56 @@ definitions:
     example:
       name: name
       state: state
+  ReplayEvent:
+    type: object
+    properties:
+      index:
+        type: integer
+        description: Event index
+        readOnly: true
+      time:
+        type: integer
+        description: Relative time (ms) an event happened since the begining of a replay sequence
+      event:
+        $ref: '#/definitions/Event'
+    description: Replay event object
+    example: {}
+  Replay:
+    type: object
+    properties:
+      description:
+        type: string
+        description: User description of the content of the replay file. 
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/ReplayEvent'
+    description: ReplayEvents from the Replay-file
+    example: {}
+  ReplayFileList:
+    type: object
+    properties:
+      replay-files:
+        type: array
+        items:
+          type: string
+    description: Replay-file list
+    example: {}
   Scenario:
     type: object
     properties:
       version:
         type: string
         description: Scenario version
+      id:
+        type: string
+        description: Unique scenario ID
       name:
         type: string
         description: Unique scenario name
+      description:
+        type: string
+        description: User description of the scenario.
       config:
         $ref: '#/definitions/ScenarioConfig'
       deployment:
@@ -591,6 +656,17 @@ definitions:
     example:
       visualization: visualization
       other: other
+  ReplayInfo:
+    type: object
+    properties:
+      scenarioName:
+        type: string
+        description: Scenario name
+      description:
+        type: string
+        description: User description of the replay file
+    description: Scenario information
+    example: {}
   ScenarioList:
     type: object
     properties:
@@ -598,7 +674,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Scenario'
-    description: Scenario list object
+    description: Scenario list 
     example: {}
   ServiceConfig:
     type: object
@@ -608,7 +684,7 @@ definitions:
         description: Unique service name
       meSvcName:
         type: string
-        description: Multi-Edge service name, if any
+        description: 'Multi-Edge service name, if any'
       ports:
         type: array
         items:
@@ -626,13 +702,15 @@ definitions:
         description: Port number that the service is listening on
       externalPort:
         type: integer
-        description: |
-          External port number on which to expose the application (30000 - 32767)  <li>Only one application allowed per external port <li>Scenario builder must configure to prevent conflicts
+        description: >
+          External port number on which to expose the application (30000 -
+          32767)  <li>Only one application allowed per external port
+          <li>Scenario builder must configure to prevent conflicts
     description: Service port object
     example: {}
   Settings:
     type: object
-    description: MEEP settings - Key/Value Pair Map (string, string)
+    description: 'MEEP settings - Key/Value Pair Map (string, string)'
     additionalProperties:
       type: string
   Zone:
@@ -683,7 +761,9 @@ definitions:
         description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latency'
       edgeFogLatencyVariation:
         type: integer
-        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latencyVariation'
+        description: >-
+          **DEPRECATED** As of release 1.3.0, replaced by netChar
+          latencyVariation
       edgeFogThroughput:
         type: integer
         description: '**DEPRECATED** As of release 1.3.0, replaced by netChar throughput'
@@ -693,12 +773,12 @@ definitions:
         description: '**DEPRECATED** As of release 1.3.0, replaced by netChar packetLoss'
       meta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       userMeta:
         type: object
-        description: Key/Value Pair Map (string, string)
+        description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
       networkLocations:

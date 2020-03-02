@@ -95,11 +95,11 @@ func (dbCon *Connector) GetDoc(returnNilOnNotFound bool, docName string) (doc []
 }
 
 // getDocList - Get document list from DB
-func (dbCon *Connector) GetDocList() (docList [][]byte, err error) {
+func (dbCon *Connector) GetDocList() (docNameList []string, docList [][]byte, err error) {
 	log.Debug("Get all docs from DB")
 	rows, err := dbCon.dbHandle.AllDocs(context.TODO())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Loop through docs and populate doc list to return
@@ -110,10 +110,11 @@ func (dbCon *Connector) GetDocList() (docList [][]byte, err error) {
 		if err == nil {
 			// Append to list
 			docList = append(docList, doc)
+			docNameList = append(docNameList, rows.ID())
 		}
 	}
 
-	return docList, nil
+	return docNameList, docList, nil
 }
 
 // addDoc - Add scenario to DB

@@ -53,7 +53,7 @@
 
   /**
    * Constructs a new <code>ScenarioList</code>.
-   * Scenario list object
+   * Scenario list
    * @alias module:model/ScenarioList
    * @class
    */

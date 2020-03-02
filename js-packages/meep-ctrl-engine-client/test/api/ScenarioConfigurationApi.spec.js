@@ -57,7 +57,9 @@
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
           scenario.version = "";
+          scenario.id = "";
           scenario.name = "";
+          scenario.description = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
           scenario.config.other = "";
@@ -231,8 +233,12 @@
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
             expect(data.version).to.be.a('string');
             expect(data.version).to.be("");
+            expect(data.id).to.be.a('string');
+            expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
+            expect(data.description).to.be.a('string');
+            expect(data.description).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
                   expect(data.config.visualization).to.be.a('string');
               expect(data.config.visualization).to.be("");
@@ -630,8 +636,12 @@
                 expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
                 expect(data.version).to.be.a('string');
                 expect(data.version).to.be("");
+                expect(data.id).to.be.a('string');
+                expect(data.id).to.be("");
                 expect(data.name).to.be.a('string');
                 expect(data.name).to.be("");
+                expect(data.description).to.be.a('string');
+                expect(data.description).to.be("");
                 expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
                       expect(data.config.visualization).to.be.a('string');
                   expect(data.config.visualization).to.be("");
@@ -1017,7 +1027,9 @@
           var name = "name_example";
           var scenario = new AdvantEdgePlatformControllerRestApi.Scenario();
           scenario.version = "";
+          scenario.id = "";
           scenario.name = "";
+          scenario.description = "";
           scenario.config = new AdvantEdgePlatformControllerRestApi.ScenarioConfig();
           scenario.config.visualization = "";
           scenario.config.other = "";
