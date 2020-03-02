@@ -17,13 +17,13 @@
 package replay
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"time"
-	"context"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
@@ -39,19 +39,19 @@ type ReplayMgr struct {
 	eventIndexMax     int
 	replayEventsList  ceModel.Replay
 	loop              bool
-        client            *ce.APIClient
+	client            *ce.APIClient
 }
 
 func createClient(path string) (*ce.APIClient, error) {
-        // Create & store client for App REST API
-        ceClientCfg := ce.NewConfiguration()
-        ceClientCfg.BasePath = path
-        ceClient := ce.NewAPIClient(ceClientCfg)
-        if ceClient == nil {
-                err := errors.New("Failed to create ctrl-engine REST API client")
-                return nil, err
-        }
-        return ceClient, nil
+	// Create & store client for App REST API
+	ceClientCfg := ce.NewConfiguration()
+	ceClientCfg.BasePath = path
+	ceClient := ce.NewAPIClient(ceClientCfg)
+	if ceClient == nil {
+		err := errors.New("Failed to create ctrl-engine REST API client")
+		return nil, err
+	}
+	return ceClient, nil
 }
 
 func (r *ReplayMgr) IsStarted() bool {
@@ -70,11 +70,11 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	r.name = name
 	r.isStarted = false
 
-        client, err := createClient(basepath)
-        if err != nil {
-                log.Error("Error creating client: ", err)
-                return
-        }
+	client, err := createClient(basepath)
+	if err != nil {
+		log.Error("Error creating client: ", err)
+		return
+	}
 	r.client = client
 
 	log.Debug("ReplayMgr created ", r.name)
@@ -94,7 +94,7 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 	}
 
 	isInitEvent := false
-	if (replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" ) {
+	if replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" {
 		isInitEvent = true
 	}
 
@@ -119,12 +119,12 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 		var validEvent ce.Event
 
 		err = json.Unmarshal(j, &validEvent)
-	        if err != nil {
-	         	log.Error(err)
+		if err != nil {
+			log.Error(err)
 			return err
-	        }
+		}
 
-	        _, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
+		_, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
 		if err != nil {
 			log.Error(err)
 		}
@@ -164,26 +164,26 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 		}()
 	}
 
-        //only send events that mean something for the scenario
-        if replayEvent.Event.Type_ != "INIT" {
+	//only send events that mean something for the scenario
+	if replayEvent.Event.Type_ != "INIT" {
 
-                vars := make(map[string]string)
+		vars := make(map[string]string)
 
-                vars["type"] = replayEvent.Event.Type_
+		vars["type"] = replayEvent.Event.Type_
 
-                var validEvent ce.Event
+		var validEvent ce.Event
 
-                err = json.Unmarshal(j, &validEvent)
-                if err != nil {
-                        log.Error(err)
-                        return err
-                }
+		err = json.Unmarshal(j, &validEvent)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
 
-                _, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
-                if err != nil {
-                        log.Error(err)
-                }
-        }
+		_, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
+		if err != nil {
+			log.Error(err)
+		}
+	}
 
 	if nextIndex == -1 {
 		r.Completed()
