@@ -170,19 +170,19 @@ class EventReplayPane extends Component {
           </GridCell>
         </Grid>
         <Grid style={{ marginTop: 10 }}>
-          <GridInner align={'right'}>
+          <GridInner>
             <GridCell span={12}>
               <Button
-                raised
-                style={styles.section1}
+                outlined
+                style={styles.button}
                 onClick={() => this.triggerReplay(true)}
                 data-cy={EXEC_BTN_REPLAY_START}
               >
                 START
               </Button>
               <Button
-                raised
-                style={styles.section1}
+                outlined
+                style={styles.button}
                 onClick={() => this.triggerReplay(false)}
                 data-cy={EXEC_BTN_REPLAY_STOP}
               >
@@ -206,17 +206,13 @@ class EventReplayPane extends Component {
 
 const styles = {
   button: {
-    marginRight: 0
+    marginRight: 10
   },
   block: {
     marginBottom: 20
   },
   field: {
     marginBottom: 10
-  },
-  section1: {
-    color: 'white',
-    marginRight: 5
   },
   select: {
     width: '100%'

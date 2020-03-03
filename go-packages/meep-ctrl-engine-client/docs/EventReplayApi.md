@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**DeleteReplayFileList**](EventReplayApi.md#DeleteReplayFileList) | **Delete** /replay | Delete all replay files
 [**GetReplayFile**](EventReplayApi.md#GetReplayFile) | **Get** /replay/{name} | Get a specific replay file
 [**GetReplayFileList**](EventReplayApi.md#GetReplayFileList) | **Get** /replay | Get all replay file names
+[**GetReplayStatus**](EventReplayApi.md#GetReplayStatus) | **Get** /replaystatus | Get status of replay manager
 [**LoopReplay**](EventReplayApi.md#LoopReplay) | **Post** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
 [**PlayReplayFile**](EventReplayApi.md#PlayReplayFile) | **Post** /replay/{name}/play | Execute a replay file present in the platform store
 [**StopReplayFile**](EventReplayApi.md#StopReplayFile) | **Post** /replay/{name}/stop | Stop execution of a replay file
@@ -165,6 +166,30 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**ReplayFileList**](ReplayFileList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **GetReplayStatus**
+> ReplayStatus GetReplayStatus(ctx, )
+Get status of replay manager
+
+Returns status information on the replay manager
+
+### Required Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ReplayStatus**](ReplayStatus.md)
 
 ### Authorization
 

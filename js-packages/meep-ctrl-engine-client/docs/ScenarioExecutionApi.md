@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 <a name="activateScenario"></a>
 # **activateScenario**
-> activateScenario(name, activationInfo)
+> activateScenario(name, opts)
 
 Deploy a scenario
 
@@ -27,8 +27,9 @@ var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioExecutionApi()
 
 var name = "name_example"; // String | Scenario name
 
-var activationInfo = new AdvantEdgePlatformControllerRestApi.ActivationInfo(); // ActivationInfo | Activation information
-
+var opts = { 
+  'activationInfo': new AdvantEdgePlatformControllerRestApi.ActivationInfo() // ActivationInfo | Activation information
+};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -37,7 +38,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.activateScenario(name, activationInfo, callback);
+apiInstance.activateScenario(name, opts, callback);
 ```
 
 ### Parameters
@@ -45,7 +46,7 @@ apiInstance.activateScenario(name, activationInfo, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**| Scenario name | 
- **activationInfo** | [**ActivationInfo**](ActivationInfo.md)| Activation information | 
+ **activationInfo** | [**ActivationInfo**](ActivationInfo.md)| Activation information | [optional] 
 
 ### Return type
 

@@ -255,6 +255,38 @@
           done();
         });
       });
+      describe('getReplayStatus', function() {
+        it('should call getReplayStatus successfully', function(done) {
+          // TODO: uncomment getReplayStatus call and complete the assertions
+          /*
+
+          instance.getReplayStatus(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.ReplayStatus);
+            expect(data.replayFileRunning).to.be.a('string');
+            expect(data.replayFileRunning).to.be("");
+            expect(data.index).to.be.a('number');
+            expect(data.index).to.be(0);
+            expect(data.maxIndex).to.be.a('number');
+            expect(data.maxIndex).to.be(0);
+            expect(data.loopMode).to.be.a('boolean');
+            expect(data.loopMode).to.be(false);
+            expect(data.duration).to.be.a('number');
+            expect(data.duration).to.be(0);
+            expect(data.durationElapsed).to.be.a('number');
+            expect(data.durationElapsed).to.be(0);
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('loopReplay', function() {
         it('should call loopReplay successfully', function(done) {
           // TODO: uncomment, update parameter values for loopReplay call

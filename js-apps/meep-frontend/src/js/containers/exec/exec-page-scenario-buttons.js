@@ -137,7 +137,7 @@ class ExecPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={styles.section2}
+          style={styles.section1}
           onClick={this.props.onOpenDashCfg}
           disabled={!this.canOpenDashCfg()}
           data-cy={EXEC_BTN_CONFIG}

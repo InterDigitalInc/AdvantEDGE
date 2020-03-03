@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Replay', 'model/ReplayFileList', 'model/ReplayInfo'], factory);
+    define(['ApiClient', 'model/Replay', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/Replay'), require('../model/ReplayFileList'), require('../model/ReplayInfo'));
+    module.exports = factory(require('../ApiClient'), require('../model/Replay'), require('../model/ReplayFileList'), require('../model/ReplayInfo'), require('../model/ReplayStatus'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.EventReplayApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Replay, root.AdvantEdgePlatformControllerRestApi.ReplayFileList, root.AdvantEdgePlatformControllerRestApi.ReplayInfo);
+    root.AdvantEdgePlatformControllerRestApi.EventReplayApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Replay, root.AdvantEdgePlatformControllerRestApi.ReplayFileList, root.AdvantEdgePlatformControllerRestApi.ReplayInfo, root.AdvantEdgePlatformControllerRestApi.ReplayStatus);
   }
-}(this, function(ApiClient, Replay, ReplayFileList, ReplayInfo) {
+}(this, function(ApiClient, Replay, ReplayFileList, ReplayInfo, ReplayStatus) {
   'use strict';
 
   /**
@@ -339,6 +339,47 @@
 
       return this.apiClient.callApi(
         '/replay', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the getReplayStatus operation.
+     * @callback module:api/EventReplayApi~getReplayStatusCallback
+     * @param {String} error Error message, if any.
+     * @param {module:model/ReplayStatus} data The data returned by the service call.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Get status of replay manager
+     * Returns status information on the replay manager
+     * @param {module:api/EventReplayApi~getReplayStatusCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/ReplayStatus}
+     */
+    this.getReplayStatus = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = ReplayStatus;
+
+      return this.apiClient.callApi(
+        '/replaystatus', 'GET',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

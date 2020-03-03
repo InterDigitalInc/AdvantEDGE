@@ -46,24 +46,9 @@ import {
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
-const greyColor = 'grey';
-
 const styles = {
   button: {
-    marginRight: 0
-  },
-  slider: {
-    container: {
-      marginTop: 10,
-      marginBottom: 10,
-      color: greyColor
-    },
-    boundaryValues: {
-      marginTop: 15
-    },
-    title: {
-      marginBottom: 0
-    }
+    marginRight: 10
   }
 };
 
@@ -241,21 +226,23 @@ const DashboardConfiguration = props => {
       style={{ padding: 10, marginBottom: 10 }}
     >
       <Grid>
-        <GridCell span={11}>
+        <GridCell span={6}>
           <div style={{ marginBottom: 10 }}>
             <span className="mdc-typography--headline6">
               Dashboard
             </span>
           </div>
         </GridCell>
-        <GridCell span={1}>
-          <Button
-            outlined
-            style={styles.button}
-            onClick={() => props.onCloseDashCfg()}
-          >
+        <GridCell span={6}>
+          <div align={'right'}>
+            <Button
+              outlined
+              style={styles.button}
+              onClick={() => props.onCloseDashCfg()}
+            >
             Close
-          </Button>
+            </Button>
+          </div>
         </GridCell>
       </Grid>
       {configurationView}

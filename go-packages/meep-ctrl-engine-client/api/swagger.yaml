@@ -211,7 +211,7 @@ paths:
       - in: "body"
         name: "activationInfo"
         description: "Activation information"
-        required: true
+        required: false
         schema:
           $ref: "#/definitions/ActivationInfo"
         x-exportParamName: "ActivationInfo"
@@ -325,6 +325,23 @@ paths:
       responses:
         200:
           description: "OK"
+        404:
+          description: "Not found"
+  /replaystatus:
+    get:
+      tags:
+      - "Event Replay"
+      summary: "Get status of replay manager"
+      description: "Returns status information on the replay manager"
+      operationId: "getReplayStatus"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ReplayStatus"
         404:
           description: "Not found"
   /replay/{name}:
@@ -1167,6 +1184,33 @@ definitions:
         items:
           type: "string"
     description: "Replay-file list"
+    example: {}
+  ReplayStatus:
+    type: "object"
+    properties:
+      replayFileRunning:
+        type: "string"
+        description: "Name of the replay file currently running"
+        readOnly: true
+      index:
+        type: "integer"
+        description: "Index of the last ran event"
+        readOnly: true
+      maxIndex:
+        type: "integer"
+        description: "Number of events in the replay file"
+        readOnly: true
+      loopMode:
+        type: "boolean"
+        description: "Loop mode enables"
+        readOnly: true
+      duration:
+        type: "integer"
+        description: "Total duration of the replay file"
+      durationElapsed:
+        type: "integer"
+        description: "Duration the replay file has been running"
+    description: "Replay status object"
     example: {}
   Replay:
     type: "object"

@@ -31,33 +31,9 @@ import {
   EXEC_BTN_SAVE_REPLAY
 } from '../../meep-constants';
 
-const greyColor = 'grey';
-
 const styles = {
   button: {
-    marginRight: 0
-  },
-  slider: {
-    container: {
-      marginTop: 10,
-      marginBottom: 10,
-      color: greyColor
-    },
-    boundaryValues: {
-      marginTop: 15
-    },
-    title: {
-      marginBottom: 0
-    }
-  },
-  section1: {
-    color: 'white',
-    marginRight: 5
-  },
-  section2: {
-    color: 'white',
-    marginRight: 5,
-    marginLeft: 10
+    marginRight: 10
   }
 };
 
@@ -67,24 +43,24 @@ const ConfigurationView = props => {
       <Grid style={{ marginBottom: 10 }}>
         <GridCell span={6}>
           <Button
-            raised
-            style={styles.section1}
+            outlined
+            style={styles.button}
             onClick={props.onCreateEvent}
             data-cy={EXEC_BTN_MANUAL_REPLAY}
           >
             MANUAL
           </Button>
           <Button
-            raised
-            style={styles.section1}
+            outlined
+            style={styles.button}
             onClick={props.onReplayEvent}
             data-cy={EXEC_BTN_AUTO_REPLAY}
           >
             AUTO-REPLAY
           </Button>
           <Button
-            raised
-            style={styles.section1}
+            outlined
+            style={styles.button}
             onClick={props.onSaveReplay}
             data-cy={EXEC_BTN_SAVE_REPLAY}
           >
@@ -117,21 +93,23 @@ const EventConfiguration = props => {
       style={{ padding: 10, marginBottom: 10 }}
     >
       <Grid>
-        <GridCell span={11}>
+        <GridCell span={6}>
           <div style={{ marginBottom: 10 }}>
             <span className="mdc-typography--headline6">
               Event
             </span>
           </div>
         </GridCell>
-        <GridCell span={1}>
-          <Button
-            outlined
-            style={styles.button}
-            onClick={() => props.onCloseEventCfg()}
-          >
+        <GridCell span={6}>
+          <div align={'right'}>
+            <Button
+              outlined
+              style={styles.button}
+              onClick={() => props.onCloseEventCfg()}
+            >
             Close
-          </Button>
+            </Button>
+          </div>
         </GridCell>
       </Grid>
       {configurationView}

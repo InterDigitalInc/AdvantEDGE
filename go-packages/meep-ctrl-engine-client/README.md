@@ -27,6 +27,7 @@ Class | Method | HTTP request | Description
 *EventReplayApi* | [**DeleteReplayFileList**](docs/EventReplayApi.md#deletereplayfilelist) | **Delete** /replay | Delete all replay files
 *EventReplayApi* | [**GetReplayFile**](docs/EventReplayApi.md#getreplayfile) | **Get** /replay/{name} | Get a specific replay file
 *EventReplayApi* | [**GetReplayFileList**](docs/EventReplayApi.md#getreplayfilelist) | **Get** /replay | Get all replay file names
+*EventReplayApi* | [**GetReplayStatus**](docs/EventReplayApi.md#getreplaystatus) | **Get** /replaystatus | Get status of replay manager
 *EventReplayApi* | [**LoopReplay**](docs/EventReplayApi.md#loopreplay) | **Post** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
 *EventReplayApi* | [**PlayReplayFile**](docs/EventReplayApi.md#playreplayfile) | **Post** /replay/{name}/play | Execute a replay file present in the platform store
 *EventReplayApi* | [**StopReplayFile**](docs/EventReplayApi.md#stopreplayfile) | **Post** /replay/{name}/stop | Stop execution of a replay file
@@ -69,6 +70,7 @@ Class | Method | HTTP request | Description
  - [ReplayEvent](docs/ReplayEvent.md)
  - [ReplayFileList](docs/ReplayFileList.md)
  - [ReplayInfo](docs/ReplayInfo.md)
+ - [ReplayStatus](docs/ReplayStatus.md)
  - [Scenario](docs/Scenario.md)
  - [ScenarioConfig](docs/ScenarioConfig.md)
  - [ScenarioList](docs/ScenarioList.md)
