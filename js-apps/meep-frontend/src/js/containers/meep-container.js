@@ -33,6 +33,7 @@ import MonitorPageContainer from './monitor/monitor-page-container';
 import {
   TYPE_CFG,
   TYPE_EXEC,
+  EXEC_STATE_IDLE,
   EXEC_STATE_DEPLOYED,
   NO_SCENARIO_NAME,
   PAGE_CONFIGURE,
@@ -79,15 +80,13 @@ import {
 } from '../state/cfg';
 
 // MEEP Controller REST API JS client
-var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.105:30000/v1';
+// var basepath = 'http://' + location.host + location.pathname + 'v1';
+const basepath = 'http://10.3.16.105:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
   ''
 );
-
-var counter = 0;
 
 class MeepContainer extends Component {
   constructor(props) {
@@ -219,13 +218,25 @@ class MeepContainer extends Component {
       });
   }
 
+  /**
+   * Callback function to receive the result of the getReplayStatus operation.
+   * @callback module:api/EventReplayApi~getReplayStatusCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/Replay} data The data returned by the service call.
+   */
+  getReplayStatusCb(error, data) {
+    this.props.changeReplayStatus((error === null) ? data : null);
+  }
+
   checkReplayStatus() {
+    if (this.props.exec.state.scenario === EXEC_STATE_IDLE) {
+      return;
+    }
+
     if (this.props.eventCfgMode || this.props.eventReplayMode) {
-      counter++;
-      var status = {
-        status: 'Latest Status: ' + counter
-      };
-      this.props.changeReplayStatus(status);
+      this.meepReplayApi.getReplayStatus((error, data, response) => {
+        this.getReplayStatusCb(error, data, response);
+      });
     }
   }
 

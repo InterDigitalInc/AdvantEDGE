@@ -632,12 +632,12 @@ definitions:
         type: boolean
         description: Loop mode enables
         readOnly: true
-      duration:
+      timeRemaining:
         type: integer
-        description: Total duration of the replay file
-      durationElapsed:
+        description: Total time remaining for the replay file after last event
+      timeToNextEvent:
         type: integer
-        description: Duration the replay file has been running
+        description: Time remaining until the next event for the replay file after last event
     description: Replay status object
     example: {}
   ReplayFileList:

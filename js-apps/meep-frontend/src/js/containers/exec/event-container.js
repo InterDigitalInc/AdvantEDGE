@@ -41,7 +41,12 @@ class EventContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sourceNodeId: ''
+      replayFileName: null,
+      eventIndex: null,
+      maxIndex: null,
+      loopMode: null,
+      timeToNextEvent: null,
+      timeRemaining: null
     };
   }
 
@@ -64,7 +69,6 @@ class EventContainer extends Component {
   }
 
   render() {
-
     if (!this.props.eventCfgMode) {
       return null;
     }
@@ -124,10 +128,19 @@ class EventContainer extends Component {
                 SAVE EVENTS AS ...
               </Button>
             </GridCell>
-          </Grid>
 
-          <div>{this.props.replayStatus ? this.props.replayStatus.status : 'NONE'}</div>
-          
+            <GridCell span={6}>
+              {this.props.replayStatus ? (
+                <>
+                {this.props.replayStatus}
+                </>
+              ) : (
+                <span>
+            Status Not Found              
+                </span>
+              )}
+            </GridCell>
+          </Grid>
         </Elevation>
       </>
     );

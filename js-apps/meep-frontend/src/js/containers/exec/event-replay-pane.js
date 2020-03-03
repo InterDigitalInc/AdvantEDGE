@@ -137,6 +137,10 @@ class EventReplayPane extends Component {
     });
   }
 
+  replayRunning() {
+    return this.props.replayStatus ? true : false;
+  }
+
   render() {
     if (this.props.page !== PAGE_EXECUTE || this.props.hide) {
       return null;
@@ -176,6 +180,7 @@ class EventReplayPane extends Component {
                 outlined
                 style={styles.button}
                 onClick={() => this.triggerReplay(true)}
+                disabled={this.replayRunning()}
                 data-cy={EXEC_BTN_REPLAY_START}
               >
                 START
@@ -184,6 +189,7 @@ class EventReplayPane extends Component {
                 outlined
                 style={styles.button}
                 onClick={() => this.triggerReplay(false)}
+                disabled={!this.replayRunning()}
                 data-cy={EXEC_BTN_REPLAY_STOP}
               >
                 STOP
@@ -198,7 +204,6 @@ class EventReplayPane extends Component {
             </GridCell>
           </GridInner>
         </Grid>
-        <div>{this.props.replayStatus ? this.props.replayStatus.status : 'NONE'}</div>
       </div>
     );
   }

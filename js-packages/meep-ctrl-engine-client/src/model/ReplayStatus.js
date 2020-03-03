@@ -78,10 +78,10 @@
         obj.maxIndex = ApiClient.convertToType(data['maxIndex'], 'Number');
       if (data.hasOwnProperty('loopMode'))
         obj.loopMode = ApiClient.convertToType(data['loopMode'], 'Boolean');
-      if (data.hasOwnProperty('duration'))
-        obj.duration = ApiClient.convertToType(data['duration'], 'Number');
-      if (data.hasOwnProperty('durationElapsed'))
-        obj.durationElapsed = ApiClient.convertToType(data['durationElapsed'], 'Number');
+      if (data.hasOwnProperty('timeRemaining'))
+        obj.timeRemaining = ApiClient.convertToType(data['timeRemaining'], 'Number');
+      if (data.hasOwnProperty('timeToNextEvent'))
+        obj.timeToNextEvent = ApiClient.convertToType(data['timeToNextEvent'], 'Number');
     }
     return obj;
   }
@@ -111,16 +111,16 @@
   exports.prototype.loopMode = undefined;
 
   /**
-   * Total duration of the replay file
-   * @member {Number} duration
+   * Total time remaining for the replay file after last event
+   * @member {Number} timeRemaining
    */
-  exports.prototype.duration = undefined;
+  exports.prototype.timeRemaining = undefined;
 
   /**
-   * Duration the replay file has been running
-   * @member {Number} durationElapsed
+   * Time remaining until the next event for the replay file after last event
+   * @member {Number} timeToNextEvent
    */
-  exports.prototype.durationElapsed = undefined;
+  exports.prototype.timeToNextEvent = undefined;
 
   return exports;
 

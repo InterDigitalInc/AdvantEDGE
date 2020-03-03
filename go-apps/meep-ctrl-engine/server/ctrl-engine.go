@@ -1199,6 +1199,28 @@ func ceGetReplayFileList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, replayFileList)
 }
 
+func ceGetReplayStatus(w http.ResponseWriter, r *http.Request) {
+	// Get Replay Manager status
+	status, err := replayMgr.GetStatus()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(status)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
 func ceLoopReplay(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	replayFileName := vars["name"]

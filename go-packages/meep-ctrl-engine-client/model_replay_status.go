@@ -34,8 +34,8 @@ type ReplayStatus struct {
 	MaxIndex int32 `json:"maxIndex,omitempty"`
 	// Loop mode enables
 	LoopMode bool `json:"loopMode,omitempty"`
-	// Total duration of the replay file
-	Duration int32 `json:"duration,omitempty"`
-	// Duration the replay file has been running
-	DurationElapsed int32 `json:"durationElapsed,omitempty"`
+	// Total time remaining for the replay file after last event
+	TimeRemaining int32 `json:"timeRemaining,omitempty"`
+	// Time remaining until the next event for the replay file after last event
+	TimeToNextEvent int32 `json:"timeToNextEvent,omitempty"`
 }

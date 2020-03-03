@@ -275,10 +275,10 @@
             expect(data.maxIndex).to.be(0);
             expect(data.loopMode).to.be.a('boolean');
             expect(data.loopMode).to.be(false);
-            expect(data.duration).to.be.a('number');
-            expect(data.duration).to.be(0);
-            expect(data.durationElapsed).to.be.a('number');
-            expect(data.durationElapsed).to.be(0);
+            expect(data.timeRemaining).to.be.a('number');
+            expect(data.timeRemaining).to.be(0);
+            expect(data.timeToNextEvent).to.be.a('number');
+            expect(data.timeToNextEvent).to.be(0);
 
             done();
           });

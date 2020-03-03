@@ -31,15 +31,20 @@ const defaultLoopInterval = 1000 //in ms
 const basepath = "http://meep-ctrl-engine/v1"
 
 type ReplayMgr struct {
-	name              string
-	currentFileName   string
-	isStarted         bool
-	ticker            *time.Ticker
-	currentEventIndex int
-	eventIndexMax     int
-	replayEventsList  ceModel.Replay
-	loop              bool
-	client            *ce.APIClient
+	name             string
+	currentFileName  string
+	isStarted        bool
+	ticker           *time.Ticker
+	nextEventIndex   int
+	eventIndexMax    int
+	replayEventsList ceModel.Replay
+	loop             bool
+	client           *ce.APIClient
+	timeToNextEvent  int
+	timeRemaining    int
+	timeStarted      time.Time
+	loopStarted      time.Time
+	ignoreInitEvent  bool
 }
 
 func createClient(path string) (*ce.APIClient, error) {
@@ -81,9 +86,8 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	return r, nil
 }
 
-func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
-
-	index := r.currentEventIndex
+func (r *ReplayMgr) playEventByIndex() error {
+	index := r.nextEventIndex
 	nextIndex := 0
 	replayEvent := r.replayEventsList.Events[index]
 
@@ -93,12 +97,16 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 		return err
 	}
 
+	if index == 0 {
+		r.loopStarted = time.Now()
+	}
+
 	isInitEvent := false
 	if replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" {
 		isInitEvent = true
 	}
 
-	if isInitEvent && ignoreInitEvent {
+	if isInitEvent && r.ignoreInitEvent {
 		index = index + 1
 		replayEvent = r.replayEventsList.Events[index]
 
@@ -111,11 +119,8 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 
 	//only send events that mean something for the scenario
 	if !isInitEvent {
-
 		vars := make(map[string]string)
-
 		vars["type"] = replayEvent.Event.Type_
-
 		var validEvent ce.Event
 
 		err = json.Unmarshal(j, &validEvent)
@@ -133,12 +138,10 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 	//see if we have a next event, if we are done or if we loop
 	if index != r.eventIndexMax {
 		nextIndex = index + 1
+	} else if r.loop {
+		nextIndex = 0
 	} else {
-		if r.loop {
-			nextIndex = 0
-		} else {
-			nextIndex = -1
-		}
+		nextIndex = -1
 	}
 
 	//sending the ticker prior to processing the current event to minimize time lost
@@ -152,14 +155,17 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 		} else {
 			diff = nextReplayEvent.Time - replayEvent.Time
 		}
-		r.currentEventIndex = nextIndex
+		r.nextEventIndex = nextIndex
 		tickerExpiry := time.Duration(diff) * time.Millisecond
 		log.Debug("next replay event (index ", nextReplayEvent.Index, ") in ", tickerExpiry)
 		r.ticker = time.NewTicker(tickerExpiry)
+
+		r.timeToNextEvent, r.timeRemaining = r.getTimesRemaining()
+
 		go func() {
 			for range r.ticker.C {
 				r.ticker.Stop()
-				_ = r.playEventByIndex(ignoreInitEvent)
+				_ = r.playEventByIndex()
 			}
 		}()
 	}
@@ -195,14 +201,16 @@ func (r *ReplayMgr) playEventByIndex(ignoreInitEvent bool) error {
 // Start - starts replay execution
 func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreInitEvent bool) error {
 	if !r.isStarted {
+		r.timeStarted = time.Now()
 		r.isStarted = true
-		r.currentEventIndex = 0
+		r.nextEventIndex = 0
 		r.replayEventsList = replay
 		r.eventIndexMax = len(replay.Events) - 1
 		r.loop = loop
 		r.currentFileName = fileName
+		r.ignoreInitEvent = ignoreInitEvent
 		//executing the events
-		_ = r.playEventByIndex(ignoreInitEvent)
+		_ = r.playEventByIndex()
 	} else {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
 	}
@@ -233,4 +241,68 @@ func (r *ReplayMgr) Stop(replayFileName string) bool {
 func (r *ReplayMgr) Completed() {
 	r.isStarted = false
 	log.Debug("replay completed execution")
+}
+
+// GetStatus - Returns the Replay Execution status
+func (r *ReplayMgr) GetStatus() (status ceModel.ReplayStatus, err error) {
+	if !r.IsStarted() {
+		err = errors.New("No replay file running")
+		return
+	}
+
+	status.ReplayFileRunning = r.currentFileName
+	status.MaxIndex = int32(r.eventIndexMax)
+	nextIndex := r.nextEventIndex
+	maxIndex := r.eventIndexMax
+	lastIndexPlayed := 0
+
+	// if next index is 0, it means it will loop so we do not remove one to find the current, the current is the last event
+	if nextIndex != 0 {
+		if nextIndex == -1 {
+			lastIndexPlayed = maxIndex
+		} else {
+			lastIndexPlayed = nextIndex - 1
+		}
+	} else {
+		if r.loop {
+			lastIndexPlayed = maxIndex
+		} else {
+			lastIndexPlayed = nextIndex
+		}
+	}
+
+	status.Index = int32(lastIndexPlayed)
+	status.MaxIndex = int32(maxIndex)
+
+	status.LoopMode = r.loop
+	timeToNextEvent, timeRemaining := r.getTimesRemaining()
+	status.TimeToNextEvent = int32(timeToNextEvent)
+	status.TimeRemaining = int32(timeRemaining)
+
+	return status, nil
+}
+
+// getTimesRemaining - returns time left to execute next event and the rest of the replay file
+func (r *ReplayMgr) getTimesRemaining() (int, int) {
+	var elapsedDuration time.Duration
+	if r.loop {
+		elapsedDuration = time.Since(r.loopStarted)
+	} else {
+		elapsedDuration = time.Since(r.timeStarted)
+	}
+	elapsed := int(elapsedDuration / time.Millisecond)
+
+	if r.ignoreInitEvent {
+		elapsed += int(r.replayEventsList.Events[1].Time)
+	}
+
+	nextEventTimeRemaining := int(r.replayEventsList.Events[r.nextEventIndex].Time) - elapsed
+	totalTimeRemaining := int(r.replayEventsList.Events[r.eventIndexMax].Time) - elapsed
+	if nextEventTimeRemaining < 0 {
+		nextEventTimeRemaining = 0
+	}
+	if totalTimeRemaining < 0 {
+		totalTimeRemaining = 0
+	}
+	return nextEventTimeRemaining, totalTimeRemaining
 }

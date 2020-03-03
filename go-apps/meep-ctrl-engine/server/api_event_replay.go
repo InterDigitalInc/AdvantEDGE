@@ -52,6 +52,10 @@ func GetReplayFileList(w http.ResponseWriter, r *http.Request) {
 	ceGetReplayFileList(w, r)
 }
 
+func GetReplayStatus(w http.ResponseWriter, r *http.Request) {
+	ceGetReplayStatus(w, r)
+}
+
 func StopReplayFile(w http.ResponseWriter, r *http.Request) {
 	ceStopReplayFile(w, r)
 }

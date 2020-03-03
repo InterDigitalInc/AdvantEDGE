@@ -79,16 +79,16 @@
         // expect(instance.loopMode).to.be(expectedValueLiteral);
       });
 
-      it('should have the property duration (base name: "duration")', function() {
-        // TODO: update the code to test the property duration
-        expect(instance).to.have.property('duration');
-        // expect(instance.duration).to.be(expectedValueLiteral);
+      it('should have the property timeRemaining (base name: "timeRemaining")', function() {
+        // TODO: update the code to test the property timeRemaining
+        expect(instance).to.have.property('timeRemaining');
+        // expect(instance.timeRemaining).to.be(expectedValueLiteral);
       });
 
-      it('should have the property durationElapsed (base name: "durationElapsed")', function() {
-        // TODO: update the code to test the property durationElapsed
-        expect(instance).to.have.property('durationElapsed');
-        // expect(instance.durationElapsed).to.be(expectedValueLiteral);
+      it('should have the property timeToNextEvent (base name: "timeToNextEvent")', function() {
+        // TODO: update the code to test the property timeToNextEvent
+        expect(instance).to.have.property('timeToNextEvent');
+        // expect(instance.timeToNextEvent).to.be(expectedValueLiteral);
       });
 
     });

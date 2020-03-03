@@ -340,9 +340,6 @@ class ExecPageContainer extends Component {
                           onSaveScenario={() => this.onSaveScenario()}
                           onTerminate={() => this.onTerminateScenario()}
                           onRefresh={this.props.refreshScenario}
-                          //onCreateEvent={() => this.onCreateEvent()}
-                          //onReplayEvent={() => this.onReplayEvent()}
-                          //onSaveReplay={() => this.onSaveReplay()}
                           onOpenDashCfg={() => this.onOpenDashCfg()}
                           onOpenEventCfg={() => this.onOpenEventCfg()}
                         />
@@ -367,6 +364,7 @@ class ExecPageContainer extends Component {
                     eventCfgMode={this.props.eventCfgMode}
                     onCloseEventCfg={() => this.onCloseEventCfg()}
                     onSaveReplay={() => this.onSaveReplay()}
+                    api={this.props.replayApi}
                   />
 
                   <DashboardContainer
@@ -456,18 +454,13 @@ const mapDispatchToProps = dispatch => {
   return {
     changeCurrentDialog: type => dispatch(uiChangeCurrentDialog(type)),
     changeScenario: scenario => dispatch(execChangeScenario(scenario)),
-    changeDeployScenarioList: scenarios =>
-      dispatch(execChangeScenarioList(scenarios)),
+    changeDeployScenarioList: scenarios => dispatch(execChangeScenarioList(scenarios)),
     changeScenarioName: name => dispatch(execChangeScenarioName(name)),
     changeState: s => dispatch(execChangeScenarioState(s)),
-    changeEventCreationMode: val =>
-      dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
-    changeEventReplayMode: val =>
-      dispatch(uiExecChangeEventReplayMode(val)), // (true or false)
-    changeDashCfgMode: val =>
-      dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
-    changeEventCfgMode: val =>
-      dispatch(uiExecChangeEventCfgMode(val)), // (true or false)
+    changeEventCreationMode: val => dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
+    changeEventReplayMode: val => dispatch(uiExecChangeEventReplayMode(val)), // (true or false)
+    changeDashCfgMode: val => dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
+    changeEventCfgMode: val => dispatch(uiExecChangeEventCfgMode(val)), // (true or false)
     changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
     changeShowApps: show => dispatch(uiExecChangeShowApps(show)),
