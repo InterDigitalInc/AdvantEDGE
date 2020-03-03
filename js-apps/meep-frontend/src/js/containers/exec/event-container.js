@@ -19,6 +19,7 @@ import React, { Component } from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
+import { Typography } from '@rmwc/typography';
 
 import {
   uiExecChangeEventCreationMode,
@@ -35,6 +36,32 @@ const styles = {
   button: {
     marginRight: 10
   }
+};
+
+const StatusTable = props => {
+  return (
+
+    <Grid>
+      <GridCell span={4}>
+        <Typography use="subtitle2">REPLAY FILE</Typography>
+      </GridCell>
+      <GridCell span={4}>
+        <Typography use="subtitle2">EVENT COUNT</Typography>
+      </GridCell>
+      <GridCell span={4}>
+        <Typography use="subtitle2">REMAINING TIME (MS)</Typography>
+      </GridCell>
+      <GridCell span={4}>
+        <Typography use="body2">{props.name}</Typography>
+      </GridCell>
+      <GridCell span={4}>
+        <Typography use="body2">{props.index} / {props.maxIndex}</Typography>
+      </GridCell>
+      <GridCell span={4}>
+        <Typography use="body2">{props.timeToNextEvent} / {props.timeRemaining}</Typography>
+      </GridCell>
+    </Grid>
+  );
 };
 
 class EventContainer extends Component {
@@ -73,6 +100,8 @@ class EventContainer extends Component {
       return null;
     }
 
+    const replayStatus = this.props.replayStatus;
+
     return (
       <>
         <Elevation
@@ -102,7 +131,7 @@ class EventContainer extends Component {
           </Grid>
 
           <Grid style={{ marginBottom: 10 }}>
-            <GridCell span={6}>
+            <GridCell span={5}>
               <Button
                 outlined
                 style={styles.button}
@@ -125,15 +154,29 @@ class EventContainer extends Component {
                 onClick={this.props.onSaveReplay}
                 data-cy={EXEC_BTN_SAVE_REPLAY}
               >
-                SAVE EVENTS AS ...
+                SAVE EVENTS
               </Button>
             </GridCell>
 
-            {this.props.replayStatus &&
-              <GridCell span={6}>
-                {this.props.replayStatus.replayFileRunning}
-              </GridCell>
-            }
+            <GridCell span={6}>
+              <Elevation
+                z={2}
+                className="component-style"
+                style={{ padding: 15 }}
+              >
+                {replayStatus ?
+                  <StatusTable
+                    name={replayStatus.replayFileRunning}
+                    index={replayStatus.index}
+                    maxIndex={replayStatus.maxIndex}
+                    loopMode={replayStatus.loopMode}
+                    timeRemaining={replayStatus.timeRemaining}
+                    timeToNextEvent={replayStatus.timeToNextEvent}
+                  /> :
+                  <Typography use="subtitle2">Ready to run REPLAY file</Typography>
+                }
+              </Elevation>
+            </GridCell>
           </Grid>
         </Elevation>
       </>
