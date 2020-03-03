@@ -613,6 +613,33 @@ definitions:
           $ref: '#/definitions/ReplayEvent'
     description: ReplayEvents from the Replay-file
     example: {}
+  ReplayStatus:
+    type: object
+    properties:
+      replayFileRunning:
+        type: string
+        description: Name of the replay file currently running
+        readOnly: true
+      index:
+        type: integer
+        description: Index of the last ran event
+        readOnly: true
+      maxIndex:
+        type: integer
+        description: Number of events in the replay file
+        readOnly: true
+      loopMode:
+        type: boolean
+        description: Loop mode enables
+        readOnly: true
+      timeRemaining:
+        type: integer
+        description: Total time remaining for the replay file after last event
+      timeToNextEvent:
+        type: integer
+        description: Time remaining until the next event for the replay file after last event
+    description: Replay status object
+    example: {}
   ReplayFileList:
     type: object
     properties:

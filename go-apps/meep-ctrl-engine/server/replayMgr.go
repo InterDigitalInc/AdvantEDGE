@@ -33,14 +33,19 @@ import (
 const defaultLoopInterval = 1000 //in ms
 
 type ReplayMgr struct {
-	name              string
-	currentFileName   string
-	isStarted         bool
-	ticker            *time.Ticker
-	currentEventIndex int
-	eventIndexMax     int
-	replayEventsList  ceModel.Replay
-	loop              bool
+	name             string
+	currentFileName  string
+	isStarted        bool
+	ticker           *time.Ticker
+	nextEventIndex   int
+	eventIndexMax    int
+	replayEventsList ceModel.Replay
+	loop             bool
+	timeToNextEvent  int
+	timeRemaining    int
+	timeStarted      time.Time
+	loopStarted      time.Time
+	ignoreInitEvent  bool
 }
 
 // NewReplayMgr - Create, Initialize and connect the replay manager
@@ -59,9 +64,9 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 	return r, nil
 }
 
-func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
+func (r *ReplayMgr) PlayEventByIndex() error {
 
-	index := r.currentEventIndex
+	index := r.nextEventIndex
 	nextIndex := 0
 	replayEvent := r.replayEventsList.Events[index]
 
@@ -71,7 +76,11 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		return err
 	}
 
-	if replayEvent.Event.Type_ == "OTHER" && ignoreOtherEvents {
+	if index == 0 {
+		r.loopStarted = time.Now()
+	}
+
+	if replayEvent.Event.Type_ == "OTHER" && r.ignoreInitEvent {
 		index = index + 1
 		replayEvent = r.replayEventsList.Events[index]
 
@@ -112,14 +121,17 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 		} else {
 			diff = nextReplayEvent.Time - replayEvent.Time
 		}
-		r.currentEventIndex = nextIndex
+		r.nextEventIndex = nextIndex
 		tickerExpiry := time.Duration(diff) * time.Millisecond
 		log.Debug("next replay event (index ", nextReplayEvent.Index, ") in ", tickerExpiry)
 		r.ticker = time.NewTicker(tickerExpiry)
+
+		r.timeToNextEvent, r.timeRemaining = r.GetTimesRemaining()
+
 		go func() {
 			for range r.ticker.C {
 				r.ticker.Stop()
-				_ = r.PlayEventByIndex(ignoreOtherEvents)
+				_ = r.PlayEventByIndex()
 			}
 		}()
 	} else {
@@ -129,17 +141,45 @@ func (r *ReplayMgr) PlayEventByIndex(ignoreOtherEvents bool) error {
 	return nil
 }
 
+// GetTimesRemaining - returns time left to execute next event and the rest of the replay file
+func (r *ReplayMgr) GetTimesRemaining() (int, int) {
+
+	var elapsedDuration time.Duration
+	if r.loop {
+		elapsedDuration = time.Since(r.loopStarted)
+	} else {
+		elapsedDuration = time.Since(r.timeStarted)
+	}
+	elapsed := int(elapsedDuration / time.Millisecond)
+
+	if r.ignoreInitEvent {
+		elapsed += int(r.replayEventsList.Events[1].Time)
+	}
+
+	nextEventTimeRemaining := int(r.replayEventsList.Events[r.nextEventIndex].Time) - elapsed
+	totalTimeRemaining := int(r.replayEventsList.Events[r.eventIndexMax].Time) - elapsed
+	if nextEventTimeRemaining < 0 {
+		nextEventTimeRemaining = 0
+	}
+	if totalTimeRemaining < 0 {
+		totalTimeRemaining = 0
+	}
+	return nextEventTimeRemaining, totalTimeRemaining
+}
+
 // Start - starts replay execution
 func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreOtherEvents bool) error {
 	if !r.isStarted {
+		r.timeStarted = time.Now()
 		r.isStarted = true
-		r.currentEventIndex = 0
+		r.nextEventIndex = 0
 		r.replayEventsList = replay
 		r.eventIndexMax = len(replay.Events) - 1
 		r.loop = loop
 		r.currentFileName = fileName
+		r.ignoreInitEvent = ignoreOtherEvents
 		//executing the events
-		_ = r.PlayEventByIndex(ignoreOtherEvents)
+		_ = r.PlayEventByIndex()
 	} else {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
 	}

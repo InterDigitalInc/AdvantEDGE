@@ -1199,6 +1199,59 @@ func ceGetReplayFileList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, replayFileList)
 }
 
+func ceGetReplayStatus(w http.ResponseWriter, r *http.Request) {
+
+	if !replayMgr.isStarted {
+		err := errors.New("No replay file running")
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	var status ceModel.ReplayStatus
+
+	status.ReplayFileRunning = replayMgr.currentFileName
+	status.MaxIndex = int32(replayMgr.eventIndexMax)
+
+	nextIndex := replayMgr.nextEventIndex
+	maxIndex := replayMgr.eventIndexMax
+	lastIndexPlayed := 0
+	//if next index is 0, it means it will loop so we do not remove one to find the current, the current is the last event
+	if nextIndex != 0 {
+		if nextIndex == -1 {
+			lastIndexPlayed = maxIndex
+		} else {
+			lastIndexPlayed = nextIndex - 1
+		}
+	} else {
+		if replayMgr.loop {
+			lastIndexPlayed = maxIndex
+		} else {
+			lastIndexPlayed = nextIndex
+		}
+	}
+
+	status.Index = int32(lastIndexPlayed)
+	status.MaxIndex = int32(maxIndex)
+
+	status.LoopMode = replayMgr.loop
+	timeToNextEvent, timeRemaining := replayMgr.GetTimesRemaining()
+	status.TimeToNextEvent = int32(timeToNextEvent)
+	status.TimeRemaining = int32(timeRemaining)
+
+	jsonResponse, err := json.Marshal(status)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
 func ceLoopReplay(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	replayFileName := vars["name"]

@@ -369,6 +369,7 @@ class ExecPageContainer extends Component {
                     eventCfgMode={this.props.eventCfgMode}
                     onCloseEventCfg={() => this.onCloseEventCfg()}
                     onSaveReplay={() => this.onSaveReplay()}
+                    api={this.props.replayApi}
                   />
 
                   <DashboardContainer

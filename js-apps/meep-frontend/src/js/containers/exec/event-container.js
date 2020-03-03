@@ -19,6 +19,7 @@ import React, { Component } from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
+import { DataTable, DataTableHeadCell, DataTableCell, DataTableContent, DataTableBody, DataTableRow } from '@rmwc/data-table';
 
 import {
   uiExecChangeEventCreationMode,
@@ -58,10 +59,59 @@ const styles = {
     color: 'white',
     marginRight: 5,
     marginLeft: 10
+  },
+  statusTable: {
+    border: 34,
+    color: 'black'
   }
 };
 
-const ConfigurationView = props => {
+const StatusTable = props => {
+  if (props.name !== '') {
+    return (
+      <DataTable style={styles.statusTable}>
+        <DataTableContent>
+          <DataTableBody>
+            <DataTableRow>
+              <DataTableHeadCell>Replay Status</DataTableHeadCell>
+              <DataTableCell>File name:</DataTableCell>
+              <DataTableCell>{props.name}</DataTableCell>
+            </DataTableRow>
+            <DataTableRow activated>
+              <DataTableHeadCell></DataTableHeadCell>
+              <DataTableCell>Event:</DataTableCell>
+              <DataTableCell>{props.index}/{props.maxIndex}</DataTableCell>
+            </DataTableRow>
+            <DataTableRow activated>
+              <DataTableHeadCell></DataTableHeadCell>
+              <DataTableCell>TimesRemaining (ms):</DataTableCell>
+              <DataTableCell>{props.timeToNextEvent}/{props.timeRemaining}</DataTableCell>
+            </DataTableRow>
+          </DataTableBody>
+        </DataTableContent>
+      </DataTable>
+    );
+  } else {
+    return (
+      <></>
+    );
+  }
+};
+
+const EventView = props => {
+
+  let statusTable = null;
+
+  statusTable = (
+    <StatusTable
+      name={props.replayFile}
+      index={props.replayIndex}
+      maxIndex ={props.replayMaxIndex}
+      timeToNextEvent={props.replayTimeToNextEvent}
+      timeRemaining={props.replayTimeRemaining}
+    />
+  );
+
   return (
     <>
       <Grid style={{ marginBottom: 10 }}>
@@ -91,6 +141,9 @@ const ConfigurationView = props => {
             SAVE EVENTS AS ...
           </Button>
         </GridCell>
+        <GridCell span={3}>
+          {statusTable}
+        </GridCell>
       </Grid>
     </>
   );
@@ -101,15 +154,21 @@ const EventConfiguration = props => {
     return null;
   }
 
-  let configurationView = null;
+  let eventView = null;
 
-  configurationView = (
-    <ConfigurationView
+  eventView = (
+    <EventView
       onCreateEvent={props.onCreateEvent}
       onReplayEvent={props.onReplayEvent}
       onSaveReplay={props.onSaveReplay}
+      replayFile={props.replayFile}
+      replayIndex={props.replayIndex}
+      replayMaxIndex={props.replayMaxIndex}
+      replayTimeToNextEvent={props.replayTimeToNextEvent}
+      replayTimeRemaining={props.replayTimeRemaining}
     />
   );
+
   return (
     <Elevation
       z={2}
@@ -134,7 +193,7 @@ const EventConfiguration = props => {
           </Button>
         </GridCell>
       </Grid>
-      {configurationView}
+      {eventView}
     </Elevation>
   );
 };
@@ -143,7 +202,12 @@ class EventContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sourceNodeId: ''
+      replayFileName: null,
+      eventIndex: null,
+      maxIndex: null,
+      loopMode: null,
+      timeToNextEvent: null,
+      timeRemaining: null
     };
   }
 
@@ -169,7 +233,43 @@ class EventContainer extends Component {
     this.props.changeEventCreationMode(false);
   }
 
+  /**
+   * Callback function to receive the result of the getReplayStatus operation.
+   * @callback module:api/EventReplayApi~getReplayStatusCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/Replay} data The data returned by the service call.
+   */
+  getReplayStatusCb(error, data) {
+
+    if (error !== null) {
+      // TODO: consider showing an alert/toast
+      this.state.replayFileName = '';
+      this.state.eventIndex = '';
+      this.state.maxIndex = '';
+      this.state.loopMode = '';
+      this.state.timeToNextEvent = '';
+      this.state.timeRemaining = '';
+
+      return;
+    }
+    this.state.replayFileName = data.replayFileRunning;
+    this.state.eventIndex = data.index;
+    this.state.maxIndex = data.maxIndex;
+    this.state.loopMode = data.loopMode;
+    this.state.timeToNextEvent = data.timeToNextEvent;
+    this.state.timeRemaining = data.timeRemaining;
+
+  }
+
+  updateReplayStatus() {
+    this.props.api.getReplayStatus((error, data, response) => {
+      this.getReplayStatusCb(error, data, response);
+    });
+  }
+
   render() {
+
+    this.updateReplayStatus();
 
     return (
       <>
@@ -181,6 +281,11 @@ class EventContainer extends Component {
           onSaveReplay={this.props.onSaveReplay}
           changeReplayLoop={checked => this.changeReplayLoop(checked)}
           replayLoop={this.props.replayLoop}
+          replayFile={this.state.replayFileName}
+          replayIndex={this.state.eventIndex}
+          replayMaxIndex={this.state.maxIndex}
+          replayTimeToNextEvent={this.state.timeToNextEvent}
+          replayTimeRemaining={this.state.timeRemaining}
         />
       </>
     );

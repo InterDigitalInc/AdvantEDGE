@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**deleteReplayFileList**](EventReplayApi.md#deleteReplayFileList) | **DELETE** /replay | Delete all replay files
 [**getReplayFile**](EventReplayApi.md#getReplayFile) | **GET** /replay/{name} | Get a specific replay file
 [**getReplayFileList**](EventReplayApi.md#getReplayFileList) | **GET** /replay | Get all replay file names
+[**getReplayStatus**](EventReplayApi.md#getReplayStatus) | **GET** /replaystatus | Get status of replay manager
 [**loopReplay**](EventReplayApi.md#loopReplay) | **POST** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
 [**playReplayFile**](EventReplayApi.md#playReplayFile) | **POST** /replay/{name}/play | Execute a replay file present in the platform store
 [**stopReplayFile**](EventReplayApi.md#stopReplayFile) | **POST** /replay/{name}/stop | Stop execution of a replay file
@@ -275,6 +276,46 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**ReplayFileList**](ReplayFileList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="getReplayStatus"></a>
+# **getReplayStatus**
+> ReplayStatus getReplayStatus()
+
+Get status of replay manager
+
+Returns status information on the replay manager
+
+### Example
+```javascript
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
+
+var apiInstance = new AdvantEdgePlatformControllerRestApi.EventReplayApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.getReplayStatus(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**ReplayStatus**](ReplayStatus.md)
 
 ### Authorization
 

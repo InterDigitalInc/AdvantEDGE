@@ -99,6 +99,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"GetReplayStatus",
+		strings.ToUpper("Get"),
+		"/v1/replaystatus",
+		GetReplayStatus,
+	},
+
+	Route{
 		"GetReplayFile",
 		strings.ToUpper("Get"),
 		"/v1/replay/{name}",
