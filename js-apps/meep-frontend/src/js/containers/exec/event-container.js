@@ -129,17 +129,11 @@ class EventContainer extends Component {
               </Button>
             </GridCell>
 
-            <GridCell span={6}>
-              {this.props.replayStatus ? (
-                <>
-                {this.props.replayStatus}
-                </>
-              ) : (
-                <span>
-            Status Not Found              
-                </span>
-              )}
-            </GridCell>
+            {this.props.replayStatus &&
+              <GridCell span={6}>
+                {this.props.replayStatus.replayFileRunning}
+              </GridCell>
+            }
           </Grid>
         </Elevation>
       </>
