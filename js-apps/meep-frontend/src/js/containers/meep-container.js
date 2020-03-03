@@ -80,8 +80,8 @@ import {
 } from '../state/cfg';
 
 // MEEP Controller REST API JS client
-// var basepath = 'http://' + location.host + location.pathname + 'v1';
-const basepath = 'http://10.3.16.105:30000/v1';
+var basepath = 'http://' + location.host + location.pathname + 'v1';
+// const basepath = 'http://10.3.16.105:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
