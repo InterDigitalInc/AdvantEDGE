@@ -23,9 +23,10 @@ class IDSaveReplayDialog extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      err: null,
       replayName: null,
-      description: null
+      replayErr: null,
+      description: null,
+      descriptionErr: null
     };
   }
 
@@ -33,8 +34,8 @@ class IDSaveReplayDialog extends Component {
     var err = null;
 
     if (name) {
-      if (name.length > 20) {
-        err = 'Maximum 20 characters';
+      if (name.length > 30) {
+        err = 'Maximum 30 characters';
       } else if (!name.match(/^(([a-z0-9][-a-z0-9.]*)?[a-z0-9])+$/)) {
         err = 'Lowercase alphanumeric or \'-\'';
       }
@@ -43,7 +44,7 @@ class IDSaveReplayDialog extends Component {
     }
     this.setState({
       replayName: name,
-      err: err
+      replayErr: err
     });
   }
 
@@ -51,13 +52,13 @@ class IDSaveReplayDialog extends Component {
     var err = null;
 
     if (desc) {
-      if (desc.length > 30) {
-        err = 'Maximum 30 characters';
+      if (desc.length > 100) {
+        err = 'Maximum 100 characters';
       }
     }
     this.setState({
       description: desc,
-      err: err
+      descriptionErr: err
     });
   }
 
@@ -74,7 +75,7 @@ class IDSaveReplayDialog extends Component {
         onSubmit={() => this.saveReplay()}
         okDisabled={
           (!this.state.replayName && this.props.replayNameRequired) ||
-          this.state.err
+          this.state.replayErr || this.state.descriptionErr
         }
         cydata={MEEP_DLG_SAVE_REPLAY}
       >
@@ -89,26 +90,29 @@ class IDSaveReplayDialog extends Component {
           style={{ width: '100%' }}
           label={'Replay Name'}
           invalid={
-            this.state.err ||
-            (!this.state.replayName && this.props.replayNameRequired)
+            this.state.replayErr
           }
           onChange={e => this.changeReplayName(e.target.value)}
           value={this.replayName}
         />
+        <TextFieldHelperText validationMsg={true}>
+          <span>{this.state.replayErr}</span>
+        </TextFieldHelperText>
+
         <TextField
           outlined
           style={{ width: '100%' }}
           label={'Replay Description'}
           invalid={
-            this.state.err 
+            this.state.descriptionErr 
           }
           onChange={e => this.changeDescription(e.target.value)}
           value={this.description}
         />
-
         <TextFieldHelperText validationMsg={true}>
-          <span>{this.state.err}</span>
+          <span>{this.state.descriptionErr}</span>
         </TextFieldHelperText>
+
       </IDDialog>
     );
   }

@@ -39,7 +39,8 @@ const initialState = {
   dashboardView2: VIEW_NAME_NONE,
   execReplayFileSelected: '',
   eventReplayMode: false,
-  eventReplayLoop: false
+  eventReplayLoop: false,
+  replayStatus: null
 };
 
 // Change the current page
@@ -172,6 +173,14 @@ export function uiExecChangeDashboardView2(name) {
   };
 }
 
+const UI_EXEC_CHANGE_REPLAY_STATUS = 'UI_EXEC_CHANGE_REPLAY_STATUS';
+export function uiExecChangeReplayStatus(status) {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_STATUS,
+    payload: status
+  };
+}
+
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
   case CHANGE_CURRENT_PAGE:
@@ -206,6 +215,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
     return updateObject(state, { dashboardView2: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_STATUS:
+    return updateObject(state, { replayStatus: action.payload });
   default:
     return state;
   }

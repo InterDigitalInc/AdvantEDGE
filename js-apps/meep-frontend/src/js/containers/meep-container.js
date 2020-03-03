@@ -54,6 +54,7 @@ import {
   uiChangeCurrentPage,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
+  uiExecChangeReplayStatus,
   uiToggleMainDrawer
 } from '../state/ui';
 
@@ -86,11 +87,15 @@ meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   ''
 );
 
+var counter = 0;
+
 class MeepContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {};
     this.refreshIntervalTimer = null;
+    this.podsPhasesIntervalTimer = null;
+    this.replayStatusIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
     this.meepReplayApi = new meepCtrlRestApiClient.EventReplayApi();
@@ -101,15 +106,22 @@ class MeepContainer extends Component {
     this.props.changeEventCreationMode(false);
     this.props.changeEventReplayMode(false);
     this.refreshScenario();
+    this.startTimers();
+    this.monitorTabFocus();
+  }
+
+  startTimers() {
     if (this.props.automaticRefresh) {
       this.startAutomaticRefresh();
     }
-    this.startRefreshCycle();
+    this.startPodsPhasesPeriodicCheck();
+    this.startReplayStatusPeriodicCheck();
   }
 
-  startRefreshCycle() {
-    this.startPodsPhasesPeriodicCheck();
-    this.monitorTabFocus();
+  stopTimers() {
+    this.stopReplayStatusPeriodicCheck();
+    this.stopCorePodsPhasesPeriodicCheck();
+    this.stopAutomaticRefresh();
   }
 
   startPodsPhasesPeriodicCheck() {
@@ -121,6 +133,17 @@ class MeepContainer extends Component {
 
   stopCorePodsPhasesPeriodicCheck() {
     clearInterval(this.podsPhasesIntervalTimer);
+  }
+
+  startReplayStatusPeriodicCheck() {
+    this.replayStatusIntervalTimer = setInterval(
+      () => this.checkReplayStatus(),
+      1000
+    );
+  }
+
+  stopReplayStatusPeriodicCheck() {
+    clearInterval(this.replayStatusIntervalTimer);
   }
 
   monitorTabFocus() {
@@ -139,14 +162,9 @@ class MeepContainer extends Component {
 
     const handleVisibilityChange = () => {
       if (document[hidden]) {
-        this.stopCorePodsPhasesPeriodicCheck();
-        this.stopAutomaticRefresh();
+        this.stopTimers();
       } else {
-        this.startPodsPhasesPeriodicCheck();
-
-        if (this.props.automaticRefresh) {
-          this.startAutomaticRefresh();
-        }
+        this.startTimers();
       }
     };
 
@@ -199,6 +217,16 @@ class MeepContainer extends Component {
       .catch(() => {
         this.props.changeServiceMaps([]);
       });
+  }
+
+  checkReplayStatus() {
+    if (this.props.eventCfgMode || this.props.eventReplayMode) {
+      counter++;
+      var status = {
+        status: 'Latest Status: ' + counter
+      };
+      this.props.changeReplayStatus(status);
+    }
   }
 
   setMainContent(targetId) {
@@ -484,6 +512,8 @@ const mapStateToProps = state => {
     mainDrawerOpen: state.ui.mainDrawerOpen,
     dashboardView1: state.ui.dashboardView1,
     dashboardView2: state.ui.dashboardView2,
+    eventReplayMode: state.ui.eventReplayMode,
+    eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
     execVisData: execVisFilteredData(state)
@@ -493,15 +523,13 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
-    changeEventCreationMode: mode =>
-      dispatch(uiExecChangeEventCreationMode(mode)),
-    changeEventReplayMode: mode =>
-      dispatch(uiExecChangeEventReplayMode(mode)),
+    changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
+    changeReplayStatus: status => dispatch(uiExecChangeReplayStatus(status)),
     cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
     execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
     execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),
-    changeScenarioPodsPhases: phases =>
-      dispatch(execChangeScenarioPodsPhases(phases)),
+    changeScenarioPodsPhases: phases => dispatch(execChangeScenarioPodsPhases(phases)),
     changeCorePodsPhases: phases => dispatch(execChangeCorePodsPhases(phases)),
     changeServiceMaps: maps => dispatch(execChangeServiceMaps(maps)),
     execChangeVisData: data => dispatch(execChangeVisData(data)),

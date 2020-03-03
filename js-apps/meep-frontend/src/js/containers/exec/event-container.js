@@ -76,16 +76,7 @@ const EventConfiguration = props => {
   if (!props.eventCfgMode) {
     return null;
   }
-
-  let configurationView = null;
-
-  configurationView = (
-    <ConfigurationView
-      onCreateEvent={props.onCreateEvent}
-      onReplayEvent={props.onReplayEvent}
-      onSaveReplay={props.onSaveReplay}
-    />
-  );
+  
   return (
     <Elevation
       z={2}
@@ -112,7 +103,15 @@ const EventConfiguration = props => {
           </div>
         </GridCell>
       </Grid>
-      {configurationView}
+
+      <ConfigurationView
+        onCreateEvent={props.onCreateEvent}
+        onReplayEvent={props.onReplayEvent}
+        onSaveReplay={props.onSaveReplay}
+      />
+
+      <div>{props.replayStatus ? props.replayStatus.status : 'NONE'}</div>
+
     </Elevation>
   );
 };
@@ -159,6 +158,7 @@ class EventContainer extends Component {
           onSaveReplay={this.props.onSaveReplay}
           changeReplayLoop={checked => this.changeReplayLoop(checked)}
           replayLoop={this.props.replayLoop}
+          replayStatus={this.props.replayStatus}
         />
       </>
     );
@@ -168,7 +168,8 @@ class EventContainer extends Component {
 const mapStateToProps = state => {
   return {
     eventCreationMode: state.exec.eventCreationMode,
-    eventReplayMode: state.exec.eventReplayMode
+    eventReplayMode: state.exec.eventReplayMode,
+    replayStatus: state.ui.replayStatus
   };
 };
 

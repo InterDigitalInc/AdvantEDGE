@@ -198,6 +198,7 @@ class EventReplayPane extends Component {
             </GridCell>
           </GridInner>
         </Grid>
+        <div>{this.props.replayStatus ? this.props.replayStatus.status : 'NONE'}</div>
       </div>
 
     );
@@ -221,7 +222,8 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    page: state.ui.page
+    page: state.ui.page,
+    replayStatus: state.ui.replayStatus
   };
 };
 
