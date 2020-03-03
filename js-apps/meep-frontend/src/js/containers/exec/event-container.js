@@ -37,85 +37,6 @@ const styles = {
   }
 };
 
-const ConfigurationView = props => {
-  return (
-    <>
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span={6}>
-          <Button
-            outlined
-            style={styles.button}
-            onClick={props.onCreateEvent}
-            data-cy={EXEC_BTN_MANUAL_REPLAY}
-          >
-            MANUAL
-          </Button>
-          <Button
-            outlined
-            style={styles.button}
-            onClick={props.onReplayEvent}
-            data-cy={EXEC_BTN_AUTO_REPLAY}
-          >
-            AUTO-REPLAY
-          </Button>
-          <Button
-            outlined
-            style={styles.button}
-            onClick={props.onSaveReplay}
-            data-cy={EXEC_BTN_SAVE_REPLAY}
-          >
-            SAVE EVENTS AS ...
-          </Button>
-        </GridCell>
-      </Grid>
-    </>
-  );
-};
-
-const EventConfiguration = props => {
-  if (!props.eventCfgMode) {
-    return null;
-  }
-  
-  return (
-    <Elevation
-      z={2}
-      className="component-style"
-      style={{ padding: 10, marginBottom: 10 }}
-    >
-      <Grid>
-        <GridCell span={6}>
-          <div style={{ marginBottom: 10 }}>
-            <span className="mdc-typography--headline6">
-              Event
-            </span>
-          </div>
-        </GridCell>
-        <GridCell span={6}>
-          <div align={'right'}>
-            <Button
-              outlined
-              style={styles.button}
-              onClick={() => props.onCloseEventCfg()}
-            >
-            Close
-            </Button>
-          </div>
-        </GridCell>
-      </Grid>
-
-      <ConfigurationView
-        onCreateEvent={props.onCreateEvent}
-        onReplayEvent={props.onReplayEvent}
-        onSaveReplay={props.onSaveReplay}
-      />
-
-      <div>{props.replayStatus ? props.replayStatus.status : 'NONE'}</div>
-
-    </Elevation>
-  );
-};
-
 class EventContainer extends Component {
   constructor(props) {
     super(props);
@@ -128,10 +49,6 @@ class EventContainer extends Component {
 
   componentWillUnmount() {
     clearInterval(this.dataTimer);
-  }
-
-  changeReplayLoop(checked) {
-    this.props.onReplayLoopChanged(checked);
   }
 
   // CREATE EVENT PANE
@@ -148,18 +65,70 @@ class EventContainer extends Component {
 
   render() {
 
+    if (!this.props.eventCfgMode) {
+      return null;
+    }
+
     return (
       <>
-        <EventConfiguration
-          eventCfgMode={this.props.eventCfgMode}
-          onCloseEventCfg={this.props.onCloseEventCfg}
-          onCreateEvent={() => this.onCreateEvent()}
-          onReplayEvent={() => this.onReplayEvent()}
-          onSaveReplay={this.props.onSaveReplay}
-          changeReplayLoop={checked => this.changeReplayLoop(checked)}
-          replayLoop={this.props.replayLoop}
-          replayStatus={this.props.replayStatus}
-        />
+        <Elevation
+          z={2}
+          className="component-style"
+          style={{ padding: 10, marginBottom: 10 }}
+        >
+          <Grid>
+            <GridCell span={6}>
+              <div style={{ marginBottom: 10 }}>
+                <span className="mdc-typography--headline6">
+                  Event
+                </span>
+              </div>
+            </GridCell>
+            <GridCell span={6}>
+              <div align={'right'}>
+                <Button
+                  outlined
+                  style={styles.button}
+                  onClick={this.props.onCloseEventCfg}
+                >
+                  Close
+                </Button>
+              </div>
+            </GridCell>
+          </Grid>
+
+          <Grid style={{ marginBottom: 10 }}>
+            <GridCell span={6}>
+              <Button
+                outlined
+                style={styles.button}
+                onClick={() => this.onCreateEvent()}
+                data-cy={EXEC_BTN_MANUAL_REPLAY}
+              >
+                MANUAL
+              </Button>
+              <Button
+                outlined
+                style={styles.button}
+                onClick={() => this.onReplayEvent()}
+                data-cy={EXEC_BTN_AUTO_REPLAY}
+              >
+                AUTO-REPLAY
+              </Button>
+              <Button
+                outlined
+                style={styles.button}
+                onClick={this.props.onSaveReplay}
+                data-cy={EXEC_BTN_SAVE_REPLAY}
+              >
+                SAVE EVENTS AS ...
+              </Button>
+            </GridCell>
+          </Grid>
+
+          <div>{this.props.replayStatus ? this.props.replayStatus.status : 'NONE'}</div>
+          
+        </Elevation>
       </>
     );
   }

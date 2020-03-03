@@ -200,7 +200,6 @@ class EventReplayPane extends Component {
         </Grid>
         <div>{this.props.replayStatus ? this.props.replayStatus.status : 'NONE'}</div>
       </div>
-
     );
   }
 }
