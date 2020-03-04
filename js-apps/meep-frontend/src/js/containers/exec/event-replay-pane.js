@@ -118,6 +118,7 @@ class EventReplayPane extends Component {
                 this.getDescription(event.target.value);
               }}
               value={this.props.replayFileSelected}
+              disabled={this.replayRunning()}
               data-cy={EXEC_EVT_REPLAY_FILES}
             />
           </GridCell>
@@ -131,6 +132,7 @@ class EventReplayPane extends Component {
             <Checkbox
               checked={this.props.replayLoop}
               onChange={e => this.props.changeReplayLoop(e.target.checked)}
+              disabled={this.replayRunning()}
             >
               Loop
             </Checkbox>

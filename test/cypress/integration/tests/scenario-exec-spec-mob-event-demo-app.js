@@ -245,7 +245,7 @@ describe('Scenario Execution', function () {
 
     cy.viewport(1920, 1080);
     cy.visit(meepUrl);
-
+    cy.wait(1000);
   }
 
   // Deploy scenario with provided name
@@ -290,6 +290,7 @@ describe('Scenario Execution', function () {
   function testCancelEvent() {
     cy.log('Cancel event creation');
     click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_MANUAL_REPLAY);
     verifyForm(meep.EXEC_EVT_TYPE, true);
     verifyEnabled(meep.MEEP_BTN_CANCEL, true);
     // verifyEnabled(meep.MEEP_BTN_APPLY, false)
@@ -313,6 +314,7 @@ describe('Scenario Execution', function () {
   function createMobilityEvent(elem, dest) {
     cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.MOBILITY_EVENT);
     select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
@@ -328,6 +330,7 @@ describe('Scenario Execution', function () {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.NETWORK_CHARACTERISTICS_EVENT);
     select(meep.EXEC_EVT_NC_TYPE, elemType);
     select(meep.EXEC_EVT_NC_NAME, name);
