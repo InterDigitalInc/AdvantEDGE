@@ -109,10 +109,6 @@ cd ~/AdvantEDGE/examples/demo1/
 ./dockerize.sh
 ```
 
-#### Configure demo specific dashboards
-
-Follow the procedure described in [Scenario Monitoring](https://github.com/InterDigitalInc/AdvantEDGE/wiki/scenario-monitoring#configure-monitoring). The demo specific dashboard that is loaded can also be found at `~/AdvantEDGE/examples/demo1/demo1-dashboards.json`
-
 #### Start iperf proxy
 
 Do it everytime you start using the demo when the iperf-proxy is not running
