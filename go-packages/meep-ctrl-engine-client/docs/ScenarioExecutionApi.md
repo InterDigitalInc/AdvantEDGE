@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 
 # **ActivateScenario**
-> ActivateScenario(ctx, name, activationInfo)
+> ActivateScenario(ctx, name, optional)
 Deploy a scenario
 
 Deploy a scenario present in the platform scenario store
@@ -23,7 +23,15 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
   **name** | **string**| Scenario name | 
-  **activationInfo** | [**ActivationInfo**](ActivationInfo.md)| Activation information | 
+ **optional** | ***ActivateScenarioOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a ActivateScenarioOpts struct
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+
+ **activationInfo** | [**optional.Interface of ActivationInfo**](ActivationInfo.md)| Activation information | 
 
 ### Return type
 

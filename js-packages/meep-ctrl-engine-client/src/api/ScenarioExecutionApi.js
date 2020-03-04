@@ -74,20 +74,17 @@
      * Deploy a scenario
      * Deploy a scenario present in the platform scenario store
      * @param {String} name Scenario name
-     * @param {module:model/ActivationInfo} activationInfo Activation information
+     * @param {Object} opts Optional parameters
+     * @param {module:model/ActivationInfo} opts.activationInfo Activation information
      * @param {module:api/ScenarioExecutionApi~activateScenarioCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.activateScenario = function(name, activationInfo, callback) {
-      var postBody = activationInfo;
+    this.activateScenario = function(name, opts, callback) {
+      opts = opts || {};
+      var postBody = opts['activationInfo'];
 
       // verify the required parameter 'name' is set
       if (name === undefined || name === null) {
         throw new Error("Missing the required parameter 'name' when calling activateScenario");
-      }
-
-      // verify the required parameter 'activationInfo' is set
-      if (activationInfo === undefined || activationInfo === null) {
-        throw new Error("Missing the required parameter 'activationInfo' when calling activateScenario");
       }
 
 

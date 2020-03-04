@@ -125,6 +125,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**deleteReplayFileList**](docs/EventReplayApi.md#deleteReplayFileList) | **DELETE** /replay | Delete all replay files
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**getReplayFile**](docs/EventReplayApi.md#getReplayFile) | **GET** /replay/{name} | Get a specific replay file
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**getReplayFileList**](docs/EventReplayApi.md#getReplayFileList) | **GET** /replay | Get all replay file names
+*AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**getReplayStatus**](docs/EventReplayApi.md#getReplayStatus) | **GET** /replaystatus | Get status of replay manager
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**loopReplay**](docs/EventReplayApi.md#loopReplay) | **POST** /replay/{name}/loop | Loop-Execute a replay file present in the platform store
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**playReplayFile**](docs/EventReplayApi.md#playReplayFile) | **POST** /replay/{name}/play | Execute a replay file present in the platform store
 *AdvantEdgePlatformControllerRestApi.EventReplayApi* | [**stopReplayFile**](docs/EventReplayApi.md#stopReplayFile) | **POST** /replay/{name}/stop | Stop execution of a replay file
@@ -167,6 +168,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgePlatformControllerRestApi.ReplayEvent](docs/ReplayEvent.md)
  - [AdvantEdgePlatformControllerRestApi.ReplayFileList](docs/ReplayFileList.md)
  - [AdvantEdgePlatformControllerRestApi.ReplayInfo](docs/ReplayInfo.md)
+ - [AdvantEdgePlatformControllerRestApi.ReplayStatus](docs/ReplayStatus.md)
  - [AdvantEdgePlatformControllerRestApi.Scenario](docs/Scenario.md)
  - [AdvantEdgePlatformControllerRestApi.ScenarioConfig](docs/ScenarioConfig.md)
  - [AdvantEdgePlatformControllerRestApi.ScenarioList](docs/ScenarioList.md)

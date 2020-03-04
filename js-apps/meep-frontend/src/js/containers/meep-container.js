@@ -33,6 +33,7 @@ import MonitorPageContainer from './monitor/monitor-page-container';
 import {
   TYPE_CFG,
   TYPE_EXEC,
+  EXEC_STATE_IDLE,
   EXEC_STATE_DEPLOYED,
   NO_SCENARIO_NAME,
   PAGE_CONFIGURE,
@@ -53,6 +54,7 @@ import {
 import {
   uiChangeCurrentPage,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventReplayMode,
   uiToggleMainDrawer
 } from '../state/ui';
 
@@ -67,7 +69,8 @@ import {
   execChangeOkToTerminate,
   corePodsRunning,
   corePodsErrors,
-  execVisFilteredData
+  execVisFilteredData,
+  execChangeReplayStatus
 } from '../state/exec';
 
 import {
@@ -90,23 +93,32 @@ class MeepContainer extends Component {
     super(props);
     this.state = {};
     this.refreshIntervalTimer = null;
+    this.podsPhasesIntervalTimer = null;
+    this.replayStatusIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
+    this.meepReplayApi = new meepCtrlRestApiClient.EventReplayApi();
   }
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
-    this.props.changeEventCreationMode(false);
     this.refreshScenario();
+    this.startTimers();
+    this.monitorTabFocus();
+  }
+
+  startTimers() {
     if (this.props.automaticRefresh) {
       this.startAutomaticRefresh();
     }
-    this.startRefreshCycle();
+    this.startPodsPhasesPeriodicCheck();
+    this.startReplayStatusPeriodicCheck();
   }
 
-  startRefreshCycle() {
-    this.startPodsPhasesPeriodicCheck();
-    this.monitorTabFocus();
+  stopTimers() {
+    this.stopReplayStatusPeriodicCheck();
+    this.stopCorePodsPhasesPeriodicCheck();
+    this.stopAutomaticRefresh();
   }
 
   startPodsPhasesPeriodicCheck() {
@@ -118,6 +130,17 @@ class MeepContainer extends Component {
 
   stopCorePodsPhasesPeriodicCheck() {
     clearInterval(this.podsPhasesIntervalTimer);
+  }
+
+  startReplayStatusPeriodicCheck() {
+    this.replayStatusIntervalTimer = setInterval(
+      () => this.checkReplayStatus(),
+      1000
+    );
+  }
+
+  stopReplayStatusPeriodicCheck() {
+    clearInterval(this.replayStatusIntervalTimer);
   }
 
   monitorTabFocus() {
@@ -136,14 +159,9 @@ class MeepContainer extends Component {
 
     const handleVisibilityChange = () => {
       if (document[hidden]) {
-        this.stopCorePodsPhasesPeriodicCheck();
-        this.stopAutomaticRefresh();
+        this.stopTimers();
       } else {
-        this.startPodsPhasesPeriodicCheck();
-
-        if (this.props.automaticRefresh) {
-          this.startAutomaticRefresh();
-        }
+        this.startTimers();
       }
     };
 
@@ -196,6 +214,28 @@ class MeepContainer extends Component {
       .catch(() => {
         this.props.changeServiceMaps([]);
       });
+  }
+
+  /**
+   * Callback function to receive the result of the getReplayStatus operation.
+   * @callback module:api/EventReplayApi~getReplayStatusCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/Replay} data The data returned by the service call.
+   */
+  getReplayStatusCb(error, data) {
+    this.props.changeReplayStatus((error === null) ? data : null);
+  }
+
+  checkReplayStatus() {
+    if (this.props.exec.state.scenario === EXEC_STATE_IDLE) {
+      return;
+    }
+
+    if (this.props.eventCfgMode || this.props.eventReplayMode) {
+      this.meepReplayApi.getReplayStatus((error, data, response) => {
+        this.getReplayStatusCb(error, data, response);
+      });
+    }
   }
 
   setMainContent(targetId) {
@@ -410,6 +450,7 @@ class MeepContainer extends Component {
             <ExecPageContainer
               style={{ width: '100%' }}
               api={this.meepExecApi}
+              replayApi={this.meepReplayApi}
               cfgApi={this.meepCfgApi}
               refreshScenario={() => {
                 this.refreshScenario();
@@ -480,6 +521,8 @@ const mapStateToProps = state => {
     mainDrawerOpen: state.ui.mainDrawerOpen,
     dashboardView1: state.ui.dashboardView1,
     dashboardView2: state.ui.dashboardView2,
+    eventReplayMode: state.ui.eventReplayMode,
+    eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
     execVisData: execVisFilteredData(state)
@@ -489,13 +532,13 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
-    changeEventCreationMode: mode =>
-      dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
+    changeReplayStatus: status => dispatch(execChangeReplayStatus(status)),
     cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
     execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
     execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),
-    changeScenarioPodsPhases: phases =>
-      dispatch(execChangeScenarioPodsPhases(phases)),
+    changeScenarioPodsPhases: phases => dispatch(execChangeScenarioPodsPhases(phases)),
     changeCorePodsPhases: phases => dispatch(execChangeCorePodsPhases(phases)),
     changeServiceMaps: maps => dispatch(execChangeServiceMaps(maps)),
     execChangeVisData: data => dispatch(execChangeVisData(data)),
