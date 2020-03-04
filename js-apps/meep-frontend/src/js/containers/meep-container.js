@@ -55,7 +55,6 @@ import {
   uiChangeCurrentPage,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
-  uiExecChangeReplayStatus,
   uiToggleMainDrawer
 } from '../state/ui';
 
@@ -70,7 +69,8 @@ import {
   execChangeOkToTerminate,
   corePodsRunning,
   corePodsErrors,
-  execVisFilteredData
+  execVisFilteredData,
+  execChangeReplayStatus
 } from '../state/exec';
 
 import {
@@ -102,8 +102,6 @@ class MeepContainer extends Component {
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
-    this.props.changeEventCreationMode(false);
-    this.props.changeEventReplayMode(false);
     this.refreshScenario();
     this.startTimers();
     this.monitorTabFocus();
@@ -536,7 +534,7 @@ const mapDispatchToProps = dispatch => {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
     changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
     changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
-    changeReplayStatus: status => dispatch(uiExecChangeReplayStatus(status)),
+    changeReplayStatus: status => dispatch(execChangeReplayStatus(status)),
     cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
     execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
     execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),

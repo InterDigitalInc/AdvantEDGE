@@ -30,13 +30,10 @@ import Iframe from 'react-iframe';
 import { getScenarioNodeChildren, isApp } from '../../util/scenario-utils';
 
 import {
-  execChangeSourceNodeSelected,
-  execChangeDestNodeSelected
-} from '../../state/exec';
-
-import {
   uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2
+  uiExecChangeDashboardView2,
+  uiExecChangeSourceNodeSelected,
+  uiExecChangeDestNodeSelected
 } from '../../state/ui';
 
 import {
@@ -89,9 +86,7 @@ const ConfigurationView = props => {
             onChange={e => {
               props.changeSourceNodeSelected(e.target.value);
             }}
-            value={
-              props.sourceNodeSelected ? props.sourceNodeSelected.data.id : ''
-            }
+            value={props.sourceNodeSelected}
           />
         </GridCell>
         <GridCell span={2}>
@@ -102,9 +97,7 @@ const ConfigurationView = props => {
             onChange={e => {
               props.changeDestNodeSelected(e.target.value);
             }}
-            value={
-              props.destNodeSelected ? props.destNodeSelected.data.id : ''
-            }
+            value={props.destNodeSelected}
           />
         </GridCell>
         <GridCell span={2}>
@@ -285,38 +278,19 @@ class DashboardContainer extends Component {
     this.keyForSvg++;
     const root = this.getRoot();
     const nodes = root.descendants();
-
     const apps = nodes.filter(isApp);
     const appIds = apps.map(a => a.data.id);
-    const appMap = apps.reduce((acc, app) => {
-      acc[app.data.id] = app;
-      return acc;
-    }, {});
+    appIds.unshift('None');
 
-    const selectedSource = this.props.sourceNodeSelected
-      ? this.props.sourceNodeSelected.data.id
-      : null;
-
-    const selectedDest = this.props.destNodeSelected
-      ? this.props.destNodeSelected.data.id
-      : null;
-
-    // For view 1
+    const selectedSource = appIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
+    const selectedDest = appIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None';
     const view1Name = this.props.view1Name;
-
-    // For view2
     const view2Name = this.props.view2Name;
-
-    // const height = 600;
-
-    let span1 = 12;
-    let span2 = 12;
-    // let width1 = 700;
-    // let width2 = 700;
-
     const view1Present = this.props.view1Name !== VIEW_NAME_NONE;
     const view2Present = this.props.view2Name !== VIEW_NAME_NONE;
 
+    let span1 = 12;
+    let span2 = 12;
     if (view1Present && view2Present) {
       span1 = 6;
       span2 = 6;
@@ -361,13 +335,13 @@ class DashboardContainer extends Component {
           nodeIds={appIds}
           view1Name={view1Name}
           view2Name={view2Name}
-          sourceNodeSelected={this.props.sourceNodeSelected}
-          destNodeSelected={this.props.destNodeSelected}
+          sourceNodeSelected={selectedSource}
+          destNodeSelected={selectedDest}
           changeSourceNodeSelected={nodeId =>
-            this.props.changeSourceNodeSelected(appMap[nodeId])
+            this.props.changeSourceNodeSelected(nodeId)
           }
           changeDestNodeSelected={nodeId =>
-            this.props.changeDestNodeSelected(appMap[nodeId])
+            this.props.changeDestNodeSelected(nodeId)
           }
           dashboardViewsList={dashboardViewsList}
           changeView1={viewName => this.props.changeView1(viewName)}
@@ -413,8 +387,8 @@ class DashboardContainer extends Component {
 const mapStateToProps = state => {
   return {
     displayedScenario: state.exec.displayedScenario,
-    sourceNodeSelected: state.exec.metrics.sourceNodeSelected,
-    destNodeSelected: state.exec.metrics.destNodeSelected,
+    sourceNodeSelected: state.ui.sourceNodeSelected,
+    destNodeSelected: state.ui.destNodeSelected,
     eventCreationMode: state.exec.eventCreationMode,
     scenarioState: state.exec.state.scenario,
     view1Name: state.ui.dashboardView1,
@@ -425,8 +399,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeSourceNodeSelected: src => dispatch(execChangeSourceNodeSelected(src)),
-    changeDestNodeSelected: dest => dispatch(execChangeDestNodeSelected(dest)),
+    changeSourceNodeSelected: src => dispatch(uiExecChangeSourceNodeSelected(src)),
+    changeDestNodeSelected: dest => dispatch(uiExecChangeDestNodeSelected(dest)),
     changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
     changeView2: name => dispatch(uiExecChangeDashboardView2(name))
   };

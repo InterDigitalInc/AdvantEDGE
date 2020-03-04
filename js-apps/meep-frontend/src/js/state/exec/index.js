@@ -26,7 +26,6 @@ import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
 import { execApiResultsReducer } from './api-results';
-import { metricsReducer } from './metrics-reducer';
 import {
   getElemFieldVal,
   FIELD_GROUP,
@@ -41,7 +40,6 @@ export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';
 export * from './api-results';
-export * from './metrics-reducer';
 
 const execTableElements = state => state.exec.table.entries;
 const execUEs = createSelector(
@@ -141,8 +139,7 @@ const execReducer = combineReducers({
   vis: execVisReducer,
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,
-  apiResults: execApiResultsReducer,
-  metrics: metricsReducer
+  apiResults: execApiResultsReducer
 });
 
 export default execReducer;

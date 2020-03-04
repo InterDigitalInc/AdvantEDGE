@@ -45,7 +45,7 @@ import {
   uiExecChangeEventCfgMode,
   uiExecChangeCurrentEvent,
   uiExecChangeShowApps,
-  uiExecChangeReplayLoop
+  uiExecChangeReplayFilesList
 } from '../../state/ui';
 
 import {
@@ -121,38 +121,6 @@ class ExecPageContainer extends Component {
     this.props.execChangeOkToTerminate(false);
   }
 
-  saveScenario(scenarioName) {
-    const scenario = this.props.scenario;
-
-    const scenarioCopy = JSON.parse(JSON.stringify(scenario));
-    scenarioCopy.name = scenarioName;
-
-    this.props.cfgApi.createScenario(
-      scenarioName,
-      scenarioCopy,
-      (error, data, response) => this.createScenarioCb(error, data, response)
-    );
-  }
-
-  saveReplay(state) {
-    const scenarioName = this.props.scenario.name;
-
-    var replayInfo = {
-      scenarioName: '',
-      description: ''
-    };
-
-    replayInfo.scenarioName = scenarioName;
-    replayInfo.description = state.description;
-
-    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error) => {
-      if (error) {
-        // TODO consider showing an alert
-        // console.log(error);
-      }
-    });
-  }
-
   /**
    * Callback function to receive the result of the createScenario operation.
    * @callback module:api/ScenarioConfigurationApi~createScenarioCallback
@@ -167,6 +135,60 @@ class ExecPageContainer extends Component {
     //   console.log('Failed to create scenario');
     // }
     // TODO: consider showing an alert/toast
+  }
+
+  /**
+   * Callback function to receive the result of the getReplayList operation.
+   * @callback module:api/EventReplayApi~getReplayFileListCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/ReplayFileList} data The data returned by the service call.
+   */
+  getReplayFileListCb(error, data) {
+    if (error !== null) {
+      // TODO: consider showing an alert/toast
+      return;
+    }
+    this.props.changeReplayFilesList(data.replayFiles);
+  }
+
+  saveScenario(scenarioName) {
+    const scenario = this.props.scenario;
+
+    const scenarioCopy = JSON.parse(JSON.stringify(scenario));
+    scenarioCopy.name = scenarioName;
+
+    this.props.cfgApi.createScenario(
+      scenarioName,
+      scenarioCopy,
+      (error, data, response) => this.createScenarioCb(error, data, response)
+    );
+  }
+
+  updateReplayFileList() {
+    this.props.replayApi.getReplayFileList((error, data, response) => {
+      this.getReplayFileListCb(error, data, response);
+    });
+  }
+  
+  saveReplay(state) {
+    const scenarioName = this.props.scenario.name;
+    var replayInfo = {
+      scenarioName: '',
+      description: ''
+    };
+
+    replayInfo.scenarioName = scenarioName;
+    replayInfo.description = state.description;
+
+    this.props.replayApi.createReplayFileFromScenarioExec(state.replayName, replayInfo, (error) => {
+      if (error) {
+        // TODO consider showing an alert
+        // console.log(error);
+      }
+    });
+
+    // Refresh file list
+    this.updateReplayFileList();
   }
 
   // CLOSE DIALOG
@@ -193,11 +215,15 @@ class ExecPageContainer extends Component {
     this.props.changeCurrentDialog(IDC_DIALOG_TERMINATE_SCENARIO);
   }
 
-  // SAVE SCENARIO
+  // SAVE REPLAY FILE
   onSaveReplay() {
     this.props.changeCurrentDialog(IDC_DIALOG_SAVE_REPLAY);
   }
 
+  // SHOW REPLAY PANE
+  onShowReplay() {
+    this.updateReplayFileList();
+  }
 
   // CLOSE CREATE EVENT PANE
   onQuitEventCreationMode() {
@@ -241,10 +267,6 @@ class ExecPageContainer extends Component {
     _.defer(() => {
       this.props.execVis.network.setData(this.props.execVisData);
     });
-  }
-
-  changeReplayLoop(val) {
-    this.props.changeReplayLoop(val);
   }
 
   renderDialogs() {
@@ -359,11 +381,10 @@ class ExecPageContainer extends Component {
                 <div>
                   <EventContainer
                     scenarioName={this.props.execScenarioName}
-                    onReplayLoopChanged={val => this.changeReplayLoop(val)}
-                    replayLoop={this.props.replayLoop}
                     eventCfgMode={this.props.eventCfgMode}
                     onCloseEventCfg={() => this.onCloseEventCfg()}
                     onSaveReplay={() => this.onSaveReplay()}
+                    onShowReplay={() => this.onShowReplay()}
                     api={this.props.replayApi}
                   />
 
@@ -383,10 +404,6 @@ class ExecPageContainer extends Component {
               >
                 <Elevation className="component-style" z={2}>
                   <EventReplayPane
-                    replayFiles={this.props.replayFiles}
-                    replayFileSelected={this.props.replayFileSelected}
-                    onReplayLoopChanged={val => this.changeReplayLoop(val)}
-                    replayLoop={this.props.replayLoop}
                     api={this.props.replayApi}
                     hide={!this.props.eventReplayMode}
                     onClose={() => this.onQuitEventReplayMode()}
@@ -430,7 +447,6 @@ const mapStateToProps = state => {
   return {
     exec: state.exec,
     showApps: state.ui.execShowApps,
-    replayLoop: state.ui.eventReplayLoop,
     execVis: state.exec.vis,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     table: state.exec.table,
@@ -439,8 +455,6 @@ const mapStateToProps = state => {
     scenarios: state.exec.apiResults.scenarios,
     eventCreationMode: state.ui.eventCreationMode,
     eventReplayMode: state.ui.eventReplayMode,
-    replayFiles: state.exec.apiResults.replayFiles,
-    replayFileSelected: state.ui.execReplayFileSelected,
     dashCfgMode: state.ui.dashCfgMode,
     eventCfgMode: state.ui.eventCfgMode,
     page: state.ui.page,
@@ -464,7 +478,7 @@ const mapDispatchToProps = dispatch => {
     changeCurrentEvent: e => dispatch(uiExecChangeCurrentEvent(e)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
     changeShowApps: show => dispatch(uiExecChangeShowApps(show)),
-    changeReplayLoop: val => dispatch(uiExecChangeReplayLoop(val))
+    changeReplayFilesList: list => dispatch(uiExecChangeReplayFilesList(list))
   };
 };
 

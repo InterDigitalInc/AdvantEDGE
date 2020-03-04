@@ -39,26 +39,25 @@ const styles = {
 };
 
 const StatusTable = props => {
-  return (
+  var timeToNextEvent = props.timeToNextEvent ? props.timeToNextEvent / 1000 : 0;
+  var timeRemaining = props.timeRemaining ? props.timeRemaining / 1000 : 0;
 
-    <Grid>
-      <GridCell span={4}>
-        <Typography use="subtitle2">REPLAY FILE</Typography>
+  return (
+    <Grid style={{border: '1px solid #e4e4e4'}}>
+      <GridCell span={2}>
+        <Typography use="headline6" style={{ marginLeft: 10 }}>Status:</Typography>
       </GridCell>
-      <GridCell span={4}>
-        <Typography use="subtitle2">EVENT COUNT</Typography>
-      </GridCell>
-      <GridCell span={4}>
-        <Typography use="subtitle2">REMAINING TIME (MS)</Typography>
-      </GridCell>
-      <GridCell span={4}>
+      <GridCell align={'middle'} span={3}>
+        <Typography use="subtitle2" style={{ marginRight: 10 }}>REPLAY FILE:</Typography>
         <Typography use="body2">{props.name}</Typography>
       </GridCell>
-      <GridCell span={4}>
+      <GridCell align={'middle'} span={3}>
+        <Typography use="subtitle2" style={{ marginRight: 10 }}>EVENT COUNT:</Typography>
         <Typography use="body2">{props.index} / {props.maxIndex}</Typography>
       </GridCell>
-      <GridCell span={4}>
-        <Typography use="body2">{props.timeToNextEvent} / {props.timeRemaining}</Typography>
+      <GridCell align={'middle'} span={4}>
+        <Typography use="subtitle2" style={{ marginRight: 10 }}>NEXT/LAST EVENT (S):</Typography>
+        <Typography use="body2">{timeToNextEvent.toFixed(2)} / {timeRemaining.toFixed(2)}</Typography>
       </GridCell>
     </Grid>
   );
@@ -91,8 +90,11 @@ class EventContainer extends Component {
 
   // SHOW REPLAY EVENT PANE
   onReplayEvent() {
-    this.props.changeEventReplayMode(true);
     this.props.changeEventCreationMode(false);
+    this.props.changeEventReplayMode(true);
+
+    // Refresh 
+    this.props.onShowReplay();
   }
 
   render() {
@@ -109,7 +111,7 @@ class EventContainer extends Component {
           className="component-style"
           style={{ padding: 10, marginBottom: 10 }}
         >
-          <Grid>
+          <Grid style={{ marginBottom: 10 }}>
             <GridCell span={6}>
               <div style={{ marginBottom: 10 }}>
                 <span className="mdc-typography--headline6">
@@ -122,6 +124,30 @@ class EventContainer extends Component {
                 <Button
                   outlined
                   style={styles.button}
+                  onClick={() => this.onCreateEvent()}
+                  data-cy={EXEC_BTN_MANUAL_REPLAY}
+                >
+                  MANUAL
+                </Button>
+                <Button
+                  outlined
+                  style={styles.button}
+                  onClick={() => this.onReplayEvent()}
+                  data-cy={EXEC_BTN_AUTO_REPLAY}
+                >
+                  AUTO-REPLAY
+                </Button>
+                <Button
+                  outlined
+                  style={styles.button}
+                  onClick={this.props.onSaveReplay}
+                  data-cy={EXEC_BTN_SAVE_REPLAY}
+                >
+                  SAVE EVENTS
+                </Button>
+                <Button
+                  outlined
+                  style={styles.button}
                   onClick={this.props.onCloseEventCfg}
                 >
                   Close
@@ -130,52 +156,18 @@ class EventContainer extends Component {
             </GridCell>
           </Grid>
 
-          <Grid style={{ marginBottom: 10 }}>
-            <GridCell span={5}>
-              <Button
-                outlined
-                style={styles.button}
-                onClick={() => this.onCreateEvent()}
-                data-cy={EXEC_BTN_MANUAL_REPLAY}
-              >
-                MANUAL
-              </Button>
-              <Button
-                outlined
-                style={styles.button}
-                onClick={() => this.onReplayEvent()}
-                data-cy={EXEC_BTN_AUTO_REPLAY}
-              >
-                AUTO-REPLAY
-              </Button>
-              <Button
-                outlined
-                style={styles.button}
-                onClick={this.props.onSaveReplay}
-                data-cy={EXEC_BTN_SAVE_REPLAY}
-              >
-                SAVE EVENTS
-              </Button>
-            </GridCell>
-
-            <GridCell span={6}>
-              <Elevation
-                z={2}
-                className="component-style"
-                style={{ padding: 15 }}
-              >
-                {replayStatus ?
-                  <StatusTable
-                    name={replayStatus.replayFileRunning}
-                    index={replayStatus.index}
-                    maxIndex={replayStatus.maxIndex}
-                    loopMode={replayStatus.loopMode}
-                    timeRemaining={replayStatus.timeRemaining}
-                    timeToNextEvent={replayStatus.timeToNextEvent}
-                  /> :
-                  <Typography use="subtitle2">Ready to run REPLAY file</Typography>
-                }
-              </Elevation>
+          <Grid>
+            <GridCell span={12}>
+              {replayStatus &&
+                <StatusTable
+                  name={replayStatus.replayFileRunning}
+                  index={replayStatus.index}
+                  maxIndex={replayStatus.maxIndex}
+                  loopMode={replayStatus.loopMode}
+                  timeRemaining={replayStatus.timeRemaining}
+                  timeToNextEvent={replayStatus.timeToNextEvent}
+                />
+              }
             </GridCell>
           </Grid>
         </Elevation>
@@ -188,7 +180,7 @@ const mapStateToProps = state => {
   return {
     eventCreationMode: state.exec.eventCreationMode,
     eventReplayMode: state.exec.eventReplayMode,
-    replayStatus: state.ui.replayStatus
+    replayStatus: state.exec.state.replayStatus
   };
 };
 

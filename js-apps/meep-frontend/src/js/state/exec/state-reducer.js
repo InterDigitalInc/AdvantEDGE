@@ -21,8 +21,8 @@ import { EXEC_STATE_IDLE } from '../../meep-constants';
 
 // Pod phases
 const CORE_PODS_PHASE_RUNNING = 'Running';
-const CORE_PODS_PHASE_PENDING = 'Pending';
-const SCENARIO_PODS_PHASE_RUNNING = 'Running';
+// const CORE_PODS_PHASE_PENDING = 'Pending';
+// const SCENARIO_PODS_PHASE_RUNNING = 'Running';
 const SCENARIO_PODS_PHASE_TERMINATING = 'Terminating';
 const SCENARIO_PODS_PHASE_PENDING = 'Pending';
 
@@ -32,7 +32,7 @@ const scenarioPodsPhasesSelector = state => state.exec.state.scenarioPodsPhases;
 const corePodsPhasesSelector = state => state.exec.state.corePodsPhases;
 
 // returns true if all core pods are in the RUNNING phase
-const corePodsRunning = createSelector(
+export const corePodsRunning = createSelector(
   corePodsPhasesSelector,
   phases => {
     return _.reduce(
@@ -45,7 +45,7 @@ const corePodsRunning = createSelector(
   }
 );
 
-const corePodsErrors = createSelector(
+export const corePodsErrors = createSelector(
   corePodsPhasesSelector,
   phases => {
     var statii = _.chain(phases)
@@ -61,7 +61,7 @@ const corePodsErrors = createSelector(
 );
 
 // Returns whether there scenario pods terminating
-const scenarioPodsPending = createSelector(
+export const scenarioPodsPending = createSelector(
   scenarioPodsPhasesSelector,
   pods => {
     var phasePending = false;
@@ -74,7 +74,7 @@ const scenarioPodsPending = createSelector(
   }
 );
 
-const scenarioPodsTerminating = createSelector(
+export const scenarioPodsTerminating = createSelector(
   scenarioPodsPhasesSelector,
   pods => {
     var phaseTerminating = false;
@@ -88,7 +88,7 @@ const scenarioPodsTerminating = createSelector(
   }
 );
 
-const scenarioPodsTerminated = createSelector(
+export const scenarioPodsTerminated = createSelector(
   scenarioPodsPhasesSelector,
   pods => {
     return pods === null || pods === undefined || !pods.length;
@@ -96,7 +96,7 @@ const scenarioPodsTerminated = createSelector(
 );
 
 // Returns a list of scenario posds info and adds serviceMaps to external ones
-const podsWithServiceMaps = createSelector(
+export const podsWithServiceMaps = createSelector(
   [serviceMapsSelector, scenarioPodsPhasesSelector],
   (sms, spps) => {
     var podsWithInfo = _.map(spps, spp => {
@@ -129,7 +129,7 @@ const podsWithServiceMaps = createSelector(
 );
 
 const EXEC_CHANGE_SCENARIO_STATE = 'EXEC_CHANGE_SCENARIO_STATE';
-function execChangeScenarioState(state) {
+export function execChangeScenarioState(state) {
   return {
     type: EXEC_CHANGE_SCENARIO_STATE,
     payload: state
@@ -137,7 +137,7 @@ function execChangeScenarioState(state) {
 }
 
 const EXEC_CHANGE_CORE_PODS_PHASES = 'EXEC_CHANGE_CORE_PODS_PHASES';
-function execChangeCorePodsPhases(pods) {
+export function execChangeCorePodsPhases(pods) {
   return {
     type: EXEC_CHANGE_CORE_PODS_PHASES,
     payload: pods
@@ -145,7 +145,7 @@ function execChangeCorePodsPhases(pods) {
 }
 
 const EXEC_CHANGE_SCENARIO_PODS_PHASES = 'EXEC_CHANGE_SCENARIO_PODS_PHASES';
-function execChangeScenarioPodsPhases(phases) {
+export function execChangeScenarioPodsPhases(phases) {
   return {
     type: EXEC_CHANGE_SCENARIO_PODS_PHASES,
     payload: phases
@@ -153,7 +153,7 @@ function execChangeScenarioPodsPhases(phases) {
 }
 
 const EXEC_CHANGE_SERVICE_MAPS = 'EXEC_CHANGE_SERVICE_MAPS';
-function execChangeServiceMaps(serviceMaps) {
+export function execChangeServiceMaps(serviceMaps) {
   return {
     type: EXEC_CHANGE_SERVICE_MAPS,
     payload: serviceMaps
@@ -161,40 +161,20 @@ function execChangeServiceMaps(serviceMaps) {
 }
 
 const CHANGE_OK_TO_TERMINATE = 'CHANGE_OK_TO_TERMINATE';
-function execChangeOkToTerminate(ok) {
+export function execChangeOkToTerminate(ok) {
   return {
     type: CHANGE_OK_TO_TERMINATE,
     payload: ok
   };
 }
 
-export {
-  // Actions
-  execChangeScenarioState,
-  execChangeScenarioPodsPhases,
-  execChangeCorePodsPhases,
-  execChangeServiceMaps,
-  execChangeOkToTerminate,
-  // Selectors
-  corePodsRunning,
-  corePodsErrors,
-  podsWithServiceMaps,
-  scenarioPodsPending,
-  scenarioPodsTerminating,
-  scenarioPodsTerminated,
-  // Action types
-  EXEC_CHANGE_CORE_PODS_PHASES,
-  EXEC_CHANGE_SCENARIO_STATE,
-  EXEC_CHANGE_SCENARIO_PODS_PHASES,
-  EXEC_CHANGE_SERVICE_MAPS,
-  // Core pods phases
-  CORE_PODS_PHASE_RUNNING,
-  CORE_PODS_PHASE_PENDING,
-  // Scenario pods phases
-  SCENARIO_PODS_PHASE_RUNNING,
-  SCENARIO_PODS_PHASE_PENDING,
-  SCENARIO_PODS_PHASE_TERMINATING
-};
+const EXEC_CHANGE_REPLAY_STATUS = 'EXEC_CHANGE_REPLAY_STATUS';
+export function execChangeReplayStatus(status) {
+  return {
+    type: EXEC_CHANGE_REPLAY_STATUS,
+    payload: status
+  };
+}
 
 // Initial state
 const initialState = {
@@ -203,7 +183,8 @@ const initialState = {
   corePodsPhases: [],
   scenarioPodsPhases: [],
   serviceMaps: [],
-  okToTerminate: false
+  okToTerminate: false,
+  replayStatus: null
 };
 
 export function stateReducer(state = initialState, action) {
@@ -218,6 +199,8 @@ export function stateReducer(state = initialState, action) {
     return updateObject(state, { serviceMaps: action.payload });
   case CHANGE_OK_TO_TERMINATE:
     return updateObject(state, { okToTerminate: action.payload });
+  case EXEC_CHANGE_REPLAY_STATUS:
+    return updateObject(state, { replayStatus: action.payload });
   default:
     return state;
   }

@@ -22,7 +22,11 @@ import { Select } from '@rmwc/select';
 import { Grid, GridInner, GridCell } from '@rmwc/grid';
 import { Typography } from '@rmwc/typography';
 
-import { uiExecChangeReplayFileSelected } from '../../state/ui';
+import {
+  uiExecChangeReplayFileSelected,
+  uiExecChangeReplayFileDesc,
+  uiExecChangeReplayLoop
+} from '../../state/ui';
 
 import {
   EXEC_EVT_REPLAY_FILES,
@@ -30,31 +34,7 @@ import {
   EXEC_BTN_REPLAY_STOP
 } from '../../meep-constants';
 
-import {
-  execChangeReplayFilesList
-} from '../../state/exec';
-
 import { PAGE_EXECUTE } from '../../meep-constants';
-
-const ReplayFileSelect = props => {
-  return (
-    <Grid style={styles.field}>
-      <GridCell span={12}>
-        <Select
-          style={styles.select}
-          label="Replay file"
-          fullwidth="true"
-          outlined
-          options={props.replayFiles}
-          onChange={props.onChange}
-          onClick={props.onClick}
-          value={props.replayFileSelected}
-          data-cy={EXEC_EVT_REPLAY_FILES}
-        />
-      </GridCell>
-    </Grid>
-  );
-};
 
 class EventReplayPane extends Component {
   constructor(props) {
@@ -91,25 +71,6 @@ class EventReplayPane extends Component {
     }
   }
 
-  changeLoop(checked) {
-    this.props.onReplayLoopChanged(checked);
-  }
-
-  /**
-   * Callback function to receive the result of the getReplayList operation.
-   * @callback module:api/EventReplayApi~getReplayFileListCallback
-   * @param {String} error Error message, if any.
-   * @param {module:model/ReplayFileList} data The data returned by the service call.
-   */
-  getReplayFileListCb(error, data) {
-    if (error !== null) {
-      // TODO: consider showing an alert/toast
-      return;
-    }
-    this.props.changeReplayFilesList(data.replayFiles);
-
-  }
-
   /**
    * Callback function to receive the result of the getReplayFile operation.
    * @callback module:api/EventReplayApi~getReplayFileCallback
@@ -121,14 +82,7 @@ class EventReplayPane extends Component {
       // TODO: consider showing an alert/toast
       return;
     }
-    this.state.description = data.description;
-
-  }
-
-  updateReplayFileList() {
-    this.props.api.getReplayFileList((error, data, response) => {
-      this.getReplayFileListCb(error, data, response);
-    });
+    this.props.changeReplayFileDesc(data.description);
   }
 
   getDescription(name) {
@@ -151,23 +105,32 @@ class EventReplayPane extends Component {
         <div style={styles.block}>
           <Typography use="headline6">Replay Events</Typography>
         </div>
-        <ReplayFileSelect
-          replayFiles={this.props.replayFiles}
-          replayFileSelected={this.props.replayFileSelected}
-          onClick={() => this.updateReplayFileList()}
-          onChange={event => {
-            this.props.changeReplayFileSelected(event.target.value);
-            this.getDescription(event.target.value);
-          }}
-        />
-        <div style={styles.block}>
-          <Typography use="subtitle2">{this.state.description}</Typography>
-        </div>
+        <Grid style={styles.field}>
+          <GridCell span={12}>
+            <Select
+              style={styles.select}
+              label="Replay file"
+              fullwidth="true"
+              outlined
+              options={this.props.replayFiles}
+              onChange={event => {
+                this.props.changeReplayFileSelected(event.target.value);
+                this.getDescription(event.target.value);
+              }}
+              value={this.props.replayFileSelected}
+              data-cy={EXEC_EVT_REPLAY_FILES}
+            />
+          </GridCell>
+          <GridCell span={12}>
+            <Typography use="subtitle2">{this.props.replayFileDesc}</Typography>
+          </GridCell>
+        </Grid>
+
         <Grid style={{ marginBottom: 10 }}>
           <GridCell span={2}>
             <Checkbox
               checked={this.props.replayLoop}
-              onChange={e => this.changeLoop(e.target.checked)}
+              onChange={e => this.props.changeReplayLoop(e.target.checked)}
             >
               Loop
             </Checkbox>
@@ -227,14 +190,19 @@ const styles = {
 const mapStateToProps = state => {
   return {
     page: state.ui.page,
-    replayStatus: state.ui.replayStatus
+    replayStatus: state.exec.state.replayStatus,
+    replayFiles: state.ui.replayFiles,
+    replayFileSelected: state.ui.replayFileSelected,
+    replayFileDesc: state.ui.replayFileDesc,
+    replayLoop: state.ui.eventReplayLoop
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     changeReplayFileSelected: name => dispatch(uiExecChangeReplayFileSelected(name)),
-    changeReplayFilesList: list => dispatch(execChangeReplayFilesList(list))
+    changeReplayFileDesc: name => dispatch(uiExecChangeReplayFileDesc(name)),
+    changeReplayLoop: val => dispatch(uiExecChangeReplayLoop(val))
   };
 };
 

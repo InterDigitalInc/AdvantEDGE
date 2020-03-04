@@ -17,8 +17,7 @@
 import { updateObject } from '../../util/object-util';
 
 const initialState = {
-  scenarios: [],
-  replayFiles: []
+  scenarios: []
 };
 
 const EXEC_CHANGE_SCENARIO_LIST = 'EXEC_CHANGE_SCENARIO_LIST';
@@ -29,20 +28,10 @@ export function execChangeScenarioList(scenarios) {
   };
 }
 
-const EXEC_CHANGE_REPLAY_FILES_LIST = 'EXEC_CHANGE_REPLAY_FILES_LIST';
-export function execChangeReplayFilesList(replayFiles) {
-  return {
-    type: EXEC_CHANGE_REPLAY_FILES_LIST,
-    payload: replayFiles
-  };
-}
-
 export function execApiResultsReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SCENARIO_LIST:
     return updateObject(state, { scenarios: action.payload });
-  case EXEC_CHANGE_REPLAY_FILES_LIST:
-    return updateObject(state, { replayFiles: action.payload });
   default:
     return state;
   }
