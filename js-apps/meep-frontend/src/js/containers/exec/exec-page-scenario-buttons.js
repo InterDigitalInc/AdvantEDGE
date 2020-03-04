@@ -17,8 +17,10 @@
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
+import { Icon } from '@rmwc/icon';
 
 import {
+  MEEP_HELP_PAGE_EXEC_URL,
   EXEC_STATE_DEPLOYED,
   EXEC_BTN_SAVE_SCENARIO,
   EXEC_BTN_DEPLOY,
@@ -89,7 +91,7 @@ class ExecPageScenarioButtons extends Component {
 
   render() {
     return (
-      <div style={{ marginTop: 10 }}>
+      <div>
         <Button
           raised
           style={styles.section1}
@@ -143,6 +145,20 @@ class ExecPageScenarioButtons extends Component {
           data-cy={EXEC_BTN_CONFIG}
         >
           DASHBOARD
+        </Button>
+
+        <Button
+          raised
+          style={styles.section2}
+          onClick={() => {
+            window.open(MEEP_HELP_PAGE_EXEC_URL,'_blank');
+          }}
+        >
+          <Icon
+            icon="help_outline"
+            iconOptions={{ strategy: 'ligature' }}
+            style={styles.icon}
+          />
         </Button>
       </div>
     );

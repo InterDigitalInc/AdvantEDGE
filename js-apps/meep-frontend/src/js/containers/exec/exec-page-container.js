@@ -354,7 +354,7 @@ class ExecPageContainer extends Component {
                       scenarioName={scenarioName}
                     />
                   </GridCell>
-                  <GridCell span={8}>
+                  <GridCell align={'middle'} span={8}>
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
                         <ExecPageScenarioButtons

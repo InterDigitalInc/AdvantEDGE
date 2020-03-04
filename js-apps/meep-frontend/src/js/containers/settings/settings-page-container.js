@@ -21,6 +21,7 @@ import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
+import { Icon } from '@rmwc/icon';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 
 import {
@@ -35,6 +36,7 @@ import {
 } from '../../state/ui';
 
 import {
+  MEEP_HELP_PAGE_SET_URL,
   PAGE_SETTINGS,
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
@@ -129,13 +131,44 @@ class SettingsPageContainer extends Component {
         />
         <div style={{ width: '100%' }}>
           <Grid style={{ width: '100%' }}>
-            <GridInner>
-              <GridCell span={12}>
-                <Elevation
-                  className="component-style"
-                  z={2}
-                  style={styles.elevation}
-                >
+            <GridCell span={12}>
+              <Elevation
+                className="component-style"
+                z={2}
+                style={styles.elevation}
+              >
+                <GridInner>
+                  <GridCell align={'middle'} span={4}>
+                    <span className="mdc-typography--headline6">
+                        Settings:{' '}
+                    </span>
+                  </GridCell>
+                  <GridCell align={'middle'} span={8}>
+                    <div align={'right'}>
+                      <Button
+                        raised
+                        style={{ ...styles.button, marginLeft: 10 }}
+                        onClick={() => {
+                          window.open(MEEP_HELP_PAGE_SET_URL,'_blank');
+                        }}
+                      >
+                        <Icon
+                          icon="help_outline"
+                          iconOptions={{ strategy: 'ligature' }}
+                          style={styles.icon}
+                        />
+                      </Button>
+                    </div>
+                  </GridCell>
+                </GridInner>
+              </Elevation>
+
+              <Elevation
+                className="component-style"
+                z={2}
+                style={styles.elevation}
+              >
+                <div style={styles.section}>
                   <div style={styles.headline}>
                     <span className="mdc-typography--headline6">
                       Execution:{' '}
@@ -178,13 +211,9 @@ class SettingsPageContainer extends Component {
                       </GridCell>
                     </Grid>
                   </div>
-                </Elevation>
+                </div>
 
-                <Elevation
-                  className="component-style"
-                  z={2}
-                  style={styles.elevation}
-                >
+                <div style={styles.section}>
                   <div style={styles.headline}>
                     <span className="mdc-typography--headline6">
                       Development:{' '}
@@ -198,13 +227,9 @@ class SettingsPageContainer extends Component {
                       cydata={SET_VIS_CFG_CHECKBOX}
                     />
                   </div>
-                </Elevation>
+                </div>
 
-                <Elevation
-                  className="component-style"
-                  z={2}
-                  style={styles.elevation}
-                >
+                <div style={styles.section}>
                   <div style={styles.headline}>
                     <span className="mdc-typography--headline6">
                       Local Storage:{' '}
@@ -219,16 +244,12 @@ class SettingsPageContainer extends Component {
                       CLEAR UI CACHE
                     </Button>
                   </div>
-                </Elevation>
-
-                <Elevation
-                  className="component-style"
-                  z={2}
-                  style={styles.elevation}
-                >
+                </div>
+ 
+                <div style={styles.section}>
                   <div style={styles.headline}>
                     <span className="mdc-typography--headline6">
-                      About:{' '}
+                        About:{' '}
                     </span>
                   </div>
                   <div style={styles.content}>
@@ -237,10 +258,10 @@ class SettingsPageContainer extends Component {
                       <GridCell span={10}>{__VERSION__}</GridCell>
                     </Grid>
                   </div>
-                </Elevation>
+                </div>
 
-              </GridCell>
-            </GridInner>
+              </Elevation>
+            </GridCell>
           </Grid>
         </div>
       </div>
@@ -273,8 +294,13 @@ const CheckableSettingItem = ({
 
 const styles = {
   elevation: {
-    padding: 15,
+    padding: 10,
     marginBottom: 10
+  },
+  section: {
+    border: '1px solid #e4e4e4',
+    padding: 15,
+    marginBottom: 15
   },
   headline: {
     marginBottom: 10
@@ -283,7 +309,8 @@ const styles = {
     marginBottom: 10
   },
   button: {
-    color: 'white'
+    color: 'white',
+    marginRight: 5
   }
 };
 
