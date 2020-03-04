@@ -25,6 +25,7 @@ import (
 )
 
 var componentName string
+
 const LoggerTimeStampFormat = "2006-01-02T15:04:05.999Z07:00"
 
 type Fields map[string]interface{}

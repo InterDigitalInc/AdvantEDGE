@@ -77,7 +77,10 @@ func TestWatchdogSuccess(t *testing.T) {
 		t.Errorf("Failed liveness test #3")
 	}
 	fmt.Println("Pignee stop")
-	pingee.Stop()
+	err = pingee.Stop()
+	if err != nil {
+		t.Errorf("Unable to stop pingee")
+	}
 	fmt.Println("Wait 1.25sec (cause a timeout)")
 	time.Sleep(1250 * time.Millisecond)
 	alive = wd.IsAlive()
@@ -86,7 +89,10 @@ func TestWatchdogSuccess(t *testing.T) {
 		t.Errorf("Failed liveness test #5")
 	}
 	fmt.Println("Pingee start")
-	pingee.Start()
+	err = pingee.Start()
+	if err != nil {
+		t.Errorf("Unable to start pingee")
+	}
 	fmt.Println("Wait 250ms")
 	time.Sleep(250 * time.Millisecond)
 	alive = wd.IsAlive()
@@ -96,7 +102,10 @@ func TestWatchdogSuccess(t *testing.T) {
 	}
 
 	fmt.Println("Stop watchdog & pingee")
-	pingee.Stop()
+	err = pingee.Stop()
+	if err != nil {
+		t.Errorf("Unable to stop pingee")
+	}
 	wd.Stop()
 	fmt.Println("Test Complete")
 }
