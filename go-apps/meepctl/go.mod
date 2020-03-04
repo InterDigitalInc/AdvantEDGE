@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client v0.0.0
-	github.com/antihax/optional v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

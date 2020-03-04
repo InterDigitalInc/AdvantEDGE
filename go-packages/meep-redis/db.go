@@ -299,7 +299,7 @@ func (rc *Connector) Unsubscribe(channels ...string) error {
 		return errors.New("Redis Connector is disconnected (Unsubscribe)")
 	}
 	if rc.pubsub != nil {
-		rc.pubsub.Unsubscribe(channels...)
+		_ = rc.pubsub.Unsubscribe(channels...)
 	}
 	return nil
 }

@@ -80,7 +80,7 @@ func (p *Pingee) Stop() (err error) {
 	if p.isStarted {
 		p.isStarted = false
 		p.rc.StopListen()
-		p.rc.Unsubscribe(p.pingChannel)
+		_ = p.rc.Unsubscribe(p.pingChannel)
 		log.Debug("Pignee stopped ", p.name)
 	}
 	return nil
@@ -89,5 +89,5 @@ func (p *Pingee) Stop() (err error) {
 func (p *Pingee) pingHandler(channel string, payload string) {
 	pingMsg := strings.TrimPrefix(payload, pingPrefix)
 	pongMsg := pongPrefix + pingMsg
-	p.rc.Publish(p.pongChannel, pongMsg)
+	_ = p.rc.Publish(p.pongChannel, pongMsg)
 }
