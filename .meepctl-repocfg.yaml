@@ -38,11 +38,11 @@ repo:
       api-bundle:
         - meep-ctrl-engine
         - meep-metrics-engine
-        - meep-metrics-engine-notification
+        - meep-metrics-engine-notification-client
         - meep-mg-manager
-        - meep-mg-app-notification
+        - meep-mg-app-client
         - meep-loc-serv
-        - meep-loc-serv-notification
+        - meep-loc-serv-notification-client
 
     # CORE APPS (GO)
     meep-ctrl-engine:
