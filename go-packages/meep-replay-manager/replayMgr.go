@@ -27,7 +27,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const defaultLoopInterval = 1000 //in ms
+const defaultLoopInterval = 5000 //in ms
 const basepath = "http://meep-ctrl-engine/v1"
 
 type ReplayMgr struct {
@@ -87,37 +87,41 @@ func NewReplayMgr(name string) (r *ReplayMgr, err error) {
 }
 
 func (r *ReplayMgr) playEventByIndex() error {
-	index := r.nextEventIndex
-	nextIndex := 0
-	replayEvent := r.replayEventsList.Events[index]
 
+	// Retrieve & Marshal next event
+	index := r.nextEventIndex
+	replayEvent := r.replayEventsList.Events[index]
 	j, err := json.Marshal(&replayEvent.Event)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
+	// If first event, take timestamp for reference
 	if index == 0 {
 		r.loopStarted = time.Now()
 	}
 
+	// Process INIT event
 	isInitEvent := false
 	if replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" {
-		isInitEvent = true
-	}
 
-	if isInitEvent && r.ignoreInitEvent {
-		index = index + 1
-		replayEvent = r.replayEventsList.Events[index]
+		// Skip to next event if INIT event should be ignored
+		if r.ignoreInitEvent {
+			index = index + 1
+			replayEvent = r.replayEventsList.Events[index]
 
-		j, err = json.Marshal(&replayEvent.Event)
-		if err != nil {
-			log.Error(err)
-			return err
+			j, err = json.Marshal(&replayEvent.Event)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+		} else {
+			isInitEvent = true
 		}
 	}
 
-	//only send events that mean something for the scenario
+	// Send event (except INIT event)
 	if !isInitEvent {
 		vars := make(map[string]string)
 		vars["type"] = replayEvent.Event.Type_
@@ -135,7 +139,8 @@ func (r *ReplayMgr) playEventByIndex() error {
 		}
 	}
 
-	//see if we have a next event, if we are done or if we loop
+	// Retrieve index of next event
+	nextIndex := 0
 	if index != r.eventIndexMax {
 		nextIndex = index + 1
 	} else if r.loop {
@@ -144,54 +149,31 @@ func (r *ReplayMgr) playEventByIndex() error {
 		nextIndex = -1
 	}
 
-	//sending the ticker prior to processing the current event to minimize time lost
+	// If necessary, create timer to wait before sending next event
 	if nextIndex != -1 {
 		nextReplayEvent := r.replayEventsList.Events[nextIndex]
-		//durations are all relative to event0.... need to be updated based on current time
-		//act otherwise if execution is a circular loop
+
+		// Calculate time until next event
 		var diff int32
 		if nextIndex == 0 {
 			diff = defaultLoopInterval
 		} else {
 			diff = nextReplayEvent.Time - replayEvent.Time
 		}
-		r.nextEventIndex = nextIndex
 		tickerExpiry := time.Duration(diff) * time.Millisecond
 		log.Debug("next replay event (index ", nextReplayEvent.Index, ") in ", tickerExpiry)
 		r.ticker = time.NewTicker(tickerExpiry)
-
 		r.timeToNextEvent, r.timeRemaining = r.getTimesRemaining()
+		r.nextEventIndex = nextIndex
 
+		// Start timer
 		go func() {
 			for range r.ticker.C {
 				r.ticker.Stop()
 				_ = r.playEventByIndex()
 			}
 		}()
-	}
-
-	//only send events that mean something for the scenario
-	if replayEvent.Event.Type_ != "INIT" {
-
-		vars := make(map[string]string)
-
-		vars["type"] = replayEvent.Event.Type_
-
-		var validEvent ce.Event
-
-		err = json.Unmarshal(j, &validEvent)
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-
-		_, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-
-	if nextIndex == -1 {
+	} else {
 		r.Completed()
 	}
 
