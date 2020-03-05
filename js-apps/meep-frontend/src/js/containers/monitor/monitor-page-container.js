@@ -25,6 +25,7 @@ import Iframe from 'react-iframe';
 import HeadlineBar from '../../components/headline-bar';
 import { ListEditPane } from './list-edit-pane';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
+import { Icon } from '@rmwc/icon';
 
 import {
   uiChangeCurrentDialog
@@ -41,6 +42,7 @@ import {
 } from '../../state/monitor';
 
 import {
+  MEEP_HELP_PAGE_MON_URL,
   MON_DASHBOARD_SELECT,
   MON_DASHBOARD_IFRAME,
   IDC_DIALOG_DELETE_DASHBOARD_LIST,
@@ -87,19 +89,6 @@ const DashboardContainer = props => {
   );
 };
 
-const EditModeButton = ({ isEditMode, startEditMode }) => {
-  return (
-    <Button
-      raised
-      disabled={isEditMode()}
-      style={styles.button}
-      onClick={startEditMode}
-    >
-      EDIT
-    </Button>
-  );
-};
-
 const getDashboardLabels = (dashboardOptions) => {
   var dashboardList = [];
   if (dashboardOptions) {
@@ -123,7 +112,7 @@ const MonitorPageHeadlineBar = props => {
         <GridCell span={12}>
           <Elevation className="component-style" z={2} style={styles.headline}>
             <GridInner>
-              <GridCell align={'middle'} span={5}>
+              <GridCell align={'middle'} span={4}>
                 <HeadlineBar
                   titleLabel="Deployed Scenario"
                   scenarioName={props.scenarioName}
@@ -141,19 +130,35 @@ const MonitorPageHeadlineBar = props => {
                   data-cy={MON_DASHBOARD_SELECT}
                 />
               </GridCell>
-              <GridCell span={3} align={'middle'}>
+              <GridCell span={4} align={'middle'}>
                 <div align={'right'}>
-                  <EditModeButton
-                    isEditMode={props.isEditMode}
-                    startEditMode={props.startEditMode}
-                    cancelEditMode={props.cancelEditMode}
-                  />
+                  <Button
+                    raised
+                    disabled={props.isEditMode()}
+                    style={styles.button}
+                    onClick={props.startEditMode}
+                  >
+                    EDIT
+                  </Button>
                   <Button
                     raised
                     style={styles.button}
                     onClick={() => window.open(grafanaUrl, '_blank')}
                   >
                     OPEN GRAFANA
+                  </Button>
+                  <Button
+                    raised
+                    style={{ ...styles.button, marginLeft: 10 }}
+                    onClick={() => {
+                      window.open(MEEP_HELP_PAGE_MON_URL,'_blank');
+                    }}
+                  >
+                    <Icon
+                      icon="help_outline"
+                      iconOptions={{ strategy: 'ligature' }}
+                      style={styles.icon}
+                    />
                   </Button>
                 </div>
               </GridCell>

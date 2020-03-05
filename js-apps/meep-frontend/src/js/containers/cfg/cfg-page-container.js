@@ -591,9 +591,9 @@ class CfgPageContainer extends Component {
                       scenarioName={this.props.scenarioName}
                     />
                   </GridCell>
-                  <GridCell span={8}>
+                  <GridCell align={'middle'} span={8}>
                     <GridInner align={'right'}>
-                      <GridCell align={'middle'} span={12}>
+                      <GridCell span={12}>
                         <CfgPageScenarioButtons
                           {...this.props}
                           onDeleteScenario={() => {

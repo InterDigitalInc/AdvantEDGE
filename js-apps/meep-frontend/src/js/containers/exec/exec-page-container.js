@@ -148,7 +148,9 @@ class ExecPageContainer extends Component {
       // TODO: consider showing an alert/toast
       return;
     }
-    this.props.changeReplayFilesList(data.replayFiles);
+    let replayFiles = data.replayFiles;
+    replayFiles.unshift('None');
+    this.props.changeReplayFilesList(replayFiles);
   }
 
   saveScenario(scenarioName) {
@@ -354,7 +356,7 @@ class ExecPageContainer extends Component {
                       scenarioName={scenarioName}
                     />
                   </GridCell>
-                  <GridCell span={8}>
+                  <GridCell align={'middle'} span={8}>
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
                         <ExecPageScenarioButtons
