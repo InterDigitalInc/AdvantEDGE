@@ -148,7 +148,9 @@ class ExecPageContainer extends Component {
       // TODO: consider showing an alert/toast
       return;
     }
-    this.props.changeReplayFilesList(data.replayFiles);
+    let replayFiles = data.replayFiles;
+    replayFiles.unshift('None');
+    this.props.changeReplayFilesList(replayFiles);
   }
 
   saveScenario(scenarioName) {

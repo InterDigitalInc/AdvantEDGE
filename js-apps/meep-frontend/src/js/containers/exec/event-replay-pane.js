@@ -44,31 +44,33 @@ class EventReplayPane extends Component {
     };
   }
 
-  triggerReplay(play) {
-    if (play) {
-      if (this.props.replayLoop) {
-        this.props.api.loopReplay(this.props.replayFileSelected, (error) => {
+  playReplay(name, loop) {
+    if (name !== 'None') {
+      if (loop) {
+        this.props.api.loopReplay(name, (error) => {
           if (error) {
             // TODO consider showing an alert
             // console.log(error);
           }
         });
       } else {
-        this.props.api.playReplayFile(this.props.replayFileSelected, (error) => {
+        this.props.api.playReplayFile(name, (error) => {
           if (error) {
             // TODO consider showing an alert
             // console.log(error);
           }
         });
       }
-    } else { //stop
-      this.props.api.stopReplayFile(this.props.replayFileSelected, (error) => {
-        if (error) {
-          // TODO consider showing an alert
-          // console.log(error);
-        }
-      });
     }
+  }
+
+  stopReplay(name) {
+    this.props.api.stopReplayFile(name, (error) => {
+      if (error) {
+        // TODO consider showing an alert
+        // console.log(error);
+      }
+    });
   }
 
   /**
@@ -93,6 +95,12 @@ class EventReplayPane extends Component {
 
   replayRunning() {
     return this.props.replayStatus ? true : false;
+  }
+
+  canPlay() {
+    return !this.replayRunning() &&
+      this.props.replayFileSelected &&
+      this.props.replayFileSelected !== 'None';
   }
 
   render() {
@@ -144,16 +152,16 @@ class EventReplayPane extends Component {
               <Button
                 outlined
                 style={styles.button}
-                onClick={() => this.triggerReplay(true)}
-                disabled={this.replayRunning()}
+                onClick={() => this.playReplay(this.props.replayFileSelected, this.props.replayLoop)}
+                disabled={!this.canPlay()}
                 data-cy={EXEC_BTN_REPLAY_START}
               >
-                START
+                PLAY
               </Button>
               <Button
                 outlined
                 style={styles.button}
-                onClick={() => this.triggerReplay(false)}
+                onClick={() => this.stopReplay(this.props.replayFileSelected)}
                 disabled={!this.replayRunning()}
                 data-cy={EXEC_BTN_REPLAY_STOP}
               >
