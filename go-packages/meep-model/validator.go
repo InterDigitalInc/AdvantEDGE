@@ -34,7 +34,7 @@ const (
 )
 
 var DefaultVersion = semver.Version{Major: 1, Minor: 0, Patch: 0}
-var ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 4, Patch: 0}
 
 // ValidateScenario - Verify if json scenario is valid & supported. Upgrade scenario if possible & necessary.
 func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status string, err error) {
