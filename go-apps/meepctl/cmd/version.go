@@ -97,7 +97,7 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-const meepctlVersion = "1.3.1"
+const meepctlVersion = "1.4.0"
 const na = "NA"
 
 var corePodsNameMap = []string{
@@ -108,11 +108,11 @@ var corePodsNameMap = []string{
 	"meep-redis",
 	"meep-tc-engine",
 	"meep-loc-serv",
-	"meep-grafana",
 	"meep-influxdb",
-	"meep-couchdb",
-	"meep-kube-state-metrics",
-	"meep-docker-registry",
+	"grafana",
+	"couchdb",
+	"kube-state-metrics",
+	"docker-registry",
 }
 
 var depPodsNameMap = []string{"weave"}
