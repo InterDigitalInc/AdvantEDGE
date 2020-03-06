@@ -108,11 +108,11 @@ var corePodsNameMap = []string{
 	"meep-redis",
 	"meep-tc-engine",
 	"meep-loc-serv",
-	"meep-grafana",
 	"meep-influxdb",
-	"meep-couchdb",
-	"meep-kube-state-metrics",
-	"meep-docker-registry",
+	"grafana",
+	"couchdb",
+	"kube-state-metrics",
+	"docker-registry",
 }
 
 var depPodsNameMap = []string{"weave"}
