@@ -24,10 +24,10 @@ export const PAGE_MONITOR = 'PAGE_MONITOR';
 export const PAGE_SETTINGS = 'PAGE_SETTINGS';
 
 // Help URLs
-export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
-export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
-export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
-export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki';
+export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
+export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/execution-view';
+export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/monitoring-view';
+export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/settings-view';
 
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
