@@ -81,7 +81,10 @@ func TestPingPong(t *testing.T) {
 	}
 
 	fmt.Println("Pigner start")
-	pinger.Start()
+	err = pinger.Start()
+	if err != nil {
+		t.Errorf("Unable to start (pinger)")
+	}
 	time.Sleep(time.Second)
 	fmt.Println("Pigner ping")
 	alive = pinger.Ping(msg)
@@ -90,7 +93,13 @@ func TestPingPong(t *testing.T) {
 	}
 
 	fmt.Println("Stop pinger & pingee")
-	pingee.Stop()
-	pinger.Stop()
+	err = pingee.Stop()
+	if err != nil {
+		t.Errorf("Unable to stop (pingee)")
+	}
+	err = pinger.Stop()
+	if err != nil {
+		t.Errorf("Unable to stop (pinger)")
+	}
 	fmt.Println("Test Complete")
 }

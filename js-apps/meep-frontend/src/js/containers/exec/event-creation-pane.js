@@ -114,7 +114,7 @@ class EventCreationPane extends Component {
   }
 
   render() {
-    if (this.props.page !== PAGE_EXECUTE) {
+    if (this.props.page !== PAGE_EXECUTE || this.props.hide) {
       return null;
     }
 

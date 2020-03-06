@@ -15,30 +15,8 @@
  */
 
 const initialState = {
-  currentDashboardUrl: '',
-  dashboardOptions: [
-    {
-      label: 'Latency Dashboard',
-      value:
-        'http://' +
-        location.hostname +
-        ':32003/app/kibana#/dashboard/6745bb30-c29c-11e8-95a0-933bd4e05896?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-60s%2Cmode%3Arelative%2Cto%3Anow))'
-    },
-    {
-      label: 'Demo Service Internal UE (ue1)',
-      value:
-        'http://' +
-        location.hostname +
-        ':32003/app/kibana#/dashboard/434d37b0-1b6d-11e9-b72d-e70da2a5e139?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-15m%2Cmode%3Arelative%2Cto%3Anow))'
-    },
-    {
-      label: 'Demo Service External UE (ue2-ext)',
-      value:
-        'http://' +
-        location.hostname +
-        ':32003/app/kibana#/dashboard/788a4f70-1b73-11e9-b72d-e70da2a5e139?embed=true&_g=(refreshInterval%3A(pause%3A!f%2Cvalue%3A5000)%2Ctime%3A(from%3Anow-15m%2Cmode%3Arelative%2Cto%3Anow))'
-    }
-  ],
+  currentDashboard: '',
+  dashboardOptions: [],
   editedDashboardOptions: null
 };
 
@@ -50,11 +28,11 @@ export const addDashboardOption = option => {
   };
 };
 
-const CHANGE_DASHBOARD_URL = 'CHANGE_DASHBOARD_URL';
-export function changeDashboardUrl(url) {
+const CHANGE_DASHBOARD = 'CHANGE_DASHBOARD';
+export function changeDashboard(label) {
   return {
-    type: CHANGE_DASHBOARD_URL,
-    payload: url
+    type: CHANGE_DASHBOARD,
+    payload: label
   };
 }
 
@@ -76,8 +54,8 @@ export function changeDashboardOptions(mode) {
 
 export default function settingsReducer(state = initialState, action) {
   switch (action.type) {
-  case CHANGE_DASHBOARD_URL:
-    return { ...state, currentDashboardUrl: action.payload };
+  case CHANGE_DASHBOARD:
+    return { ...state, currentDashboard: action.payload };
   case ADD_DASHBOARD_OPTION:
     return {
       ...state,

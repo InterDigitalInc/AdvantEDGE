@@ -54,82 +54,69 @@ class MeepDrawer extends Component {
 
   render() {
     return (
-      <div
-        className="component-style"
-        style={{ overflow: 'hidden', position: 'relative' }}
-      >
-        <div style={containerStyle} open={this.props.open}>
-          <div style={{ marginTop: '-80px' }}>
-            <div className="idcc-margin-top mdc-top-app-bar--fixed-adjust"></div>
-            <List>
-              <ListItem
-                data-cy={MEEP_TAB_CFG}
-                style={this.styleForPage(PAGE_CONFIGURE)}
-                onClick={() => {
-                  this.handleItemClick(PAGE_CONFIGURE);
-                }}
-              >
-                <Icon
-                  icon="sort"
-                  iconOptions={{ strategy: 'ligature' }}
-                  style={iconStyles}
-                />
-                <span style={textStyles}>Configure</span>
-              </ListItem>
-              <ListItem
-                data-cy={MEEP_TAB_EXEC}
-                style={this.styleForPage(PAGE_EXECUTE)}
-                onClick={() => {
-                  this.handleItemClick(PAGE_EXECUTE);
-                }}
-              >
-                <Icon
-                  icon="forward"
-                  iconOptions={{ strategy: 'ligature' }}
-                  style={iconStyles}
-                />
-                <span style={textStyles}>Execute</span>
-              </ListItem>
-              <ListItem
-                data-cy={MEEP_TAB_MON}
-                style={this.styleForPage(PAGE_MONITOR)}
-                onClick={() => {
-                  this.handleItemClick(PAGE_MONITOR);
-                }}
-              >
-                <Icon
-                  icon="tv"
-                  iconOptions={{ strategy: 'ligature' }}
-                  style={iconStyles}
-                />
-                <span style={textStyles}>Monitor</span>
-              </ListItem>
-              <ListItem
-                data-cy={MEEP_TAB_SET}
-                style={this.styleForPage(PAGE_SETTINGS)}
-                onClick={() => {
-                  this.handleItemClick(PAGE_SETTINGS);
-                }}
-              >
-                <Icon
-                  icon="settings"
-                  iconOptions={{ strategy: 'ligature' }}
-                  style={iconStyles}
-                />
-                <span style={textStyles}>Settings</span>
-              </ListItem>
-            </List>
-          </div>
-        </div>
+      <div className="component-style" open={this.props.open}>
+        <List>
+          <ListItem
+            data-cy={MEEP_TAB_CFG}
+            style={this.styleForPage(PAGE_CONFIGURE)}
+            onClick={() => {
+              this.handleItemClick(PAGE_CONFIGURE);
+            }}
+          >
+            <Icon
+              icon="sort"
+              iconOptions={{ strategy: 'ligature' }}
+              style={iconStyles}
+            />
+            <span style={textStyles}>Configure</span>
+          </ListItem>
+          <ListItem
+            data-cy={MEEP_TAB_EXEC}
+            style={this.styleForPage(PAGE_EXECUTE)}
+            onClick={() => {
+              this.handleItemClick(PAGE_EXECUTE);
+            }}
+          >
+            <Icon
+              icon="forward"
+              iconOptions={{ strategy: 'ligature' }}
+              style={iconStyles}
+            />
+            <span style={textStyles}>Execute</span>
+          </ListItem>
+          <ListItem
+            data-cy={MEEP_TAB_MON}
+            style={this.styleForPage(PAGE_MONITOR)}
+            onClick={() => {
+              this.handleItemClick(PAGE_MONITOR);
+            }}
+          >
+            <Icon
+              icon="tv"
+              iconOptions={{ strategy: 'ligature' }}
+              style={iconStyles}
+            />
+            <span style={textStyles}>Monitor</span>
+          </ListItem>
+          <ListItem
+            data-cy={MEEP_TAB_SET}
+            style={this.styleForPage(PAGE_SETTINGS)}
+            onClick={() => {
+              this.handleItemClick(PAGE_SETTINGS);
+            }}
+          >
+            <Icon
+              icon="settings"
+              iconOptions={{ strategy: 'ligature' }}
+              style={iconStyles}
+            />
+            <span style={textStyles}>Settings</span>
+          </ListItem>
+        </List>
       </div>
     );
   }
 }
-
-const containerStyle = {
-  borderRight: '1px solid #e4e4e4',
-  height: '100vh'
-};
 
 const textStyles = {
   marginLeft: '30px',
@@ -149,8 +136,7 @@ const mapDispatchToProps = dispatch => {
 
 const mapStateToProps = state => {
   return {
-    currentPage: state.ui.page,
-    mainDrawerOpen: state.ui.mainDrawerOpen
+    currentPage: state.ui.page
   };
 };
 

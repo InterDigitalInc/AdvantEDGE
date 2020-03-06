@@ -196,11 +196,10 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP Ctrl Engine active scenario update Channel
 	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents)
+		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
 		processActiveScenarioUpdate()
-
 	default:
-		log.Warn("Unsupported channel")
+		log.Warn("Unsupported channel", " payload: ", payload)
 	}
 }
 
@@ -640,6 +639,7 @@ func applyMgSvcMapping() {
 	}
 
 	// Publish Edge LB rules update
+	log.Debug("TX-MSG [", channelMgManagerLb, "] ", "")
 	_ = mgm.lbRulesStore.rc.Publish(channelMgManagerLb, "")
 }
 

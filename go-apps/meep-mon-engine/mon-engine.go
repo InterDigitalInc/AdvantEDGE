@@ -113,23 +113,23 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 func printfMonEngineInfo(monEngineInfo MonEngineInfo, reason int) {
 
 	log.Debug("Monitoring Engine info *** ", pod_event_str[reason], " *** ",
-		"pod name : ", monEngineInfo.PodName,
-		"namespace : ", monEngineInfo.Namespace,
-		"meepApp : ", monEngineInfo.MeepApp,
-		"meepOrigin : ", monEngineInfo.MeepOrigin,
-		"meepScenario : ", monEngineInfo.MeepScenario,
-		"phase : ", monEngineInfo.Phase,
-		"podInitialized : ", monEngineInfo.PodInitialized,
-		"podUnschedulable : ", monEngineInfo.PodUnschedulable,
-		"podScheduled : ", monEngineInfo.PodScheduled,
-		"podReady : ", monEngineInfo.PodReady,
-		"podConditionError : ", monEngineInfo.PodConditionError,
-		"ContainerStatusesMsg : ", monEngineInfo.ContainerStatusesMsg,
-		"NbOkContainers : ", monEngineInfo.NbOkContainers,
-		"NbTotalContainers : ", monEngineInfo.NbTotalContainers,
-		"NbPodRestart : ", monEngineInfo.NbPodRestart,
-		"LogicalState : ", monEngineInfo.LogicalState,
-		"StartTime : ", monEngineInfo.StartTime)
+		" pod name : ", monEngineInfo.PodName,
+		" namespace : ", monEngineInfo.Namespace,
+		" meepApp : ", monEngineInfo.MeepApp,
+		" meepOrigin : ", monEngineInfo.MeepOrigin,
+		" meepScenario : ", monEngineInfo.MeepScenario,
+		" phase : ", monEngineInfo.Phase,
+		" podInitialized : ", monEngineInfo.PodInitialized,
+		" podUnschedulable : ", monEngineInfo.PodUnschedulable,
+		" podScheduled : ", monEngineInfo.PodScheduled,
+		" podReady : ", monEngineInfo.PodReady,
+		" podConditionError : ", monEngineInfo.PodConditionError,
+		" ContainerStatusesMsg : ", monEngineInfo.ContainerStatusesMsg,
+		" NbOkContainers : ", monEngineInfo.NbOkContainers,
+		" NbTotalContainers : ", monEngineInfo.NbTotalContainers,
+		" NbPodRestart : ", monEngineInfo.NbPodRestart,
+		" LogicalState : ", monEngineInfo.LogicalState,
+		" StartTime : ", monEngineInfo.StartTime)
 }
 
 func processEvent(obj interface{}, reason int) {
@@ -256,7 +256,10 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = rc.SetEntry(key, fields)
+	err := rc.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Entry could not be updated in DB for ", monEngineInfo.MeepApp, ": ", err)
+	}
 }
 
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
@@ -265,7 +268,10 @@ func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 	key := moduleMonEngine + ":MO-" + monEngineInfo.MeepOrigin + ":MS-" + monEngineInfo.MeepScenario + ":MA-" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
-	_ = rc.DelEntry(key)
+	err := rc.DelEntry(key)
+	if err != nil {
+		log.Error("Entry could not be deleted in DB for ", monEngineInfo.MeepApp, ": ", err)
+	}
 }
 
 func k8sConnect() (err error) {

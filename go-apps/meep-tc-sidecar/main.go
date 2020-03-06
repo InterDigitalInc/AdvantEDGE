@@ -23,9 +23,11 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
@@ -68,29 +70,28 @@ type podShortElement struct {
 	IfbNumber string
 }
 
-var sem = make(chan int, 1)
+var semOptsDests sync.Mutex
+var semLatencyMap sync.Mutex
 
 var opts = struct {
-	timeout                time.Duration
-	interval               time.Duration
-	trafficInterval        time.Duration
-	trafficIntervalsPerLog uint
-	payloadSize            uint
-	statBufferSize         uint
-	bind4                  string
-	bind6                  string
-	dests                  []*destination
-	resolverTimeout        time.Duration
+	timeout         time.Duration
+	interval        time.Duration
+	trafficInterval time.Duration
+	payloadSize     uint
+	statBufferSize  uint
+	bind4           string
+	bind6           string
+	dests           []*destination
+	resolverTimeout time.Duration
 }{
-	timeout:                100000 * time.Millisecond,
-	interval:               1000 * time.Millisecond,
-	trafficInterval:        100 * time.Millisecond,
-	trafficIntervalsPerLog: 10, //set to 10 to have one log per second, in order to lower the impact on Elastic Search
-	bind4:                  "0.0.0.0",
-	bind6:                  "::",
-	payloadSize:            56,
-	statBufferSize:         50,
-	resolverTimeout:        15000 * time.Millisecond,
+	timeout:         100000 * time.Millisecond,
+	interval:        1000 * time.Millisecond,
+	trafficInterval: 100 * time.Millisecond,
+	bind4:           "0.0.0.0",
+	bind6:           "::",
+	payloadSize:     56,
+	statBufferSize:  50,
+	resolverTimeout: 15000 * time.Millisecond,
 }
 
 // NetChar
@@ -110,16 +111,21 @@ var serviceChains = map[string]string{}
 var ifbs = map[string]string{}
 var filters = map[string]string{}
 var netcharMap = map[string]*NetChar{}
+var latestLatencyResultsMap map[string]int32
 
 var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
 
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr = "meep-redis-master:6379"
+const influxDBAddr = "http://meep-influxdb:8086"
 
 var rc *redis.Connector
+var metricStore *ms.MetricStore
 
 const DEFAULT_SIDECAR_DB = 0
+
+var nbAppliedOperations = 0
 
 // Run - MEEP Sidecar execution
 func main() {
@@ -146,7 +152,7 @@ func initMeepSidecar() error {
 	var err error
 
 	// Log as JSON instead of the default ASCII formatter.
-	log.MeepJSONLogInit("meep-tc-sidecar")
+	log.MeepTextLogInit("meep-tc-sidecar")
 
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
@@ -161,6 +167,13 @@ func initMeepSidecar() error {
 	}
 	log.Info("MEEP_POD_NAME: ", PodName)
 
+	scenarioName := strings.TrimSpace(os.Getenv("MEEP_SCENARIO_NAME"))
+	if scenarioName == "" {
+		log.Error("MEEP_SCENARIO_NAME not set. Exiting.")
+		return errors.New("MEEP_SCENARIO_NAME not set")
+	}
+	log.Info("MEEP_SCENARIO_NAME: ", scenarioName)
+
 	// Create IPtables client
 	ipTbl, err = ipt.New()
 	if err != nil {
@@ -172,10 +185,17 @@ func initMeepSidecar() error {
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
 	if err != nil {
-		log.Error("Failed connection to Redis DB.  Error: ", err)
+		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
 	log.Info("Connected to redis DB")
+
+	// Connect to Metric Store
+	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
 
 	// Subscribe to Pub-Sub events for MEEP TC & LB
 	// NOTE: Current implementation is RedisDB Pub-Sub
@@ -187,6 +207,10 @@ func initMeepSidecar() error {
 
 	log.Info("Successfully subscribed to Pub/Sub events")
 
+	semLatencyMap.Lock()
+	latestLatencyResultsMap = make(map[string]int32)
+	semLatencyMap.Unlock()
+
 	return nil
 }
 
@@ -196,14 +220,14 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP TC Network Characteristic Channel
 	case channelTcNet:
+		log.Debug("Event received on channel: ", channelTcNet, " payload: ", payload)
 		processNetCharMsg(payload)
-
 	// MEEP TC LB Channel
 	case channelTcLb:
+		log.Debug("Event received on channel: ", channelTcLb, " payload: ", payload)
 		processLbMsg(payload)
-
 	default:
-		log.Warn("Unsupported channel")
+		log.Warn("Unsupported channel", " payload: ", payload)
 	}
 }
 
@@ -220,8 +244,8 @@ func refreshNetCharRules() {
 	// Create shape rules
 	_ = initializeOnFirstPass()
 
-	// moduleName := "sidecar"
-	// currentTime := time.Now()
+	currentTime := time.Now()
+	nbAppliedOperations = 0
 
 	_ = createIfbs()
 
@@ -233,12 +257,8 @@ func refreshNetCharRules() {
 	// Delete unused ifbs
 	deleteUnusedIfbs()
 
-	// elapsed := time.Since(currentTime)
-	// log.WithFields(log.Fields{
-	// 	"meep.log.component": moduleName,
-	// 	"meep.time.location": "refreshNetCharRules execution time",
-	// 	"meep.time.exec":     elapsed,
-	// }).Info("Measurements log")
+	elapsed := time.Since(currentTime)
+	log.Debug("RefreshNetCharRules execution time for ", nbAppliedOperations, " updates, elapsed time: ", elapsed)
 
 	// Start measurements
 	startMeasurementThreads()
@@ -501,15 +521,17 @@ func callPing() {
 				history: &history{
 					results: make([]time.Duration, opts.statBufferSize),
 				},
-				historyRx: &historyRx{
-					rcvedBytes: 0,
+				prevRx: &historyRx{
+					rxBytes: 0,
 				},
-				historyLogRx: &historyRx{
-					rcvedBytes: 0,
+				prevRxLog: &historyRx{
+					rxBytes: 0,
 				},
 			}
 
+			semOptsDests.Lock()
 			opts.dests = append(opts.dests, &dst)
+			semOptsDests.Unlock()
 		}
 	}
 
@@ -527,15 +549,19 @@ func callPing() {
 
 func workLatency() {
 	for {
+
+		semOptsDests.Lock()
 		for i, u := range opts.dests {
 			//starting 2 threads, one for the pings, one for the computing part
 			go func(u *destination, i int) {
 				u.ping(pinger)
 			}(u, i)
-			go func(u *destination, i int) {
-				u.compute(rc)
-			}(u, i)
+			//go func(u *destination, i int) {
+			u.compute()
+			//}(u, i)
+
 		}
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.interval)
 	}
@@ -545,15 +571,53 @@ func workRxTxPackets() {
 	for {
 		//only this one affects the destinations based on info in the DB
 
-		sem <- 1
+		semOptsDests.Lock()
 
-		for i, u := range opts.dests {
-			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			go func(u *destination, i int) {
-				u.processRxTx(rc)
-			}(u, i)
+		str := "tc -s qdisc show"
+		out, err := cmdExec(str)
+		if err != nil {
+			log.Error("tc -s qdisc show")
+			log.Error(err)
+			return
 		}
-		<-sem
+		//split line by line
+		lineStrings := strings.Split(out, "\n")
+
+		//store the mapping
+		qdiscResults := make(map[string]string)
+
+		lineIndex := 0
+		for lineIndex < (len(lineStrings) - 1) {
+			//each entry has 3 lines
+			//first line get the ifb
+			line1 := lineStrings[lineIndex]
+			//second line are the stats we need
+			line2 := lineStrings[lineIndex+1]
+			//third line is not useful stats for our application
+			//line3 := lineStrings[lineIndex+2]
+			ifb := strings.Split(line1, " ")
+			//store the mapping
+			qdiscResults[ifb[4]] = line2
+			lineIndex = lineIndex + 3
+		}
+
+		// Store throughput metric if entry exists
+		var tputStats = make(map[string]interface{})
+
+		for _, u := range opts.dests {
+			//get the data for all, parse the output and transmit to each
+			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
+			/*go*/
+			tputStats[u.remoteName] = u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
+		}
+
+		key := moduleMetrics + ":" + PodName + ":throughput"
+
+		if rc.EntryExists(key) {
+			_ = rc.SetEntry(key, tputStats)
+		}
+
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.trafficInterval)
 	}
@@ -563,15 +627,42 @@ func workLogRxTxData() {
 	for {
 		//only this one affects the destinations based on info in the DB
 
-		sem <- 1
+		semOptsDests.Lock()
 
-		for i, u := range opts.dests {
-			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
-			go func(u *destination, i int) {
-				u.logRxTx(rc)
-			}(u, i)
+		str := "tc -s qdisc show"
+		out, err := cmdExec(str)
+		if err != nil {
+			log.Error("tc -s qdisc show")
+			log.Error(err)
+			return
 		}
-		<-sem
+		//split line by line
+		lineStrings := strings.Split(out, "\n")
+
+		//store the mapping
+		qdiscResults := make(map[string]string)
+
+		lineIndex := 0
+		for lineIndex < (len(lineStrings) - 1) {
+			//each entry has 3 lines
+			//first line get the ifb
+			line1 := lineStrings[lineIndex]
+			//second line are the stats we need
+			line2 := lineStrings[lineIndex+1]
+			//third line is not useful stats for our application
+			//line3 := lineStrings[lineIndex+2]
+			ifb := strings.Split(line1, " ")
+			//store the mapping
+			qdiscResults[ifb[4]] = line2
+			lineIndex = lineIndex + 3
+		}
+
+		for _, u := range opts.dests {
+			//starting 1 thread for getting the rx-tx info and computing the appropriate metrics
+			/*go*/
+			u.logRxTx(qdiscResults["ifb"+u.ifbNumber])
+		}
+		semOptsDests.Unlock()
 
 		time.Sleep(opts.interval)
 	}
@@ -610,14 +701,13 @@ func createIfbs() error {
 
 func createIfbsHandler(key string, fields map[string]string, userData interface{}) error {
 	ifbNumber := fields["ifb_uniqueId"]
-
 	_, exists := ifbs[ifbNumber]
 	if !exists {
 		_ = cmdCreateIfb(fields)
 		ifbs[ifbNumber] = ifbNumber
-		_ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	} else {
-		_ = cmdSetIfb(fields)
+		_, _ = cmdSetIfb(fields)
 	}
 
 	return nil
@@ -634,7 +724,6 @@ func createFilters() error {
 
 func createFiltersHandler(key string, fields map[string]string, userData interface{}) error {
 	filterNumber := fields["filter_uniqueId"]
-
 	_, exists := filters[filterNumber]
 
 	if !exists {
@@ -710,6 +799,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"ip link add $ifb$ifbnumber type ifb"
 	str := "ip link add ifb" + ifbNumber + " type ifb"
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("ERROR ifb" + ifbNumber + " already exist in sidecar")
@@ -718,6 +808,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"ip link set $ifb$ifbnumber up"
 	str = "ip link set ifb" + ifbNumber + " up"
+	nbAppliedOperations++
 	_, err = cmdExec(str)
 	if err != nil {
 		return err
@@ -725,6 +816,7 @@ func cmdCreateIfb(shape map[string]string) error {
 
 	//"tc qdisc replace dev $ifb$ifbnumber handle 1:0 root netem"
 	str = "tc qdisc replace dev ifb" + ifbNumber + " handle 1:0 root netem"
+	nbAppliedOperations++
 	_, err = cmdExec(str)
 	if err != nil {
 		return err
@@ -733,7 +825,7 @@ func cmdCreateIfb(shape map[string]string) error {
 	return nil
 }
 
-func cmdSetIfb(shape map[string]string) error {
+func cmdSetIfb(shape map[string]string) (bool, error) {
 	ifbNumber := shape["ifb_uniqueId"]
 	delay := shape["delay"]
 	delayVariation := shape["delayVariation"]
@@ -773,10 +865,10 @@ func cmdSetIfb(shape map[string]string) error {
 		if dataRate != "" && dataRate != "0" {
 			str = str + " rate " + dataRate + "bit"
 		}
-
+		nbAppliedOperations++
 		_, err := cmdExec(str)
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		//store the new values
@@ -784,14 +876,16 @@ func cmdSetIfb(shape map[string]string) error {
 		nc.Jitter = delayVariation
 		nc.PacketLoss = loss
 		nc.Throughput = dataRate
+		return true, nil
 	}
 
-	return nil
+	return false, nil
 }
 
 func cmdDeleteIfb(ifbNumber string) error {
 	//"ip link delete ifb$ifbNumber"
 	str := "ip link delete ifb" + ifbNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -811,6 +905,7 @@ func cmdDeleteIfb(ifbNumber string) error {
 func cmdDeleteFilter(filterNumber string) error {
 	//tc filter del dev eth0 parent ffff: pref $filterNumber
 	str := "tc filter del dev eth0 parent ffff: pref " + filterNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		return err
@@ -821,12 +916,13 @@ func cmdDeleteFilter(filterNumber string) error {
 func initializeOnFirstPass() error {
 
 	if firstTimePass {
+		nbAppliedOperations++
 		_, err := cmdExec("tc qdisc replace dev eth0 root handle 1: netem")
 		if err != nil {
 			log.Info("Error: ", err)
 			return err
 		}
-
+		nbAppliedOperations++
 		_, err = cmdExec("tc qdisc replace dev eth0 handle ffff: ingress")
 		if err != nil {
 			log.Info("Error: ", err)
@@ -845,6 +941,7 @@ func cmdCreateFilter(filterNumber string, ifbNumber string, ipSrc string) error 
 	//fonction must be a replace... a replace Adds if not there or replace if existing
 	//"tc filter replace dev eth0 parent ffff: protocol ip prio $filterNumber u32 match ip src $ipsrc match u32 0 0 action mirred egress redirect dev $ifb$ifbnumber"
 	//str := "tc filter replace dev eth0 parent ffff: protocol ip prio " + filterNumber + " handle 800::800 u32 match u32 0 0 action mirred egress redirect dev ifb" + ifbNumber
+	nbAppliedOperations++
 	_, err := cmdExec(str)
 	if err != nil {
 		log.Info("Error: ", err)

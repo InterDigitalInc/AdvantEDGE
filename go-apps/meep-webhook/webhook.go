@@ -83,12 +83,11 @@ func eventHandler(channel string, payload string) {
 	// MEEP Ctrl Engine active scenario update Channel
 	// case channelCtrlActive:
 	case model.ActiveChannel:
-		log.Debug("Event received on channel: ", model.ActiveChannel)
+		log.Debug("Event received on channel: ", model.ActiveChannel, " payload: ", payload)
 		// processActiveScenarioUpdate()
 		activeScenarioName = model.GetScenarioName()
-
 	default:
-		log.Warn("Unsupported channel")
+		log.Warn("Unsupported channel", " payload: ", payload)
 	}
 }
 
@@ -127,6 +126,9 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	var envVar corev1.EnvVar
 	envVar.Name = "MEEP_POD_NAME"
 	envVar.Value = meepAppName
+	envVars = append(envVars, envVar)
+	envVar.Name = "MEEP_SCENARIO_NAME"
+	envVar.Value = activeScenarioName
 	envVars = append(envVars, envVar)
 
 	var sidecarContainers []corev1.Container

@@ -1,0 +1,790 @@
+---
+swagger: "2.0"
+info:
+  description: "Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine)\
+    \ <p>**Type & Usage**<br>Platform Service used by control/monitoring software\
+    \ and possibly by edge applications that require metrics <p>**Details**<br>API\
+    \ details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30008`"
+  version: "1.0.0"
+  title: "AdvantEDGE Metrics Service REST API"
+  contact:
+    name: "InterDigital AdvantEDGE Support"
+    email: "AdvantEDGE@InterDigital.com"
+  license:
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+basePath: "/v2"
+tags:
+- name: "Metrics"
+- name: "Subscriptions"
+schemes:
+- "http"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /metrics/query/network:
+    post:
+      tags:
+      - "Metrics"
+      description: "Returns Network metrics according to specificed parameters"
+      operationId: "postNetworkQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/NetworkQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/NetworkMetricList"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+  /metrics/subscriptions/network:
+    get:
+      tags:
+      - "Subscriptions"
+      description: "Returns all Network subscriptions"
+      operationId: "getNetworkSubscription"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/NetworkSubscriptionList"
+        500:
+          description: "Internal server error"
+    post:
+      tags:
+      - "Subscriptions"
+      description: "Create a Network subscription"
+      operationId: "createNetworkSubscription"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Network subscription parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/NetworkSubscriptionParams"
+        x-exportParamName: "Params"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/NetworkSubscription"
+        500:
+          description: "Internal server error"
+  /metrics/subscriptions/network/{subscriptionId}:
+    get:
+      tags:
+      - "Subscriptions"
+      description: "Returns a Network subscription"
+      operationId: "getNetworkSubscriptionById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription ID - returned when the subscription was created"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/NetworkSubscription"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+    delete:
+      tags:
+      - "Subscriptions"
+      description: "Returns a Network subscription"
+      operationId: "deleteNetworkSubscriptionById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription ID - returned when the subscription was created"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+  /metrics/query/event:
+    post:
+      tags:
+      - "Metrics"
+      description: "Returns Event metrics according to specificed parameters"
+      operationId: "postEventQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/EventQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EventMetricList"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+  /metrics/subscriptions/event:
+    get:
+      tags:
+      - "Subscriptions"
+      description: "Returns all Event subscriptions"
+      operationId: "getEventSubscription"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EventSubscriptionList"
+        500:
+          description: "Internal server error"
+    post:
+      tags:
+      - "Subscriptions"
+      description: "Create an Event subscription"
+      operationId: "createEventSubscription"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Event subscription parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/EventSubscriptionParams"
+        x-exportParamName: "Params"
+      responses:
+        201:
+          description: "Created"
+          schema:
+            $ref: "#/definitions/EventSubscription"
+        500:
+          description: "Internal server error"
+  /metrics/subscriptions/event/{subscriptionId}:
+    get:
+      tags:
+      - "Subscriptions"
+      description: "Returns an Event subscription"
+      operationId: "getEventSubscriptionById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription ID - returned when the subscription was created"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/EventSubscription"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+    delete:
+      tags:
+      - "Subscriptions"
+      description: "Returns an Event subscription"
+      operationId: "deleteEventSubscriptionById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription ID - returned when the subscription was created"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        204:
+          description: "deleted"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
+definitions:
+  NetworkQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> <li>src:\
+          \ Source network element name <li>dest: Destination network element name"
+        items:
+          $ref: "#/definitions/Tag"
+      fields:
+        type: "array"
+        description: "Field names to return in query response. Supported values:<br>\
+          \ <li>lat: Round-trip latency (ms)<br> <li>ul: Uplink throughput from src\
+          \ to dest (Mbps) <li>dl: Downlink throughput from dest to src (Mbps) <li>ulos:\
+          \ Uplink packet loss from src to dest (%) <li>dlos: Downlink packet loss\
+          \ from dest to src (%)"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "lat"
+          - "ul"
+          - "dl"
+          - "ulos"
+          - "dlos"
+      scope:
+        $ref: "#/definitions/Scope"
+    description: "Network metrics query parameters"
+    example:
+      scope:
+        duration: "10s"
+        limit: 60
+      fields:
+      - "lat"
+      - "ul"
+      - "dl"
+      - "ulos"
+      - "dlos"
+      tags:
+      - name: "src"
+        value: "ue1-iperf"
+      - name: "dest"
+        value: "zone1-fog1-iperf"
+  Tag:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "src"
+        description: "Tag name"
+      value:
+        type: "string"
+        example: "ue1-iperf"
+        description: "Tag value"
+    description: "Filtering query parameter"
+    example:
+      name: "src"
+      value: "ue1-iperf"
+  Scope:
+    type: "object"
+    properties:
+      limit:
+        type: "integer"
+        example: 60
+        description: "Maximum number of points in the response"
+      duration:
+        type: "string"
+        example: "10s"
+        description: "Length of time range (specify s for seconds, m for minutes,\
+          \ d for days)"
+    description: "Query scope (time / number of points)"
+    example:
+      duration: "10s"
+      limit: 60
+  NetworkMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "network metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkMetric"
+    description: "Network metrics query response"
+    example:
+      columns:
+      - "time"
+      - "lat"
+      - "ul"
+      - "dl"
+      - "ulos"
+      - "dlos"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        lat: 5
+        ul: 100000.0
+        dl: 90000.0
+        ulos: 0.001
+        dlos: 0.003
+      - time: "2019-11-24T12:45:01-5:00"
+        lat: 5
+        ul: 100000.0
+        dl: 90000.0
+        ulos: 0.001
+        dlos: 0.003
+      name: "network metrics"
+  NetworkMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of network metrics"
+      lat:
+        type: "integer"
+        example: 5
+        description: "Round-trip latency (ms)"
+      ul:
+        type: "number"
+        format: "double"
+        example: 90.1
+        description: "Uplink throughput from src to dest (Mbps)"
+      dl:
+        type: "number"
+        format: "double"
+        example: 100.0
+        description: "Downlink throughput from dest to src (Mbps)"
+      ulos:
+        type: "number"
+        format: "double"
+        example: 0.001
+        description: "Uplink packet loss from src to dest (%)"
+      dlos:
+        type: "number"
+        format: "double"
+        example: 0.003
+        description: "Uplink packet loss from dest to src (%)"
+    description: "Value of a single network metric"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      lat: 5
+      ul: 100000.0
+      dl: 90000.0
+      ulos: 0.001
+      dlos: 0.003
+  NetworkSubscriptionList:
+    properties:
+      networkSubscription:
+        type: "array"
+        items:
+          $ref: "#/definitions/NetworkSubscription"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        description: "Self referring URL."
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+      networkSubscription:
+      - resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "lat"
+          - "ul"
+          - "dl"
+          - "ulos"
+          - "dlos"
+          tags:
+          - name: "src"
+            value: "ue1-iperf"
+          - name: "dest"
+            value: "zone1-fog1-iperf"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+      - resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "lat"
+          - "ul"
+          - "dl"
+          - "ulos"
+          - "dlos"
+          tags:
+          - name: "src"
+            value: "ue1-iperf"
+          - name: "dest"
+            value: "zone1-fog1-iperf"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+  NetworkSubscription:
+    type: "object"
+    properties:
+      subscriptionId:
+        type: "string"
+        example: "1.2556487E7"
+        description: "Subscription identifier"
+      clientCorrelator:
+        type: "string"
+        example: "83"
+        description: "Uniquely identifies this create subscription request. If there\
+          \ is a communication failure during the request, using the same clientCorrelator\
+          \ when retrying the request allows the operator to avoid creating a duplicate\
+          \ subscription."
+      callbackReference:
+        $ref: "#/definitions/NetworkCallbackReference"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/network/subscription123"
+        description: "Self referring URL."
+      networkQueryParams:
+        $ref: "#/definitions/NetworkQueryParams"
+      period:
+        type: "integer"
+        example: 1
+        description: "Notification interval in seconds, disabled if set to 0"
+      subscriptionType:
+        type: "string"
+        example: "period"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "period"
+    description: "Network metrics subscription response"
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/network/subscription123"
+      eventQueryParams:
+        scope:
+          duration: "10s"
+          limit: 60
+        fields:
+        - "lat"
+        - "ul"
+        - "dl"
+        - "ulos"
+        - "dlos"
+        tags:
+        - name: "src"
+          value: "ue1-iperf"
+        - name: "dest"
+          value: "zone1-fog1-iperf"
+      callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+        }"
+      clientCorrelator: "83"
+      subscriptionId: "1.2556487E7"
+  NetworkCallbackReference:
+    type: "object"
+    required:
+    - "notifyURL"
+    properties:
+      notifyURL:
+        type: "string"
+        format: "url"
+        example: "http://clientApp.example.com/metric_network_notifications/123456"
+        description: "The URL of your own listener application."
+    description: "Notification callback definition."
+    example: "{\"notifyURL\":\"http://clientApp.example.com/metric_network_notifications/123456\"\
+      }"
+  NetworkSubscriptionParams:
+    type: "object"
+    properties:
+      clientCorrelator:
+        type: "string"
+        example: "83"
+        description: "Uniquely identifies this create subscription request. If there\
+          \ is a communication failure during the request, using the same clientCorrelator\
+          \ when retrying the request allows the operator to avoid creating a duplicate\
+          \ subscription."
+      callbackReference:
+        $ref: "#/definitions/NetworkCallbackReference"
+      networkQueryParams:
+        $ref: "#/definitions/NetworkQueryParams"
+      period:
+        type: "integer"
+        example: 1
+        description: "Notification interval in seconds"
+      subscriptionType:
+        type: "string"
+        example: "period"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "period"
+    description: "Network metrics subscription parameters"
+    example:
+      clientCorrelator: "0123"
+      callbackReference:
+        notifyURL: "http://clientApp.example.com/network_event_notifications/123456"
+      networkQueryParams:
+        tags:
+        - name: "src"
+          value: "ue1-iperf"
+        fields:
+        - "lat"
+        - "ul"
+        - "dl"
+        - "ulos"
+        - "dlos"
+        scope:
+          limit: 60
+      period: 1
+      subscriptionType: "period"
+  EventQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> <li>type:\
+          \ Destination network element name"
+        items:
+          $ref: "#/definitions/Tag"
+      fields:
+        type: "array"
+        description: "Field names to return in query response. Supported values:<br>\
+          \ <li>event: Downlink packet loss from dest to src (%)"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "event"
+      scope:
+        $ref: "#/definitions/Scope"
+    description: "Event metrics query parameters"
+    example:
+      scope:
+        duration: "10s"
+        limit: 60
+      fields:
+      - "event"
+      tags:
+      - name: "type"
+        value: "MOBILITY"
+  EventMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "event metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/EventMetric"
+    description: "Event metrics query response"
+    example:
+      columns:
+      - "event"
+      values:
+      - event: "JSON-formatted mobility event ue1 to poa3"
+        time: "2019-11-24T12:45:00-5:00"
+      - event: "JSON-formatted mobility event ue1 to poa2"
+        time: "2019-11-24T12:44:01-5:00"
+      name: "event metrics"
+  EventMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of event metrics"
+      event:
+        type: "string"
+        example: "JSON-formatted mobility event ue1 to poa3"
+        description: "JSON-fomatted event"
+    description: "Value of a single event metric"
+    example:
+      event: "JSON-formatted mobility event ue1 to poa3"
+      time: "2019-11-24T12:45:00-5:00"
+  EventSubscriptionList:
+    properties:
+      eventSubscription:
+        type: "array"
+        items:
+          $ref: "#/definitions/EventSubscription"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/event/subscription123"
+        description: "Self referring URL."
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/event/subscription123"
+      eventSubscription:
+      - resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "event"
+          tags:
+          - name: "type"
+            value: "MOBILITY"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+      - resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
+        eventQueryParams:
+          scope:
+            duration: "10s"
+            limit: 60
+          fields:
+          - "event"
+          tags:
+          - name: "type"
+            value: "MOBILITY"
+        callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+          }"
+        clientCorrelator: "83"
+        subscriptionId: "1.2556487E7"
+  EventSubscription:
+    type: "object"
+    properties:
+      subscriptionId:
+        type: "string"
+        example: "1.2556487E7"
+        description: "Subscription identifier"
+      clientCorrelator:
+        type: "string"
+        example: "83"
+        description: "Uniquely identifies this create subscription request. If there\
+          \ is a communication failure during the request, using the same clientCorrelator\
+          \ when retrying the request allows the operator to avoid creating a duplicate\
+          \ subscription."
+      callbackReference:
+        $ref: "#/definitions/EventsCallbackReference"
+      resourceURL:
+        type: "string"
+        format: "uri"
+        example: "http://localhost:8291/v2/subscriptions/events/subscription123"
+        description: "Self referring URL."
+      eventQueryParams:
+        $ref: "#/definitions/EventQueryParams"
+      period:
+        type: "integer"
+        example: 1
+        description: "Notification interval in seconds, disabled if set to 0"
+      subscriptionType:
+        type: "string"
+        example: "period"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "period"
+    description: "Events metrics subscription response"
+    example:
+      resourceURL: "http://localhost:8291/v2/subscriptions/events/subscription123"
+      eventQueryParams:
+        scope:
+          duration: "10s"
+          limit: 60
+        fields:
+        - "event"
+        tags:
+        - name: "type"
+          value: "MOBILITY"
+      callbackReference: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+        }"
+      clientCorrelator: "83"
+      subscriptionId: "1.2556487E7"
+  EventsCallbackReference:
+    type: "object"
+    required:
+    - "notifyURL"
+    properties:
+      notifyURL:
+        type: "string"
+        format: "url"
+        example: "http://clientApp.example.com/metric_event_notifications/123456"
+        description: "The URL of your own listener application."
+    description: "Notification callback definition."
+    example: "{\"notifyURL\":\"http://clientApp.example.com/metric_event_notifications/123456\"\
+      }"
+  EventSubscriptionParams:
+    type: "object"
+    properties:
+      clientCorrelator:
+        type: "string"
+        example: "83"
+        description: "Uniquely identifies this create subscription request. If there\
+          \ is a communication failure during the request, using the same clientCorrelator\
+          \ when retrying the request allows the operator to avoid creating a duplicate\
+          \ subscription."
+      callbackReference:
+        $ref: "#/definitions/EventsCallbackReference"
+      eventQueryParams:
+        $ref: "#/definitions/EventQueryParams"
+      period:
+        type: "integer"
+        example: 1
+        description: "Notification interval in seconds, disabled if set to 0"
+      subscriptionType:
+        type: "string"
+        example: "period"
+        description: "Type of subscription triggering notifications"
+        enum:
+        - "period"
+    description: "Events subscription parameters"
+    example:
+      clientCorrelator: "0123"
+      callbackReference:
+        notifyURL: "http://clientApp.example.com/metric_event_notifications/123456"
+      eventQueryParams:
+        tags:
+        - name: "type"
+          value: "MOBILITY"
+        fields:
+        - "event"
+      period: 1
+      subscriptionType: "period"
+responses:
+  Std200:
+    description: "OK"
+  Std201:
+    description: "Created"
+  Std204:
+    description: "Deleted"
+  Std400:
+    description: "Bad request"
+  Std404:
+    description: "Not found"
+  Std500:
+    description: "Internal server error"
+externalDocs:
+  description: "GitHub Wiki"
+  url: "https://github.com/InterDigitalInc/AdvantEDGE/wiki"

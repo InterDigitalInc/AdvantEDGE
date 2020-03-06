@@ -55,8 +55,11 @@
           // TODO: uncomment, update parameter values for activateScenario call
           /*
           var name = "name_example";
+          var opts = {};
+          opts.activationInfo = new AdvantEdgePlatformControllerRestApi.ActivationInfo();
+          opts.activationInfo.replayFileName = "";
 
-          instance.activateScenario(name, function(error, data, response) {
+          instance.activateScenario(name, opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -151,8 +154,12 @@
             expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Scenario);
             expect(data.version).to.be.a('string');
             expect(data.version).to.be("");
+            expect(data.id).to.be.a('string');
+            expect(data.id).to.be("");
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
+            expect(data.description).to.be.a('string');
+            expect(data.description).to.be("");
             expect(data.config).to.be.a(AdvantEdgePlatformControllerRestApi.ScenarioConfig);
                   expect(data.config.visualization).to.be.a('string');
               expect(data.config.visualization).to.be("");

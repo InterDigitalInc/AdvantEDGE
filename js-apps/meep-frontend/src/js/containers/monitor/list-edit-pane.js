@@ -20,8 +20,11 @@ import { Grid, GridCell } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Button } from '@rmwc/button';
+import { Typography } from '@rmwc/typography';
+import { DEFAULT_DASHBOARD_OPTIONS } from '../../meep-constants';
 
 export const ListEditPaneRow = ({
+  disabled,
   item,
   itemLabelLabel,
   itemValueLabel,
@@ -53,12 +56,13 @@ export const ListEditPaneRow = ({
           }}
         />
       </GridCell>
-      <GridCell span={1} style={{ ...styles.editListItemCell, paddingTop: 30 }}>
+      <GridCell span={1} style={{ ...styles.editListItemCell, paddingTop: 25 }}>
         <Checkbox
           checked={item.selected}
           onChange={e => {
             updateItemSelection(item.index, e.target.checked);
           }}
+          disabled={disabled} 
         />
       </GridCell>
     </Grid>
@@ -68,41 +72,66 @@ export const ListEditPaneRow = ({
 export const ListEditPane = props => {
   return (
     <div>
-      {_.map(props.items, (item, index) => {
-        return (
-          <ListEditPaneRow
-            item={item}
-            key={index}
-            itemLabelLabel={props.itemLabelLabel}
-            itemValueLabel={props.itemValueLabel}
-            updateItemLabel={props.updateItemLabel}
-            updateItemValue={props.updateItemValue}
-            updateItemSelection={props.updateItemSelection}
-          />
-        );
-      })}
+      <Grid>
+        <GridCell span={4}>
+          <div style={styles.block}>
+            <Typography use="headline6">User Dashboard List:</Typography>
+          </div>
+        </GridCell>
+      </Grid>
+
+      <div style={{ marginTop: 20 }}>
+        {_.map(DEFAULT_DASHBOARD_OPTIONS, (item, index) => {
+          return (
+            <ListEditPaneRow
+              key={index}
+              disabled={true}
+              item={item}
+              itemLabelLabel={props.itemLabelLabel}
+              itemValueLabel={props.itemValueLabel}
+              updateItemLabel={props.updateItemLabel}
+              updateItemValue={props.updateItemValue}
+              updateItemSelection={props.updateItemSelection}
+            />
+          );
+        })}
+        {_.map(props.items, (item, index) => {
+          return (
+            <ListEditPaneRow
+              key={index}
+              disabled={false}
+              item={item}
+              itemLabelLabel={props.itemLabelLabel}
+              itemValueLabel={props.itemValueLabel}
+              updateItemLabel={props.updateItemLabel}
+              updateItemValue={props.updateItemValue}
+              updateItemSelection={props.updateItemSelection}
+            />
+          );
+        })}
+      </div>
 
       <Grid style={{ marginTop: 20, marginBottom: 10 }}>
-        <GridCell span={7}></GridCell>
-
-        <GridCell span={5}>
-          <Button raised style={styles.button} onClick={props.cancelEditMode}>
-            CANCEL
-          </Button>
-          <Button
-            raised
-            style={styles.button}
-            onClick={props.deleteItems}
-            disabled={!props.canDelete()}
-          >
-            DELETE
-          </Button>
-          <Button raised style={styles.button} onClick={props.addItem}>
-            ADD
-          </Button>
-          <Button raised style={styles.button} onClick={props.saveItems}>
-            SAVE
-          </Button>
+        <GridCell span={12}>
+          <div align={'right'}>
+            <Button outlined style={styles.button} onClick={props.addItem}>
+              NEW
+            </Button>
+            <Button
+              outlined
+              style={styles.button}
+              onClick={props.deleteItems}
+              disabled={!props.canDelete()}
+            >
+              DELETE
+            </Button>
+            <Button outlined style={styles.button} onClick={props.cancelEditMode}>
+              CANCEL
+            </Button>
+            <Button outlined style={styles.button} onClick={props.saveItems}>
+              APPLY
+            </Button>
+          </div>
         </GridCell>
       </Grid>
     </div>
@@ -111,10 +140,9 @@ export const ListEditPane = props => {
 
 const styles = {
   button: {
-    color: 'white',
-    marginRight: 5
+    marginRight: 10
   },
   editListItemCell: {
-    padding: 5
+    padding: 0
   }
 };

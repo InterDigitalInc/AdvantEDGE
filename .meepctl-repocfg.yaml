@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.3.0
+version: 1.4.0
 repo:
   name: AdvantEDGE
   core:
@@ -21,17 +21,8 @@ repo:
       cluster-role-binding: charts/meep-user/meep-user-clusterrolebinding.yaml
       codecov: false
       lint: false
-    meep-ctrl-engine:
-      src: go-apps/meep-ctrl-engine
-      bin: bin/meep-ctrl-engine
-      chart: charts/meep-ctrl-engine
-      codecov: true
-      lint: true
-      nodeport: 30000
-      api: go-apps/meep-ctrl-engine/api/swagger.yaml
-      docker-data:
-        api: bin/meep-swagger-ui
-        static: bin/meep-frontend
+
+    # CORE APPS (JS)
     meep-frontend:
       src: js-apps/meep-frontend
       bin: bin/meep-frontend
@@ -47,34 +38,24 @@ repo:
       api-bundle:
         - meep-ctrl-engine
         - meep-metrics-engine
+        - meep-metrics-engine-notification-client
         - meep-mg-manager
-        - meep-mg-app-notification
+        - meep-mg-app-client
         - meep-loc-serv
-        - meep-loc-serv-notification
-    meep-webhook:
-      src: go-apps/meep-webhook
-      bin: bin/meep-webhook
-      chart: charts/meep-webhook
-      build-flags:
-        - -mod=vendor
-      codecov: false
-      lint: true
-    meep-mg-manager:
-      src: go-apps/meep-mg-manager
-      bin: bin/meep-mg-manager
-      chart: charts/meep-mg-manager
+        - meep-loc-serv-notification-client
+
+    # CORE APPS (GO)
+    meep-ctrl-engine:
+      src: go-apps/meep-ctrl-engine
+      bin: bin/meep-ctrl-engine
+      chart: charts/meep-ctrl-engine
       codecov: true
       lint: true
-      nodeport: 30005
-      api: go-apps/meep-mg-manager/api/swagger.yaml
-    meep-mon-engine:
-      src: go-apps/meep-mon-engine
-      bin: bin/meep-mon-engine
-      chart: charts/meep-mon-engine
-      build-flags:
-        - -mod=vendor
-      codecov: true
-      lint: true
+      nodeport: 30000
+      api: go-apps/meep-ctrl-engine/api/swagger.yaml
+      docker-data:
+        api: bin/meep-swagger-ui
+        static: bin/meep-frontend
     meep-loc-serv:
       src: go-apps/meep-loc-serv
       bin: bin/meep-loc-serv
@@ -94,7 +75,23 @@ repo:
       codecov: true
       lint: true
       nodeport: 30008
-      api: go-apps/meep-metrics-engine/api/swagger.yaml
+      api: go-apps/meep-metrics-engine/api/v2/swagger.yaml
+    meep-mg-manager:
+      src: go-apps/meep-mg-manager
+      bin: bin/meep-mg-manager
+      chart: charts/meep-mg-manager
+      codecov: true
+      lint: true
+      nodeport: 30005
+      api: go-apps/meep-mg-manager/api/swagger.yaml
+    meep-mon-engine:
+      src: go-apps/meep-mon-engine
+      bin: bin/meep-mon-engine
+      chart: charts/meep-mon-engine
+      build-flags:
+        - -mod=vendor
+      codecov: true
+      lint: true
     meep-tc-engine:
       src: go-apps/meep-tc-engine
       bin: bin/meep-tc-engine
@@ -113,29 +110,86 @@ repo:
       template: charts/meep-virt-engine/virt-templates
       codecov: true
       lint: true
-    meep-loc-serv-notification:
+    meep-webhook:
+      src: go-apps/meep-webhook
+      bin: bin/meep-webhook
+      chart: charts/meep-webhook
+      build-flags:
+        - -mod=vendor
+      codecov: false
+      lint: true
+
+    # # CORE PACKAGES (JS)
+    # meep-ctrl-engine-client:
+    #   src: js-packages/meep-ctrl-engine-client
+    #   lint: false
+    # meep-metrics-engine-client:
+    #   src: js-packages/meep-metrics-engine-client
+    #   lint: false
+
+    # CORE PACKAGES (GO)
+    meep-couch:
+      src: go-packages/meep-couch
+      lint: true
+    meep-ctrl-engine-client:
+      src: go-packages/meep-ctrl-engine-client
+      lint: false
+    meep-ctrl-engine-model:
+      src: go-packages/meep-ctrl-engine-model
+      lint: true
+    meep-loc-serv-client:
+      src: go-packages/meep-loc-serv-client
+      lint: false
+    meep-loc-serv-notification-client:
+      src: go-packages/meep-loc-serv-notification-client
+      lint: false
       api: go-packages/meep-loc-serv-notification-client/api/swagger.yaml
-    meep-mg-app-notification:
+    meep-logger:
+      src: go-packages/meep-logger
+      lint: true
+    meep-metric-store:
+      src: go-packages/meep-metric-store
+      lint: true
+    meep-metrics-engine-notification-client:
+      src: go-packages/meep-metrics-engine-notification-client
+      lint: false
+      api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
+    meep-mg-app-client:
+      src: go-packages/meep-mg-app-client
+      lint: false
       api: go-packages/meep-mg-app-client/api/swagger.yaml
+    meep-mg-manager-client:
+      src: go-packages/meep-mg-manager-client
+      lint: false
+    meep-mg-manager-model:
+      src: go-packages/meep-mg-manager-model
+      lint: true
+    meep-model:
+      src: go-packages/meep-model
+      lint: true
+    meep-net-char-mgr:
+      src: go-packages/meep-net-char-mgr
+      lint: true
+    meep-redis:
+      src: go-packages/meep-redis
+      lint: true
+    meep-replay-manager:
+      src: go-packages/meep-replay-manager
+      lint: true
+    meep-watchdog:
+      src: go-packages/meep-watchdog
+      lint: true
   dep:
     docker-registry:
       chart: charts/docker-registry
-    elastic:
-      es:
-        chart: charts/elasticsearch
-        pv: charts/elasticsearch/meep-pv-es.yaml
-      es-curator:
-        chart: charts/elasticsearch-curator
-      kibana:
-        chart: charts/kibana
-      filebeat:
-        chart: charts/filebeat
-      metricbeat:
-        chart: charts/metricbeat
     couchdb:
       chart: charts/couchdb
+    influxdb:
+      chart: charts/influxdb
     redis:
       chart: charts/redis
     k8s:
       kube-state-metrics:
         chart: charts/kube-state-metrics
+    grafana:
+      chart: charts/grafana

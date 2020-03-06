@@ -20,23 +20,33 @@ import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
+import { Button } from '@rmwc/button';
+import { Icon } from '@rmwc/icon';
+import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
+
+import {
+  meepSetDefaultState
+} from '../../state/meep-reducer';
 
 import {
   uiSetAutomaticRefresh,
   uiChangeRefreshInterval,
   uiChangeDevMode,
-  uiExecChangeShowDashboardConfig
+  uiChangeCurrentDialog
 } from '../../state/ui';
 
 import {
+  MEEP_HELP_PAGE_SET_URL,
   PAGE_SETTINGS,
   SET_EXEC_REFRESH_CHECKBOX,
   SET_EXEC_REFRESH_INT,
   SET_VIS_CFG_CHECKBOX,
   SET_VIS_CFG_LABEL,
-  SET_DASHBOARD_CFG_CHECKBOX,
-  SET_DASHBOARD_CFG_LABEL
+  SET_RESET_SETTINGS_BUTTON,
+  IDC_DIALOG_CLEAR_UI_CACHE
 } from '../../meep-constants';
+
+/*global __VERSION__*/
 
 class SettingsPageContainer extends Component {
   constructor(props) {
@@ -75,7 +85,8 @@ class SettingsPageContainer extends Component {
 
   styles() {
     var styles = {
-      interval: {},
+      interval: {
+      },
       errorText: {
         display: 'none'
       },
@@ -95,105 +106,164 @@ class SettingsPageContainer extends Component {
     return styles;
   }
 
+  showDialog(id) {
+    this.props.showDialog(id);
+  }
+
+  closeDialog() {
+    this.showDialog(null);
+  }
+
   render() {
     if (this.props.page !== PAGE_SETTINGS) {
       return null;
     }
 
     return (
-      <div style={{ width: '100%' }}>
-        <Grid style={{ width: '100%' }}>
-          <GridInner>
-            <GridCell span={12} style={styles.inner}>
+      <div>
+        <IDConfirmDialog
+          title="Clear UI cache (reset default frontend state)"
+          open={this.props.currentDialog === IDC_DIALOG_CLEAR_UI_CACHE}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          onSubmit={() => this.props.meepSetDefaultState()}
+        />
+        <div style={{ width: '100%' }}>
+          <Grid style={{ width: '100%' }}>
+            <GridCell span={12}>
               <Elevation
                 className="component-style"
                 z={2}
-                style={{ paddingBottom: 10, marginBottom: 10 }}
+                style={styles.elevation}
               >
-                <Grid>
-                  <GridCell
-                    span={12}
-                    style={{ paddingLeft: 10, paddingTop: 10 }}
-                  >
-                    <div>
-                      <span className="mdc-typography--headline6">
-                        Execution:{' '}
-                      </span>
-                    </div>
+                <GridInner>
+                  <GridCell align={'middle'} span={4}>
+                    <span className="mdc-typography--headline6">
+                        Settings:{' '}
+                    </span>
                   </GridCell>
-                </Grid>
-                <Grid span={12}>
-                  <GridCell span={2}>
-                    <div style={{ marginTop: 20 }}>
-                      <Checkbox
-                        checked={this.props.automaticRefresh}
-                        onChange={e =>
-                          this.handleCheckboxChange(e.target.checked)
-                        }
-                        data-cy={SET_EXEC_REFRESH_CHECKBOX}
+                  <GridCell align={'middle'} span={8}>
+                    <div align={'right'}>
+                      <Button
+                        raised
+                        style={{ ...styles.button, marginLeft: 10 }}
+                        onClick={() => {
+                          window.open(MEEP_HELP_PAGE_SET_URL,'_blank');
+                        }}
                       >
-                        Automatic refresh:
-                      </Checkbox>
+                        <Icon
+                          icon="help_outline"
+                          iconOptions={{ strategy: 'ligature' }}
+                          style={styles.icon}
+                        />
+                      </Button>
                     </div>
                   </GridCell>
-                  <GridCell span={2}>
-                    <TextField
-                      outlined
-                      style={this.styles().interval}
-                      label="Interval (ms)"
-                      onChange={e => this.handleIntervalChange(e.target.value)}
-                      value={this.props.refreshInterval}
-                      disabled={!this.props.automaticRefresh}
-                      data-cy={SET_EXEC_REFRESH_INT}
-                    />
-                  </GridCell>
-                  <GridCell span={8}></GridCell>
-                </Grid>
-
-                <Grid>
-                  <GridCell span={2}></GridCell>
-                  <GridCell span={2} style={this.styles().errorGridCell}>
-                    <p style={this.styles().errorText}>
-                      500 &lt; value &lt; 60000
-                    </p>
-                  </GridCell>
-                  <GridCell span={8}></GridCell>
-                </Grid>
+                </GridInner>
               </Elevation>
 
               <Elevation
                 className="component-style"
                 z={2}
-                style={{ paddingBottom: 10, marginBottom: 10 }}
+                style={styles.elevation}
               >
-                <Grid>
-                  <GridCell
-                    span={12}
-                    style={{ paddingLeft: 10, paddingTop: 10 }}
-                  >
-                    <div>
-                      <span className="mdc-typography--headline6">
-                        Development:{' '}
-                      </span>
-                    </div>
-                  </GridCell>
-                </Grid>
-                <CheckableSettingItem
-                  stateItem={this.props.devMode}
-                  changeStateItem={this.props.changeDevMode}
-                  stateItemName={SET_VIS_CFG_LABEL}
-                  cydata={SET_VIS_CFG_CHECKBOX}
-                />
-                <CheckableSettingItem
-                  stateItem={this.props.showDashboardConfig}
-                  changeStateItem={this.props.changeShowDashboardConfig}
-                  stateItemName={SET_DASHBOARD_CFG_LABEL}
-                  cydata={SET_DASHBOARD_CFG_CHECKBOX}
-                />
+                <div style={styles.section}>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Execution:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Grid span={12}>
+                      <GridCell span={2}>
+                        <div style={{ marginTop: 20 }}>
+                          <Checkbox
+                            checked={this.props.automaticRefresh}
+                            onChange={e =>
+                              this.handleCheckboxChange(e.target.checked)
+                            }
+                            data-cy={SET_EXEC_REFRESH_CHECKBOX}
+                          >
+                            Automatic refresh:
+                          </Checkbox>
+                        </div>
+                      </GridCell>
+                      <GridCell span={10}>
+                        <TextField
+                          outlined
+                          style={this.styles().interval}
+                          label="Interval (ms)"
+                          onChange={e => this.handleIntervalChange(e.target.value)}
+                          value={this.props.refreshInterval}
+                          disabled={!this.props.automaticRefresh}
+                          data-cy={SET_EXEC_REFRESH_INT}
+                        />
+                      </GridCell>
+                    </Grid>
+
+                    <Grid>
+                      <GridCell span={2}></GridCell>
+                      <GridCell span={10} style={this.styles().errorGridCell}>
+                        <p style={this.styles().errorText}>
+                          500 &lt; value &lt; 60000
+                        </p>
+                      </GridCell>
+                    </Grid>
+                  </div>
+                </div>
+
+                <div style={styles.section}>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Development:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <CheckableSettingItem
+                      stateItem={this.props.devMode}
+                      changeStateItem={this.props.changeDevMode}
+                      stateItemName={SET_VIS_CFG_LABEL}
+                      cydata={SET_VIS_CFG_CHECKBOX}
+                    />
+                  </div>
+                </div>
+
+                <div style={styles.section}>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                      Local Storage:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Button
+                      raised
+                      style={styles.button}
+                      onClick={() => this.showDialog(IDC_DIALOG_CLEAR_UI_CACHE)}
+                      cydata={SET_RESET_SETTINGS_BUTTON}>
+                      CLEAR UI CACHE
+                    </Button>
+                  </div>
+                </div>
+ 
+                <div style={styles.section}>
+                  <div style={styles.headline}>
+                    <span className="mdc-typography--headline6">
+                        About:{' '}
+                    </span>
+                  </div>
+                  <div style={styles.content}>
+                    <Grid>
+                      <GridCell span={2}>UI Version:</GridCell>
+                      <GridCell span={10}>{__VERSION__}</GridCell>
+                    </Grid>
+                  </div>
+                </div>
+
               </Elevation>
             </GridCell>
-          </GridInner>
-        </Grid>
+          </Grid>
+        </div>
       </div>
     );
   }
@@ -206,7 +276,7 @@ const CheckableSettingItem = ({
   cydata
 }) => {
   return (
-    <Grid span={12} style={{ marginTop: 10 }}>
+    <Grid span={12}>
       <GridCell span={12}>
         <div>
           <Checkbox
@@ -223,23 +293,24 @@ const CheckableSettingItem = ({
 };
 
 const styles = {
-  headlineGrid: {
+  elevation: {
+    padding: 10,
     marginBottom: 10
+  },
+  section: {
+    border: '1px solid #e4e4e4',
+    padding: 15,
+    marginBottom: 15
   },
   headline: {
-    padding: 10,
-    marginBotton: 25
-  },
-  inner: {
-    height: '100%'
-  },
-  page: {
-    height: 1500,
     marginBottom: 10
   },
-  cfgTable: {
-    marginTop: 20,
-    padding: 10
+  content: {
+    marginBottom: 10
+  },
+  button: {
+    color: 'white',
+    marginRight: 5
   }
 };
 
@@ -249,7 +320,7 @@ const mapStateToProps = state => {
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
     page: state.ui.page,
-    showDashboardConfig: state.ui.showDashboardConfig
+    currentDialog: state.ui.currentDialog
   };
 };
 
@@ -258,8 +329,8 @@ const mapDispatchToProps = dispatch => {
     setAutomaticRefresh: val => dispatch(uiSetAutomaticRefresh(val)),
     changeRefreshInterval: val => dispatch(uiChangeRefreshInterval(val)),
     changeDevMode: mode => dispatch(uiChangeDevMode(mode)),
-    changeShowDashboardConfig: show =>
-      dispatch(uiExecChangeShowDashboardConfig(show))
+    showDialog: type => dispatch(uiChangeCurrentDialog(type)),
+    meepSetDefaultState: () => dispatch(meepSetDefaultState())
   };
 };
 

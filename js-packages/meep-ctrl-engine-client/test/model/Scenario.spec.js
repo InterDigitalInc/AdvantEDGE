@@ -61,10 +61,22 @@
         // expect(instance.version).to.be(expectedValueLiteral);
       });
 
+      it('should have the property id (base name: "id")', function() {
+        // TODO: update the code to test the property id
+        expect(instance).to.have.property('id');
+        // expect(instance.id).to.be(expectedValueLiteral);
+      });
+
       it('should have the property name (base name: "name")', function() {
         // TODO: update the code to test the property name
         expect(instance).to.have.property('name');
         // expect(instance.name).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property description (base name: "description")', function() {
+        // TODO: update the code to test the property description
+        expect(instance).to.have.property('description');
+        // expect(instance.description).to.be(expectedValueLiteral);
       });
 
       it('should have the property config (base name: "config")', function() {

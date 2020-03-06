@@ -7,7 +7,9 @@ BASEDIR=$(dirname "$SCRIPT")
 GOPKGS=(
     meep-model
     meep-net-char-mgr
+    meep-metric-store
     meep-watchdog
+    meep-couch
 )
 
 echo ""

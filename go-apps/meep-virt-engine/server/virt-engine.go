@@ -19,6 +19,7 @@ package server
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -28,6 +29,7 @@ import (
 
 const moduleName string = "meep-virt-engine"
 const redisAddr string = "localhost:30379"
+const retryTimerDuration = 10000
 
 var watchdogClient *watchdog.Pingee
 var activeModel *mod.Model
@@ -69,17 +71,37 @@ func eventHandler(channel string, payload string) {
 
 	// MEEP Ctrl Engine active scenario update event
 	case mod.ActiveScenarioEvents:
+		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		processActiveScenarioUpdate(payload)
-
 	default:
-		log.Warn("Unsupported channel event: ", channel)
+		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
 	}
 }
 
 func processActiveScenarioUpdate(event string) {
 	if event == mod.EventTerminate {
-		terminateScenario(activeScenarioName)
-		activeScenarioName = ""
+
+		//process right away and start a ticker to retry until everything is deleted
+		_, _ = terminateScenario(activeScenarioName)
+
+		//starts a ticker
+		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+		go func() {
+			for range ticker.C {
+
+				err, chartsToDelete := terminateScenario(activeScenarioName)
+
+				if err == nil && chartsToDelete == 0 {
+					activeScenarioName = ""
+					ticker.Stop()
+					return
+				} else {
+					//stay in the deletion process until everything is cleared
+					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+				}
+			}
+		}()
 	} else if event == mod.EventActivate {
 		// Cache name for later deletion
 		activeScenarioName = activeModel.GetScenarioName()
@@ -97,33 +119,42 @@ func activateScenario() {
 	}
 }
 
-func terminateScenario(name string) {
+func terminateScenario(name string) (error, int) {
 	if name == "" {
-		return
+		return nil, 0
 	}
 	// Retrieve list of releases
-	rels, _ := helm.GetReleasesName()
-	var toDelete []helm.Chart
-	for _, rel := range rels {
-		if strings.Contains(rel.Name, name) {
-			// just keep releases related to the current scenario
-			var c helm.Chart
-			c.ReleaseName = rel.Name
-			toDelete = append(toDelete, c)
+	chartsToDelete := 0
+	rels, err := helm.GetReleasesName()
+	if err == nil {
+		var toDelete []helm.Chart
+		for _, rel := range rels {
+			if strings.Contains(rel.Name, name) {
+				// just keep releases related to the current scenario
+				var c helm.Chart
+				c.ReleaseName = rel.Name
+				toDelete = append(toDelete, c)
+			}
+		}
+
+		// Delete releases
+		chartsToDelete = len(toDelete)
+
+		if chartsToDelete > 0 {
+			err := helm.DeleteReleases(toDelete)
+			chartsToDelete = len(toDelete)
+			if err != nil {
+				log.Debug("Releases deletion failure:", err)
+			}
+		}
+
+		// Then delete charts
+		homePath := os.Getenv("HOME")
+		path := homePath + "/.meep/active/" + name
+		if _, err := os.Stat(path); err == nil {
+			log.Debug("Removing charts ", path)
+			os.RemoveAll(path)
 		}
 	}
-
-	// Delete releases
-	if len(toDelete) > 0 {
-		err := helm.DeleteReleases(toDelete)
-		log.Debug(err)
-	}
-
-	// Then delete charts
-	homePath := os.Getenv("HOME")
-	path := homePath + "/.meep/active/" + name
-	if _, err := os.Stat(path); err == nil {
-		log.Debug("Removing charts ", path)
-		os.RemoveAll(path)
-	}
+	return err, chartsToDelete
 }

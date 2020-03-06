@@ -47,10 +47,17 @@ ScenarioExecutionApiService Deploy a scenario
 Deploy a scenario present in the platform scenario store
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param name Scenario name
+ * @param optional nil or *ActivateScenarioOpts - Optional Parameters:
+     * @param "ActivationInfo" (optional.Interface of ActivationInfo) -  Activation information
 
 
 */
-func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name string) (*http.Response, error) {
+
+type ActivateScenarioOpts struct {
+	ActivationInfo optional.Interface
+}
+
+func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name string, localVarOptionals *ActivateScenarioOpts) (*http.Response, error) {
 	var (
 		localVarHttpMethod = strings.ToUpper("Post")
 		localVarPostBody   interface{}
@@ -82,6 +89,15 @@ func (a *ScenarioExecutionApiService) ActivateScenario(ctx context.Context, name
 	localVarHttpHeaderAccept := selectHeaderAccept(localVarHttpHeaderAccepts)
 	if localVarHttpHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHttpHeaderAccept
+	}
+	// body params
+	if localVarOptionals != nil && localVarOptionals.ActivationInfo.IsSet() {
+
+		localVarOptionalActivationInfo, localVarOptionalActivationInfook := localVarOptionals.ActivationInfo.Value().(ActivationInfo)
+		if !localVarOptionalActivationInfook {
+			return nil, reportError("activationInfo should be ActivationInfo")
+		}
+		localVarPostBody = &localVarOptionalActivationInfo
 	}
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {

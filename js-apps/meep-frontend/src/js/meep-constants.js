@@ -23,6 +23,12 @@ export const PAGE_EXECUTE = 'PAGE_EXECUTE';
 export const PAGE_MONITOR = 'PAGE_MONITOR';
 export const PAGE_SETTINGS = 'PAGE_SETTINGS';
 
+// Help URLs
+export const MEEP_HELP_PAGE_CFG_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/configuration-view';
+export const MEEP_HELP_PAGE_EXEC_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/execution-view';
+export const MEEP_HELP_PAGE_MON_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/monitoring-view';
+export const MEEP_HELP_PAGE_SET_URL = 'https://github.com/InterDigitalInc/AdvantEDGE/wiki/settings-view';
+
 // MEEP IDs
 export const MEEP_TAB_CFG = 'meep-tab-cfg';
 export const MEEP_TAB_EXEC = 'meep-tab-exec';
@@ -36,6 +42,7 @@ export const MEEP_BTN_APPLY = 'meep-btn-apply';
 export const MEEP_DLG_NEW_SCENARIO = 'meep-dlg-new-scenario';
 export const MEEP_DLG_NEW_SCENARIO_NAME = 'meep-dlg-new-scenario-name';
 export const MEEP_DLG_SAVE_SCENARIO = 'meep-dlg-save-scenario';
+export const MEEP_DLG_SAVE_REPLAY = 'meep-dlg-save-replay';
 export const MEEP_DLG_OPEN_SCENARIO = 'meep-dlg-open-scenario';
 export const MEEP_DLG_OPEN_SCENARIO_SELECT = 'meep-dlg-open-scenario-select';
 export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
@@ -46,6 +53,22 @@ export const MEEP_DLG_DEPLOY_SCENARIO_SELECT =
   'meep-dlg-deploy-scenario-select';
 export const MEEP_DLG_TERMINATE_SCENARIO = 'meep-dlg-terminate-scenario';
 export const MEEP_DLG_CONFIRM = 'meep-dlg-confirm';
+
+// Dialog Types
+// CFG
+export const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
+export const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
+export const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
+export const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
+export const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
+// EXEC
+export const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
+export const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
+export const IDC_DIALOG_SAVE_REPLAY = 'IDC_DIALOG_SAVE_REPLAY';
+// MONITORING
+export const IDC_DIALOG_DELETE_DASHBOARD_LIST = 'IDC_DIALOG_DELETE_DASHBOARD_LIST';
+// SETTINGS
+export const IDC_DIALOG_CLEAR_UI_CACHE = 'IDC_DIALOG_CLEAR_UI_CACHE';
 
 // Configuration page states
 export const CFG_STATE_IDLE = 'IDLE';
@@ -63,6 +86,7 @@ export const CFG_BTN_IMP_SCENARIO = 'cfg-btn-imp-scenario';
 export const CFG_BTN_EXP_SCENARIO = 'cfg-btn-exp-scenario';
 export const CFG_BTN_NEW_ELEM = 'cfg-btn-new-elem';
 export const CFG_BTN_DEL_ELEM = 'cfg-btn-del-elem';
+export const CFG_BTN_CLONE_ELEM = 'cfg-btn-clone-elem';
 export const CFG_BTN_SAVE_ELEM = 'cfg-btn-save-elem';
 
 export const CFG_ELEM_TYPE = 'cfg-elem-type';
@@ -101,12 +125,19 @@ export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
+export const EXEC_BTN_CONFIG = 'exec-btn-config';
+export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
+export const EXEC_BTN_AUTO_REPLAY = 'exec-btn-auto-replay';
+export const EXEC_BTN_SAVE_REPLAY = 'exec-btn-save-replay';
+export const EXEC_BTN_REPLAY_START = 'exec-btn-replay-start';
+export const EXEC_BTN_REPLAY_STOP = 'exec-btn-replay-stop';
 
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
 export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
+export const EXEC_EVT_REPLAY_FILES = 'exec-evt-replay-files';
 
 // Trivia
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';
@@ -157,7 +188,7 @@ export const DEFAULT_PACKET_LOSS_INTRA_ZONE = 0;
 export const DEFAULT_LATENCY_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
 export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
-export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 1;
+export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 0;
 export const DEFAULT_LATENCY_LINK = 0;
 export const DEFAULT_LATENCY_JITTER_LINK = 0;
 export const DEFAULT_THROUGHPUT_LINK = 1000;
@@ -182,6 +213,7 @@ export const SET_VIS_CFG_CHECKBOX = 'set-vis-cfg-checkbox';
 export const SET_VIS_CFG_LABEL = 'VIS Configuration Mode';
 export const SET_DASHBOARD_CFG_CHECKBOX = 'set-dashboard-cfg-checkbox';
 export const SET_DASHBOARD_CFG_LABEL = 'Show Dashboard Config (Experimental)';
+export const SET_RESET_SETTINGS_BUTTON = 'set-reset-settings-btn';
 
 // Logical Scenario types
 export const TYPE_SCENARIO = 0;
@@ -208,26 +240,30 @@ export const id = label => {
   return '#' + label;
 };
 
-// Metrics engine data types
-export const ME_LATENCY_METRICS = 'latency';
-export const ME_THROUGHPUT_METRICS = 'ingressPacketStats';
-export const ME_MOBILITY_EVENT = 'mobilityEvent';
-
 export const VIEW_NAME_NONE = 'None';
-export const HIERARCHY_VIEW = 'Network Topology';
-export const APPS_VIEW = 'Applications';
-export const LATENCY_VIEW = 'Latency Graph';
-export const THROUGHPUT_VIEW = 'Throughput Graph';
-export const VIS_VIEW = 'Network Topology (vis)';
+export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
-export const DASHBOARD_VIEWS_LIST = [
-  VIEW_NAME_NONE,
-  VIS_VIEW,
-  APPS_VIEW,
-  LATENCY_VIEW,
-  THROUGHPUT_VIEW,
-  HIERARCHY_VIEW
+// Default Dashboard list
+export const DEFAULT_DASHBOARD_OPTIONS = [
+  {
+    label: 'None',
+    value: ''
+  },
+  {
+    label: 'Network Metrics Point-to-Point',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Network Metrics Aggregation',
+    value:
+      'http://' +
+      location.hostname +
+      ':30009/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  }
 ];

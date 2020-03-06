@@ -15,22 +15,26 @@
  */
 
 // Will persist the app state between browser refresh
+// import * as stringify from 'json-stringify-safe';
+// import {version} from './package.json';
 
-const UI_STATE_KEY = 'IDC-meep-frontend:ui-state';
+// /*global __VERSION__*/
+// const STATE_KEY = 'IDCC-meep-frontend' + (__VERSION__ ? ':' + __VERSION__ : '') + ':state';
+const STATE_KEY = 'IDCC-meep-frontend:state';
 
-export function saveUIState(state) {
+export function saveState(state) {
   try {
     let serializedState = JSON.stringify(state);
-    localStorage.setItem(UI_STATE_KEY, serializedState);
+    localStorage.setItem(STATE_KEY, serializedState);
   } catch (e) {
     // TODO: consider showing an alert.
     // console.log('Error while saving app state: ', e);
   }
 }
 
-export function loadUIState() {
+export function loadState() {
   try {
-    let serializedState = localStorage.getItem(UI_STATE_KEY);
+    let serializedState = localStorage.getItem(STATE_KEY);
 
     if (serializedState === null) {
       return this.initializeState();

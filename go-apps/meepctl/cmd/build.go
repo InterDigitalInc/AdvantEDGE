@@ -140,6 +140,7 @@ func build(targetName string, cobraCmd *cobra.Command) {
 func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
 	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+	version := utils.RepoCfg.GetString("version")
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
@@ -198,7 +199,7 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 
 	//build
 	fmt.Println("   + building " + targetName)
-	cmd = exec.Command("npm", "run", "build", "--", "--output-path="+binDir)
+	cmd = exec.Command("npm", "run", "build", "--", "--output-path="+binDir, "--env.VERSION=v"+version)
 	cmd.Dir = srcDir
 	out, err = utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {

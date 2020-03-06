@@ -15,20 +15,40 @@
  */
 
 import { updateObject } from '../../util/object-util';
-
-// export const PAGE_CONFIGURE = 'page-configure-link';
-// export const PAGE_EXECUTE = 'page-execute-link';
-// export const PAGE_MONITOR = 'page-monitor-link';
-// export const PAGE_SETTINGS = 'page-settings-link';
-
 import {
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  PAGE_CONFIGURE,
+  VIEW_NAME_NONE,
+  NET_TOPOLOGY_VIEW,
+  MOBILITY_EVENT
 } from '../../meep-constants';
+
+const initialState = {
+  page: PAGE_CONFIGURE,
+  mainDrawerOpen: true,
+  eventCreationMode: false,
+  execCurrentEvent: null,
+  currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
+  devMode: false,
+  currentDialog: '',
+  automaticRefresh: false,
+  refreshInterval: 1000,
+  execShowApps: false,
+  dashCfgMode: false,
+  eventCfgMode: false,
+  dashboardView1: NET_TOPOLOGY_VIEW,
+  dashboardView2: VIEW_NAME_NONE,
+  sourceNodeSelected: '',
+  destNodeSelected: '',
+  eventReplayMode: false,
+  eventReplayLoop: false,
+  replayFiles: [],
+  replayFileSelected: '',
+  replayFileDesc: ''
+};
 
 // Change the current page
 const CHANGE_CURRENT_PAGE = 'CHANGE_CURRENT_PAGE';
-function uiChangeCurrentPage(page) {
+export function uiChangeCurrentPage(page) {
   return {
     type: CHANGE_CURRENT_PAGE,
     payload: page
@@ -36,167 +56,156 @@ function uiChangeCurrentPage(page) {
 }
 
 const TOGGLE_MAIN_DRAWER = 'TOGGLE_MAIN_DRAWER';
-function uiToggleMainDrawer() {
+export function uiToggleMainDrawer() {
   return {
     type: TOGGLE_MAIN_DRAWER,
     payload: null
   };
 }
 
-const EXEC_CHANGE_CURRENT_EVENT = 'EXEC_CHANGE_CURRENT_EVENT';
-function uiExecChangeCurrentEvent(event) {
+const UI_EXEC_CHANGE_CURRENT_EVENT = 'UI_EXEC_CHANGE_CURRENT_EVENT';
+export function uiExecChangeCurrentEvent(event) {
   return {
-    type: EXEC_CHANGE_CURRENT_EVENT,
+    type: UI_EXEC_CHANGE_CURRENT_EVENT,
     payload: event
   };
 }
 
-const EXEC_CHANGE_EVENT_CREATION_MODE = 'EXEC_CHANGE_EVENT_CREATION_MODE';
-function uiExecChangeEventCreationMode(val) {
+const UI_EXEC_CHANGE_EVENT_CREATION_MODE = 'UI_EXEC_CHANGE_EVENT_CREATION_MODE';
+export function uiExecChangeEventCreationMode(val) {
   return {
-    type: EXEC_CHANGE_EVENT_CREATION_MODE,
+    type: UI_EXEC_CHANGE_EVENT_CREATION_MODE,
+    payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_EVENT_REPLAY_MODE = 'UI_EXEC_CHANGE_EVENT_REPLAY_MODE';
+export function uiExecChangeEventReplayMode(val) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_REPLAY_MODE,
+    payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_DASH_CFG_MODE = 'UI_EXEC_CHANGE_DASH_CFG_MODE';
+export function uiExecChangeDashCfgMode(val) {
+  return {
+    type: UI_EXEC_CHANGE_DASH_CFG_MODE,
+    payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_EVENT_CFG_MODE = 'UI_EXEC_CHANGE_EVENT_CFG_MODE';
+export function uiExecChangeEventCfgMode(val) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_CFG_MODE,
     payload: val
   };
 }
 
 const UI_CHANGE_DEV_MODE = 'UI_CHANGE_DEV_MODE';
-function uiChangeDevMode(mode) {
+export function uiChangeDevMode(mode) {
   return {
     type: UI_CHANGE_DEV_MODE,
     payload: mode
   };
 }
 
-// Dialog Types
-// CFG
-const IDC_DIALOG_OPEN_SCENARIO = 'IDC_DIALOG_OPEN_SCENARIO';
-const IDC_DIALOG_NEW_SCENARIO = 'IDC_DIALOG_NEW_SCENARIO';
-const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
-const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
-const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
-const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
-const IDC_DIALOG_CONFIRM = 'IDC_DIALOG_CONFIRM';
-
-// EXEC
-const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
-
 const UI_CHANGE_CURRENT_DIALOG = 'UI_CHANGE_CURRENT_DIALOG';
-const uiChangeCurrentDialog = type => {
+export function uiChangeCurrentDialog(type) {
   return {
     type: UI_CHANGE_CURRENT_DIALOG,
     payload: type
   };
-};
+}
 
 const UI_SET_AUTOMATIC_REFRESH = 'UI_SET_AUTOMATIC_REFRESH';
-const uiSetAutomaticRefresh = val => {
+export function uiSetAutomaticRefresh(val) {
   return {
     type: UI_SET_AUTOMATIC_REFRESH,
     payload: val
   };
-};
+}
 
 const UI_CHANGE_REFRESH_INTERVAL = 'UI_CHANGE_REFRESH_INTERVAL';
-const uiChangeRefreshInterval = val => {
+export function uiChangeRefreshInterval(val) {
   return {
     type: UI_CHANGE_REFRESH_INTERVAL,
     payload: val
   };
-};
+}
 
 const UI_EXEC_CHANGE_SHOW_APPS = 'UI_EXEC_CHANGE_SHOW_APPS';
-const uiExecChangeShowApps = show => {
+export function uiExecChangeShowApps(show) {
   return {
     type: UI_EXEC_CHANGE_SHOW_APPS,
     payload: show
   };
-};
-
-const UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG =
-  'UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG';
-const uiExecChangeShowDashboardConfig = show => {
-  return {
-    type: UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
-    payload: show
-  };
-};
-
-const UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG =
-  'UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG';
-const uiExecExpandDashboardConfig = show => {
-  return {
-    type: UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG,
-    payload: show
-  };
-};
+}
 
 const UI_EXEC_CHANGE_DASHBOARD_VIEW1 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW1';
-const uiExecChangeDashboardView1 = name => {
+export function uiExecChangeDashboardView1(name) {
   return {
     type: UI_EXEC_CHANGE_DASHBOARD_VIEW1,
     payload: name
   };
-};
+}
 
 const UI_EXEC_CHANGE_DASHBOARD_VIEW2 = 'UI_EXEC_CHANGE_DASHBOARD_VIEW2';
-const uiExecChangeDashboardView2 = name => {
+export function uiExecChangeDashboardView2(name) {
   return {
     type: UI_EXEC_CHANGE_DASHBOARD_VIEW2,
     payload: name
   };
+}
+
+const UI_EXEC_CHANGE_SOURCE_NODE_SELECTED = 'UI_EXEC_CHANGE_SOURCE_NODE_SELECTED';
+export function uiExecChangeSourceNodeSelected(node) {
+  return {
+    type: UI_EXEC_CHANGE_SOURCE_NODE_SELECTED,
+    payload: node
+  };
+}
+
+const UI_EXEC_CHANGE_DEST_NODE_SELECTED = 'UI_EXEC_CHANGE_DEST_NODE_SELECTED';
+export function uiExecChangeDestNodeSelected(node) {
+  return {
+    type: UI_EXEC_CHANGE_DEST_NODE_SELECTED,
+    payload: node
+  };
+}
+
+const UI_EXEC_CHANGE_REPLAY_FILES_LIST = 'UI_EXEC_CHANGE_REPLAY_FILES_LIST';
+export function uiExecChangeReplayFilesList(replayFiles) {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_FILES_LIST,
+    payload: replayFiles
+  };
+}
+
+const UI_EXEC_CHANGE_REPLAY_FILE_SELECTED = 'UI_EXEC_CHANGE_REPLAY_FILE_SELECTED';
+export function uiExecChangeReplayFileSelected(name) {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_FILE_SELECTED,
+    payload: name
+  };
+}
+
+const UI_EXEC_CHANGE_REPLAY_FILE_DESC = 'UI_EXEC_CHANGE_REPLAY_FILE_DESC';
+export function uiExecChangeReplayFileDesc(desc) {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_FILE_DESC,
+    payload: desc
+  };
+}
+
+const UI_EXEC_CHANGE_REPLAY_LOOP = 'UI_EXEC_CHANGE_REPLAY_LOOP';
+export const uiExecChangeReplayLoop = val => {
+  return {
+    type: UI_EXEC_CHANGE_REPLAY_LOOP,
+    payload: val
+  };
 };
-
-export {
-  // Event types
-  MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT,
-  // Action types
-  EXEC_CHANGE_CURRENT_EVENT,
-  UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW1,
-  UI_EXEC_CHANGE_DASHBOARD_VIEW2,
-  // Dialogs types
-  IDC_DIALOG_OPEN_SCENARIO,
-  IDC_DIALOG_NEW_SCENARIO,
-  IDC_DIALOG_SAVE_SCENARIO,
-  IDC_DIALOG_DELETE_SCENARIO,
-  IDC_DIALOG_EXPORT_SCENARIO,
-  IDC_DIALOG_DEPLOY_SCENARIO,
-  IDC_DIALOG_TERMINATE_SCENARIO,
-  IDC_DIALOG_CONFIRM,
-  // Action creators
-  uiChangeCurrentPage,
-  uiToggleMainDrawer,
-  uiExecChangeEventCreationMode,
-  uiExecChangeCurrentEvent,
-  uiChangeDevMode,
-  uiChangeCurrentDialog,
-  uiSetAutomaticRefresh,
-  uiChangeRefreshInterval,
-  uiExecChangeShowApps,
-  uiExecChangeShowDashboardConfig,
-  uiExecExpandDashboardConfig,
-  uiExecChangeDashboardView1,
-  uiExecChangeDashboardView2
-};
-
-const initialState = {}; //createMeepState();
-
-// {
-//   page: PAGE_CONFIGURE,
-//   mainDrawerOpen: true,
-//   eventCreationMode: false,
-//   execCurrentEvent: null,
-//   currentEventType: MOBILITY_EVENT,
-//   devMode: false,
-//   currentDialog: '',
-//   automaticRefresh: false,
-//   refreshInterval: 1000,
-//   execShowApps: false,
-//   showDashboardConfig: false,
-//   dashboardView1: VIS_VIEW,
-//   dashboardView2: VIEW_NAME_NONE
-// };
 
 export default function uiReducer(state = initialState, action) {
   switch (action.type) {
@@ -204,28 +213,42 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { page: action.payload });
   case TOGGLE_MAIN_DRAWER:
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
-  case EXEC_CHANGE_CURRENT_EVENT:
+  case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:
     return updateObject(state, { currentDialog: action.payload });
-  case EXEC_CHANGE_EVENT_CREATION_MODE:
+  case UI_EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_REPLAY_MODE:
+    return updateObject(state, { eventReplayMode: action.payload });
+  case UI_EXEC_CHANGE_DASH_CFG_MODE:
+    return updateObject(state, { dashCfgMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_CFG_MODE:
+    return updateObject(state, { eventCfgMode: action.payload });
   case UI_SET_AUTOMATIC_REFRESH:
     return updateObject(state, { automaticRefresh: action.payload });
   case UI_CHANGE_REFRESH_INTERVAL:
     return updateObject(state, { refreshInterval: action.payload });
   case UI_EXEC_CHANGE_SHOW_APPS:
     return updateObject(state, { execShowApps: action.payload });
-  case UI_EXEC_CHANGE_EXPAND_DASHBOARD_CONFIG:
-    return updateObject(state, { dashboardConfigExpanded: action.payload });
-  case UI_EXEC_CHANGE_SHOW_DASHBOARD_CONFIG:
-    return updateObject(state, { showDashboardConfig: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW1:
     return updateObject(state, { dashboardView1: action.payload });
   case UI_EXEC_CHANGE_DASHBOARD_VIEW2:
     return updateObject(state, { dashboardView2: action.payload });
+  case UI_EXEC_CHANGE_SOURCE_NODE_SELECTED:
+    return updateObject(state, { sourceNodeSelected: action.payload });
+  case UI_EXEC_CHANGE_DEST_NODE_SELECTED:
+    return updateObject(state, { destNodeSelected: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_FILES_LIST:
+    return updateObject(state, { replayFiles: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_FILE_SELECTED:
+    return updateObject(state, { replayFileSelected: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_FILE_DESC:
+    return updateObject(state, { replayFileDesc: action.payload });
+  case UI_EXEC_CHANGE_REPLAY_LOOP:
+    return updateObject(state, { eventReplayLoop: action.payload });
   default:
     return state;
   }

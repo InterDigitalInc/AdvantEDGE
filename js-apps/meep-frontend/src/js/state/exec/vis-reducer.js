@@ -22,10 +22,14 @@ import * as vis from 'vis';
 import {
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
-  ELEMENT_TYPE_CLOUD_APP
+  ELEMENT_TYPE_CLOUD_APP,
+  TYPE_EXEC
 } from '../../meep-constants';
 
-import { getElemFieldVal, FIELD_NAME, FIELD_TYPE } from '../../util/elem-utils';
+import {
+  getElemFieldVal,
+  FIELD_TYPE
+} from '../../util/elem-utils';
 
 // CHANGE_VIS
 const EXEC_CHANGE_VIS = 'EXEC_CHANGE_VIS';
@@ -67,10 +71,7 @@ const execVisFilteredData = createSelector(
 
     var types = {};
     _.each(table.entries, entry => {
-      types[getElemFieldVal(entry, FIELD_NAME)] = getElemFieldVal(
-        entry,
-        FIELD_TYPE
-      );
+      types[entry.id] = getElemFieldVal(entry,FIELD_TYPE);
     });
 
     if (showApps) {
@@ -101,6 +102,7 @@ const execVisFilteredData = createSelector(
 export { execVisFilteredData };
 
 const initialState = {
+  type: TYPE_EXEC,
   network: {},
   options: {},
   data: {

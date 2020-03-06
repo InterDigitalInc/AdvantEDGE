@@ -220,7 +220,7 @@ func (rc *Connector) DelEntry(key string) error {
 	if !rc.connected {
 		return errors.New("Redis Connector is disconnected (DelEntry)")
 	}
-	// Update existing entry or create new entry if it does not exist
+	// Delete entry if it exists
 	_, err := rc.client.Del(key).Result()
 	if err != nil {
 		return err
@@ -233,7 +233,7 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 	if !rc.connected {
 		return "", errors.New("Redis Connector is disconnected (JSONGetEntry)")
 	}
-	// Update existing entry or create new entry if it does not exist
+	// Retreive JSON entry if it exists
 	json, err := rc.client.JsonGet(key, path).Result()
 	if err != nil {
 		return "", err
@@ -250,7 +250,7 @@ func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string,
 	keyName := elementPath + "*"
 	err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("keyName: ", keyName, ": ", err.Error())
 		return err
 	}
 	return nil
@@ -264,7 +264,7 @@ func (rc *Connector) JSONSetEntry(key string, path string, json string) error {
 	// Update existing entry or create new entry if it does not exist
 	_, err := rc.client.JsonSet(key, path, json).Result()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("key: ", key, ": ", err.Error())
 		return err
 	}
 	return nil
@@ -299,7 +299,7 @@ func (rc *Connector) Unsubscribe(channels ...string) error {
 		return errors.New("Redis Connector is disconnected (Unsubscribe)")
 	}
 	if rc.pubsub != nil {
-		rc.pubsub.Unsubscribe(channels...)
+		_ = rc.pubsub.Unsubscribe(channels...)
 	}
 	return nil
 }
@@ -337,7 +337,7 @@ func (rc *Connector) Listen(handler func(string, string)) error {
 			case *redis.Message:
 				channel = m.Channel
 				payload = m.Payload
-				log.Info("RX-MSG [", channel, "] ", payload)
+				log.Trace("RX-MSG [", channel, "] ", payload)
 				handler(channel, payload)
 			}
 		}
@@ -366,7 +366,7 @@ func (rc *Connector) Publish(channel string, message string) error {
 		return errors.New("Redis Connector is disconnected (Publish)")
 	}
 
-	log.Info("TX-MSG [", channel, "] ", message)
+	log.Trace("TX-MSG [", channel, "] ", message)
 	_, err := rc.client.Publish(channel, message).Result()
 	return err
 }

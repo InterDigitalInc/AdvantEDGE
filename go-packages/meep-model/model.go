@@ -21,6 +21,7 @@ import (
 	"errors"
 	"reflect"
 	"strings"
+	"sync"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -69,6 +70,7 @@ type Model struct {
 	svcMap        []ceModel.NodeServiceMaps
 	nodeMap       *NodeMap
 	networkGraph  *NetworkGraph
+	lock          sync.RWMutex
 }
 
 var DbAddress = "meep-redis-master:6379"
@@ -149,8 +151,39 @@ func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
 	return string(json), nil
 }
 
+// JSONMarshallReplayFileList - Convert ReplayFileList to JSON string
+func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err error) {
+	var rl ceModel.ReplayFileList
+	rl.ReplayFiles = replayFileNameList
+	json, err := json.Marshal(rl)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
+// JSONMarshallReplay - Convert Replay to JSON string
+func JSONMarshallReplay(replay []byte) (rStr string, err error) {
+	var r ceModel.Replay
+	err = json.Unmarshal(replay, &r)
+	if err != nil {
+		return "", err
+	}
+
+	json, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
 // SetScenario - Initialize model from JSON string
 func (m *Model) SetScenario(j []byte) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	scenario := new(ceModel.Scenario)
 	err = json.Unmarshal(j, scenario)
 	if err != nil {
@@ -176,12 +209,18 @@ func (m *Model) SetScenario(j []byte) (err error) {
 
 // GetScenario - Get Scenario JSON string
 func (m *Model) GetScenario() (j []byte, err error) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	j, err = json.Marshal(m.scenario)
 	return j, err
 }
 
 // Activate - Make scenario the active scenario
 func (m *Model) Activate() (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	jsonScenario, err := json.Marshal(m.scenario)
 	if err != nil {
 		log.Error(err.Error())
@@ -192,6 +231,7 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
+	log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventActivate)
 	err = m.rc.Publish(m.ActiveChannel, EventActivate)
 	if err != nil {
 		log.Error(err.Error())
@@ -203,24 +243,31 @@ func (m *Model) Activate() (err error) {
 
 // Deactivate - Remove the active scenario
 func (m *Model) Deactivate() (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	if m.Active {
-		m.Active = false
 		err = m.rc.JSONDelEntry(m.activeKey, ".")
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
+		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
 		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error("Failed to publish: ", err.Error())
 			return err
 		}
+		m.Active = false
 	}
 	return nil
 }
 
 //Listen - Listen to scenario update events
 func (m *Model) Listen(handler func(string, string)) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	if handler == nil {
 		return errors.New("Nil event handler")
 	}
@@ -242,13 +289,18 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 		}()
 
 		// Generate first event to initialize
-		m.internalListener(m.ActiveChannel, "")
+		go func() {
+			m.internalListener(m.ActiveChannel, "")
+		}()
 	}
 	return nil
 }
 
 // MoveNode - Move a specific UE in the scenario
 func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, newLocName string, err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	moveNode := m.nodeMap.FindByName(nodeName)
 	// fmt.Printf("+++ ueNode: %+v\n", moveNode)
 	if moveNode == nil {
@@ -276,11 +328,17 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 
 // GetServiceMaps - Extracts the model service maps
 func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	return &m.svcMap
 }
 
 //UpdateNetChar - Update network characteristics for a node
 func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	err = nil
 	updated := false
 
@@ -361,6 +419,9 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 
 //GetScenarioName - Get the scenario name
 func (m *Model) GetScenarioName() string {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	// fmt.Printf("%+v", m)
 	if m.scenario != nil {
 		return m.scenario.Name
@@ -370,6 +431,9 @@ func (m *Model) GetScenarioName() string {
 
 //GetNodeNames - Get the list of nodes of a certain type; "" or "ANY" returns all
 func (m *Model) GetNodeNames(typ ...string) []string {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	nm := make(map[string]*Node)
 	for _, t := range typ {
 		if t == "" || t == "ANY" {
@@ -390,6 +454,9 @@ func (m *Model) GetNodeNames(typ ...string) []string {
 
 //GetEdges - Get a map of node edges for the current scenario
 func (m *Model) GetEdges() (edgeMap map[string]string) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	edgeMap = make(map[string]string)
 	for k, node := range m.nodeMap.nameMap {
 		p := reflect.ValueOf(node.parent)
@@ -406,6 +473,9 @@ func (m *Model) GetEdges() (edgeMap map[string]string) {
 // 		Returned value is of type interface{}
 //    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
 func (m *Model) GetNode(name string) (node interface{}) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	node = nil
 	n := m.nodeMap.nameMap[name]
 	if n != nil {
@@ -416,6 +486,9 @@ func (m *Model) GetNode(name string) (node interface{}) {
 
 // GetNodeType - Get a node by its name
 func (m *Model) GetNodeType(name string) (typ string) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	typ = ""
 	n := m.nodeMap.nameMap[name]
 	if n != nil {
@@ -428,6 +501,9 @@ func (m *Model) GetNodeType(name string) (typ string) {
 // 		Returned value is of type interface{}
 //    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
 func (m *Model) GetNodeContext(name string) (ctx interface{}) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	ctx = nil
 	n := m.nodeMap.nameMap[name]
 	if n != nil {
@@ -438,6 +514,9 @@ func (m *Model) GetNodeContext(name string) (ctx interface{}) {
 
 // GetNetworkGraph - Get the network graph
 func (m *Model) GetNetworkGraph() *dijkstra.Graph {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
 	return m.networkGraph.graph
 }
 
@@ -521,6 +600,7 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
+		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
 		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
 		if err != nil {
 			log.Error(err.Error())
@@ -657,15 +737,9 @@ func (m *Model) internalListener(channel string, payload string) {
 }
 
 func isDefaultZone(typ string) bool {
-	if typ == "COMMON" {
-		return true
-	}
-	return false
+	return typ == "COMMON"
 }
 
 func isDefaultNetLoc(typ string) bool {
-	if typ == "DEFAULT" {
-		return true
-	}
-	return false
+	return typ == "DEFAULT"
 }

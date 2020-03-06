@@ -18,6 +18,7 @@ basePath: "/v1"
 tags:
 - name: "Scenario Configuration"
 - name: "Scenario Execution"
+- name: "Event Replay"
 - name: "Pod States"
 schemes:
 - "http"
@@ -99,7 +100,7 @@ paths:
         x-exportParamName: "Name"
       - in: "body"
         name: "scenario"
-        description: "Scenario to add to MEEP store"
+        description: "Scenario"
         required: true
         schema:
           $ref: "#/definitions/Scenario"
@@ -207,6 +208,13 @@ paths:
         required: true
         type: "string"
         x-exportParamName: "Name"
+      - in: "body"
+        name: "activationInfo"
+        description: "Activation information"
+        required: false
+        schema:
+          $ref: "#/definitions/ActivationInfo"
+        x-exportParamName: "ActivationInfo"
       responses:
         200:
           description: "OK"
@@ -287,6 +295,219 @@ paths:
           description: "OK"
         400:
           description: "Bad request"
+  /replay:
+    get:
+      tags:
+      - "Event Replay"
+      summary: "Get all replay file names"
+      description: "Returns a list of all replay files names present in the platform\
+        \ store"
+      operationId: "getReplayFileList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ReplayFileList"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Event Replay"
+      summary: "Delete all replay files"
+      description: "Delete all replay files present in the platform store"
+      operationId: "deleteReplayFileList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /replaystatus:
+    get:
+      tags:
+      - "Event Replay"
+      summary: "Get status of replay manager"
+      description: "Returns status information on the replay manager"
+      operationId: "getReplayStatus"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ReplayStatus"
+        404:
+          description: "Not found"
+  /replay/{name}:
+    get:
+      tags:
+      - "Event Replay"
+      summary: "Get a specific replay file"
+      description: "Get a replay file by name from the platform store"
+      operationId: "getReplayFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Replay"
+        404:
+          description: "Not found"
+    post:
+      tags:
+      - "Event Replay"
+      summary: "Add a replay file"
+      description: "Add a replay file to the platform store"
+      operationId: "createReplayFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      - in: "body"
+        name: "replay-file"
+        description: "Replay-file"
+        required: true
+        schema:
+          $ref: "#/definitions/Replay"
+        x-exportParamName: "ReplayFile"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Event Replay"
+      summary: "Delete a replay file"
+      description: "Delete a replay file by name from the platform store"
+      operationId: "deleteReplayFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /replay/{name}/generate:
+    post:
+      tags:
+      - "Event Replay"
+      summary: "Generate a replay file from scenario execution events"
+      description: "Generate a replay file using events from the latest execution\
+        \ of a scenario"
+      operationId: "createReplayFileFromScenarioExec"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      - in: "body"
+        name: "replayInfo"
+        description: "Replay information"
+        required: true
+        schema:
+          $ref: "#/definitions/ReplayInfo"
+        x-exportParamName: "ReplayInfo"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+  /replay/{name}/play:
+    post:
+      tags:
+      - "Event Replay"
+      summary: "Execute a replay file present in the platform store"
+      description: "Execute a replay file present in the platform store"
+      operationId: "playReplayFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /replay/{name}/loop:
+    post:
+      tags:
+      - "Event Replay"
+      summary: "Loop-Execute a replay file present in the platform store"
+      description: "Loop-Execute a replay file present in the platform store"
+      operationId: "loopReplay"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
+  /replay/{name}/stop:
+    post:
+      tags:
+      - "Event Replay"
+      summary: "Stop execution of a replay file"
+      description: "Stop execution a replay file"
+      operationId: "stopReplayFile"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "Replay file name"
+        required: true
+        type: "string"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "OK"
+        404:
+          description: "Not found"
   /states:
     get:
       tags:
@@ -344,7 +565,7 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Scenario"
-    description: "Scenario list object"
+    description: "Scenario list"
     example: {}
   Scenario:
     type: "object"
@@ -352,9 +573,15 @@ definitions:
       version:
         type: "string"
         description: "Scenario version"
+      id:
+        type: "string"
+        description: "Unique scenario ID"
       name:
         type: "string"
         description: "Unique scenario name"
+      description:
+        type: "string"
+        description: "User description of the scenario."
       config:
         $ref: "#/definitions/ScenarioConfig"
       deployment:
@@ -821,6 +1048,14 @@ definitions:
         type: "string"
         description: "Service protocol (TCP or UDP)"
     description: "External service exposed internally via specific port"
+  ActivationInfo:
+    type: "object"
+    properties:
+      replayFileName:
+        type: "string"
+        description: "Replay-file name to execute at deployment time"
+    description: "Activation information"
+    example: {}
   NodeServiceMaps:
     type: "object"
     properties:
@@ -941,6 +1176,81 @@ definitions:
     description: "Other Event object"
     example:
       event: "event"
+  ReplayFileList:
+    type: "object"
+    properties:
+      replay-files:
+        type: "array"
+        items:
+          type: "string"
+    description: "Replay-file list"
+    example: {}
+  ReplayStatus:
+    type: "object"
+    properties:
+      replayFileRunning:
+        type: "string"
+        description: "Name of the replay file currently running"
+        readOnly: true
+      index:
+        type: "integer"
+        description: "Index of the last ran event"
+        readOnly: true
+      maxIndex:
+        type: "integer"
+        description: "Number of events in the replay file"
+        readOnly: true
+      loopMode:
+        type: "boolean"
+        description: "Loop mode enables"
+        readOnly: true
+      timeRemaining:
+        type: "integer"
+        description: "Total time remaining for the replay file after last event"
+      timeToNextEvent:
+        type: "integer"
+        description: "Time remaining until the next event for the replay file after\
+          \ last event"
+    description: "Replay status object"
+    example: {}
+  Replay:
+    type: "object"
+    properties:
+      description:
+        type: "string"
+        description: "User description of the content of the replay file."
+      events:
+        type: "array"
+        items:
+          $ref: "#/definitions/ReplayEvent"
+    description: "ReplayEvents from the Replay-file"
+    example: {}
+  ReplayEvent:
+    type: "object"
+    properties:
+      index:
+        type: "integer"
+        description: "Event index"
+        readOnly: true
+      time:
+        type: "integer"
+        description: "Relative time (ms) an event happened since the begining of a\
+          \ replay sequence"
+      event:
+        $ref: "#/definitions/Event"
+    description: "Replay event object"
+    example: {}
+  ReplayInfo:
+    type: "object"
+    properties:
+      scenarioName:
+        type: "string"
+        description: "Scenario name"
+      description:
+        type: "string"
+        description: "User description of the replay file"
+    description: "Scenario information"
+    example: {}
   PodsStatus:
     type: "object"
     properties:
@@ -1029,6 +1339,27 @@ parameters:
     required: true
     type: "string"
     x-exportParamName: "Name"
+  ReplayInfo:
+    in: "body"
+    name: "replayInfo"
+    description: "Replay information"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ReplayInfo"
+    x-exportParamName: "ReplayInfo"
+  Replay:
+    name: "replay"
+    in: "path"
+    description: "Scenario events execution sequence"
+    required: true
+    x-exportParamName: "Replay"
+  ReplayFileName:
+    name: "replayFileName"
+    in: "path"
+    description: "Scenario events execution file name"
+    required: true
+    type: "string"
+    x-exportParamName: "ReplayFileName"
   Scenario:
     in: "body"
     name: "scenario"
@@ -1037,6 +1368,14 @@ parameters:
     schema:
       $ref: "http://localhost:8291/meep-model.yaml#/definitions/Scenario"
     x-exportParamName: "Scenario"
+  ActivationInfo:
+    in: "body"
+    name: "activationInfo"
+    description: "Activation information"
+    required: true
+    schema:
+      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ActivationInfo"
+    x-exportParamName: "ActivationInfo"
   EventType:
     name: "type"
     in: "path"

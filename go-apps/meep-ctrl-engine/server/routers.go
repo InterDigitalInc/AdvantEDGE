@@ -44,8 +44,7 @@ type Routes []Route
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
-		//		handler = Logger(handler, route.Name)
+		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
 
 		router.
 			Methods(route.Method).
@@ -69,6 +68,76 @@ var routes = Routes{
 		"GET",
 		"/v1/",
 		Index,
+	},
+
+	Route{
+		"CreateReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}",
+		CreateReplayFile,
+	},
+
+	Route{
+		"CreateReplayFileFromScenarioExec",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/generate",
+		CreateReplayFileFromScenarioExec,
+	},
+
+	Route{
+		"DeleteReplayFile",
+		strings.ToUpper("Delete"),
+		"/v1/replay/{name}",
+		DeleteReplayFile,
+	},
+
+	Route{
+		"DeleteReplayFileList",
+		strings.ToUpper("Delete"),
+		"/v1/replay",
+		DeleteReplayFileList,
+	},
+
+	Route{
+		"GetReplayStatus",
+		strings.ToUpper("Get"),
+		"/v1/replaystatus",
+		GetReplayStatus,
+	},
+
+	Route{
+		"GetReplayFile",
+		strings.ToUpper("Get"),
+		"/v1/replay/{name}",
+		GetReplayFile,
+	},
+
+	Route{
+		"GetReplayFileList",
+		strings.ToUpper("Get"),
+		"/v1/replay",
+		GetReplayFileList,
+	},
+
+	Route{
+		"LoopReplay",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/loop",
+		LoopReplay,
+	},
+
+	Route{
+		"PlayReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/play",
+		PlayReplayFile,
+	},
+
+	Route{
+		"StopReplayFile",
+		strings.ToUpper("Post"),
+		"/v1/replay/{name}/stop",
+		StopReplayFile,
 	},
 
 	Route{

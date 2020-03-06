@@ -23,7 +23,7 @@
 
 package model
 
-// Scenario list object
+// Scenario list
 type ScenarioList struct {
 	Scenarios []Scenario `json:"scenarios,omitempty"`
 }

@@ -25,6 +25,8 @@ import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
 
 import { updateObject } from '../../util/object-util';
+import { createUniqueName } from '../../util/elem-utils';
+
 import IDSelect from '../../components/helper-components/id-select';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 import NCGroup from '../../components/helper-components/nc-group';
@@ -56,7 +58,13 @@ import {
   setElemFieldErr
 } from '../../util/elem-utils';
 
-import { CFG_ELEM_MODE_EDIT, cfgElemUpdate } from '../../state/cfg';
+import {
+  CFG_ELEM_MODE_NEW,
+  CFG_ELEM_MODE_EDIT,
+  CFG_ELEM_MODE_CLONE,
+  cfgElemUpdate,
+  cfgElemClone
+} from '../../state/cfg';
 
 import {
   TYPE_CFG,
@@ -111,6 +119,7 @@ import {
   CFG_ELEM_EGRESS_SVC_MAP,
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM,
+  CFG_BTN_CLONE_ELEM,
 
   // Layout type
   MEEP_COMPONENT_TABLE_LAYOUT
@@ -915,20 +924,22 @@ const getParentTypes = type => {
 };
 
 const buttonStyles = {
-  marginRight: 5
+  marginRight: 10,
+  marginBottom: 5
 };
 
 const ElementCfgButtons = ({
   configuredElement,
   configMode,
   onNewElement,
-  onDeleteElement
+  onDeleteElement,
+  onCloneElement
 }) => {
   const canCreateNewElement = () => {
     return !configuredElement;
   };
 
-  const canDeleteElement = () => {
+  const canDeleteOrCloneElement = () => {
     return configuredElement && configMode === CFG_ELEM_MODE_EDIT;
   };
 
@@ -949,39 +960,73 @@ const ElementCfgButtons = ({
         data-cy={CFG_BTN_DEL_ELEM}
         style={buttonStyles}
         onClick={() => onDeleteElement()}
-        disabled={!canDeleteElement()}
+        disabled={!canDeleteOrCloneElement()}
       >
         DELETE
+      </Button>
+
+      <Button
+        outlined
+        data-cy={CFG_BTN_CLONE_ELEM}
+        style={buttonStyles}
+        onClick={() => onCloneElement()}
+        disabled={!canDeleteOrCloneElement()}
+      >
+        CLONE
       </Button>
     </>
   );
 };
 
-const HeaderGroup = ({ element, onTypeChange, onUpdate, disabled }) => {
+const getSuggestedName = ( type, elements ) => {
+  var suggestedPrefix = '';
+  switch(type) {
+  case ELEMENT_TYPE_UE_APP:
+    suggestedPrefix = 'ue-app';
+    break;
+  case ELEMENT_TYPE_EDGE_APP:
+    suggestedPrefix = 'edge-app';
+    break;
+  case ELEMENT_TYPE_CLOUD_APP:
+    suggestedPrefix = 'cloud-app';
+    break;
+  case ELEMENT_TYPE_DC:
+    suggestedPrefix = 'cloud';
+    break;
+  default:
+    suggestedPrefix = type.toLowerCase();
+  }
+
+  return createUniqueName(elements, suggestedPrefix);
+};
+
+const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
 
   return (
     <>
-      <Grid style={{ marginTop: 10 }}>
-        <IDSelect
-          label="Element Type"
-          span={6}
-          options={elementTypes}
-          onChange={elem => onTypeChange(elem.target.value)}
-          value={type}
-          disabled={disabled}
-          cydata={CFG_ELEM_TYPE}
-        />
-        {type && (
+      <Grid style={{ marginTop: 20 }}>
+        {type !== 'SCENARIO' && (
+          <IDSelect
+            label="Element Type"
+            span={6}
+            options={elementTypes}
+            onChange={elem => onTypeChange(elem.target.value)}
+            value={type}
+            disabled={typeDisabled}
+            cydata={CFG_ELEM_TYPE}
+          />
+        )}
+        {type && type !== 'SCENARIO' && (
           <IDSelect
             label="Parent Node"
             span={6}
             options={parentElements}
             onChange={elem => onUpdate(FIELD_PARENT, elem.target.value, null)}
             value={parent}
-            disabled={disabled}
+            disabled={parentDisabled}
             cydata={CFG_ELEM_PARENT}
           />
         )}
@@ -994,7 +1039,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, disabled }) => {
           validate={validateName}
           label="Unique Element Name"
           fieldName={FIELD_NAME}
-          disabled={disabled}
+          disabled={nameDisabled}
           cydata={CFG_ELEM_NAME}
         />
       </Grid>
@@ -1014,6 +1059,17 @@ export class CfgNetworkElementContainer extends Component {
     setElemFieldErr(updatedElem, name, err);
 
     this.props.cfgElemUpdate(updatedElem);
+  }
+
+  // Element clone handler
+  onCloneElement(newName) {
+    var clonedElem = updateObject({}, this.props.configuredElement);
+    setElemFieldVal(clonedElem, FIELD_NAME, newName);
+    setElemFieldVal(clonedElem, FIELD_PARENT, null);
+    var elementType = getElemFieldVal(clonedElem, FIELD_TYPE);
+    clonedElem.parentElements = this.elementsOfType(getParentTypes(elementType));
+
+    this.props.cfgElemClone(clonedElem);
   }
 
   // Retrieve names of elements with matching type
@@ -1038,6 +1094,9 @@ export class CfgNetworkElementContainer extends Component {
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementType));
 
+    if (this.props.configMode !== CFG_ELEM_MODE_CLONE) {
+      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementType, this.props.tableData));
+    }
     this.props.cfgElemUpdate(elem);
   }
 
@@ -1046,13 +1105,13 @@ export class CfgNetworkElementContainer extends Component {
     return (
       <div className="cfg-network-element-div" style={styles.outer}>
         <Grid>
-          <GridCell span={7}>
+          <GridCell span={12}>
             <div style={styles.block}>
               <Typography use="headline6">Element Configuration</Typography>
             </div>
           </GridCell>
-          <GridCell span={5}>
-            <GridInner align={'right'}>
+          <GridCell span={12}>
+            <GridInner align={'left'}>
               <GridCell span={12}>
                 <ElementCfgButtons
                   configuredElement={element}
@@ -1060,6 +1119,9 @@ export class CfgNetworkElementContainer extends Component {
                   onNewElement={this.props.onNewElement}
                   onDeleteElement={() => {
                     this.props.onDeleteElement(element);
+                  }}
+                  onCloneElement={() => {
+                    this.onCloneElement(createUniqueName(this.props.tableData, getElemFieldVal(element, FIELD_NAME) + '-copy'));
                   }}
                 />
               </GridCell>
@@ -1077,7 +1139,9 @@ export class CfgNetworkElementContainer extends Component {
               onUpdate={(name, val, err) => {
                 this.onUpdateElement(name, val, err);
               }}
-              disabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
+              typeDisabled={this.props.configMode === CFG_ELEM_MODE_CLONE || this.props.configMode === CFG_ELEM_MODE_EDIT}
+              parentDisabled={this.props.configMode === CFG_ELEM_MODE_EDIT}
+              nameDisabled={getElemFieldVal(element, FIELD_TYPE) === ELEMENT_TYPE_SCENARIO && this.props.configMode !== CFG_ELEM_MODE_NEW}
             />
 
             <TypeRelatedFormFields
@@ -1095,10 +1159,12 @@ export class CfgNetworkElementContainer extends Component {
             </div>
 
             <CancelApplyPair
+              saveDisabled={(this.props.isModified === false) ? true : false}
               onCancel={this.props.onCancelElement}
               onApply={() => {
-                this.props.onSaveElement(element);
+                (this.props.configMode === CFG_ELEM_MODE_CLONE) ? this.props.onApplyCloneElement(element) : this.props.onSaveElement(element);
               }}
+
             />
           </>
         )}
@@ -1113,7 +1179,7 @@ const styles = {
     height: '100%'
   },
   block: {
-    marginBottom: 20
+    marginBottom: 10
   },
   field: {
     marginBottom: 10
@@ -1131,13 +1197,15 @@ const mapStateToProps = state => {
     tableData: state.cfg.table.entries,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     configMode: state.cfg.elementConfiguration.configurationMode,
+    isModified: state.cfg.elementConfiguration.isModified,
     errorMessage: state.cfg.elementConfiguration.errorMessage
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    cfgElemUpdate: element => dispatch(cfgElemUpdate(element))
+    cfgElemUpdate: element => dispatch(cfgElemUpdate(element)),
+    cfgElemClone: element => dispatch(cfgElemClone(element))
   };
 };
 

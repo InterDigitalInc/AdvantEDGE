@@ -79,7 +79,7 @@ func (w *Watchdog) Start(rate time.Duration, timeout time.Duration) (err error) 
 
 func (w *Watchdog) watchdogTask() {
 	log.Debug("Watchdog task started: ", w.name)
-	for _ = range w.ticker.C {
+	for range w.ticker.C {
 		isAlive := w.pinger.Ping(time.Now().String())
 		if isAlive {
 			w.pongTime = time.Now()
@@ -92,7 +92,7 @@ func (w *Watchdog) watchdogTask() {
 func (w *Watchdog) Stop() {
 	if w.isStarted {
 		w.ticker.Stop()
-		w.pinger.Stop()
+		_ = w.pinger.Stop()
 		log.Debug("Watchdog stopped ", w.name)
 	}
 }

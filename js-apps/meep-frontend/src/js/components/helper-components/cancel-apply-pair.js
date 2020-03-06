@@ -26,7 +26,7 @@ const buttonStyles = {
 const CancelApplyPair = props => {
   return (
     <Grid style={{ marginTop: 10 }}>
-      <GridInner align={'right'}>
+      <GridInner align={'left'}>
         <GridCell span={12}>
           <Button
             outlined

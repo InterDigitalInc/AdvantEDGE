@@ -17,15 +17,17 @@
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
-import { Checkbox } from '@rmwc/checkbox';
+import { Icon } from '@rmwc/icon';
 
 import {
+  MEEP_HELP_PAGE_EXEC_URL,
   EXEC_STATE_DEPLOYED,
   EXEC_BTN_SAVE_SCENARIO,
   EXEC_BTN_DEPLOY,
   EXEC_BTN_TERMINATE,
   EXEC_BTN_REFRESH,
-  EXEC_BTN_EVENT
+  EXEC_BTN_EVENT,
+  EXEC_BTN_CONFIG
 } from '../../meep-constants';
 
 import {
@@ -71,22 +73,25 @@ class ExecPageScenarioButtons extends Component {
     );
   }
 
-  canCreateEvent() {
+  canOpenDashCfg() {
     return (
-      !this.props.eventCreationMode &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
       !this.props.podsTerminated
     );
   }
 
-  checkboxChanged(checked) {
-    this.props.onShowAppsChanged(checked);
+  canOpenEventCfg() {
+    return (
+      !this.props.podsPending &&
+      !this.props.podsTerminating &&
+      !this.props.podsTerminated
+    );
   }
 
   render() {
     return (
-      <div style={{ marginTop: 10 }}>
+      <div>
         <Button
           raised
           style={styles.section1}
@@ -126,19 +131,35 @@ class ExecPageScenarioButtons extends Component {
         <Button
           raised
           style={styles.section2}
-          onClick={this.props.onCreateEvent}
-          disabled={!this.canCreateEvent()}
+          onClick={this.props.onOpenEventCfg}
+          disabled={!this.canOpenEventCfg()}
           data-cy={EXEC_BTN_EVENT}
         >
-          CREATE EVENT
+          EVENT
+        </Button>
+        <Button
+          raised
+          style={styles.section1}
+          onClick={this.props.onOpenDashCfg}
+          disabled={!this.canOpenDashCfg()}
+          data-cy={EXEC_BTN_CONFIG}
+        >
+          DASHBOARD
         </Button>
 
-        <Checkbox
-          checked={this.props.showApps}
-          onChange={e => this.checkboxChanged(e.target.checked)}
+        <Button
+          raised
+          style={styles.section2}
+          onClick={() => {
+            window.open(MEEP_HELP_PAGE_EXEC_URL,'_blank');
+          }}
         >
-          Show Apps
-        </Checkbox>
+          <Icon
+            icon="help_outline"
+            iconOptions={{ strategy: 'ligature' }}
+            style={styles.icon}
+          />
+        </Button>
       </div>
     );
   }

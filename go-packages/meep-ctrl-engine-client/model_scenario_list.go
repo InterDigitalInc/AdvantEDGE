@@ -24,7 +24,7 @@
 
 package client
 
-// Scenario list object
+// Scenario list
 type ScenarioList struct {
 	Scenarios []Scenario `json:"scenarios,omitempty"`
 }

@@ -18,8 +18,7 @@ import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import axios from 'axios';
-import moment from 'moment';
-import { updateObject } from '../util/object-util';
+import { updateObject, deepCopy } from '../util/object-util';
 
 // Import JS dependencies
 import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
@@ -34,10 +33,13 @@ import MonitorPageContainer from './monitor/monitor-page-container';
 import {
   TYPE_CFG,
   TYPE_EXEC,
+  EXEC_STATE_IDLE,
   EXEC_STATE_DEPLOYED,
   NO_SCENARIO_NAME,
-  VIS_VIEW,
-  VIEW_NAME_NONE
+  PAGE_CONFIGURE,
+  PAGE_EXECUTE,
+  PAGE_MONITOR,
+  PAGE_SETTINGS
 } from '../meep-constants';
 
 import {
@@ -45,12 +47,14 @@ import {
   createNewScenario,
   addElementToScenario,
   updateElementInScenario,
+  cloneElementInScenario,
   removeElementFromScenario
 } from '../util/scenario-utils';
 
 import {
   uiChangeCurrentPage,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventReplayMode,
   uiToggleMainDrawer
 } from '../state/ui';
 
@@ -66,7 +70,7 @@ import {
   corePodsRunning,
   corePodsErrors,
   execVisFilteredData,
-  execAddMetricsEpoch
+  execChangeReplayStatus
 } from '../state/exec';
 
 import {
@@ -75,23 +79,9 @@ import {
   cfgChangeTable
 } from '../state/cfg';
 
-import {
-  PAGE_CONFIGURE,
-  PAGE_EXECUTE,
-  PAGE_MONITOR,
-  PAGE_SETTINGS
-} from '../meep-constants';
-
-import { idlog } from '../util/functional';
-
 // MEEP Controller REST API JS client
 var basepath = 'http://' + location.host + location.pathname + 'v1';
-// const basepath = 'http://10.3.16.137:30000/v1';
-
-const metricsBasePath = 'http://' + location.hostname + ':30008/v1';
-// const metricsBasePath = 'http://10.3.16.137:30008/v1';
-
-const TIME_FORMAT = moment.HTML5_FMT.DATETIME_LOCAL_MS;
+// const basepath = 'http://10.3.16.105:30000/v1';
 
 meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(
   /\/+$/,
@@ -103,25 +93,32 @@ class MeepContainer extends Component {
     super(props);
     this.state = {};
     this.refreshIntervalTimer = null;
+    this.podsPhasesIntervalTimer = null;
+    this.replayStatusIntervalTimer = null;
     this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
     this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
-    this.metricsPollingEnabled = false;
+    this.meepReplayApi = new meepCtrlRestApiClient.EventReplayApi();
   }
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
-    this.props.changeEventCreationMode(false);
     this.refreshScenario();
+    this.startTimers();
+    this.monitorTabFocus();
+  }
+
+  startTimers() {
     if (this.props.automaticRefresh) {
       this.startAutomaticRefresh();
     }
-    this.startRefreshCycle();
-    this.setMetricsPolling();
+    this.startPodsPhasesPeriodicCheck();
+    this.startReplayStatusPeriodicCheck();
   }
 
-  startRefreshCycle() {
-    this.startPodsPhasesPeriodicCheck();
-    this.monitorTabFocus();
+  stopTimers() {
+    this.stopReplayStatusPeriodicCheck();
+    this.stopCorePodsPhasesPeriodicCheck();
+    this.stopAutomaticRefresh();
   }
 
   startPodsPhasesPeriodicCheck() {
@@ -133,6 +130,17 @@ class MeepContainer extends Component {
 
   stopCorePodsPhasesPeriodicCheck() {
     clearInterval(this.podsPhasesIntervalTimer);
+  }
+
+  startReplayStatusPeriodicCheck() {
+    this.replayStatusIntervalTimer = setInterval(
+      () => this.checkReplayStatus(),
+      1000
+    );
+  }
+
+  stopReplayStatusPeriodicCheck() {
+    clearInterval(this.replayStatusIntervalTimer);
   }
 
   monitorTabFocus() {
@@ -151,14 +159,9 @@ class MeepContainer extends Component {
 
     const handleVisibilityChange = () => {
       if (document[hidden]) {
-        this.stopCorePodsPhasesPeriodicCheck();
-        this.stopAutomaticRefresh();
+        this.stopTimers();
       } else {
-        this.startPodsPhasesPeriodicCheck();
-
-        if (this.props.automaticRefresh) {
-          this.startAutomaticRefresh();
-        }
+        this.startTimers();
       }
     };
 
@@ -176,61 +179,6 @@ class MeepContainer extends Component {
         handleVisibilityChange,
         false
       );
-    }
-  }
-
-  fetchMetrics() {
-    const delta = -7;
-    const startTime = moment()
-      .utc()
-      .add(delta, 'seconds')
-      .format(TIME_FORMAT);
-    const stopTime = moment()
-      .utc()
-      .add(delta + 1, 'seconds')
-      .format(TIME_FORMAT);
-    return axios
-      .get(
-        `${metricsBasePath}/metrics?startTime=${startTime}&stopTime=${stopTime}`
-      )
-      .then(res => {
-        let epoch = {
-          data: res.data.logResponse || [],
-          startTime: startTime
-        };
-
-        this.props.addMetricsEpoch(epoch);
-      })
-      .catch(e => {
-        idlog('Error while fetching metrics')(e);
-      });
-  }
-
-  setMetricsPolling() {
-    if (
-      this.props.dashboardView1 === VIS_VIEW &&
-      this.props.dashboardView2 === VIEW_NAME_NONE
-    ) {
-      this.stopMetricsPolling();
-    } else {
-      this.startMetricsPolling();
-    }
-  }
-  stopMetricsPolling() {
-    if (this.metricsPollingEnabled) {
-      clearInterval(this.dataTimer);
-      this.metricsPollingEnabled = false;
-    }
-  }
-  startMetricsPolling() {
-    if (!this.metricsPollingEnabled) {
-      this.epochCount = 0;
-      const nextData = () => {
-        this.epochCount += 1;
-        this.fetchMetrics();
-      };
-      this.dataTimer = setInterval(nextData, 1000);
-      this.metricsPollingEnabled = true;
     }
   }
 
@@ -266,6 +214,28 @@ class MeepContainer extends Component {
       .catch(() => {
         this.props.changeServiceMaps([]);
       });
+  }
+
+  /**
+   * Callback function to receive the result of the getReplayStatus operation.
+   * @callback module:api/EventReplayApi~getReplayStatusCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/Replay} data The data returned by the service call.
+   */
+  getReplayStatusCb(error, data) {
+    this.props.changeReplayStatus((error === null) ? data : null);
+  }
+
+  checkReplayStatus() {
+    if (this.props.exec.state.scenario === EXEC_STATE_IDLE) {
+      return;
+    }
+
+    if (this.props.eventCfgMode || this.props.eventReplayMode) {
+      this.meepReplayApi.getReplayStatus((error, data, response) => {
+        this.getReplayStatusCb(error, data, response);
+      });
+    }
   }
 
   setMainContent(targetId) {
@@ -323,8 +293,12 @@ class MeepContainer extends Component {
     }, 2000);
   }
 
-  // Change & process scenario
   changeScenario(pageType, scenario) {
+    this.updateScenario(pageType, scenario, false);
+  }
+
+  // Change & process scenario
+  updateScenario(pageType, scenario, reInitVisView) {
     // Change scenario state
     if (pageType === TYPE_CFG) {
       this.props.cfgChangeScenario(scenario);
@@ -345,7 +319,16 @@ class MeepContainer extends Component {
 
       const vis = this.props.cfgVis;
       if (vis && vis.network && vis.network.setData) {
+        //save the canvas position and scale level in vis
+        var view;
+        if (!reInitVisView) {
+          view = deepCopy(vis.network.canvas.body.view);
+        }
         vis.network.setData(updatedVisData);
+        if (view) {
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
+        }
       }
     } else {
       this.props.execChangeVisData(updatedVisData);
@@ -354,7 +337,11 @@ class MeepContainer extends Component {
       const vis = this.props.execVis;
       if (vis && vis.network && vis.network.setData) {
         _.defer(() => {
+          //save the canvas position and scale level in vis
+          const view = deepCopy(vis.network.canvas.body.view);
           vis.network.setData(this.props.execVisData);
+          //restore the canvas position and scale in vis
+          vis.network.canvas.body.view = view;
         });
       }
     }
@@ -363,18 +350,18 @@ class MeepContainer extends Component {
   // Create, store & process new scenario
   createScenario(pageType, name) {
     var scenario = createNewScenario(name);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Set & process scenario
   setScenario(pageType, scenario) {
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Delete & process scenario
   deleteScenario(pageType) {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
-    this.changeScenario(pageType, scenario);
+    this.updateScenario(pageType, scenario, true);
   }
 
   // Refresh Active scenario
@@ -385,14 +372,16 @@ class MeepContainer extends Component {
   }
 
   // Add new element to scenario
-  newScenarioElem(pageType, element) {
+  newScenarioElem(pageType, element, scenarioUpdate) {
     var scenario =
       pageType === TYPE_CFG
         ? this.props.cfg.scenario
         : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
-    this.changeScenario(pageType, updatedScenario);
+    if (scenarioUpdate) {
+      this.changeScenario(pageType, updatedScenario);
+    }
   }
 
   // Update element in scenario
@@ -417,6 +406,13 @@ class MeepContainer extends Component {
     this.changeScenario(pageType, updatedScenario);
   }
 
+  // Clone element in scenario
+  cloneScenarioElem(element) {
+    var updatedScenario = updateObject({}, this.props.cfg.scenario);
+    cloneElementInScenario(updatedScenario, element, this.props.cfg.table);
+    this.changeScenario(TYPE_CFG, updatedScenario);
+  }
+
   renderPage() {
     switch (this.props.page) {
     case PAGE_CONFIGURE:
@@ -433,8 +429,11 @@ class MeepContainer extends Component {
           deleteScenario={() => {
             this.deleteScenario(TYPE_CFG);
           }}
-          newScenarioElem={elem => {
-            this.newScenarioElem(TYPE_CFG, elem);
+          newScenarioElem={(elem, update) => {
+            this.newScenarioElem(TYPE_CFG, elem, update);
+          }}
+          cloneScenarioElem={elem => {
+            this.cloneScenarioElem(elem);
           }}
           updateScenarioElem={elem => {
             this.updateScenarioElem(TYPE_CFG, elem);
@@ -451,6 +450,7 @@ class MeepContainer extends Component {
             <ExecPageContainer
               style={{ width: '100%' }}
               api={this.meepExecApi}
+              replayApi={this.meepReplayApi}
               cfgApi={this.meepCfgApi}
               refreshScenario={() => {
                 this.refreshScenario();
@@ -481,25 +481,27 @@ class MeepContainer extends Component {
 
   render() {
     const flexString = this.props.mainDrawerOpen ? '0 0 250px' : '0 0 0px';
-    this.setMetricsPolling();
 
     return (
-      <div style={{ width: '100%' }}>
-        <MeepTopBar
-          title=""
-          toggleMainDrawer={() => this.props.toggleMainDrawer()}
-          corePodsRunning={this.props.corePodsRunning}
-          corePodsErrors={this.props.corePodsErrors}
-        />
-
-        <div style={{ display: 'flex' }}>
-          <div
-            className="component-style"
-            style={{ overflow: 'hidden', flex: flexString, marginTop: '5px' }}
-          >
-            <MeepDrawer open={this.props.mainDrawerOpen} style={{ flex: 1 }} />
+      <div style={{ display: 'table', width: '100%', height: '100%' }}>
+        <div style={{ display: 'table-row' }}>
+          <MeepTopBar
+            title=""
+            toggleMainDrawer={() => this.props.toggleMainDrawer()}
+            corePodsRunning={this.props.corePodsRunning}
+            corePodsErrors={this.props.corePodsErrors}
+          />
+        </div>
+        <div style={{ display: 'table-row', height: '100%' }}>
+          <div style={{ display: 'flex', height: '100%' }}>
+            <div
+              className="component-style"
+              style={{ flex: flexString, borderRight: '1px solid #e4e4e4', overflow: 'hidden' }}
+            >
+              <MeepDrawer open={this.props.mainDrawerOpen} />
+            </div>
+            <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
           </div>
-          <div style={{ flex: '1', padding: 10 }}>{this.renderPage()}</div>
         </div>
       </div>
     );
@@ -519,6 +521,8 @@ const mapStateToProps = state => {
     mainDrawerOpen: state.ui.mainDrawerOpen,
     dashboardView1: state.ui.dashboardView1,
     dashboardView2: state.ui.dashboardView2,
+    eventReplayMode: state.ui.eventReplayMode,
+    eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
     corePodsErrors: corePodsErrors(state),
     execVisData: execVisFilteredData(state)
@@ -528,13 +532,13 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
-    changeEventCreationMode: mode =>
-      dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
+    changeReplayStatus: status => dispatch(execChangeReplayStatus(status)),
     cfgChangeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
     execChangeScenario: scenario => dispatch(execChangeScenario(scenario)),
     execChangeScenarioState: s => dispatch(execChangeScenarioState(s)),
-    changeScenarioPodsPhases: phases =>
-      dispatch(execChangeScenarioPodsPhases(phases)),
+    changeScenarioPodsPhases: phases => dispatch(execChangeScenarioPodsPhases(phases)),
     changeCorePodsPhases: phases => dispatch(execChangeCorePodsPhases(phases)),
     changeServiceMaps: maps => dispatch(execChangeServiceMaps(maps)),
     execChangeVisData: data => dispatch(execChangeVisData(data)),
@@ -542,8 +546,7 @@ const mapDispatchToProps = dispatch => {
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),
-    toggleMainDrawer: () => dispatch(uiToggleMainDrawer()),
-    addMetricsEpoch: epoch => dispatch(execAddMetricsEpoch(epoch))
+    toggleMainDrawer: () => dispatch(uiToggleMainDrawer())
   };
 };
 

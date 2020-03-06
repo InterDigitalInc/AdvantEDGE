@@ -185,12 +185,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_TYPE, true);
     verifyForm(meep.CFG_ELEM_NAME, true);
     verifyEnabled(meep.MEEP_BTN_CANCEL, true);
-    verifyEnabled(meep.MEEP_BTN_APPLY, true);
+    verifyEnabled(meep.MEEP_BTN_APPLY, false);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, false);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
     click(meep.MEEP_BTN_CANCEL);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
 
     // Domain
     cy.log('Add new domain and verify default & configured settings: ' + operatorName);
@@ -315,6 +317,7 @@ describe('Scenario Configuration', function () {
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', name);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateScenario(name) {
@@ -350,6 +353,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateDomain(name, parent) {
@@ -377,6 +381,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateZone(name, parent) {
@@ -414,6 +419,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateEdge(name, parent) {
@@ -478,6 +484,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateEdgeApp(name, parent) {
@@ -530,6 +537,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validatePoa(name, parent) {
@@ -565,6 +573,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateFog(name, parent) {
@@ -623,6 +632,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateFogApp(name, parent) {
@@ -670,6 +680,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateUe(name, parent) {
@@ -722,6 +733,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateUeApp(name, parent) {
@@ -786,6 +798,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateCloud(name, parent) {
@@ -842,6 +855,7 @@ describe('Scenario Configuration', function () {
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
   function validateCloudApp(name, parent) {

@@ -30,6 +30,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+
+	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
 )
 
 type Route struct {
@@ -57,22 +59,93 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+func IndexV2(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello World! on v2")
+}
+
+func Init() (err error) {
+	err = v2.Init()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 var routes = Routes{
 	Route{
-		"Index",
+		"IndexV2",
 		"GET",
-		"/v1/",
-		Index,
+		"/v2/",
+		IndexV2,
 	},
 
 	Route{
-		"MetricsGet",
+		"PostEventQuery",
+		strings.ToUpper("Post"),
+		"/v2/metrics/query/event",
+		v2.PostEventQuery,
+	},
+
+	Route{
+		"PostNetworkQuery",
+		strings.ToUpper("Post"),
+		"/v2/metrics/query/network",
+		v2.PostNetworkQuery,
+	},
+
+	Route{
+		"CreateEventSubscription",
+		strings.ToUpper("Post"),
+		"/v2/metrics/subscriptions/event",
+		v2.CreateEventSubscription,
+	},
+
+	Route{
+		"CreateNetworkSubscription",
+		strings.ToUpper("Post"),
+		"/v2/metrics/subscriptions/network",
+		v2.CreateNetworkSubscription,
+	},
+
+	Route{
+		"DeleteEventSubscriptionById",
+		strings.ToUpper("Delete"),
+		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		v2.DeleteEventSubscriptionById,
+	},
+
+	Route{
+		"DeleteNetworkSubscriptionById",
+		strings.ToUpper("Delete"),
+		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		v2.DeleteNetworkSubscriptionById,
+	},
+
+	Route{
+		"GetEventSubscription",
 		strings.ToUpper("Get"),
-		"/v1/metrics",
-		MetricsGet,
+		"/v2/metrics/subscriptions/event",
+		v2.GetEventSubscription,
+	},
+
+	Route{
+		"GetEventSubscriptionById",
+		strings.ToUpper("Get"),
+		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		v2.GetEventSubscriptionById,
+	},
+
+	Route{
+		"GetNetworkSubscription",
+		strings.ToUpper("Get"),
+		"/v2/metrics/subscriptions/network",
+		v2.GetNetworkSubscription,
+	},
+
+	Route{
+		"GetNetworkSubscriptionById",
+		strings.ToUpper("Get"),
+		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		v2.GetNetworkSubscriptionById,
 	},
 }

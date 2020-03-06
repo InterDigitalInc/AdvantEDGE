@@ -18,8 +18,10 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Button } from '@rmwc/button';
 import { TextField } from '@rmwc/textfield';
+import { Icon } from '@rmwc/icon';
 
 import {
+  MEEP_HELP_PAGE_CFG_URL,
   CFG_STATE_IDLE,
   CFG_STATE_NEW,
   CFG_STATE_LOADED,
@@ -82,6 +84,7 @@ class CfgPageScenarioButtons extends Component {
     const input = (
       <TextField
         type="file"
+        hidden
         ref={input => (this.inputElement = input)}
         onClick={() => this.props.onInputScenario(this.inputElement.input_)}
         onChange={() => this.props.onInputScenario(this.inputElement.input_)}
@@ -89,10 +92,10 @@ class CfgPageScenarioButtons extends Component {
       />
     );
     return (
-      <div style={{ marginTop: 12 }}>
+      <>
         <Button
           raised
-          style={buttonStyles}
+          style={styles.button}
           onClick={() => this.props.onNewScenario()}
           disabled={!this.canCreateNewScenario()}
           data-cy={CFG_BTN_NEW_SCENARIO}
@@ -101,7 +104,7 @@ class CfgPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={buttonStyles}
+          style={styles.button}
           onClick={() => this.props.onOpenScenario()}
           disabled={!this.canOpenScenario()}
           data-cy={CFG_BTN_OPEN_SCENARIO}
@@ -110,7 +113,7 @@ class CfgPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={buttonStyles}
+          style={styles.button}
           onClick={() => this.props.onSaveScenario()}
           disabled={!this.canSaveScenario()}
           data-cy={CFG_BTN_SAVE_SCENARIO}
@@ -119,7 +122,7 @@ class CfgPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={buttonStyles}
+          style={styles.button}
           onClick={() => this.props.onDeleteScenario()}
           disabled={!this.canDeleteScenario()}
           data-cy={CFG_BTN_DEL_SCENARIO}
@@ -131,7 +134,7 @@ class CfgPageScenarioButtons extends Component {
 
         <Button
           raised
-          style={{ ...buttonStyles, marginLeft: 10 }}
+          style={{ ...styles.button, marginLeft: 10 }}
           onClick={() => {
             this.inputElement.input_.click();
           }}
@@ -143,7 +146,7 @@ class CfgPageScenarioButtons extends Component {
 
         <Button
           raised
-          style={buttonStyles}
+          style={styles.button}
           onClick={() => this.props.onExportScenario()}
           disabled={!this.canExportScenario()}
           data-cy={CFG_BTN_EXP_SCENARIO}
@@ -151,15 +154,34 @@ class CfgPageScenarioButtons extends Component {
           EXPORT
         </Button>
 
+        <Button
+          raised
+          style={{ ...styles.button, marginLeft: 10 }}
+          onClick={() => {
+            window.open(MEEP_HELP_PAGE_CFG_URL,'_blank');
+          }}
+        >
+          <Icon
+            icon="help_outline"
+            iconOptions={{ strategy: 'ligature' }}
+            style={styles.icon}
+          />
+        </Button>
+
         <a id="export-scenario-link" download="config.yaml" hidden></a>
-      </div>
+      </>
     );
   }
 }
 
-const buttonStyles = {
-  color: 'white',
-  marginRight: 5
+const styles = {
+  button: {
+    color: 'white',
+    marginRight: 5
+  },
+  icon: {
+    color: 'white'
+  }
 };
 
 const mapStateToProps = state => {

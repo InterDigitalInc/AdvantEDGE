@@ -31,9 +31,9 @@ type Pinger struct {
 	isStarted   bool
 	pingChannel string
 	pongChannel string
-	pingMsg     string
-	pongMsg     string
-	rc          *redis.Connector
+	// pingMsg     string
+	pongMsg string
+	rc      *redis.Connector
 }
 
 // NewPinger - Create, Initialize and connect  a pinger
@@ -83,7 +83,7 @@ func (p *Pinger) Stop() (err error) {
 	if p.isStarted {
 		p.isStarted = false
 		p.rc.StopListen()
-		p.rc.Unsubscribe(p.pongChannel)
+		_ = p.rc.Unsubscribe(p.pongChannel)
 		log.Debug("Pigner stopped ", p.name)
 	}
 	return nil

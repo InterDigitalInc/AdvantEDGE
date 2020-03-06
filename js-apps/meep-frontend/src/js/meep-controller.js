@@ -28,17 +28,18 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import meepReducer from './state/meep-reducer';
 import { execDisplayedScenarioMiddleware } from './middlewares/exec-displayed-scenario-middleware';
-import { fixMetricsValuesMiddleware } from './middlewares/fix-metrics-values-middleware';
 
-import { saveUIState, loadUIState } from './util/persist';
+import { saveState, loadState } from './util/persist';
 
-import { createMeepState } from './util/meep-utils';
 
 // UI Components
 import MeepContainer from './containers/meep-container';
 
 // Initialize variables and listeners when document ready
-var loadedUIState = loadUIState();
+
+// Get MEEP state from local storage
+// Set state to 'undefined' to use default values
+var loadedState = loadState();
 
 // Uncomment if logger middleware is needed
 // var logger = store => () => action => {
@@ -46,21 +47,29 @@ var loadedUIState = loadUIState();
 //   console.log('state: ', store.getState());
 // };
 
-const meepState = createMeepState({ ui: loadedUIState });
-
+// Create state store
 const meepStore = createStore(
   meepReducer,
-  meepState,
+  loadedState ? loadedState : undefined,
   applyMiddleware(
     thunk,
-    execDisplayedScenarioMiddleware,
-    fixMetricsValuesMiddleware
+    execDisplayedScenarioMiddleware
   )
 );
 window.meepStore = meepStore;
 
 meepStore.subscribe(() => {
-  saveUIState(meepStore.getState().ui);
+  var curState = meepStore.getState();
+
+  // Filter state to be persisted
+  // NOTE: do not modify current state!
+  var filteredState = {
+    monitor: curState.monitor,
+    settings: curState.settings,
+    ui: curState.ui
+  };
+
+  saveState(filteredState);
 });
 
 // Monitor Page

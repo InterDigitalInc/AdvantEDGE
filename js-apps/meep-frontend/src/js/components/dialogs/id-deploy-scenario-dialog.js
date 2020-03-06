@@ -39,6 +39,7 @@ class IDDeployScenarioDialog extends Component {
     }
     this.props.api.activateScenario(
       this.state.selectedScenario,
+      null,
       this.props.activateScenarioCb
     );
   }

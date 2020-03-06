@@ -28,7 +28,7 @@ var apiInstance = new AdvantEdgePlatformControllerRestApi.ScenarioConfigurationA
 
 var name = "name_example"; // String | Scenario name
 
-var scenario = new AdvantEdgePlatformControllerRestApi.Scenario(); // Scenario | Scenario to add to MEEP store
+var scenario = new AdvantEdgePlatformControllerRestApi.Scenario(); // Scenario | Scenario
 
 
 var callback = function(error, data, response) {
@@ -46,7 +46,7 @@ apiInstance.createScenario(name, scenario, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **name** | **String**| Scenario name | 
- **scenario** | [**Scenario**](Scenario.md)| Scenario to add to MEEP store | 
+ **scenario** | [**Scenario**](Scenario.md)| Scenario | 
 
 ### Return type
 
