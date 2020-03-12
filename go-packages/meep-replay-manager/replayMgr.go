@@ -182,20 +182,26 @@ func (r *ReplayMgr) playEventByIndex() error {
 
 // Start - starts replay execution
 func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreInitEvent bool) error {
-	if !r.isStarted {
-		r.timeStarted = time.Now()
-		r.isStarted = true
-		r.nextEventIndex = 0
-		r.replayEventsList = replay
-		r.eventIndexMax = len(replay.Events) - 1
-		r.loop = loop
-		r.currentFileName = fileName
-		r.ignoreInitEvent = ignoreInitEvent
-		//executing the events
-		_ = r.playEventByIndex()
-	} else {
+	// Verify replay file can be started
+	if r.isStarted {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
+	} else if len(replay.Events) <= 1 {
+		return errors.New("Replay has no events, filename: " + r.currentFileName)
 	}
+
+	// Initialize replay execution
+	r.timeStarted = time.Now()
+	r.isStarted = true
+	r.nextEventIndex = 0
+	r.replayEventsList = replay
+	r.eventIndexMax = len(replay.Events) - 1
+	r.loop = loop
+	r.currentFileName = fileName
+	r.ignoreInitEvent = ignoreInitEvent
+
+	// Start playing events
+	_ = r.playEventByIndex()
+
 	return nil
 }
 

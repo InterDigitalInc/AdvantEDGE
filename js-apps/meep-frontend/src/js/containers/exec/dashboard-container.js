@@ -279,7 +279,7 @@ class DashboardContainer extends Component {
     const root = this.getRoot();
     const nodes = root.descendants();
     const apps = nodes.filter(isApp);
-    const appIds = apps.map(a => a.data.id);
+    const appIds = apps.map(a => a.data.name);
     appIds.unshift('None');
 
     const selectedSource = appIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
