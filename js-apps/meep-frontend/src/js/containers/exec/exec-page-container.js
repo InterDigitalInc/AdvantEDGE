@@ -187,10 +187,9 @@ class ExecPageContainer extends Component {
         // TODO consider showing an alert
         // console.log(error);
       }
+      // Refresh file list
+      this.updateReplayFileList();
     });
-
-    // Refresh file list
-    this.updateReplayFileList();
   }
 
   // CLOSE DIALOG
