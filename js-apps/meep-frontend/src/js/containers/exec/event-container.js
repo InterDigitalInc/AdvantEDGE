@@ -112,14 +112,14 @@ class EventContainer extends Component {
           style={{ padding: 10, marginBottom: 10 }}
         >
           <Grid style={{ marginBottom: 10 }}>
-            <GridCell span={6}>
+            <GridCell span={2}>
               <div style={{ marginBottom: 10 }}>
                 <span className="mdc-typography--headline6">
                   Event
                 </span>
               </div>
             </GridCell>
-            <GridCell span={6}>
+            <GridCell span={10}>
               <div align={'right'}>
                 <Button
                   outlined
