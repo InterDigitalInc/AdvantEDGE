@@ -147,9 +147,10 @@ func deleteDep(cobraCmd *cobra.Command) {
 	go k8sDelete("meep-influxdb", cobraCmd, messages)
 	go k8sDelete("meep-kube-state-metrics", cobraCmd, messages)
 	go k8sDelete("meep-docker-registry", cobraCmd, messages)
+	go k8sDelete("meep-ingress", cobraCmd, messages)
 
 	// Wait for all pvc delete routines to complete
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 7; i++ {
 		fmt.Println(<-messages)
 	}
 }

@@ -267,7 +267,12 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.kube-state-metrics.chart")
+	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	//---
+	repo = "meep-ingress"
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.nginx-ingress.chart")
 	flags = nil
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }

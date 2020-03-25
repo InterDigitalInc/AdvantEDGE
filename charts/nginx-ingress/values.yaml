@@ -50,7 +50,7 @@ controller:
 
   ## Use host ports 80 and 443
   daemonset:
-    useHostPort: false
+    useHostPort: true
 
     hostPorts:
       http: 80
@@ -125,7 +125,7 @@ controller:
 
   ## DaemonSet or Deployment
   ##
-  kind: Deployment
+  kind: DaemonSet
 
   ## Annotations to be added to the controller deployment
   ##

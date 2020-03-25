@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "docker-registry.fullname" . }}
@@ -8,6 +8,10 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
+  selector:
+    matchLabels:
+      app: {{ template "docker-registry.name" . }}
+      release: {{ .Release.Name }}
   replicas: {{ .Values.replicaCount }}
 {{- if .Values.updateStrategy }}
   strategy:
@@ -39,21 +43,6 @@ spec:
       securityContext:
         fsGroup: {{ .Values.securityContext.fsGroup }}
         runAsUser: {{ .Values.securityContext.runAsUser }}
-{{- end }}
-{{- if eq .Values.storage "filesystem" }}
-      initContainers:
-        - name: "chown"
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-          command:
-          - /bin/sh
-          - -c
-          - chown -R 1000:1000 /var/lib/registry/
-          securityContext:
-            runAsUser: 0
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/registry/
 {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -186,7 +175,9 @@ spec:
               name: tls-cert
               readOnly: true
 {{- end }}
-      terminationGracePeriodSeconds: 5
+{{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+{{- end }}
 {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
@@ -224,4 +215,7 @@ spec:
         - name: tls-cert
           secret:
             secretName: {{ .Values.tlsSecretName }}
+{{- end }}
+{{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
 {{- end }}
