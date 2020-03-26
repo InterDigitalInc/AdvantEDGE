@@ -1,6 +1,6 @@
 # \UsersApi
 
-All URIs are relative to *http://127.0.0.1:8081/etsi-013/location/v1*
+All URIs are relative to *https://localhost/location/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

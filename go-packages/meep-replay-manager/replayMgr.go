@@ -28,7 +28,7 @@ import (
 )
 
 const defaultLoopInterval = 5000 //in ms
-const basepath = "http://meep-ctrl-engine/v1"
+const basepath = "http://meep-ctrl-engine/ctrl-engine/v1"
 
 type ReplayMgr struct {
 	name             string

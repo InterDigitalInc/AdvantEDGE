@@ -1,6 +1,6 @@
 # \MembershipApi
 
-All URIs are relative to *http://localhost/v1*
+All URIs are relative to *http://localhost/mgm/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

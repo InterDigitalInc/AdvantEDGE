@@ -8,7 +8,7 @@ info:
     \ <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)\
     \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
     \ information about Users (UE) and Zone locations <p>**Details**<br>API details\
-    \ available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30007`"
+    \ available at _your-AdvantEDGE-ip-address/api_"
   version: "1.1.1"
   title: "AdvantEDGE Location Service REST API"
   contact:
@@ -17,14 +17,11 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-host: "127.0.0.1:8081"
-basePath: "/etsi-013/location/v1"
+basePath: "/location/v1"
 tags:
 - name: "zones"
 - name: "users"
 - name: "subscriptions"
-schemes:
-- "http"
 consumes:
 - "application/json"
 produces:

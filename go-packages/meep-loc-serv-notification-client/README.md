@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://172.0.0.1:8081/location/v1*
+All URIs are relative to *https://172.0.0.1:8081/location-notif/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

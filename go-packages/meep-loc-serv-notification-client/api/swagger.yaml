@@ -15,11 +15,9 @@ info:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
 host: "172.0.0.1:8081"
-basePath: "/location/v1"
+basePath: "/location-notif/v1"
 tags:
 - name: "notifications"
-schemes:
-- "http"
 consumes:
 - "application/json"
 produces:

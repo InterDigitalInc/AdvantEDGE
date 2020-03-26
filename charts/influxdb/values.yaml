@@ -30,10 +30,10 @@ startupProbe:
 service:
   ## Add annotations to service
   # annotations: {}
-  # type: ClusterIP
-  type: NodePort
-  apiNodePort: 30086
-  rpcNodePort: 30088
+  type: ClusterIP
+  # type: NodePort
+  # apiNodePort: 30086
+  # rpcNodePort: 30088
   ## Add IP Cluster
   # clusterIP: ""
   ## Add external IPs that route to one or more cluster nodes
@@ -111,11 +111,13 @@ resources: {}
 podAnnotations: {}
 
 ingress:
-  enabled: false
+  enabled: true
   tls: false
   # secretName: my-tls-cert # only needed if tls above is true
-  hostname: influxdb.foobar.com
+  hostname: ''
+  path: /influxdb(/|$)(.*)
   annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     # kubernetes.io/ingress.class: "nginx"
     # kubernetes.io/tls-acme: "true"
 

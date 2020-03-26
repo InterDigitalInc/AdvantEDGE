@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Location Service REST API
  *
- * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/01.01.01_60/gs_mec013v010101p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30007`
+ * Location Service is AdvantEDGE's implementation of [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/01.01.01_60/gs_mec013v010101p.pdf) <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt) <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv) <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.1.1
  * Contact: AdvantEDGE@InterDigital.com
@@ -65,154 +65,154 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		"/etsi-013/location/v1/",
+		"/location/v1/",
 		Index,
 	},
 
 	Route{
 		"UserTrackingSubDelById",
 		strings.ToUpper("Delete"),
-		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubDelById,
 	},
 
 	Route{
 		"UserTrackingSubGet",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/userTracking",
+		"/location/v1/subscriptions/userTracking",
 		UserTrackingSubGet,
 	},
 
 	Route{
 		"UserTrackingSubGetById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubGetById,
 	},
 
 	Route{
 		"UserTrackingSubPost",
 		strings.ToUpper("Post"),
-		"/etsi-013/location/v1/subscriptions/userTracking",
+		"/location/v1/subscriptions/userTracking",
 		UserTrackingSubPost,
 	},
 
 	Route{
 		"UserTrackingSubPutById",
 		strings.ToUpper("Put"),
-		"/etsi-013/location/v1/subscriptions/userTracking/{subscriptionId}",
+		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubPutById,
 	},
 
 	Route{
 		"ZonalTrafficSubDelById",
 		strings.ToUpper("Delete"),
-		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubDelById,
 	},
 
 	Route{
 		"ZonalTrafficSubGet",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/zonalTraffic",
+		"/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubGet,
 	},
 
 	Route{
 		"ZonalTrafficSubGetById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubGetById,
 	},
 
 	Route{
 		"ZonalTrafficSubPost",
 		strings.ToUpper("Post"),
-		"/etsi-013/location/v1/subscriptions/zonalTraffic",
+		"/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubPost,
 	},
 
 	Route{
 		"ZonalTrafficSubPutById",
 		strings.ToUpper("Put"),
-		"/etsi-013/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
+		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubPutById,
 	},
 
 	Route{
 		"ZoneStatusDelById",
 		strings.ToUpper("Delete"),
-		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusDelById,
 	},
 
 	Route{
 		"ZoneStatusGet",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/zonalStatus",
+		"/location/v1/subscriptions/zonalStatus",
 		ZoneStatusGet,
 	},
 
 	Route{
 		"ZoneStatusGetById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusGetById,
 	},
 
 	Route{
 		"ZoneStatusPost",
 		strings.ToUpper("Post"),
-		"/etsi-013/location/v1/subscriptions/zonalStatus",
+		"/location/v1/subscriptions/zonalStatus",
 		ZoneStatusPost,
 	},
 
 	Route{
 		"ZoneStatusPutById",
 		strings.ToUpper("Put"),
-		"/etsi-013/location/v1/subscriptions/zoneStatus/{subscriptionId}",
+		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusPutById,
 	},
 
 	Route{
 		"UsersGet",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/users",
+		"/location/v1/users",
 		UsersGet,
 	},
 
 	Route{
 		"UsersGetById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/users/{userId}",
+		"/location/v1/users/{userId}",
 		UsersGetById,
 	},
 
 	Route{
 		"ZonesByIdGetAps",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/zones/{zoneId}/accessPoints",
+		"/location/v1/zones/{zoneId}/accessPoints",
 		ZonesByIdGetAps,
 	},
 
 	Route{
 		"ZonesByIdGetApsById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
+		"/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
 		ZonesByIdGetApsById,
 	},
 
 	Route{
 		"ZonesGet",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/zones",
+		"/location/v1/zones",
 		ZonesGet,
 	},
 
 	Route{
 		"ZonesGetById",
 		strings.ToUpper("Get"),
-		"/etsi-013/location/v1/zones/{zoneId}",
+		"/location/v1/zones/{zoneId}",
 		ZonesGetById,
 	},
 }

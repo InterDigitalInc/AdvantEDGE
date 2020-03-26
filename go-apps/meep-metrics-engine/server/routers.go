@@ -75,77 +75,77 @@ var routes = Routes{
 	Route{
 		"IndexV2",
 		"GET",
-		"/v2/",
+		"/metrics/v2/",
 		IndexV2,
 	},
 
 	Route{
 		"PostEventQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/query/event",
+		"/metrics/v2/metrics/query/event",
 		v2.PostEventQuery,
 	},
 
 	Route{
 		"PostNetworkQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/query/network",
+		"/metrics/v2/metrics/query/network",
 		v2.PostNetworkQuery,
 	},
 
 	Route{
 		"CreateEventSubscription",
 		strings.ToUpper("Post"),
-		"/v2/metrics/subscriptions/event",
+		"/metrics/v2/metrics/subscriptions/event",
 		v2.CreateEventSubscription,
 	},
 
 	Route{
 		"CreateNetworkSubscription",
 		strings.ToUpper("Post"),
-		"/v2/metrics/subscriptions/network",
+		"/metrics/v2/metrics/subscriptions/network",
 		v2.CreateNetworkSubscription,
 	},
 
 	Route{
 		"DeleteEventSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.DeleteEventSubscriptionById,
 	},
 
 	Route{
 		"DeleteNetworkSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.DeleteNetworkSubscriptionById,
 	},
 
 	Route{
 		"GetEventSubscription",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/event",
+		"/metrics/v2/metrics/subscriptions/event",
 		v2.GetEventSubscription,
 	},
 
 	Route{
 		"GetEventSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.GetEventSubscriptionById,
 	},
 
 	Route{
 		"GetNetworkSubscription",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/network",
+		"/metrics/v2/metrics/subscriptions/network",
 		v2.GetNetworkSubscription,
 	},
 
 	Route{
 		"GetNetworkSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.GetNetworkSubscriptionById,
 	},
 }
