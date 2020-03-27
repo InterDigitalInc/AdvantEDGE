@@ -82,7 +82,7 @@ describe('Scenario Configuration', function () {
   beforeEach(() => {
     var meepUrl = Cypress.env('meep_url');
     if (meepUrl == null) {
-      meepUrl = 'http://127.0.0.1:30000';
+      meepUrl = 'http://127.0.0.1';
     }
 
     cy.viewport(1920, 1080);

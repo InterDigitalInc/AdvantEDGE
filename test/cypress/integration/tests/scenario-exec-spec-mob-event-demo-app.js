@@ -80,7 +80,7 @@ describe('Scenario Execution', function () {
 
     let scenario = 'demo1';
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
 
     // Deploy demo scenario
     deployScenario(scenario);
@@ -96,7 +96,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Already deployed scenario
 
@@ -108,7 +108,7 @@ describe('Scenario Execution', function () {
   // Demo1 scenario testing  mobility event #2
   it('DEMO1 scenario - mobility event #2', function () {
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -120,7 +120,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone2-poa1');
@@ -130,7 +130,7 @@ describe('Scenario Execution', function () {
   // Demo1 scenario testing  mobility event #3
   it('DEMO1 scenario - mobility event #3', function () {
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -142,7 +142,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone1-poa1');
@@ -152,7 +152,7 @@ describe('Scenario Execution', function () {
   // Demo1 scenario testing  mobility event #4
   it('DEMO1 scenario - mobility event #4', function () {
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -164,7 +164,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa2');
@@ -174,7 +174,7 @@ describe('Scenario Execution', function () {
   // Demo1 scenario testing  mobility event #5
   it('DEMO1 scenario - mobility event #5', function () {
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -186,7 +186,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone2-poa1');
@@ -196,7 +196,7 @@ describe('Scenario Execution', function () {
   // Demo1 scenario testing  mobility event #6
   it('DEMO1 scenario - mobility event #6', function () {
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -208,7 +208,7 @@ describe('Scenario Execution', function () {
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
 
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa1');
@@ -220,7 +220,7 @@ describe('Scenario Execution', function () {
 
     let scenario = 'demo1';
 
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
 
     // Test events
@@ -234,17 +234,26 @@ describe('Scenario Execution', function () {
   // ------------------------------
 
   // Opens the default meepUrl page
-  function openDefaultMeepUrl(port) {
+  function openDefaultMeepUrl() {
     var meepUrl = Cypress.env('meep_url');
     if (meepUrl == null) {
-      meepUrl = 'http://127.0.0.1:30000';
-    }
-    if (port != "") {
-      meepUrl = meepUrl.replace("30000", port);
+      meepUrl = 'http://127.0.0.1';
     }
 
     cy.viewport(1920, 1080);
     cy.visit(meepUrl);
+    cy.wait(1000);
+  }
+
+  // Opens the demo frontend page
+  function openDemoUrl() {
+    var demoUrl = Cypress.env('demo_url');
+    if (demoUrl == null) {
+      demoUrl = 'http://127.0.0.1:31111';
+    }
+
+    cy.viewport(1920, 1080);
+    cy.visit(demoUrl);
     cy.wait(1000);
   }
 
