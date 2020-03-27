@@ -27,9 +27,10 @@ import (
 )
 
 const eventTypeStateUpdate = "STATE-UPDATE"
-const eventTypeStateTransferStart = "STATE-TRANSFER-START"
-const eventTypeStateTransferComplete = "STATE-TRANSFER-COMPLETE"
-const eventTypeStateTransferCancel = "STATE-TRANSFER-CANCEL"
+
+// const eventTypeStateTransferStart = "STATE-TRANSFER-START"
+// const eventTypeStateTransferComplete = "STATE-TRANSFER-COMPLETE"
+// const eventTypeStateTransferCancel = "STATE-TRANSFER-CANCEL"
 
 var mgManager *mgm.APIClient
 var mgName string
@@ -41,7 +42,6 @@ var ueIdToTickerMap map[string]*time.Ticker
 var ueIdToUserInfoMap map[string]*UserInfo
 
 func Init() {
-
 	ueIdToStateValueMap = make(map[string]UeState)
 	ueIdToTickerMap = make(map[string]*time.Ticker)
 	ueIdToUserInfoMap = make(map[string]*UserInfo)
@@ -66,7 +66,7 @@ func Init() {
 
 	// Create client for MG Manager API
 	mgmCfg := mgm.NewConfiguration()
-	mgmCfg.BasePath = "http://meep-mg-manager/v1"
+	mgmCfg.BasePath = "http://meep-mg-manager/mgm/v1"
 	mgManager = mgm.NewAPIClient(mgmCfg)
 	if mgManager == nil {
 		log.Println("Cannot find the MG Manager API")
@@ -83,7 +83,6 @@ func Init() {
 		log.Println(err.Error())
 		//return err
 	}
-
 }
 
 func updateUe(ueId string, ueState UeState) {
@@ -99,10 +98,9 @@ func updateUe(ueId string, ueState UeState) {
 
 func getUe(ueId string) *UeState {
 	ueState, ok := ueIdToStateValueMap[ueId]
-	if ok == false {
+	if !ok {
 		return nil
 	}
-
 	return &ueState
 }
 
@@ -135,7 +133,6 @@ func restartUe(ueId string) {
 }
 
 func startTicker(ueId string) *time.Ticker {
-
 	ticker := time.NewTicker(1000 * time.Millisecond)
 	go func() {
 		for range ticker.C {
@@ -192,6 +189,9 @@ func localDBHandleEvent(w http.ResponseWriter, r *http.Request) {
 
 		//marshal the data
 		jsonResponse, err := json.Marshal(ueState)
+		if err != nil {
+			log.Println(err.Error())
+		}
 		mgAppState.UeState = string(jsonResponse)
 
 		_, err = mgManager.StateTransferApi.TransferAppState(nil, mgName, mgAppId, mgAppState)
@@ -227,11 +227,9 @@ func localDBUpdateTrackedUes(w http.ResponseWriter, r *http.Request) {
 }
 
 func getLocalDBUserInfo(ueId string) *UserInfo {
-
 	userInfo, ok := ueIdToUserInfoMap[ueId]
-	if ok == false {
+	if !ok {
 		return nil
 	}
-
 	return userInfo
 }
