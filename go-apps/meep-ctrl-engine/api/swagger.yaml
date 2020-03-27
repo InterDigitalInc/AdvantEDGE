@@ -5,7 +5,7 @@ info:
     \ frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine)\
     \ <p>**Type & Usage**<br>Platform main interface used by controller software that\
     \ want to interact with the AdvantEDGE platform <p>**Details**<br>API details\
-    \ available at _your-AdvantEDGE-ip-address/swagger_"
+    \ available at _your-AdvantEDGE-ip-address/api_"
   version: "1.0.0"
   title: "AdvantEDGE Platform Controller REST API"
   contact:

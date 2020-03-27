@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Platform Controller REST API
- * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/swagger_
+ * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -40,7 +40,7 @@
   'use strict';
 
   /**
-   * This_API_is_the_main_platform_API_and_mainly_used_by_the_AdvantEDGE_frontend_to_interact_with_scenarios_pMicro_servicebr_meep_ctrl_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_ctrl_engine_pType__UsagebrPlatform_main_interface_used_by_controller_software_that_want_to_interact_with_the_AdvantEDGE_platform_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_addressswagger_.<br>
+   * This_API_is_the_main_platform_API_and_mainly_used_by_the_AdvantEDGE_frontend_to_interact_with_scenarios_pMicro_servicebr_meep_ctrl_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_ctrl_engine_pType__UsagebrPlatform_main_interface_used_by_controller_software_that_want_to_interact_with_the_AdvantEDGE_platform_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_addressapi_.<br>
    * The <code>index</code> module provides access to constructors for all the classes which comprise the public API.
    * <p>
    * An AMD (recommended!) or CommonJS application will generally do something equivalent to the following:

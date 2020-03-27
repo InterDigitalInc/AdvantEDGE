@@ -4,9 +4,8 @@ info:
   description: "This API enables the Mobility Group Service to post state transfer\
     \ events to edge applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's\
     \ Edge Applications participating in a Mobility Group must implement this API\
-    \ <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_\
-    \ <p>**Default Port**<br>This API is not exposed by default on the AdvantEDGE\
-    \ platform"
+    \ <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_\
+    \ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform"
   version: "1.0.0"
   title: "AdvantEDGE Mobility Group Application Notification REST API"
   contact:

@@ -6,7 +6,6 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0"
-host: "127.0.0.1:8086"
 basePath: "/v1"
 tags:
 - name: "Edge App Info"
@@ -16,8 +15,6 @@ tags:
 - name: "Notifications"
   description: "AdvantEDGE Location Subscription Notification Callbacks (user and\
     \ zonal)"
-schemes:
-- "http"
 consumes:
 - "application/json"
 produces:
