@@ -24,9 +24,10 @@ image:
   pullPolicy: Always
 
 service:
-  type: NodePort
-  targetPort: 80
-  nodePort: 30003
+  type: ClusterIP
+  # type: NodePort
+  port: 80
+  # nodePort: 30003
 
 codecov:
   enabled: false
