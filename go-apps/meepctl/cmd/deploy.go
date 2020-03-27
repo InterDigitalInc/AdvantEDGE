@@ -183,6 +183,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	}
 	gitdir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir") + "/"
+	ip := viper.GetString("node.ip")
 
 	deployMeepUserAccount(cobraCmd)
 
@@ -197,7 +198,8 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-loc-serv"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-loc-serv.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags := utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-metrics-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-metrics-engine.chart")
@@ -214,7 +216,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	repo = "meep-webhook"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-webhook.chart")
 	cert, key, cabundle := createWebhookCerts(chart, workdir+"certs", cobraCmd)
-	flags := utils.HelmFlags(nil, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
+	flags = utils.HelmFlags(nil, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
 	flags = utils.HelmFlags(flags, "--set", "sidecar.image.tag="+tag)
 	flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 	flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
@@ -223,7 +225,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-virt-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
-	flags = utils.HelmFlags(nil, "--set", "service.ip="+viper.GetString("node.ip"))
+	flags = utils.HelmFlags(nil, "--set", "service.ip="+ip)
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	deployVirtEngineExt(repo, cobraCmd)
 }
