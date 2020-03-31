@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -203,7 +204,8 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-metrics-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-metrics-engine.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags = utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-tc-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-tc-engine.chart")
@@ -276,6 +278,15 @@ func deployDep(cobraCmd *cobra.Command) {
 	repo = "meep-ingress"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.nginx-ingress.chart")
 	flags = nil
+	httpPort, httpsPort := getPorts()
+	if httpPort != "80" {
+		flags = utils.HelmFlags(flags, "--set", "controller.hostNetwork=false")
+		flags = utils.HelmFlags(flags, "--set", "controller.dnsPolicy=ClusterFirst")
+		flags = utils.HelmFlags(flags, "--set", "controller.daemonset.useHostPort=false")
+		flags = utils.HelmFlags(flags, "--set", "controller.service.type=NodePort")
+		flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
+		flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
+	}
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 
@@ -390,4 +401,10 @@ func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (
 func createRegistryCerts(chart string, certdir string, cobraCmd *cobra.Command) {
 	cmd := exec.Command("sh", "-c", chart+"/create-signed-cert.sh --certdir "+certdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func getPorts() (string, string) {
+	ports := viper.GetString("meep.ports")
+	p := strings.Split(ports, "/")
+	return p[0], p[1]
 }

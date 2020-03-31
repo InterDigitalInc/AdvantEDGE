@@ -44,8 +44,8 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^(/api)$ $1/ redirect;
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   rewrite ^(/api)$ $1/ redirect;
 
   labels: {}
   tls:

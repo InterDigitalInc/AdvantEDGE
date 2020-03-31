@@ -27,40 +27,40 @@ import (
 )
 
 // configSet represents the set command
-var configIp = &cobra.Command{
-	Use:     "ip [IP]",
-	Short:   "get/set node IP address in the meepctl config file",
-	Long:    "Get/Set node IP address in the meepctl config file",
-	Example: "meepctl config ip 1.2.3.4",
+var configPorts = &cobra.Command{
+	Use:     "ports [http port #/https port #]",
+	Short:   "get/set HTTP/HTTPS ports in the meepctl config file",
+	Long:    "Get/Set HTTP/HTTPS ports in the meepctl config file",
+	Example: "  meepctl config ports 32080/32443",
 	Args:    cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		key := "node.ip"
+		key := "meep.ports"
 		v, _ := cmd.Flags().GetBool("verbose")
 		t, _ := cmd.Flags().GetBool("time")
 		if v {
-			fmt.Println("config ip called")
+			fmt.Println("config ports called")
 			fmt.Println("[flag] verbose:", v)
 			fmt.Println("[flag] time:", t)
 		}
 
 		start := time.Now()
 		value := viper.GetString(key)
-
 		if len(args) == 0 {
 			_ = cmd.Help()
 			fmt.Println("")
 		} else {
-			ip := args[0]
-			valid, reason := utils.ConfigIPValid(ip)
+			ports := args[0]
+			valid, reason := utils.ConfigPortsValid(ports)
 			if valid {
-				utils.Cfg.Node.IP = ip
+				utils.Cfg.Meep.Ports = ports
 				err := utils.ConfigWriteFile(utils.Cfg, viper.ConfigFileUsed())
 				if err != nil {
 					fmt.Println(err)
 				}
-				value = ip
+				fmt.Println("Updated meep.ports with [" + ports + "]")
+				value = ports
 			} else {
-				fmt.Println("Invalid IP: " + reason)
+				fmt.Println("Invalid Ports: " + reason)
 				fmt.Println("")
 				_ = cmd.Help()
 			}
@@ -77,5 +77,5 @@ var configIp = &cobra.Command{
 }
 
 func init() {
-	configCmd.AddCommand(configIp)
+	configCmd.AddCommand(configPorts)
 }

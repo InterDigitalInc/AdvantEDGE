@@ -14,6 +14,8 @@ image:
   repository: meep-metrics-engine
   tag: latest
   pullPolicy: Always
+  env:
+    rooturl: "http://www.example.com"
 
 service:
   type: ClusterIP
