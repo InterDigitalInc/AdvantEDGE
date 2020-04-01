@@ -277,6 +277,7 @@ func deployDep(cobraCmd *cobra.Command) {
 	//---
 	repo = "meep-ingress"
 	chart = gitdir + utils.RepoCfg.GetString("repo.dep.nginx-ingress.chart")
+	createIngressCerts(chart, workdir+"certs", cobraCmd)
 	flags = nil
 	httpPort, httpsPort := getPorts()
 	if httpPort != "80" {
@@ -386,7 +387,7 @@ func deployMeepUserAccount(cobraCmd *cobra.Command) {
 }
 
 func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (string, string, string) {
-	cmd := exec.Command("sh", "-c", chart+"/webhook-create-signed-cert.sh --certdir "+certdir)
+	cmd := exec.Command("sh", "-c", chart+"/create-k8s-ca-signed-cert.sh --certdir "+certdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-cert.pem | base64 -w0")
 	cert, _ := utils.ExecuteCmd(cmd, cobraCmd)
@@ -399,7 +400,12 @@ func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (
 }
 
 func createRegistryCerts(chart string, certdir string, cobraCmd *cobra.Command) {
-	cmd := exec.Command("sh", "-c", chart+"/create-signed-cert.sh --certdir "+certdir)
+	cmd := exec.Command("sh", "-c", chart+"/create-k8s-ca-signed-cert.sh --certdir "+certdir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func createIngressCerts(chart string, certdir string, cobraCmd *cobra.Command) {
+	cmd := exec.Command("sh", "-c", chart+"/create-self-signed-cert.sh --certdir "+certdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 

@@ -75,7 +75,7 @@ storage: filesystem
 
 # Set this to name of secret for tls certs
 # tlsSecretName: registry.docker.example.com
-tlsSecretName: meep-docker-registry-certs
+tlsSecretName: meep-docker-registry
 secrets:
   haSharedSecret: ""
   htpasswd: ""

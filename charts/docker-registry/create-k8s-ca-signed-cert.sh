@@ -51,7 +51,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [ -z ${service} ] && service=meep-docker-registry
-[ -z ${secret} ] && secret=meep-docker-registry-certs
+[ -z ${secret} ] && secret=meep-docker-registry
 [ -z ${namespace} ] && namespace=default
 [ -z ${certdir} ] && certdir=$(mktemp -d)
 
