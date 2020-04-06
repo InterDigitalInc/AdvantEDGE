@@ -28,6 +28,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const meepctlVersion = "1.4.1"
+const na = "NA"
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version <group>",
@@ -96,9 +99,6 @@ type versionInfo struct {
 	VersionID string `json:"id,omitempty"`
 	BuildID   string `json:"build,omitempty"`
 }
-
-const meepctlVersion = "1.4.0"
-const na = "NA"
 
 var corePodsNameMap = []string{
 	"meep-ctrl-engine",

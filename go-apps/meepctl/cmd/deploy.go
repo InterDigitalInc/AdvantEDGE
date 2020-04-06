@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
@@ -183,6 +184,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	}
 	gitdir := viper.GetString("meep.gitdir") + "/"
 	workdir := viper.GetString("meep.workdir") + "/"
+	ip := viper.GetString("node.ip")
 
 	deployMeepUserAccount(cobraCmd)
 
@@ -197,11 +199,13 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-loc-serv"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-loc-serv.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags := utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-metrics-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-metrics-engine.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags = utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-tc-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-tc-engine.chart")
@@ -214,7 +218,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	repo = "meep-webhook"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-webhook.chart")
 	cert, key, cabundle := createWebhookCerts(chart, workdir+"certs", cobraCmd)
-	flags := utils.HelmFlags(nil, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
+	flags = utils.HelmFlags(nil, "--set", "sidecar.image.repository="+registry+"meep-tc-sidecar")
 	flags = utils.HelmFlags(flags, "--set", "sidecar.image.tag="+tag)
 	flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 	flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
@@ -223,7 +227,7 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-virt-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
-	flags = utils.HelmFlags(nil, "--set", "service.ip="+viper.GetString("node.ip"))
+	flags = utils.HelmFlags(nil, "--set", "service.ip="+ip)
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	deployVirtEngineExt(repo, cobraCmd)
 }
@@ -267,8 +271,23 @@ func deployDep(cobraCmd *cobra.Command) {
 	k8sDeploy(repo, chart, flags, cobraCmd)
 	//---
 	repo = "meep-kube-state-metrics"
-	chart = gitdir + utils.RepoCfg.GetString("repo.dep.k8s.kube-state-metrics.chart")
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.kube-state-metrics.chart")
 	flags = nil
+	k8sDeploy(repo, chart, flags, cobraCmd)
+	//---
+	repo = "meep-ingress"
+	chart = gitdir + utils.RepoCfg.GetString("repo.dep.nginx-ingress.chart")
+	createIngressCerts(chart, workdir+"certs", cobraCmd)
+	flags = nil
+	httpPort, httpsPort := getPorts()
+	if httpPort != "80" {
+		flags = utils.HelmFlags(flags, "--set", "controller.hostNetwork=false")
+		flags = utils.HelmFlags(flags, "--set", "controller.dnsPolicy=ClusterFirst")
+		flags = utils.HelmFlags(flags, "--set", "controller.daemonset.useHostPort=false")
+		flags = utils.HelmFlags(flags, "--set", "controller.service.type=NodePort")
+		flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
+		flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
+	}
 	k8sDeploy(repo, chart, flags, cobraCmd)
 }
 
@@ -368,7 +387,7 @@ func deployMeepUserAccount(cobraCmd *cobra.Command) {
 }
 
 func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (string, string, string) {
-	cmd := exec.Command("sh", "-c", chart+"/webhook-create-signed-cert.sh --certdir "+certdir)
+	cmd := exec.Command("sh", "-c", chart+"/create-k8s-ca-signed-cert.sh --certdir "+certdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	cmd = exec.Command("sh", "-c", "cat "+certdir+"/server-cert.pem | base64 -w0")
 	cert, _ := utils.ExecuteCmd(cmd, cobraCmd)
@@ -381,6 +400,17 @@ func createWebhookCerts(chart string, certdir string, cobraCmd *cobra.Command) (
 }
 
 func createRegistryCerts(chart string, certdir string, cobraCmd *cobra.Command) {
-	cmd := exec.Command("sh", "-c", chart+"/create-signed-cert.sh --certdir "+certdir)
+	cmd := exec.Command("sh", "-c", chart+"/create-k8s-ca-signed-cert.sh --certdir "+certdir)
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func createIngressCerts(chart string, certdir string, cobraCmd *cobra.Command) {
+	cmd := exec.Command("sh", "-c", chart+"/create-self-signed-cert.sh --certdir "+certdir)
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func getPorts() (string, string) {
+	ports := viper.GetString("meep.ports")
+	p := strings.Split(ports, "/")
+	return p[0], p[1]
 }

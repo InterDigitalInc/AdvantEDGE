@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Platform Controller REST API
  *
- * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30000`
+ * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -43,6 +43,8 @@ type Routes []Route
 
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
+	// subrouter := router.PathPrefix("/ctrl-engine/").Subrouter()
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
 
@@ -53,6 +55,8 @@ func NewRouter() *mux.Router {
 			Handler(handler)
 	}
 
+	// Path prefix router order is important
+	router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir("./static/api"))))
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./static/"))))
 
 	return router
@@ -66,161 +70,161 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		"/v1/",
+		"/ctrl-engine/v1/",
 		Index,
 	},
 
 	Route{
 		"CreateReplayFile",
 		strings.ToUpper("Post"),
-		"/v1/replay/{name}",
+		"/ctrl-engine/v1/replay/{name}",
 		CreateReplayFile,
 	},
 
 	Route{
 		"CreateReplayFileFromScenarioExec",
 		strings.ToUpper("Post"),
-		"/v1/replay/{name}/generate",
+		"/ctrl-engine/v1/replay/{name}/generate",
 		CreateReplayFileFromScenarioExec,
 	},
 
 	Route{
 		"DeleteReplayFile",
 		strings.ToUpper("Delete"),
-		"/v1/replay/{name}",
+		"/ctrl-engine/v1/replay/{name}",
 		DeleteReplayFile,
 	},
 
 	Route{
 		"DeleteReplayFileList",
 		strings.ToUpper("Delete"),
-		"/v1/replay",
+		"/ctrl-engine/v1/replay",
 		DeleteReplayFileList,
-	},
-
-	Route{
-		"GetReplayStatus",
-		strings.ToUpper("Get"),
-		"/v1/replaystatus",
-		GetReplayStatus,
 	},
 
 	Route{
 		"GetReplayFile",
 		strings.ToUpper("Get"),
-		"/v1/replay/{name}",
+		"/ctrl-engine/v1/replay/{name}",
 		GetReplayFile,
 	},
 
 	Route{
 		"GetReplayFileList",
 		strings.ToUpper("Get"),
-		"/v1/replay",
+		"/ctrl-engine/v1/replay",
 		GetReplayFileList,
+	},
+
+	Route{
+		"GetReplayStatus",
+		strings.ToUpper("Get"),
+		"/ctrl-engine/v1/replaystatus",
+		GetReplayStatus,
 	},
 
 	Route{
 		"LoopReplay",
 		strings.ToUpper("Post"),
-		"/v1/replay/{name}/loop",
+		"/ctrl-engine/v1/replay/{name}/loop",
 		LoopReplay,
 	},
 
 	Route{
 		"PlayReplayFile",
 		strings.ToUpper("Post"),
-		"/v1/replay/{name}/play",
+		"/ctrl-engine/v1/replay/{name}/play",
 		PlayReplayFile,
 	},
 
 	Route{
 		"StopReplayFile",
 		strings.ToUpper("Post"),
-		"/v1/replay/{name}/stop",
+		"/ctrl-engine/v1/replay/{name}/stop",
 		StopReplayFile,
 	},
 
 	Route{
 		"GetStates",
 		strings.ToUpper("Get"),
-		"/v1/states",
+		"/ctrl-engine/v1/states",
 		GetStates,
 	},
 
 	Route{
 		"CreateScenario",
 		strings.ToUpper("Post"),
-		"/v1/scenarios/{name}",
+		"/ctrl-engine/v1/scenarios/{name}",
 		CreateScenario,
 	},
 
 	Route{
 		"DeleteScenario",
 		strings.ToUpper("Delete"),
-		"/v1/scenarios/{name}",
+		"/ctrl-engine/v1/scenarios/{name}",
 		DeleteScenario,
 	},
 
 	Route{
 		"DeleteScenarioList",
 		strings.ToUpper("Delete"),
-		"/v1/scenarios",
+		"/ctrl-engine/v1/scenarios",
 		DeleteScenarioList,
 	},
 
 	Route{
 		"GetScenario",
 		strings.ToUpper("Get"),
-		"/v1/scenarios/{name}",
+		"/ctrl-engine/v1/scenarios/{name}",
 		GetScenario,
 	},
 
 	Route{
 		"GetScenarioList",
 		strings.ToUpper("Get"),
-		"/v1/scenarios",
+		"/ctrl-engine/v1/scenarios",
 		GetScenarioList,
 	},
 
 	Route{
 		"SetScenario",
 		strings.ToUpper("Put"),
-		"/v1/scenarios/{name}",
+		"/ctrl-engine/v1/scenarios/{name}",
 		SetScenario,
 	},
 
 	Route{
 		"ActivateScenario",
 		strings.ToUpper("Post"),
-		"/v1/active/{name}",
+		"/ctrl-engine/v1/active/{name}",
 		ActivateScenario,
 	},
 
 	Route{
 		"GetActiveNodeServiceMaps",
 		strings.ToUpper("Get"),
-		"/v1/active/serviceMaps",
+		"/ctrl-engine/v1/active/serviceMaps",
 		GetActiveNodeServiceMaps,
 	},
 
 	Route{
 		"GetActiveScenario",
 		strings.ToUpper("Get"),
-		"/v1/active",
+		"/ctrl-engine/v1/active",
 		GetActiveScenario,
 	},
 
 	Route{
 		"SendEvent",
 		strings.ToUpper("Post"),
-		"/v1/events/{type}",
+		"/ctrl-engine/v1/events/{type}",
 		SendEvent,
 	},
 
 	Route{
 		"TerminateScenario",
 		strings.ToUpper("Delete"),
-		"/v1/active",
+		"/ctrl-engine/v1/active",
 		TerminateScenario,
 	},
 }

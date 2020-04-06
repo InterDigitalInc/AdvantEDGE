@@ -30,39 +30,36 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion string = "1.4.0"
+const configVersion = "1.4.1"
 
-const defaultNotSet string = "not set"
-const defaultIP string = ""
-const defaultGitDir string = ""
-const defaultWorkDir string = ".meep"
-const defaultRegistry string = "meep-docker-registry:30001"
+const defaultNotSet = "not set"
+
+const defaultNodeIP = ""
+const defaultMeepGitDir = ""
+const defaultMeepWorkDir = ".meep"
+const defaultMeepRegistry = "meep-docker-registry:30001"
+const defaultPorts = "80/443"
 
 var Cfg *Config
 var RepoCfg *viper.Viper
 
-// Node parameters node
+// Platform Config
+type Config struct {
+	Node Node `json:"ip,omitempty"`
+	Meep Meep `json:"meep,omitempty"`
+}
+
+// Node Config
 type Node struct {
-	// Node IP Address
 	IP string `json:"ip,omitempty"`
 }
 
-// Meep parameters node
+// Meep Config
 type Meep struct {
-	// GIT directory
-	Gitdir string `json:"gitdir,omitempty"`
-	// MEEP work directory
-	Workdir string `json:"workdir,omitempty"`
-	// MEEP docker registry
+	Gitdir   string `json:"gitdir,omitempty"`
+	Workdir  string `json:"workdir,omitempty"`
 	Registry string `json:"registry,omitempty"`
-}
-
-// Config structure
-type Config struct {
-	// Node parameters
-	Node Node `json:"ip,omitempty"`
-	// Meep parameters
-	Meep Meep `json:"meep,omitempty"`
+	Ports    string `json:"ports,omitempty"`
 }
 
 // ConfigInit initializes the meep configuration
@@ -77,6 +74,7 @@ func ConfigInit() bool {
 			Gitdir:   defaultNotSet,
 			Workdir:  defaultNotSet,
 			Registry: defaultNotSet,
+			Ports:    defaultNotSet,
 		},
 	}
 
@@ -137,20 +135,24 @@ func ConfigGetDefaultPath() (path string) {
 func ConfigSetDefaultValues(cfg *Config) bool {
 	updated := false
 	if cfg.Node.IP == defaultNotSet {
-		cfg.Node.IP = defaultIP
+		cfg.Node.IP = defaultNodeIP
 		updated = true
 	}
 	if cfg.Meep.Gitdir == defaultNotSet {
-		cfg.Meep.Gitdir = defaultGitDir
+		cfg.Meep.Gitdir = defaultMeepGitDir
 		updated = true
 	}
 	if cfg.Meep.Workdir == defaultNotSet {
 		home, _ := homedir.Dir()
-		cfg.Meep.Workdir = home + "/" + defaultWorkDir
+		cfg.Meep.Workdir = home + "/" + defaultMeepWorkDir
 		updated = true
 	}
 	if cfg.Meep.Registry == defaultNotSet {
-		cfg.Meep.Registry = defaultRegistry
+		cfg.Meep.Registry = defaultMeepRegistry
+		updated = true
+	}
+	if cfg.Meep.Ports == defaultNotSet {
+		cfg.Meep.Ports = defaultPorts
 		updated = true
 	}
 	return updated
@@ -207,6 +209,17 @@ func ConfigValidate(filePath string) (valid bool) {
 		fmt.Println("  WARNING    invalid meepctl config: node.ip")
 		fmt.Println("             Reason: " + reason)
 		fmt.Println("             Fix:  meepctl config ip <node-ip-address>")
+		fmt.Println("")
+		configValid = false
+	}
+
+	// Validate Ports
+	valid, reason = ConfigPortsValid(Cfg.Meep.Ports)
+	if !valid {
+		fmt.Println("")
+		fmt.Println("  WARNING    invalid meepctl config: meep.ports")
+		fmt.Println("             Reason: " + reason)
+		fmt.Println("             Fix:  meepctl config ports <http port/https port>")
 		fmt.Println("")
 		configValid = false
 	}
@@ -290,6 +303,30 @@ func ConfigIPValid(ipAddr string) (valid bool, reason string) {
 		reason = "Not an IPV4 address [" + ipAddr + "]"
 		valid = false
 	}
+	return valid, reason
+}
+
+// ConfigPortsValid validates ports
+func ConfigPortsValid(ports string) (valid bool, reason string) {
+	valid = true
+
+	p := strings.Split(ports, "/")
+	if len(p) == 2 {
+		if httpPort, err := strconv.Atoi(p[0]); err == nil {
+			if httpsPort, err := strconv.Atoi(p[1]); err == nil {
+				if (httpPort == 80 && httpsPort == 443) ||
+					((httpPort >= 30000 && httpPort <= 32767) &&
+						(httpsPort >= 30000 && httpsPort <= 32767) &&
+						httpPort != httpsPort) {
+					valid = true
+					return
+				}
+			}
+		}
+	}
+
+	valid = false
+	reason = "Invalid ports. Need <80/443|30000-32767/30000-32767>"
 	return valid, reason
 }
 

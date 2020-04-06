@@ -16,7 +16,8 @@ spec:
     release: {{ .Release.Name }}
     meepOrigin: {{ .Values.meepOrigin }}
   ports:
-    - port: {{ .Values.deployment.port }}
-      targetPort: {{ .Values.service.targetPort }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.deployment.port }}
+      {{- if .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
-
+      {{- end }}

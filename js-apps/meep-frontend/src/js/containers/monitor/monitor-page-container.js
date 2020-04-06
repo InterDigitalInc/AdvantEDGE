@@ -49,7 +49,7 @@ import {
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
 
-const grafanaUrl = 'http://' + location.hostname + ':30009';
+const grafanaUrl = location.origin + '/grafana/';
 
 const DashboardContainer = props => {
   if (!props.dashboardUrl) {

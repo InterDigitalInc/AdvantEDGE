@@ -29,7 +29,7 @@ import (
 // configSet represents the set command
 var configIp = &cobra.Command{
 	Use:     "ip [IP]",
-	Short:   "get/get node IP address in the meepctl config file",
+	Short:   "get/set node IP address in the meepctl config file",
 	Long:    "Get/Set node IP address in the meepctl config file",
 	Example: "meepctl config ip 1.2.3.4",
 	Args:    cobra.RangeArgs(0, 1),

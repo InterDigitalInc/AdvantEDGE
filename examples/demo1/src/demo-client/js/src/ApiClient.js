@@ -60,9 +60,9 @@
     /**
      * The base URL against which to resolve every API call's (relative) path.
      * @type {String}
-     * @default http://127.0.0.1:8086/v1
+     * @default https://localhost/v1
      */
-    this.basePath = 'http://127.0.0.1:8086/v1'.replace(/\/+$/, '');
+    this.basePath = 'https://localhost/v1'.replace(/\/+$/, '');
 
     /**
      * The authentication methods to be included for all API calls.

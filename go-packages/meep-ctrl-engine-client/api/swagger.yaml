@@ -5,7 +5,7 @@ info:
     \ frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine)\
     \ <p>**Type & Usage**<br>Platform main interface used by controller software that\
     \ want to interact with the AdvantEDGE platform <p>**Details**<br>API details\
-    \ available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30000` "
+    \ available at _your-AdvantEDGE-ip-address/api_"
   version: "1.0.0"
   title: "AdvantEDGE Platform Controller REST API"
   contact:
@@ -14,14 +14,12 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/v1"
+basePath: "/ctrl-engine/v1"
 tags:
 - name: "Scenario Configuration"
 - name: "Scenario Execution"
 - name: "Event Replay"
 - name: "Pod States"
-schemes:
-- "http"
 consumes:
 - "application/json"
 produces:
@@ -1331,66 +1329,6 @@ definitions:
         nbTotalContainers: "1"
         nbPodRestart: "15005"
         startTime: "2018-09-10 14:24:00 +0000 UTC"
-parameters:
-  Name:
-    name: "name"
-    in: "path"
-    description: "Scenario name"
-    required: true
-    type: "string"
-    x-exportParamName: "Name"
-  ReplayInfo:
-    in: "body"
-    name: "replayInfo"
-    description: "Replay information"
-    required: true
-    schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ReplayInfo"
-    x-exportParamName: "ReplayInfo"
-  Replay:
-    name: "replay"
-    in: "path"
-    description: "Scenario events execution sequence"
-    required: true
-    x-exportParamName: "Replay"
-  ReplayFileName:
-    name: "replayFileName"
-    in: "path"
-    description: "Scenario events execution file name"
-    required: true
-    type: "string"
-    x-exportParamName: "ReplayFileName"
-  Scenario:
-    in: "body"
-    name: "scenario"
-    description: "Scenario to add to MEEP store"
-    required: true
-    schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Scenario"
-    x-exportParamName: "Scenario"
-  ActivationInfo:
-    in: "body"
-    name: "activationInfo"
-    description: "Activation information"
-    required: true
-    schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/ActivationInfo"
-    x-exportParamName: "ActivationInfo"
-  EventType:
-    name: "type"
-    in: "path"
-    description: "Event type"
-    required: true
-    type: "string"
-    x-exportParamName: "Type_"
-  Event:
-    in: "body"
-    name: "event"
-    description: "Event to send to active scenario"
-    required: true
-    schema:
-      $ref: "http://localhost:8291/meep-model.yaml#/definitions/Event"
-    x-exportParamName: "Event"
 responses:
   Std200:
     description: "OK"

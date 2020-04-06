@@ -1,6 +1,6 @@
 # \EventReplayApi
 
-All URIs are relative to *http://localhost/v1*
+All URIs are relative to *https://localhost/ctrl-engine/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

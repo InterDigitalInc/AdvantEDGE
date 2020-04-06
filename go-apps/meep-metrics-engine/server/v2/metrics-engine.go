@@ -22,7 +22,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
@@ -42,7 +45,7 @@ const metricNetwork = "network"
 const moduleName string = "meep-metrics-engine"
 const redisAddr string = "meep-redis-master:6379"
 
-const basepathURL = "http://meep-metrics-engine/v2/"
+const basePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"
 const typeEventSubscription = "eventsubs"
 
@@ -59,6 +62,7 @@ var eventSubscriptionMap = map[string]*EventRegistration{}
 var activeModel *mod.Model
 var activeScenarioName string
 var metricStore *ms.MetricStore
+var rootUrl *url.URL
 
 var rc *redis.Connector
 
@@ -76,6 +80,13 @@ type NetworkRegistration struct {
 
 // Init - Metrics engine initialization
 func Init() (err error) {
+	// Retrieve Root URL from environment variable
+	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_METRICS_ROOT_URL")))
+	if err != nil {
+		rootUrl = new(url.URL)
+	}
+	log.Info("MEEP_METRICS_ROOT_URL: ", rootUrl)
+
 	// Connect to Metric Store
 	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
 	if err != nil {
@@ -378,7 +389,7 @@ func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.ResourceURL = basepathURL + "subscriptions/event/" + subsIdStr
+	response.ResourceURL = rootUrl.String() + basePath + "subscriptions/event/" + subsIdStr
 	response.SubscriptionId = subsIdStr
 	response.SubscriptionType = eventSubscriptionParams.SubscriptionType
 	response.Period = eventSubscriptionParams.Period
@@ -423,7 +434,7 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.ResourceURL = basepathURL + "metrics/subscriptions/network/" + subsIdStr
+	response.ResourceURL = rootUrl.String() + basePath + "metrics/subscriptions/network/" + subsIdStr
 	response.SubscriptionId = subsIdStr
 	response.SubscriptionType = networkSubscriptionParams.SubscriptionType
 	response.Period = networkSubscriptionParams.Period
@@ -758,7 +769,7 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", moduleName+":"+typeEventSubscription, populateEventList, &response)
 
-	response.ResourceURL = basepathURL + "metrics/subscriptions/event"
+	response.ResourceURL = rootUrl.String() + basePath + "metrics/subscriptions/event"
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -775,7 +786,7 @@ func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", moduleName+":"+typeNetworkSubscription, populateNetworkList, &response)
 
-	response.ResourceURL = basepathURL + "metrics/subscriptions/network"
+	response.ResourceURL = rootUrl.String() + basePath + "metrics/subscriptions/network"
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())

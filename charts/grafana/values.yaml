@@ -111,10 +111,8 @@ podPortName: grafana
 ## ref: http://kubernetes.io/docs/user-guide/services/
 ##
 service:
-  #type: ClusterIP
-  type: NodePort
+  type: ClusterIP
   port: 80
-  nodePort: 30009
   targetPort: 3000
     # targetPort: 4181 To be used with a proxy extraContainer
   annotations: {}
@@ -122,14 +120,15 @@ service:
   portName: service
 
 ingress:
-  enabled: false
-  annotations: {}
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   labels: {}
-  path: /
+  path: /grafana(/|$)(.*)
   hosts:
-    - chart-example.local
+    - ''
   ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
   extraPaths: []
   # - path: /*
@@ -322,10 +321,10 @@ datasources:
 #      isDefault: true
     - name: meep-influxdb
       type: influxdb
-      # access: proxy
+      access: proxy
       database: demo1
       # user: grafana
-      url: "http://<CLUSTERIP>:30086"
+      url: "http://meep-influxdb:8086"
       jsonData:
         timeInterval: "10s"
       # secureJsonData:
@@ -425,6 +424,8 @@ grafana.ini:
     mode: console
   grafana_net:
     url: https://grafana.net
+  server:
+    root_url: /grafana/
 ## LDAP Authentication can be enabled with the following values on grafana.ini
 ## NOTE: Grafana will fail to start if the value for ldap.toml is invalid
   # auth.ldap:

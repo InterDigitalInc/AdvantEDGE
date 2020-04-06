@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.4.0
+version: 1.4.1
 repo:
   name: AdvantEDGE
   core:
@@ -180,16 +180,17 @@ repo:
       src: go-packages/meep-watchdog
       lint: true
   dep:
-    docker-registry:
-      chart: charts/docker-registry
     couchdb:
       chart: charts/couchdb
-    influxdb:
-      chart: charts/influxdb
-    redis:
-      chart: charts/redis
-    k8s:
-      kube-state-metrics:
-        chart: charts/kube-state-metrics
+    docker-registry:
+      chart: charts/docker-registry
     grafana:
       chart: charts/grafana
+    influxdb:
+      chart: charts/influxdb
+    kube-state-metrics:
+      chart: charts/kube-state-metrics
+    nginx-ingress:
+      chart: charts/nginx-ingress
+    redis:
+      chart: charts/redis

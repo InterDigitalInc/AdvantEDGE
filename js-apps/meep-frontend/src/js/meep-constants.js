@@ -254,16 +254,10 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Network Metrics Point-to-Point',
-    value:
-      'http://' +
-      location.hostname +
-      ':30009/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: location.origin + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Network Metrics Aggregation',
-    value:
-      'http://' +
-      location.hostname +
-      ':30009/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: location.origin + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   }
 ];

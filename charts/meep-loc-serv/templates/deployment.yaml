@@ -41,6 +41,9 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_LOC_SERV_ROOT_URL
+              value: {{ .Values.image.env.rooturl }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage

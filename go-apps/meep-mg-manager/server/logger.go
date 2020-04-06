@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Mobility Group Service REST API
  *
- * Mobility Group Service allows to form groups formed multiple edge application instances and share user states automatically withing the group <p>**Micro-service**<br>[meep-mg-manager](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-mg-manager) <p>**Type & Usage**<br>Edge Service used by edge applications to share user state between the  Mobility Group members <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Mobility Group Service allows to form groups formed multiple edge application instances and share user states automatically withing the group <p>**Micro-service**<br>[meep-mg-manager](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-mg-manager) <p>**Type & Usage**<br>Edge Service used by edge applications to share user state between the  Mobility Group members <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com

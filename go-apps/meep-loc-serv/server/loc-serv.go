@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const basepathURL = "http://meep-loc-serv/etsi-013/location/v1/"
+const basePath = "/location/v1/"
 const moduleLocServ string = "loc-serv"
 
 const typeZone = "zone"
@@ -78,10 +79,19 @@ var LOC_SERV_DB = 5
 const redisAddr string = "meep-redis-master:6379"
 
 var rc *redis.Connector
+var rootUrl *url.URL
 
 // Init - Location Service initialization
 func Init() (err error) {
 
+	// Retrieve Root URL from environment variable
+	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_LOC_SERV_ROOT_URL")))
+	if err != nil {
+		rootUrl = new(url.URL)
+	}
+	log.Info("MEEP_LOC_SERV_ROOT_URL: ", rootUrl)
+
+	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, LOC_SERV_DB)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
@@ -461,7 +471,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	response.UserList = &userList
 
 	_ = rc.JSONGetList(zoneIdVar, accessPointIdVar, moduleLocServ+":"+typeUser+":", populateUserList, &userList)
-	userList.ResourceURL = basepathURL + "users"
+	userList.ResourceURL = rootUrl.String() + basePath + "users"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -551,7 +561,7 @@ func zonesByIdGetAps(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList(interestRealm, "", moduleLocServ+":"+typeZone+":"+vars["zoneId"], populateApList, &apList)
 	apList.ZoneId = vars["zoneId"]
-	apList.ResourceURL = basepathURL + "zones/" + vars["zoneId"] + "/accessPoints"
+	apList.ResourceURL = rootUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -602,7 +612,7 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 	response.ZoneList = &zoneList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZone+":", populateZoneList, &zoneList)
-	zoneList.ResourceURL = basepathURL + "zones"
+	zoneList.ResourceURL = rootUrl.String() + basePath + "zones"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -710,7 +720,7 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeUserSubscription, populateUserTrackingList, &userTrackingSubList)
 
-	userTrackingSubList.ResourceURL = basepathURL + "subscriptions/userTracking"
+	userTrackingSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -773,7 +783,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := strconv.Itoa(newSubsId)
 
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
-	userTrackingSub.ResourceURL = basepathURL + "subscriptions/userTracking/" + subsIdStr
+	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
@@ -804,7 +814,7 @@ func userTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	userTrackingSub.ResourceURL = basepathURL + "subscriptions/userTracking/" + subsIdStr
+	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
@@ -857,7 +867,7 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	response.NotificationSubscriptionList = &zonalTrafficSubList
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZonalSubscription, populateZonalTrafficList, &zonalTrafficSubList)
-	zonalTrafficSubList.ResourceURL = basepathURL + "subcription/zonalTraffic"
+	zonalTrafficSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -930,7 +940,7 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	}
 	//else, lasts forever or until subscription is deleted
 
-	zonalTrafficSub.ResourceURL = basepathURL + "subscriptions/zonalTraffic/" + subsIdStr
+	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
@@ -963,7 +973,7 @@ func zonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	zonalTrafficSub.ResourceURL = basepathURL + "subscriptions/zonalTraffic/" + subsIdStr
+	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
@@ -1017,7 +1027,7 @@ func zoneStatusGet(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneStatusSubList)
 
-	zoneStatusSubList.ResourceURL = basepathURL + "subscription/zoneStatus"
+	zoneStatusSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1079,7 +1089,7 @@ func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 	nextZoneStatusSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)
 
-	zoneStatusSub.ResourceURL = basepathURL + "subscriptions/zoneStatus/" + subsIdStr
+	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
@@ -1113,7 +1123,7 @@ func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	zoneStatusSub.ResourceURL = basepathURL + "subscriptions/zoneStatus/" + subsIdStr
+	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
 	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
@@ -1164,7 +1174,6 @@ func getCurrentUserLocation(resourceName string) (string, string) {
 }
 */
 func cleanUp() {
-
 	log.Info("Terminate all")
 	rc.DBFlush(moduleLocServ)
 	nextZonalSubscriptionIdAvailable = 1
@@ -1182,7 +1191,6 @@ func cleanUp() {
 	userSubscriptionMap = map[int]string{}
 
 	zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
-
 }
 
 func updateUserInfo(address string, zoneId string, accessPointId string) {
@@ -1215,7 +1223,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		userInfo.Address = address
 		userInfo.ZoneId = zoneId
 		userInfo.AccessPointId = accessPointId
-		userInfo.ResourceURL = basepathURL + "users/" + address
+		userInfo.ResourceURL = rootUrl.String() + basePath + "users/" + address
 		//unsued optional attributes
 		//userInfo.LocationInfo.Latitude,
 		//userInfo.LocationInfo.Longitude,
@@ -1251,7 +1259,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
 	} else {
 		zoneInfo.ZoneId = zoneId
-		zoneInfo.ResourceURL = basepathURL + "zones/" + zoneId
+		zoneInfo.ResourceURL = rootUrl.String() + basePath + "zones/" + zoneId
 
 		zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
 		zoneInfo.NumberOfUnservicableAccessPoints = int32(nbUnsrvAccessPoints)
@@ -1283,7 +1291,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 	} else {
 		apInfo := new(AccessPointInfo)
 		apInfo.AccessPointId = apId
-		apInfo.ResourceURL = basepathURL + "zones/" + zoneId + "/accessPoints/" + apId
+		apInfo.ResourceURL = rootUrl.String() + basePath + "zones/" + zoneId + "/accessPoints/" + apId
 		conType := convertStringToConnectionType(conTypeStr)
 		apInfo.ConnectionType = &conType
 		opStatus := convertStringToOperationStatus(opStatusStr)

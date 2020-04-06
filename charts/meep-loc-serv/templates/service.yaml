@@ -15,7 +15,9 @@ spec:
     app: {{ template "meep-loc-serv.name" . }}
     release: {{ .Release.Name }}
   ports:
-    - port: {{ .Values.deployment.port }}
-      targetPort: {{ .Values.service.targetPort }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.deployment.port }}
+      {{- if .Values.service.nodePort }}
       nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
 

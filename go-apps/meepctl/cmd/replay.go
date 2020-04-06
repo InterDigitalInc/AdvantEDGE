@@ -71,8 +71,7 @@ func printError(errorString string, err error, verbose bool) {
 }
 
 func getBasePath() string {
-
 	host := viper.GetString("node.ip")
-	reqString := "http://" + host + ":30000/v1"
+	reqString := "http://" + host + "/ctrl-engine/v1"
 	return reqString
 }

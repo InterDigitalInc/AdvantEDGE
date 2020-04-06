@@ -29,7 +29,7 @@ import (
 // configSet represents the set command
 var configRegistry = &cobra.Command{
 	Use:     "registry [name:port]",
-	Short:   "get/get docker registry meepctl config file",
+	Short:   "get/set docker registry meepctl config file",
 	Long:    "Get/Set docker registry in the meepctl config file",
 	Example: "  meepctl config registry meep-docker-registry:30001",
 	Args:    cobra.RangeArgs(0, 1),
