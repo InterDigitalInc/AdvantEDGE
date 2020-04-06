@@ -59,6 +59,7 @@ Class | Method | HTTP request | Description
  - [ExternalConfig](docs/ExternalConfig.md)
  - [GpuConfig](docs/GpuConfig.md)
  - [IngressService](docs/IngressService.md)
+ - [Model3gpp](docs/Model3gpp.md)
  - [NetworkCharacteristics](docs/NetworkCharacteristics.md)
  - [NetworkLocation](docs/NetworkLocation.md)
  - [NodeServiceMaps](docs/NodeServiceMaps.md)

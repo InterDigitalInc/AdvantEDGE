@@ -1,0 +1,35 @@
+{{- if .Values.codecov.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-rnis-codecov-pv
+spec:
+  storageClassName: meep-rnis-codecov-sc
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/home/englab/.meep/codecov/meep-rnis"
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-rnis-codecov-sc
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: meep-rnis-codecov-pvc
+spec:
+  storageClassName: meep-rnis-codecov-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+{{- end}}

@@ -157,6 +157,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgePlatformControllerRestApi.ExternalConfig](docs/ExternalConfig.md)
  - [AdvantEdgePlatformControllerRestApi.GpuConfig](docs/GpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.IngressService](docs/IngressService.md)
+ - [AdvantEdgePlatformControllerRestApi.Model3gpp](docs/Model3gpp.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkCharacteristics](docs/NetworkCharacteristics.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
  - [AdvantEdgePlatformControllerRestApi.NodeServiceMaps](docs/NodeServiceMaps.md)

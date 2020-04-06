@@ -48,7 +48,7 @@ Valid targets:`,
   meepctl build meep-ctrl-engine`,
 	Args: cobra.OnlyValidArgs,
 	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
-	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-swagger-ui", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
+	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-swagger-ui", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-rnis", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !utils.ConfigValidate("") {
@@ -267,14 +267,16 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 
 			//update the string to update the drop-down menu in the index.html file of /api
 			cmd = exec.Command("grep", "title:", apiDstPath)
-			title, err := utils.ExecuteCmd(cmd, cobraCmd)
+			titles, err := utils.ExecuteCmd(cmd, cobraCmd)
 			if err != nil {
 				fmt.Println("Failed to move: ", err)
 				return
 			}
+			multiTitle := strings.Split(titles, "title:")
+			title := multiTitle[1]
 			title = strings.TrimSpace(title)
-			title = title[6:]
-			title = strings.TrimSpace(title)
+			//title = title[6:]
+			//title = strings.TrimSpace(title)
 
 			if title[0] == '"' {
 				title = title[1:]

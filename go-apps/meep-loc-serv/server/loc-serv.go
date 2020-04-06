@@ -778,6 +778,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info("SIMON2 ", userTrackingSub)
 	newSubsId := nextUserSubscriptionIdAvailable
 	nextUserSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)

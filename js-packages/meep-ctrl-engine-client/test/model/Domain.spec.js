@@ -109,6 +109,12 @@
         // expect(instance.userMeta).to.be(expectedValueLiteral);
       });
 
+      it('should have the property _3gpp (base name: "3gpp")', function() {
+        // TODO: update the code to test the property _3gpp
+        expect(instance).to.have.property('_3gpp');
+        // expect(instance._3gpp).to.be(expectedValueLiteral);
+      });
+
       it('should have the property zones (base name: "zones")', function() {
         // TODO: update the code to test the property zones
         expect(instance).to.have.property('zones');

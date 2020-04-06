@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **terminalLinkPacketLoss** | **Number** | Packet lost (in terms of percentage) for all terminal links within the network location | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**_3gpp** | [**Model3gpp**](Model3gpp.md) |  | [optional] 
 **physicalLocations** | [**[PhysicalLocation]**](PhysicalLocation.md) |  | [optional] 
 
 

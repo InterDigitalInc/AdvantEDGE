@@ -671,11 +671,30 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      3gpp:
+        $ref: "#/definitions/3gpp"
       zones:
         type: "array"
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
+    example: {}
+  3gpp:
+    type: "object"
+    properties:
+      mnc:
+        type: "string"
+        description: "Mobile Network Code part of PLMN identity as defined in ETSI\
+          \ TS 136 413"
+      mcc:
+        type: "string"
+        description: "Mobile Country Code part of PLMN identity as defined in ETSI\
+          \ TS 136 413"
+      cellId:
+        type: "string"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
+          \ the ID of the eNB serving the cell"
+    description: "3GPP element information"
     example: {}
   Zone:
     type: "object"
@@ -808,6 +827,8 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      3gpp:
+        $ref: "#/definitions/3gpp"
       physicalLocations:
         type: "array"
         items:
