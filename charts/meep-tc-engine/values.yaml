@@ -25,9 +25,7 @@ image:
 
 service:
   type: ClusterIP
-  # type: NodePort
   port: 80
-  # nodePort: 30003
 
 codecov:
   enabled: false

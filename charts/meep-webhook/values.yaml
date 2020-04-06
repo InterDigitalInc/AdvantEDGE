@@ -16,9 +16,7 @@ deployment:
 
 service:
   type: ClusterIP
-  # type: NodePort
   port: 443
-  # nodePort: 30006
 
 image:
   repository: meep-webhook

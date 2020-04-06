@@ -19,9 +19,7 @@ image:
 
 service:
   type: ClusterIP
-  # type: NodePort
   port: 80
-  # nodePort: 30007
 
 ingress:
   enabled: true

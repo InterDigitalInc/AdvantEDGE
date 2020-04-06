@@ -24,10 +24,8 @@ image:
   pullPolicy: Always
 
 service:
-  # type: NodePort
   type: ClusterIP
   port: 80
-  # nodePort: 30000
 
 ingress:
   enabled: true

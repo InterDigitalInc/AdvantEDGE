@@ -112,9 +112,7 @@ podPortName: grafana
 ##
 service:
   type: ClusterIP
-  # type: NodePort
   port: 80
-  # nodePort: 30009
   targetPort: 3000
     # targetPort: 4181 To be used with a proxy extraContainer
   annotations: {}
