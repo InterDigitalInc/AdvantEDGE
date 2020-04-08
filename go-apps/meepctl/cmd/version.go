@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const meepctlVersion = "1.4.1"
+const meepctlVersion = "1.4.2"
 const na = "NA"
 
 // versionCmd represents the version command

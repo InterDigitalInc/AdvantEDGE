@@ -14,7 +14,7 @@
 
 FROM debian:9.6-slim
 
-COPY ./data/virt-templates /templates
+COPY ./data/templates /templates
 COPY ./data/entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
 
