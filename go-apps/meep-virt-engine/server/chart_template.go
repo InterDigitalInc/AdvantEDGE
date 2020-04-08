@@ -340,10 +340,8 @@ func deployCharts(charts []helm.Chart) error {
 
 func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 
-	homePath := os.Getenv("HOME")
-
-	templateFilePath := homePath + "/.meep/template/values-template.yaml"
-	templateDefaultDir := homePath + "/.meep/template/defaultDir"
+	templateFilePath := "/templates/values-template.yaml"
+	templateDefaultDir := "/templates/defaultDir"
 
 	t, err := template.ParseFiles(templateFilePath)
 	if err != nil {
@@ -351,7 +349,7 @@ func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 		return "", err
 	}
 
-	outputDirPath := homePath + "/.meep/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.Name
+	outputDirPath := "/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.Name
 	log.Debug("Creation of the output path ", outputDirPath)
 
 	_ = CopyDir(templateDefaultDir, outputDirPath)

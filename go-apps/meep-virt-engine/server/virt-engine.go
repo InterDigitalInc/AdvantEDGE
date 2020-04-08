@@ -28,7 +28,7 @@ import (
 )
 
 const moduleName string = "meep-virt-engine"
-const redisAddr string = "localhost:30379"
+const redisAddr string = "meep-redis-master:6379"
 const retryTimerDuration = 10000
 
 var watchdogClient *watchdog.Pingee
@@ -149,8 +149,7 @@ func terminateScenario(name string) (error, int) {
 		}
 
 		// Then delete charts
-		homePath := os.Getenv("HOME")
-		path := homePath + "/.meep/active/" + name
+		path := "/active/" + name
 		if _, err := os.Stat(path); err == nil {
 			log.Debug("Removing charts ", path)
 			os.RemoveAll(path)

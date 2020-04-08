@@ -12,6 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian
+FROM debian:9.6-slim
+
+COPY ./data/virt-templates /templates
+COPY ./data/entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
-ENTRYPOINT ["/meep-virt-engine"]
+
+ENV HELM_VERSION="v2.16.1"
+RUN mkdir -p /active \
+    && apt-get update \
+    && apt-get install -y wget \
+    && wget -q https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm \
+    && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -10,8 +10,13 @@ metadata:
     heritage: {{ .Release.Service }}
     meepOrigin: {{ .Values.meepOrigin }}
 spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ template "meep-virt-engine.name" . }}
+    release: {{ .Release.Name }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
-      protocol: {{ .Values.service.protocol }}
-
+      targetPort: {{ .Values.deployment.port }}
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}

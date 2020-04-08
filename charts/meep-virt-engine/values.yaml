@@ -3,11 +3,31 @@
 # Declare variables to be passed into your templates.
 
 namespace: default
+serviceAccount: meep-virt-engine
 
-service:
-  ip: 10.3.16.136
+deployment:
+  replicas: 1
   port: 80
-  targetPort: 30219
   protocol: TCP
 
-meepOrigin: core  
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+
+image:
+  repository: meep-docker-registry:30001/meep-virt-engine
+  tag: latest
+  pullPolicy: Always      
+
+service:
+  type: ClusterIP
+  port: 80
+
+codecov:
+  enabled: false
+  
+meepOrigin: co

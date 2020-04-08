@@ -48,7 +48,7 @@ Valid targets:`,
   meepctl build meep-ctrl-engine`,
 	Args: cobra.OnlyValidArgs,
 	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
-	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-swagger-ui", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-rnis", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar", "meep-virt-engine"},
+	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-virt-engine", "meep-swagger-ui", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-rnis", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar"},
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if !utils.ConfigValidate("") {

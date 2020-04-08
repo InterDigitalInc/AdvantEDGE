@@ -19,7 +19,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -118,14 +117,6 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 		fmt.Println(err)
 	}
 
-	//templates
-	templatedir := viper.GetString("meep.gitdir") + "/" + utils.RepoCfg.GetString("repo.core.meep-virt-engine.template")
-	cmd = exec.Command("rm", "-rf", workdir+"template-bak")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("mv", workdir+"template", workdir+"template-bak")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("cp", "-r", templatedir, workdir+"template")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	//codecov
 	cmd = exec.Command("rm", "-rf", workdir+"codecov-bak")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
@@ -140,6 +131,7 @@ func ensureCoreStorage(cobraCmd *cobra.Command) {
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
+
 	//certs
 	cmd = exec.Command("mkdir", "-p", workdir+"certs")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
@@ -193,6 +185,10 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	chart := gitdir + utils.RepoCfg.GetString("repo.core.meep-ctrl-engine.chart")
 	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
 	//---
+	repo = "meep-virt-engine"
+	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
+	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	//---
 	repo = "meep-mon-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-mon-engine.chart")
 	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
@@ -229,12 +225,6 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 	flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
 	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
-	//---
-	repo = "meep-virt-engine"
-	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
-	flags = utils.HelmFlags(nil, "--set", "service.ip="+ip)
-	k8sDeploy(repo, chart, flags, cobraCmd)
-	deployVirtEngineExt(repo, cobraCmd)
 }
 
 func deployDep(cobraCmd *cobra.Command) {
@@ -322,63 +312,6 @@ func k8sDeploy(component string, chart string, flags [][]string, cobraCmd *cobra
 
 	// Deploy
 	_ = utils.HelmInstall(component, chart, flags, cobraCmd)
-}
-
-func deployVirtEngineExt(component string, cobraCmd *cobra.Command) {
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	force, _ := cobraCmd.Flags().GetBool("force")
-	gitdir := viper.GetString("meep.gitdir") + "/"
-	workdir := viper.GetString("meep.workdir") + "/"
-	start := time.Now()
-
-	// If release exist && --force, delete
-	pid, err := utils.GetProcess(component, cobraCmd)
-	if err == nil && pid != "" {
-		if force {
-			deleteVirtEngine(cobraCmd)
-		} else {
-			fmt.Println("Skipping " + component + " (ext.): already deployed -- use [-f, --force] flag to force deployment")
-			return
-		}
-	}
-
-	// Deploy
-	// ensure directory
-	logdir := workdir + "log"
-	cmd := exec.Command("mkdir", "-p", logdir)
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	// start ext. component
-	file, err := os.Create(logdir + "/virt-engine.log")
-	if err != nil {
-		fmt.Println("Error starting virt.engine (ext.)")
-		fmt.Println(err)
-		return
-	}
-
-	codecovCapable := utils.RepoCfg.GetBool("repo.core." + component + ".codecov")
-	virtEngineApp := gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.bin") + "/meep-virt-engine"
-	if deployCodecov && codecovCapable {
-		codecovFile := workdir + "/codecov/" + component + "/codecov-meep-virt-engine.out"
-		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-		cmd = exec.Command(virtEngineApp, "-test.coverprofile="+codecovFile, "__DEVEL--code-cov")
-	} else {
-		cmd = exec.Command(virtEngineApp)
-	}
-	cmd.Stdout = file
-	cmd.Stderr = file
-	if verbose {
-		fmt.Println("Args:", cmd.Args)
-	}
-	err = cmd.Start()
-	elapsed := time.Since(start)
-
-	if err != nil {
-		fmt.Println("Error starting virt.engine (ext.)")
-		fmt.Println(err)
-	} else {
-		r := utils.FormatResult("Deployed meep-virt-engine (ext.)", elapsed, cobraCmd)
-		fmt.Println(r)
-	}
 }
 
 func deployMeepUserAccount(cobraCmd *cobra.Command) {

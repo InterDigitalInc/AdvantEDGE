@@ -88,35 +88,12 @@ func deleteCore(cobraCmd *cobra.Command) {
 	go k8sDelete("meep-rnis", cobraCmd, messages)
 	go k8sDelete("meep-metrics-engine", cobraCmd, messages)
 	go k8sDelete("meep-ctrl-engine", cobraCmd, messages)
-	deleteVirtEngine(cobraCmd)
 	deleteMeepUserAccount(cobraCmd)
 
 	for i := 0; i < 8; i++ {
 		fmt.Println(<-messages)
 	}
 
-}
-
-func deleteVirtEngine(cobraCmd *cobra.Command) {
-	pid, err := utils.GetProcess("meep-virt-engine", cobraCmd)
-	if err == nil {
-		var timeoutMsg string
-		start := time.Now()
-		// Try interrupting process first
-		utils.InterruptProcess(pid, cobraCmd)
-		err = utils.WaitProcess(pid, "5", cobraCmd)
-		if err != nil {
-			// Kill process if it did not exit before timeout
-			utils.KillProcess(pid, cobraCmd)
-			err = utils.WaitProcess(pid, "5", cobraCmd)
-			if err != nil {
-				timeoutMsg = " failed with timeout error: " + err.Error()
-			}
-		}
-		elapsed := time.Since(start)
-		r := utils.FormatResult("Deleted meep-virt-engine (ext.)"+timeoutMsg, elapsed, cobraCmd)
-		fmt.Println(r)
-	}
 }
 
 func deleteMeepUserAccount(cobraCmd *cobra.Command) {

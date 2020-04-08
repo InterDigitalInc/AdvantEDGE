@@ -119,9 +119,10 @@ repo:
       src: go-apps/meep-virt-engine
       bin: bin/meep-virt-engine
       chart: charts/meep-virt-engine
-      template: charts/meep-virt-engine/virt-templates
       codecov: true
       lint: true
+      docker-data:
+        data: go-apps/meep-virt-engine/docker-data
     meep-webhook:
       src: go-apps/meep-webhook
       bin: bin/meep-webhook
