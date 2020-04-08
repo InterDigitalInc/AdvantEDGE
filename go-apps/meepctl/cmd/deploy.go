@@ -187,7 +187,8 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-virt-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-virt-engine.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags := utils.HelmFlags(nil, "--set", "volumes.charts.path="+workdir+"charts")
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-mon-engine"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-mon-engine.chart")

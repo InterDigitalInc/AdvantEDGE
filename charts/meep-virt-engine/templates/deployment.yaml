@@ -24,12 +24,16 @@ spec:
         meepOrigin: {{ .Values.meepOrigin }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount }}
-      {{- if .Values.codecov.enabled}}
       volumes:
+        - name: charts
+          hostPath:
+            path: "{{ .Values.volumes.charts.path }}"
+            type: Directory
+        {{- if .Values.codecov.enabled}}
         - name: codecov-storage
           persistentVolumeClaim:
             claimName: meep-virt-engine-codecov-pvc
-      {{- end}}
+        {{- end}}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -41,14 +45,15 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
-          {{- if .Values.codecov.enabled}}
           volumeMounts:
-          - name: codecov-storage
-            mountPath: /codecov
-          {{- end}}
+            - name: charts
+              mountPath: /charts
+            {{- if .Values.codecov.enabled}}
+            - name: codecov-storage
+              mountPath: /codecov
+            {{- end}}
       terminationGracePeriodSeconds: 5
       {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
-

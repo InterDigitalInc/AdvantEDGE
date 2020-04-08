@@ -27,7 +27,11 @@ service:
   type: ClusterIP
   port: 80
 
+volumes:
+  charts:
+    path: <HOME>/.meep/charts
+
 codecov:
   enabled: false
   
-meepOrigin: co
+meepOrigin: core

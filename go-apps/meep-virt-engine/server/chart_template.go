@@ -19,7 +19,6 @@ package server
 import (
 	"errors"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -405,19 +404,8 @@ func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 
 func getFullPath(path string) string {
 	fullPath := path
-
-	// Get home directory
-	usr, err := user.Current()
-	if err != nil {
-		return fullPath
-	}
-	homeDir := usr.HomeDir
-
-	// Replace ~ with home directory
-	if path == "~" {
-		fullPath = homeDir
-	} else if strings.HasPrefix(path, "~/") {
-		fullPath = filepath.Join(homeDir, path[2:])
+	if path != "" && !strings.HasPrefix(path, "/") {
+		fullPath = filepath.Join("/charts/", path)
 	}
 	return fullPath
 }
