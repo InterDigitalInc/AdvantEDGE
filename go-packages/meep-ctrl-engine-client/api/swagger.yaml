@@ -672,14 +672,14 @@ definitions:
         additionalProperties:
           type: "string"
       3gpp:
-        $ref: "#/definitions/3gpp"
+        $ref: "#/definitions/Domain3gpp"
       zones:
         type: "array"
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
     example: {}
-  3gpp:
+  Domain3gpp:
     type: "object"
     properties:
       mnc:
@@ -690,11 +690,11 @@ definitions:
         type: "string"
         description: "Mobile Country Code part of PLMN identity as defined in ETSI\
           \ TS 136 413"
-      cellId:
+      defaultCellId:
         type: "string"
-        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
-          \ the ID of the eNB serving the cell"
-    description: "3GPP element information"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no\
+          \ cellId is defined for the cell or if not applicable"
+    description: "3GPP domain element information"
     example: {}
   Zone:
     type: "object"
@@ -801,6 +801,12 @@ definitions:
         enum:
         - "POA"
         - "DEFAULT"
+      subType:
+        type: "string"
+        description: "Network location subtype"
+        enum:
+        - "3GPP"
+        - "NON-3GPP"
       terminalLinkLatency:
         type: "integer"
         description: "Latency in ms for all terminal links within network location"
@@ -827,8 +833,10 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
-      3gpp:
-        $ref: "#/definitions/3gpp"
+      cellId:
+        type: "string"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
+          \ the ID of the eNB serving the cell"
       physicalLocations:
         type: "array"
         items:

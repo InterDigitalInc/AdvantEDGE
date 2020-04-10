@@ -30,9 +30,6 @@ const redisAddr string = "meep-redis-master:6379"
 type RnisSbi struct {
 	activeModel        *mod.Model
 	updateUeEcgiInfoCB func(string, string, string, string)
-	//updateZoneInfoCB        func(string, int, int, int)
-	//updateAccessPointInfoCB func(string, string, string, string, int)
-	//cleanUpCB               func()
 }
 
 var sbi *RnisSbi
@@ -51,10 +48,6 @@ func Init(updateUeEcgiInfo func(string, string, string, string)) (err error) {
 	}
 
 	sbi.updateUeEcgiInfoCB = updateUeEcgiInfo
-	/*sbi.updateZoneInfoCB = updateZoneInfo
-	sbi.updateAccessPointInfoCB = updateAccessPointInfo
-	sbi.cleanUpCB = cleanUp
-	*/
 	return nil
 }
 
@@ -111,10 +104,11 @@ func processActiveScenarioUpdate() {
 						mnc = domain.Var3gpp.Mnc
 						mcc = domain.Var3gpp.Mcc
 					}
-					if poa.Var3gpp != nil {
-						cellId = poa.Var3gpp.CellId
+					if poa.CellId != "" {
+						cellId = poa.CellId
 					} else {
-						cellId = poa.Name
+						//cellId = poa.Name
+						cellId = domain.Var3gpp.DefaultCellId
 					}
 
 					sbi.updateUeEcgiInfoCB(name, mnc, mcc, cellId)

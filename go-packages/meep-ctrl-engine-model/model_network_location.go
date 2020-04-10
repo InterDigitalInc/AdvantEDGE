@@ -31,6 +31,8 @@ type NetworkLocation struct {
 	Name string `json:"name,omitempty"`
 	// Network location type
 	Type_ string `json:"type,omitempty"`
+	// Network location subtype
+	SubType string `json:"subType,omitempty"`
 	// Latency in ms for all terminal links within network location
 	TerminalLinkLatency int32 `json:"terminalLinkLatency,omitempty"`
 	// Latency variation in ms for all terminal links within network location
@@ -42,7 +44,8 @@ type NetworkLocation struct {
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 	// Key/Value Pair Map (string, string)
-	UserMeta          map[string]string  `json:"userMeta,omitempty"`
-	Var3gpp           *Model3gpp         `json:"3gpp,omitempty"`
+	UserMeta map[string]string `json:"userMeta,omitempty"`
+	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+	CellId            string             `json:"cellId,omitempty"`
 	PhysicalLocations []PhysicalLocation `json:"physicalLocations,omitempty"`
 }

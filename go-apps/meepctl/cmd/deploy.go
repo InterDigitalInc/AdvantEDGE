@@ -199,11 +199,12 @@ func deployCore(cobraCmd *cobra.Command, registry string, tag string) {
 	//---
 	repo = "meep-rnis"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-rnis.chart")
-	k8sDeployCore(repo, registry, tag, chart, nil, cobraCmd)
+	flags := utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-loc-serv"
 	chart = gitdir + utils.RepoCfg.GetString("repo.core.meep-loc-serv.chart")
-	flags := utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
+	flags = utils.HelmFlags(nil, "--set", "image.env.rooturl=http://"+ip)
 	k8sDeployCore(repo, registry, tag, chart, flags, cobraCmd)
 	//---
 	repo = "meep-metrics-engine"

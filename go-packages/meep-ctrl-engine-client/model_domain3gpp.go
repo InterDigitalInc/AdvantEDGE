@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Platform Controller REST API
  *
- * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30000`
+ * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -24,12 +24,12 @@
 
 package client
 
-// 3GPP element information
-type Model3gpp struct {
+// 3GPP domain element information
+type Domain3gpp struct {
 	// Mobile Network Code part of PLMN identity as defined in ETSI TS 136 413
 	Mnc string `json:"mnc,omitempty"`
 	// Mobile Country Code part of PLMN identity as defined in ETSI TS 136 413
 	Mcc string `json:"mcc,omitempty"`
-	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
-	CellId string `json:"cellId,omitempty"`
+	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
+	DefaultCellId string `json:"defaultCellId,omitempty"`
 }

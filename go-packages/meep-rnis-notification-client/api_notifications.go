@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Radio Network Information Service Subscription Notification REST API
  *
- * This API enables the Radio Network Information Service to post notification events to subscribers' applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's Edge Applications subscribing to Radio Network Information events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>This API is not exposed by default on the AdvantEDGE platform
+ * This API enables the Radio Network Information Service to post notification events to subscribers' applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's Edge Applications subscribing to Radio Network Information events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -158,25 +158,18 @@ func (a *NotificationsApiService) PostExpiryNotification(ctx context.Context, su
 	localVarPostBody = &notification
 	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHttpMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFileName, localVarFileBytes)
 	if err != nil {
-		fmt.Println("SIMONA")
-		return nil, nil
-//		return nil, err
+		return nil, err
 	}
 
 	localVarHttpResponse, err := a.client.callAPI(r)
 	if err != nil || localVarHttpResponse == nil {
-		fmt.Println("SIMONB")
-		fmt.Println(err)
-		return localVarHttpResponse, nil
-		//return localVarHttpResponse, err
+		return localVarHttpResponse, err
 	}
 
 	localVarBody, err := ioutil.ReadAll(localVarHttpResponse.Body)
 	localVarHttpResponse.Body.Close()
 	if err != nil {
-		fmt.Println("SIMONC")
-		return localVarHttpResponse, nil
-		//return localVarHttpResponse, err
+		return localVarHttpResponse, err
 	}
 
 	if localVarHttpResponse.StatusCode >= 300 {
@@ -184,7 +177,7 @@ func (a *NotificationsApiService) PostExpiryNotification(ctx context.Context, su
 			body:  localVarBody,
 			error: localVarHttpResponse.Status,
 		}
-		fmt.Println("SIMOND")
+
 		return localVarHttpResponse, newErr
 	}
 

@@ -4,9 +4,8 @@ info:
   description: "This API enables the Radio Network Information Service to post notification\
     \ events to subscribers' applications <p>**Micro-service**<br>None <p>**Type &\
     \ Usage**<br>User's Edge Applications subscribing to Radio Network Information\
-    \ events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_\
-    \ <p>**Default Port**<br>This API is not exposed by default on the AdvantEDGE\
-    \ platform"
+    \ events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_\
+    \ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform"
   version: "1.0.0"
   title: "AdvantEDGE Radio Network Information Service Subscription Notification REST\
     \ API"
@@ -16,12 +15,9 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-host: "172.0.0.1:8081"
-basePath: "/v1"
+basePath: "/rni/v1"
 tags:
 - name: "notifications"
-schemes:
-- "http"
 consumes:
 - "application/json"
 produces:

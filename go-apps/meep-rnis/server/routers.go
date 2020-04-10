@@ -64,315 +64,315 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		"/etsi-012/rni/v1/",
+		"/rni/v1/",
 		Index,
 	},
 
 	Route{
 		"CaReConfSubscriptionSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
+		"/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
 		CaReConfSubscriptionSubscriptionsGET,
 	},
 
 	Route{
 		"CaReConfSubscriptionSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/ca_reconf",
+		"/rni/v1/subscriptions/ca_reconf",
 		CaReConfSubscriptionSubscriptionsPOST,
 	},
 
 	Route{
 		"CaReConfSubscriptionSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
+		"/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
 		CaReConfSubscriptionSubscriptionsPUT,
 	},
 
 	Route{
 		"CaReConfSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
+		"/rni/v1/subscriptions/ca_reconf/{subscriptionId}",
 		CaReConfSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"CellChangeSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/cell_change/{subscriptionId}",
+		"/rni/v1/subscriptions/cell_change/{subscriptionId}",
 		CellChangeSubscriptionsGET,
 	},
 
 	Route{
 		"CellChangeSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/cell_change",
+		"/rni/v1/subscriptions/cell_change",
 		CellChangeSubscriptionsPOST,
 	},
 
 	Route{
 		"CellChangeSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/cell_change/{subscriptionId}",
+		"/rni/v1/subscriptions/cell_change/{subscriptionId}",
 		CellChangeSubscriptionsPUT,
 	},
 
 	Route{
 		"CellChangeSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/cell_change/{subscriptionId}",
+		"/rni/v1/subscriptions/cell_change/{subscriptionId}",
 		CellChangeSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"MeasRepUeReportSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
+		"/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
 		MeasRepUeReportSubscriptionsPUT,
 	},
 
 	Route{
 		"MeasRepUeSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
+		"/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
 		MeasRepUeSubscriptionsGET,
 	},
 
 	Route{
 		"MeasRepUeSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/meas_rep_ue",
+		"/rni/v1/subscriptions/meas_rep_ue",
 		MeasRepUeSubscriptionsPOST,
 	},
 
 	Route{
 		"MeasRepUeSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
+		"/rni/v1/subscriptions/meas_rep_ue/{subscriptionId}",
 		MeasRepUeSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"MeasTaSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/ta/{subscriptionId}",
+		"/rni/v1/subscriptions/ta/{subscriptionId}",
 		MeasTaSubscriptionsGET,
 	},
 
 	Route{
 		"MeasTaSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/ta",
+		"/rni/v1/subscriptions/ta",
 		MeasTaSubscriptionsPOST,
 	},
 
 	Route{
 		"MeasTaSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/ta/{subscriptionId}",
+		"/rni/v1/subscriptions/ta/{subscriptionId}",
 		MeasTaSubscriptionsPUT,
 	},
 
 	Route{
 		"MeasTaSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/ta/{subscriptionId}",
+		"/rni/v1/subscriptions/ta/{subscriptionId}",
 		MeasTaSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"PlmnInfoGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/queries/plmn_info",
+		"/rni/v1/queries/plmn_info",
 		PlmnInfoGET,
 	},
 
 	Route{
 		"RabEstSubscriptionSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_est/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_est/{subscriptionId}",
 		RabEstSubscriptionSubscriptionsGET,
 	},
 
 	Route{
 		"RabEstSubscriptionSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/rab_est",
+		"/rni/v1/subscriptions/rab_est",
 		RabEstSubscriptionSubscriptionsPOST,
 	},
 
 	Route{
 		"RabEstSubscriptionSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/rab_est/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_est/{subscriptionId}",
 		RabEstSubscriptionSubscriptionsPUT,
 	},
 
 	Route{
 		"RabEstSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/rab_est/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_est/{subscriptionId}",
 		RabEstSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"RabInfoGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/queries/rab_info",
+		"/rni/v1/queries/rab_info",
 		RabInfoGET,
 	},
 
 	Route{
 		"RabModSubscriptionSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_mod/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_mod/{subscriptionId}",
 		RabModSubscriptionSubscriptionsGET,
 	},
 
 	Route{
 		"RabModSubscriptionSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/rab_mod",
+		"/rni/v1/subscriptions/rab_mod",
 		RabModSubscriptionSubscriptionsPOST,
 	},
 
 	Route{
 		"RabModSubscriptionSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/rab_mod/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_mod/{subscriptionId}",
 		RabModSubscriptionSubscriptionsPUT,
 	},
 
 	Route{
 		"RabModSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/rab_mod/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_mod/{subscriptionId}",
 		RabModSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"RabRelSubscriptionSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_rel/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_rel/{subscriptionId}",
 		RabRelSubscriptionSubscriptionsGET,
 	},
 
 	Route{
 		"RabRelSubscriptionSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/rab_rel",
+		"/rni/v1/subscriptions/rab_rel",
 		RabRelSubscriptionSubscriptionsPOST,
 	},
 
 	Route{
 		"RabRelSubscriptionSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/rab_rel/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_rel/{subscriptionId}",
 		RabRelSubscriptionSubscriptionsPUT,
 	},
 
 	Route{
 		"RabRelSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/rab_rel/{subscriptionId}",
+		"/rni/v1/subscriptions/rab_rel/{subscriptionId}",
 		RabRelSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"S1BearerInfoGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/queries/s1_bearer_info",
+		"/rni/v1/queries/s1_bearer_info",
 		S1BearerInfoGET,
 	},
 
 	Route{
 		"S1BearerSubscriptionSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
+		"/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
 		S1BearerSubscriptionSubscriptionsGET,
 	},
 
 	Route{
 		"S1BearerSubscriptionSubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/etsi-012/rni/v1/subscriptions/s1_bearer",
+		"/rni/v1/subscriptions/s1_bearer",
 		S1BearerSubscriptionSubscriptionsPOST,
 	},
 
 	Route{
 		"S1BearerSubscriptionSubscriptionsPUT",
 		strings.ToUpper("Put"),
-		"/etsi-012/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
+		"/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
 		S1BearerSubscriptionSubscriptionsPUT,
 	},
 
 	Route{
 		"S1BearerSubscriptionsSubscrIdDELETE",
 		strings.ToUpper("Delete"),
-		"/etsi-012/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
+		"/rni/v1/subscriptions/s1_bearer/{subscriptionId}",
 		S1BearerSubscriptionsSubscrIdDELETE,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsCcGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/cell_change",
+		"/rni/v1/subscriptions/cell_change",
 		SubscriptionLinkListSubscriptionsCcGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsCrGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/ca_reconf",
+		"/rni/v1/subscriptions/ca_reconf",
 		SubscriptionLinkListSubscriptionsCrGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/",
+		"/rni/v1/subscriptions/",
 		SubscriptionLinkListSubscriptionsGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsMrGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/meas_rep_ue",
+		"/rni/v1/subscriptions/meas_rep_ue",
 		SubscriptionLinkListSubscriptionsMrGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsReGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_est",
+		"/rni/v1/subscriptions/rab_est",
 		SubscriptionLinkListSubscriptionsReGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsRmGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_mod",
+		"/rni/v1/subscriptions/rab_mod",
 		SubscriptionLinkListSubscriptionsRmGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsRrGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/rab_rel",
+		"/rni/v1/subscriptions/rab_rel",
 		SubscriptionLinkListSubscriptionsRrGET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsS1GET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/s1_bearer",
+		"/rni/v1/subscriptions/s1_bearer",
 		SubscriptionLinkListSubscriptionsS1GET,
 	},
 
 	Route{
 		"SubscriptionLinkListSubscriptionsTaGET",
 		strings.ToUpper("Get"),
-		"/etsi-012/rni/v1/subscriptions/ta",
+		"/rni/v1/subscriptions/ta",
 		SubscriptionLinkListSubscriptionsTaGET,
 	},
 }

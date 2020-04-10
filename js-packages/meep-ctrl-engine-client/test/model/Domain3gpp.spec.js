@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Platform Controller REST API
- * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30000` 
+ * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -45,14 +45,14 @@
   var instance;
 
   describe('(package)', function() {
-    describe('Model3gpp', function() {
+    describe('Domain3gpp', function() {
       beforeEach(function() {
-        instance = new AdvantEdgePlatformControllerRestApi.Model3gpp();
+        instance = new AdvantEdgePlatformControllerRestApi.Domain3gpp();
       });
 
-      it('should create an instance of Model3gpp', function() {
-        // TODO: update the code to test Model3gpp
-        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Model3gpp);
+      it('should create an instance of Domain3gpp', function() {
+        // TODO: update the code to test Domain3gpp
+        expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Domain3gpp);
       });
 
       it('should have the property mnc (base name: "mnc")', function() {
@@ -67,10 +67,10 @@
         // expect(instance.mcc).to.be(expectedValueLiteral);
       });
 
-      it('should have the property cellId (base name: "cellId")', function() {
-        // TODO: update the code to test the property cellId
-        expect(instance).to.have.property('cellId');
-        // expect(instance.cellId).to.be(expectedValueLiteral);
+      it('should have the property defaultCellId (base name: "defaultCellId")', function() {
+        // TODO: update the code to test the property defaultCellId
+        expect(instance).to.have.property('defaultCellId');
+        // expect(instance.defaultCellId).to.be(expectedValueLiteral);
       });
 
     });

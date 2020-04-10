@@ -73,6 +73,12 @@
         // expect(instance.type).to.be(expectedValueLiteral);
       });
 
+      it('should have the property subType (base name: "subType")', function() {
+        // TODO: update the code to test the property subType
+        expect(instance).to.have.property('subType');
+        // expect(instance.subType).to.be(expectedValueLiteral);
+      });
+
       it('should have the property terminalLinkLatency (base name: "terminalLinkLatency")', function() {
         // TODO: update the code to test the property terminalLinkLatency
         expect(instance).to.have.property('terminalLinkLatency');
@@ -109,10 +115,10 @@
         // expect(instance.userMeta).to.be(expectedValueLiteral);
       });
 
-      it('should have the property _3gpp (base name: "3gpp")', function() {
-        // TODO: update the code to test the property _3gpp
-        expect(instance).to.have.property('_3gpp');
-        // expect(instance._3gpp).to.be(expectedValueLiteral);
+      it('should have the property cellId (base name: "cellId")', function() {
+        // TODO: update the code to test the property cellId
+        expect(instance).to.have.property('cellId');
+        // expect(instance.cellId).to.be(expectedValueLiteral);
       });
 
       it('should have the property physicalLocations (base name: "physicalLocations")', function() {

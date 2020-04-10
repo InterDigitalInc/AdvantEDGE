@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Platform Controller REST API
- * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30000` 
+ * This API is the main platform API and mainly used by the AdvantEDGE frontend to interact with scenarios <p>**Micro-service**<br>[meep-ctrl-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-ctrl-engine) <p>**Type & Usage**<br>Platform main interface used by controller software that want to interact with the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -40,32 +40,32 @@
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Model3gpp = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient);
+    root.AdvantEdgePlatformControllerRestApi.Domain3gpp = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
 
   /**
-   * The Model3gpp model module.
-   * @module model/Model3gpp
+   * The Domain3gpp model module.
+   * @module model/Domain3gpp
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new <code>Model3gpp</code>.
-   * 3GPP element information
-   * @alias module:model/Model3gpp
+   * Constructs a new <code>Domain3gpp</code>.
+   * 3GPP domain element information
+   * @alias module:model/Domain3gpp
    * @class
    */
   var exports = function() {
   };
 
   /**
-   * Constructs a <code>Model3gpp</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>Domain3gpp</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/Model3gpp} obj Optional instance to populate.
-   * @return {module:model/Model3gpp} The populated <code>Model3gpp</code> instance.
+   * @param {module:model/Domain3gpp} obj Optional instance to populate.
+   * @return {module:model/Domain3gpp} The populated <code>Domain3gpp</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
@@ -74,8 +74,8 @@
         obj.mnc = ApiClient.convertToType(data['mnc'], 'String');
       if (data.hasOwnProperty('mcc'))
         obj.mcc = ApiClient.convertToType(data['mcc'], 'String');
-      if (data.hasOwnProperty('cellId'))
-        obj.cellId = ApiClient.convertToType(data['cellId'], 'String');
+      if (data.hasOwnProperty('defaultCellId'))
+        obj.defaultCellId = ApiClient.convertToType(data['defaultCellId'], 'String');
     }
     return obj;
   }
@@ -93,10 +93,10 @@
   exports.prototype.mcc = undefined;
 
   /**
-   * The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
-   * @member {String} cellId
+   * The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
+   * @member {String} defaultCellId
    */
-  exports.prototype.cellId = undefined;
+  exports.prototype.defaultCellId = undefined;
 
   return exports;
 

@@ -1,6 +1,6 @@
 # \NotificationsApi
 
-All URIs are relative to *http://172.0.0.1:8081/v1*
+All URIs are relative to *https://localhost/rni/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

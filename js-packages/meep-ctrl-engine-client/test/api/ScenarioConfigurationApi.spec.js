@@ -80,10 +80,10 @@
           scenario.deployment.domains[0].interZonePacketLoss = 0.0;
           scenario.deployment.domains[0].meta = {key: ""};
           scenario.deployment.domains[0].userMeta = {key: ""};
-          scenario.deployment.domains[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Model3gpp();
+          scenario.deployment.domains[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Domain3gpp();
           scenario.deployment.domains[0]._3gpp.mnc = "";
           scenario.deployment.domains[0]._3gpp.mcc = "";
-          scenario.deployment.domains[0]._3gpp.cellId = "";
+          scenario.deployment.domains[0]._3gpp.defaultCellId = "";
           scenario.deployment.domains[0].zones = [new AdvantEdgePlatformControllerRestApi.Zone()];
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
@@ -111,16 +111,14 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].name = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].type = "POA";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].subType = "3GPP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkLatency = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkPacketLoss = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Model3gpp();
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.mnc = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.mcc = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -322,13 +320,13 @@
                       expect(data).to.be("");
                     }
                   }
-                  expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Model3gpp);
+                  expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Domain3gpp);
                         expect(data._3gpp.mnc).to.be.a('string');
                     expect(data._3gpp.mnc).to.be("");
                     expect(data._3gpp.mcc).to.be.a('string');
                     expect(data._3gpp.mcc).to.be("");
-                    expect(data._3gpp.cellId).to.be.a('string');
-                    expect(data._3gpp.cellId).to.be("");
+                    expect(data._3gpp.defaultCellId).to.be.a('string');
+                    expect(data._3gpp.defaultCellId).to.be("");
                   {
                     let dataCtr = data.zones;
                     expect(dataCtr).to.be.an(Array);
@@ -408,6 +406,8 @@
                           expect(data.name).to.be("");
                           expect(data.type).to.be.a('string');
                           expect(data.type).to.be("POA");
+                          expect(data.subType).to.be.a('string');
+                          expect(data.subType).to.be("3GPP");
                           expect(data.terminalLinkLatency).to.be.a('number');
                           expect(data.terminalLinkLatency).to.be(0);
                           expect(data.terminalLinkLatencyVariation).to.be.a('number');
@@ -436,13 +436,8 @@
                               expect(data).to.be("");
                             }
                           }
-                          expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Model3gpp);
-                                expect(data._3gpp.mnc).to.be.a('string');
-                            expect(data._3gpp.mnc).to.be("");
-                            expect(data._3gpp.mcc).to.be.a('string');
-                            expect(data._3gpp.mcc).to.be("");
-                            expect(data._3gpp.cellId).to.be.a('string');
-                            expect(data._3gpp.cellId).to.be("");
+                          expect(data.cellId).to.be.a('string');
+                          expect(data.cellId).to.be("");
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -739,13 +734,13 @@
                           expect(data).to.be("");
                         }
                       }
-                      expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Model3gpp);
+                      expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Domain3gpp);
                             expect(data._3gpp.mnc).to.be.a('string');
                         expect(data._3gpp.mnc).to.be("");
                         expect(data._3gpp.mcc).to.be.a('string');
                         expect(data._3gpp.mcc).to.be("");
-                        expect(data._3gpp.cellId).to.be.a('string');
-                        expect(data._3gpp.cellId).to.be("");
+                        expect(data._3gpp.defaultCellId).to.be.a('string');
+                        expect(data._3gpp.defaultCellId).to.be("");
                       {
                         let dataCtr = data.zones;
                         expect(dataCtr).to.be.an(Array);
@@ -825,6 +820,8 @@
                               expect(data.name).to.be("");
                               expect(data.type).to.be.a('string');
                               expect(data.type).to.be("POA");
+                              expect(data.subType).to.be.a('string');
+                              expect(data.subType).to.be("3GPP");
                               expect(data.terminalLinkLatency).to.be.a('number');
                               expect(data.terminalLinkLatency).to.be(0);
                               expect(data.terminalLinkLatencyVariation).to.be.a('number');
@@ -853,13 +850,8 @@
                                   expect(data).to.be("");
                                 }
                               }
-                              expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Model3gpp);
-                                    expect(data._3gpp.mnc).to.be.a('string');
-                                expect(data._3gpp.mnc).to.be("");
-                                expect(data._3gpp.mcc).to.be.a('string');
-                                expect(data._3gpp.mcc).to.be("");
-                                expect(data._3gpp.cellId).to.be.a('string');
-                                expect(data._3gpp.cellId).to.be("");
+                              expect(data.cellId).to.be.a('string');
+                              expect(data.cellId).to.be("");
                               {
                                 let dataCtr = data.physicalLocations;
                                 expect(dataCtr).to.be.an(Array);
@@ -1086,10 +1078,10 @@
           scenario.deployment.domains[0].interZonePacketLoss = 0.0;
           scenario.deployment.domains[0].meta = {key: ""};
           scenario.deployment.domains[0].userMeta = {key: ""};
-          scenario.deployment.domains[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Model3gpp();
+          scenario.deployment.domains[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Domain3gpp();
           scenario.deployment.domains[0]._3gpp.mnc = "";
           scenario.deployment.domains[0]._3gpp.mcc = "";
-          scenario.deployment.domains[0]._3gpp.cellId = "";
+          scenario.deployment.domains[0]._3gpp.defaultCellId = "";
           scenario.deployment.domains[0].zones = [new AdvantEdgePlatformControllerRestApi.Zone()];
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
@@ -1117,16 +1109,14 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].name = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].type = "POA";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].subType = "3GPP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkLatency = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkPacketLoss = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp = new AdvantEdgePlatformControllerRestApi.Model3gpp();
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.mnc = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.mcc = "";
-          scenario.deployment.domains[0].zones[0].networkLocations[0]._3gpp.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";

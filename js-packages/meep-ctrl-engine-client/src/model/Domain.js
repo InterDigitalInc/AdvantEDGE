@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Model3gpp', 'model/Zone'], factory);
+    define(['ApiClient', 'model/Domain3gpp', 'model/Zone'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Model3gpp'), require('./Zone'));
+    module.exports = factory(require('../ApiClient'), require('./Domain3gpp'), require('./Zone'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Model3gpp, root.AdvantEdgePlatformControllerRestApi.Zone);
+    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Domain3gpp, root.AdvantEdgePlatformControllerRestApi.Zone);
   }
-}(this, function(ApiClient, Model3gpp, Zone) {
+}(this, function(ApiClient, Domain3gpp, Zone) {
   'use strict';
 
   /**
@@ -89,7 +89,7 @@
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       if (data.hasOwnProperty('3gpp'))
-        obj._3gpp = Model3gpp.constructFromObject(data['3gpp']);
+        obj._3gpp = Domain3gpp.constructFromObject(data['3gpp']);
       if (data.hasOwnProperty('zones'))
         obj.zones = ApiClient.convertToType(data['zones'], [Zone]);
     }
@@ -151,7 +151,7 @@
   exports.prototype.userMeta = undefined;
 
   /**
-   * @member {module:model/Model3gpp} _3gpp
+   * @member {module:model/Domain3gpp} _3gpp
    */
   exports.prototype._3gpp = undefined;
 

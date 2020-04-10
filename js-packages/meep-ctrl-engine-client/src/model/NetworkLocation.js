@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Model3gpp', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/PhysicalLocation'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Model3gpp'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./PhysicalLocation'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Model3gpp, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
+    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
   }
-}(this, function(ApiClient, Model3gpp, PhysicalLocation) {
+}(this, function(ApiClient, PhysicalLocation) {
   'use strict';
 
   /**
@@ -76,6 +76,8 @@
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
+      if (data.hasOwnProperty('subType'))
+        obj.subType = ApiClient.convertToType(data['subType'], 'String');
       if (data.hasOwnProperty('terminalLinkLatency'))
         obj.terminalLinkLatency = ApiClient.convertToType(data['terminalLinkLatency'], 'Number');
       if (data.hasOwnProperty('terminalLinkLatencyVariation'))
@@ -88,8 +90,8 @@
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
-      if (data.hasOwnProperty('3gpp'))
-        obj._3gpp = Model3gpp.constructFromObject(data['3gpp']);
+      if (data.hasOwnProperty('cellId'))
+        obj.cellId = ApiClient.convertToType(data['cellId'], 'String');
       if (data.hasOwnProperty('physicalLocations'))
         obj.physicalLocations = ApiClient.convertToType(data['physicalLocations'], [PhysicalLocation]);
     }
@@ -113,6 +115,12 @@
    * @member {module:model/NetworkLocation.TypeEnum} type
    */
   exports.prototype.type = undefined;
+
+  /**
+   * Network location subtype
+   * @member {module:model/NetworkLocation.SubTypeEnum} subType
+   */
+  exports.prototype.subType = undefined;
 
   /**
    * Latency in ms for all terminal links within network location
@@ -151,9 +159,10 @@
   exports.prototype.userMeta = undefined;
 
   /**
-   * @member {module:model/Model3gpp} _3gpp
+   * The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+   * @member {String} cellId
    */
-  exports.prototype._3gpp = undefined;
+  exports.prototype.cellId = undefined;
 
   /**
    * @member {Array.<module:model/PhysicalLocation>} physicalLocations
@@ -178,6 +187,26 @@
      * @const
      */
     DEFAULT: "DEFAULT"
+  };
+
+
+  /**
+   * Allowed values for the <code>subType</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.SubTypeEnum = {
+    /**
+     * value: "3GPP"
+     * @const
+     */
+    _3GPP: "3GPP",
+
+    /**
+     * value: "NON-3GPP"
+     * @const
+     */
+    nON3GPP: "NON-3GPP"
   };
 
   return exports;

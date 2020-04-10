@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const basepathURL = "http://meep-rnis/etsi-012/rni/v1/"
+const basepathURL = "/rni/v1/"
 const moduleRNIS string = "rnis"
 
 //const module string = "rnis"
@@ -48,6 +49,8 @@ var subscriptionExpiryMap = map[int][]int{} //*IntList{}
 var RNIS_DB = 5
 
 var rc *redis.Connector
+var rootUrl *url.URL
+
 var expiryTicker *time.Ticker
 
 var nextSubscriptionIdAvailable int
@@ -59,6 +62,13 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 
 // Init - RNI Service initialization
 func Init() (err error) {
+
+	// Retrieve Root URL from environment variable
+	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_RNIS_ROOT_URL")))
+	if err != nil {
+		rootUrl = new(url.URL)
+	}
+	log.Info("MEEP_RNIS_ROOT_URL: ", rootUrl)
 
 	rc, err = redis.NewConnector(redisAddr, RNIS_DB)
 	if err != nil {
@@ -243,9 +253,16 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 					matchOne := false
 
 					for _, cellId := range sub.FilterCriteria.CellId {
-						if newCellId != "" && (newCellId == cellId || oldCellId != cellId) {
-							matchOne = true
-							break
+						if newCellId != oldCellId {
+							if newCellId != "" && newCellId == cellId {
+								matchOne = true
+								break
+							} else {
+								if oldCellId != "" && oldCellId == cellId {
+									matchOne = true
+									break
+								}
+							}
 						}
 					}
 					if matchOne {
@@ -412,7 +429,7 @@ func cellChangeSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	cellChangeSubscription.ExpiryDeadline = cellChangeSubscriptionPost.ExpiryDeadline
 	link := new(Link)
-	link.Self = basepathURL + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
+	link.Self = rootUrl.String() + basepathURL + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
 	cellChangeSubscription.Links = link
 
 	_ = rc.JSONSetEntry(moduleRNIS+":"+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
@@ -550,7 +567,7 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 					poa, ok := plParent.(*ceModel.NetworkLocation)
 					if ok {
 						if poa.Type_ == "POA" {
-							if poa.Var3gpp != nil {
+							if poa.SubType == "3GPP" {
 								poaParent := activeModel.GetNodeParent(poa.Name)
 								zone, ok := poaParent.(*ceModel.Zone)
 								if ok {
@@ -559,21 +576,24 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 
 									if ok {
 										if domain.Type_ == "OPERATOR" {
-											if domain.Var3gpp != nil {
-												var plmnInfo PlmnInfo
-												var plmn Plmn
-												var ecgi Ecgi
-												plmn.Mnc = domain.Var3gpp.Mnc
-												plmn.Mcc = domain.Var3gpp.Mcc
-												cellId := []string{poa.Var3gpp.CellId}
-												ecgi.CellId = cellId
-												ecgi.Plmn = &plmn
-												plmnInfo.Ecgi = &ecgi
-												plmnInfo.AppInsId = meAppName
-												plmnInfo.TimeStamp = &timeStamp
-												response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
-												atLeastOne = true
+											//if domain.Var3gpp != nil {
+											var plmnInfo PlmnInfo
+											var plmn Plmn
+											var ecgi Ecgi
+											plmn.Mnc = domain.Var3gpp.Mnc
+											plmn.Mcc = domain.Var3gpp.Mcc
+											cellId := []string{poa.CellId}
+											if cellId[0] == "" {
+												cellId[0] = domain.Var3gpp.DefaultCellId
 											}
+											ecgi.CellId = cellId
+											ecgi.Plmn = &plmn
+											plmnInfo.Ecgi = &ecgi
+											plmnInfo.AppInsId = meAppName
+											plmnInfo.TimeStamp = &timeStamp
+											response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
+											atLeastOne = true
+											//}
 										}
 									}
 								}
@@ -605,7 +625,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	subscriptionLinkList := new(SubscriptionLinkList)
 
 	link := new(Link)
-	link.Self = basepathURL + "subscriptions"
+	link.Self = rootUrl.String() + basepathURL + "subscriptions"
 
 	if subType != "" {
 		link.Self = link.Self + "/" + subType
