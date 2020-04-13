@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -28,69 +29,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const meepctlVersion = "1.4.2"
-const na = "NA"
-
-// versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   "version <group>",
-	Short: "Display version information",
-	Long: `Display version information
-
-AdvantEDGE is composed of a collection of components running as micro-services/applications.
-
-Versions command collects and displays version of core & dependency components
-
-Valid groups:
-  * core: AdvantEDGE core containers
-  * dep:  Dependency applications
-  * all:  All containers and applications
-  * <none>: Displays the version of the meepctl tool
-                        `,
-	Example: `  # Displays Versions of all containers
-  meepctl version all
-  # Display versions of only AdvantEDGE core containers
-  meepctl version core
-                        `,
-	Args:      cobra.MaximumNArgs(1),
-	ValidArgs: []string{"all", "dep", "core"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if !utils.ConfigValidate("") {
-			fmt.Println("Fix configuration issues")
-			return
-		}
-
-		group := ""
-		if len(args) > 0 {
-			group = args[0]
-		}
-		v, _ := cmd.Flags().GetBool("verbose")
-		t, _ := cmd.Flags().GetBool("time")
-		if v {
-			fmt.Println("Version called")
-			fmt.Println("[arg]  group:", group)
-			fmt.Println("[flag] verbose:", v)
-			fmt.Println("[flag] time:", t)
-		}
-
-		start := time.Now()
-		ver := formatVersion("meepctl", meepctlVersion, "", "")
-		fmt.Println(ver)
-		repoVer := formatVersion(".meepctl-repocfg.yaml", utils.RepoCfg.GetString("version"), "", "")
-		fmt.Println(repoVer)
-		if group == "all" {
-			versionsDep(cmd)
-			versionsCore(cmd)
-		} else if group == "core" {
-			versionsCore(cmd)
-		} else if group == "dep" {
-			versionsDep(cmd)
-		}
-		elapsed := time.Since(start)
-		if t {
-			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-		}
-	},
+type VersionData struct {
+	coreApps []string
+	depApps  []string
 }
 
 type versionInfo struct {
@@ -100,26 +41,102 @@ type versionInfo struct {
 	BuildID   string `json:"build,omitempty"`
 }
 
-var corePodsNameMap = []string{
-	"meep-ctrl-engine",
-	"meep-webhook",
-	"meep-mg-manager",
-	"meep-mon-engine",
-	"meep-redis",
-	"meep-tc-engine",
-	"meep-rnis",
-	"meep-loc-serv",
-	"meep-influxdb",
-	"grafana",
-	"couchdb",
-	"kube-state-metrics",
-	"docker-registry",
+const meepctlVersion = "1.4.2"
+const na = "NA"
+
+const versionDesc = `Display version information
+
+AdvantEDGE is composed of a collection of components running as micro-services/applications.
+
+Versions command collects and displays version of core & dependency components
+
+Valid groups:
+  * core: AdvantEDGE core containers
+  * dep:  Dependency applications
+  * all:  All containers and applications
+  * <none>: Displays the version of the meepctl tool`
+
+const versionExample = `  # Displays Versions of all containers
+  meepctl version all
+  # Display versions of only AdvantEDGE core containers
+  meepctl version core`
+
+// versionCmd represents the version command
+var versionCmd = &cobra.Command{
+	Use:       "version <group>",
+	Short:     "Display version information",
+	Long:      versionDesc,
+	Example:   versionExample,
+	Args:      cobra.MaximumNArgs(1),
+	ValidArgs: nil,
+	Run:       versionRun,
 }
 
-var depPodsNameMap = []string{"weave"}
+var versionData VersionData
 
 func init() {
+	// Get targets from repo config file
+	versionData.coreApps = utils.GetTargets("repo.core.go-apps")
+	// versionData.coreApps = append(versionData.coreApps, utils.GetTargets("repo.sandbox.go-apps")...)
+	sort.Strings(versionData.coreApps)
+
+	versionData.depApps = utils.GetTargets("repo.dep")
+	sort.Strings(versionData.depApps)
+
+	// Configure the list of valid arguments
+	versionCmd.ValidArgs = []string{"all", "core", "dep"}
+
+	// Add list of arguments to Example usage
+	versionCmd.Example += "\n\nValid Targets:"
+	for _, arg := range versionCmd.ValidArgs {
+		versionCmd.Example += "\n  * " + arg
+	}
+
+	// Add command
 	rootCmd.AddCommand(versionCmd)
+}
+
+func versionRun(cmd *cobra.Command, args []string) {
+	if !utils.ConfigValidate("") {
+		fmt.Println("Fix configuration issues")
+		return
+	}
+
+	group := ""
+	if len(args) > 0 {
+		group = args[0]
+	}
+	v, _ := cmd.Flags().GetBool("verbose")
+	t, _ := cmd.Flags().GetBool("time")
+	if v {
+		fmt.Println("Version called")
+		fmt.Println("[arg]  group:", group)
+		fmt.Println("[flag] verbose:", v)
+		fmt.Println("[flag] time:", t)
+	}
+
+	start := time.Now()
+
+	// Print meepctl version
+	ver := formatVersion("meepctl", meepctlVersion, "", "")
+	fmt.Println(ver)
+	repoVer := formatVersion(".meepctl-repocfg.yaml", utils.RepoCfg.GetString("version"), "", "")
+	fmt.Println(repoVer)
+
+	// Print
+	if group == "all" {
+		versionsDep(cmd)
+		versionsCore(cmd)
+	} else if group == "core" {
+		versionsCore(cmd)
+	} else if group == "dep" {
+		versionsDep(cmd)
+	}
+
+	elapsed := time.Since(start)
+	if t {
+		fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
+	}
 }
 
 func formatVersion(name string, version string, versionID string, buildID string) string {
@@ -130,6 +147,35 @@ func formatVersion(name string, version string, versionID string, buildID string
 	info.BuildID = buildID
 	v, _ := json.MarshalIndent(info, "", "  ")
 	return string(v)
+}
+
+func versionsCore(cobraCmd *cobra.Command) {
+	// Get core versions
+	outVer := getPodVersions(versionData.coreApps, cobraCmd)
+	for _, app := range versionData.coreApps {
+		if p, ok := outVer[app]; ok {
+			fmt.Println(formatVersion(p.Name, p.Version, p.VersionID, p.BuildID))
+		} else {
+			fmt.Println(formatVersion(app, na, "", ""))
+		}
+	}
+}
+
+func versionsDep(cobraCmd *cobra.Command) {
+	// Get dependency versions
+	outVer := getPodVersions(versionData.depApps, cobraCmd)
+	for _, app := range versionData.depApps {
+		if p, ok := outVer[app]; ok {
+			fmt.Println(formatVersion(p.Name, p.Version, p.VersionID, p.BuildID))
+		} else {
+			fmt.Println(formatVersion(app, na, "", ""))
+		}
+	}
+
+	// Gert additional dependency versions
+	getHelmVersion(cobraCmd)
+	getDockerVersion(cobraCmd)
+	getKubernetesVersion(cobraCmd)
 }
 
 func getHelmVersion(cobraCmd *cobra.Command) {
@@ -199,12 +245,13 @@ func getKubernetesVersion(cobraCmd *cobra.Command) {
 	fmt.Println(serverStr)
 
 	/* weave section as part of kubernetes */
-	outVer := getPodVersions(depPodsNameMap, cobraCmd)
-	for i := range depPodsNameMap {
-		if p, ok := outVer[depPodsNameMap[i]]; ok {
+	k8sDepPodNames := []string{"weave"}
+	outVer := getPodVersions(k8sDepPodNames, cobraCmd)
+	for _, podName := range k8sDepPodNames {
+		if p, ok := outVer[podName]; ok {
 			fmt.Println(formatVersion(p.Name, p.Version, p.VersionID, ""))
 		} else {
-			fmt.Println(formatVersion(depPodsNameMap[i], na, "", ""))
+			fmt.Println(formatVersion(podName, na, "", ""))
 		}
 	}
 }
@@ -235,8 +282,9 @@ func getPodVersions(podList []string, cobraCmd *cobra.Command) map[string]*versi
 			if err != nil {
 				continue
 			}
-			if vi.Name != "" && contains(podList, vi.Name) {
-				outMap[vi.Name] = vi
+			svcName := getSvcName(vi.Name)
+			if svcName != "" && contains(podList, svcName) {
+				outMap[svcName] = vi
 
 				// Build ID (custom docker image label)
 				cmd := exec.Command("docker", "image", "inspect", "--format", "{{ index .Config.Labels \"MeepVersion\"}}", vi.Version)
@@ -256,19 +304,19 @@ func getPodVersions(podList []string, cobraCmd *cobra.Command) map[string]*versi
 	return outMap
 }
 
-func versionsDep(cobraCmd *cobra.Command) {
-	getHelmVersion(cobraCmd)
-	getDockerVersion(cobraCmd)
-	getKubernetesVersion(cobraCmd)
-}
-
-func versionsCore(cobraCmd *cobra.Command) {
-	outVer := getPodVersions(corePodsNameMap, cobraCmd)
-	for i := range corePodsNameMap {
-		if p, ok := outVer[corePodsNameMap[i]]; ok {
-			fmt.Println(formatVersion(p.Name, p.Version, p.VersionID, p.BuildID))
-		} else {
-			fmt.Println(formatVersion(corePodsNameMap[i], na, "", ""))
-		}
+func getSvcName(containerName string) string {
+	svcName := containerName
+	switch containerName {
+	case "couchdb":
+		svcName = "meep-couchdb"
+	case "docker-registry":
+		svcName = "meep-docker-registry"
+	case "grafana":
+		svcName = "meep-grafana"
+	case "kube-state-metrics":
+		svcName = "meep-kube-state-metrics"
+	case "nginx-ingress-controller":
+		svcName = "meep-ingress"
 	}
+	return svcName
 }
