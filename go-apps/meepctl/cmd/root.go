@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
-
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
@@ -40,9 +39,8 @@ Find more information [here](https://github.com/InterDigitalInc/AdvantEDGE/blob/
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	// Initialize configuration
-	cfgInitialized := utils.ConfigInit()
-	if !cfgInitialized {
+	// Make sure Config is initialized
+	if !utils.CfgInitialized {
 		fmt.Println("Failed to initialize configuration")
 		os.Exit(1)
 	}

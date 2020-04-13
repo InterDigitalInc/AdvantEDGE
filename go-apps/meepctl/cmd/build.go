@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -29,122 +30,159 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var buildCodecov bool
-var buildNolint bool
+type BuildData struct {
+	codecov       bool
+	nolint        bool
+	coreGoApps    []string
+	coreJsApps    []string
+	sandboxGoApps []string
+}
+
+const buildDesc = `AdvantEDGE is composed of a collection of micro-services.
+
+Build command generates AdvantEDGE binaries.
+Multiple targets can be specified (e.g. meepctl build <target1> <target2>...)`
+
+const buildExample = `  # Build all components
+  meepctl build all
+  # Build meep-ctrl-engine component only
+  meepctl build meep-ctrl-engine`
 
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{
-	Use:   "build <targets>",
-	Short: "Build core components",
-	Long: `AdvantEDGE is composed of a collection of micro-services.
-
-Build command generates AdvantEDGE binaries.
-Multiple targets can be specified (e.g. meepctl build <target1> <target2>...)
-
-Valid targets:`,
-	Example: `  # Build all components
-  meepctl build all
-  # Build meep-ctrl-engine component only
-  meepctl build meep-ctrl-engine`,
-	Args: cobra.OnlyValidArgs,
-	// WARNING -- meep-frontend comes before meep-ctrl-engine so that "all" works
-	ValidArgs: []string{"all", "meep-frontend", "meep-ctrl-engine", "meep-virt-engine", "meep-swagger-ui", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-rnis", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar"},
-
-	Run: func(cmd *cobra.Command, args []string) {
-		if !utils.ConfigValidate("") {
-			fmt.Println("Fix configuration issues")
-			return
-		}
-
-		targets := args
-		if len(targets) == 0 {
-			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
-			os.Exit(0)
-		}
-
-		v, _ := cmd.Flags().GetBool("verbose")
-		t, _ := cmd.Flags().GetBool("time")
-
-		if v {
-			fmt.Println("Build called")
-			fmt.Println("[arg]  targets:", targets)
-			fmt.Println("[flag] codecov:", buildCodecov)
-			fmt.Println("[flag] verbose:", v)
-			fmt.Println("[flag] time:", t)
-		}
-
-		start := time.Now()
-		for _, target := range targets {
-			if target == "all" {
-				buildAll(cmd)
-			} else {
-				build(target, cmd)
-			}
-		}
-		elapsed := time.Since(start)
-		if t {
-			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-		}
-	},
+	Use:       "build <targets>",
+	Short:     "Build core components",
+	Long:      buildDesc,
+	Example:   buildExample,
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: nil,
+	Run:       buildRun,
 }
 
+var buildData BuildData
+
 func init() {
-	var argsStr string
+	// Get targets from repo config file
+	buildData.coreGoApps = utils.GetTargets("repo.core.go-apps")
+	buildData.coreJsApps = utils.GetTargets("repo.core.js-apps")
+	buildData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps")
+
+	// Create the list of valid arguments
+	baseArgs := []string{"all"}
+	configArgs := append(buildData.coreGoApps, buildData.coreJsApps...)
+	configArgs = append(configArgs, buildData.sandboxGoApps...)
+	sort.Strings(configArgs)
+	buildCmd.ValidArgs = append(baseArgs, configArgs...)
+
+	// Add list of arguments to Example usage
+	buildCmd.Example += "\n\nValid Targets:"
 	for _, arg := range buildCmd.ValidArgs {
-		argsStr += "\n  * " + arg
+		buildCmd.Example += "\n  * " + arg
 	}
-	buildCmd.Long += argsStr
 
+	// Set build-specific flags
+	buildCmd.Flags().BoolVar(&buildData.codecov, "codecov", false, "Build a code coverage binary (dev. option)")
+	buildCmd.Flags().BoolVar(&buildData.nolint, "nolint", false, "Disable linting")
+
+	// Add command
 	rootCmd.AddCommand(buildCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func buildRun(cmd *cobra.Command, args []string) {
+	if !utils.ConfigValidate("") {
+		fmt.Println("Fix configuration issues")
+		return
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// buildCmd.PersistentFlags().String("foo", "", "A help for foo")
+	targets := args
+	if len(targets) == 0 {
+		fmt.Println("Error: Need to specify at least one target")
+		_ = cmd.Usage()
+		os.Exit(0)
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	buildCmd.Flags().BoolVar(&buildCodecov, "codecov", false, "Build a code coverage binary (dev. option)")
-	buildCmd.Flags().BoolVar(&buildNolint, "nolint", false, "Disable linting")
+	v, _ := cmd.Flags().GetBool("verbose")
+	t, _ := cmd.Flags().GetBool("time")
+
+	if v {
+		fmt.Println("Build called")
+		fmt.Println("[arg]  targets:", targets)
+		fmt.Println("[flag] codecov:", buildData.codecov)
+		fmt.Println("[flag] nolint:", buildData.nolint)
+		fmt.Println("[flag] verbose:", v)
+		fmt.Println("[flag] time:", t)
+	}
+
+	start := time.Now()
+	for _, target := range targets {
+		if target == "all" {
+			buildAll(cmd)
+		} else {
+			build(target, cmd)
+		}
+	}
+	elapsed := time.Since(start)
+	if t {
+		fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
+	}
 }
 
 func buildAll(cobraCmd *cobra.Command) {
-	for _, target := range cobraCmd.ValidArgs {
-		if target == "all" {
-			continue
-		}
-		build(target, cobraCmd)
+	for _, target := range buildData.coreGoApps {
+		buildGoApp(target, "repo.core.go-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range buildData.coreJsApps {
+		buildJsApp(target, "repo.core.js-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range buildData.sandboxGoApps {
+		buildGoApp(target, "repo.sandbox.go-apps.", cobraCmd)
 		fmt.Println("")
 	}
 }
 
 func build(targetName string, cobraCmd *cobra.Command) {
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	if len(target) == 0 {
-		fmt.Println("Invalid target:", targetName)
-		return
+	for _, target := range buildData.coreGoApps {
+		if target == targetName {
+			buildGoApp(target, "repo.core.go-apps.", cobraCmd)
+			return
+		}
 	}
+	for _, target := range buildData.coreJsApps {
+		if target == targetName {
+			buildJsApp(target, "repo.core.js-apps.", cobraCmd)
+			return
+		}
+	}
+	for _, target := range buildData.sandboxGoApps {
+		if target == targetName {
+			buildGoApp(target, "repo.sandbox.go-apps.", cobraCmd)
+			return
+		}
+	}
+	fmt.Println("Error: Unsupported target: ", targetName)
+}
 
+func buildJsApp(targetName string, repo string, cobraCmd *cobra.Command) {
 	switch targetName {
 	case "meep-frontend":
-		buildFrontend(targetName, cobraCmd)
+		buildFrontend(targetName, repo, cobraCmd)
 	case "meep-swagger-ui":
-		buildSwaggerUi(targetName, cobraCmd)
+		buildSwaggerUi(targetName, repo, cobraCmd)
 	default:
-		buildGoApp(targetName, cobraCmd)
+		fmt.Println("Error: Unsupported JS App: ", targetName)
 	}
 }
 
-func buildFrontend(targetName string, cobraCmd *cobra.Command) {
+func buildFrontend(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
 	version := utils.RepoCfg.GetString("version")
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
-	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
+	lintEnabled := utils.RepoCfg.GetBool(repo + targetName + ".lint")
 
 	// dependencies
 	fmt.Println("   + checking external dependencies")
@@ -156,7 +194,7 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 		fmt.Println(out)
 	}
 
-	locDeps := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".local-deps")
+	locDeps := utils.RepoCfg.GetStringMapString(repo + targetName + ".local-deps")
 	if len(locDeps) > 0 {
 		fmt.Println("   + checking local dependencies")
 		for dep, depDir := range locDeps {
@@ -183,7 +221,7 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 	}
 
 	// linter: ESLint
-	if lintEnabled && !buildNolint {
+	if lintEnabled && !buildData.nolint {
 		fmt.Println("   + running linter")
 		cmd := exec.Command("eslint", "src/js/")
 		cmd.Dir = srcDir
@@ -208,12 +246,13 @@ func buildFrontend(targetName string, cobraCmd *cobra.Command) {
 	}
 }
 
-func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
+func buildSwaggerUi(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
 	fmt.Println("   + creating api files")
 
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
+	apiBundle := utils.RepoCfg.GetStringSlice(repo + targetName + ".api-bundle")
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
@@ -244,16 +283,16 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 	urls := " [ "
 	urlStringToReplace := `url: "https:\/\/petstore.swagger.io\/v2\/swagger.json",`
 
-	apiBundle := utils.RepoCfg.GetStringSlice("repo.core.meep-swagger-ui.api-bundle")
 	//find all the apis and copy them at the location above
 	for _, target := range apiBundle {
-		apiSrcFile := utils.RepoCfg.GetString("repo.core." + target + ".api")
+		apiSrcFile := utils.RepoCfg.GetString("repo." + target + ".api")
 		if apiSrcFile == "" {
 			continue
 		}
 		apiSrcPath := gitDir + "/" + apiSrcFile
 		if apiSrcPath != "" {
-			apiDstPath := binDir + "/" + target + "-api.yaml"
+			name := target[strings.LastIndex(target, ".")+1:]
+			apiDstPath := binDir + "/" + name + "-api.yaml"
 			if verbose {
 				fmt.Println("    Copying: " + apiSrcPath + " --> " + apiDstPath)
 			}
@@ -286,7 +325,7 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 			}
 
 			//update urls for swagger-ui index file
-			urls = urls + `{"name": "` + title + `", "url": "` + target + `-api.yaml"},`
+			urls = urls + `{"name": "` + title + `", "url": "` + name + `-api.yaml"},`
 		}
 	}
 
@@ -301,14 +340,14 @@ func buildSwaggerUi(targetName string, cobraCmd *cobra.Command) {
 	}
 }
 
-func buildGoApp(targetName string, cobraCmd *cobra.Command) {
+func buildGoApp(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 	binDir := gitDir + "/" + target["bin"]
-	codecovCapable := utils.RepoCfg.GetBool("repo.core." + targetName + ".codecov")
-	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
+	codecovCapable := utils.RepoCfg.GetBool(repo + targetName + ".codecov")
+	lintEnabled := utils.RepoCfg.GetBool(repo + targetName + ".lint")
 
 	// dependencies
 	fmt.Println("   + checking external dependencies")
@@ -321,7 +360,7 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	}
 
 	// linter: goloangci-lint
-	if lintEnabled && !buildNolint {
+	if lintEnabled && !buildData.nolint {
 		fmt.Println("   + running linter")
 		cmd := exec.Command("golangci-lint", "run")
 		cmd.Dir = srcDir
@@ -338,11 +377,11 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	// for go, local dependencies are handled via the Go toolchain so nothing to do
 
 	// Remove unnecessary deps
-	fixDeps(targetName, cobraCmd)
+	fixDeps(targetName, repo, cobraCmd)
 
 	// build
-	buildFlags := utils.RepoCfg.GetStringSlice("repo.core." + targetName + ".build-flags")
-	if buildCodecov && codecovCapable {
+	buildFlags := utils.RepoCfg.GetStringSlice(repo + targetName + ".build-flags")
+	if buildData.codecov && codecovCapable {
 		fmt.Println("   + building " + targetName + " (warning: development build - code coverage)")
 		args := []string{"test", "-covermode=count", "-coverpkg=./...", "-c"}
 		args = append(args, buildFlags...)
@@ -372,8 +411,8 @@ func buildGoApp(targetName string, cobraCmd *cobra.Command) {
 	}
 }
 
-func fixDeps(targetName string, cobraCmd *cobra.Command) {
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
+func fixDeps(targetName string, repo string, cobraCmd *cobra.Command) {
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
 	gitDir := viper.GetString("meep.gitdir")
 	srcDir := gitDir + "/" + target["src"]
 
