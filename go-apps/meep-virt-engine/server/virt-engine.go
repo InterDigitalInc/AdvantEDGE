@@ -31,33 +31,46 @@ const moduleName string = "meep-virt-engine"
 const redisAddr string = "meep-redis-master:6379"
 const retryTimerDuration = 10000
 
-var watchdogClient *watchdog.Pingee
-var activeModel *mod.Model
-var activeScenarioName string
+type VirtEngine struct {
+	watchdogClient     *watchdog.Pingee
+	activeModel        *mod.Model
+	activeScenarioName string
+}
 
-// VirtEngineInit - Initialize virtualization engine
-func VirtEngineInit() (err error) {
+var ve *VirtEngine
+
+// Init - Initialize virtualization engine
+func Init() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
+	ve = new(VirtEngine)
 
 	// Setup for liveness monitoring
-	watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
+	ve.watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
 	if err != nil {
 		log.Error("Failed to initialize pigner. Error: ", err)
 		return err
 	}
-	err = watchdogClient.Start()
+	err = ve.watchdogClient.Start()
 	if err != nil {
 		log.Error("Failed watchdog client listen. Error: ", err)
 		return err
 	}
 
-	// Listen for model updates
-	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
+	// Create new Model
+	ve.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-	err = activeModel.Listen(eventHandler)
+
+	return nil
+}
+
+// Run - Start Virt Engine execution
+func Run() (err error) {
+
+	// Listen for Model updates
+	err = ve.activeModel.Listen(eventHandler)
 	if err != nil {
 		log.Error("Failed to listening for model updates: ", err.Error())
 	}
@@ -80,9 +93,8 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate(event string) {
 	if event == mod.EventTerminate {
-
 		//process right away and start a ticker to retry until everything is deleted
-		_, _ = terminateScenario(activeScenarioName)
+		_, _ = terminateScenario(ve.activeScenarioName)
 
 		//starts a ticker
 		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
@@ -90,10 +102,10 @@ func processActiveScenarioUpdate(event string) {
 		go func() {
 			for range ticker.C {
 
-				err, chartsToDelete := terminateScenario(activeScenarioName)
+				err, chartsToDelete := terminateScenario(ve.activeScenarioName)
 
 				if err == nil && chartsToDelete == 0 {
-					activeScenarioName = ""
+					ve.activeScenarioName = ""
 					ticker.Stop()
 					return
 				} else {
@@ -104,7 +116,16 @@ func processActiveScenarioUpdate(event string) {
 		}()
 	} else if event == mod.EventActivate {
 		// Cache name for later deletion
-		activeScenarioName = activeModel.GetScenarioName()
+		ve.activeScenarioName = ve.activeModel.GetScenarioName()
+
+		// Create sandbox using scenario name
+		err := deploySandbox(ve.activeScenarioName)
+		if err != nil {
+			log.Error("Error deploying sandbox: ", err)
+			return
+		}
+
+		// Activate scenario
 		activateScenario()
 	} else {
 		log.Debug("Reveived event: ", event, " - Do nothing")
@@ -112,7 +133,7 @@ func processActiveScenarioUpdate(event string) {
 }
 
 func activateScenario() {
-	err := Deploy(activeModel)
+	err := Deploy(ve.activeModel)
 	if err != nil {
 		log.Error("Error creating charts: ", err)
 		return
@@ -156,4 +177,8 @@ func terminateScenario(name string) (error, int) {
 		}
 	}
 	return err, chartsToDelete
+}
+
+func deploySandbox(name string) error {
+	return nil
 }

@@ -116,13 +116,24 @@ var serviceMap map[string]string
 
 // Deploy - Generate charts & deploy
 func Deploy(model *mod.Model) error {
-	charts, err := generateCharts(model)
+	// Create sandbox charts
+	sandboxCharts, err := generateSandboxCharts(model.GetScenarioName())
+	if err != nil {
+		log.Debug("Error creating sandbox charts: ", err)
+		return err
+	}
+	log.Debug("Created ", len(sandboxCharts), " sandbox charts")
+
+	// Create scenario charts
+	scenarioCharts, err := generateCharts(model)
 	if err != nil {
 		log.Debug("Error creating scenario templates: ", err)
 		return err
 	}
-	log.Debug("Created ", len(charts), " charts")
+	log.Debug("Created ", len(scenarioCharts), " scenario charts")
 
+	// Deploy all charts
+	charts := append(sandboxCharts, scenarioCharts...)
 	err = deployCharts(charts)
 	if err != nil {
 		log.Error("Error deploying scenario templates: ", err)
@@ -464,4 +475,15 @@ func setCommand(deployment *DeploymentTemplate, command string, commandArgs stri
 			deployment.ContainerCommandArg = append(deployment.ContainerCommandArg, strings.TrimSpace(arg))
 		}
 	}
+}
+
+func generateSandboxCharts(name string) (charts []helm.Chart, err error) {
+
+	// Create sandbox values.yaml files from from templates
+
+	// Create sandbox charts
+
+	// nc := newChart(name+"-"+proc.Name, getFullPath(proc.UserChartLocation),
+	// 	getFullPath(proc.UserChartAlternateValues))
+	// charts = append(charts, nc)
 }

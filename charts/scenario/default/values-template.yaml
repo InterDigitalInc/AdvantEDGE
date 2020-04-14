@@ -1,0 +1,122 @@
+# Default values for generic values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+
+deployment:
+  enabled: {{.Deployment.Enabled}}
+  replicaCount: {{.Deployment.ReplicaCount}}
+  name: {{.Deployment.Name}}
+  apiVersion: {{.Deployment.ApiVersion}}
+  matchLabels: 
+  {{- range .Deployment.MatchLabels}}
+    {{.}}
+  {{- end}}
+
+  image:
+    name: {{.Deployment.ContainerName}}
+    repository: {{.Deployment.ContainerImageRepository}}
+    pullPolicy: {{.Deployment.ContainerImagePullPolicy}}
+    envvar:
+      enabled: {{.Deployment.ContainerEnvEnabled}}
+      env:
+      {{- range .Deployment.ContainerEnv}}
+        {{.}}
+      {{- end}}
+    command:
+      enabled: {{.Deployment.ContainerCommandEnabled}}
+      command:
+      {{- range .Deployment.ContainerCommand}}
+        - {{.}}
+      {{- end}}
+      args:
+      {{- range .Deployment.ContainerCommandArg}}
+        - {{.}}
+      {{- end}}
+
+  terminationGracePeriodSeconds: 5
+
+  template:
+    namespace: default
+    labels:
+    {{- range .Deployment.TemplateLabels}}
+      {{.}}
+    {{- end}}
+
+  resources:
+    requests: {}
+    limits:
+    {{- if .Deployment.GpuEnabled}}
+    {{- if eq .Deployment.GpuType "NVIDIA" }}
+      nvidia.com/gpu: {{.Deployment.GpuCount}}
+    {{- end}}
+    {{- end}}
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: 
+  {{- if .Deployment.PlacementId}}
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - {{.Deployment.PlacementId}}
+  {{- else}}
+    {}
+  {{- end}}
+
+service:
+  enabled: {{.Service.Enabled}}
+  name: {{.Service.Name}}
+  namespace: default
+  labels:
+  {{- range .Service.Labels}}
+    {{.}}
+  {{- end}}
+  selector:
+  {{- range .Service.Selector}}
+    {{.}}
+  {{- end}}
+  type: {{.Service.Type}}
+  ports:
+    {{- range .Service.Ports}}
+    - name: port-{{.Port}}
+      port: {{.Port}}
+      targetPort: {{.TargetPort}}
+      protocol: {{.Protocol}}
+      nodePort: {{.NodePort}}
+    {{- end}}
+  
+  meservice:
+    enabled: {{.Service.MeServiceEnabled}}
+    name: {{.Service.MeServiceName}}
+    namespace: default
+    type: ClusterIP
+
+external:
+  enabled: {{.External.Enabled}}
+  selector:
+  {{- range .External.Selector}}
+    {{.}}
+  {{- end}}
+  ingressservicemap:
+    {{- range .External.IngressServiceMap}}
+    - nodePort: {{.NodePort}}
+      name: {{.Name}}
+      port: {{.NodePort}}
+      targetPort: {{.NodePort}}
+      protocol: {{.Protocol}}
+    {{- end}}
+  egressservicemap:
+    {{- range .External.EgressServiceMap}}
+    - name: {{.Name}}
+      mesvcname: {{.MeSvcName}}
+      ip: {{.IP}}
+      port: {{.Port}}
+      targetPort: {{.Port}}
+      protocol: {{.Protocol}}
+    {{- end}}

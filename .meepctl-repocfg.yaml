@@ -26,7 +26,7 @@ repo:
       meep-ctrl-engine:
         src: go-apps/meep-ctrl-engine
         bin: bin/meep-ctrl-engine
-        chart: charts/meep-ctrl-engine
+        chart: charts/core/meep-ctrl-engine
         codecov: true
         lint: true
         api: go-apps/meep-ctrl-engine/api/swagger.yaml
@@ -36,7 +36,7 @@ repo:
       meep-mon-engine:
         src: go-apps/meep-mon-engine
         bin: bin/meep-mon-engine
-        chart: charts/meep-mon-engine
+        chart: charts/core/meep-mon-engine
         build-flags:
           - -mod=vendor
         codecov: true
@@ -44,7 +44,7 @@ repo:
       meep-virt-engine:
         src: go-apps/meep-virt-engine
         bin: bin/meep-virt-engine
-        chart: charts/meep-virt-engine
+        chart: charts/core/meep-virt-engine
         codecov: true
         lint: true
         docker-data:
@@ -52,7 +52,7 @@ repo:
       meep-webhook:
         src: go-apps/meep-webhook
         bin: bin/meep-webhook
-        chart: charts/meep-webhook
+        chart: charts/core/meep-webhook
         build-flags:
           - -mod=vendor
         codecov: false
@@ -84,8 +84,8 @@ repo:
     # Kubernetes Objects
     k8s:
       meep-user:
-        service-account: charts/meep-user/meep-user-serviceaccount.yaml
-        cluster-role-binding: charts/meep-user/meep-user-clusterrolebinding.yaml
+        service-account: charts/core/meep-user/meep-user-serviceaccount.yaml
+        cluster-role-binding: charts/core/meep-user/meep-user-clusterrolebinding.yaml
 
   #------------------------------
   #  Sandbox Subsystem
@@ -97,7 +97,7 @@ repo:
       meep-loc-serv:
         src: go-apps/meep-loc-serv
         bin: bin/meep-loc-serv
-        chart: charts/meep-loc-serv
+        chart: charts/sandbox/meep-loc-serv
         build-flags:
           - -mod=vendor
         codecov: false
@@ -106,7 +106,7 @@ repo:
       meep-metrics-engine:
         src: go-apps/meep-metrics-engine
         bin: bin/meep-metrics-engine
-        chart: charts/meep-metrics-engine
+        chart: charts/sandbox/meep-metrics-engine
         build-flags:
           - -mod=vendor
         codecov: false
@@ -115,7 +115,7 @@ repo:
       meep-mg-manager:
         src: go-apps/meep-mg-manager
         bin: bin/meep-mg-manager
-        chart: charts/meep-mg-manager
+        chart: charts/sandbox/meep-mg-manager
         codecov: false
         lint: true
         api: go-apps/meep-mg-manager/api/swagger.yaml
@@ -131,7 +131,7 @@ repo:
       meep-tc-engine:
         src: go-apps/meep-tc-engine
         bin: bin/meep-tc-engine
-        chart: charts/meep-tc-engine
+        chart: charts/sandbox/meep-tc-engine
         codecov: false
         lint: true
       meep-tc-sidecar:
@@ -145,19 +145,19 @@ repo:
   #------------------------------
   dep:
     meep-couchdb:
-      chart: charts/couchdb
+      chart: charts/dep/couchdb
     meep-docker-registry:
-      chart: charts/docker-registry
+      chart: charts/dep/docker-registry
     meep-grafana:
-      chart: charts/grafana
+      chart: charts/dep/grafana
     meep-influxdb:
-      chart: charts/influxdb
+      chart: charts/dep/influxdb
     meep-kube-state-metrics:
-      chart: charts/kube-state-metrics
+      chart: charts/dep/kube-state-metrics
     meep-ingress:
-      chart: charts/nginx-ingress
+      chart: charts/dep/nginx-ingress
     meep-redis:
-      chart: charts/redis
+      chart: charts/dep/redis
 
   #------------------------------
   #  Packages
