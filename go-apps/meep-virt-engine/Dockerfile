@@ -14,9 +14,9 @@
 
 FROM debian:9.6-slim
 
-COPY ./data/sandbox /sandbox
-COPY ./data/templates /templates
-COPY ./data/entrypoint.sh /entrypoint.sh
+COPY ./sandbox /templates/sandbox
+COPY ./scenario /templates/scenario
+COPY ./entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
 
 ENV HELM_VERSION="v2.16.1"

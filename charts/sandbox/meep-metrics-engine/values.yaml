@@ -11,13 +11,14 @@ deployment:
   protocol: TCP
 
 image:
-  repository: meep-metrics-engine
+  repository: meep-docker-registry:30001/meep-metrics-engine
   tag: latest
   pullPolicy: Always
   env:
     rooturl: "http://www.example.com"
 
 service:
+  name: meep-metrics-engine
   type: ClusterIP
   port: 80
 

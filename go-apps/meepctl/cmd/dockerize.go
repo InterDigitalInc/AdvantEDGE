@@ -141,11 +141,11 @@ func dockerizeRun(cmd *cobra.Command, args []string) {
 
 func dockerizeAll(cobraCmd *cobra.Command) {
 	for _, target := range dockerizeData.coreGoApps {
-		dockerize(target, "repo.core.go-apps", cobraCmd)
+		dockerize(target, "repo.core.go-apps.", cobraCmd)
 		fmt.Println("")
 	}
 	for _, target := range dockerizeData.sandboxGoApps {
-		dockerize(target, "repo.sandbox.go-apps", cobraCmd)
+		dockerize(target, "repo.sandbox.go-apps.", cobraCmd)
 		fmt.Println("")
 	}
 }
@@ -153,13 +153,13 @@ func dockerizeAll(cobraCmd *cobra.Command) {
 func dockerizeTarget(targetName string, cobraCmd *cobra.Command) {
 	for _, target := range dockerizeData.coreGoApps {
 		if target == targetName {
-			dockerize(target, "repo.core.go-apps", cobraCmd)
+			dockerize(target, "repo.core.go-apps.", cobraCmd)
 			return
 		}
 	}
 	for _, target := range dockerizeData.sandboxGoApps {
 		if target == targetName {
-			dockerize(target, "repo.sandbox.go-apps", cobraCmd)
+			dockerize(target, "repo.sandbox.go-apps.", cobraCmd)
 			return
 		}
 	}
@@ -198,18 +198,21 @@ func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
 		}
 	}
 
-	fmt.Println("   + dockerize " + targetName)
-
 	// Obtain checksum of bin folder contents to add as a label in docker image
 	cmd := exec.Command("/bin/sh", "-c", "find "+bindir+" -type f | xargs sha256sum | sort | sha256sum")
 	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
 	checksum := strings.Split(output, " ")
 
 	// dockerize & push to private meep docker registry
+	fmt.Println("   + dockerize " + targetName)
 	if dockerizeData.registry != "" {
 		tag := dockerizeData.registry + "/" + targetName
 		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, bindir)
-		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+		_, err = utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error: Failed to dockerize ", tag, " with error: ", err)
+			return
+		}
 		cmd = exec.Command("docker", "push", tag)
 		_, err := utils.ExecuteCmd(cmd, cobraCmd)
 		if err != nil {

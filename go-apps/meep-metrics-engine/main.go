@@ -52,10 +52,18 @@ func main() {
 	}()
 
 	go func() {
-		// Initialize Metric Engine Service
+		// Initialize Metrics Engine
 		err := server.Init()
 		if err != nil {
-			log.Error("Failed to initialize Metric Engine Service")
+			log.Error("Failed to initialize Metrics Engine")
+			run = false
+			return
+		}
+
+		// Start Metrics Engine Event Handler thread
+		err = server.Run()
+		if err != nil {
+			log.Error("Failed to start Metrics Engine")
 			run = false
 			return
 		}

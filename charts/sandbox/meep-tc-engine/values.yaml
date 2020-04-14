@@ -19,11 +19,12 @@ affinity:
           operator: Exists
           
 image:
-  repository: meep-tc-engine
+  repository: meep-docker-registry:30001/meep-tc-engine
   tag: latest
   pullPolicy: Always
 
 service:
+  name: meep-tc-engine
   type: ClusterIP
   port: 80
 

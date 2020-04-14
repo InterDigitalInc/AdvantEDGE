@@ -74,6 +74,14 @@ func Init() (err error) {
 	return nil
 }
 
+func Run() (err error) {
+	err = v2.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 var routes = Routes{
 	Route{
 		"IndexV2",

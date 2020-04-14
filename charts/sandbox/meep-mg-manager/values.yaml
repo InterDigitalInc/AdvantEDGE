@@ -19,11 +19,12 @@ affinity:
           operator: Exists
           
 image:
-  repository: meep-mg-manager
+  repository: meep-docker-registry:30001/meep-mg-manager
   tag: latest
   pullPolicy: Always
 
 service:
+  name: meep-mg-manager
   type: ClusterIP
   port: 80
 

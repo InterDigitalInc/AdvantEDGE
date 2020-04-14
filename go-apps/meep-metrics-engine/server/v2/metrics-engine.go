@@ -101,11 +101,8 @@ func Init() (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
-	err = activeModel.Listen(eventHandler)
-	if err != nil {
-		log.Error("Failed to listening for model updates: ", err.Error())
-	}
 
+	// Connect to Redis DB to monitor metrics
 	rc, err = redis.NewConnector(redisAddr, METRICS_DB)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
@@ -118,6 +115,19 @@ func Init() (err error) {
 
 	networkSubscriptionReInit()
 	eventSubscriptionReInit()
+
+	return nil
+}
+
+// Run - Start Metrics Engine execution
+func Run() (err error) {
+
+	// Listen for Model updates
+	err = activeModel.Listen(eventHandler)
+	if err != nil {
+		log.Error("Failed to listening for model updates: ", err.Error())
+		return err
+	}
 
 	return nil
 }
@@ -136,15 +146,23 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate(event string) {
-	if event == mod.EventTerminate {
-		terminateScenario(activeScenarioName)
-		activeScenarioName = ""
-	} else if event == mod.EventActivate {
-		// Cache name for later deletion
+	switch event {
+	case mod.EventInit:
+		// Initialize metrics engine if scenario already active
+		activeScenarioName = activeModel.GetScenarioName()
+		if activeScenarioName != "" {
+			activateScenario()
+		}
+	case mod.EventActivate:
+		// Activate scenario metrics
 		activeScenarioName = activeModel.GetScenarioName()
 		activateScenario()
-	} else {
-		log.Debug("Reveived event: ", event, " - Do nothing")
+	case mod.EventTerminate:
+		// Terminate scenario metrics
+		terminateScenario(activeScenarioName)
+		activeScenarioName = ""
+	default:
+		log.Debug("Received event: ", event, " - Do nothing")
 	}
 	_ = httpLog.ReInit(moduleName, activeScenarioName)
 

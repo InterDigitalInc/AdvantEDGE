@@ -11,13 +11,14 @@ deployment:
   protocol: TCP
 
 image:
-  repository: meep-loc-serv
+  repository: meep-docker-registry:30001/meep-loc-serv
   tag: latest
   pullPolicy: Always
   env:
     rooturl: "http://www.example.com"
 
 service:
+  name: meep-loc-serv
   type: ClusterIP
   port: 80
 

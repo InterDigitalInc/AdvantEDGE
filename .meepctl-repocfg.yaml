@@ -48,7 +48,9 @@ repo:
         codecov: true
         lint: true
         docker-data:
-          data: go-apps/meep-virt-engine/docker-data
+          entrypoint.sh: go-apps/meep-virt-engine/entrypoint.sh
+          sandbox: charts/sandbox
+          scenario: charts/scenario
       meep-webhook:
         src: go-apps/meep-webhook
         bin: bin/meep-webhook

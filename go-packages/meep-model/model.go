@@ -37,6 +37,7 @@ const activeScenarioKey = "ctrl-engine:active"
 
 // Event types (basic)
 const (
+	EventInit      = "INIT"
 	EventActivate  = "ACTIVATE"
 	EventTerminate = "TERMINATE"
 	EventUpdate    = "UPDATE"
@@ -292,7 +293,7 @@ func (m *Model) Listen(handler func(string, string)) (err error) {
 
 		// Generate first event to initialize
 		go func() {
-			m.internalListener(m.ActiveChannel, "")
+			m.internalListener(m.ActiveChannel, EventInit)
 		}()
 	}
 	return nil
