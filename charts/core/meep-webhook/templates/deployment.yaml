@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-webhook.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-webhook.name" . }}
     chart: {{ template "meep-webhook.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-webhook.name" . }}
         release: {{ .Release.Name }}

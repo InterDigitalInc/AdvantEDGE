@@ -77,7 +77,7 @@ type ZoneStatusCheck struct {
 
 var LOC_SERV_DB = 5
 
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 var rc *redis.Connector
 var rootUrl *url.URL

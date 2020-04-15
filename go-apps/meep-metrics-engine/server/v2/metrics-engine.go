@@ -39,12 +39,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const influxDBAddr = "http://meep-influxdb:8086"
+const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const metricEvent = "events"
 const metricNetwork = "network"
 
 const moduleName string = "meep-metrics-engine"
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 const basePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"

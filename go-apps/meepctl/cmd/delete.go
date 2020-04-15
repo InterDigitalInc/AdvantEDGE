@@ -18,12 +18,10 @@ package cmd
 
 import (
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
 
-	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
 )
 
@@ -93,8 +91,6 @@ func deleteRun(cmd *cobra.Command, args []string) {
 	start := time.Now()
 	if group == "core" {
 		deleteApps(deleteData.coreApps, cmd)
-		deleteMeepUserAccount(cmd)
-
 	} else if group == "dep" {
 		deleteApps(deleteData.depApps, cmd)
 	}
@@ -128,23 +124,5 @@ func k8sDelete(component string, cobraCmd *cobra.Command, messages chan string) 
 		messages <- "Deleted " + component
 	} else {
 		messages <- "Missing " + component
-	}
-}
-
-func deleteMeepUserAccount(cobraCmd *cobra.Command) {
-	gitdir := viper.GetString("meep.gitdir")
-
-	cmd := exec.Command("kubectl", "delete", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.k8s.meep-user.service-account"))
-	out, err := utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
-	}
-
-	cmd = exec.Command("kubectl", "delete", "-f", gitdir+"/"+utils.RepoCfg.GetString("repo.core.k8s.meep-user.cluster-role-binding"))
-	out, err = utils.ExecuteCmd(cmd, cobraCmd)
-	if err != nil {
-		fmt.Println("Error:", err)
-		fmt.Println(out)
 	}
 }

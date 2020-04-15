@@ -26,8 +26,7 @@ import (
 
 const module string = "loc-serv-sbi"
 const moduleName string = "meep-loc-serv"
-
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type LocServSbi struct {
 	activeModel             *mod.Model

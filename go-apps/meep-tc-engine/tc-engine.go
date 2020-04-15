@@ -70,7 +70,7 @@ const (
 
 const DEFAULT_NET_CHAR_DB = 0
 const DEFAULT_LB_RULES_DB = 0
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 // NetElem -
 // NextUniqueNumber is reserving 2 spaces for each unique number to apply

@@ -58,11 +58,11 @@ func install(charts []Chart) error {
 	for _, c := range charts {
 		var cmd *exec.Cmd
 		if strings.Trim(c.ValuesFile, " ") == "" {
-			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set",
-				"fullnameOverride="+c.ReleaseName, c.Location, "--replace")
+			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--namespace", c.Namespace,
+				"--set", "fullnameOverride="+c.ReleaseName, c.Location, "--replace")
 		} else {
-			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--set",
-				"fullnameOverride="+c.ReleaseName, c.Location, "-f", c.ValuesFile, "--replace")
+			cmd = exec.Command("helm", "install", "--name", c.ReleaseName, "--namespace", c.Namespace,
+				"--set", "fullnameOverride="+c.ReleaseName, c.Location, "-f", c.ValuesFile, "--replace")
 		}
 		out, err := cmd.CombinedOutput()
 		if err != nil {

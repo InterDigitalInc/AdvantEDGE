@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-loc-serv.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-loc-serv.name" . }}
     chart: {{ template "meep-loc-serv.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-loc-serv.name" . }}
         release: {{ .Release.Name }}

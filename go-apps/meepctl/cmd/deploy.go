@@ -166,9 +166,6 @@ func deployCore(cobraCmd *cobra.Command) {
 	// Code coverage storage
 	deployCodeCovStorage(cobraCmd)
 
-	// Create MEEP user account
-	deployMeepUserAccount(cobraCmd)
-
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
@@ -266,15 +263,6 @@ func deployCodeCovStorage(cobraCmd *cobra.Command) {
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
-}
-
-func deployMeepUserAccount(cobraCmd *cobra.Command) {
-	cmd := exec.Command("kubectl", "create", "-f",
-		deployData.gitdir+"/"+utils.RepoCfg.GetString("repo.core.k8s.meep-user.service-account"))
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("kubectl", "create", "-f",
-		deployData.gitdir+"/"+utils.RepoCfg.GetString("repo.core.k8s.meep-user.cluster-role-binding"))
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
 func deployCreateWebhookCerts(chart string, cobraCmd *cobra.Command) (string, string, string) {

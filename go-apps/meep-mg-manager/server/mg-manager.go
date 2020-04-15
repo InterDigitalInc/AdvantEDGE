@@ -40,7 +40,7 @@ const moduleMgManager string = "mg-manager"
 const logModuleMgMgr string = "meep-mg-manager"
 const typeLb string = "lb"
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const DEFAULT_LB_RULES_DB = 0
 
 const eventTypeStateUpdate = "STATE-UPDATE"

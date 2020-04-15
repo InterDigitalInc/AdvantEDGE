@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-mg-manager.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-mg-manager.name" . }}
     chart: {{ template "meep-mg-manager.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-mg-manager.name" . }}
         release: {{ .Release.Name }}

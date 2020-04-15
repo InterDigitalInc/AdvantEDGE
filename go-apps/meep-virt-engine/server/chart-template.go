@@ -105,10 +105,15 @@ type EgressServiceTemplate struct {
 
 // ScenarioTemplate -helm values.yaml template
 type ScenarioTemplate struct {
-	Deployment    DeploymentTemplate
-	Service       ServiceTemplate
-	External      ExternalTemplate
-	NamespaceName string
+	Deployment DeploymentTemplate
+	Service    ServiceTemplate
+	External   ExternalTemplate
+	Namespace  string
+}
+
+// SandboxTemplate -helm values.yaml template
+type SandboxTemplate struct {
+	Namespace string
 }
 
 // Service map
@@ -171,7 +176,7 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 		setScenarioDefaults(&scenarioTemplate)
 
 		// Fill general scenario template information
-		scenarioTemplate.NamespaceName = scenarioName
+		scenarioTemplate.Namespace = scenarioName
 		deploymentTemplate.Name = proc.Name
 
 		// Create charts
@@ -179,7 +184,7 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 			log.Debug("Processing user-defined chart for element[", proc.Name, "]")
 
 			// Add user-defined chart
-			nc := newChart(scenarioName+"-"+proc.Name, getFullPath(proc.UserChartLocation),
+			nc := newChart(scenarioName+"-"+proc.Name, scenarioName, getFullPath(proc.UserChartLocation),
 				getFullPath(proc.UserChartAlternateValues))
 			charts = append(charts, nc)
 			log.Debug("user chart added ", len(charts))
@@ -214,7 +219,7 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 						}
 
 						// Create virt-engine chart for new group service
-						c := newChart(scenarioName+"-"+proc.Name+"-svc", chartLocation, "")
+						c := newChart(scenarioName+"-"+proc.Name+"-svc", scenarioName, chartLocation, "")
 						charts = append(charts, c)
 						log.Debug("chart added for user chart group service ", len(charts))
 					}
@@ -330,7 +335,7 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 			}
 
 			// Create virt-engine chart
-			newChart := newChart(scenarioName+"-"+proc.Name, chartLocation, "")
+			newChart := newChart(scenarioName+"-"+proc.Name, scenarioName, chartLocation, "")
 			charts = append(charts, newChart)
 			log.Debug("chart added ", len(charts))
 		}
@@ -350,9 +355,9 @@ func deployCharts(charts []helm.Chart) error {
 
 func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 
-	templateValues := "/templates/scenario/default/values-template.yaml"
 	templateChart := "/templates/scenario/default"
-	outChart := "/active/" + scenarioTemplate.NamespaceName + "/" + scenarioTemplate.Deployment.Name
+	templateValues := templateChart + "/values-template.yaml"
+	outChart := "/active/" + scenarioTemplate.Namespace + "/" + scenarioTemplate.Deployment.Name
 	outValues := outChart + "/values.yaml"
 
 	// Create template object from template values file
@@ -384,9 +389,10 @@ func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 	return outChart, nil
 }
 
-func newChart(name string, chartLocation string, valuesFile string) helm.Chart {
+func newChart(name string, namespace string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
 	chart.ChartName = name
+	chart.Namespace = namespace
 	chart.ReleaseName = "meep-" + name
 	chart.Location = chartLocation
 	chart.ValuesFile = valuesFile
@@ -479,27 +485,66 @@ func setCommand(deployment *DeploymentTemplate, command string, commandArgs stri
 
 func generateSandboxCharts(scenarioName string) (charts []helm.Chart, err error) {
 
-	// Create sandbox values.yaml files from from templates
+	// Create Sandbox template
+	var sandboxTemplate SandboxTemplate
+	sandboxTemplate.Namespace = scenarioName
 
 	// Create sandbox charts
-	charts = append(charts, createChart("loc-serv", scenarioName))
-	charts = append(charts, createChart("metrics-engine", scenarioName))
-	charts = append(charts, createChart("mg-manager", scenarioName))
-	charts = append(charts, createChart("tc-engine", scenarioName))
+	chart, err := createSandboxChart("loc-serv", &sandboxTemplate)
+	if err == nil {
+		charts = append(charts, chart)
+	}
+	chart, err = createSandboxChart("metrics-engine", &sandboxTemplate)
+	if err == nil {
+		charts = append(charts, chart)
+	}
+	chart, err = createSandboxChart("mg-manager", &sandboxTemplate)
+	if err == nil {
+		charts = append(charts, chart)
+	}
+	chart, err = createSandboxChart("tc-engine", &sandboxTemplate)
+	if err == nil {
+		charts = append(charts, chart)
+	}
 
 	return charts, nil
 }
 
-func createChart(name string, scenarioName string) (chart helm.Chart) {
+func createSandboxChart(name string, sandboxTemplate *SandboxTemplate) (chart helm.Chart, err error) {
+
 	templateChart := "/templates/sandbox/meep-" + name
-	outChart := "/active/" + scenarioName + "/meep-" + name
+	templateValues := templateChart + "/values-template.yaml"
+	outChart := "/active/" + sandboxTemplate.Namespace + "/meep-" + name
+	outValues := outChart + "/values.yaml"
+
+	// Create template object from template values file
+	t, err := template.ParseFiles(templateValues)
+	if err != nil {
+		log.Error(err)
+		return chart, err
+	}
 
 	// Create new chart folder
 	log.Debug("Creation of the output chart path: ", outChart)
 	_ = CopyDir(templateChart, outChart)
 
-	// Create new chart
-	chart = newChart(scenarioName+"-"+name, outChart, "")
+	// Create new chart values file
+	f, err := os.Create(outValues)
+	if err != nil {
+		log.Debug("create file: ", err)
+		return chart, err
+	}
 
-	return chart
+	// Fill new chart values file using sandbox template
+	err = t.Execute(f, *sandboxTemplate)
+	if err != nil {
+		log.Debug("execute: ", err)
+		return chart, err
+	}
+	f.Close()
+
+	// Create new chart
+	chart = newChart(sandboxTemplate.Namespace+"-"+name, sandboxTemplate.Namespace, outChart, "")
+
+	return chart, nil
 }

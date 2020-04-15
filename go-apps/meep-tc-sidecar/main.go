@@ -117,8 +117,8 @@ var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
 
-const redisAddr = "meep-redis-master:6379"
-const influxDBAddr = "http://meep-influxdb:8086"
+const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 var rc *redis.Connector
 var metricStore *ms.MetricStore

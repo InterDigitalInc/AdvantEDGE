@@ -2,8 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: default
-
 deployment:
   enabled: {{.Deployment.Enabled}}
   replicaCount: {{.Deployment.ReplicaCount}}
@@ -38,7 +36,6 @@ deployment:
   terminationGracePeriodSeconds: 5
 
   template:
-    namespace: default
     labels:
     {{- range .Deployment.TemplateLabels}}
       {{.}}
@@ -72,7 +69,6 @@ deployment:
 service:
   enabled: {{.Service.Enabled}}
   name: {{.Service.Name}}
-  namespace: default
   labels:
   {{- range .Service.Labels}}
     {{.}}
@@ -94,7 +90,6 @@ service:
   meservice:
     enabled: {{.Service.MeServiceEnabled}}
     name: {{.Service.MeServiceName}}
-    namespace: default
     type: ClusterIP
 
 external:
