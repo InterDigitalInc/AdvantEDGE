@@ -23,10 +23,13 @@ spec:
     spec:
       serviceAccountName: {{ .Values.serviceAccount }}
       volumes:
-        - name: charts
-          hostPath:
-            path: "{{ .Values.volumes.charts.path }}"
-            type: Directory
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "meep-virt-engine.fullname" . }}{{- end }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
         {{- if .Values.codecov.enabled}}
         - name: codecov-storage
           persistentVolumeClaim:
@@ -44,8 +47,8 @@ spec:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
           volumeMounts:
-            - name: charts
-              mountPath: /charts
+            - name: data
+              mountPath: /data/
             {{- if .Values.codecov.enabled}}
             - name: codecov-storage
               mountPath: /codecov

@@ -148,12 +148,12 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	// Local storage structure
 	cmd := exec.Command("mkdir", "-p", deployData.workdir)
 	cmd.Args = append(cmd.Args, deployData.workdir+"/certs")
-	cmd.Args = append(cmd.Args, deployData.workdir+"/charts")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/couchdb")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/docker-registry")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/grafana")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + deployData.workdir + "]")
@@ -218,7 +218,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
 	case "meep-virt-engine":
-		flags = utils.HelmFlags(nil, "--set", "volumes.charts.path="+deployData.workdir+"/charts")
+		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(nil, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")

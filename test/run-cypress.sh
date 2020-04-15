@@ -13,7 +13,7 @@ echo ""
 
 # Retrieve workdir
 WORKDIR=`grep workdir $HOME/.meepctl.yaml | sed 's/^.*workdir:[ \t]*//'`
-DEMO2DIR=${WORKDIR}/charts/demo2
+DEMO2DIR=${WORKDIR}/virt-engine/user-charts/demo2
 
 # Copy demo charts to workdir
 mkdir -p ${DEMO2DIR}

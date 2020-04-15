@@ -26,9 +26,21 @@ service:
   type: ClusterIP
   port: 80
 
-volumes:
-  charts:
-    path: <HOME>/.meep/charts
+persistence:
+  enabled: true
+  accessMode: 'ReadWriteOnce'
+  reclaimPolicy: Retain
+  size: 5Gi
+  location: ''
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If set to "fullname", storageClassName: <template fullname>
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: '-'
+  storageClass: 'fullname'
 
 codecov:
   enabled: false

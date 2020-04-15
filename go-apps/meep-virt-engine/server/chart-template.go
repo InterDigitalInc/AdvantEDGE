@@ -30,6 +30,8 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
 
+const SandboxName = "sbox-1"
+
 const serviceNodePortMin = 30000
 const serviceNodePortMax = 32767
 const trueStr = "true"
@@ -122,7 +124,7 @@ var serviceMap map[string]string
 // Deploy - Generate charts & deploy
 func Deploy(model *mod.Model) error {
 	// Create sandbox charts
-	sandboxCharts, err := generateSandboxCharts(model.GetScenarioName())
+	sandboxCharts, err := generateSandboxCharts(SandboxName)
 	if err != nil {
 		log.Debug("Error creating sandbox charts: ", err)
 		return err
@@ -130,9 +132,9 @@ func Deploy(model *mod.Model) error {
 	log.Debug("Created ", len(sandboxCharts), " sandbox charts")
 
 	// Create scenario charts
-	scenarioCharts, err := generateCharts(model)
+	scenarioCharts, err := generateScenarioCharts(SandboxName, model)
 	if err != nil {
-		log.Debug("Error creating scenario templates: ", err)
+		log.Debug("Error creating scenario charts: ", err)
 		return err
 	}
 	log.Debug("Created ", len(scenarioCharts), " scenario charts")
@@ -141,14 +143,14 @@ func Deploy(model *mod.Model) error {
 	charts := append(sandboxCharts, scenarioCharts...)
 	err = deployCharts(charts)
 	if err != nil {
-		log.Error("Error deploying scenario templates: ", err)
+		log.Error("Error deploying charts: ", err)
 		return err
 	}
 
 	return nil
 }
 
-func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
+func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm.Chart, err error) {
 	serviceMap = map[string]string{}
 
 	procNames := model.GetNodeNames("CLOUD-APP")
@@ -184,8 +186,8 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 			log.Debug("Processing user-defined chart for element[", proc.Name, "]")
 
 			// Add user-defined chart
-			nc := newChart(scenarioName+"-"+proc.Name, scenarioName, getFullPath(proc.UserChartLocation),
-				getFullPath(proc.UserChartAlternateValues))
+			nc := newChart(proc.Name, sandboxName, scenarioName,
+				getFullPath(proc.UserChartLocation), getFullPath(proc.UserChartAlternateValues))
 			charts = append(charts, nc)
 			log.Debug("user chart added ", len(charts))
 
@@ -211,15 +213,14 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 						portTemplate.Protocol = userChartGroup[3]
 						serviceTemplate.Ports = append(serviceTemplate.Ports, portTemplate)
 
-						// Create chart files
-						chartLocation, err := templateChart(scenarioTemplate)
+						// Create virt-engine chart for new group service
+						chartName := proc.Name + "-svc"
+						chartLocation, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
 						if err != nil {
 							log.Debug("yaml creation file process: ", err)
 							return nil, err
 						}
-
-						// Create virt-engine chart for new group service
-						c := newChart(scenarioName+"-"+proc.Name+"-svc", scenarioName, chartLocation, "")
+						c := newChart(chartName, sandboxName, scenarioName, chartLocation, "")
 						charts = append(charts, c)
 						log.Debug("chart added for user chart group service ", len(charts))
 					}
@@ -327,16 +328,15 @@ func generateCharts(model *mod.Model) (charts []helm.Chart, err error) {
 				}
 			}
 
-			// Create chart files
-			chartLocation, err := templateChart(scenarioTemplate)
+			// Create virt-engine chart
+			chartName := proc.Name
+			chartLocation, err := createChart(chartName, sandboxName, scenarioName, scenarioTemplate)
 			if err != nil {
 				log.Debug("yaml creation file process: ", err)
 				return nil, err
 			}
-
-			// Create virt-engine chart
-			newChart := newChart(scenarioName+"-"+proc.Name, scenarioName, chartLocation, "")
-			charts = append(charts, newChart)
+			c := newChart(chartName, sandboxName, scenarioName, chartLocation, "")
+			charts = append(charts, c)
 			log.Debug("chart added ", len(charts))
 		}
 	}
@@ -353,11 +353,19 @@ func deployCharts(charts []helm.Chart) error {
 	return nil
 }
 
-func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
+func createChart(chartName string, sandboxName string, scenarioName string, templateData interface{}) (string, error) {
 
-	templateChart := "/templates/scenario/default"
+	// Determine source templates & destination chart location
+	var templateChart string
+	var outChart string
+	if scenarioName == "" {
+		templateChart = "/templates/sandbox/" + chartName
+		outChart = "/data/" + sandboxName + "/sandbox/" + chartName
+	} else {
+		templateChart = "/templates/scenario/default"
+		outChart = "/data/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
+	}
 	templateValues := templateChart + "/values-template.yaml"
-	outChart := "/active/" + scenarioTemplate.Namespace + "/" + scenarioTemplate.Deployment.Name
 	outValues := outChart + "/values.yaml"
 
 	// Create template object from template values file
@@ -378,8 +386,8 @@ func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 		return "", err
 	}
 
-	// Fill new chart values file using template object & parsed scenario values
-	err = t.Execute(f, scenarioTemplate)
+	// Fill new chart values file using template data
+	err = t.Execute(f, templateData)
 	if err != nil {
 		log.Debug("execute: ", err)
 		return "", err
@@ -389,11 +397,16 @@ func templateChart(scenarioTemplate ScenarioTemplate) (string, error) {
 	return outChart, nil
 }
 
-func newChart(name string, namespace string, chartLocation string, valuesFile string) helm.Chart {
+func newChart(chartName string, sandboxName string, scenarioName string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
-	chart.ChartName = name
-	chart.Namespace = namespace
-	chart.ReleaseName = "meep-" + name
+	if scenarioName == "" {
+		chart.Name = "meep-" + chartName
+		chart.ReleaseName = "meep-" + sandboxName + "-" + chartName
+	} else {
+		chart.Name = chartName
+		chart.ReleaseName = "meep-" + sandboxName + "-" + scenarioName + "-" + chartName
+	}
+	chart.Namespace = sandboxName
 	chart.Location = chartLocation
 	chart.ValuesFile = valuesFile
 	return chart
@@ -422,7 +435,7 @@ func addExtSelector(externalTemplate *ExternalTemplate, selector string) {
 func getFullPath(path string) string {
 	fullPath := path
 	if path != "" && !strings.HasPrefix(path, "/") {
-		fullPath = filepath.Join("/charts/", path)
+		fullPath = filepath.Join("/data/user-charts/", path)
 	}
 	return fullPath
 }
@@ -483,68 +496,40 @@ func setCommand(deployment *DeploymentTemplate, command string, commandArgs stri
 	}
 }
 
-func generateSandboxCharts(scenarioName string) (charts []helm.Chart, err error) {
+func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) {
 
 	// Create Sandbox template
 	var sandboxTemplate SandboxTemplate
-	sandboxTemplate.Namespace = scenarioName
+	sandboxTemplate.Namespace = sandboxName
 
 	// Create sandbox charts
-	chart, err := createSandboxChart("loc-serv", &sandboxTemplate)
-	if err == nil {
-		charts = append(charts, chart)
+	chartLocation, err := createChart("meep-loc-serv", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
 	}
-	chart, err = createSandboxChart("metrics-engine", &sandboxTemplate)
-	if err == nil {
-		charts = append(charts, chart)
+	chart := newChart("loc-serv", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
+
+	chartLocation, err = createChart("meep-metrics-engine", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
 	}
-	chart, err = createSandboxChart("mg-manager", &sandboxTemplate)
-	if err == nil {
-		charts = append(charts, chart)
+	chart = newChart("metrics-engine", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
+
+	chartLocation, err = createChart("meep-mg-manager", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
 	}
-	chart, err = createSandboxChart("tc-engine", &sandboxTemplate)
-	if err == nil {
-		charts = append(charts, chart)
+	chart = newChart("mg-manager", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
+
+	chartLocation, err = createChart("meep-tc-engine", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
 	}
+	chart = newChart("tc-engine", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
 
 	return charts, nil
-}
-
-func createSandboxChart(name string, sandboxTemplate *SandboxTemplate) (chart helm.Chart, err error) {
-
-	templateChart := "/templates/sandbox/meep-" + name
-	templateValues := templateChart + "/values-template.yaml"
-	outChart := "/active/" + sandboxTemplate.Namespace + "/meep-" + name
-	outValues := outChart + "/values.yaml"
-
-	// Create template object from template values file
-	t, err := template.ParseFiles(templateValues)
-	if err != nil {
-		log.Error(err)
-		return chart, err
-	}
-
-	// Create new chart folder
-	log.Debug("Creation of the output chart path: ", outChart)
-	_ = CopyDir(templateChart, outChart)
-
-	// Create new chart values file
-	f, err := os.Create(outValues)
-	if err != nil {
-		log.Debug("create file: ", err)
-		return chart, err
-	}
-
-	// Fill new chart values file using sandbox template
-	err = t.Execute(f, *sandboxTemplate)
-	if err != nil {
-		log.Debug("execute: ", err)
-		return chart, err
-	}
-	f.Close()
-
-	// Create new chart
-	chart = newChart(sandboxTemplate.Namespace+"-"+name, sandboxTemplate.Namespace, outChart, "")
-
-	return chart, nil
 }

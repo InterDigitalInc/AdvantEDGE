@@ -68,11 +68,12 @@ func Init() (err error) {
 
 // Run - Start Virt Engine execution
 func Run() (err error) {
+	log.Debug("Starting MEEP Virtualization Engine")
 
 	// Listen for Model updates
 	err = ve.activeModel.Listen(eventHandler)
 	if err != nil {
-		log.Error("Failed to listening for model updates: ", err.Error())
+		log.Error("Failed to listen for model updates: ", err.Error())
 	}
 
 	return nil
@@ -92,51 +93,46 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate(event string) {
-	if event == mod.EventTerminate {
-		//process right away and start a ticker to retry until everything is deleted
-		_, _ = terminateScenario(ve.activeScenarioName)
-
-		//starts a ticker
-		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
-
-		go func() {
-			for range ticker.C {
-
-				err, chartsToDelete := terminateScenario(ve.activeScenarioName)
-
-				if err == nil && chartsToDelete == 0 {
-					ve.activeScenarioName = ""
-					ticker.Stop()
-					return
-				} else {
-					//stay in the deletion process until everything is cleared
-					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
-				}
-			}
-		}()
-	} else if event == mod.EventActivate {
+	switch event {
+	case mod.EventActivate:
 		// Cache name for later deletion
 		ve.activeScenarioName = ve.activeModel.GetScenarioName()
 
-		// Create sandbox using scenario name
+		// Deploy sandbox using scenario name
 		err := deploySandbox(ve.activeScenarioName)
 		if err != nil {
 			log.Error("Error deploying sandbox: ", err)
 			return
 		}
 
-		// Activate scenario
-		activateScenario()
-	} else {
-		log.Debug("Reveived event: ", event, " - Do nothing")
-	}
-}
+		// Deploy scenario
+		err = Deploy(ve.activeModel)
+		if err != nil {
+			log.Error("Error creating charts: ", err)
+			return
+		}
 
-func activateScenario() {
-	err := Deploy(ve.activeModel)
-	if err != nil {
-		log.Error("Error creating charts: ", err)
-		return
+	case mod.EventTerminate:
+		// Process right away and start a ticker to retry until everything is deleted
+		_, _ = terminateScenario(ve.activeScenarioName)
+		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+		go func() {
+			for range ticker.C {
+				err, chartsToDelete := terminateScenario(ve.activeScenarioName)
+				if err == nil && chartsToDelete == 0 {
+					ve.activeScenarioName = ""
+					ticker.Stop()
+					return
+				} else {
+					// Stay in the deletion process until everything is cleared
+					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+				}
+			}
+		}()
+
+	default:
+		log.Debug("Received event: ", event, " - Do nothing")
 	}
 }
 
@@ -150,7 +146,8 @@ func terminateScenario(name string) (error, int) {
 	if err == nil {
 		var toDelete []helm.Chart
 		for _, rel := range rels {
-			if strings.Contains(rel.Name, name) {
+			// TODO -- Split sandbox & scenario termination
+			if strings.HasPrefix(rel.Name, "meep-"+SandboxName+"-") {
 				// just keep releases related to the current scenario
 				var c helm.Chart
 				c.ReleaseName = rel.Name
@@ -170,7 +167,7 @@ func terminateScenario(name string) (error, int) {
 		}
 
 		// Then delete charts
-		path := "/active/" + name
+		path := "/data/" + SandboxName + "/scenario/"
 		if _, err := os.Stat(path); err == nil {
 			log.Debug("Removing charts ", path)
 			os.RemoveAll(path)

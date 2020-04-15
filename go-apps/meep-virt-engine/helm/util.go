@@ -23,9 +23,9 @@ import (
 )
 
 type Chart struct {
-	ChartName   string
-	Namespace   string
+	Name        string
 	ReleaseName string
+	Namespace   string
 	Location    string
 	ValuesFile  string
 }

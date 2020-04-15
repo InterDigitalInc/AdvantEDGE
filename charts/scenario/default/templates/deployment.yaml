@@ -3,6 +3,8 @@ apiVersion: apps/{{.Values.deployment.apiVersion}}
 kind: Deployment
 metadata:
   name: {{template "meep.fullname" .}}
+  labels:
+    release: {{ .Release.Name }}
 spec:
   replicas: {{.Values.deployment.replicaCount}}
   selector:
@@ -13,6 +15,7 @@ spec:
   template:
     metadata:
       labels:
+        release: {{ .Release.Name }}
         {{- range $key, $value := .Values.deployment.template.labels}}
         {{$key}}: {{$value | quote}}
         {{- end}}

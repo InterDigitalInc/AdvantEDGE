@@ -19,11 +19,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
@@ -36,6 +36,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
+
+const SandboxName = "sbox-1"
 
 const meepOrigin = "scenario"
 
@@ -103,13 +105,9 @@ func loadConfig(configFile string) (*Config, error) {
 	return &cfg, nil
 }
 
-// Retrieve App Name from provided network element name string, if any
-func getAppName(name string) string {
-	names := bytes.Split([]byte(name), []byte("meep-"+activeScenarioName+"-"))
-	if len(names) != 2 {
-		return ""
-	}
-	return string(names[1])
+// Determine if resource is part of the active scenario
+func isScenarioResource(name string, namespace string) bool {
+	return name != "" && strings.HasPrefix(name, "meep-"+SandboxName+"-"+activeScenarioName+"-")
 }
 
 func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string) (patch []byte, err error) {
@@ -226,6 +224,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 
 	// Retrieve resource-specific information
 	var resourceName string
+	var releaseName string
 	var template corev1.PodTemplateSpec
 
 	switch req.Kind.Kind {
@@ -240,9 +239,10 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 				},
 			}
 		}
-		log.Info("Deployment Name: ", deployment.Name)
 		resourceName = deployment.Name
+		releaseName = deployment.Labels["release"]
 		template = deployment.Spec.Template
+		log.Info("Deployment Name: ", resourceName, " Release: ", releaseName)
 
 	case "StatefulSet":
 		// Unmarshal StatefulSet
@@ -255,9 +255,10 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 				},
 			}
 		}
-		log.Info("StatefulSet Name: ", statefulset.Name)
 		resourceName = statefulset.Name
+		releaseName = statefulset.Labels["release"]
 		template = statefulset.Spec.Template
+		log.Info("StatefulSet Name: ", resourceName, " Release: ", releaseName)
 
 	default:
 		log.Info("Unsupported admission request Kind[", req.Kind.Kind, "]")
@@ -266,18 +267,16 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	// Retrieve App Name from resource name
-	meepAppName := getAppName(resourceName)
-	if meepAppName == "" {
+	// Determine if resource is part of the active scenario
+	if !isScenarioResource(releaseName, req.Namespace) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
 		}
 	}
-	log.Info("MEEP App Name: ", meepAppName)
 
 	// Get sidecar patch
-	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, meepAppName)
+	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, resourceName)
 	if err != nil {
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{
