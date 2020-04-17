@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Zone'], factory);
+    define(['ApiClient', 'model/Cellular4gDomainConfig', 'model/Zone'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Zone'));
+    module.exports = factory(require('../ApiClient'), require('./Cellular4gDomainConfig'), require('./Zone'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Zone);
+    root.AdvantEdgePlatformControllerRestApi.Domain = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig, root.AdvantEdgePlatformControllerRestApi.Zone);
   }
-}(this, function(ApiClient, Zone) {
+}(this, function(ApiClient, Cellular4gDomainConfig, Zone) {
   'use strict';
 
   /**
@@ -88,6 +88,8 @@
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
+      if (data.hasOwnProperty('cellular4gDomainConfig'))
+        obj.cellular4gDomainConfig = Cellular4gDomainConfig.constructFromObject(data['cellular4gDomainConfig']);
       if (data.hasOwnProperty('zones'))
         obj.zones = ApiClient.convertToType(data['zones'], [Zone]);
     }
@@ -147,6 +149,11 @@
    * @member {Object.<String, String>} userMeta
    */
   exports.prototype.userMeta = undefined;
+
+  /**
+   * @member {module:model/Cellular4gDomainConfig} cellular4gDomainConfig
+   */
+  exports.prototype.cellular4gDomainConfig = undefined;
 
   /**
    * @member {Array.<module:model/Zone>} zones

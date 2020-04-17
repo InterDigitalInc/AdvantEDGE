@@ -85,6 +85,7 @@ func deleteCore(cobraCmd *cobra.Command) {
 	go k8sDelete("meep-tc-engine", cobraCmd, messages)
 	go k8sDelete("meep-mon-engine", cobraCmd, messages)
 	go k8sDelete("meep-loc-serv", cobraCmd, messages)
+	go k8sDelete("meep-rnis", cobraCmd, messages)
 	go k8sDelete("meep-metrics-engine", cobraCmd, messages)
 	go k8sDelete("meep-ctrl-engine", cobraCmd, messages)
 	deleteVirtEngine(cobraCmd)

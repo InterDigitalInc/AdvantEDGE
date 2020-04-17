@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **terminalLinkPacketLoss** | **Number** | Packet lost (in terms of percentage) for all terminal links within the network location | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
+**cellular4gPoaConfig** | [**Cellular4gPoaConfig**](Cellular4gPoaConfig.md) |  | [optional] 
 **physicalLocations** | [**[PhysicalLocation]**](PhysicalLocation.md) |  | [optional] 
 
 
@@ -20,6 +21,8 @@ Name | Type | Description | Notes
 
 
 * `POA` (value: `"POA"`)
+
+* `pOACELLULAR4G` (value: `"POA-CELLULAR-4G"`)
 
 * `DEFAULT` (value: `"DEFAULT"`)
 

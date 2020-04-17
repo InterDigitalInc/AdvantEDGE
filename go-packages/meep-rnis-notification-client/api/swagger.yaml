@@ -1,0 +1,296 @@
+---
+swagger: "2.0"
+info:
+  description: "This API enables the Radio Network Information Service to post notification\
+    \ events to subscribers' applications <p>**Micro-service**<br>None <p>**Type &\
+    \ Usage**<br>User's Edge Applications subscribing to Radio Network Information\
+    \ events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_\
+    \ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform"
+  version: "1.0.0"
+  title: "AdvantEDGE Radio Network Information Service Subscription Notification REST\
+    \ API"
+  contact:
+    name: "InterDigital AdvantEDGE Support"
+    email: "AdvantEDGE@InterDigital.com"
+  license:
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+basePath: "/rni/v1"
+tags:
+- name: "notifications"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /notifications/cell_change/{subscriptionId}:
+    post:
+      tags:
+      - "notifications"
+      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
+        \ notification to inform about teh cell change of a UE subscription"
+      description: "Cell change subscription notification"
+      operationId: "postCellChangeNotification"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Identity of a notification subscription"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      - in: "body"
+        name: "Notification"
+        description: "Cell change Notification"
+        required: true
+        schema:
+          $ref: "#/definitions/CellChangeNotification"
+        x-exportParamName: "Notification"
+      responses:
+        204:
+          description: "No Content"
+  /notifications/expiry/{subscriptionId}:
+    post:
+      tags:
+      - "notifications"
+      summary: "This operation is used by the AdvantEDGE RNI Service to issue a notification\
+        \ with regards to expiry of an existing subscription"
+      description: "Subscription expiry notification"
+      operationId: "postExpiryNotification"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Identity of a notification subscription"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      - in: "body"
+        name: "Notification"
+        description: "Subscription expiry Notification"
+        required: true
+        schema:
+          $ref: "#/definitions/ExpiryNotification"
+        x-exportParamName: "Notification"
+      responses:
+        204:
+          description: "No Content"
+definitions:
+  AssociateId:
+    type: "object"
+    required:
+    - "type"
+    - "value"
+    properties:
+      type:
+        type: "string"
+        example: "UE_IPV4_ADDRESS"
+        description: "Numeric value (0-255) corresponding to specified type of identifier"
+        enum:
+        - "RESERVED_ASSOCIATED_ID_TYPE"
+        - "UE_IPV4_ADDRESS"
+        - "UE_IPV6_ADDRESS"
+        - "NATED_IP_ADDRESS"
+        - "GTP_TEID"
+      value:
+        type: "string"
+        example: "192.168.10.1"
+        description: "Value for the identifier"
+    example:
+      type: "UE_IPV4_ADDRESS"
+      value: "192.168.10.1"
+  Ecgi:
+    type: "object"
+    required:
+    - "cellId"
+    - "plmn"
+    properties:
+      plmn:
+        $ref: "#/definitions/Plmn"
+      cellId:
+        type: "array"
+        example: "0x800000A"
+        description: "The E-UTRAN Cell Identity as a bit string (size (28)), as defined\
+          \ in 3GPP TS 36.413"
+        items:
+          type: "string"
+          format: "binary"
+    description: "E-UTRAN CelI Global Identifier as defined in 3GPP TS 36.413"
+    example:
+      plmn:
+        mnc: "01"
+        mcc: "001"
+      cellId: "0x800000A"
+  HoStatus:
+    type: "string"
+    description: "Description of the subscribed to event"
+    example: "COMPLETED"
+    enum:
+    - "RESERVED_HO_STATUS"
+    - "IN_PREPARATION"
+    - "IN_EXECUTION"
+    - "COMPLETED"
+    - "REJECTED"
+    - "CANCELLED"
+  Link:
+    type: "object"
+    properties:
+      self:
+        type: "string"
+        format: "uri"
+        example: "http://meAppClient.example.com/rni/v1/"
+        description: "URI referring to a resource"
+    description: "List of hyperlinks related to the resource"
+    example:
+      self: "http://meAppClient.example.com/rni/v1/"
+  Plmn:
+    type: "object"
+    required:
+    - "mcc"
+    - "mnc"
+    properties:
+      mcc:
+        type: "string"
+        format: "string"
+        example: "001"
+        description: "The Mobile Country Code part of PLMN Identity as defined in\
+          \ 3GPP TS 36.413"
+      mnc:
+        type: "string"
+        format: "string"
+        example: "01"
+        description: "The Mobile Network Code part of PLMN Identity as defined in\
+          \ 3GPP TS 36.413"
+    example:
+      mnc: "01"
+      mcc: "001"
+  TempUeId:
+    type: "object"
+    required:
+    - "mmec"
+    - "mtmsi"
+    properties:
+      mmec:
+        type: "string"
+        example: "0"
+        description: "MMEC as defined in ETSI TS 136 413"
+      mtmsi:
+        type: "string"
+        example: "1234"
+        description: "M-TMSI as defined in ETSI TS 136 413"
+    example:
+      mtmsi: "1234"
+      mmec: "0"
+  TimeStamp:
+    type: "object"
+    required:
+    - "nanoSeconds"
+    - "seconds"
+    properties:
+      seconds:
+        type: "integer"
+        format: "uint32"
+        example: 1577836800
+        description: "The seconds part of the time. Time is defined as Unix-time since\
+          \ January 1, 1970, 00:00:00 UTC"
+      nanoSeconds:
+        type: "integer"
+        format: "uint32"
+        example: 0
+        description: "The nanoseconds part of the time. Time is defined as Unix-time\
+          \ since January 1, 1970, 00:00:00 UTC"
+    example:
+      seconds: 1577836800
+      nanoSeconds: 0
+  ExpiryNotification:
+    type: "object"
+    required:
+    - "_links"
+    - "expiryDeadline"
+    properties:
+      timestamp:
+        $ref: "#/definitions/TimeStamp"
+      _links:
+        $ref: "#/definitions/Link"
+      expiryDeadline:
+        $ref: "#/definitions/TimeStamp"
+    example:
+      _links:
+        self: "http://meAppClient.example.com/rni/v1/"
+      expiryDeadline:
+        seconds: 1577836800
+        nanoSeconds: 0
+      timestamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+  CellChangeNotification:
+    type: "object"
+    required:
+    - "hoStatus"
+    - "srcEcgi"
+    - "trgEcgi"
+    properties:
+      timestamp:
+        $ref: "#/definitions/TimeStamp"
+      associateId:
+        $ref: "#/definitions/AssociateId"
+      srcEcgi:
+        $ref: "#/definitions/Ecgi"
+      trgEcgi:
+        type: "array"
+        items:
+          $ref: "#/definitions/Ecgi"
+      hoStatus:
+        $ref: "#/definitions/HoStatus"
+      tempUeId:
+        $ref: "#/definitions/TempUeId"
+    example:
+      associateId:
+        type: "UE_IPV4_ADDRESS"
+        value: "192.168.10.1"
+      hoStatus: "COMPLETED"
+      srcEcgi:
+        plmn:
+          mnc: "01"
+          mcc: "001"
+        cellId: "0x800000A"
+      trgEcgi:
+      - plmn:
+          mnc: "01"
+          mcc: "001"
+        cellId: "0x800000A"
+      - plmn:
+          mnc: "01"
+          mcc: "001"
+        cellId: "0x800000A"
+      timestamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+      tempUeId:
+        mtmsi: "1234"
+        mmec: "0"
+parameters:
+  Path.SubscriptionId:
+    name: "subscriptionId"
+    in: "path"
+    description: "Identity of a notification subscription"
+    required: true
+    type: "string"
+    x-exportParamName: "SubscriptionId"
+  Body.CellChangeNotification:
+    in: "body"
+    name: "Notification"
+    description: "Cell change Notification"
+    required: true
+    schema:
+      $ref: "#/definitions/CellChangeNotification"
+    x-exportParamName: "Notification"
+  Body.ExpiryNotification:
+    in: "body"
+    name: "Notification"
+    description: "Subscription expiry Notification"
+    required: true
+    schema:
+      $ref: "#/definitions/ExpiryNotification"
+    x-exportParamName: "Notification"
+externalDocs:
+  description: "ETSI MEC012 V1.1.1 Radio Network Information Service API"
+  url: "http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/01.01.01_60/gs_MEC012v010101p.pdf"

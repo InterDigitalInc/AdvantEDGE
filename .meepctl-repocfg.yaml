@@ -41,6 +41,8 @@ repo:
         - meep-metrics-engine-notification-client
         - meep-mg-manager
         - meep-mg-app-client
+        - meep-rnis
+        - meep-rnis-notification-client
         - meep-loc-serv
         - meep-loc-serv-notification-client
 
@@ -56,6 +58,16 @@ repo:
       docker-data:
         api: bin/meep-swagger-ui
         static: bin/meep-frontend
+    meep-rnis:
+      src: go-apps/meep-rnis
+      bin: bin/meep-rnis
+      chart: charts/meep-rnis
+      build-flags:
+        - -mod=vendor
+      codecov: true
+      lint: true
+      nodeport: 30017
+      api: go-apps/meep-rnis/api/swagger.yaml
     meep-loc-serv:
       src: go-apps/meep-loc-serv
       bin: bin/meep-loc-serv
@@ -137,6 +149,13 @@ repo:
     meep-ctrl-engine-model:
       src: go-packages/meep-ctrl-engine-model
       lint: true
+    meep-rnis-client:
+      src: go-packages/meep-rnis-client
+      lint: false
+    meep-rnis-notification-client:
+      src: go-packages/meep-rnis-notification-client
+      lint: false
+      api: go-packages/meep-rnis-notification-client/api/swagger.yaml
     meep-loc-serv-client:
       src: go-packages/meep-loc-serv-client
       lint: false

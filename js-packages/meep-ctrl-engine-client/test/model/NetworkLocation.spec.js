@@ -109,6 +109,12 @@
         // expect(instance.userMeta).to.be(expectedValueLiteral);
       });
 
+      it('should have the property cellular4gPoaConfig (base name: "cellular4gPoaConfig")', function() {
+        // TODO: update the code to test the property cellular4gPoaConfig
+        expect(instance).to.have.property('cellular4gPoaConfig');
+        // expect(instance.cellular4gPoaConfig).to.be(expectedValueLiteral);
+      });
+
       it('should have the property physicalLocations (base name: "physicalLocations")', function() {
         // TODO: update the code to test the property physicalLocations
         expect(instance).to.have.property('physicalLocations');

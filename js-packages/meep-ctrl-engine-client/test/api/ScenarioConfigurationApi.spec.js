@@ -80,6 +80,10 @@
           scenario.deployment.domains[0].interZonePacketLoss = 0.0;
           scenario.deployment.domains[0].meta = {key: ""};
           scenario.deployment.domains[0].userMeta = {key: ""};
+          scenario.deployment.domains[0].cellular4gDomainConfig = new AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig();
+          scenario.deployment.domains[0].cellular4gDomainConfig.mnc = "";
+          scenario.deployment.domains[0].cellular4gDomainConfig.mcc = "";
+          scenario.deployment.domains[0].cellular4gDomainConfig.defaultCellId = "";
           scenario.deployment.domains[0].zones = [new AdvantEdgePlatformControllerRestApi.Zone()];
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
@@ -113,6 +117,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkPacketLoss = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellular4gPoaConfig = new AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellular4gPoaConfig.cellId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -314,6 +320,13 @@
                       expect(data).to.be("");
                     }
                   }
+                  expect(data.cellular4gDomainConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig);
+                        expect(data.cellular4gDomainConfig.mnc).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.mnc).to.be("");
+                    expect(data.cellular4gDomainConfig.mcc).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.mcc).to.be("");
+                    expect(data.cellular4gDomainConfig.defaultCellId).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.defaultCellId).to.be("");
                   {
                     let dataCtr = data.zones;
                     expect(dataCtr).to.be.an(Array);
@@ -421,6 +434,9 @@
                               expect(data).to.be("");
                             }
                           }
+                          expect(data.cellular4gPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig);
+                                expect(data.cellular4gPoaConfig.cellId).to.be.a('string');
+                            expect(data.cellular4gPoaConfig.cellId).to.be("");
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -717,6 +733,13 @@
                           expect(data).to.be("");
                         }
                       }
+                      expect(data.cellular4gDomainConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig);
+                            expect(data.cellular4gDomainConfig.mnc).to.be.a('string');
+                        expect(data.cellular4gDomainConfig.mnc).to.be("");
+                        expect(data.cellular4gDomainConfig.mcc).to.be.a('string');
+                        expect(data.cellular4gDomainConfig.mcc).to.be("");
+                        expect(data.cellular4gDomainConfig.defaultCellId).to.be.a('string');
+                        expect(data.cellular4gDomainConfig.defaultCellId).to.be("");
                       {
                         let dataCtr = data.zones;
                         expect(dataCtr).to.be.an(Array);
@@ -824,6 +847,9 @@
                                   expect(data).to.be("");
                                 }
                               }
+                              expect(data.cellular4gPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig);
+                                    expect(data.cellular4gPoaConfig.cellId).to.be.a('string');
+                                expect(data.cellular4gPoaConfig.cellId).to.be("");
                               {
                                 let dataCtr = data.physicalLocations;
                                 expect(dataCtr).to.be.an(Array);
@@ -1050,6 +1076,10 @@
           scenario.deployment.domains[0].interZonePacketLoss = 0.0;
           scenario.deployment.domains[0].meta = {key: ""};
           scenario.deployment.domains[0].userMeta = {key: ""};
+          scenario.deployment.domains[0].cellular4gDomainConfig = new AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig();
+          scenario.deployment.domains[0].cellular4gDomainConfig.mnc = "";
+          scenario.deployment.domains[0].cellular4gDomainConfig.mcc = "";
+          scenario.deployment.domains[0].cellular4gDomainConfig.defaultCellId = "";
           scenario.deployment.domains[0].zones = [new AdvantEdgePlatformControllerRestApi.Zone()];
           scenario.deployment.domains[0].zones[0].id = "";
           scenario.deployment.domains[0].zones[0].name = "";
@@ -1083,6 +1113,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].terminalLinkPacketLoss = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellular4gPoaConfig = new AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].cellular4gPoaConfig.cellId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
