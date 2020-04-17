@@ -235,13 +235,13 @@
                       expect(data).to.be("");
                     }
                   }
-                  expect(data._3gpp).to.be.a(AdvantEdgePlatformControllerRestApi.Domain3gpp);
-                        expect(data._3gpp.mnc).to.be.a('string');
-                    expect(data._3gpp.mnc).to.be("");
-                    expect(data._3gpp.mcc).to.be.a('string');
-                    expect(data._3gpp.mcc).to.be("");
-                    expect(data._3gpp.defaultCellId).to.be.a('string');
-                    expect(data._3gpp.defaultCellId).to.be("");
+                  expect(data.cellular4gDomainConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig);
+                        expect(data.cellular4gDomainConfig.mnc).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.mnc).to.be("");
+                    expect(data.cellular4gDomainConfig.mcc).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.mcc).to.be("");
+                    expect(data.cellular4gDomainConfig.defaultCellId).to.be.a('string');
+                    expect(data.cellular4gDomainConfig.defaultCellId).to.be("");
                   {
                     let dataCtr = data.zones;
                     expect(dataCtr).to.be.an(Array);
@@ -321,8 +321,6 @@
                           expect(data.name).to.be("");
                           expect(data.type).to.be.a('string');
                           expect(data.type).to.be("POA");
-                          expect(data.subType).to.be.a('string');
-                          expect(data.subType).to.be("3GPP");
                           expect(data.terminalLinkLatency).to.be.a('number');
                           expect(data.terminalLinkLatency).to.be(0);
                           expect(data.terminalLinkLatencyVariation).to.be.a('number');
@@ -351,8 +349,9 @@
                               expect(data).to.be("");
                             }
                           }
-                          expect(data.cellId).to.be.a('string');
-                          expect(data.cellId).to.be("");
+                          expect(data.cellular4gPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig);
+                                expect(data.cellular4gPoaConfig.cellId).to.be.a('string');
+                            expect(data.cellular4gPoaConfig.cellId).to.be("");
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);

@@ -24,26 +24,8 @@
 
 package client
 
-// Logical network location object
-type NetworkLocation struct {
-	// Unique network location ID
-	Id string `json:"id,omitempty"`
-	// Network location name
-	Name string `json:"name,omitempty"`
-	// Network location type
-	Type_ string `json:"type,omitempty"`
-	// Latency in ms for all terminal links within network location
-	TerminalLinkLatency int32 `json:"terminalLinkLatency,omitempty"`
-	// Latency variation in ms for all terminal links within network location
-	TerminalLinkLatencyVariation int32 `json:"terminalLinkLatencyVariation,omitempty"`
-	// The limit of the traffic supported for all terminal links within the network location
-	TerminalLinkThroughput int32 `json:"terminalLinkThroughput,omitempty"`
-	// Packet lost (in terms of percentage) for all terminal links within the network location
-	TerminalLinkPacketLoss float64 `json:"terminalLinkPacketLoss,omitempty"`
-	// Key/Value Pair Map (string, string)
-	Meta map[string]string `json:"meta,omitempty"`
-	// Key/Value Pair Map (string, string)
-	UserMeta            map[string]string    `json:"userMeta,omitempty"`
-	Cellular4gPoaConfig *Cellular4gPoaConfig `json:"cellular4gPoaConfig,omitempty"`
-	PhysicalLocations   []PhysicalLocation   `json:"physicalLocations,omitempty"`
+// Cellular 4G POA configuration information
+type Cellular4gPoaConfig struct {
+	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+	CellId string `json:"cellId,omitempty"`
 }

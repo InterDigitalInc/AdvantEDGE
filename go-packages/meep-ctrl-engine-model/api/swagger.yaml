@@ -14,6 +14,27 @@ definitions:
         description: Replay-file name to execute at deployment time
     description: Activation information
     example: {}
+  Cellular4gPoaConfig:
+    type: object
+    properties:
+      cellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+    description: Cellular 4G POA configuration information
+  Cellular4gDomainConfig:
+    type: object
+    properties:
+      mnc:
+        type: string
+        description: Mobile Network Code part of PLMN identity as defined in ETSI TS 136 413
+      mcc:
+        type: string
+        description: Mobile Country Code part of PLMN identity as defined in ETSI TS 136 413
+      defaultCellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
+    description: Cellular 4G domain configuration information
+    example: {}
   NodeServiceMaps:
     type: object
     properties:
@@ -100,27 +121,13 @@ definitions:
         description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
-      3gpp:
-        $ref: '#/definitions/Domain3gpp'
+      cellular4gDomainConfig:
+        $ref: '#/definitions/Cellular4gDomainConfig'
       zones:
         type: array
         items:
           $ref: '#/definitions/Zone'
     description: Operator domain object
-    example: {}
-  Domain3gpp:
-    type: object
-    properties:
-      mnc:
-        type: string
-        description: Mobile Network Code part of PLMN identity as defined in ETSI TS 136 413
-      mcc:
-        type: string
-        description: Mobile Country Code part of PLMN identity as defined in ETSI TS 136 413
-      defaultCellId:
-        type: string
-        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable 
-    description: 3GPP domain element information 
     example: {}
   EgressService:
     type: object
@@ -327,13 +334,8 @@ definitions:
         description: Network location type
         enum:
           - POA
+          - POA-CELLULAR-4G
           - DEFAULT
-      subType:
-        type: string
-        description: Network location subtype
-        enum:
-          - 3GPP
-          - NON-3GPP
       terminalLinkLatency:
         type: integer
         description: Latency in ms for all terminal links within network location
@@ -361,9 +363,8 @@ definitions:
         description: 'Key/Value Pair Map (string, string)'
         additionalProperties:
           type: string
-      cellId:
-        type: string
-        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+      cellular4gPoaConfig:
+        $ref: '#/definitions/Cellular4gPoaConfig'
       physicalLocations:
         type: array
         items:

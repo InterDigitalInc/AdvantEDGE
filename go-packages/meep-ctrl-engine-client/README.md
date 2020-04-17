@@ -48,9 +48,10 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [ActivationInfo](docs/ActivationInfo.md)
+ - [Cellular4gDomainConfig](docs/Cellular4gDomainConfig.md)
+ - [Cellular4gPoaConfig](docs/Cellular4gPoaConfig.md)
  - [Deployment](docs/Deployment.md)
  - [Domain](docs/Domain.md)
- - [Domain3gpp](docs/Domain3gpp.md)
  - [EgressService](docs/EgressService.md)
  - [Event](docs/Event.md)
  - [EventMobility](docs/EventMobility.md)

@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **InterZonePacketLoss** | **float64** | Packet lost (in terms of percentage) between zones within the domain | [optional] [default to null]
 **Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **UserMeta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
-**Var3gpp** | [***Domain3gpp**](Domain3gpp.md) |  | [optional] [default to null]
+**Cellular4gDomainConfig** | [***Cellular4gDomainConfig**](Cellular4gDomainConfig.md) |  | [optional] [default to null]
 **Zones** | [**[]Zone**](Zone.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

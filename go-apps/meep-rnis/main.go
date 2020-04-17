@@ -50,7 +50,7 @@ func main() {
 	}()
 
 	go func() {
-		// Initialize Location Service
+		// Initialize RNIS
 		err := server.Init()
 		if err != nil {
 			log.Error("Failed to initialize RNI Service")
@@ -58,7 +58,7 @@ func main() {
 			return
 		}
 
-		// Start Location Service Event Handler thread
+		// Start RNIS Event Handler thread
 		err = server.Run()
 		if err != nil {
 			log.Error("Failed to start RNI Service")
@@ -66,7 +66,7 @@ func main() {
 			return
 		}
 
-		// Start Location Service REST API Server
+		// Start RNIS REST API Server
 		router := server.NewRouter()
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})

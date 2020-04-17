@@ -671,15 +671,15 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
-      3gpp:
-        $ref: "#/definitions/Domain3gpp"
+      cellular4gDomainConfig:
+        $ref: "#/definitions/Cellular4gDomainConfig"
       zones:
         type: "array"
         items:
           $ref: "#/definitions/Zone"
     description: "Operator domain object"
     example: {}
-  Domain3gpp:
+  Cellular4gDomainConfig:
     type: "object"
     properties:
       mnc:
@@ -694,7 +694,7 @@ definitions:
         type: "string"
         description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no\
           \ cellId is defined for the cell or if not applicable"
-    description: "3GPP domain element information"
+    description: "Cellular 4G domain configuration information"
     example: {}
   Zone:
     type: "object"
@@ -800,13 +800,8 @@ definitions:
         description: "Network location type"
         enum:
         - "POA"
+        - "POA-CELLULAR-4G"
         - "DEFAULT"
-      subType:
-        type: "string"
-        description: "Network location subtype"
-        enum:
-        - "3GPP"
-        - "NON-3GPP"
       terminalLinkLatency:
         type: "integer"
         description: "Latency in ms for all terminal links within network location"
@@ -833,16 +828,22 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
-      cellId:
-        type: "string"
-        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
-          \ the ID of the eNB serving the cell"
+      cellular4gPoaConfig:
+        $ref: "#/definitions/Cellular4gPoaConfig"
       physicalLocations:
         type: "array"
         items:
           $ref: "#/definitions/PhysicalLocation"
     description: "Logical network location object"
     example: {}
+  Cellular4gPoaConfig:
+    type: "object"
+    properties:
+      cellId:
+        type: "string"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
+          \ the ID of the eNB serving the cell"
+    description: "Cellular 4G POA configuration information"
   PhysicalLocation:
     type: "object"
     properties:

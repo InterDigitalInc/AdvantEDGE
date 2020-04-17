@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ActivationInfo', 'model/Deployment', 'model/Domain', 'model/Domain3gpp', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/EventReplayApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
+    define(['ApiClient', 'model/ActivationInfo', 'model/Cellular4gDomainConfig', 'model/Cellular4gPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/PodStatus', 'model/PodsStatus', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/EventReplayApi', 'api/PodStatesApi', 'api/ScenarioConfigurationApi', 'api/ScenarioExecutionApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/Deployment'), require('./model/Domain'), require('./model/Domain3gpp'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/EventReplayApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/Cellular4gDomainConfig'), require('./model/Cellular4gPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/PodStatus'), require('./model/PodsStatus'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/EventReplayApi'), require('./api/PodStatesApi'), require('./api/ScenarioConfigurationApi'), require('./api/ScenarioExecutionApi'));
   }
-}(function(ApiClient, ActivationInfo, Deployment, Domain, Domain3gpp, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, NodeServiceMaps, PhysicalLocation, PodStatus, PodsStatus, Process, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, EventReplayApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
+}(function(ApiClient, ActivationInfo, Cellular4gDomainConfig, Cellular4gPoaConfig, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, NodeServiceMaps, PhysicalLocation, PodStatus, PodsStatus, Process, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, EventReplayApi, PodStatesApi, ScenarioConfigurationApi, ScenarioExecutionApi) {
   'use strict';
 
   /**
@@ -82,6 +82,16 @@
      */
     ActivationInfo: ActivationInfo,
     /**
+     * The Cellular4gDomainConfig model constructor.
+     * @property {module:model/Cellular4gDomainConfig}
+     */
+    Cellular4gDomainConfig: Cellular4gDomainConfig,
+    /**
+     * The Cellular4gPoaConfig model constructor.
+     * @property {module:model/Cellular4gPoaConfig}
+     */
+    Cellular4gPoaConfig: Cellular4gPoaConfig,
+    /**
      * The Deployment model constructor.
      * @property {module:model/Deployment}
      */
@@ -91,11 +101,6 @@
      * @property {module:model/Domain}
      */
     Domain: Domain,
-    /**
-     * The Domain3gpp model constructor.
-     * @property {module:model/Domain3gpp}
-     */
-    Domain3gpp: Domain3gpp,
     /**
      * The EgressService model constructor.
      * @property {module:model/EgressService}

@@ -29,7 +29,7 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	//ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
@@ -44,7 +44,7 @@ const redisAddr string = "meep-redis-master:6379"
 const cellChangeSubscriptionType = "cell_change"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}
-var subscriptionExpiryMap = map[int][]int{} //*IntList{}
+var subscriptionExpiryMap = map[int][]int{}
 
 var RNIS_DB = 5
 
@@ -87,7 +87,7 @@ func Init() (err error) {
 	}()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(updateUeEcgiInfo)
+	return sbi.Init(updateUeEcgiInfo, updateAppEcgiInfo, cleanUp)
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
@@ -108,7 +108,6 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	var newEcgi Ecgi
 	plmn.Mnc = mnc
 	plmn.Mcc = mcc
-	//cellId = []string{poa.Var3gpp.CellId}
 	newEcgi.CellId = []string{cellId}
 	newEcgi.Plmn = &plmn
 
@@ -140,6 +139,38 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 
 		//log to model for all apps on that UE
 		checkNotificationRegisteredSubscriptions("", assocId, &plmn, ecgiInfo.Plmn, "", cellId, oldCellId)
+	}
+}
+
+func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
+
+	var plmn Plmn
+	var newEcgi Ecgi
+	plmn.Mnc = mnc
+	plmn.Mcc = mcc
+	newEcgi.CellId = []string{cellId}
+	newEcgi.Plmn = &plmn
+
+	//get from DB
+	jsonAppEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":APP:"+name, ".")
+
+	oldPlmnMnc := ""
+	oldPlmnMcc := ""
+	oldCellId := ""
+
+	if jsonAppEcgiInfo != "" {
+
+		ecgiInfo := convertJsonToEcgi(jsonAppEcgiInfo)
+
+		oldPlmnMnc = ecgiInfo.Plmn.Mnc
+		oldPlmnMcc = ecgiInfo.Plmn.Mcc
+		oldCellId = ecgiInfo.CellId[0]
+	}
+
+	//updateDB if changes occur
+	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId[0] != oldCellId {
+		//updateDB
+		_ = rc.JSONSetEntry(moduleRNIS+":APP:"+name, ".", convertEcgiToJson(&newEcgi))
 	}
 }
 
@@ -537,13 +568,6 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	var response InlineResponse2001
 	atLeastOne := false
 
-	activeModel := sbi.GetActiveModel()
-	if activeModel == nil {
-		log.Error("No active scenarion")
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	//same for all plmnInfo
 	seconds := time.Now().Unix()
 	var timeStamp TimeStamp
@@ -552,56 +576,19 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	for _, meAppName := range appInsIdArray {
 		meAppName = strings.TrimSpace(meAppName)
 
-		n := activeModel.GetNode(meAppName)
-		if n == nil {
-			log.Error("Error node not found " + meAppName)
-			continue
-		}
-		meApp, ok := n.(*ceModel.Process)
-		if ok {
-			if meApp.Type_ == "EDGE-APP" || meApp.Type_ == "UE-APP" {
-				meAppParent := activeModel.GetNodeParent(meAppName)
-				pl, ok := meAppParent.(*ceModel.PhysicalLocation)
-				if ok {
-					plParent := activeModel.GetNodeParent(pl.Name)
-					poa, ok := plParent.(*ceModel.NetworkLocation)
-					if ok {
-						if poa.Type_ == "POA" {
-							if poa.SubType == "3GPP" {
-								poaParent := activeModel.GetNodeParent(poa.Name)
-								zone, ok := poaParent.(*ceModel.Zone)
-								if ok {
-									zoneParent := activeModel.GetNodeParent(zone.Name)
-									domain, ok := zoneParent.(*ceModel.Domain)
+		//get from DB
+		jsonAppEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":APP:"+meAppName, ".")
 
-									if ok {
-										if domain.Type_ == "OPERATOR" {
-											//if domain.Var3gpp != nil {
-											var plmnInfo PlmnInfo
-											var plmn Plmn
-											var ecgi Ecgi
-											plmn.Mnc = domain.Var3gpp.Mnc
-											plmn.Mcc = domain.Var3gpp.Mcc
-											cellId := []string{poa.CellId}
-											if cellId[0] == "" {
-												cellId[0] = domain.Var3gpp.DefaultCellId
-											}
-											ecgi.CellId = cellId
-											ecgi.Plmn = &plmn
-											plmnInfo.Ecgi = &ecgi
-											plmnInfo.AppInsId = meAppName
-											plmnInfo.TimeStamp = &timeStamp
-											response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
-											atLeastOne = true
-											//}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+		if jsonAppEcgiInfo != "" {
+
+			ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
+
+			var plmnInfo PlmnInfo
+			plmnInfo.Ecgi = ecgi
+			plmnInfo.AppInsId = meAppName
+			plmnInfo.TimeStamp = &timeStamp
+			response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
+			atLeastOne = true
 		}
 	}
 
@@ -691,4 +678,14 @@ func subscriptionLinkListSubscriptionsCcGET(w http.ResponseWriter, r *http.Reque
 
 func subscriptionLinkListSubscriptionsMrGET(w http.ResponseWriter, r *http.Request) {
 	notImplemented(w, r)
+}
+
+func cleanUp() {
+	log.Info("Terminate all")
+	rc.DBFlush(moduleRNIS)
+	nextSubscriptionIdAvailable = 1
+
+	ccSubscriptionMap = map[int]*CellChangeSubscription{}
+	subscriptionExpiryMap = map[int][]int{}
+
 }

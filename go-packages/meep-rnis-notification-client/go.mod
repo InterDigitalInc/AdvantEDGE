@@ -1,4 +1,4 @@
-module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client
+module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client
 
 go 1.12
 

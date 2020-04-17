@@ -43,7 +43,7 @@ type Domain struct {
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 	// Key/Value Pair Map (string, string)
-	UserMeta map[string]string `json:"userMeta,omitempty"`
-	Var3gpp  *Domain3gpp       `json:"3gpp,omitempty"`
-	Zones    []Zone            `json:"zones,omitempty"`
+	UserMeta               map[string]string       `json:"userMeta,omitempty"`
+	Cellular4gDomainConfig *Cellular4gDomainConfig `json:"cellular4gDomainConfig,omitempty"`
+	Zones                  []Zone                  `json:"zones,omitempty"`
 }
