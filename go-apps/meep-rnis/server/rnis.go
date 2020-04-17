@@ -29,7 +29,6 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
-	//ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
@@ -45,6 +44,7 @@ const cellChangeSubscriptionType = "cell_change"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
+var currentStoreName = ""
 
 var RNIS_DB = 5
 
@@ -87,7 +87,7 @@ func Init() (err error) {
 	}()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(updateUeEcgiInfo, updateAppEcgiInfo, cleanUp)
+	return sbi.Init(updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
@@ -349,31 +349,54 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 }
 
 func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.CellChangeNotification) {
+
+	startTime := time.Now()
+
 	client, err := createClient(notifyUrl)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	_, err = client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	defer resp.Body.Close()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 }
 
 func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
+
+	startTime := time.Now()
+
 	client, err := createClient(notifyUrl)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	_, err = client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	defer resp.Body.Close()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+
 }
 
 func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -687,5 +710,9 @@ func cleanUp() {
 
 	ccSubscriptionMap = map[int]*CellChangeSubscription{}
 	subscriptionExpiryMap = map[int][]int{}
+	currentStoreName = ""
+}
 
+func updateStoreName(storeName string) {
+	currentStoreName = storeName
 }

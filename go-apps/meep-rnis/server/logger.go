@@ -24,23 +24,148 @@
 package server
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 )
 
+var nextUniqueId int32 = 1
+var redisDBAddr string = "meep-redis-master:6379"
+var influxDBAddr string = "http://meep-influxdb:8086"
+var scenarioName string = ""
+var metricStore *ms.MetricStore
+
+const DirectionRX = "RX"
+const DirectionTX = "TX"
+
+func InitLogger() (err error) {
+
+	//currentStoreName located in NBI of RNIS populated by SBI upon new activation
+	scenarioName = currentStoreName
+	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+	return nil
+}
+
+func LogTx(url string, method string, body string, resp *http.Response, startTime time.Time) {
+
+	uniqueId := nextUniqueId
+	nextUniqueId++
+
+	responseBodyString := ""
+
+	if resp.Body != nil {
+		responseData, _ := ioutil.ReadAll(resp.Body)
+		responseBodyString = string(responseData)
+	}
+
+	var metric ms.HttpMetric
+	metric.LoggerName = log.GetComponentName()
+	metric.Direction = DirectionTX
+	metric.Id = uniqueId
+	metric.Url = url
+	metric.Endpoint = url //reusing the url info
+	metric.Method = method
+	metric.Body = body
+	metric.RespBody = responseBodyString
+	metric.RespCode = strconv.Itoa(resp.StatusCode)
+	metric.ProcTime = strconv.Itoa(int(time.Since(startTime) / time.Microsecond))
+
+	if currentStoreName != scenarioName {
+		scenarioName = currentStoreName
+		err := metricStore.SetStore(scenarioName)
+		if err != nil {
+			log.Error("Failed to set the store: ", err)
+		}
+	}
+
+	err := metricStore.SetHttpMetric(metric)
+	if err != nil {
+		log.Error("Failed to set http metric: ", err)
+	}
+
+}
+
 func Logger(inner http.Handler, name string) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		start := time.Now()
 
-		inner.ServeHTTP(w, r)
+		//use a recorder to record/intercept the response
+		rr := httptest.NewRecorder()
+
+		//consume the body and store it locally
+		rawBody, _ := ioutil.ReadAll(r.Body)
+
+		// Restore the io.ReadCloser to it's original state to be consumed in ServeHTTP
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(rawBody))
+
+		inner.ServeHTTP(rr, r)
+
+		endpoint := strings.Split(r.RequestURI, "?")
+
+		uniqueId := nextUniqueId
+		nextUniqueId++
+
+		procTime := strconv.Itoa(int(time.Since(start) / time.Microsecond))
 
 		log.Debug(
-			r.Method, " ",
-			r.RequestURI, " ",
-			name, " ",
-			time.Since(start),
+			"fields [id: ", uniqueId,
+			" url: ", r.RequestURI,
+			" endpoint: ", endpoint[0],
+			" method: ", r.Method,
+			" body: ", string(rawBody),
+			" resp_body: ", rr.Body.String(),
+			" resp_code: ", int32(rr.Code),
+			" proc_time: ", procTime,
+			"] tags [name: ", log.GetComponentName(),
+			" direction: ", DirectionRX,
 		)
+
+		if currentStoreName != scenarioName {
+			scenarioName = currentStoreName
+			err := metricStore.SetStore(scenarioName)
+			if err != nil {
+				log.Error("Failed to set the store: ", err)
+			}
+		}
+
+		var metric ms.HttpMetric
+		metric.LoggerName = log.GetComponentName()
+		metric.Direction = DirectionRX
+		metric.Id = uniqueId
+		metric.Url = r.RequestURI
+		metric.Endpoint = endpoint[0]
+		metric.Method = r.Method
+		metric.Body = string(rawBody)
+		metric.RespBody = rr.Body.String()
+		metric.RespCode = strconv.Itoa(rr.Code)
+		metric.ProcTime = procTime
+
+		err := metricStore.SetHttpMetric(metric)
+		if err != nil {
+			log.Error("Failed to set http metric: ", err)
+		}
+
+		// copy everything from response recorder
+		// to actual response writer
+		for k, v := range rr.Result().Header {
+			w.Header()[k] = v
+		}
+		w.WriteHeader(rr.Code)
+
+		//writting deletes the content of the body, so log had to be done before that
+		_, _ = rr.Body.WriteTo(w)
 	})
 }

@@ -41,6 +41,9 @@ type Route struct {
 type Routes []Route
 
 func NewRouter() *mux.Router {
+
+	_ = InitLogger()
+
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc

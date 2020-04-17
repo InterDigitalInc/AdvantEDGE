@@ -17,8 +17,6 @@
 package sbi
 
 import (
-	//"strings"
-
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -28,16 +26,17 @@ const module string = "rnis-sbi"
 const redisAddr string = "meep-redis-master:6379"
 
 type RnisSbi struct {
-	activeModel         *mod.Model
-	updateUeEcgiInfoCB  func(string, string, string, string)
-	updateAppEcgiInfoCB func(string, string, string, string)
-	cleanUpCB           func()
+	activeModel          *mod.Model
+	updateUeEcgiInfoCB   func(string, string, string, string)
+	updateAppEcgiInfoCB  func(string, string, string, string)
+	updateScenarioNameCB func(string)
+	cleanUpCB            func()
 }
 
 var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
-func Init(updateUeEcgiInfo func(string, string, string, string), updateAppEcgiInfo func(string, string, string, string), cleanUp func()) (err error) {
+func Init(updateUeEcgiInfo func(string, string, string, string), updateAppEcgiInfo func(string, string, string, string), updateScenarioName func(string), cleanUp func()) (err error) {
 
 	// Create new SBI instance
 	sbi = new(RnisSbi)
@@ -51,6 +50,7 @@ func Init(updateUeEcgiInfo func(string, string, string, string), updateAppEcgiIn
 
 	sbi.updateUeEcgiInfoCB = updateUeEcgiInfo
 	sbi.updateAppEcgiInfoCB = updateAppEcgiInfo
+	sbi.updateScenarioNameCB = updateScenarioName
 	sbi.cleanUpCB = cleanUp
 
 	return nil
@@ -87,6 +87,10 @@ func eventHandler(channel string, payload string) {
 
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
+
+	// Update scenario Name that needs to be accessed by the NBI
+	scenarioName := sbi.activeModel.GetScenarioName()
+	sbi.updateScenarioNameCB(scenarioName)
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
