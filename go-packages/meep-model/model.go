@@ -23,7 +23,7 @@ import (
 	"strings"
 	"sync"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	"github.com/RyanCarrier/dijkstra"
@@ -69,8 +69,8 @@ type Model struct {
 	activeKey     string
 	listener      func(string, string)
 	rc            *redis.Connector
-	scenario      *ceModel.Scenario
-	svcMap        []ceModel.NodeServiceMaps
+	scenario      *dataModel.Scenario
+	svcMap        []dataModel.NodeServiceMaps
 	nodeMap       *NodeMap
 	networkGraph  *NetworkGraph
 	lock          sync.RWMutex
@@ -99,7 +99,7 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	m.subscribed = false
 	m.ActiveChannel = ActiveScenarioEvents
 	m.activeKey = activeScenarioKey
-	m.scenario = new(ceModel.Scenario)
+	m.scenario = new(dataModel.Scenario)
 	err = m.parseNodes()
 	if err != nil {
 		log.Error("Failed to parse nodes for new model: ", m.name)
@@ -120,9 +120,9 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 
 // JSONMarshallScenarioList - Convert ScenarioList to JSON string
 func JSONMarshallScenarioList(scenarioList [][]byte) (slStr string, err error) {
-	var sl ceModel.ScenarioList
+	var sl dataModel.ScenarioList
 	for _, s := range scenarioList {
-		var scenario ceModel.Scenario
+		var scenario dataModel.Scenario
 		err = json.Unmarshal(s, &scenario)
 		if err != nil {
 			return "", err
@@ -140,7 +140,7 @@ func JSONMarshallScenarioList(scenarioList [][]byte) (slStr string, err error) {
 
 // JSONMarshallScenario - Convert ScenarioList to JSON string
 func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
-	var s ceModel.Scenario
+	var s dataModel.Scenario
 	err = json.Unmarshal(scenario, &s)
 	if err != nil {
 		return "", err
@@ -156,7 +156,7 @@ func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
 
 // JSONMarshallReplayFileList - Convert ReplayFileList to JSON string
 func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err error) {
-	var rl ceModel.ReplayFileList
+	var rl dataModel.ReplayFileList
 	rl.ReplayFiles = replayFileNameList
 	json, err := json.Marshal(rl)
 	if err != nil {
@@ -168,7 +168,7 @@ func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err 
 
 // JSONMarshallReplay - Convert Replay to JSON string
 func JSONMarshallReplay(replay []byte) (rStr string, err error) {
-	var r ceModel.Replay
+	var r dataModel.Replay
 	err = json.Unmarshal(replay, &r)
 	if err != nil {
 		return "", err
@@ -187,7 +187,7 @@ func (m *Model) SetScenario(j []byte) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err = json.Unmarshal(j, scenario)
 	if err != nil {
 		log.Error(err.Error())
@@ -330,7 +330,7 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 }
 
 // GetServiceMaps - Extracts the model service maps
-func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
+func (m *Model) GetServiceMaps() *[]dataModel.NodeServiceMaps {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
@@ -338,7 +338,7 @@ func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
 }
 
 //UpdateNetChar - Update network characteristics for a node
-func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (err error) {
+func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -362,16 +362,16 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
 		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
-			domain := n.object.(*ceModel.Domain)
+			domain := n.object.(*dataModel.Domain)
 			domain.InterZoneLatency = nc.Latency
 			domain.InterZoneLatencyVariation = nc.LatencyVariation
 			domain.InterZoneThroughput = nc.Throughput
 			domain.InterZonePacketLoss = nc.PacketLoss
 			updated = true
 		} else if ncType == NetCharZone {
-			zone := n.object.(*ceModel.Zone)
+			zone := n.object.(*dataModel.Zone)
 			if zone.NetChar == nil {
-				zone.NetChar = new(ceModel.NetworkCharacteristics)
+				zone.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			zone.NetChar.Latency = nc.Latency
 			zone.NetChar.LatencyVariation = nc.LatencyVariation
@@ -379,21 +379,21 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			zone.NetChar.PacketLoss = nc.PacketLoss
 			updated = true
 		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
-			nl := n.object.(*ceModel.NetworkLocation)
+			nl := n.object.(*dataModel.NetworkLocation)
 			nl.TerminalLinkLatency = nc.Latency
 			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
 			nl.TerminalLinkThroughput = nc.Throughput
 			nl.TerminalLinkPacketLoss = nc.PacketLoss
 			updated = true
 		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
-			pl := n.object.(*ceModel.PhysicalLocation)
+			pl := n.object.(*dataModel.PhysicalLocation)
 			pl.LinkLatency = nc.Latency
 			pl.LinkLatencyVariation = nc.LatencyVariation
 			pl.LinkThroughput = nc.Throughput
 			pl.LinkPacketLoss = nc.PacketLoss
 			updated = true
 		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
-			proc := n.object.(*ceModel.Process)
+			proc := n.object.(*dataModel.Process)
 			proc.AppLatency = nc.Latency
 			proc.AppLatencyVariation = nc.LatencyVariation
 			proc.AppThroughput = nc.Throughput
@@ -551,7 +551,7 @@ func (m *Model) parseNodes() (err error) {
 			deployment := m.scenario.Deployment
 			ctx := NewNodeContext(m.scenario.Name, "", "", "", "")
 			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
-			m.svcMap = make([]ceModel.NodeServiceMaps, 0)
+			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
 
 			// Domains
 			for iDomain := range m.scenario.Deployment.Domains {
@@ -590,7 +590,7 @@ func (m *Model) parseNodes() (err error) {
 
 								// Update service map for external processes
 								if proc.IsExternal {
-									var nodeServiceMaps ceModel.NodeServiceMaps
+									var nodeServiceMaps dataModel.NodeServiceMaps
 									nodeServiceMaps.Node = proc.Name
 									nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap, proc.ExternalConfig.IngressServiceMap...)
 									nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap, proc.ExternalConfig.EgressServiceMap...)
@@ -629,15 +629,15 @@ func (m *Model) refresh() (err error) {
 }
 
 func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocName string, err error) {
-	var pl *ceModel.PhysicalLocation
-	var oldNL *ceModel.NetworkLocation
-	var newNL *ceModel.NetworkLocation
+	var pl *dataModel.PhysicalLocation
+	var oldNL *dataModel.NetworkLocation
+	var newNL *dataModel.NetworkLocation
 
 	// Node is a UE
-	pl = node.object.(*ceModel.PhysicalLocation)
+	pl = node.object.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ pl: %+v\n", pl)
 
-	oldNL = node.parent.(*ceModel.NetworkLocation)
+	oldNL = node.parent.(*dataModel.NetworkLocation)
 	// fmt.Printf("+++ oldNL: %+v\n", oldNL)
 	if oldNL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
@@ -648,7 +648,7 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 	if newNLNode == nil {
 		return "", "", errors.New("MoveNode: " + destName + " not found")
 	}
-	newNL = newNLNode.object.(*ceModel.NetworkLocation)
+	newNL = newNLNode.object.(*dataModel.NetworkLocation)
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
@@ -683,12 +683,12 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 }
 
 func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLocName string, err error) {
-	var proc *ceModel.Process
-	var oldPL *ceModel.PhysicalLocation
-	var newPL *ceModel.PhysicalLocation
+	var proc *dataModel.Process
+	var oldPL *dataModel.PhysicalLocation
+	var newPL *dataModel.PhysicalLocation
 
 	// Node is a process
-	proc = node.object.(*ceModel.Process)
+	proc = node.object.(*dataModel.Process)
 	// fmt.Printf("+++ process: %+v\n", proc)
 	//process part of a mobility group can't be moved
 	if proc.ServiceConfig != nil {
@@ -697,7 +697,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 		}
 	}
 
-	oldPL = node.parent.(*ceModel.PhysicalLocation)
+	oldPL = node.parent.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ oldPL: %+v\n", oldPL)
 	if oldPL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
@@ -708,7 +708,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	if newPLNode == nil {
 		return "", "", errors.New("MoveNode: " + destName + " not found")
 	}
-	newPL = newPLNode.object.(*ceModel.PhysicalLocation)
+	newPL = newPLNode.object.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
@@ -744,7 +744,7 @@ func (m *Model) internalListener(channel string, payload string) {
 	if err != nil {
 		log.Debug("Scenario was deleted")
 		// Scenario was deleted
-		m.scenario = new(ceModel.Scenario)
+		m.scenario = new(dataModel.Scenario)
 		_ = m.parseNodes()
 	} else {
 		_ = m.SetScenario([]byte(j))

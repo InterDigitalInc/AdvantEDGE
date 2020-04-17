@@ -15,7 +15,7 @@ require (
 )
 
 replace (
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model => ../../go-packages/meep-data-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger => ../../go-packages/meep-http-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client => ../../go-packages/meep-loc-serv-notification-client
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger

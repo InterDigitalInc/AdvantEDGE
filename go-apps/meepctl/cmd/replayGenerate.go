@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	"github.com/spf13/cobra"
 )
 
@@ -59,7 +59,7 @@ func replayAddFromScenario(cobraCmd *cobra.Command, filename string, scenarioNam
 		return
 	}
 
-	var replayInfo ce.ReplayInfo
+	var replayInfo sandbox.ReplayInfo
 	replayInfo.ScenarioName = scenarioName
 	replayInfo.Description = description
 

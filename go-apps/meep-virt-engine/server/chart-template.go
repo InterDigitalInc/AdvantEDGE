@@ -25,7 +25,7 @@ import (
 	"text/template"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
@@ -162,7 +162,7 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 			err = errors.New("Error finding process: " + name)
 			return nil, err
 		}
-		proc, ok := node.(*ceModel.Process)
+		proc, ok := node.(*dataModel.Process)
 		if !ok {
 			err = errors.New("Error casting process: " + name)
 			return nil, err

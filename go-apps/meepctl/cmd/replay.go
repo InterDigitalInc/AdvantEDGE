@@ -24,7 +24,7 @@ import (
 	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 )
 
 // replayCmd represents the replay command
@@ -50,11 +50,11 @@ func init() {
 	rootCmd.AddCommand(replayCmd)
 }
 
-func createClient(path string) (*ce.APIClient, error) {
+func createClient(path string) (*sandbox.APIClient, error) {
 	// Create & store client for App REST API
-	ceClientCfg := ce.NewConfiguration()
+	ceClientCfg := sandbox.NewConfiguration()
 	ceClientCfg.BasePath = path
-	ceClient := ce.NewAPIClient(ceClientCfg)
+	ceClient := sandbox.NewAPIClient(ceClientCfg)
 	if ceClient == nil {
 		err := errors.New("Failed to create ctrl-engine REST API client")
 		return nil, err

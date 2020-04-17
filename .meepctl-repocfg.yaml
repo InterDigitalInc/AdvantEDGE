@@ -23,16 +23,6 @@ repo:
 
     # Go Applications
     go-apps:
-      meep-ctrl-engine:
-        src: go-apps/meep-ctrl-engine
-        bin: bin/meep-ctrl-engine
-        chart: charts/core/meep-ctrl-engine
-        codecov: true
-        lint: true
-        api: go-apps/meep-ctrl-engine/api/swagger.yaml
-        docker-data:
-          api: bin/meep-swagger-ui
-          static: bin/meep-frontend
       meep-mon-engine:
         src: go-apps/meep-mon-engine
         bin: bin/meep-mon-engine
@@ -41,6 +31,16 @@ repo:
           - -mod=vendor
         codecov: true
         lint: true
+      meep-platform-ctrl:
+        src: go-apps/meep-platform-ctrl
+        bin: bin/meep-platform-ctrl
+        chart: charts/core/meep-platform-ctrl
+        codecov: true
+        lint: true
+        api: go-apps/meep-platform-ctrl/api/swagger.yaml
+        docker-data:
+          api: bin/meep-swagger-ui
+          static: bin/meep-frontend
       meep-virt-engine:
         src: go-apps/meep-virt-engine
         bin: bin/meep-virt-engine
@@ -67,21 +67,24 @@ repo:
         bin: bin/meep-frontend
         lint: true
         local-deps:
-          meep-ctrl-engine-api: js-packages/meep-ctrl-engine-client
+          meep-platform-ctrl-api: js-packages/meep-platform-ctrl-client
+          meep-sandbox-ctrl-api: js-packages/meep-sandbox-ctrl-client
+          meep-mon-engine-api: js-packages/meep-mon-engine-client
       meep-swagger-ui:
         src: js-apps/meep-swagger-ui
         bin: bin/meep-swagger-ui
         lint: false
         api-bundle:
-          - core.go-apps.meep-ctrl-engine
+          - core.go-apps.meep-platform-ctrl
+          - sandbox.go-apps.meep-sandbox-ctrl
           - sandbox.go-apps.meep-loc-serv
-          - sandbox.go-apps.meep-metrics-engine
-          - sandbox.go-apps.meep-mg-manager
           - packages.go-packages.meep-loc-serv-notification-client
+          - sandbox.go-apps.meep-rnis
+          - packages.go-packages.meep-rnis-notification-client
+          - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
+          - sandbox.go-apps.meep-mg-manager
           - packages.go-packages.meep-mg-app-client
-          - meep-rnis
-          - meep-rnis-notification-client
 
   #------------------------------
   #  Sandbox Subsystem
@@ -124,6 +127,13 @@ repo:
         codecov: false
         lint: true
         api: go-apps/meep-rnis/api/swagger.yaml
+      meep-sandbox-ctrl:
+        src: go-apps/meep-sandbox-ctrl
+        bin: bin/meep-sandbox-ctrl
+        chart: charts/sandbox/meep-sandbox-ctrl
+        codecov: false
+        lint: true
+        api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
       meep-tc-engine:
         src: go-apps/meep-tc-engine
         bin: bin/meep-tc-engine
@@ -165,11 +175,8 @@ repo:
       meep-couch:
         src: go-packages/meep-couch
         lint: true
-      meep-ctrl-engine-client:
-        src: go-packages/meep-ctrl-engine-client
-        lint: false
-      meep-ctrl-engine-model:
-        src: go-packages/meep-ctrl-engine-model
+      meep-data-model:
+        src: go-packages/meep-data-model
         lint: true
       meep-loc-serv-client:
         src: go-packages/meep-loc-serv-client
@@ -217,15 +224,21 @@ repo:
         src: go-packages/meep-rnis-notification-client
         lint: false
         api: go-packages/meep-rnis-notification-client/api/swagger.yaml
+      meep-sandbox-ctrl-client:
+        src: go-packages/meep-sandbox-ctrl-client
+        lint: false
       meep-watchdog:
         src: go-packages/meep-watchdog
         lint: true
 
     # Javascript Packages
     js-packages:
-      meep-ctrl-engine-client:
-        src: js-packages/meep-ctrl-engine-client
+      meep-mon-engine-client:
+        src: js-packages/meep-mon-engine-client
         lint: false
-      meep-metrics-engine-client:
-        src: js-packages/meep-metrics-engine-client
+      meep-platform-ctrl-client:
+        src: js-packages/meep-platform-ctrl-client
+        lint: false
+      meep-sandbox-ctrl-client:
+        src: js-packages/meep-sandbox-ctrl-client
         lint: false

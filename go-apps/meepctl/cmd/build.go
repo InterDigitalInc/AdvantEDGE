@@ -45,8 +45,8 @@ Multiple targets can be specified (e.g. meepctl build <target1> <target2>...)`
 
 const buildExample = `  # Build all components
   meepctl build all
-  # Build meep-ctrl-engine component only
-  meepctl build meep-ctrl-engine`
+  # Build meep-platform-ctrl component only
+  meepctl build meep-platform-ctrl`
 
 // buildCmd represents the build command
 var buildCmd = &cobra.Command{

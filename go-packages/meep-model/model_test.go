@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	"github.com/blang/semver"
 )
@@ -257,7 +257,7 @@ func TestMoveNode(t *testing.T) {
 	if node == nil {
 		t.Errorf("unable to find node")
 	}
-	proc := node.object.(*ceModel.Process)
+	proc := node.object.(*dataModel.Process)
 	proc.ServiceConfig.MeSvcName = ""
 	old, new, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge1")
 	if err != nil {
@@ -303,7 +303,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("SetScenario failed")
 	}
 
-	var nc ceModel.EventNetworkCharacteristicsUpdate
+	var nc dataModel.EventNetworkCharacteristicsUpdate
 	nc.ElementName = "demo1"
 	nc.ElementType = "SCENARIO"
 	nc.Latency = 1
@@ -334,7 +334,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n := m.nodeMap.FindByName(nc.ElementName)
-	d := n.object.(*ceModel.Domain)
+	d := n.object.(*dataModel.Domain)
 	if d.InterZoneLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -355,7 +355,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	z := n.object.(*ceModel.Zone)
+	z := n.object.(*dataModel.Zone)
 	if z.NetChar.Latency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -376,7 +376,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	nl := n.object.(*ceModel.NetworkLocation)
+	nl := n.object.(*dataModel.NetworkLocation)
 	if nl.TerminalLinkLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -397,7 +397,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	pl := n.object.(*ceModel.PhysicalLocation)
+	pl := n.object.(*dataModel.PhysicalLocation)
 	if pl.LinkLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -418,7 +418,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	pl = n.object.(*ceModel.PhysicalLocation)
+	pl = n.object.(*dataModel.PhysicalLocation)
 	if pl.LinkLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -439,7 +439,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	pl = n.object.(*ceModel.PhysicalLocation)
+	pl = n.object.(*dataModel.PhysicalLocation)
 	if pl.LinkLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -460,7 +460,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	pl = n.object.(*ceModel.PhysicalLocation)
+	pl = n.object.(*dataModel.PhysicalLocation)
 	if pl.LinkLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -481,7 +481,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	proc := n.object.(*ceModel.Process)
+	proc := n.object.(*dataModel.Process)
 	if proc.AppLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -502,7 +502,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	proc = n.object.(*ceModel.Process)
+	proc = n.object.(*dataModel.Process)
 	if proc.AppLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -523,7 +523,7 @@ func TestUpdateNetChar(t *testing.T) {
 		t.Errorf("Update " + nc.ElementType + " failed")
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
-	proc = n.object.(*ceModel.Process)
+	proc = n.object.(*dataModel.Process)
 	if proc.AppLatency != 1 {
 		t.Errorf("Update " + nc.ElementType + " latency failed")
 	}
@@ -642,7 +642,7 @@ func TestListenModel(t *testing.T) {
 		t.Errorf("No event received for MoveUE")
 	}
 	n := mLis.nodeMap.FindByName("ue1")
-	parent := n.parent.(*ceModel.NetworkLocation)
+	parent := n.parent.(*dataModel.NetworkLocation)
 	if parent.Name != "zone2-poa1" {
 		t.Errorf("Published model not as expected")
 	}
@@ -650,7 +650,7 @@ func TestListenModel(t *testing.T) {
 	//UpdateNetChar
 	fmt.Println("Update net-char")
 	testCount++
-	var nc ceModel.EventNetworkCharacteristicsUpdate
+	var nc dataModel.EventNetworkCharacteristicsUpdate
 	nc.ElementName = "demo1"
 	nc.ElementType = "SCENARIO"
 	nc.Latency = 1
@@ -813,7 +813,7 @@ func TestGetters(t *testing.T) {
 	if n == nil {
 		t.Errorf("Failed getting ue1 node")
 	}
-	pl, ok := n.(*ceModel.PhysicalLocation)
+	pl, ok := n.(*dataModel.PhysicalLocation)
 	if !ok {
 		t.Errorf("ue1 has wrong type %T -- expected *model.PhysicalLocation", n)
 	}

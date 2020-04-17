@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -103,7 +103,7 @@ func TestSegAlgoSegmentation(t *testing.T) {
 
 	// Verify algo after Network Characteristic update
 	fmt.Println("Update Net char")
-	var netCharUpdateEvent ceModel.EventNetworkCharacteristicsUpdate
+	var netCharUpdateEvent dataModel.EventNetworkCharacteristicsUpdate
 	netCharUpdateEvent.ElementName = "zone1-poa1"
 	netCharUpdateEvent.ElementType = "POA"
 	netCharUpdateEvent.Throughput = 100
@@ -275,7 +275,7 @@ func TestSegAlgoCalculation(t *testing.T) {
 
 	// Verify algo calculations after Network Characteristic update
 	fmt.Println("Update Net char")
-	var netCharUpdateEvent ceModel.EventNetworkCharacteristicsUpdate
+	var netCharUpdateEvent dataModel.EventNetworkCharacteristicsUpdate
 	netCharUpdateEvent.ElementName = "zone1-poa1"
 	netCharUpdateEvent.ElementType = "POA"
 	netCharUpdateEvent.Latency = 1          // no change

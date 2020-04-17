@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -403,7 +403,7 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error finding process: " + name)
 			return err
 		}
-		proc, ok := node.(*ceModel.Process)
+		proc, ok := node.(*dataModel.Process)
 		if !ok {
 			err := errors.New("Error casting process: " + name)
 			return err
@@ -442,10 +442,10 @@ func processScenario(model *mod.Model) error {
 			userChartGroup := strings.Split(proc.UserChartGroup, ":")
 
 			// Retrieve service ports
-			var servicePorts []ceModel.ServicePort
+			var servicePorts []dataModel.ServicePort
 			port, err := strconv.ParseInt(userChartGroup[2], 10, 32)
 			if err == nil {
-				var servicePort ceModel.ServicePort
+				var servicePort dataModel.ServicePort
 				servicePort.Port = int32(port)
 				servicePort.Protocol = userChartGroup[3]
 				servicePorts = append(servicePorts, servicePort)
@@ -475,8 +475,8 @@ func processScenario(model *mod.Model) error {
 				egressSvcMap.Protocol = service.Protocol
 				podInfo.EgressSvcMapList[egressSvcMap.SvcName] = egressSvcMap
 
-				var servicePorts []ceModel.ServicePort
-				var servicePort ceModel.ServicePort
+				var servicePorts []dataModel.ServicePort
+				var servicePort dataModel.ServicePort
 				servicePort.Port = service.Port
 				servicePort.Protocol = service.Protocol
 				servicePorts = append(servicePorts, servicePort)
@@ -489,7 +489,7 @@ func processScenario(model *mod.Model) error {
 }
 
 // Create & store new service & MG service information
-func addServiceInfo(svcName string, svcPorts []ceModel.ServicePort, mgSvcName string, nodeName string) {
+func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName string, nodeName string) {
 	// Add service instance service map
 	addSvc(svcName)
 

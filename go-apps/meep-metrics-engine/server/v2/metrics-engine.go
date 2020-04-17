@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
@@ -180,7 +180,7 @@ func activateScenario() {
 	metricStore.Flush()
 
 	//inserting an INIT event at T0
-	var ev ceModel.Event
+	var ev dataModel.Event
 	ev.Name = "Init"
 	ev.Type_ = "OTHER"
 	j, _ := json.Marshal(ev)

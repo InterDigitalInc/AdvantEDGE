@@ -46,8 +46,8 @@ Multiple targets can be specified (e.g. meepctl lint <target1> <target2>...)`
 
 const lintExample = `  # Lint all components
   meepctl lint all
-  # Lint meep-ctrl-engine component only
-  meepctl lint meep-ctrl-engine`
+  # Lint meep-platform-ctrl component only
+  meepctl lint meep-platform-ctrl`
 
 // lintCmd represents the lint command
 var lintCmd = &cobra.Command{

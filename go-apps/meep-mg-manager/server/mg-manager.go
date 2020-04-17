@@ -24,7 +24,7 @@ import (
 	"strings"
 	"sync"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
@@ -270,7 +270,7 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error finding process: " + name)
 			return err
 		}
-		proc, ok := procNode.(*ceModel.Process)
+		proc, ok := procNode.(*dataModel.Process)
 		if !ok {
 			err := errors.New("Error casting process: " + name)
 			return err
@@ -297,7 +297,7 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error finding physical location: " + netElem.phyLoc)
 			return err
 		}
-		phyLoc, ok := phyLocNode.(*ceModel.PhysicalLocation)
+		phyLoc, ok := phyLocNode.(*dataModel.PhysicalLocation)
 		if !ok {
 			err := errors.New("Error casting physical location: " + netElem.phyLoc)
 			return err

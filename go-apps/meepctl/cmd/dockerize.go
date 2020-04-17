@@ -47,8 +47,8 @@ Multiple targets can be specified (e.g. meepctl dockerize <target1> <target2>...
 
 const dockerizeExample = `  # Dockerize all components
   meepctl dockerize all
-  # Dockerize meep-ctrl-engine component only
-  meepctl dockerize meep-ctrl-engine`
+  # Dockerize meep-platform-ctrl component only
+  meepctl dockerize meep-platform-ctrl`
 
 // dockerizeCmd represents the dockerize command
 var dockerizeCmd = &cobra.Command{
