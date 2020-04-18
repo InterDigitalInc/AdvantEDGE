@@ -116,7 +116,12 @@ const execZones = createSelector(
 const execPOAs = createSelector(
   [execTableElements],
   elems => {
-    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'POA');
+    return _.filter(
+      elems,
+      elem =>
+        getElemFieldVal(elem, FIELD_TYPE) === 'POA' ||
+        getElemFieldVal(elem, FIELD_TYPE) === 'POA-CELL-4G'
+    );
   }
 );
 

@@ -48,6 +48,10 @@ import {
   FIELD_CMD_ARGS,
   FIELD_EXT_PORT,
   FIELD_IS_EXTERNAL,
+  FIELD_MCC,
+  FIELD_MNC,
+  FIELD_DEFAULT_CELL_ID,
+  FIELD_CELL_ID,
   FIELD_CHART_ENABLED,
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
@@ -74,6 +78,7 @@ import {
   ELEMENT_TYPE_OPERATOR,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_CELL_4G,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -111,6 +116,10 @@ import {
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_EXTERNAL_CHECK,
+  CFG_ELEM_MNC,
+  CFG_ELEM_MCC,
+  CFG_ELEM_DEFAULT_CELL_ID,
+  CFG_ELEM_CELL_ID,
   CFG_ELEM_CHART_CHECK,
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
@@ -242,6 +251,28 @@ const validateGpuCount = count => {
   const p = Number(count);
   if (p !== '' && (p < GPU_COUNT_MIN || p > GPU_COUNT_MAX)) {
     return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
+  }
+  return null;
+};
+
+const validateCellularMccMnc = val => {
+  if (val) {
+    if (val.length > 3) {
+      return 'Maximum 3 numeric characters';
+    } else if (!val.match(/^(([0-9][0-9]*)?[0-9])+$/)) {
+      return 'Numeric characters only';
+    }
+  }
+  return null;
+};
+
+const validateCellularCellId = val => {
+  if (val) {
+    if (val.length > 7) {
+      return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
   }
   return null;
 };
@@ -592,11 +623,42 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
     );
   case ELEMENT_TYPE_OPERATOR:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INT_ZONE]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_ZONE]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MCC"
+            fieldName={FIELD_MCC}
+            cydata={CFG_ELEM_MCC}
+          />
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MNC"
+            fieldName={FIELD_MNC}
+            cydata={CFG_ELEM_MNC}
+          />
+          <CfgTextFieldCell
+            span={6}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularCellId}
+            label="Default cell Id"
+            fieldName={FIELD_DEFAULT_CELL_ID}
+            cydata={CFG_ELEM_DEFAULT_CELL_ID}
+          />
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_ZONE:
     return (
@@ -613,6 +675,24 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         element={element}
         prefixes={[PREFIX_TERM_LINK]}
       />
+    );
+  case ELEMENT_TYPE_POA_CELL_4G:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateCellularCellId}
+          label="Cell Id"
+          fieldName={FIELD_CELL_ID}
+          cydata={CFG_ELEM_CELL_ID}
+        />
+      </>
     );
   case ELEMENT_TYPE_UE:
   case ELEMENT_TYPE_DC:
@@ -878,7 +958,7 @@ const elementTypes = [
   },
   {
     label: 'Network Location',
-    options: [ELEMENT_TYPE_DC, ELEMENT_TYPE_POA]
+    options: [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL_4G]
   },
   {
     label: 'Physical Location',
@@ -906,9 +986,10 @@ parentTypes[ELEMENT_TYPE_OPERATOR] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_EDGE] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR];
 parentTypes[ELEMENT_TYPE_POA] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_CELL_4G] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_CN] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA];
-parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA];
+parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL_4G];
+parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL_4G];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
 parentTypes[ELEMENT_TYPE_MECSVC] = [
@@ -992,6 +1073,9 @@ const getSuggestedName = ( type, elements ) => {
     break;
   case ELEMENT_TYPE_DC:
     suggestedPrefix = 'cloud';
+    break;
+  case ELEMENT_TYPE_POA_CELL_4G:
+    suggestedPrefix = 'poa-cell-4g';
     break;
   default:
     suggestedPrefix = type.toLowerCase();

@@ -38,6 +38,10 @@ import {
   FIELD_CMD_ARGS,
   FIELD_EXT_PORT,
   FIELD_IS_EXTERNAL,
+  FIELD_MCC,
+  FIELD_MNC,
+  FIELD_DEFAULT_CELL_ID,
+  FIELD_CELL_ID,
   FIELD_CHART_ENABLED,
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
@@ -77,6 +81,7 @@ import {
   ELEMENT_TYPE_OPERATOR,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_CELL_4G,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -115,7 +120,8 @@ import {
   PUBLIC_DOMAIN_TYPE_STR,
   ZONE_TYPE_STR,
   COMMON_ZONE_TYPE_STR,
-  NL_TYPE_STR,
+  POA_TYPE_STR,
+  POA_CELL_4G_TYPE_STR,
   DEFAULT_NL_TYPE_STR,
   UE_TYPE_STR,
   FOG_TYPE_STR,
@@ -319,8 +325,12 @@ export function addElementToScenario(scenario, element) {
     scenarioElement = createZone(uniqueId, name, element);
     break;
   }
+  case ELEMENT_TYPE_POA_CELL_4G: {
+    scenarioElement = createPoaCell4g(uniqueId, name, element);
+    break;
+  }
   case ELEMENT_TYPE_POA: {
-    scenarioElement = createNL(uniqueId, name, element);
+    scenarioElement = createPoa(uniqueId, name, element);
     break;
   }
   case ELEMENT_TYPE_DC: {
@@ -485,6 +495,14 @@ export function updateElementInScenario(scenario, element) {
         FIELD_INT_ZONE_PKT_LOSS
       );
 
+      var cellular4gDomainConfig = {
+        mcc: getElemFieldVal(element, FIELD_MCC),
+        mnc: getElemFieldVal(element, FIELD_MNC),
+        defaultCellId: getElemFieldVal(element, FIELD_DEFAULT_CELL_ID)
+      };
+
+      domain.cellular4gDomainConfig = cellular4gDomainConfig;
+
       //if domain name changed, other elements created based on that name must also be updated (default ones)
       for (var i2 in domain.zones) {
         var zoneCommon = domain.zones[i2];
@@ -559,6 +577,17 @@ export function updateElementInScenario(scenario, element) {
             element,
             FIELD_TERM_LINK_PKT_LOSS
           );
+          nl.terminalLinkPacketLoss = getElemFieldVal(
+            element,
+            FIELD_TERM_LINK_PKT_LOSS
+          );
+
+          var cellular4gPoaConfig = {
+            cellId: getElemFieldVal(element, FIELD_CELL_ID)
+          };
+
+          nl.cellular4gPoaConfig = cellular4gPoaConfig;
+
           nl.label = name;
           nl.name = name;
           return;
@@ -987,7 +1016,12 @@ export function createDomain(uniqueId, name, element) {
     ),
     interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),
     interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),
-    zones: [createDefaultZone(name)]
+    zones: [createDefaultZone(name)],
+    cellular4gDomainConfig: {
+      mcc: getElemFieldVal(element, FIELD_MCC),
+      mnc: getElemFieldVal(element, FIELD_MNC),
+      defaultCellId: getElemFieldVal(element, FIELD_DEFAULT_CELL_ID)
+    }
   };
   return domain;
 }
@@ -1006,11 +1040,11 @@ export function createDefaultDomain() {
   return domain;
 }
 
-export function createNL(uniqueId, name, element) {
+export function createPoa(uniqueId, name, element) {
   var nl = {
     id: uniqueId,
     name: name,
-    type: NL_TYPE_STR,
+    type: POA_TYPE_STR,
     terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
     terminalLinkLatencyVariation: getElemFieldVal(
       element,
@@ -1018,8 +1052,33 @@ export function createNL(uniqueId, name, element) {
     ),
     terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
     terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
-    physicalLocations: []
+    physicalLocations: [],
+    cellular4gPoaConfig: {}
   };
+
+  return nl;
+}
+
+export function createPoaCell4g(uniqueId, name, element) {
+  var nl = {
+    id: uniqueId,
+    name: name,
+    type: POA_CELL_4G_TYPE_STR,
+    terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+    terminalLinkLatencyVariation: getElemFieldVal(
+      element,
+      FIELD_TERM_LINK_LATENCY_VAR
+    ),
+    terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
+    terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
+    physicalLocations: [],
+    cellular4gPoaConfig: {}
+  };
+  var cellular4g = {
+    cellId: getElemFieldVal(element, FIELD_CELL_ID)
+  };
+  nl.cellular4gPoaConfig = cellular4g;
+
   return nl;
 }
 
@@ -1151,6 +1210,13 @@ export function getElementFromScenario(scenario, elementId) {
         FIELD_INT_ZONE_PKT_LOSS,
         domain.interZonePacketLoss || 0
       );
+
+      if (domain.cellular4gDomainConfig) {
+        setElemFieldVal(elem, FIELD_MCC, domain.cellular4gDomainConfig.mcc);
+        setElemFieldVal(elem, FIELD_MNC, domain.cellular4gDomainConfig.mnc);
+        setElemFieldVal(elem, FIELD_DEFAULT_CELL_ID, domain.cellular4gDomainConfig.defaultCellId);
+      }
+
       return elem;
     }
 
@@ -1189,7 +1255,17 @@ export function getElementFromScenario(scenario, elementId) {
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.id === elementId) {
-          setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
+          switch (nl.type) {
+          case POA_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
+            break;
+          case POA_CELL_4G_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_CELL_4G);
+            break;
+          default:
+            break;
+          }
+
           setElemFieldVal(elem, FIELD_NAME, nl.name);
           setElemFieldVal(
             elem,
@@ -1220,6 +1296,13 @@ export function getElementFromScenario(scenario, elementId) {
             FIELD_TERM_LINK_PKT_LOSS,
             nl.terminalLinkPacketLoss || 0
           );
+          if (nl.cellular4gPoaConfig) {
+            setElemFieldVal(
+              elem,
+              FIELD_CELL_ID,
+              nl.cellular4gPoaConfig.cellId || ''
+            );
+          }
           return elem;
         }
 
