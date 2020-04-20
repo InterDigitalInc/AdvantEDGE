@@ -80,7 +80,7 @@ describe('Scenario Configuration', function () {
 
   // Test Variables
   let defaultScenario = 'None';
-  let dummyScenario = 'dummy-scenario3';
+  let dummyScenario = 'dummy-scenario';
 
   // Test Setup
   beforeEach(() => {

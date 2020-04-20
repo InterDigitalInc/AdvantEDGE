@@ -965,7 +965,8 @@ const elementTypes = [
     options: [
       ELEMENT_TYPE_UE,
       ELEMENT_TYPE_FOG,
-      ELEMENT_TYPE_EDGE
+      ELEMENT_TYPE_EDGE,
+      ELEMENT_TYPE_DC
       // ELEMENT_TYPE_CN
     ]
   },

@@ -107,6 +107,7 @@ export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
 export const CFG_ELEM_MNC = 'cfg-elem-mnc';
 export const CFG_ELEM_MCC = 'cfg-elem-mcc';
 export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
+export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
