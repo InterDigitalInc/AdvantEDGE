@@ -32,6 +32,16 @@ import {
   FIELD_TYPE
 } from '../../util/elem-utils';
 
+import {
+  ELEMENT_TYPE_ZONE,
+  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_CELL_4G,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_UE,
+  ELEMENT_TYPE_EDGE_APP
+} from '../../meep-constants';
+
 export * from './type-reducer';
 export * from './state-reducer';
 export * from './scenario-reducer';
@@ -45,7 +55,7 @@ const execTableElements = state => state.exec.table.entries;
 const execUEs = createSelector(
   [execTableElements],
   elems => {
-    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'UE');
+    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_UE);
   }
 );
 
@@ -55,10 +65,10 @@ const execMobTypes = createSelector(
     return _.filter(
       elems,
       elem =>
-        getElemFieldVal(elem, FIELD_TYPE) === 'UE' ||
-        getElemFieldVal(elem, FIELD_TYPE) === 'FOG' ||
-        getElemFieldVal(elem, FIELD_TYPE) === 'EDGE' ||
-        (getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION' &&
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_UE ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_FOG ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE ||
+        (getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE_APP &&
           getElemFieldVal(elem, FIELD_GROUP) === '')
     );
   }
@@ -70,8 +80,8 @@ const execFogEdges = createSelector(
     return _.filter(
       elems,
       elem =>
-        getElemFieldVal(elem, FIELD_TYPE) === 'FOG' ||
-        getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_FOG ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE
     );
   }
 );
@@ -81,7 +91,7 @@ const execEdgeApps = createSelector(
   elems => {
     return _.filter(
       elems,
-      elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE APPLICATION'
+      elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE_APP
     );
   }
 );
@@ -91,7 +101,7 @@ const execEdges = createSelector(
   elems => {
     return _.filter(
       elems,
-      elem => getElemFieldVal(elem, FIELD_TYPE) === 'EDGE'
+      elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_EDGE
     );
   }
 );
@@ -99,7 +109,7 @@ const execEdges = createSelector(
 const execFogs = createSelector(
   [execTableElements],
   elems => {
-    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === 'FOG');
+    return _.filter(elems, elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_FOG);
   }
 );
 
@@ -108,7 +118,7 @@ const execZones = createSelector(
   elems => {
     return _.filter(
       elems,
-      elem => getElemFieldVal(elem, FIELD_TYPE) === 'ZONE'
+      elem => getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_ZONE
     );
   }
 );
@@ -119,8 +129,8 @@ const execPOAs = createSelector(
     return _.filter(
       elems,
       elem =>
-        getElemFieldVal(elem, FIELD_TYPE) === 'POA' ||
-        getElemFieldVal(elem, FIELD_TYPE) === 'POA-CELL-4G'
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_POA ||
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_POA_CELL_4G
     );
   }
 );
