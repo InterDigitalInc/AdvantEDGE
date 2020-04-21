@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +35,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 )
 
@@ -42,25 +44,28 @@ type Scenario struct {
 }
 
 type SandboxCtrl struct {
+	sandboxName   string
 	scenarioStore *couch.Connector
 	replayStore   *couch.Connector
 	activeModel   *mod.Model
 	metricStore   *ms.MetricStore
 	replayMgr     *replay.ReplayMgr
+	sandboxStore  *redis.Connector
 }
 
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
-const moduleName string = "meep-sandbox-ctrl"
+const platformModuleName = "platform-ctrl"
+const moduleName = "meep-sandbox-ctrl"
 const eventTypeMobility = "MOBILITY"
 const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
 const eventTypeOther = "OTHER"
 
 // Declare as variables to enable overwrite in test
-var couchDBAddr string = "http://meep-couchdb-svc-couchdb:5984/"
-var redisDBAddr string = "meep-redis-master:6379"
-var influxDBAddr string = "http://meep-influxdb:8086"
+var couchDBAddr string = "http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/"
+var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 // Sandbox Controller
 var sbxCtrl *SandboxCtrl
@@ -68,6 +73,18 @@ var sbxCtrl *SandboxCtrl
 // Init Initializes the Sandbox Controller
 func Init() (err error) {
 	log.Debug("Init")
+
+	// Create new Platform Controller
+	sbxCtrl = new(SandboxCtrl)
+
+	// Retrieve Sandbox name from environment variable
+	sbxCtrl.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sbxCtrl.sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sbxCtrl.sandboxName)
 
 	// Make Scenario DB connection
 	sbxCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
@@ -106,11 +123,86 @@ func Init() (err error) {
 		return err
 	}
 
+	// Connect to Sandbox Store
+	sbxCtrl.sandboxStore, err = redis.NewConnector(redisDBAddr, 0)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+	log.Info("Connected to Sandbox Store DB")
+
 	return nil
 }
 
 // Run Starts the Sandbox Controller
 func Run() (err error) {
+
+	// Activate scenario on sandbox startup if required, otherwise wait for activation request
+	key := platformModuleName + ":sandboxes:" + sbxCtrl.sandboxName
+	fields, err := sbxCtrl.sandboxStore.GetEntry(key)
+	if err == nil {
+		scenarioName := fields["scenarioName"]
+		err = activateScenario(scenarioName)
+		if err != nil {
+			log.Error("Failed to activate scenario with err: ", err.Error())
+		} else {
+			log.Info("Successfully activated scenario: ", scenarioName)
+		}
+	}
+
+	return nil
+}
+
+// Activate the provided scenario
+func activateScenario(scenarioName string) (err error) {
+	// Verify scenario name
+	if scenarioName == "" {
+		err = errors.New("Empty scenario name")
+		return err
+	}
+
+	// Create new model object
+	if sbxCtrl.activeModel == nil {
+		sbxCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+		if err != nil {
+			log.Error("Failed to create model: ", err.Error())
+			return err
+		}
+	}
+
+	// Make sure scenario is not already deployed
+	if sbxCtrl.activeModel.Active {
+		err = errors.New("Scenario already active")
+		return err
+	}
+
+	// Retrieve scenario to activate from DB
+	var scenario []byte
+	scenario, err = sbxCtrl.scenarioStore.GetDoc(false, scenarioName)
+	if err != nil {
+		log.Error("Failed to retrieve scenario from store with err: ", err.Error())
+		return err
+	}
+
+	// Set Metrics Store
+	err = sbxCtrl.metricStore.SetStore(scenarioName)
+	if err != nil {
+		log.Error("Failed to set scenario metrics store with err: ", err.Error())
+		return err
+	}
+
+	// Activate scenario & publish
+	err = sbxCtrl.activeModel.SetScenario(scenario)
+	if err != nil {
+		log.Error("Failed to set active scenario with err: ", err.Error())
+		return err
+	}
+	err = sbxCtrl.activeModel.Activate()
+	if err != nil {
+		log.Error("Failed to activate scenario with err: ", err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -460,7 +552,7 @@ func sendEventMobility(event dataModel.Event) (error, int, string) {
 		return err, http.StatusInternalServerError, ""
 	}
 	log.WithFields(log.Fields{
-		"meep.log.component": "ctrl-engine",
+		"meep.log.component": "sandbox-ctrl",
 		"meep.log.msgType":   "mobilityEvent",
 		"meep.log.oldPoa":    oldNL,
 		"meep.log.newPoa":    newNL,

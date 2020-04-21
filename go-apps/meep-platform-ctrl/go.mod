@@ -4,8 +4,10 @@ go 1.12
 
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3

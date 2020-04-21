@@ -40,6 +40,8 @@ spec:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
           env:
+            - name: MEEP_SANDBOX_NAME
+              value: {{ .Values.image.env.sandboxName }}
             - name: MEEP_METRICS_ROOT_URL
               value: {{ .Values.image.env.rooturl }}
           {{- if .Values.codecov.enabled}}

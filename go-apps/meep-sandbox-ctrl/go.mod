@@ -9,6 +9,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0-20200306214341-11d08c83c4d6 // indirect
 	github.com/gorilla/handlers v1.4.0

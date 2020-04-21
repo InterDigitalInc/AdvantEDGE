@@ -122,6 +122,7 @@ describe('Scenario Execution', function () {
     // Go to execution page
     cy.log('Go to execution page');
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);

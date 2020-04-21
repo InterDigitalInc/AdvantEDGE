@@ -56,6 +56,8 @@ import {
 } from '../../state/exec';
 
 import {
+  SANDBOX_NAME,
+
   // States
   EXEC_STATE_IDLE,
   PAGE_EXECUTE,
@@ -111,6 +113,9 @@ class ExecPageContainer extends Component {
    * @param {String} error Error message, if any.
    */
   terminateScenarioCb(error) {
+    // Delete sandbox immediately after terminating scenario
+    this.deleteSandbox();
+
     if (error !== null) {
       // TODO consider showing an alert  (i.e. toast)
       return;
@@ -135,6 +140,40 @@ class ExecPageContainer extends Component {
     //   console.log('Failed to create scenario');
     // }
     // TODO: consider showing an alert/toast
+  }
+
+  /**
+   * Callback function to receive the result of the createSandboxWithName operation.
+   * @callback module:api/SandboxControlApi~createSandboxWithNameCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
+  createSandboxWithNameCb(error) {
+    if (error) {
+      // TODO: consider showing an alert/toast
+      return;
+    }
+
+    this.props.refreshScenario();
+  }
+
+  /**
+   * Callback function to receive the result of the deleteSandbox operation.
+   * @callback module:api/SandboxControlApi~deleteSandboxCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
+  deleteSandboxCb(error) {
+    if (error !== null) {
+      // TODO consider showing an alert  (i.e. toast)
+      return;
+    }
+
+    this.props.deleteScenario();
+    this.props.changeState(EXEC_STATE_IDLE);
+    this.props.execChangeOkToTerminate(false);
   }
 
   /**
@@ -263,6 +302,14 @@ class ExecPageContainer extends Component {
     );
   }
 
+  // Destroy Active sandbox
+  deleteSandbox() {
+    this.props.sandboxApi.deleteSandbox(
+      SANDBOX_NAME,
+      (error, data, response) => this.deleteSandboxCb(error, data, response)
+    );
+  }
+
   showApps(show) {
     this.props.changeShowApps(show);
     _.defer(() => {
@@ -280,9 +327,16 @@ class ExecPageContainer extends Component {
           onClose={() => {
             this.closeDialog();
           }}
-          api={this.props.api}
-          activateScenarioCb={(error, data, response) =>
-            this.activateScenarioCb(error, data, response)
+
+          // NOTE: The MEEP Frontend only supports sandbox creation
+          // api={this.props.api}
+          api={this.props.sandboxApi}
+
+          // activateScenarioCb={(error, data, response) =>
+          //   this.activateScenarioCb(error, data, response)
+          // }
+          createSandboxWithNameCb={(error, data, response) =>
+            this.createSandboxWithNameCb(error, data, response)
           }
         />
 
@@ -292,7 +346,6 @@ class ExecPageContainer extends Component {
           onClose={() => {
             this.closeDialog();
           }}
-          api={this.props.api}
           saveScenario={name => this.saveScenario(name)}
           scenarioNameRequired={true}
         />
@@ -413,7 +466,7 @@ class ExecPageContainer extends Component {
                 <Elevation className="component-style" z={2}>
                   <EventCreationPane
                     eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
-                    api={this.props.api}
+                    api={this.props.eventsApi}
                     hide={!this.props.eventCreationMode}
                     onSuccess={() => {
                       this.props.refreshScenario();

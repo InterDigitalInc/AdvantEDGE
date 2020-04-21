@@ -193,6 +193,7 @@ func deployDep(cobraCmd *cobra.Command) {
 
 func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobra.Command) [][]string {
 	var flags [][]string
+	nodeIp := viper.GetString("node.ip")
 
 	switch targetName {
 	case "meep-couchdb":
@@ -219,6 +220,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		}
 	case "meep-virt-engine":
 		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
+		flags = utils.HelmFlags(flags, "--set", "image.env.rooturl=http://"+nodeIp)
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(nil, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")

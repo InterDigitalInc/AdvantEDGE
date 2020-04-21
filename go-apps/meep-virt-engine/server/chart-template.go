@@ -30,8 +30,6 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
 
-const SandboxName = "sbox-1"
-
 const serviceNodePortMin = 30000
 const serviceNodePortMax = 32767
 const trueStr = "true"
@@ -115,32 +113,26 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
-	Namespace string
+	SandboxName string
+	Namespace   string
+	RootUrl     string
 }
 
 // Service map
 var serviceMap map[string]string
 
 // Deploy - Generate charts & deploy
-func Deploy(model *mod.Model) error {
-	// Create sandbox charts
-	sandboxCharts, err := generateSandboxCharts(SandboxName)
-	if err != nil {
-		log.Debug("Error creating sandbox charts: ", err)
-		return err
-	}
-	log.Debug("Created ", len(sandboxCharts), " sandbox charts")
+func Deploy(sandboxName string, model *mod.Model) error {
 
 	// Create scenario charts
-	scenarioCharts, err := generateScenarioCharts(SandboxName, model)
+	charts, err := generateScenarioCharts(sandboxName, model)
 	if err != nil {
 		log.Debug("Error creating scenario charts: ", err)
 		return err
 	}
-	log.Debug("Created ", len(scenarioCharts), " scenario charts")
+	log.Debug("Created ", len(charts), " scenario charts")
 
 	// Deploy all charts
-	charts := append(sandboxCharts, scenarioCharts...)
 	err = deployCharts(charts)
 	if err != nil {
 		log.Error("Error deploying charts: ", err)
@@ -375,6 +367,12 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 		return "", err
 	}
 
+	// Remove old chart if it already exists
+	if _, err := os.Stat(outChart); err == nil {
+		log.Debug("Removing old chart from path: ", outChart)
+		os.RemoveAll(outChart)
+	}
+
 	// Create new chart folder
 	log.Debug("Creation of the output chart path: ", outChart)
 	_ = CopyDir(templateChart, outChart)
@@ -500,7 +498,9 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 
 	// Create Sandbox template
 	var sandboxTemplate SandboxTemplate
+	sandboxTemplate.SandboxName = sandboxName
 	sandboxTemplate.Namespace = sandboxName
+	sandboxTemplate.RootUrl = ve.rootUrl + "/" + sandboxName
 
 	// Create sandbox charts
 	chartLocation, err := createChart("meep-loc-serv", sandboxName, "", sandboxTemplate)
@@ -531,5 +531,32 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	chart = newChart("tc-engine", sandboxName, "", chartLocation, "")
 	charts = append(charts, chart)
 
+	chartLocation, err = createChart("meep-sandbox-ctrl", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
+	}
+	chart = newChart("sandbox-ctrl", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
+
 	return charts, nil
+}
+
+func deploySandbox(name string) error {
+
+	// Create sandbox charts
+	charts, err := generateSandboxCharts(name)
+	if err != nil {
+		log.Debug("Error creating sandbox charts: ", err)
+		return err
+	}
+	log.Debug("Created ", len(charts), " sandbox charts")
+
+	// Deploy all charts
+	err = deployCharts(charts)
+	if err != nil {
+		log.Error("Error deploying charts: ", err)
+		return err
+	}
+
+	return nil
 }

@@ -21,7 +21,9 @@ image:
   repository: meep-docker-registry:30001/meep-tc-engine
   tag: latest
   pullPolicy: Always
-
+  env:
+    sandboxName: {{ .SandboxName }}
+    
 service:
   name: meep-tc-engine
   type: ClusterIP

@@ -75,6 +75,48 @@ var routes = Routes{
 	},
 
 	Route{
+		"CreateSandbox",
+		strings.ToUpper("Post"),
+		"/platform-ctrl/v1/sandboxes",
+		CreateSandbox,
+	},
+
+	Route{
+		"CreateSandboxWithName",
+		strings.ToUpper("Post"),
+		"/platform-ctrl/v1/sandboxes/{name}",
+		CreateSandboxWithName,
+	},
+
+	Route{
+		"DeleteSandbox",
+		strings.ToUpper("Delete"),
+		"/platform-ctrl/v1/sandboxes/{name}",
+		DeleteSandbox,
+	},
+
+	Route{
+		"DeleteSandboxList",
+		strings.ToUpper("Delete"),
+		"/platform-ctrl/v1/sandboxes",
+		DeleteSandboxList,
+	},
+
+	Route{
+		"GetSandbox",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/sandboxes/{name}",
+		GetSandbox,
+	},
+
+	Route{
+		"GetSandboxList",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/sandboxes",
+		GetSandboxList,
+	},
+
+	Route{
 		"CreateScenario",
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/scenarios/{name}",

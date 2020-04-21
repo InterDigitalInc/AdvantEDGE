@@ -37,11 +37,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-const SandboxName = "sbox-1"
-
 const meepOrigin = "scenario"
 
-// Active scenarion name
+// Active scenario name
 var activeScenarioName string
 
 var (
@@ -80,13 +78,10 @@ func init() {
 }
 
 func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
+	log.Debug("Event received on channel: ", channel, " payload: ", payload)
+
 	switch channel {
-	// MEEP Ctrl Engine active scenario update Channel
-	// case channelCtrlActive:
 	case model.ActiveChannel:
-		log.Debug("Event received on channel: ", model.ActiveChannel, " payload: ", payload)
-		// processActiveScenarioUpdate()
 		activeScenarioName = model.GetScenarioName()
 	default:
 		log.Warn("Unsupported channel", " payload: ", payload)
@@ -106,16 +101,17 @@ func loadConfig(configFile string) (*Config, error) {
 }
 
 // Determine if resource is part of the active scenario
-func isScenarioResource(name string, namespace string) bool {
-	return name != "" && strings.HasPrefix(name, "meep-"+SandboxName+"-"+activeScenarioName+"-")
+func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
+	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+activeScenarioName+"-")
 }
 
-func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string) (patch []byte, err error) {
+func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
 
 	// Apply labels
 	newLabels := make(map[string]string)
 	newLabels["meepApp"] = meepAppName
 	newLabels["meepOrigin"] = meepOrigin
+	newLabels["meepSandbox"] = sandboxName
 	newLabels["meepScenario"] = activeScenarioName
 	newLabels["processId"] = meepAppName
 
@@ -124,6 +120,9 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	var envVar corev1.EnvVar
 	envVar.Name = "MEEP_POD_NAME"
 	envVar.Value = meepAppName
+	envVars = append(envVars, envVar)
+	envVar.Name = "MEEP_SANDBOX_NAME"
+	envVar.Value = sandboxName
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SCENARIO_NAME"
 	envVar.Value = activeScenarioName
@@ -268,7 +267,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Determine if resource is part of the active scenario
-	if !isScenarioResource(releaseName, req.Namespace) {
+	if !isScenarioResource(releaseName, req.Namespace, activeScenarioName) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
@@ -276,7 +275,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Get sidecar patch
-	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, resourceName)
+	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, resourceName, req.Namespace)
 	if err != nil {
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{

@@ -72,7 +72,7 @@ func TestPlatformCtrl(t *testing.T) {
 
 func testGetScenarioList(t *testing.T) {
 	// get
-	err := sendRequest(http.MethodGet, "/scenarios", nil, nil, nil, http.StatusOK, ceGetScenarioList)
+	err := sendRequest(http.MethodGet, "/scenarios", nil, nil, nil, http.StatusOK, pcGetScenarioList)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -83,25 +83,25 @@ func testGetScenario(t *testing.T) {
 
 	// get scenario 1
 	vars["name"] = scenario1Name
-	err := sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusOK, ceGetScenario)
+	err := sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusOK, pcGetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	// get scenario 2
 	vars["name"] = scenario2Name
-	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusOK, ceGetScenario)
+	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusOK, pcGetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	//--- inexisting scenario
 	vars["name"] = "not-a-scenario"
-	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusNotFound, ceGetScenario)
+	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusNotFound, pcGetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	//--- inexisting scenario
 	vars["name"] = ""
-	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusBadRequest, ceGetScenario)
+	err = sendRequest(http.MethodGet, "/scenarios", nil, vars, nil, http.StatusBadRequest, pcGetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -112,24 +112,24 @@ func testCreateScenario(t *testing.T) {
 
 	// create
 	vars["name"] = scenario1Name
-	err := sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusOK, ceCreateScenario)
+	err := sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusOK, pcCreateScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	// conflict
-	err = sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusConflict, ceCreateScenario)
+	err = sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusConflict, pcCreateScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	// Create another scenario
 	vars["name"] = scenario2Name
-	err = sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario2)), vars, nil, http.StatusOK, ceCreateScenario)
+	err = sendRequest(http.MethodPost, "/scenarios", bytes.NewBuffer([]byte(testScenario2)), vars, nil, http.StatusOK, pcCreateScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	// bad request
 	vars["name"] = "this-should-fail"
-	err = sendRequest(http.MethodPost, "/scenarios", nil, vars, nil, http.StatusBadRequest, ceCreateScenario)
+	err = sendRequest(http.MethodPost, "/scenarios", nil, vars, nil, http.StatusBadRequest, pcCreateScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -140,21 +140,21 @@ func testDeleteScenario(t *testing.T) {
 
 	// delete scenario 1
 	vars["name"] = scenario1Name
-	err := sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusOK, ceDeleteScenario)
+	err := sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusOK, pcDeleteScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
 	// delete scenario 2
 	vars["name"] = scenario2Name
-	err = sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusOK, ceDeleteScenario)
+	err = sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusOK, pcDeleteScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
 	// delete invalid scenario
 	vars["name"] = "not-a-scenario"
-	err = sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusNotFound, ceDeleteScenario)
+	err = sendRequest(http.MethodDelete, "/scenarios", nil, vars, nil, http.StatusNotFound, pcDeleteScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -165,25 +165,25 @@ func testSetScenario(t *testing.T) {
 
 	// set scenario 1
 	vars["name"] = scenario1Name
-	err := sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusOK, ceSetScenario)
+	err := sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusOK, pcSetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	// set scenario 2
 	vars["name"] = scenario2Name
-	err = sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario2)), vars, nil, http.StatusOK, ceSetScenario)
+	err = sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario2)), vars, nil, http.StatusOK, pcSetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	//---- inexistent
 	vars["name"] = "this-should-fail"
-	err = sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusNotFound, ceSetScenario)
+	err = sendRequest(http.MethodPut, "/scenarios", bytes.NewBuffer([]byte(testScenario1)), vars, nil, http.StatusNotFound, pcSetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	//---- bad request
 	vars["name"] = "this-should-fail"
-	err = sendRequest(http.MethodPut, "/scenarios", nil, vars, nil, http.StatusBadRequest, ceSetScenario)
+	err = sendRequest(http.MethodPut, "/scenarios", nil, vars, nil, http.StatusBadRequest, pcSetScenario)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

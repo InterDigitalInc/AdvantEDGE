@@ -28,7 +28,7 @@ import (
 )
 
 const defaultLoopInterval = 5000 //in ms
-const basepath = "http://meep-ctrl-engine/ctrl-engine/v1"
+const basepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 
 type ReplayMgr struct {
 	name             string
@@ -53,7 +53,7 @@ func createClient(path string) (*sandbox.APIClient, error) {
 	ceClientCfg.BasePath = path
 	ceClient := sandbox.NewAPIClient(ceClientCfg)
 	if ceClient == nil {
-		err := errors.New("Failed to create ctrl-engine REST API client")
+		err := errors.New("Failed to create Sandbox Ctrl REST API client")
 		return nil, err
 	}
 	return ceClient, nil

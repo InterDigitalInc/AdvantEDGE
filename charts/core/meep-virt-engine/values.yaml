@@ -1,4 +1,4 @@
-# Default values for meep-ctrl-engine.
+# Default values for meep-virt-engine.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -21,6 +21,8 @@ image:
   repository: meep-docker-registry:30001/meep-virt-engine
   tag: latest
   pullPolicy: Always      
+  env:
+    rooturl: "http://www.example.com"
 
 service:
   type: ClusterIP

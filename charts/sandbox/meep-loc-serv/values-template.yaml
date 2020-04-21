@@ -14,7 +14,8 @@ image:
   tag: latest
   pullPolicy: Always
   env:
-    rooturl: "http://www.example.com"
+    sandboxName: {{ .SandboxName }}
+    rooturl: {{ .RootUrl }}
 
 service:
   name: meep-loc-serv
@@ -28,14 +29,14 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /location
+        - /({{ .SandboxName }}/|)location
 
   annotations:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   rewrite ^/location(/|$)(.*)$ /$2 break;
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/{{ .SandboxName }}/location(/|$)(.*)$ /location/$2 break;
 
   labels: {}
   tls:

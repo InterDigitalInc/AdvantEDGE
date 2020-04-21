@@ -29,31 +29,25 @@ import (
 )
 
 func CreateSandbox(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcCreateSandbox(w, r)
 }
 
 func CreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcCreateSandboxWithName(w, r)
 }
 
 func DeleteSandbox(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcDeleteSandbox(w, r)
 }
 
 func DeleteSandboxList(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcDeleteSandboxList(w, r)
 }
 
 func GetSandbox(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcGetSandbox(w, r)
 }
 
 func GetSandboxList(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	pcGetSandboxList(w, r)
 }

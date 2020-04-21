@@ -44,13 +44,14 @@ var replayCatCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayCatCmd)
 	replayCmd.AddCommand(replayCatCmd)
 }
 
 func replayGet(cobraCmd *cobra.Command, filename string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

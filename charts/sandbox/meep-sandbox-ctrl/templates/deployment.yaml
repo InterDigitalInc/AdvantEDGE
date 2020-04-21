@@ -39,6 +39,9 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_SANDBOX_NAME
+              value: {{ .Values.image.env.sandboxName }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage

@@ -27,8 +27,10 @@ import (
 	"github.com/gorilla/mux"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -39,11 +41,23 @@ type Scenario struct {
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	virtWatchdog  *watchdog.Watchdog
-	activeModel   *mod.Model
+	sandboxStore  *redis.Connector
 }
 
 const scenarioDBName = "scenarios"
-const moduleName string = "meep-platform-ctrl"
+const moduleName = "platform-ctrl"
+
+// Sandbox Pub/Sub
+type SandboxMsg struct {
+	Message string
+	Payload string
+}
+
+const sandboxChannel = "sandbox-channel"
+const (
+	SandboxCreate  = "SBX-CREATE"
+	SandboxDestroy = "SBX-DESTROY"
+)
 
 // Declare as variables to enable overwrite in test
 var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
@@ -94,12 +108,16 @@ func Init() (err error) {
 		}
 	}
 
-	// Create new active scenario model
-	pfmCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+	// Connect to Sandbox Store
+	pfmCtrl.sandboxStore, err = redis.NewConnector(redisDBAddr, 0)
 	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
+		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
+	log.Info("Connected to Sandbox Store DB")
+
+	// Empty DB
+	_ = pfmCtrl.sandboxStore.DBFlush(moduleName)
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.virtWatchdog, err = watchdog.NewWatchdog(redisDBAddr, "meep-virt-engine")
@@ -126,8 +144,8 @@ func Run() (err error) {
 
 // Create a new scenario in the scenario store
 // POST /scenario/{name}
-func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceCreateScenario")
+func pcCreateScenario(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcCreateScenario")
 
 	// Get scenario name from request parameters
 	vars := mux.Vars(r)
@@ -172,8 +190,8 @@ func ceCreateScenario(w http.ResponseWriter, r *http.Request) {
 
 // Delete scenario from scenario store
 // DELETE /scenarios/{name}
-func ceDeleteScenario(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceDeleteScenario")
+func pcDeleteScenario(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcDeleteScenario")
 
 	// Get scenario name from request parameters
 	vars := mux.Vars(r)
@@ -195,8 +213,8 @@ func ceDeleteScenario(w http.ResponseWriter, r *http.Request) {
 
 // Remove all scenarios from sceanrio store
 // DELETE /scenarios
-func ceDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceDeleteScenarioList")
+func pcDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcDeleteScenarioList")
 
 	// Remove all scenario from DB
 	err := pfmCtrl.scenarioStore.DeleteAllDocs()
@@ -212,8 +230,8 @@ func ceDeleteScenarioList(w http.ResponseWriter, r *http.Request) {
 
 // Retrieve scenario from scenario store
 // GET /scenarios/{name}
-func ceGetScenario(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceGetScenario")
+func pcGetScenario(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcGetScenario")
 
 	// Get scenario name from request parameters
 	vars := mux.Vars(r)
@@ -251,8 +269,8 @@ func ceGetScenario(w http.ResponseWriter, r *http.Request) {
 
 // Retrieve all scenarios from scenario store
 // GET /scenarios
-func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceGetScenarioList")
+func pcGetScenarioList(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcGetScenarioList")
 
 	// Retrieve scenario list from DB
 	_, scenarioList, err := pfmCtrl.scenarioStore.GetDocList()
@@ -276,8 +294,8 @@ func ceGetScenarioList(w http.ResponseWriter, r *http.Request) {
 
 // Update scenario in scenario store
 // PUT /scenarios/{name}
-func ceSetScenario(w http.ResponseWriter, r *http.Request) {
-	log.Debug("ceSetScenario")
+func pcSetScenario(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcSetScenario")
 
 	// Get scenario name from request parameters
 	vars := mux.Vars(r)
@@ -316,6 +334,176 @@ func ceSetScenario(w http.ResponseWriter, r *http.Request) {
 	log.Debug("Scenario updated with rev: ", rev)
 
 	// OK
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Create new Sandbox
+// POST /sandboxes
+func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcCreateSandbox")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Create new Sandbox with provided name
+// POST /sandboxes/{name}
+func pcCreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcCreateSandboxWithName")
+
+	// Get sandbox name from request parameters
+	vars := mux.Vars(r)
+	sandboxName := vars["name"]
+	log.Debug("Sandbox to create: ", sandboxName)
+
+	// Retrieve sandbox config from request body
+	var sandboxConfig dataModel.SandboxConfig
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&sandboxConfig)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create new sandbox key
+	key := moduleName + ":sandboxes:" + sandboxName
+
+	// Make sure sandbox does not already exist
+	if pfmCtrl.sandboxStore.EntryExists(key) {
+		err = errors.New("Sandbox already exists")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+
+	// Create sandbox in DB
+	fields := make(map[string]interface{})
+	fields["name"] = sandboxName
+	fields["scenarioName"] = sandboxConfig.ScenarioName
+	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Inform Virt Engine to create sandbox
+	msg := SandboxMsg{SandboxCreate, sandboxName}
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Delete Sandbox with provided name
+// DELETE /sandboxes/{name}
+func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcDeleteSandbox")
+
+	// Get sandbox name from request parameters
+	vars := mux.Vars(r)
+	sandboxName := vars["name"]
+	log.Debug("Sandbox to delete: ", sandboxName)
+
+	// Get sandbox key
+	key := moduleName + ":sandboxes:" + sandboxName
+
+	// Make sure sandbox exists
+	if !pfmCtrl.sandboxStore.EntryExists(key) {
+		err := errors.New("Sandbox not found exists")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Remove sandbox from DB
+	err := pfmCtrl.sandboxStore.DelEntry(key)
+	if err != nil {
+		log.Error("Entry could not be deleted in DB for sandbox: ", sandboxName, ": ", err)
+	}
+
+	// Inform Virt Engine to destroy sandbox
+	msg := SandboxMsg{SandboxDestroy, sandboxName}
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Delete all Sandboxes
+// DELETE /sandboxes
+func pcDeleteSandboxList(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcDeleteSandboxList")
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}
+
+// Retrieve Sandbox with provided name
+// GET /sandboxes/{name}
+func pcGetSandbox(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcGetSandbox")
+
+	// Get sandbox name from request parameters
+	vars := mux.Vars(r)
+	sandboxName := vars["name"]
+	log.Debug("Sandbox to retrieve: ", sandboxName)
+
+	// Get sandbox key
+	key := moduleName + ":sandboxes:" + sandboxName
+
+	// Make sure sandbox exists
+	if !pfmCtrl.sandboxStore.EntryExists(key) {
+		err := errors.New("Sandbox not found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Prepare response
+	var sandbox dataModel.Sandbox
+	sandbox.Name = sandboxName
+
+	// Format response
+	jsonResponse, err := json.Marshal(sandbox)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+// Retrieve all Sandboxes
+// GET /sandboxes
+func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
+	log.Debug("pcGetSandboxList")
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }

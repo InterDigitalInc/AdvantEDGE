@@ -30,10 +30,10 @@ import (
 )
 
 // const activeScenarioEvents = "activeScenarioEvents"
-const ActiveScenarioEvents = "ctrl-engine-active"
+const ActiveScenarioEvents = "meep-active"
 
 // const activeScenarioKey = "activeScenarioKey"
-const activeScenarioKey = "ctrl-engine:active"
+const activeScenarioKey = "meep:active"
 
 // Event types (basic)
 const (
@@ -76,7 +76,7 @@ type Model struct {
 	lock          sync.RWMutex
 }
 
-var DbAddress = "meep-redis-master:6379"
+var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
 var redisTable = 0
 
 // NewModel - Create a model object

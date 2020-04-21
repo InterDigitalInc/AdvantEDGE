@@ -30,30 +30,30 @@ import (
 
 // CreateScenario - Add new scenario to MEEP store
 func CreateScenario(w http.ResponseWriter, r *http.Request) {
-	ceCreateScenario(w, r)
+	pcCreateScenario(w, r)
 }
 
 // DeleteScenario - Delete scenario from MEEP store
 func DeleteScenario(w http.ResponseWriter, r *http.Request) {
-	ceDeleteScenario(w, r)
+	pcDeleteScenario(w, r)
 }
 
 // DeleteScenarioList - Delete all scenarios in MEEP store
 func DeleteScenarioList(w http.ResponseWriter, r *http.Request) {
-	ceDeleteScenarioList(w, r)
+	pcDeleteScenarioList(w, r)
 }
 
 // GetScenario - Retrieve scenario from MEEP store
 func GetScenario(w http.ResponseWriter, r *http.Request) {
-	ceGetScenario(w, r)
+	pcGetScenario(w, r)
 }
 
 // GetScenarioList - Retrieve list of scenarios in MEEP store
 func GetScenarioList(w http.ResponseWriter, r *http.Request) {
-	ceGetScenarioList(w, r)
+	pcGetScenarioList(w, r)
 }
 
 // SetScenario - Update scenario in MEEP store
 func SetScenario(w http.ResponseWriter, r *http.Request) {
-	ceSetScenario(w, r)
+	pcSetScenario(w, r)
 }

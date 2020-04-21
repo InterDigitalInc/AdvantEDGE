@@ -46,6 +46,9 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_ROOT_URL
+              value: {{ .Values.image.env.rooturl }}
           volumeMounts:
             - name: data
               mountPath: /data/

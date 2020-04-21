@@ -1,4 +1,4 @@
-module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-ctrl-engine
+module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-replay-manager
 
 go 1.12
 

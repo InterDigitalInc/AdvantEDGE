@@ -17,6 +17,8 @@
 package server
 
 import (
+	"encoding/json"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -24,6 +26,7 @@ import (
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -31,10 +34,25 @@ const moduleName string = "meep-virt-engine"
 const redisAddr string = "meep-redis-master:6379"
 const retryTimerDuration = 10000
 
+// Sandbox Pub/Sub
+type SandboxMsg struct {
+	Message string
+	Payload string
+}
+
+const sandboxChannel = "sandbox-channel"
+const (
+	SandboxCreate  = "SBX-CREATE"
+	SandboxDestroy = "SBX-DESTROY"
+)
+
 type VirtEngine struct {
 	watchdogClient     *watchdog.Pingee
 	activeModel        *mod.Model
 	activeScenarioName string
+	sandboxStore       *redis.Connector
+	sandboxName        string
+	rootUrl            string
 }
 
 var ve *VirtEngine
@@ -43,6 +61,15 @@ var ve *VirtEngine
 func Init() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
 	ve = new(VirtEngine)
+
+	// Retrieve Sandbox name from environment variable
+	ve.rootUrl = strings.TrimSpace(os.Getenv("MEEP_ROOT_URL"))
+	if ve.rootUrl == "" {
+		err = errors.New("MEEP_ROOT_URL env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_ROOT_URL: ", ve.rootUrl)
 
 	// Setup for liveness monitoring
 	ve.watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
@@ -63,6 +90,22 @@ func Init() (err error) {
 		return err
 	}
 
+	// Connect to Sandbox Store
+	ve.sandboxStore, err = redis.NewConnector(redisAddr, 0)
+	if err != nil {
+		log.Error("Failed connection to Redis: ", err)
+		return err
+	}
+	log.Info("Connected to Sandbox Store DB")
+
+	// Subscribe to Sandbox Pub-Sub events
+	err = ve.sandboxStore.Subscribe(sandboxChannel)
+	if err != nil {
+		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
+		return err
+	}
+	log.Info("Subscribed to sandbox events (Redis)")
+
 	return nil
 }
 
@@ -76,17 +119,25 @@ func Run() (err error) {
 		log.Error("Failed to listen for model updates: ", err.Error())
 	}
 
+	// Listen for Sandbox events
+	go func() {
+		err = ve.sandboxStore.Listen(eventHandler)
+		if err != nil {
+			log.Error("Failed to listen for sandbox updates: ", err.Error())
+		}
+	}()
+
 	return nil
 }
 
 func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
+	log.Debug("Event received on channel: ", channel, " payload: ", payload)
 
-	// MEEP Ctrl Engine active scenario update event
+	switch channel {
 	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		processActiveScenarioUpdate(payload)
+	case sandboxChannel:
+		processSandboxMsg(payload)
 	default:
 		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
 	}
@@ -98,15 +149,8 @@ func processActiveScenarioUpdate(event string) {
 		// Cache name for later deletion
 		ve.activeScenarioName = ve.activeModel.GetScenarioName()
 
-		// Deploy sandbox using scenario name
-		err := deploySandbox(ve.activeScenarioName)
-		if err != nil {
-			log.Error("Error deploying sandbox: ", err)
-			return
-		}
-
 		// Deploy scenario
-		err = Deploy(ve.activeModel)
+		err := Deploy(ve.sandboxName, ve.activeModel)
 		if err != nil {
 			log.Error("Error creating charts: ", err)
 			return
@@ -114,12 +158,12 @@ func processActiveScenarioUpdate(event string) {
 
 	case mod.EventTerminate:
 		// Process right away and start a ticker to retry until everything is deleted
-		_, _ = terminateScenario(ve.activeScenarioName)
+		_, _ = deleteReleases(ve.sandboxName, ve.activeScenarioName)
 		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
 
 		go func() {
 			for range ticker.C {
-				err, chartsToDelete := terminateScenario(ve.activeScenarioName)
+				err, chartsToDelete := deleteReleases(ve.sandboxName, ve.activeScenarioName)
 				if err == nil && chartsToDelete == 0 {
 					ve.activeScenarioName = ""
 					ticker.Stop()
@@ -136,19 +180,27 @@ func processActiveScenarioUpdate(event string) {
 	}
 }
 
-func terminateScenario(name string) (error, int) {
-	if name == "" {
+func deleteReleases(sandboxName string, scenarioName string) (error, int) {
+	if sandboxName == "" {
 		return nil, 0
 	}
+
+	// Get chart prefix & path
+	path := "/data/" + ve.sandboxName
+	releasePrefix := "meep-" + ve.sandboxName + "-"
+	if scenarioName != "" {
+		path += "/scenario/"
+		releasePrefix += scenarioName + "-"
+	}
+
 	// Retrieve list of releases
 	chartsToDelete := 0
 	rels, err := helm.GetReleasesName()
 	if err == nil {
+		// Filter charts by sandbox & scenario names
 		var toDelete []helm.Chart
 		for _, rel := range rels {
-			// TODO -- Split sandbox & scenario termination
-			if strings.HasPrefix(rel.Name, "meep-"+SandboxName+"-") {
-				// just keep releases related to the current scenario
+			if strings.HasPrefix(rel.Name, releasePrefix) {
 				var c helm.Chart
 				c.ReleaseName = rel.Name
 				toDelete = append(toDelete, c)
@@ -157,8 +209,8 @@ func terminateScenario(name string) (error, int) {
 
 		// Delete releases
 		chartsToDelete = len(toDelete)
-
 		if chartsToDelete > 0 {
+			log.Debug("Deleting [", chartsToDelete, "] charts with release prefix: ", releasePrefix)
 			err := helm.DeleteReleases(toDelete)
 			chartsToDelete = len(toDelete)
 			if err != nil {
@@ -167,15 +219,56 @@ func terminateScenario(name string) (error, int) {
 		}
 
 		// Then delete charts
-		path := "/data/" + SandboxName + "/scenario/"
 		if _, err := os.Stat(path); err == nil {
-			log.Debug("Removing charts ", path)
+			log.Debug("Removing charts from path: ", path)
 			os.RemoveAll(path)
 		}
 	}
 	return err, chartsToDelete
 }
 
-func deploySandbox(name string) error {
-	return nil
+func processSandboxMsg(payload string) {
+
+	// Unmarshal sandbox msg
+	sandboxMsg := new(SandboxMsg)
+	err := json.Unmarshal([]byte(payload), sandboxMsg)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	switch sandboxMsg.Message {
+	case SandboxCreate:
+		// Store sandbox name
+		ve.sandboxName = sandboxMsg.Payload
+
+		// Deploy sandbox
+		err := deploySandbox(sandboxMsg.Payload)
+		if err != nil {
+			log.Error("Error deploying sandbox: ", err)
+			return
+		}
+
+	case SandboxDestroy:
+		// Process right away and start a ticker to retry until everything is deleted
+		_, _ = deleteReleases(ve.sandboxName, "")
+		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+		go func() {
+			for range ticker.C {
+				err, chartsToDelete := deleteReleases(ve.sandboxName, "")
+				if err == nil && chartsToDelete == 0 {
+					ve.sandboxName = ""
+					ticker.Stop()
+					return
+				} else {
+					// Stay in the deletion process until everything is cleared
+					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+				}
+			}
+		}()
+
+	default:
+		log.Error("Unsupported message type: ", sandboxMsg.Message)
+	}
 }

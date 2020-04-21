@@ -34,25 +34,25 @@ describe('MEEP Settings', function() {
     cy.visit(meepUrl);
   });
 
-  it('Execution Settings', function() {
-    let refreshInterval = '10000';
+  // it('Execution Settings', function() {
+  //   let refreshInterval = '10000';
 
-    // Go to monitoring page
-    cy.log('Go to settings page');
-    click(meep.MEEP_TAB_SET);
+  //   // Go to monitoring page
+  //   cy.log('Go to settings page');
+  //   click(meep.MEEP_TAB_SET);
 
-    // Enable refresh interval
-    check(meep.SET_EXEC_REFRESH_CHECKBOX, true);
-    verifyEnabled(meep.SET_EXEC_REFRESH_INT, true);
-    type(meep.SET_EXEC_REFRESH_INT, refreshInterval);
-    verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'be.checked');
-    // verify(meep.SET_EXEC_REFRESH_INT, 'contain', refreshInterval)
+  //   // Enable refresh interval
+  //   check(meep.SET_EXEC_REFRESH_CHECKBOX, true);
+  //   verifyEnabled(meep.SET_EXEC_REFRESH_INT, true);
+  //   type(meep.SET_EXEC_REFRESH_INT, refreshInterval);
+  //   verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'be.checked');
+  //   // verify(meep.SET_EXEC_REFRESH_INT, 'contain', refreshInterval)
 
-    // Disable refresh interval
-    check(meep.SET_EXEC_REFRESH_CHECKBOX, false);
-    verifyEnabled(meep.SET_EXEC_REFRESH_INT, false);
-    verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'not.be.checked');
-  });
+  //   // Disable refresh interval
+  //   check(meep.SET_EXEC_REFRESH_CHECKBOX, false);
+  //   verifyEnabled(meep.SET_EXEC_REFRESH_INT, false);
+  //   verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'not.be.checked');
+  // });
 
   it('Development Settings', function() {
     // Go to monitoring page
