@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -115,9 +116,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store DB")
-
-	// Empty DB
-	_ = pfmCtrl.sandboxStore.DBFlush(moduleName)
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.virtWatchdog, err = watchdog.NewWatchdog(redisDBAddr, "meep-virt-engine")
@@ -342,6 +340,53 @@ func pcSetScenario(w http.ResponseWriter, r *http.Request) {
 // POST /sandboxes
 func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcCreateSandbox")
+	var err error
+	var sandboxName string
+	var key string
+
+	// Get unique sandbox name
+	uniqueNameFound := false
+	for i := 0; i < 10; i++ {
+		sandboxName = "sbox-gen-" + strconv.Itoa(i)
+		key = moduleName + ":sandboxes:" + sandboxName
+		if !pfmCtrl.sandboxStore.EntryExists(key) {
+			uniqueNameFound = true
+			break
+		}
+	}
+	if !uniqueNameFound {
+		err = errors.New("Failed to generate a unique sandbox name")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create sandbox in DB
+	fields := make(map[string]interface{})
+	fields["name"] = sandboxName
+	fields["scenarioName"] = ""
+	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Inform Virt Engine to create sandbox
+	msg := SandboxMsg{SandboxCreate, sandboxName}
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
@@ -457,8 +502,42 @@ func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
 // DELETE /sandboxes
 func pcDeleteSandboxList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcDeleteSandboxList")
+
+	// Delete all sandboxes
+	keyMatchStr := moduleName + ":sandboxes:*"
+	err := pfmCtrl.sandboxStore.ForEachEntry(keyMatchStr, deleteSandbox, nil)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+}
+
+func deleteSandbox(key string, fields map[string]string, userData interface{}) error {
+
+	// Remove sandbox from DB
+	sandboxName := fields["name"]
+	err := pfmCtrl.sandboxStore.DelEntry(key)
+	if err != nil {
+		log.Error("Entry could not be deleted in DB for sandbox: ", sandboxName, ": ", err.Error())
+	}
+
+	// Inform Virt Engine to destroy sandbox
+	msg := SandboxMsg{SandboxDestroy, sandboxName}
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		log.Error("Failed to marshal delete msg for sandbox: ", sandboxName, ": ", err.Error())
+	} else {
+		err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
+		if err != nil {
+			log.Error("Failed to publish delete msg for sandbox: ", sandboxName, ": ", err.Error())
+		}
+	}
+
+	return nil
 }
 
 // Retrieve Sandbox with provided name
@@ -504,6 +583,35 @@ func pcGetSandbox(w http.ResponseWriter, r *http.Request) {
 // GET /sandboxes
 func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcGetSandboxList")
+
+	// Retrieve list of sandboxes
+	var sandboxList dataModel.SandboxList
+	keyMatchStr := moduleName + ":sandboxes:*"
+	err := pfmCtrl.sandboxStore.ForEachEntry(keyMatchStr, getSandboxInfo, &sandboxList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(sandboxList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
+}
+
+func getSandboxInfo(key string, fields map[string]string, userData interface{}) error {
+	sandboxList := userData.(*dataModel.SandboxList)
+	var sandbox dataModel.Sandbox
+	sandbox.Name = fields["name"]
+	sandboxList.Sandboxes = append(sandboxList.Sandboxes, sandbox)
+	return nil
 }

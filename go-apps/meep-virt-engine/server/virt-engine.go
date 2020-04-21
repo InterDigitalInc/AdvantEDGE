@@ -186,8 +186,8 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 	}
 
 	// Get chart prefix & path
-	path := "/data/" + ve.sandboxName
-	releasePrefix := "meep-" + ve.sandboxName + "-"
+	path := "/data/" + sandboxName
+	releasePrefix := "meep-" + sandboxName + "-"
 	if scenarioName != "" {
 		path += "/scenario/"
 		releasePrefix += scenarioName + "-"
@@ -239,8 +239,11 @@ func processSandboxMsg(payload string) {
 
 	switch sandboxMsg.Message {
 	case SandboxCreate:
-		// Store sandbox name
-		ve.sandboxName = sandboxMsg.Payload
+		// Store sandbox name if not already stored
+		// TODO -- Required for now to support multiple sandboxes but a single active scenario
+		if ve.sandboxName == "" {
+			ve.sandboxName = sandboxMsg.Payload
+		}
 
 		// Deploy sandbox
 		err := deploySandbox(sandboxMsg.Payload)
@@ -251,14 +254,16 @@ func processSandboxMsg(payload string) {
 
 	case SandboxDestroy:
 		// Process right away and start a ticker to retry until everything is deleted
-		_, _ = deleteReleases(ve.sandboxName, "")
+		_, _ = deleteReleases(sandboxMsg.Payload, "")
 		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
 
 		go func() {
 			for range ticker.C {
-				err, chartsToDelete := deleteReleases(ve.sandboxName, "")
+				err, chartsToDelete := deleteReleases(sandboxMsg.Payload, "")
 				if err == nil && chartsToDelete == 0 {
-					ve.sandboxName = ""
+					if sandboxMsg.Payload == ve.sandboxName {
+						ve.sandboxName = ""
+					}
 					ticker.Stop()
 					return
 				} else {
