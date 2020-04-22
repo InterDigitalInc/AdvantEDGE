@@ -35,7 +35,7 @@ import {
 import {
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
-  ELEMENT_TYPE_POA_CELL_4G,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
   ELEMENT_TYPE_UE,
@@ -130,7 +130,7 @@ const execPOAs = createSelector(
       elems,
       elem =>
         getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_POA ||
-        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_POA_CELL_4G
+        getElemFieldVal(elem, FIELD_TYPE) === ELEMENT_TYPE_POA_CELL
     );
   }
 );

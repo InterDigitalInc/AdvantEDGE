@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 **interZonePacketLoss** | **Number** | Packet lost (in terms of percentage) between zones within the domain | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
-**cellular4gDomainConfig** | [**Cellular4gDomainConfig**](Cellular4gDomainConfig.md) |  | [optional] 
+**cellularDomainConfig** | [**CellularDomainConfig**](CellularDomainConfig.md) |  | [optional] 
 **zones** | [**[Zone]**](Zone.md) |  | [optional] 
 
 
@@ -21,6 +21,8 @@ Name | Type | Description | Notes
 
 
 * `OPERATOR` (value: `"OPERATOR"`)
+
+* `OPERATOR_CELLULAR` (value: `"OPERATOR-CELLULAR"`)
 
 * `PUBLIC` (value: `"PUBLIC"`)
 

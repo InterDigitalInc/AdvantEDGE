@@ -582,7 +582,7 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 		if jsonAppEcgiInfo != "" {
 
 			ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
-			if ecgi != nil {
+			if ecgi != nil {  
 				if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" && ecgi.CellId[0] != "" {
 					var plmnInfo PlmnInfo
 					plmnInfo.Ecgi = ecgi

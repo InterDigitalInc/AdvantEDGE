@@ -148,8 +148,9 @@ class NetworkCharacteristicsEventPane extends Component {
       break;
     default:
       neType = this.state.currentElementType;
+      break;
     }
-
+    
     var ncEvent = {
       name: 'name',
       type: this.props.currentEvent,

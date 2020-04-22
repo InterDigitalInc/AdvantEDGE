@@ -45,9 +45,10 @@ const (
 const (
 	NetCharScenario  = "SCENARIO"
 	NetCharOperator  = "OPERATOR"
+        NetCharOperatorCell = "OPERATOR CELLULAR"
 	NetCharZone      = "ZONE"
 	NetCharPoa       = "POA"
-	NetCharPoaCell4g = "POA CELLULAR 4G"
+	NetCharPoaCell   = "POA CELLULAR"
 	NetCharDC        = "DISTANT CLOUD"
 	NetCharEdge      = "EDGE"
 	NetCharFog       = "FOG"
@@ -359,7 +360,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NetCharOperator {
+		if ncType == NetCharOperator  || ncType == NetCharOperatorCell {
 			domain := n.object.(*ceModel.Domain)
 			domain.InterZoneLatency = nc.Latency
 			domain.InterZoneLatencyVariation = nc.LatencyVariation
@@ -376,7 +377,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			zone.NetChar.Throughput = nc.Throughput
 			zone.NetChar.PacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == NetCharPoa || ncType == NetCharPoaCell4g {
+		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
 			nl := n.object.(*ceModel.NetworkLocation)
 			nl.TerminalLinkLatency = nc.Latency
 			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
@@ -401,9 +402,10 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
 				NetCharScenario + ", " +
 				NetCharOperator + ", " +
+                                NetCharOperatorCell + ", " +
 				NetCharZone + ", " +
 				NetCharPoa + ", " +
-				NetCharPoaCell4g + ", " +
+				NetCharPoaCell + ", " +
 				NetCharDC + ", " +
 				NetCharEdge + ", " +
 				NetCharFog + ", " +

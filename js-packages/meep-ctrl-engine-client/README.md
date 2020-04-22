@@ -146,8 +146,8 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AdvantEdgePlatformControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
- - [AdvantEdgePlatformControllerRestApi.Cellular4gDomainConfig](docs/Cellular4gDomainConfig.md)
- - [AdvantEdgePlatformControllerRestApi.Cellular4gPoaConfig](docs/Cellular4gPoaConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgePlatformControllerRestApi.EgressService](docs/EgressService.md)

@@ -101,19 +101,19 @@ func processActiveScenarioUpdate() {
 					mnc := ""
 					mcc := ""
 					cellId := ""
-					if domain.Cellular4gDomainConfig != nil {
-						mnc = domain.Cellular4gDomainConfig.Mnc
-						mcc = domain.Cellular4gDomainConfig.Mcc
+					if domain.CellularDomainConfig != nil {
+						mnc = domain.CellularDomainConfig.Mnc
+						mcc = domain.CellularDomainConfig.Mcc
 					}
-					if poa.Cellular4gPoaConfig != nil {
-						if poa.Cellular4gPoaConfig.CellId != "" {
-							cellId = poa.Cellular4gPoaConfig.CellId
+					if poa.CellularPoaConfig != nil {
+						if poa.CellularPoaConfig.CellId != "" {
+							cellId = poa.CellularPoaConfig.CellId
 						} else {
-							cellId = domain.Cellular4gDomainConfig.DefaultCellId
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
 					} else {
-						if domain.Cellular4gDomainConfig != nil {
-							cellId = domain.Cellular4gDomainConfig.DefaultCellId
+						if domain.CellularDomainConfig != nil {
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
 					}
 
@@ -142,19 +142,19 @@ func processActiveScenarioUpdate() {
 						mnc := ""
 						mcc := ""
 						cellId := ""
-						if domain.Cellular4gDomainConfig != nil {
-							mnc = domain.Cellular4gDomainConfig.Mnc
-							mcc = domain.Cellular4gDomainConfig.Mcc
+						if domain.CellularDomainConfig != nil {
+							mnc = domain.CellularDomainConfig.Mnc
+							mcc = domain.CellularDomainConfig.Mcc
 						}
-						if nl.Cellular4gPoaConfig != nil {
-							if nl.Cellular4gPoaConfig.CellId != "" {
-								cellId = nl.Cellular4gPoaConfig.CellId
+						if nl.CellularPoaConfig != nil {
+							if nl.CellularPoaConfig.CellId != "" {
+								cellId = nl.CellularPoaConfig.CellId
 							} else {
-								cellId = domain.Cellular4gDomainConfig.DefaultCellId
+								cellId = domain.CellularDomainConfig.DefaultCellId
 							}
 						} else {
-							if domain.Cellular4gDomainConfig != nil {
-								cellId = domain.Cellular4gDomainConfig.DefaultCellId
+							if domain.CellularDomainConfig != nil {
+								cellId = domain.CellularDomainConfig.DefaultCellId
 							}
 						}
 
