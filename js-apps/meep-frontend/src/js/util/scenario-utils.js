@@ -501,7 +501,7 @@ export function updateElementInScenario(scenario, element) {
         FIELD_INT_ZONE_PKT_LOSS
       );
 
-      if (domain.elementType === DOMAIN_CELL_TYPE_STR) {
+      if (domain.type === DOMAIN_CELL_TYPE_STR) {
         var cellularDomainConfig = {
           mcc: getElemFieldVal(element, FIELD_MCC),
           mnc: getElemFieldVal(element, FIELD_MNC),
@@ -579,10 +579,6 @@ export function updateElementInScenario(scenario, element) {
           nl.terminalLinkThroughput = getElemFieldVal(
             element,
             FIELD_TERM_LINK_THROUGPUT
-          );
-          nl.terminalLinkPacketLoss = getElemFieldVal(
-            element,
-            FIELD_TERM_LINK_PKT_LOSS
           );
           nl.terminalLinkPacketLoss = getElemFieldVal(
             element,
@@ -1096,12 +1092,10 @@ export function createPoaCell(uniqueId, name, element) {
     terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
     terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
     physicalLocations: [],
-    cellularPoaConfig: {}
+    cellularPoaConfig: {
+      cellId: getElemFieldVal(element, FIELD_CELL_ID)
+    }
   };
-  var cellular = {
-    cellId: getElemFieldVal(element, FIELD_CELL_ID)
-  };
-  nl.cellularPoaConfig = cellular;
 
   return nl;
 }
