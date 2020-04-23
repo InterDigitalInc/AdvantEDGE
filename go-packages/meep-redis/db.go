@@ -61,7 +61,7 @@ func NewConnector(addr string, table int) (rc *Connector, err error) {
 
 func (rc *Connector) connectDB(addr string, table int) error {
 	if addr == "" {
-		rc.addr = "meep-redis-master:6379"
+		rc.addr = "meep-redis-master.default.svc.cluster.local:6379"
 	} else {
 		rc.addr = addr
 	}
