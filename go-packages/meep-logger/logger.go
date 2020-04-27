@@ -56,10 +56,6 @@ func getLogCaller() string {
 	return location
 }
 
-func GetComponentName() string {
-	return componentName
-}
-
 func Info(args ...interface{}) {
 	logrus.WithFields(logrus.Fields{
 		"meep.component": componentName,

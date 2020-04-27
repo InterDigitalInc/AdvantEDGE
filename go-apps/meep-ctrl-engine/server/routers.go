@@ -29,6 +29,8 @@ import (
 	"net/http"
 	"strings"
 
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
+
 	"github.com/gorilla/mux"
 )
 
@@ -46,7 +48,9 @@ func NewRouter() *mux.Router {
 
 	// subrouter := router.PathPrefix("/ctrl-engine/").Subrouter()
 	for _, route := range routes {
-		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
+		var handler http.Handler = route.HandlerFunc
+		handler = Logger(handler, route.Name)
+		handler = httpLog.LogRx(handler, "")
 
 		router.
 			Methods(route.Method).

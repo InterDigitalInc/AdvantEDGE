@@ -19,11 +19,14 @@ package sbi
 import (
 	"strings"
 
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 )
 
 const module string = "loc-serv-sbi"
+const moduleName string = "meep-loc-serv"
+
 const redisAddr string = "meep-redis-master:6379"
 
 type LocServSbi struct {
@@ -92,6 +95,8 @@ func processActiveScenarioUpdate() {
 	uePerNetLocMap := make(map[string]int)
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)
+
+	_ = httpLog.ReInit(moduleName, sbi.activeModel.GetScenarioName())
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")

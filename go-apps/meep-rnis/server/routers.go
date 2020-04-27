@@ -28,6 +28,8 @@ import (
 	"net/http"
 	"strings"
 
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
+
 	"github.com/gorilla/mux"
 )
 
@@ -42,12 +44,11 @@ type Routes []Route
 
 func NewRouter() *mux.Router {
 
-	_ = InitLogger()
-
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
+		handler = httpLog.LogRx(handler, "")
 
 		router.
 			Methods(route.Method).

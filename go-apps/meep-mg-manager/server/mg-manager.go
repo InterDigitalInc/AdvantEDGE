@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
@@ -36,6 +37,7 @@ import (
 )
 
 const moduleMgManager string = "mg-manager"
+const logModuleMgMgr string = "meep-mg-manager"
 const typeLb string = "lb"
 const channelMgManagerLb string = moduleMgManager + "-" + typeLb
 const redisAddr string = "meep-redis-master:6379"
@@ -204,6 +206,8 @@ func eventHandler(channel string, payload string) {
 }
 
 func processActiveScenarioUpdate() {
+
+	_ = httpLog.ReInit(logModuleMgMgr, mgm.activeModel.GetScenarioName())
 
 	// Handle empty/missing scenario
 	if mgm.activeModel.GetScenarioName() == "" {

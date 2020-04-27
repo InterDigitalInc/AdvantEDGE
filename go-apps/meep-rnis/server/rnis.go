@@ -29,6 +29,7 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
@@ -37,6 +38,7 @@ import (
 
 const basepathURL = "/rni/v1/"
 const moduleRNIS string = "rnis"
+const logModuleRNIS string = "meep-rnis"
 
 //const module string = "rnis"
 const redisAddr string = "meep-redis-master:6379"
@@ -370,7 +372,7 @@ func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId st
 		log.Error(err.Error())
 	}
 
-	LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 }
 
 func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
@@ -395,7 +397,7 @@ func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionI
 		log.Error(err.Error())
 	}
 
-	LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 
 }
 
@@ -710,9 +712,10 @@ func cleanUp() {
 
 	ccSubscriptionMap = map[int]*CellChangeSubscription{}
 	subscriptionExpiryMap = map[int][]int{}
-	currentStoreName = ""
+	updateStoreName("")
 }
 
 func updateStoreName(storeName string) {
 	currentStoreName = storeName
+	_ = httpLog.ReInit(logModuleRNIS, storeName)
 }

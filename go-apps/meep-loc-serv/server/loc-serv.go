@@ -29,6 +29,7 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -348,31 +349,53 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 }
 
 func sendNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.TrackingNotification) {
+	startTime := time.Now()
+
 	client, err := createClient(notifyUrl)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	_, err = client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	defer resp.Body.Close()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+
 }
 
 func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.ZoneStatusNotification) {
+	startTime := time.Now()
+
 	client, err := createClient(notifyUrl)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	_, err = client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
+	defer resp.Body.Close()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {

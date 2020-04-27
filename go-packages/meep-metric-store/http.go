@@ -81,7 +81,13 @@ func (ms *MetricStore) GetHttpMetric(loggerName string, direction string, durati
 	}
 
 	// Get Http metrics
-	tags := map[string]string{HttpLoggerName: loggerName, HttpLoggerDirection: direction}
+	tags := map[string]string{}
+	if loggerName != "" {
+		tags[HttpLoggerName] = loggerName
+	}
+	if direction != "" {
+		tags[HttpLoggerDirection] = direction
+	}
 	fields := []string{HttpLogId, HttpUrl, HttpLogEndpoint, HttpMethod, HttpBody, HttpRespBody, HttpRespCode, HttpProcTime}
 	var valuesArray []map[string]interface{}
 	valuesArray, err = ms.GetInfluxMetric(HttpLogMetricName, tags, fields, duration, count)

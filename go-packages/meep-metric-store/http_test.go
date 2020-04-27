@@ -75,6 +75,14 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	if err != nil || len(h) != 2 {
 		t.Errorf("Failed to get metric")
 	}
+	h, err = ms.GetHttpMetric("logger1", "", "", 0)
+	if err != nil || len(h) != 3 {
+		t.Errorf("Failed to get metric")
+	}
+	h, err = ms.GetHttpMetric("", "RX", "", 0)
+	if err != nil || len(h) != 2 {
+		t.Errorf("Failed to get metric")
+	}
 
 	// t.Errorf("DONE")
 }
