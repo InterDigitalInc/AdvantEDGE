@@ -176,7 +176,7 @@ class NetworkCharacteristicsEventPane extends Component {
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
         if (type === 'DOMAIN' || type === 'OPERATOR' || type === 'OPERATOR GENERIC') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN' || elemType === 'OPERATOR';
+          return elemType === 'OPERATOR' || elemType === 'DOMAIN';
         }
         if (elemType === 'ZONE') {
           return type.startsWith(elemType);

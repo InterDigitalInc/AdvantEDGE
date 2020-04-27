@@ -43,19 +43,19 @@ const (
 )
 
 const (
-	NetCharScenario  = "SCENARIO"
-	NetCharOperator  = "OPERATOR"
-        NetCharOperatorCell = "OPERATOR CELLULAR"
-	NetCharZone      = "ZONE"
-	NetCharPoa       = "POA"
-	NetCharPoaCell   = "POA CELLULAR"
-	NetCharDC        = "DISTANT CLOUD"
-	NetCharEdge      = "EDGE"
-	NetCharFog       = "FOG"
-	NetCharUE        = "UE"
-	NetCharCloudApp  = "CLOUD APPLICATION"
-	NetCharEdgeApp   = "EDGE APPLICATION"
-	NetCharUEApp     = "UE APPLICATION"
+	NetCharScenario     = "SCENARIO"
+	NetCharOperator     = "OPERATOR"
+	NetCharOperatorCell = "OPERATOR CELLULAR"
+	NetCharZone         = "ZONE"
+	NetCharPoa          = "POA"
+	NetCharPoaCell      = "POA CELLULAR"
+	NetCharDC           = "DISTANT CLOUD"
+	NetCharEdge         = "EDGE"
+	NetCharFog          = "FOG"
+	NetCharUE           = "UE"
+	NetCharCloudApp     = "CLOUD APPLICATION"
+	NetCharEdgeApp      = "EDGE APPLICATION"
+	NetCharUEApp        = "UE APPLICATION"
 )
 
 // Model - Implements a Meep Model
@@ -360,7 +360,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NetCharOperator  || ncType == NetCharOperatorCell {
+		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
 			domain := n.object.(*ceModel.Domain)
 			domain.InterZoneLatency = nc.Latency
 			domain.InterZoneLatencyVariation = nc.LatencyVariation
@@ -402,7 +402,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
 				NetCharScenario + ", " +
 				NetCharOperator + ", " +
-                                NetCharOperatorCell + ", " +
+				NetCharOperatorCell + ", " +
 				NetCharZone + ", " +
 				NetCharPoa + ", " +
 				NetCharPoaCell + ", " +
