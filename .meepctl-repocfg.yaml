@@ -166,6 +166,9 @@ repo:
     meep-logger:
       src: go-packages/meep-logger
       lint: true
+    meep-http-logger:
+      src: go-packages/meep-http-logger
+      lint: true
     meep-metric-store:
       src: go-packages/meep-metric-store
       lint: true

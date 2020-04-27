@@ -29,6 +29,7 @@ import (
 	"time"
 
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
@@ -145,6 +146,8 @@ func processActiveScenarioUpdate(event string) {
 	} else {
 		log.Debug("Reveived event: ", event, " - Do nothing")
 	}
+	_ = httpLog.ReInit(moduleName, activeScenarioName)
+
 }
 
 func activateScenario() {

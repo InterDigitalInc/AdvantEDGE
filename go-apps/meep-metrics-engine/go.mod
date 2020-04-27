@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client v0.0.0
@@ -20,6 +21,7 @@ require (
 
 replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model => ../../go-packages/meep-ctrl-engine-model
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger => ../../go-packages/meep-http-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store => ../../go-packages/meep-metric-store
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client => ../../go-packages/meep-metrics-engine-notification-client

@@ -31,6 +31,7 @@ import (
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -412,6 +413,8 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	_ = httpLog.ReInit(moduleName, scenarioName)
 
 	// Activate scenario & publish
 	err = activeModel.SetScenario(scenario)
