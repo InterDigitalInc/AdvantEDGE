@@ -99,7 +99,7 @@ func reInit() {
 
 }
 
-// Run - Start Location Service
+// Run - Start RNIS
 func Run() (err error) {
 	return sbi.Run()
 }

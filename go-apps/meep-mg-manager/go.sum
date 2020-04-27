@@ -1,5 +1,4 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-github.com/InterDigitalInc/AdvantEDGE v1.4.0 h1:MnzK3dl4hUvfhZ4wYarVmJzE5IMO2Q63dyDkcQtEv1Q=
 github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db h1:Zkf5kwhxdW0xV7WM/crqIcOP5LCFGnAmumWSFAewJ74=
 github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db/go.mod h1:RU+6d0CNIRSp6yo1mXLIIrnFa/3LHhvcDVLVJyovptM=
 github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351 h1:1u1XrfCBnY+GijnyU6O1k4odp5TnqZQTsp5v7+n/E4Y=
