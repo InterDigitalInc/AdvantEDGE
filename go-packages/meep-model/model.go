@@ -43,17 +43,19 @@ const (
 )
 
 const (
-	NetCharScenario = "SCENARIO"
-	NetCharOperator = "OPERATOR"
-	NetCharZone     = "ZONE"
-	NetCharPoa      = "POA"
-	NetCharDC       = "DISTANT CLOUD"
-	NetCharEdge     = "EDGE"
-	NetCharFog      = "FOG"
-	NetCharUE       = "UE"
-	NetCharCloudApp = "CLOUD APPLICATION"
-	NetCharEdgeApp  = "EDGE APPLICATION"
-	NetCharUEApp    = "UE APPLICATION"
+	NetCharScenario     = "SCENARIO"
+	NetCharOperator     = "OPERATOR"
+	NetCharOperatorCell = "OPERATOR CELLULAR"
+	NetCharZone         = "ZONE"
+	NetCharPoa          = "POA"
+	NetCharPoaCell      = "POA CELLULAR"
+	NetCharDC           = "DISTANT CLOUD"
+	NetCharEdge         = "EDGE"
+	NetCharFog          = "FOG"
+	NetCharUE           = "UE"
+	NetCharCloudApp     = "CLOUD APPLICATION"
+	NetCharEdgeApp      = "EDGE APPLICATION"
+	NetCharUEApp        = "UE APPLICATION"
 )
 
 // Model - Implements a Meep Model
@@ -358,7 +360,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NetCharOperator {
+		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
 			domain := n.object.(*ceModel.Domain)
 			domain.InterZoneLatency = nc.Latency
 			domain.InterZoneLatencyVariation = nc.LatencyVariation
@@ -375,7 +377,7 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			zone.NetChar.Throughput = nc.Throughput
 			zone.NetChar.PacketLoss = nc.PacketLoss
 			updated = true
-		} else if ncType == NetCharPoa {
+		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
 			nl := n.object.(*ceModel.NetworkLocation)
 			nl.TerminalLinkLatency = nc.Latency
 			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
@@ -400,8 +402,10 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
 				NetCharScenario + ", " +
 				NetCharOperator + ", " +
+				NetCharOperatorCell + ", " +
 				NetCharZone + ", " +
 				NetCharPoa + ", " +
+				NetCharPoaCell + ", " +
 				NetCharDC + ", " +
 				NetCharEdge + ", " +
 				NetCharFog + ", " +
@@ -499,15 +503,15 @@ func (m *Model) GetNodeType(name string) (typ string) {
 
 // GetNodeParent - Get a parent node by its child name
 func (m *Model) GetNodeParent(name string) (parent interface{}) {
-        m.lock.RLock()
-        defer m.lock.RUnlock()
+	m.lock.RLock()
+	defer m.lock.RUnlock()
 
-        parent = ""
-        n := m.nodeMap.nameMap[name]
-        if n != nil {
-                parent = n.parent
-        }
-        return parent
+	parent = ""
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		parent = n.parent
+	}
+	return parent
 }
 
 // GetNodeContext - Get a node context

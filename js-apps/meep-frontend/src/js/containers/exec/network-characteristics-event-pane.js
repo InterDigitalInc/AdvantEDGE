@@ -35,8 +35,12 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   //ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -95,9 +99,11 @@ import {
 
 const ncApplicableTypes = [
   ELEMENT_TYPE_SCENARIO,
-  ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
-  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
@@ -131,10 +137,19 @@ class NetworkCharacteristicsEventPane extends Component {
       return;
     }
 
-    var neType =
-      this.state.currentElementType === 'DOMAIN'
-        ? 'OPERATOR'
-        : this.state.currentElementType;
+    var neType = '';
+    switch(this.state.currentElementType) {
+    case 'DOMAIN':
+    case 'OPERATOR GENERIC':
+      neType = 'OPERATOR';
+      break;
+    case 'POA GENERIC':
+      neType = 'POA';
+      break;
+    default:
+      neType = this.state.currentElementType;
+    }
+
     var ncEvent = {
       name: 'name',
       type: this.props.currentEvent,
@@ -160,11 +175,14 @@ class NetworkCharacteristicsEventPane extends Component {
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR') {
+        if (type === 'DOMAIN' || type === 'OPERATOR' || type === 'OPERATOR GENERIC') {
           return elemType === 'OPERATOR' || elemType === 'DOMAIN';
         }
         if (elemType === 'ZONE') {
           return type.startsWith(elemType);
+        }
+        if (type === 'POA GENERIC') {
+          return elemType === 'POA';
         }
         return type === elemType;
       })
@@ -178,10 +196,14 @@ class NetworkCharacteristicsEventPane extends Component {
     case ELEMENT_TYPE_SCENARIO:
       return PREFIX_INT_DOM;
     case ELEMENT_TYPE_OPERATOR:
+    case ELEMENT_TYPE_OPERATOR_GENERIC:
+    case ELEMENT_TYPE_OPERATOR_CELL:
       return PREFIX_INT_ZONE;
     case ELEMENT_TYPE_ZONE:
       return PREFIX_INTRA_ZONE;
     case ELEMENT_TYPE_POA:
+    case ELEMENT_TYPE_POA_GENERIC:
+    case ELEMENT_TYPE_POA_CELL:
       return PREFIX_TERM_LINK;
     case ELEMENT_TYPE_EDGE:
       return PREFIX_LINK;
@@ -295,12 +317,16 @@ class NetworkCharacteristicsEventPane extends Component {
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN';
+        if (type === 'DOMAIN' || type === 'OPERATOR' || type === 'OPERATOR-CELL') {
+          return elemType === 'OPERATOR' || elemType === 'DOMAIN' || elemType === 'OPERATOR-CELL';
         }
         if (elemType === 'ZONE') {
           return this.state.currentElementType.startsWith(elemType);
         }
+        if (type === 'POA') {
+          return elemType === 'POA';
+        }
+
         return this.state.currentElementType === elemType;
       })
       .map(e => {

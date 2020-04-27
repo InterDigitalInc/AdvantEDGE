@@ -142,6 +142,12 @@
     OPERATOR: "OPERATOR",
 
     /**
+     * value: "OPERATOR-CELLULAR"
+     * @const
+     */
+    OPERATOR_CELLULAR: "OPERATOR-CELLULAR",
+
+    /**
      * value: "ZONE"
      * @const
      */
@@ -152,6 +158,12 @@
      * @const
      */
     POA: "POA",
+
+    /**
+     * value: "POA-CELLULAR"
+     * @const
+     */
+    POA_CELLULAR: "POA-CELLULAR",
 
     /**
      * value: "EDGE"

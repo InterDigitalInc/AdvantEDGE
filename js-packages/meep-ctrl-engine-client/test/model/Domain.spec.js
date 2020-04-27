@@ -109,10 +109,10 @@
         // expect(instance.userMeta).to.be(expectedValueLiteral);
       });
 
-      it('should have the property cellular4gDomainConfig (base name: "cellular4gDomainConfig")', function() {
-        // TODO: update the code to test the property cellular4gDomainConfig
-        expect(instance).to.have.property('cellular4gDomainConfig');
-        // expect(instance.cellular4gDomainConfig).to.be(expectedValueLiteral);
+      it('should have the property cellularDomainConfig (base name: "cellularDomainConfig")', function() {
+        // TODO: update the code to test the property cellularDomainConfig
+        expect(instance).to.have.property('cellularDomainConfig');
+        // expect(instance.cellularDomainConfig).to.be(expectedValueLiteral);
       });
 
       it('should have the property zones (base name: "zones")', function() {

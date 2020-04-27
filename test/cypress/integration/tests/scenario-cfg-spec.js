@@ -64,6 +64,10 @@ import {
   FIELD_APP_LATENCY_VAR,
   FIELD_APP_THROUGPUT,
   FIELD_APP_PKT_LOSS,
+  FIELD_MNC,
+  FIELD_MCC,
+  FIELD_DEFAULT_CELL_ID,
+  FIELD_CELL_ID,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -76,7 +80,7 @@ describe('Scenario Configuration', function () {
 
   // Test Variables
   let defaultScenario = 'None';
-  let dummyScenario = 'dummy-scenario';
+  let dummyScenario = 'dummy-scenario21';
 
   // Test Setup
   beforeEach(() => {
@@ -161,10 +165,12 @@ describe('Scenario Configuration', function () {
 
   it('Create Full Scenario', function () {
     let operatorName = 'operator1';
+    let operatorCellName = 'operator-cell1';
     let zoneName = 'zone1';
     let edgeName = 'edge1';
     let edgeAppName = 'edge1-app1';
     let poaName = 'poa1';
+    let poaCellName = 'poa-cell1';
     let fogName = 'fog1';
     let fogAppName = 'fog1-app1';
     let ueName = 'ue1';
@@ -199,6 +205,11 @@ describe('Scenario Configuration', function () {
     addDomain(operatorName, dummyScenario);
     validateDomain(operatorName, dummyScenario);
 
+    // Domain Cell
+    cy.log('Add new domain cell and verify default & configured settings: ' + operatorCellName);
+    addDomainCell(operatorCellName, dummyScenario);
+    validateDomainCell(operatorCellName, dummyScenario);
+
     // Zone
     cy.log('Add new zone and verify default & configured settings: ' + zoneName);
     addZone(zoneName, operatorName);
@@ -218,6 +229,11 @@ describe('Scenario Configuration', function () {
     cy.log('Add new poa and verify default & configured settings: ' + poaName);
     addPoa(poaName, zoneName);
     validatePoa(poaName, zoneName);
+
+    // POA Cell
+    cy.log('Add new poa cell and verify default & configured settings: ' + poaCellName);
+    addPoaCell(poaCellName, zoneName);
+    validatePoaCell(poaCellName, zoneName);
 
     // Fog
     cy.log('Add new fog and verify default & configured settings: ' + fogName);
@@ -272,10 +288,12 @@ describe('Scenario Configuration', function () {
     cy.log('Validate Loaded scenario entries match saved scenario values');
     validateScenario(dummyScenario);
     validateDomain(operatorName, dummyScenario);
+    validateDomainCell(operatorCellName, dummyScenario);
     validateZone(zoneName, operatorName);
     validateEdge(edgeName, zoneName);
     validateEdgeApp(edgeAppName, edgeName);
     validatePoa(poaName, zoneName);
+    validatePoaCell(poaCellName, zoneName);
     validateFog(fogName, poaName);
     validateFogApp(fogAppName, fogName);
     validateUe(ueName, poaName);
@@ -339,7 +357,7 @@ describe('Scenario Configuration', function () {
 
   function addDomain(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
-    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_OPERATOR);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_OPERATOR_GENERIC);
     verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_INTER_ZONE));
     verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_INTER_ZONE));
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_INTER_ZONE));
@@ -368,6 +386,57 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), interZoneThroughput);
     });
   }
+
+  // ==============================
+  // DOMAIN CELL
+  // ==============================
+
+  let interZoneLatency2 = '13';
+  let interZoneLatencyVar2 = '4';
+  let interZonePktLoss2 = '3';
+  let interZoneThroughput2 = '2001';
+  let mcc = '002';
+  let mnc = '001';
+  let defaultCellId = 'ABCDEF1';
+
+  function addDomainCell(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_OPERATOR_CELL);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_INTER_ZONE));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_INTER_ZONE));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_INTER_ZONE));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_INTER_ZONE));
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    type(meep.CFG_ELEM_LATENCY, interZoneLatency2);
+    type(meep.CFG_ELEM_LATENCY_VAR, interZoneLatencyVar2);
+    type(meep.CFG_ELEM_PKT_LOSS, interZonePktLoss2);
+    type(meep.CFG_ELEM_THROUGHPUT, interZoneThroughput2);
+    type(meep.CFG_ELEM_MCC, mcc);
+    type(meep.CFG_ELEM_MNC, mnc);
+    type(meep.CFG_ELEM_DEFAULT_CELL_ID, defaultCellId);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validateDomainCell(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_OPERATOR_CELL);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), interZoneLatency2);
+      assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), interZoneLatencyVar2);
+      assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), interZonePktLoss2);
+      assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), interZoneThroughput2);
+      assert.equal(getElemFieldVal(entry, FIELD_MCC), mcc);
+      assert.equal(getElemFieldVal(entry, FIELD_MNC), mnc);
+      assert.equal(getElemFieldVal(entry, FIELD_DEFAULT_CELL_ID), defaultCellId);
+    });
+  }
+
 
   // ==============================
   // ZONE
@@ -523,7 +592,7 @@ describe('Scenario Configuration', function () {
 
   function addPoa(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
-    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_GENERIC);
     verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
@@ -550,6 +619,50 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), termLinkThroughput);
+    });
+  }
+
+  // ==============================
+  // POA-CELL
+  // ==============================
+
+  let termLinkLatency2 = '2';
+  let termLinkLatencyVar2 = '3';
+  let termLinkPktLoss2 = '4';
+  let termLinkThroughput2 = '5';
+  let cellId = '1234567';
+
+  function addPoaCell(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_CELL);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency2);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar2);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss2);
+    type(meep.CFG_ELEM_THROUGHPUT, termLinkThroughput2);
+    type(meep.CFG_ELEM_CELL_ID, cellId);
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validatePoaCell(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_CELL);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency2);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar2);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss2);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), termLinkThroughput2);
+      assert.equal(getElemFieldVal(entry, FIELD_CELL_ID), cellId);
     });
   }
 

@@ -24,26 +24,8 @@
 
 package client
 
-// Operator domain object
-type Domain struct {
-	// Unique domain ID
-	Id string `json:"id,omitempty"`
-	// Domain name
-	Name string `json:"name,omitempty"`
-	// Domain type
-	Type_ string `json:"type,omitempty"`
-	// Latency in ms between zones within domain
-	InterZoneLatency int32 `json:"interZoneLatency,omitempty"`
-	// Latency variation in ms between zones within domain
-	InterZoneLatencyVariation int32 `json:"interZoneLatencyVariation,omitempty"`
-	// The limit of the traffic supported between zones within the domain
-	InterZoneThroughput int32 `json:"interZoneThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between zones within the domain
-	InterZonePacketLoss float64 `json:"interZonePacketLoss,omitempty"`
-	// Key/Value Pair Map (string, string)
-	Meta map[string]string `json:"meta,omitempty"`
-	// Key/Value Pair Map (string, string)
-	UserMeta             map[string]string     `json:"userMeta,omitempty"`
-	CellularDomainConfig *CellularDomainConfig `json:"cellularDomainConfig,omitempty"`
-	Zones                []Zone                `json:"zones,omitempty"`
+// Cellular POA configuration information
+type CellularPoaConfig struct {
+	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+	CellId string `json:"cellId,omitempty"`
 }

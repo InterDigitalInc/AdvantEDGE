@@ -582,13 +582,16 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 		if jsonAppEcgiInfo != "" {
 
 			ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
-
-			var plmnInfo PlmnInfo
-			plmnInfo.Ecgi = ecgi
-			plmnInfo.AppInsId = meAppName
-			plmnInfo.TimeStamp = &timeStamp
-			response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
-			atLeastOne = true
+			if ecgi != nil {
+				if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" && ecgi.CellId[0] != "" {
+					var plmnInfo PlmnInfo
+					plmnInfo.Ecgi = ecgi
+					plmnInfo.AppInsId = meAppName
+					plmnInfo.TimeStamp = &timeStamp
+					response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
+					atLeastOne = true
+				}
+			}
 		}
 	}
 

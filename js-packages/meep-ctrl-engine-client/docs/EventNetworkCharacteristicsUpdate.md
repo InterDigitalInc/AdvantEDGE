@@ -19,9 +19,13 @@ Name | Type | Description | Notes
 
 * `OPERATOR` (value: `"OPERATOR"`)
 
+* `OPERATOR_CELLULAR` (value: `"OPERATOR-CELLULAR"`)
+
 * `ZONE` (value: `"ZONE"`)
 
 * `POA` (value: `"POA"`)
+
+* `POA_CELLULAR` (value: `"POA-CELLULAR"`)
 
 * `EDGE` (value: `"EDGE"`)
 

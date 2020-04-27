@@ -48,6 +48,10 @@ import {
   FIELD_CMD_ARGS,
   FIELD_EXT_PORT,
   FIELD_IS_EXTERNAL,
+  FIELD_MCC,
+  FIELD_MNC,
+  FIELD_DEFAULT_CELL_ID,
+  FIELD_CELL_ID,
   FIELD_CHART_ENABLED,
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
@@ -72,8 +76,12 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -111,6 +119,10 @@ import {
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_EXTERNAL_CHECK,
+  CFG_ELEM_MNC,
+  CFG_ELEM_MCC,
+  CFG_ELEM_DEFAULT_CELL_ID,
+  CFG_ELEM_CELL_ID,
   CFG_ELEM_CHART_CHECK,
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
@@ -242,6 +254,28 @@ const validateGpuCount = count => {
   const p = Number(count);
   if (p !== '' && (p < GPU_COUNT_MIN || p > GPU_COUNT_MAX)) {
     return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
+  }
+  return null;
+};
+
+const validateCellularMccMnc = val => {
+  if (val) {
+    if (val.length > 3) {
+      return 'Maximum 3 numeric characters';
+    } else if (!val.match(/^(([0-9][0-9]*)?[0-9])+$/)) {
+      return 'Numeric characters only';
+    }
+  }
+  return null;
+};
+
+const validateCellularCellId = val => {
+  if (val) {
+    if (val.length > 7) {
+      return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
   }
   return null;
 };
@@ -592,11 +626,52 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
     );
   case ELEMENT_TYPE_OPERATOR:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INT_ZONE]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_ZONE]}
+        />
+      </>
+    );
+  case ELEMENT_TYPE_OPERATOR_CELL:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_ZONE]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MCC"
+            fieldName={FIELD_MCC}
+            cydata={CFG_ELEM_MCC}
+          />
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MNC"
+            fieldName={FIELD_MNC}
+            cydata={CFG_ELEM_MNC}
+          />
+          <CfgTextFieldCell
+            span={6}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularCellId}
+            label="Default cell Id"
+            fieldName={FIELD_DEFAULT_CELL_ID}
+            cydata={CFG_ELEM_DEFAULT_CELL_ID}
+          />
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_ZONE:
     return (
@@ -613,6 +688,24 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         element={element}
         prefixes={[PREFIX_TERM_LINK]}
       />
+    );
+  case ELEMENT_TYPE_POA_CELL:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateCellularCellId}
+          label="Cell Id"
+          fieldName={FIELD_CELL_ID}
+          cydata={CFG_ELEM_CELL_ID}
+        />
+      </>
     );
   case ELEMENT_TYPE_UE:
   case ELEMENT_TYPE_DC:
@@ -870,7 +963,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
 const elementTypes = [
   {
     label: 'Logical Domain',
-    options: [ELEMENT_TYPE_OPERATOR]
+    options: [ELEMENT_TYPE_OPERATOR_GENERIC, ELEMENT_TYPE_OPERATOR_CELL]
   },
   {
     label: 'Logical Zone',
@@ -878,14 +971,15 @@ const elementTypes = [
   },
   {
     label: 'Network Location',
-    options: [ELEMENT_TYPE_DC, ELEMENT_TYPE_POA]
+    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_CELL]
   },
   {
     label: 'Physical Location',
     options: [
       ELEMENT_TYPE_UE,
       ELEMENT_TYPE_FOG,
-      ELEMENT_TYPE_EDGE
+      ELEMENT_TYPE_EDGE,
+      ELEMENT_TYPE_DC
       // ELEMENT_TYPE_CN
     ]
   },
@@ -903,12 +997,14 @@ const elementTypes = [
 var parentTypes = {};
 parentTypes[ELEMENT_TYPE_SCENARIO] = null;
 parentTypes[ELEMENT_TYPE_OPERATOR] = [ELEMENT_TYPE_SCENARIO];
+parentTypes[ELEMENT_TYPE_OPERATOR_CELL] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_EDGE] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR];
+parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR, ELEMENT_TYPE_OPERATOR_CELL];
 parentTypes[ELEMENT_TYPE_POA] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_CELL] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_CN] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA];
-parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA];
+parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
+parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
 parentTypes[ELEMENT_TYPE_MECSVC] = [
@@ -993,6 +1089,12 @@ const getSuggestedName = ( type, elements ) => {
   case ELEMENT_TYPE_DC:
     suggestedPrefix = 'cloud';
     break;
+  case ELEMENT_TYPE_POA_CELL:
+    suggestedPrefix = 'poa-cell';
+    break;
+  case ELEMENT_TYPE_OPERATOR_CELL:
+    suggestedPrefix = 'operator-cell';
+    break;
   default:
     suggestedPrefix = type.toLowerCase();
   }
@@ -1000,10 +1102,42 @@ const getSuggestedName = ( type, elements ) => {
   return createUniqueName(elements, suggestedPrefix);
 };
 
+const getElementTypeOverride = (type) => {
+  var typeOverride = '';
+  switch(type) {
+  case ELEMENT_TYPE_POA:
+    typeOverride = ELEMENT_TYPE_POA_GENERIC;
+    break;
+  case ELEMENT_TYPE_OPERATOR:
+    typeOverride = ELEMENT_TYPE_OPERATOR_GENERIC;
+    break;
+  default:
+    typeOverride = type;
+  }
+  return typeOverride;
+};
+
+const getElementTypeOverrideBack = (typeOverride) => {
+  var type = '';
+  switch(typeOverride) {
+  case ELEMENT_TYPE_POA_GENERIC:
+    type = ELEMENT_TYPE_POA;
+    break;
+  case ELEMENT_TYPE_OPERATOR_GENERIC:
+    type = ELEMENT_TYPE_OPERATOR;
+    break;
+  default:
+    type = typeOverride;
+  }
+  return type;
+};
+
 const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
+
+  var typeOverride = getElementTypeOverride(type);
 
   return (
     <>
@@ -1014,7 +1148,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisa
             span={6}
             options={elementTypes}
             onChange={elem => onTypeChange(elem.target.value)}
-            value={type}
+            value={typeOverride}
             disabled={typeDisabled}
             cydata={CFG_ELEM_TYPE}
           />
@@ -1089,13 +1223,15 @@ export class CfgNetworkElementContainer extends Component {
   onElementTypeChange(elementType) {
     var elem = updateObject({}, this.props.configuredElement);
 
-    setElemFieldVal(elem, FIELD_TYPE, elementType);
+    //override the frontend terminology
+    var elementTypeOverride = getElementTypeOverrideBack(elementType);
+    setElemFieldVal(elem, FIELD_TYPE, elementTypeOverride);
     setElemFieldVal(elem, FIELD_PARENT, null);
 
-    elem.parentElements = this.elementsOfType(getParentTypes(elementType));
+    elem.parentElements = this.elementsOfType(getParentTypes(elementTypeOverride));
 
     if (this.props.configMode !== CFG_ELEM_MODE_CLONE) {
-      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementType, this.props.tableData));
+      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementTypeOverride, this.props.tableData));
     }
     this.props.cfgElemUpdate(elem);
   }
