@@ -510,6 +510,13 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	chart := newChart("loc-serv", sandboxName, "", chartLocation, "")
 	charts = append(charts, chart)
 
+	chartLocation, err = createChart("meep-rnis", sandboxName, "", sandboxTemplate)
+	if err != nil {
+		return
+	}
+	chart = newChart("rnis", sandboxName, "", chartLocation, "")
+	charts = append(charts, chart)
+
 	chartLocation, err = createChart("meep-metrics-engine", sandboxName, "", sandboxTemplate)
 	if err != nil {
 		return

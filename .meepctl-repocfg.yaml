@@ -121,7 +121,7 @@ repo:
       meep-rnis:
         src: go-apps/meep-rnis
         bin: bin/meep-rnis
-        chart: charts/meep-rnis
+        chart: charts/sandbox/meep-rnis
         build-flags:
           - -mod=vendor
         codecov: false
