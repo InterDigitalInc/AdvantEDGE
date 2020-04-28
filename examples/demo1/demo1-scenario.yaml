@@ -1,9 +1,9 @@
+version: 1.4.0
 name: demo1
 deployment:
     interDomainLatency: 50
     interDomainLatencyVariation: 5
     interDomainThroughput: 1000
-    interDomainPacketLoss: 0
     domains:
         -
             id: PUBLIC
@@ -17,15 +17,11 @@ deployment:
                     id: PUBLIC-COMMON
                     name: PUBLIC-COMMON
                     type: COMMON
-                    interFogLatency: 2
-                    interFogLatencyVariation: 1
-                    interFogThroughput: 1000000
-                    interEdgeLatency: 3
-                    interEdgeLatencyVariation: 1
-                    interEdgeThroughput: 1000000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughput: 1000000
+                        packetLoss: null
                     networkLocations:
                         -
                             id: PUBLIC-COMMON-DEFAULT
@@ -45,7 +41,7 @@ deployment:
                                             id: cloud1-iperf
                                             name: cloud1-iperf
                                             type: CLOUD-APP
-                                            image: meep-docker-registry:30001/iperf-server
+                                            image: 'meep-docker-registry:30001/iperf-server'
                                             commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT'
                                             commandExe: /bin/bash
                                             serviceConfig:
@@ -58,38 +54,78 @@ deployment:
                                                 meSvcName: null
                                             isExternal: null
                                             environment: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
                                             id: cloud1-svc
                                             name: cloud1-svc
                                             type: CLOUD-APP
-                                            isExternal: false
-                                            userChartLocation: null
-                                            userChartAlternateValues: null
-                                            userChartGroup: null
-                                            image: meep-docker-registry:30001/demo-server
+                                            image: 'meep-docker-registry:30001/demo-server'
                                             environment: 'MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80'
-                                            commandArguments: ""
-                                            commandExe: ""
                                             serviceConfig:
                                                 name: cloud1-svc
-                                                meSvcName: ""
                                                 ports:
                                                     -
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
+                                                meSvcName: null
+                                            isExternal: null
+                                            commandArguments: null
+                                            commandExe: null
+                                            gpuConfig: null
                                             externalConfig: null
+                                            status: null
+                                            userChartLocation: null
+                                            userChartAlternateValues: null
+                                            userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     isExternal: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
             interZonePacketLoss: null
+            meta: null
+            userMeta: null
+            cellularDomainConfig: null
         -
             id: operator1
             name: operator1
@@ -97,21 +133,16 @@ deployment:
             interZoneLatency: 15
             interZoneLatencyVariation: 3
             interZoneThroughput: 1000
-            interZonePacketLoss: 0
             zones:
                 -
                     id: operator1-COMMON
                     name: operator1-COMMON
                     type: COMMON
-                    interFogLatency: 2
-                    interFogLatencyVariation: 1
-                    interFogThroughput: 1000000
-                    interEdgeLatency: 3
-                    interEdgeLatencyVariation: 1
-                    interEdgeThroughput: 1000000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughput: 1000000
+                        packetLoss: null
                     networkLocations:
                         -
                             id: operator1-COMMON-DEFAULT
@@ -121,26 +152,33 @@ deployment:
                             terminalLinkLatencyVariation: 1
                             terminalLinkThroughput: 50000
                             terminalLinkPacketLoss: 1
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
                 -
                     id: zone1
                     name: zone1
                     type: ZONE
-                    interFogLatency: 10
-                    interFogLatencyVariation: 2
-                    interFogThroughput: 1000
-                    interFogPacketLoss: 0
-                    interEdgeLatency: 12
-                    interEdgeLatencyVariation: 2
-                    interEdgeThroughput: 1000
-                    interEdgePacketLoss: 0
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000
-                    edgeFogPacketLoss: 0
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughput: 1000
+                        packetLoss: null
                     networkLocations:
                         -
                             id: zone1-DEFAULT
@@ -160,7 +198,7 @@ deployment:
                                             id: zone1-edge1-iperf
                                             name: zone1-edge1-iperf
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/iperf-server
+                                            image: 'meep-docker-registry:30001/iperf-server'
                                             commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT'
                                             commandExe: /bin/bash
                                             serviceConfig:
@@ -173,16 +211,24 @@ deployment:
                                                         externalPort: null
                                             isExternal: null
                                             environment: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
                                             id: zone1-edge1-svc
                                             name: zone1-edge1-svc
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/demo-server
+                                            image: 'meep-docker-registry:30001/demo-server'
                                             environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone1-edge1-svc
@@ -195,13 +241,30 @@ deployment:
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     isExternal: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                         -
                             id: zone1-poa1
                             name: zone1-poa1
@@ -209,7 +272,6 @@ deployment:
                             terminalLinkLatency: 1
                             terminalLinkLatencyVariation: 1
                             terminalLinkThroughput: 1000
-                            terminalLinkPacketLoss: 0
                             physicalLocations:
                                 -
                                     id: zone1-fog1
@@ -220,7 +282,7 @@ deployment:
                                             id: zone1-fog1-iperf
                                             name: zone1-fog1-iperf
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/iperf-server
+                                            image: 'meep-docker-registry:30001/iperf-server'
                                             commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT;'
                                             commandExe: /bin/bash
                                             serviceConfig:
@@ -233,16 +295,24 @@ deployment:
                                                         externalPort: null
                                             isExternal: null
                                             environment: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
                                             id: zone1-fog1-svc
                                             name: zone1-fog1-svc
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/demo-server
+                                            image: 'meep-docker-registry:30001/demo-server'
                                             environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone1-fog1-svc
@@ -255,13 +325,27 @@ deployment:
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     isExternal: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
                                 -
                                     id: ue1
                                     name: ue1
@@ -271,19 +355,33 @@ deployment:
                                             id: ue1-iperf
                                             name: ue1-iperf
                                             type: UE-APP
-                                            image: meep-docker-registry:30001/iperf-client
+                                            image: 'meep-docker-registry:30001/iperf-client'
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
                                             isExternal: null
                                             environment: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     isExternal: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
                                 -
                                     id: ue2-ext
                                     name: ue2-ext
@@ -295,41 +393,57 @@ deployment:
                                             name: ue2-svc
                                             type: UE-APP
                                             isExternal: true
-                                            userChartLocation: null
-                                            userChartAlternateValues: null
-                                            userChartGroup: null
+                                            externalConfig:
+                                                ingressServiceMap:
+                                                    -
+                                                        name: svc
+                                                        port: 80
+                                                        externalPort: 31111
+                                                        protocol: TCP
+                                                    -
+                                                        name: iperf
+                                                        port: 80
+                                                        externalPort: 31222
+                                                        protocol: UDP
+                                                    -
+                                                        name: cloud1-svc
+                                                        port: 80
+                                                        externalPort: 31112
+                                                        protocol: TCP
+                                                    -
+                                                        name: cloud1-iperf
+                                                        port: 80
+                                                        externalPort: 31223
+                                                        protocol: UDP
+                                                egressServiceMap: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
                                             serviceConfig: null
-                                            externalConfig:
-                                                ingressServiceMap:
-                                                    -
-                                                        externalPort: 31111
-                                                        name: svc
-                                                        port: 80
-                                                        protocol: TCP
-                                                        ip: null
-                                                    -
-                                                        externalPort: 31222
-                                                        name: iperf
-                                                        port: 80
-                                                        protocol: UDP
-                                                        ip: null
-                                                    -
-                                                        externalPort: 31112
-                                                        name: cloud1-svc
-                                                        port: 80
-                                                        protocol: TCP
-                                                        ip: null
-                                                    -
-                                                        externalPort: 31223
-                                                        name: cloud1-iperf
-                                                        port: 80
-                                                        protocol: UDP
-                                                        ip: null
+                                            gpuConfig: null
+                                            status: null
+                                            userChartLocation: null
+                                            userChartAlternateValues: null
+                                            userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                         -
                             id: zone1-poa2
                             name: zone1-poa2
@@ -337,24 +451,34 @@ deployment:
                             terminalLinkLatency: 10
                             terminalLinkLatencyVariation: 2
                             terminalLinkThroughput: 50
-                            terminalLinkPacketLoss: 0
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
                 -
                     id: zone2
                     name: zone2
                     type: ZONE
-                    interFogLatency: 10
-                    interFogLatencyVariation: 2
-                    interFogThroughput: 1000
-                    interFogPacketLoss: 0
-                    interEdgeLatency: 12
-                    interEdgeLatencyVariation: 2
-                    interEdgeThroughput: 1000
-                    interEdgePacketLoss: 0
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000
-                    edgeFogPacketLoss: 0
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughput: 1000
+                        packetLoss: null
                     networkLocations:
                         -
                             id: zone2-DEFAULT
@@ -374,7 +498,7 @@ deployment:
                                             id: zone2-edge1-iperf
                                             name: zone2-edge1-iperf
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/iperf-server
+                                            image: 'meep-docker-registry:30001/iperf-server'
                                             commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT;'
                                             commandExe: /bin/bash
                                             serviceConfig:
@@ -387,16 +511,24 @@ deployment:
                                                         externalPort: null
                                             isExternal: null
                                             environment: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
                                             id: zone2-edge1-svc
                                             name: zone2-edge1-svc
                                             type: EDGE-APP
-                                            image: meep-docker-registry:30001/demo-server
+                                            image: 'meep-docker-registry:30001/demo-server'
                                             environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone2-edge1-svc
@@ -409,13 +541,30 @@ deployment:
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                     isExternal: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                         -
                             id: zone2-poa1
                             name: zone2-poa1
@@ -423,5 +572,32 @@ deployment:
                             terminalLinkLatency: 1
                             terminalLinkLatencyVariation: 1
                             terminalLinkThroughput: 20
-                            terminalLinkPacketLoss: 0
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
+                    interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
+                    interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
+                    edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
+            interZonePacketLoss: null
+            meta: null
+            userMeta: null
+            cellularDomainConfig: null
+    interDomainPacketLoss: null
+    meta: null
+    userMeta: null
+id: null
+description: null
+config: null
