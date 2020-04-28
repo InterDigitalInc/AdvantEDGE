@@ -35,6 +35,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 )
@@ -45,8 +46,10 @@ type Scenario struct {
 
 type SandboxCtrl struct {
 	sandboxName   string
+	msgQueue      *mq.MsgQueue
 	scenarioStore *couch.Connector
 	replayStore   *couch.Connector
+	modelCfg      mod.ModelCfg
 	activeModel   *mod.Model
 	metricStore   *ms.MetricStore
 	replayMgr     *replay.ReplayMgr
@@ -55,8 +58,8 @@ type SandboxCtrl struct {
 
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
-const platformModuleName = "platform-ctrl"
 const moduleName = "meep-sandbox-ctrl"
+const platformModuleName = "meep-platform-ctrl"
 const eventTypeMobility = "MOBILITY"
 const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
@@ -86,6 +89,22 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sbxCtrl.sandboxName)
 
+	// Create message queue
+	sbxCtrl.msgQueue, err = mq.NewMsgQueue(moduleName, sbxCtrl.sandboxName, redisDBAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	sbxCtrl.modelCfg = mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: activeScenarioUpdateCb, DbAddr: mod.DbAddress}
+	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+
 	// Make Scenario DB connection
 	sbxCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
 	if err != nil {
@@ -93,13 +112,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Scenario DB")
-
-	// Create new active scenario model
-	sbxCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
-		return err
-	}
 
 	// Make Replay DB connection
 	sbxCtrl.replayStore, err = couch.NewConnector(couchDBAddr, replayDBName)
@@ -163,7 +175,7 @@ func activateScenario(scenarioName string) (err error) {
 
 	// Create new model object
 	if sbxCtrl.activeModel == nil {
-		sbxCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+		sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
 		if err != nil {
 			log.Error("Failed to create model: ", err.Error())
 			return err
@@ -191,7 +203,7 @@ func activateScenario(scenarioName string) (err error) {
 		return err
 	}
 
-	// Activate scenario & publish
+	// Activate scenario
 	err = sbxCtrl.activeModel.SetScenario(scenario)
 	if err != nil {
 		log.Error("Failed to set active scenario with err: ", err.Error())
@@ -200,6 +212,15 @@ func activateScenario(scenarioName string) (err error) {
 	err = sbxCtrl.activeModel.Activate()
 	if err != nil {
 		log.Error("Failed to activate scenario with err: ", err.Error())
+		return err
+	}
+
+	// Send Activation message
+	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioActivate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
 		return err
 	}
 
@@ -218,7 +239,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 
 	if sbxCtrl.activeModel == nil {
 		var err error
-		sbxCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+		sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
 		if err != nil {
 			log.Error("Failed to create model: ", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -264,6 +285,14 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Send Activation message
+	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioActivate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
 	}
 
 	if r.Body != nil {
@@ -422,8 +451,16 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send Terminate message
+	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioTerminate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
+
 	// Use new model instance
-	sbxCtrl.activeModel, err = mod.NewModel(mod.DbAddress, moduleName, "activeScenario")
+	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -960,4 +997,13 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+}
+
+func activeScenarioUpdateCb() {
+	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioUpdate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := sbxCtrl.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 }

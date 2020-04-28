@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -29,6 +30,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	ncm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-net-char-mgr"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
@@ -37,8 +39,9 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const moduleTcEngine string = "tc-engine"
-const moduleMgManager string = "mg-manager"
+const moduleName string = "meep-tc-engine"
+const moduleTcSidecar string = "meep-tc-sidecar"
+const moduleMgManager string = "meep-mg-manager"
 
 const typeNet string = "net"
 const typeLb string = "lb"
@@ -54,10 +57,6 @@ const fieldSvcPort string = "svc-port"
 const fieldLbSvcName string = "lb-svc-name"
 const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
-
-const channelMgManagerLb string = moduleMgManager + "-" + typeLb
-const channelTcNet string = moduleTcEngine + "-" + typeNet
-const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const COMMON_CORRELATION = 50
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
@@ -157,10 +156,13 @@ type LbRulesStore struct {
 
 // TcEngine -
 type TcEngine struct {
+	sandboxName  string
+	msgQueue     *mq.MsgQueue
 	activeModel  *mod.Model
 	netCharStore *NetCharStore
 	lbRulesStore *LbRulesStore
 	netCharMgr   ncm.NetCharMgr
+	handlerId    int
 
 	// Flag & Counters used to indicate when TC Engine is ready to
 	tcEngineState     int
@@ -204,8 +206,26 @@ func Init() (err error) {
 	tce.svcCount = 0
 	tce.nextTransactionId = 1
 
+	// Retrieve Sandbox name from environment variable
+	tce.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if tce.sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", tce.sandboxName)
+
+	// Create message queue
+	tce.msgQueue, err = mq.NewMsgQueue(moduleName, tce.sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
 	// Create new Model
-	tce.activeModel, err = mod.NewModel(redisAddr, moduleTcEngine, "activeScenario")
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: mod.DbAddress}
+	tce.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return err
@@ -221,7 +241,7 @@ func Init() (err error) {
 	log.Info("Connected to Net Char Store redis DB")
 
 	// Flush any remaining TC Engine rules
-	tce.netCharStore.rc.DBFlush(moduleTcEngine)
+	tce.netCharStore.rc.DBFlush(moduleName)
 
 	// Open Load Balancing Rules Store
 	tce.lbRulesStore = new(LbRulesStore)
@@ -233,7 +253,7 @@ func Init() (err error) {
 	log.Info("Connected to LB Rules Store redis DB")
 
 	// Create new Network Characteristics Manager instance
-	tce.netCharMgr, err = ncm.NewNetChar("default", redisAddr)
+	tce.netCharMgr, err = ncm.NewNetChar(moduleName, tce.sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create a netChar object. Error: ", err)
 		return err
@@ -248,45 +268,46 @@ func Init() (err error) {
 }
 
 // Run - MEEP TC Engine execution
-func Run() error {
+func Run() (err error) {
 
-	// Listen for Active Scenario updates
-	err := tce.activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
+	tce.handlerId, err = tce.msgQueue.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
 	}
-
-	// Listen for LB Rules updates
-	go func() {
-		err := tce.lbRulesStore.rc.Subscribe(channelMgManagerLb)
-		if err != nil {
-			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-			return
-		}
-		_ = tce.lbRulesStore.rc.Listen(eventHandler)
-	}()
 
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
 	mutex.Lock()
-	// Handle Message according to Rx Channel
-	switch channel {
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
+	defer mutex.Unlock()
+
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioUpdate()
-	case channelMgManagerLb:
-		log.Debug("Event received on channel: ", channelMgManagerLb, " payload: ", payload)
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgMgLbRulesUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processMgSvcMapUpdate()
 	default:
-		log.Warn("Unsupported channel")
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
-	mutex.Unlock()
 }
 
 func processActiveScenarioUpdate() {
+	// Sync with active scenario store
+	tce.activeModel.UpdateScenario()
+
 	// Stop scenario if not active
 	scenarioName = tce.activeModel.GetScenarioName()
 	if scenarioName == "" {
@@ -346,9 +367,13 @@ func processMgSvcMapUpdate() {
 	// Apply new MG Service mapping rules
 	applyMgSvcMapping()
 
-	// Publish update to TC Sidecars for enforcement
-	log.Debug("TX-MSG [", channelTcLb, "] ", "")
-	_ = tce.netCharStore.rc.Publish(channelTcLb, "")
+	// Send TC LB Rules update message to TC Sidecars for enforcement
+	msg := tce.msgQueue.CreateMsg(mq.MsgTcLbRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = tce.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 }
 
 func addPod(name string) {
@@ -383,10 +408,21 @@ func stopScenario() {
 
 	scenarioName = ""
 
-	tce.netCharStore.rc.DBFlush(moduleTcEngine)
+	tce.netCharStore.rc.DBFlush(moduleName)
 
-	_ = tce.netCharStore.rc.Publish(channelTcNet, "delAll")
-	_ = tce.netCharStore.rc.Publish(channelTcLb, "delAll")
+	// Send message to clear TC LB & Net Rules
+	msg := tce.msgQueue.CreateMsg(mq.MsgTcNetRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := tce.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
+	msg = tce.msgQueue.CreateMsg(mq.MsgTcLbRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = tce.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 
 	tce.netCharMgr.Stop()
 }
@@ -535,23 +571,23 @@ func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName 
 func updateDbState(transactionId int) {
 	var dbState = make(map[string]interface{})
 	dbState["transactionIdStored"] = transactionId
-	keyName := moduleTcEngine + ":" + typeNet + ":dbState"
+	keyName := moduleName + ":" + typeNet + ":dbState"
 	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
 func netCharUpdate(dstName string, srcName string, rate float64, latency float64, latencyVariation float64, packetLoss float64) {
 	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Retrieve flow filter info
 	dstElement, found := netElemMap[dstName]
 	if !found {
 		log.Error("Failed to find flow destination: ", dstName)
-		mutex.Unlock()
 		return
 	}
 	filterInfo, found := dstElement.FilterInfoMap[srcName]
 	if !found {
 		log.Error("Failed to find flow source: ", srcName)
-		mutex.Unlock()
 		return
 	}
 
@@ -561,20 +597,26 @@ func netCharUpdate(dstName string, srcName string, rate float64, latency float64
 	filterInfo.PacketLoss = int(100 * packetLoss)
 	filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
 	_ = setShapingRule(filterInfo)
-	mutex.Unlock()
 }
 
 func updateComplete() {
 	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Update the Db for state information (only transactionId for now)
 	updateDbState(tce.nextTransactionId)
 
-	// Publish update to TC Sidecars for enforcement
-	transactionIdStr := strconv.Itoa(tce.nextTransactionId)
-	log.Debug("TX-MSG [", channelTcNet, "] ", transactionIdStr)
-	_ = tce.netCharStore.rc.Publish(channelTcNet, transactionIdStr)
+	// Send TC Net Rules update message to TC Sidecars for enforcement
+	msg := tce.msgQueue.CreateMsg(mq.MsgTcNetRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	msg.Payload["transaction-id"] = strconv.Itoa(tce.nextTransactionId)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := tce.msgQueue.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
+
+	// Increment transaction ID
 	tce.nextTransactionId++
-	mutex.Unlock()
 }
 
 func setFilterInfoRules() {
@@ -629,7 +671,7 @@ func setFilterRule(filterInfo *FilterInfo) error {
 	m_filter["ifb_uniqueId"] = uniqueId
 	m_filter["filter_uniqueId"] = uniqueId
 
-	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + uniqueId
+	keyName := moduleName + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + uniqueId
 	err := tce.netCharStore.rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
@@ -648,7 +690,7 @@ func setShapingRule(filterInfo *FilterInfo) error {
 	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
 	m_shape["ifb_uniqueId"] = uniqueId
 
-	keyName := moduleTcEngine + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + uniqueId
+	keyName := moduleName + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + uniqueId
 	err := tce.netCharStore.rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
@@ -680,7 +722,7 @@ func applyMgSvcMapping() {
 				fields[fieldLbSvcPort] = portInfo.Port
 
 				// Make unique key
-				key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+				key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
 					svcInfo.MgSvc.Name + ":" + strconv.Itoa(int(portInfo.Port))
 				keys[key] = true
 
@@ -715,7 +757,7 @@ func applyMgSvcMapping() {
 			fields[fieldLbSvcPort] = svcMap.SvcPort
 
 			// Make unique key
-			key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+			key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
 				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.NodePort))
 			keys[key] = true
 
@@ -737,7 +779,7 @@ func applyMgSvcMapping() {
 			fields[fieldLbSvcPort] = svcMap.SvcPort
 
 			// Make unique key
-			key := moduleTcEngine + ":" + typeLb + ":" + podInfo.Name + ":" +
+			key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
 				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.SvcPort))
 			keys[key] = true
 
@@ -747,7 +789,7 @@ func applyMgSvcMapping() {
 	}
 
 	// Remove old DB entries
-	keyName := moduleTcEngine + ":" + typeLb + ":*"
+	keyName := moduleName + ":" + typeLb + ":*"
 	err := tce.netCharStore.rc.ForEachEntry(keyName, removeEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)

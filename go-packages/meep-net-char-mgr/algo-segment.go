@@ -111,6 +111,7 @@ type SegAlgoNetElem struct {
 
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
+	Name       string
 	FlowMap    map[string]*SegAlgoFlow
 	SegmentMap map[string]*SegAlgoSegment
 	Config     SegAlgoConfig
@@ -118,10 +119,11 @@ type SegmentAlgorithm struct {
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
-func NewSegmentAlgorithm(redisAddr string) (*SegmentAlgorithm, error) {
+func NewSegmentAlgorithm(name string, redisAddr string) (*SegmentAlgorithm, error) {
 	// Create new instance & set default config
 	var err error
 	var algo SegmentAlgorithm
+	algo.Name = name
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	algo.Config.MaxBwPerInactiveFlow = 20.0
@@ -349,7 +351,7 @@ func (algo *SegmentAlgorithm) logTimeLapse(currentTime *time.Time, message strin
 	if algo.Config.LogVerbose {
 		elapsed := time.Since(*currentTime)
 		log.WithFields(log.Fields{
-			"meep.log.component": moduleName,
+			"meep.log.component": algo.Name,
 			"meep.time.location": message,
 			"meep.time.exec":     elapsed,
 		}).Info("Measurements log")

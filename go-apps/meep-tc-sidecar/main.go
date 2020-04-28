@@ -22,12 +22,15 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
@@ -35,15 +38,13 @@ import (
 	k8s_exec "k8s.io/utils/exec"
 )
 
-const moduleTcEngine string = "tc-engine"
+const moduleName string = "meep-tc-sidecar"
+const moduleTcEngine string = "meep-tc-engine"
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
 const typeIngressSvc string = "INGRESS-SVC"
 const typeEgressSvc string = "EGRESS-SVC"
-
-const channelTcNet string = moduleTcEngine + "-" + typeNet
-const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const meepPrefix string = "MEEP-"
 const svcPrefix string = "SVC-"
@@ -104,6 +105,7 @@ type NetChar struct {
 
 var pinger *Pinger
 var PodName string
+var sandboxName string
 var ipTbl *ipt.IPTables
 
 var letters = []rune(capLetters)
@@ -120,6 +122,8 @@ var firstTimePass = true
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
+var msgQueue *mq.MsgQueue
+var handlerId int
 var rc *redis.Connector
 var metricStore *ms.MetricStore
 
@@ -127,37 +131,60 @@ const DEFAULT_SIDECAR_DB = 0
 
 var nbAppliedOperations = 0
 
-// Run - MEEP Sidecar execution
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	//log.MeepJSONLogInit("meep-tc-sidecar")
+	log.MeepTextLogInit("meep-tc-sidecar")
+}
+
 func main() {
-	// Initialize MEEP Sidecar
-	err := initMeepSidecar()
-	if err != nil {
-		log.Error("Failed to initialize MEEP Sidecar")
-		return
+	log.Info(os.Args)
+	log.Info("Starting TC Sidecar")
+
+	// Start signal handler
+	run := true
+	go func() {
+		sigchan := make(chan os.Signal, 10)
+		signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigchan
+		log.Info("Program killed !")
+		// do last actions and wait for all write operations to end
+		run = false
+	}()
+
+	// Initialize & Start TC Engine
+	go func() {
+		err := initMeepSidecar()
+		if err != nil {
+			log.Error("Failed to initialize TC Sidecar")
+			run = false
+			return
+		}
+
+		err = runMeepSidecar()
+		if err != nil {
+			log.Error("Failed to start TC Sidecar")
+			run = false
+			return
+		}
+	}()
+
+	// Main loop
+	count := 0
+	for {
+		if !run {
+			log.Info("Ran for ", count, " seconds")
+			break
+		}
+		time.Sleep(time.Second)
+		count++
 	}
-	log.Info("Successfully initialized MEEP Sidecar")
-
-	// Refresh TC rules to match DB state
-	refreshNetCharRules()
-
-	// Refresh LB IPtables rules to match DB state
-	refreshLbRules()
-
-	// Listen for subscribed events. Provide event handler method.
-	_ = rc.Listen(eventHandler)
 }
 
 // initMeepSidecar - MEEP Sidecar initialization
-func initMeepSidecar() error {
-	var err error
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.MeepTextLogInit("meep-tc-sidecar")
-
+func initMeepSidecar() (err error) {
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
-
-	// Initialize global variables
 
 	// Retrieve Environment variables
 	PodName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
@@ -167,12 +194,28 @@ func initMeepSidecar() error {
 	}
 	log.Info("MEEP_POD_NAME: ", PodName)
 
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+
 	scenarioName := strings.TrimSpace(os.Getenv("MEEP_SCENARIO_NAME"))
 	if scenarioName == "" {
 		log.Error("MEEP_SCENARIO_NAME not set. Exiting.")
 		return errors.New("MEEP_SCENARIO_NAME not set")
 	}
 	log.Info("MEEP_SCENARIO_NAME: ", scenarioName)
+
+	// Create message queue
+	msgQueue, err = mq.NewMsgQueue(moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
 
 	// Create IPtables client
 	ipTbl, err = ipt.New()
@@ -197,16 +240,6 @@ func initMeepSidecar() error {
 		return err
 	}
 
-	// Subscribe to Pub-Sub events for MEEP TC & LB
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = rc.Subscribe(channelTcNet, channelTcLb)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return err
-	}
-
-	log.Info("Successfully subscribed to Pub/Sub events")
-
 	semLatencyMap.Lock()
 	latestLatencyResultsMap = make(map[string]int32)
 	semLatencyMap.Unlock()
@@ -214,30 +247,37 @@ func initMeepSidecar() error {
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP TC Network Characteristic Channel
-	case channelTcNet:
-		log.Debug("Event received on channel: ", channelTcNet, " payload: ", payload)
-		processNetCharMsg(payload)
-	// MEEP TC LB Channel
-	case channelTcLb:
-		log.Debug("Event received on channel: ", channelTcLb, " payload: ", payload)
-		processLbMsg(payload)
-	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
-	}
-}
-
-func processNetCharMsg(payload string) {
+// runMeepSidecar - Start TC Sidecar
+func runMeepSidecar() (err error) {
+	// Refresh TC rules to match DB state
 	refreshNetCharRules()
+
+	// Refresh LB IPtables rules to match DB state
+	refreshLbRules()
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
+	handlerId, err = msgQueue.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func processLbMsg(payload string) {
-	// NOTE: Payload contains no information yet. For now reevaluate LB rules on every received event.
-	refreshLbRules()
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgTcLbRulesUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		refreshLbRules()
+	case mq.MsgTcNetRulesUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		refreshNetCharRules()
+	default:
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
+	}
 }
 
 func refreshNetCharRules() {

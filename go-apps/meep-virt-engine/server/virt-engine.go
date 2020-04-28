@@ -17,7 +17,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"os"
 	"strings"
@@ -26,33 +25,27 @@ import (
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
+	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
-const moduleName string = "meep-virt-engine"
 const redisAddr string = "meep-redis-master:6379"
 const retryTimerDuration = 10000
 
-// Sandbox Pub/Sub
-type SandboxMsg struct {
-	Message string
-	Payload string
-}
-
-const sandboxChannel = "sandbox-channel"
-const (
-	SandboxCreate  = "SBX-CREATE"
-	SandboxDestroy = "SBX-DESTROY"
-)
+const moduleName string = "meep-virt-engine"
+const moduleNamespace string = "default"
 
 type VirtEngine struct {
-	watchdogClient     *watchdog.Pingee
+	wdPinger           *wd.Pinger
+	msgQueue           *mq.MsgQueue
+	modelCfg           mod.ModelCfg
 	activeModel        *mod.Model
 	activeScenarioName string
 	sandboxStore       *redis.Connector
 	sandboxName        string
 	rootUrl            string
+	handlerId          int
 }
 
 var ve *VirtEngine
@@ -71,22 +64,37 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_ROOT_URL: ", ve.rootUrl)
 
+	// Create message queue
+	ve.msgQueue, err = mq.NewMsgQueue(moduleName, moduleNamespace, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Model configuration
+	ve.modelCfg = mod.ModelCfg{
+		Name:   moduleName,
+		Module: moduleName,
+		DbAddr: redisAddr,
+	}
+
+	// Create new Model
+	ve.activeModel, err = mod.NewModel(ve.modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+
 	// Setup for liveness monitoring
-	ve.watchdogClient, err = watchdog.NewPingee(redisAddr, "meep-virt-engine")
+	ve.wdPinger, err = wd.NewPinger(moduleName, moduleNamespace, redisAddr)
 	if err != nil {
 		log.Error("Failed to initialize pigner. Error: ", err)
 		return err
 	}
-	err = ve.watchdogClient.Start()
+	err = ve.wdPinger.Start()
 	if err != nil {
 		log.Error("Failed watchdog client listen. Error: ", err)
-		return err
-	}
-
-	// Create new Model
-	ve.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
 
@@ -98,14 +106,6 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store DB")
 
-	// Subscribe to Sandbox Pub-Sub events
-	err = ve.sandboxStore.Subscribe(sandboxChannel)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return err
-	}
-	log.Info("Subscribed to sandbox events (Redis)")
-
 	return nil
 }
 
@@ -113,71 +113,110 @@ func Init() (err error) {
 func Run() (err error) {
 	log.Debug("Starting MEEP Virtualization Engine")
 
-	// Listen for Model updates
-	err = ve.activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Scope: mq.ScopeGlobal, Handler: msgHandler, UserData: nil}
+	ve.handlerId, err = ve.msgQueue.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
 	}
-
-	// Listen for Sandbox events
-	go func() {
-		err = ve.sandboxStore.Listen(eventHandler)
-		if err != nil {
-			log.Error("Failed to listen for sandbox updates: ", err.Error())
-		}
-	}()
 
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	log.Debug("Event received on channel: ", channel, " payload: ", payload)
-
-	switch channel {
-	case mod.ActiveScenarioEvents:
-		processActiveScenarioUpdate(payload)
-	case sandboxChannel:
-		processSandboxMsg(payload)
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgSandboxCreate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		createSandbox(msg.Payload["sandboxName"])
+	case mq.MsgSandboxDestroy:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		destroySandbox(msg.Payload["sandboxName"])
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		activateScenario()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		terminateScenario()
 	default:
-		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func processActiveScenarioUpdate(event string) {
-	switch event {
-	case mod.EventActivate:
-		// Cache name for later deletion
-		ve.activeScenarioName = ve.activeModel.GetScenarioName()
+func activateScenario() {
+	// Sync with active scenario store
+	ve.activeModel.UpdateScenario()
 
-		// Deploy scenario
-		err := Deploy(ve.sandboxName, ve.activeModel)
-		if err != nil {
-			log.Error("Error creating charts: ", err)
-			return
-		}
+	// Cache name for later deletion
+	ve.activeScenarioName = ve.activeModel.GetScenarioName()
 
-	case mod.EventTerminate:
-		// Process right away and start a ticker to retry until everything is deleted
-		_, _ = deleteReleases(ve.sandboxName, ve.activeScenarioName)
-		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
-
-		go func() {
-			for range ticker.C {
-				err, chartsToDelete := deleteReleases(ve.sandboxName, ve.activeScenarioName)
-				if err == nil && chartsToDelete == 0 {
-					ve.activeScenarioName = ""
-					ticker.Stop()
-					return
-				} else {
-					// Stay in the deletion process until everything is cleared
-					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
-				}
-			}
-		}()
-
-	default:
-		log.Debug("Received event: ", event, " - Do nothing")
+	// Deploy scenario
+	err := Deploy(ve.sandboxName, ve.activeModel)
+	if err != nil {
+		log.Error("Error creating charts: ", err)
+		return
 	}
+}
+
+func terminateScenario() {
+	// Sync with active scenario store
+	ve.activeModel.UpdateScenario()
+
+	// Process right away and start a ticker to retry until everything is deleted
+	_, _ = deleteReleases(ve.sandboxName, ve.activeScenarioName)
+	ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+	go func() {
+		for range ticker.C {
+			err, chartsToDelete := deleteReleases(ve.sandboxName, ve.activeScenarioName)
+			if err == nil && chartsToDelete == 0 {
+				ve.activeScenarioName = ""
+				ticker.Stop()
+				return
+			} else {
+				// Stay in the deletion process until everything is cleared
+				log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+			}
+		}
+	}()
+}
+
+func createSandbox(sandboxName string) {
+	// Store sandbox name if not already stored
+	// TODO -- Required for now to support multiple sandboxes but a single active scenario
+	if ve.sandboxName == "" {
+		ve.sandboxName = sandboxName
+	}
+
+	// Deploy sandbox
+	err := deploySandbox(sandboxName)
+	if err != nil {
+		log.Error("Error deploying sandbox: ", err)
+		return
+	}
+}
+
+func destroySandbox(sandboxName string) {
+	// Process right away and start a ticker to retry until everything is deleted
+	_, _ = deleteReleases(sandboxName, "")
+	ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+	go func() {
+		for range ticker.C {
+			err, chartsToDelete := deleteReleases(sandboxName, "")
+			if err == nil && chartsToDelete == 0 {
+				if sandboxName == ve.sandboxName {
+					ve.sandboxName = ""
+				}
+				ticker.Stop()
+				return
+			} else {
+				// Stay in the deletion process until everything is cleared
+				log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+			}
+		}
+	}()
 }
 
 func deleteReleases(sandboxName string, scenarioName string) (error, int) {
@@ -225,55 +264,4 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 		}
 	}
 	return err, chartsToDelete
-}
-
-func processSandboxMsg(payload string) {
-
-	// Unmarshal sandbox msg
-	sandboxMsg := new(SandboxMsg)
-	err := json.Unmarshal([]byte(payload), sandboxMsg)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	switch sandboxMsg.Message {
-	case SandboxCreate:
-		// Store sandbox name if not already stored
-		// TODO -- Required for now to support multiple sandboxes but a single active scenario
-		if ve.sandboxName == "" {
-			ve.sandboxName = sandboxMsg.Payload
-		}
-
-		// Deploy sandbox
-		err := deploySandbox(sandboxMsg.Payload)
-		if err != nil {
-			log.Error("Error deploying sandbox: ", err)
-			return
-		}
-
-	case SandboxDestroy:
-		// Process right away and start a ticker to retry until everything is deleted
-		_, _ = deleteReleases(sandboxMsg.Payload, "")
-		ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
-
-		go func() {
-			for range ticker.C {
-				err, chartsToDelete := deleteReleases(sandboxMsg.Payload, "")
-				if err == nil && chartsToDelete == 0 {
-					if sandboxMsg.Payload == ve.sandboxName {
-						ve.sandboxName = ""
-					}
-					ticker.Stop()
-					return
-				} else {
-					// Stay in the deletion process until everything is cleared
-					log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
-				}
-			}
-		}()
-
-	default:
-		log.Error("Unsupported message type: ", sandboxMsg.Message)
-	}
 }

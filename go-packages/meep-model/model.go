@@ -29,19 +29,8 @@ import (
 	"github.com/RyanCarrier/dijkstra"
 )
 
-// const activeScenarioEvents = "activeScenarioEvents"
-const ActiveScenarioEvents = "meep-active"
-
 // const activeScenarioKey = "activeScenarioKey"
 const activeScenarioKey = "meep:active"
-
-// Event types (basic)
-const (
-	EventInit      = "INIT"
-	EventActivate  = "ACTIVATE"
-	EventTerminate = "TERMINATE"
-	EventUpdate    = "UPDATE"
-)
 
 const (
 	NetCharScenario     = "SCENARIO"
@@ -59,47 +48,56 @@ const (
 	NetCharUEApp        = "UE APPLICATION"
 )
 
+// ModelCfg - Model Configuration
+type ModelCfg struct {
+	Name     string
+	Module   string
+	DbAddr   string
+	UpdateCb func()
+}
+
 // Model - Implements a Meep Model
 type Model struct {
-	name          string
-	module        string
-	Active        bool
-	subscribed    bool
-	ActiveChannel string
-	activeKey     string
-	listener      func(string, string)
-	rc            *redis.Connector
-	scenario      *dataModel.Scenario
-	svcMap        []dataModel.NodeServiceMaps
-	nodeMap       *NodeMap
-	networkGraph  *NetworkGraph
-	lock          sync.RWMutex
+	name         string
+	module       string
+	Active       bool
+	subscribed   bool
+	activeKey    string
+	updateCb     func()
+	rc           *redis.Connector
+	scenario     *dataModel.Scenario
+	svcMap       []dataModel.NodeServiceMaps
+	nodeMap      *NodeMap
+	networkGraph *NetworkGraph
+	lock         sync.RWMutex
 }
 
 var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
 var redisTable = 0
 
 // NewModel - Create a model object
-func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
-	if name == "" {
+func NewModel(cfg ModelCfg) (m *Model, err error) {
+	if cfg.Name == "" {
 		err = errors.New("Missing name")
 		log.Error(err)
 		return nil, err
 	}
-	if module == "" {
+	if cfg.Module == "" {
 		err = errors.New("Missing module")
 		log.Error(err)
 		return nil, err
 	}
 
 	m = new(Model)
-	m.name = name
-	m.module = module
+	m.name = cfg.Name
+	m.module = cfg.Module
+	m.updateCb = cfg.UpdateCb
 	m.Active = false
 	m.subscribed = false
-	m.ActiveChannel = ActiveScenarioEvents
 	m.activeKey = activeScenarioKey
 	m.scenario = new(dataModel.Scenario)
+
+	// Process scenario
 	err = m.parseNodes()
 	if err != nil {
 		log.Error("Failed to parse nodes for new model: ", m.name)
@@ -108,12 +106,13 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	}
 
 	// Connect to Redis DB
-	m.rc, err = redis.NewConnector(dbAddr, redisTable)
+	m.rc, err = redis.NewConnector(cfg.DbAddr, redisTable)
 	if err != nil {
 		log.Error("Model ", m.name, " failed connection to Redis:")
 		log.Error(err)
 		return nil, err
 	}
+
 	log.Debug("[", m.module, "] Model created ", m.name)
 	return m, nil
 }
@@ -234,12 +233,7 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventActivate)
-	err = m.rc.Publish(m.ActiveChannel, EventActivate)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
+
 	m.Active = true
 	return nil
 }
@@ -255,46 +249,7 @@ func (m *Model) Deactivate() (err error) {
 			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
-		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
-		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
-		if err != nil {
-			log.Error("Failed to publish: ", err.Error())
-			return err
-		}
 		m.Active = false
-	}
-	return nil
-}
-
-//Listen - Listen to scenario update events
-func (m *Model) Listen(handler func(string, string)) (err error) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	if handler == nil {
-		return errors.New("Nil event handler")
-	}
-	if !m.subscribed {
-		// Subscribe to Pub-Sub events for MEEP Controller
-		err = m.rc.Subscribe(m.ActiveChannel)
-		if err != nil {
-			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-			return err
-		}
-		log.Info("Subscribed to active scenario events (Redis)")
-		m.subscribed = true
-
-		m.listener = handler
-
-		// Listen for events
-		go func() {
-			_ = m.rc.Listen(m.internalListener)
-		}()
-
-		// Generate first event to initialize
-		go func() {
-			m.internalListener(m.ActiveChannel, EventInit)
-		}()
 	}
 	return nil
 }
@@ -618,11 +573,10 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
-		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+
+		// Invoke Active Scenario Update callback
+		if m.updateCb != nil {
+			m.updateCb()
 		}
 	}
 	return nil
@@ -736,7 +690,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	return oldPL.Name, newPL.Name, nil
 }
 
-func (m *Model) internalListener(channel string, payload string) {
+func (m *Model) UpdateScenario() {
 	// An update was received - Update the object state and call the external Handler
 	// Retrieve active scenario from DB
 	j, err := m.rc.JSONGetEntry(m.activeKey, ".")
@@ -749,9 +703,6 @@ func (m *Model) internalListener(channel string, payload string) {
 	} else {
 		_ = m.SetScenario([]byte(j))
 	}
-
-	// external listener
-	m.listener(channel, payload)
 }
 
 func isDefaultZone(typ string) bool {

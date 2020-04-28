@@ -27,6 +27,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const defaultRedisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const dbMaxRetryCount = 2
 
 // Connector - Implements a Redis connector
@@ -61,7 +62,7 @@ func NewConnector(addr string, table int) (rc *Connector, err error) {
 
 func (rc *Connector) connectDB(addr string, table int) error {
 	if addr == "" {
-		rc.addr = "meep-redis-master.default.svc.cluster.local:6379"
+		rc.addr = defaultRedisAddr
 	} else {
 		rc.addr = addr
 	}

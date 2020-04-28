@@ -34,6 +34,7 @@ import (
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
@@ -60,6 +61,9 @@ var nextEventSubscriptionIdAvailable int
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
 
+var sandboxName string
+var msgQueue *mq.MsgQueue
+var handlerId int
 var activeModel *mod.Model
 var activeScenarioName string
 var metricStore *ms.MetricStore
@@ -88,17 +92,35 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_METRICS_ROOT_URL: ", rootUrl)
 
+	// Retrieve Sandbox name from environment variable
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+
+	// Create message queue
+	msgQueue, err = mq.NewMsgQueue(moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	activeModel, err = mod.NewModel(modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+
 	// Connect to Metric Store
 	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
-		return err
-	}
-
-	// Listen for model updates
-	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
 
@@ -116,59 +138,53 @@ func Init() (err error) {
 	networkSubscriptionReInit()
 	eventSubscriptionReInit()
 
+	// Initialize metrics engine if scenario already active
+	activateScenarioMetrics()
+
 	return nil
 }
 
 // Run - Start Metrics Engine execution
 func Run() (err error) {
 
-	// Listen for Model updates
-	err = activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
+	handlerId, err = msgQueue.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listening for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP Ctrl Engine active scenario update event
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
-		processActiveScenarioUpdate(payload)
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		activateScenarioMetrics()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		terminateScenarioMetrics()
 	default:
-		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func processActiveScenarioUpdate(event string) {
-	switch event {
-	case mod.EventInit:
-		// Initialize metrics engine if scenario already active
-		activeScenarioName = activeModel.GetScenarioName()
-		if activeScenarioName != "" {
-			activateScenario()
-		}
-	case mod.EventActivate:
-		// Activate scenario metrics
-		activeScenarioName = activeModel.GetScenarioName()
-		activateScenario()
-	case mod.EventTerminate:
-		// Terminate scenario metrics
-		terminateScenario(activeScenarioName)
-		activeScenarioName = ""
-	default:
-		log.Debug("Received event: ", event, " - Do nothing")
+func activateScenarioMetrics() {
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Update current active scenario name
+	activeScenarioName = activeModel.GetScenarioName()
+	if activeScenarioName == "" {
+		return
 	}
+
+	// Set new HTTP logger store name
 	_ = httpLog.ReInit(moduleName, activeScenarioName)
 
-}
-
-func activateScenario() {
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
 	if err != nil {
@@ -202,15 +218,24 @@ func activateScenario() {
 	}
 }
 
-func terminateScenario(name string) {
+func terminateScenarioMetrics() {
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
 	// Terminate snapshot thread
 	metricStore.StopSnapshotThread()
+
+	// Set new HTTP logger store name
+	_ = httpLog.ReInit(moduleName, activeScenarioName)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")
 	if err != nil {
 		log.Error(err.Error())
 	}
+
+	// Reset current active scenario name
+	activeScenarioName = ""
 }
 
 func mePostEventQuery(w http.ResponseWriter, r *http.Request) {

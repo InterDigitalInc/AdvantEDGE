@@ -208,6 +208,9 @@ repo:
       meep-model:
         src: go-packages/meep-model
         lint: true
+      meep-mq:
+        src: go-packages/meep-mq
+        lint: true
       meep-net-char-mgr:
         src: go-packages/meep-net-char-mgr
         lint: true

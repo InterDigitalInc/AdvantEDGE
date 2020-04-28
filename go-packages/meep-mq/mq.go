@@ -19,6 +19,7 @@ package mq
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -35,7 +36,11 @@ type Msg struct {
 	Payload      map[string]string `json:"payload,omitempty"`
 }
 
-type MsgHandler func(msg *Msg)
+type MsgHandler struct {
+	Scope    string
+	Handler  func(msg *Msg, userData interface{})
+	UserData interface{}
+}
 
 type MsgQueue struct {
 	name      string
@@ -43,17 +48,33 @@ type MsgQueue struct {
 	global    string
 	local     string
 	rc        *redis.Connector
-	handler   MsgHandler
+	handlers  map[int]MsgHandler
+	counter   int
 }
 
 // Messages
 type Message string
 
 const (
-	MsgSandboxCreate     Message = "SANDBOX-CREATE"
-	MsgSandboxDestroy    Message = "SANDBOX-DESTROY"
+	// Sandbox Control
+	MsgSandboxCreate  Message = "SANDBOX-CREATE"
+	MsgSandboxDestroy Message = "SANDBOX-DESTROY"
+
+	// Scenario Management
 	MsgScenarioActivate  Message = "SCENARIO-ACTIVATE"
+	MsgScenarioUpdate    Message = "SCENARIO-UPDATE"
 	MsgScenarioTerminate Message = "SCENARIO-TERMINATE"
+
+	// Mobility Groups
+	MsgMgLbRulesUpdate Message = "MG-LB-RULES-UPDATE"
+
+	// Traffic Control
+	MsgTcLbRulesUpdate  Message = "TC-LB-RULES-UPDATE"
+	MsgTcNetRulesUpdate Message = "TC-NET-RULES-UPDATE"
+
+	// Watchdog
+	MsgPing Message = "PING"
+	MsgPong Message = "PONG"
 )
 
 // Scopes
@@ -67,8 +88,16 @@ const TargetAll = "all"
 const redisTable = 0
 const globalQueueName = "mq:global"
 
+// var lock = &sync.Mutex{}
+
+// var instance *MsgQueue
+
 // MsgQueue - Creates and initialize a Message Queue instance
-func NewMsgQueue(name string, namespace string, redisAddr string) (mq *MsgQueue, err error) {
+func NewMsgQueue(name string, namespace string, addr string) (*MsgQueue, error) {
+	// lock.Lock()
+	// defer lock.Unlock()
+	var err error
+
 	// Validate name & namespace
 	if name == "" || namespace == "" {
 		err = errors.New("Invalid name or namespace")
@@ -76,27 +105,43 @@ func NewMsgQueue(name string, namespace string, redisAddr string) (mq *MsgQueue,
 		return nil, err
 	}
 
-	// Create new Message Queue instance
-	mq = new(MsgQueue)
-	mq.name = name
-	mq.namespace = namespace
-	mq.global = globalQueueName
-	mq.local = "mq:local-" + namespace
-	mq.handler = nil
+	// Get Message Queue instance
+	// if instance == nil {
+	log.Info("Creating new MsgQueue instance")
+	instance := new(MsgQueue)
+	instance.name = name
+	instance.namespace = namespace
+	instance.global = globalQueueName
+	instance.local = "mq:local-" + namespace
+	instance.counter = 0
+	instance.handlers = make(map[int]MsgHandler)
 
 	// Connect to Redis DB
-	mq.rc, err = redis.NewConnector(redisAddr, redisTable)
+	instance.rc, err = redis.NewConnector(addr, redisTable)
 	if err != nil {
 		log.Error("Failed connection to Message Queue redis DB. Error: ", err)
 		return nil, err
 	}
 	log.Info("Connected to Message Queue Redis DB")
+	// }
 
-	return mq, nil
+	return instance, nil
+}
+
+// Private destructor for test purposes
+func destroyInstance() {
+	// lock.Lock()
+	// defer lock.Unlock()
+
+	// if instance != nil {
+	// 	instance.rc.StopListen()
+	// 	_ = instance.rc.Unsubscribe([]string{instance.local, instance.global}...)
+	// 	instance = nil
+	// }
 }
 
 // CreateMsg - Create a new message
-func (mq *MsgQueue) CreateMsg(dstName string, dstNamespace string, scope string, message Message) *Msg {
+func (mq *MsgQueue) CreateMsg(message Message, scope string, dstName string, dstNamespace string) *Msg {
 	msg := new(Msg)
 	msg.SrcName = mq.name
 	msg.SrcNamespace = mq.namespace
@@ -122,7 +167,7 @@ func (mq *MsgQueue) SendMsg(msg *Msg) error {
 		log.Error(err.Error())
 		return err
 	}
-	log.Debug("Sending message: ", msgToStr(msg))
+	log.Trace("Sending message: ", PrintMsg(msg))
 
 	// Marshal message
 	jsonMsg, err := json.Marshal(msg)
@@ -151,71 +196,66 @@ func (mq *MsgQueue) SendMsg(msg *Msg) error {
 	return nil
 }
 
-// Listen - Register a message handler and listen for messages
-func (mq *MsgQueue) Listen(handler MsgHandler, scope string) (err error) {
+// Register - Add a message handler
+func (mq *MsgQueue) RegisterHandler(handler MsgHandler) (id int, err error) {
+	// lock.Lock()
+	// defer lock.Unlock()
+
 	// Validate handler
-	if handler == nil {
+	if !validScope(handler.Scope) || handler.Handler == nil {
 		err = errors.New("Invalid handler")
-		log.Error(err.Error())
-		return err
-	}
-	// Make sure we are not already listening
-	if mq.handler != nil {
-		err = errors.New("MsgQueue handler already registered")
-		log.Error(err.Error())
-		return err
+		return
 	}
 
-	// Get list of channels
-	var channels []string
-	switch scope {
-	case ScopeLocal:
-		channels = []string{mq.local}
-	case ScopeGlobal:
-		channels = []string{mq.global}
-	case ScopeAll:
-		channels = []string{mq.local, mq.global}
-	default:
-		err = errors.New("Invalid scope")
-		log.Error(err.Error())
-		return err
-	}
+	// Add Handler
+	mq.counter++
+	mq.handlers[mq.counter] = handler
 
-	// Subscribe to channels
-	err = mq.rc.Subscribe(channels...)
-	if err != nil {
-		log.Error("Failed to subscribe to channels with err: ", err.Error())
-		return err
-	}
-
-	// Store handler
-	mq.handler = handler
-
-	// Start goroutine to listen on subscribed channels
-	go func() {
-		err := mq.rc.Listen(mq.eventHandler)
+	// Start listening for messages if first handler
+	if len(mq.handlers) == 1 {
+		// Subscribe to channels
+		err = mq.rc.Subscribe([]string{mq.local, mq.global}...)
 		if err != nil {
-			log.Error("Error listening on subscribed channels: ", err.Error())
+			log.Error("Failed to subscribe to channels with err: ", err.Error())
+			delete(mq.handlers, mq.counter)
+			return
 		}
-		log.Info("Exiting listener goroutine")
-	}()
 
-	// Give the Listener time to create the stop channel
-	time.Sleep(100 * time.Millisecond)
+		// Start goroutine to listen on subscribed channels
+		go func() {
+			err := mq.rc.Listen(mq.eventHandler)
+			if err != nil {
+				log.Error("Error listening on subscribed channels: ", err.Error())
+			}
+			log.Info("Exiting listener goroutine")
+		}()
 
-	return nil
+		// Give the Listener time to create the stop channel
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// Return handler ID
+	return mq.counter, nil
 }
 
-// StopListen - Stop the listening goroutine
-func (mq *MsgQueue) StopListen() {
-	mq.rc.StopListen()
-	_ = mq.rc.Unsubscribe([]string{mq.local, mq.global}...)
-	mq.handler = nil
+// Unregister - Remove a message handler
+func (mq *MsgQueue) UnregisterHandler(id int) {
+	// lock.Lock()
+	// defer lock.Unlock()
+
+	// Remove handler
+	delete(mq.handlers, id)
+
+	// Stop listening if no more handlers
+	if len(mq.handlers) == 0 {
+		mq.rc.StopListen()
+		_ = mq.rc.Unsubscribe([]string{mq.local, mq.global}...)
+	}
 }
 
 // Event handler
 func (mq *MsgQueue) eventHandler(channel string, payload string) {
-	log.Debug("Received message on channel[", channel, "]")
+	log.Trace("Received message on channel[", channel, "]")
 
 	// Unmarshal message
 	msg := new(Msg)
@@ -234,15 +274,20 @@ func (mq *MsgQueue) eventHandler(channel string, payload string) {
 	// Validate message destination
 	if (msg.DstName != TargetAll && msg.DstName != mq.name) ||
 		(msg.DstNamespace != TargetAll && msg.DstNamespace != mq.namespace) {
-		log.Debug("Destination does not match Msg Queue name... ignoring message")
+		log.Trace("Ignoring message with other destination")
 		return
 	}
-	log.Debug("Received message: ", msgToStr(msg))
+	log.Trace("Received message: ", PrintMsg(msg))
 
-	// Invoke registered handler
-	if mq.handler != nil {
-		mq.handler(msg)
+	// Invoke registered handlers
+	// lock.Lock()
+	for _, handler := range mq.handlers {
+		if (channel == mq.global && (handler.Scope == ScopeGlobal || handler.Scope == ScopeAll)) ||
+			(channel == mq.local && (handler.Scope == ScopeLocal || handler.Scope == ScopeAll)) {
+			handler.Handler(msg, handler.UserData)
+		}
 	}
+	// lock.Unlock()
 }
 
 // Validate message format
@@ -256,7 +301,7 @@ func validateMsg(msg *Msg) error {
 	if msg.DstName == "" || msg.DstNamespace == "" {
 		return errors.New("Invalid destination")
 	}
-	if msg.Scope != ScopeLocal && msg.Scope != ScopeGlobal && msg.Scope != ScopeAll {
+	if !validScope(msg.Scope) {
 		return errors.New("Invalid scope")
 	}
 	if msg.Message == "" {
@@ -265,9 +310,18 @@ func validateMsg(msg *Msg) error {
 	return nil
 }
 
+// Validate scope
+func validScope(scope string) bool {
+	return scope == ScopeLocal || scope == ScopeGlobal || scope == ScopeAll
+}
+
 // Convert message to string
-func msgToStr(msg *Msg) string {
-	msgStr := "Message[" + string(msg.Message) + "] Src[" + msg.SrcNamespace + ":" + msg.SrcName + "] Dst[" +
-		msg.DstNamespace + ":" + msg.DstName + "] Scope[" + msg.Scope + "] Payload[]"
+func PrintMsg(msg *Msg) string {
+	msgStr := "Message[" + string(msg.Message) +
+		"] Src[" + msg.SrcNamespace + ":" + msg.SrcName +
+		"] Dst[" + msg.DstNamespace + ":" + msg.DstName +
+		"] Scope[" + msg.Scope +
+		"] Payload[" + fmt.Sprintf("%+v", msg.Payload) + "]"
+
 	return msgStr
 }

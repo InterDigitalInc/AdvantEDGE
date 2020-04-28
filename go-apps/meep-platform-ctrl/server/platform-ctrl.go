@@ -31,8 +31,9 @@ import (
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	watchdog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
+	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
 type Scenario struct {
@@ -41,24 +42,16 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
-	virtWatchdog  *watchdog.Watchdog
+	veWatchdog    *wd.Watchdog
 	sandboxStore  *redis.Connector
+	msgQueue      *mq.MsgQueue
 }
 
 const scenarioDBName = "scenarios"
-const moduleName = "platform-ctrl"
-
-// Sandbox Pub/Sub
-type SandboxMsg struct {
-	Message string
-	Payload string
-}
-
-const sandboxChannel = "sandbox-channel"
-const (
-	SandboxCreate  = "SBX-CREATE"
-	SandboxDestroy = "SBX-DESTROY"
-)
+const moduleName = "meep-platform-ctrl"
+const moduleNamespace = "default"
+const moduleVirtEngineName = "meep-virt-engine"
+const moduleVirtEngineNamespace = "default"
 
 // Declare as variables to enable overwrite in test
 var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
@@ -73,6 +66,14 @@ func Init() (err error) {
 
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
+
+	// Create message queue
+	pfmCtrl.msgQueue, err = mq.NewMsgQueue(moduleName, moduleNamespace, redisDBAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
 
 	// Make Scenario DB connection
 	pfmCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
@@ -118,9 +119,9 @@ func Init() (err error) {
 	log.Info("Connected to Sandbox Store DB")
 
 	// Setup for virt-engine monitoring
-	pfmCtrl.virtWatchdog, err = watchdog.NewWatchdog(redisDBAddr, "meep-virt-engine")
+	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
 	if err != nil {
-		log.Error("Failed to initialize virt-engine watchdog. Error: ", err)
+		log.Error("Failed to initialize virt-engine wd. Error: ", err)
 		return err
 	}
 
@@ -130,10 +131,10 @@ func Init() (err error) {
 // Run Starts the Platform Controller
 func Run() (err error) {
 
-	// Start Virt Engine watchdog
-	err = pfmCtrl.virtWatchdog.Start(time.Second, 3*time.Second)
+	// Start Virt Engine wd
+	err = pfmCtrl.veWatchdog.Start(time.Second, 3*time.Second)
 	if err != nil {
-		log.Error("Failed to start virt-engine watchdog. Error: ", err)
+		log.Error("Failed to start virt-engine wd. Error: ", err)
 		return err
 	}
 
@@ -373,16 +374,13 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Inform Virt Engine to create sandbox
-	msg := SandboxMsg{SandboxCreate, sandboxName}
-	jsonMsg, err := json.Marshal(msg)
+	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxCreate, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload["sandboxName"] = sandboxName
+	msg.Payload["scenarioName"] = ""
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = pfmCtrl.msgQueue.SendMsg(msg)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
-	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to send message. Error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -434,16 +432,13 @@ func pcCreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Inform Virt Engine to create sandbox
-	msg := SandboxMsg{SandboxCreate, sandboxName}
-	jsonMsg, err := json.Marshal(msg)
+	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxCreate, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload["sandboxName"] = sandboxName
+	msg.Payload["scenarioName"] = sandboxConfig.ScenarioName
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = pfmCtrl.msgQueue.SendMsg(msg)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
-	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to send message. Error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -480,16 +475,12 @@ func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Inform Virt Engine to destroy sandbox
-	msg := SandboxMsg{SandboxDestroy, sandboxName}
-	jsonMsg, err := json.Marshal(msg)
+	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxDestroy, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload["sandboxName"] = sandboxName
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = pfmCtrl.msgQueue.SendMsg(msg)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
-	if err != nil {
-		log.Error(err.Error())
+		log.Error("Failed to send message. Error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -526,15 +517,12 @@ func deleteSandbox(key string, fields map[string]string, userData interface{}) e
 	}
 
 	// Inform Virt Engine to destroy sandbox
-	msg := SandboxMsg{SandboxDestroy, sandboxName}
-	jsonMsg, err := json.Marshal(msg)
+	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxDestroy, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload["sandboxName"] = sandboxName
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = pfmCtrl.msgQueue.SendMsg(msg)
 	if err != nil {
-		log.Error("Failed to marshal delete msg for sandbox: ", sandboxName, ": ", err.Error())
-	} else {
-		err = pfmCtrl.sandboxStore.Publish(sandboxChannel, string(jsonMsg))
-		if err != nil {
-			log.Error("Failed to publish delete msg for sandbox: ", sandboxName, ": ", err.Error())
-		}
+		log.Error("Failed to send message. Error: ", err.Error())
 	}
 
 	return nil

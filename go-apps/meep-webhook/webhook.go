@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 
 	"github.com/ghodss/yaml"
 	"k8s.io/api/admission/v1beta1"
@@ -77,15 +78,26 @@ func init() {
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
 }
 
-func eventHandler(channel string, payload string) {
-	log.Debug("Event received on channel: ", channel, " payload: ", payload)
-
-	switch channel {
-	case model.ActiveChannel:
-		activeScenarioName = model.GetScenarioName()
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processScenarioChange()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processScenarioChange()
 	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
+}
+
+func processScenarioChange() {
+	// Sync model with data store
+	model.UpdateScenario()
+
+	// Update Active scenrio name
+	activeScenarioName = model.GetScenarioName()
 }
 
 func loadConfig(configFile string) (*Config, error) {
