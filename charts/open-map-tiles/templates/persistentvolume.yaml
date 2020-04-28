@@ -1,0 +1,22 @@
+{{- if .Values.persistentVolume.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ template "open-map-tiles.fullname" . }}
+  labels:
+    app: {{ template "open-map-tiles.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  capacity:
+    storage: {{ .Values.persistentVolume.size }}
+  accessModes:
+  {{- range .Values.persistentVolume.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistentVolume.reclaimPolicy }}
+  hostPath:
+    path: "{{.Values.persistentVolume.location}}"
+  storageClassName: {{ template "open-map-tiles.fullname" . }}
+{{- end }}

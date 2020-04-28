@@ -1,0 +1,57 @@
+# Default values for open-map-tiles.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: default
+
+deployment:
+  replicaCount: 1
+
+image:
+  repository: klokantech/openmaptiles-server
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  # Used to create an Ingress record.
+  hosts:
+    - name: ''
+      paths:
+        - /map
+        - /styles
+        - /images
+        - /fonts
+        - /data
+        - /leaflet-hash
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+     rewrite ^/map(/|$)(.*)$ /$2 break;
+
+persistentVolume:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  reclaimPolicy: Retain
+  #location: "<WORKDIR>/couchdb"
+  location: "/home/englab/.meep/omt"
+
+persistentVolumeClaim:
+  # set to true to use pvc
+  enabled: true
+  # set to true to use you own pvc
+  existingClaim: false
+  annotations: {}
+  accessModes:
+    - ReadWriteOnce
+  size: "10Gi"
+  storageClass: "fullname"
+
+meepOrigin: core

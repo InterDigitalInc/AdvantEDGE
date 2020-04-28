@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "open-map-tiles.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "open-map-tiles.name" . }}
+    chart: {{ template "open-map-tiles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+{{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+{{- end }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "open-map-tiles.name" . }}
+    release: {{ .Release.Name }}
+    meepOrigin: {{ .Values.meepOrigin }}
