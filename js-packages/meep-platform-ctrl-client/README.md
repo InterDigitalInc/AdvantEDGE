@@ -133,7 +133,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
- - [AdvantEdgePlatformControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
  - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)

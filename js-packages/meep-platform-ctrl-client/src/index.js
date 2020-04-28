@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
   }
-}(function(ApiClient, Deployment, Domain, EgressService, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
+}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, Deployment, Domain, EgressService, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
   'use strict';
 
   /**
@@ -76,6 +76,16 @@
      * @property {module:ApiClient}
      */
     ApiClient: ApiClient,
+    /**
+     * The CellularDomainConfig model constructor.
+     * @property {module:model/CellularDomainConfig}
+     */
+    CellularDomainConfig: CellularDomainConfig,
+    /**
+     * The CellularPoaConfig model constructor.
+     * @property {module:model/CellularPoaConfig}
+     */
+    CellularPoaConfig: CellularPoaConfig,
     /**
      * The Deployment model constructor.
      * @property {module:model/Deployment}

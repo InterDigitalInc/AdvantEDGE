@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Zone'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/Zone'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Zone'));
+    module.exports = factory(require('../ApiClient'), require('./CellularDomainConfig'), require('./Zone'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Domain = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.Zone);
+    root.AdvantEdgeSandboxControllerRestApi.Domain = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.CellularDomainConfig, root.AdvantEdgeSandboxControllerRestApi.Zone);
   }
-}(this, function(ApiClient, Zone) {
+}(this, function(ApiClient, CellularDomainConfig, Zone) {
   'use strict';
 
   /**
@@ -88,6 +88,8 @@
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
+      if (data.hasOwnProperty('cellularDomainConfig'))
+        obj.cellularDomainConfig = CellularDomainConfig.constructFromObject(data['cellularDomainConfig']);
       if (data.hasOwnProperty('zones'))
         obj.zones = ApiClient.convertToType(data['zones'], [Zone]);
     }
@@ -149,6 +151,11 @@
   exports.prototype.userMeta = undefined;
 
   /**
+   * @member {module:model/CellularDomainConfig} cellularDomainConfig
+   */
+  exports.prototype.cellularDomainConfig = undefined;
+
+  /**
    * @member {Array.<module:model/Zone>} zones
    */
   exports.prototype.zones = undefined;
@@ -165,6 +172,12 @@
      * @const
      */
     OPERATOR: "OPERATOR",
+
+    /**
+     * value: "OPERATOR-CELLULAR"
+     * @const
+     */
+    OPERATOR_CELLULAR: "OPERATOR-CELLULAR",
 
     /**
      * value: "PUBLIC"

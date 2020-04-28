@@ -140,6 +140,8 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AdvantEdgeSandboxControllerRestApi.ActivationInfo](docs/ActivationInfo.md)
+ - [AdvantEdgeSandboxControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
+ - [AdvantEdgeSandboxControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
  - [AdvantEdgeSandboxControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgeSandboxControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgeSandboxControllerRestApi.EgressService](docs/EgressService.md)

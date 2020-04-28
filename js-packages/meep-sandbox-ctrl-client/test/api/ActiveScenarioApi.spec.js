@@ -235,6 +235,13 @@
                       expect(data).to.be("");
                     }
                   }
+                  expect(data.cellularDomainConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularDomainConfig);
+                        expect(data.cellularDomainConfig.mnc).to.be.a('string');
+                    expect(data.cellularDomainConfig.mnc).to.be("");
+                    expect(data.cellularDomainConfig.mcc).to.be.a('string');
+                    expect(data.cellularDomainConfig.mcc).to.be("");
+                    expect(data.cellularDomainConfig.defaultCellId).to.be.a('string');
+                    expect(data.cellularDomainConfig.defaultCellId).to.be("");
                   {
                     let dataCtr = data.zones;
                     expect(dataCtr).to.be.an(Array);
@@ -342,6 +349,9 @@
                               expect(data).to.be("");
                             }
                           }
+                          expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
+                                expect(data.cellularPoaConfig.cellId).to.be.a('string');
+                            expect(data.cellularPoaConfig.cellId).to.be("");
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);

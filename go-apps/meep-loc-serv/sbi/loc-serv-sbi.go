@@ -80,6 +80,9 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 	sbi.updateAccessPointInfoCB = updateAccessPointInfo
 	sbi.cleanUpCB = cleanUp
 
+	// Initialize service
+	processActiveScenarioUpdate()
+
 	return nil
 }
 
@@ -128,6 +131,9 @@ func processActiveScenarioUpdate() {
 
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
+	if sbi.activeModel.GetScenarioName() == "" {
+		return
+	}
 
 	uePerNetLocMap := make(map[string]int)
 	uePerZoneMap := make(map[string]int)

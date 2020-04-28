@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/CellularPoaConfig', 'model/PhysicalLocation'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./PhysicalLocation'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.NetworkLocation = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+    root.AdvantEdgeSandboxControllerRestApi.NetworkLocation = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.CellularPoaConfig, root.AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
   }
-}(this, function(ApiClient, PhysicalLocation) {
+}(this, function(ApiClient, CellularPoaConfig, PhysicalLocation) {
   'use strict';
 
   /**
@@ -88,6 +88,8 @@
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
+      if (data.hasOwnProperty('cellularPoaConfig'))
+        obj.cellularPoaConfig = CellularPoaConfig.constructFromObject(data['cellularPoaConfig']);
       if (data.hasOwnProperty('physicalLocations'))
         obj.physicalLocations = ApiClient.convertToType(data['physicalLocations'], [PhysicalLocation]);
     }
@@ -149,6 +151,11 @@
   exports.prototype.userMeta = undefined;
 
   /**
+   * @member {module:model/CellularPoaConfig} cellularPoaConfig
+   */
+  exports.prototype.cellularPoaConfig = undefined;
+
+  /**
    * @member {Array.<module:model/PhysicalLocation>} physicalLocations
    */
   exports.prototype.physicalLocations = undefined;
@@ -165,6 +172,12 @@
      * @const
      */
     POA: "POA",
+
+    /**
+     * value: "POA-CELLULAR"
+     * @const
+     */
+    POA_CELLULAR: "POA-CELLULAR",
 
     /**
      * value: "DEFAULT"
