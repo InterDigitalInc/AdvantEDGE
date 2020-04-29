@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	"github.com/spf13/cobra"
 )
 
@@ -48,18 +48,19 @@ var replayGenerateCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayGenerateCmd)
 	replayCmd.AddCommand(replayGenerateCmd)
 }
 
 func replayAddFromScenario(cobraCmd *cobra.Command, filename string, scenarioName string, description string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return
 	}
 
-	var replayInfo ce.ReplayInfo
+	var replayInfo sandbox.ReplayInfo
 	replayInfo.ScenarioName = scenarioName
 	replayInfo.Description = description
 

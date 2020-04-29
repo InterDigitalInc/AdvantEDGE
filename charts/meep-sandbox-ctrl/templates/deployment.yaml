@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-sandbox-ctrl.fullname" . }}
+  labels:
+    app: {{ template "meep-sandbox-ctrl.name" . }}
+    chart: {{ template "meep-sandbox-ctrl.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-sandbox-ctrl.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "meep-sandbox-ctrl.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      {{- if .Values.codecov.enabled}}
+      volumes:
+        - name: codecov-storage
+          persistentVolumeClaim:
+            claimName: meep-sandbox-ctrl-codecov-pvc
+      {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.codecov.enabled}}
+          command: [ "/meep-sandbox-ctrl" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-sandbox-ctrl.out", "__DEVEL--code-cov" ]
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_SANDBOX_NAME
+              value: {{ .Values.image.env.sandboxName }}
+          {{- if .Values.codecov.enabled}}
+          volumeMounts:
+          - name: codecov-storage
+            mountPath: /codecov
+          {{- end}}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+

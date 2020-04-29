@@ -19,35 +19,41 @@ package watchdog
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const pingerRedisAddr string = "localhost:30380"
-const pingerName string = "pinger-tester"
+const redisAddr string = "localhost:30380"
+const name string = "pinger"
+const namespace string = "pinger-ns"
+const peerName string = "peer"
+const peerNamespace string = "peer-ns"
 
 func TestNewPinger(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	// Keep this one first...
-	fmt.Println("Invalid Redis DB address")
-	_, err := NewPinger("ExpectedFailure-InvalidDbLocation", pingerName)
+	fmt.Println("Invalid Pinger")
+	_, err := NewPinger("", namespace, redisAddr)
 	if err == nil {
-		t.Errorf("Should report error on invalid Redis db")
+		t.Fatalf("Should report error on invalid Redis db")
+	}
+	_, err = NewPinger(name, "", redisAddr)
+	if err == nil {
+		t.Fatalf("Should report error on invalid Redis db")
+	}
+	_, err = NewPinger(name, namespace, "ExpectedFailure-InvalidDbLocation")
+	if err == nil {
+		t.Fatalf("Should report error on invalid Redis db")
 	}
 
 	fmt.Println("Create normal")
-	_, err = NewPinger(pingerRedisAddr, pingerName)
+	pinger, err := NewPinger(name, namespace, redisAddr)
 	if err != nil {
-		t.Errorf("Unable to create pinger")
+		t.Fatalf("Unable to create pinger")
 	}
-
-	fmt.Println("Create no name")
-	_, err = NewPinger(pingerRedisAddr, "")
-	if err == nil {
-		t.Errorf("Should not allow creating pinger without a name")
+	if pinger == nil {
+		t.Fatalf("Pinger == nil")
 	}
 }
 
@@ -56,50 +62,50 @@ func TestPingPong(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 
 	fmt.Println("Create pinger")
-	pinger, err := NewPinger(pingerRedisAddr, pingerName)
+	pinger, err := NewPinger(name, namespace, redisAddr)
 	if err != nil {
-		t.Errorf("Unable to create pinger")
+		t.Fatalf("Unable to create pinger")
 	}
 
 	fmt.Println("Create pingee")
-	pingee, err := NewPingee(pingerRedisAddr, pingerName)
+	pingee, err := NewPinger(peerName, peerNamespace, redisAddr)
 	if err != nil {
-		t.Errorf("Unable to create pingee")
+		t.Fatalf("Unable to create pingee")
 	}
 
 	fmt.Println("Pingee start")
 	err = pingee.Start()
 	if err != nil {
-		t.Errorf("Unable to start (pingee)")
+		t.Fatalf("Unable to start (pingee)")
 	}
-	time.Sleep(time.Second)
+	// time.Sleep(time.Second)
 
 	fmt.Println("Pigner Ping while stopped")
-	alive := pinger.Ping(msg)
+	alive := pinger.Ping(peerName, peerNamespace, msg)
 	if alive {
-		t.Errorf("Ping must fail if pinger stopped")
+		t.Fatalf("Ping must fail if pinger stopped")
 	}
 
-	fmt.Println("Pigner start")
+	fmt.Println("Pinger start")
 	err = pinger.Start()
 	if err != nil {
-		t.Errorf("Unable to start (pinger)")
+		t.Fatalf("Unable to start (pinger)")
 	}
-	time.Sleep(time.Second)
-	fmt.Println("Pigner ping")
-	alive = pinger.Ping(msg)
+	// time.Sleep(time.Second)
+	fmt.Println("Pinger ping")
+	alive = pinger.Ping(peerName, peerNamespace, msg)
 	if !alive {
-		t.Errorf("Ping failed")
+		t.Fatalf("Ping failed")
 	}
 
 	fmt.Println("Stop pinger & pingee")
 	err = pingee.Stop()
 	if err != nil {
-		t.Errorf("Unable to stop (pingee)")
+		t.Fatalf("Unable to stop (pingee)")
 	}
 	err = pinger.Stop()
 	if err != nil {
-		t.Errorf("Unable to stop (pinger)")
+		t.Fatalf("Unable to stop (pinger)")
 	}
 	fmt.Println("Test Complete")
 }

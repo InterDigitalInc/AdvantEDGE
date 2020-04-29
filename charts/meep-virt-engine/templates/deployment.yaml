@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-virt-engine.fullname" . }}
+  labels:
+    app: {{ template "meep-virt-engine.name" . }}
+    chart: {{ template "meep-virt-engine.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-virt-engine.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "meep-virt-engine.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      volumes:
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "meep-virt-engine.fullname" . }}{{- end }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
+        {{- if .Values.codecov.enabled}}
+        - name: codecov-storage
+          persistentVolumeClaim:
+            claimName: meep-virt-engine-codecov-pvc
+        {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.codecov.enabled}}
+          command: [ "/meep-virt-engine" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-virt-engine.out", "__DEVEL--code-cov" ]
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_ROOT_URL
+              value: {{ .Values.image.env.rooturl }}
+          volumeMounts:
+            - name: data
+              mountPath: /data/
+            {{- if .Values.codecov.enabled}}
+            - name: codecov-storage
+              mountPath: /codecov
+            {{- end}}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}

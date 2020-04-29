@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -111,6 +111,7 @@ type SegAlgoNetElem struct {
 
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
+	Name       string
 	FlowMap    map[string]*SegAlgoFlow
 	SegmentMap map[string]*SegAlgoSegment
 	Config     SegAlgoConfig
@@ -118,10 +119,11 @@ type SegmentAlgorithm struct {
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
-func NewSegmentAlgorithm(redisAddr string) (*SegmentAlgorithm, error) {
+func NewSegmentAlgorithm(name string, redisAddr string) (*SegmentAlgorithm, error) {
 	// Create new instance & set default config
 	var err error
 	var algo SegmentAlgorithm
+	algo.Name = name
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	algo.Config.MaxBwPerInactiveFlow = 20.0
@@ -170,7 +172,7 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 			err := errors.New("Error finding process: " + name)
 			return err
 		}
-		proc, ok := node.(*ceModel.Process)
+		proc, ok := node.(*dataModel.Process)
 		if !ok {
 			err := errors.New("Error casting process: " + name)
 			return err
@@ -349,7 +351,7 @@ func (algo *SegmentAlgorithm) logTimeLapse(currentTime *time.Time, message strin
 	if algo.Config.LogVerbose {
 		elapsed := time.Since(*currentTime)
 		log.WithFields(log.Fields{
-			"meep.log.component": moduleName,
+			"meep.log.component": algo.Name,
 			"meep.time.location": message,
 			"meep.time.exec":     elapsed,
 		}).Info("Measurements log")
@@ -1003,34 +1005,34 @@ func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
 	jitter := 0.0
 	packetLoss := 0.0
 	// Get max throughput based on Node Type, as well as other netcharse
-	if p, ok := node.(*ceModel.Process); ok {
+	if p, ok := node.(*dataModel.Process); ok {
 		maxThroughput = float64(p.AppThroughput)
 		latency = float64(p.AppLatency)
 		jitter = float64(p.AppLatencyVariation)
 		packetLoss = float64(p.AppPacketLoss)
-	} else if pl, ok := node.(*ceModel.PhysicalLocation); ok {
+	} else if pl, ok := node.(*dataModel.PhysicalLocation); ok {
 		maxThroughput = float64(pl.LinkThroughput)
 		latency = float64(pl.LinkLatency)
 		jitter = float64(pl.LinkLatencyVariation)
 		packetLoss = float64(pl.LinkPacketLoss)
-	} else if nl, ok := node.(*ceModel.NetworkLocation); ok {
+	} else if nl, ok := node.(*dataModel.NetworkLocation); ok {
 		maxThroughput = float64(nl.TerminalLinkThroughput)
 		latency = float64(nl.TerminalLinkLatency)
 		jitter = float64(nl.TerminalLinkLatencyVariation)
 		packetLoss = float64(nl.TerminalLinkPacketLoss)
-	} else if zone, ok := node.(*ceModel.Zone); ok {
+	} else if zone, ok := node.(*dataModel.Zone); ok {
 		if zone.NetChar != nil {
 			maxThroughput = float64(zone.NetChar.Throughput)
 			latency = float64(zone.NetChar.Latency)
 			jitter = float64(zone.NetChar.LatencyVariation)
 			packetLoss = float64(zone.NetChar.PacketLoss)
 		}
-	} else if domain, ok := node.(*ceModel.Domain); ok {
+	} else if domain, ok := node.(*dataModel.Domain); ok {
 		maxThroughput = float64(domain.InterZoneThroughput)
 		latency = float64(domain.InterZoneLatency)
 		jitter = float64(domain.InterZoneLatencyVariation)
 		packetLoss = float64(domain.InterZonePacketLoss)
-	} else if deployment, ok := node.(*ceModel.Deployment); ok {
+	} else if deployment, ok := node.(*dataModel.Deployment); ok {
 		maxThroughput = float64(deployment.InterDomainThroughput)
 		latency = float64(deployment.InterDomainLatency)
 		jitter = float64(deployment.InterDomainLatencyVariation)

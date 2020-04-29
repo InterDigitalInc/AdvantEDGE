@@ -22,13 +22,13 @@ import (
 	"errors"
 	"time"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 )
 
 const defaultLoopInterval = 5000 //in ms
-const basepath = "http://meep-ctrl-engine/ctrl-engine/v1"
+const basepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 
 type ReplayMgr struct {
 	name             string
@@ -37,9 +37,9 @@ type ReplayMgr struct {
 	ticker           *time.Ticker
 	nextEventIndex   int
 	eventIndexMax    int
-	replayEventsList ceModel.Replay
+	replayEventsList dataModel.Replay
 	loop             bool
-	client           *ce.APIClient
+	client           *sandbox.APIClient
 	timeToNextEvent  int
 	timeRemaining    int
 	timeStarted      time.Time
@@ -47,13 +47,13 @@ type ReplayMgr struct {
 	ignoreInitEvent  bool
 }
 
-func createClient(path string) (*ce.APIClient, error) {
+func createClient(path string) (*sandbox.APIClient, error) {
 	// Create & store client for App REST API
-	ceClientCfg := ce.NewConfiguration()
+	ceClientCfg := sandbox.NewConfiguration()
 	ceClientCfg.BasePath = path
-	ceClient := ce.NewAPIClient(ceClientCfg)
+	ceClient := sandbox.NewAPIClient(ceClientCfg)
 	if ceClient == nil {
-		err := errors.New("Failed to create ctrl-engine REST API client")
+		err := errors.New("Failed to create Sandbox Ctrl REST API client")
 		return nil, err
 	}
 	return ceClient, nil
@@ -125,7 +125,7 @@ func (r *ReplayMgr) playEventByIndex() error {
 	if !isInitEvent {
 		vars := make(map[string]string)
 		vars["type"] = replayEvent.Event.Type_
-		var validEvent ce.Event
+		var validEvent sandbox.Event
 
 		err = json.Unmarshal(j, &validEvent)
 		if err != nil {
@@ -133,7 +133,7 @@ func (r *ReplayMgr) playEventByIndex() error {
 			return err
 		}
 
-		_, err = r.client.ScenarioExecutionApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
+		_, err = r.client.EventsApi.SendEvent(context.TODO(), replayEvent.Event.Type_, validEvent)
 		if err != nil {
 			log.Error(err)
 		}
@@ -181,7 +181,7 @@ func (r *ReplayMgr) playEventByIndex() error {
 }
 
 // Start - starts replay execution
-func (r *ReplayMgr) Start(fileName string, replay ceModel.Replay, loop bool, ignoreInitEvent bool) error {
+func (r *ReplayMgr) Start(fileName string, replay dataModel.Replay, loop bool, ignoreInitEvent bool) error {
 	// Verify replay file can be started
 	if r.isStarted {
 		return errors.New("Replay already running, filename: " + r.currentFileName)
@@ -232,7 +232,7 @@ func (r *ReplayMgr) Completed() {
 }
 
 // GetStatus - Returns the Replay Execution status
-func (r *ReplayMgr) GetStatus() (status ceModel.ReplayStatus, err error) {
+func (r *ReplayMgr) GetStatus() (status dataModel.ReplayStatus, err error) {
 	if !r.IsStarted() {
 		err = errors.New("No replay file running")
 		return

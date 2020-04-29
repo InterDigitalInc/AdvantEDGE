@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -30,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.4.1"
+const configVersion = "1.4.2"
 
 const defaultNotSet = "not set"
 
@@ -42,6 +43,10 @@ const defaultPorts = "80/443"
 
 var Cfg *Config
 var RepoCfg *viper.Viper
+
+// Initialize config file
+// NOTE: This MUST run before the package init() functions
+var CfgInitialized = ConfigInit()
 
 // Platform Config
 type Config struct {
@@ -346,4 +351,14 @@ func ConfigIsIpv4(host string) bool {
 		}
 	}
 	return true
+}
+
+// GetTargets retreives the keys at the provided repo location
+func GetTargets(repo string) []string {
+	targets := []string{}
+	for target := range RepoCfg.GetStringMapString(repo) {
+		targets = append(targets, target)
+	}
+	sort.Strings(targets)
+	return targets
 }

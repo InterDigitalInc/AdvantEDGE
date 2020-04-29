@@ -2,13 +2,12 @@ apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
   name: {{ template "meep-webhook.fullname" . }}
-  namespace: {{ .Values.namespace }}
 webhooks:
   - name: {{ .Values.webhook.name }}
     clientConfig:
       service:
         name: {{ template "meep-webhook.fullname" . }}
-        namespace: {{ .Values.namespace }}
+        namespace: {{ .Release.Namespace }}
         path: "/mutate"
       caBundle: {{ .Values.webhook.cabundle }}
     rules:

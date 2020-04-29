@@ -27,6 +27,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const defaultRedisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const dbMaxRetryCount = 2
 
 // Connector - Implements a Redis connector
@@ -61,7 +62,7 @@ func NewConnector(addr string, table int) (rc *Connector, err error) {
 
 func (rc *Connector) connectDB(addr string, table int) error {
 	if addr == "" {
-		rc.addr = "meep-redis-master:6379"
+		rc.addr = defaultRedisAddr
 	} else {
 		rc.addr = addr
 	}
@@ -128,7 +129,19 @@ func (rc *Connector) EntryExists(key string) bool {
 	return value != 0
 }
 
-// // DBForEachEntry - Search for matching keys and run handler for each entry
+// GetEntry - Retrieve key values
+func (rc *Connector) GetEntry(key string) (map[string]string, error) {
+
+	// Get key values
+	fields, err := rc.client.HGetAll(key).Result()
+	if err != nil {
+		log.Error("Failed to retrieve entry fields with err: ", err.Error())
+		return nil, err
+	}
+	return fields, nil
+}
+
+// ForEachEntry - Search for matching keys and run handler for each entry
 func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
 	var cursor uint64
 	var err error

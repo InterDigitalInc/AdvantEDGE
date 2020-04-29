@@ -42,7 +42,7 @@ func TestNetCharBasic(t *testing.T) {
 
 	var netCharMgr NetCharMgr
 	var err error
-	netCharMgr, err = NewNetChar("test", netCharMgrRedisAddr)
+	netCharMgr, err = NewNetChar("test", "default", netCharMgrRedisAddr)
 	if err != nil {
 		t.Errorf("Failed to create a NetChar object.")
 		return

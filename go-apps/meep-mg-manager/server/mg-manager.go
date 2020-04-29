@@ -21,26 +21,27 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mga "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-app-client"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/RyanCarrier/dijkstra"
 	"github.com/gorilla/mux"
 )
 
-const moduleMgManager string = "mg-manager"
-const logModuleMgMgr string = "meep-mg-manager"
+const moduleName string = "meep-mg-manager"
+const moduleTcEngine string = "meep-tc-engine"
 const typeLb string = "lb"
-const channelMgManagerLb string = moduleMgManager + "-" + typeLb
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const DEFAULT_LB_RULES_DB = 0
 
 const eventTypeStateUpdate = "STATE-UPDATE"
@@ -119,6 +120,9 @@ type lbRulesStore struct {
 }
 
 type MgManager struct {
+	sandboxName  string
+	mqLocal      *mq.MsgQueue
+	handlerId    int
 	mutex        sync.Mutex
 	networkGraph *dijkstra.Graph
 	activeModel  *mod.Model
@@ -155,6 +159,31 @@ func Init() (err error) {
 	mgm.netElemInfoMap = make(map[string]*netElemInfo)
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
+	// Retrieve Sandbox name from environment variable
+	mgm.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if mgm.sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", mgm.sandboxName)
+
+	// Create message queue
+	mgm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(mgm.sandboxName), moduleName, mgm.sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	mgm.activeModel, err = mod.NewModel(modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+
 	// Open Load Balancing Rules Store
 	mgm.lbRulesStore = new(lbRulesStore)
 	mgm.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
@@ -164,15 +193,8 @@ func Init() (err error) {
 	}
 	log.Info("Connected to LB Rules Store redis DB")
 
-	// Create new Model
-	mgm.activeModel, err = mod.NewModel(redisAddr, moduleMgManager, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
-		return err
-	}
-
 	// Flush module data
-	_ = mgm.lbRulesStore.rc.DBFlush(moduleMgManager)
+	_ = mgm.lbRulesStore.rc.DBFlush(moduleName)
 
 	// Initialize Edge-LB rules with current active scenario
 	processActiveScenarioUpdate()
@@ -183,31 +205,39 @@ func Init() (err error) {
 // Run - MEEP MG Manager execution
 func Run() (err error) {
 
-	// Listen for Model updates
-	err = mgm.activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	mgm.handlerId, err = mgm.mqLocal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
 	}
+
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP Ctrl Engine active scenario update Channel
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioUpdate()
 	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
 func processActiveScenarioUpdate() {
+	// Sync with active scenario store
+	mgm.activeModel.UpdateScenario()
 
-	_ = httpLog.ReInit(logModuleMgMgr, mgm.activeModel.GetScenarioName())
+	_ = httpLog.ReInit(moduleName, mgm.activeModel.GetScenarioName())
 
 	// Handle empty/missing scenario
 	if mgm.activeModel.GetScenarioName() == "" {
@@ -245,8 +275,15 @@ func clearScenario() {
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
 	// Flush module data and send update
-	_ = mgm.lbRulesStore.rc.DBFlush(moduleMgManager)
-	_ = mgm.lbRulesStore.rc.Publish(channelMgManagerLb, "")
+	_ = mgm.lbRulesStore.rc.DBFlush(moduleName)
+
+	// Send LB Rules Update message
+	msg := mgm.mqLocal.CreateMsg(mq.MsgMgLbRulesUpdate, moduleTcEngine, mgm.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := mgm.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 }
 
 func processScenario(model *mod.Model) error {
@@ -270,7 +307,7 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error finding process: " + name)
 			return err
 		}
-		proc, ok := procNode.(*ceModel.Process)
+		proc, ok := procNode.(*dataModel.Process)
 		if !ok {
 			err := errors.New("Error casting process: " + name)
 			return err
@@ -297,7 +334,7 @@ func processScenario(model *mod.Model) error {
 			err := errors.New("Error finding physical location: " + netElem.phyLoc)
 			return err
 		}
-		phyLoc, ok := phyLocNode.(*ceModel.PhysicalLocation)
+		phyLoc, ok := phyLocNode.(*dataModel.PhysicalLocation)
 		if !ok {
 			err := errors.New("Error casting physical location: " + netElem.phyLoc)
 			return err
@@ -636,15 +673,19 @@ func applyMgSvcMapping() {
 		log.Error(err.Error())
 		return
 	}
-	err = mgm.lbRulesStore.rc.JSONSetEntry(moduleMgManager+":"+typeLb, ".", string(jsonNetElemList))
+	err = mgm.lbRulesStore.rc.JSONSetEntry(moduleName+":"+typeLb, ".", string(jsonNetElemList))
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
 
-	// Publish Edge LB rules update
-	log.Debug("TX-MSG [", channelMgManagerLb, "] ", "")
-	_ = mgm.lbRulesStore.rc.Publish(channelMgManagerLb, "")
+	// Send LB Rules Update message
+	msg := mgm.mqLocal.CreateMsg(mq.MsgMgLbRulesUpdate, moduleTcEngine, mgm.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = mgm.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 }
 
 func mgCreate(mg *mgModel.MobilityGroup) error {

@@ -24,12 +24,12 @@ import (
 	"github.com/roymx/viper"
 	"github.com/spf13/cobra"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 )
 
 // replayCmd represents the replay command
 var replayCmd = &cobra.Command{
-	Use:   "replay <action> [filename]",
+	Use:   "replay -s <sandbox> <action>",
 	Short: "Use and manage auto-replay feature",
 	Long: `AdvantEDGE supports creation and usage of auto-replay files.
 
@@ -50,13 +50,13 @@ func init() {
 	rootCmd.AddCommand(replayCmd)
 }
 
-func createClient(path string) (*ce.APIClient, error) {
+func createClient(path string) (*sandbox.APIClient, error) {
 	// Create & store client for App REST API
-	ceClientCfg := ce.NewConfiguration()
+	ceClientCfg := sandbox.NewConfiguration()
 	ceClientCfg.BasePath = path
-	ceClient := ce.NewAPIClient(ceClientCfg)
+	ceClient := sandbox.NewAPIClient(ceClientCfg)
 	if ceClient == nil {
-		err := errors.New("Failed to create ctrl-engine REST API client")
+		err := errors.New("Failed to create REST API client")
 		return nil, err
 	}
 	return ceClient, nil
@@ -70,8 +70,14 @@ func printError(errorString string, err error, verbose bool) {
 	}
 }
 
-func getBasePath() string {
+func getBasePath(cmd *cobra.Command) string {
 	host := viper.GetString("node.ip")
-	reqString := "http://" + host + "/ctrl-engine/v1"
+	sandbox, _ := cmd.Flags().GetString("sandbox")
+	reqString := "http://" + host + "/" + sandbox + "/sandbox-ctrl/v1"
 	return reqString
+}
+
+func setSandboxFlag(cmd *cobra.Command) {
+	cmd.Flags().StringP("sandbox", "s", "", "Sandbox to send request to")
+	_ = cmd.MarkFlagRequired("sandbox")
 }

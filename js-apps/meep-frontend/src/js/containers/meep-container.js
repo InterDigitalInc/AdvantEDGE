@@ -21,7 +21,9 @@ import axios from 'axios';
 import { updateObject, deepCopy } from '../util/object-util';
 
 // Import JS dependencies
-import * as meepCtrlRestApiClient from '../../../../../js-packages/meep-ctrl-engine-client/src/index.js';
+import * as meepPlatformCtrlRestApiClient from '../../../../../js-packages/meep-platform-ctrl-client/src/index.js';
+import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-sandbox-ctrl-client/src/index.js';
+import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
 
 import MeepDrawer from './meep-drawer';
 import MeepTopBar from '../components/meep-top-bar';
@@ -31,6 +33,8 @@ import SettingsPageContainer from './settings/settings-page-container';
 import MonitorPageContainer from './monitor/monitor-page-container';
 
 import {
+  HOST_PATH,
+  SANDBOX_NAME,
   TYPE_CFG,
   TYPE_EXEC,
   EXEC_STATE_IDLE,
@@ -79,21 +83,26 @@ import {
   cfgChangeTable
 } from '../state/cfg';
 
-// MEEP Controller REST API JS client
-var basepath = location.origin + '/ctrl-engine/v1';
-// const basepath = 'http://10.3.16.105:30000/v1';
-meepCtrlRestApiClient.ApiClient.instance.basePath = basepath.replace(/\/+$/,'');
+// REST API Clients
+var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
+meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
+var basepathSandboxCtrl = HOST_PATH + '/' + SANDBOX_NAME + '/sandbox-ctrl/v1';
+meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
+var basepathMonEngine = HOST_PATH + '/mon-engine/v1';
+meepMonEngineRestApiClient.ApiClient.instance.basePath = basepathMonEngine.replace(/\/+$/,'');
 
 class MeepContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {};
-    this.refreshIntervalTimer = null;
-    this.podsPhasesIntervalTimer = null;
-    this.replayStatusIntervalTimer = null;
-    this.meepCfgApi = new meepCtrlRestApiClient.ScenarioConfigurationApi();
-    this.meepExecApi = new meepCtrlRestApiClient.ScenarioExecutionApi();
-    this.meepReplayApi = new meepCtrlRestApiClient.EventReplayApi();
+    this.platformRefreshIntervalTimer = null;
+    this.execPageRefreshIntervalTimer = null;
+    this.replayStatusRefreshIntervalTimer = null;
+    this.meepScenarioConfigurationApi = new meepPlatformCtrlRestApiClient.ScenarioConfigurationApi();
+    this.meepSandboxControlApi = new meepPlatformCtrlRestApiClient.SandboxControlApi();
+    this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
+    this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
+    this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
   }
 
   componentDidMount() {
@@ -103,40 +112,56 @@ class MeepContainer extends Component {
     this.monitorTabFocus();
   }
 
+  // Timers
   startTimers() {
-    if (this.props.automaticRefresh) {
-      this.startAutomaticRefresh();
-    }
-    this.startPodsPhasesPeriodicCheck();
-    this.startReplayStatusPeriodicCheck();
+    this.startPlatformRefresh();
+    this.startExecPageRefresh();
+    this.startReplayStatusRefresh();
   }
-
   stopTimers() {
-    this.stopReplayStatusPeriodicCheck();
-    this.stopCorePodsPhasesPeriodicCheck();
-    this.stopAutomaticRefresh();
+    this.stopReplayStatusRefresh();
+    this.stopExecPageRefresh();
+    this.stopPlatformRefresh();
   }
 
-  startPodsPhasesPeriodicCheck() {
-    this.podsPhasesIntervalTimer = setInterval(
-      () => this.checkPodsPhases(),
+  // Platform refresh
+  startPlatformRefresh() {
+    this.platformRefreshIntervalTimer = setInterval(
+      () => {
+        this.checkPlatformStatus();
+      },
       1000
     );
   }
-
-  stopCorePodsPhasesPeriodicCheck() {
-    clearInterval(this.podsPhasesIntervalTimer);
+  stopPlatformRefresh() {
+    clearInterval(this.platformRefreshIntervalTimer);
   }
 
-  startReplayStatusPeriodicCheck() {
-    this.replayStatusIntervalTimer = setInterval(
+  // Exec page refresh
+  startExecPageRefresh() {
+    this.execPageRefreshIntervalTimer = setInterval(
+      () => {
+        if (this.props.page === PAGE_EXECUTE) {
+          this.checkScenarioStatus();
+          this.refreshScenario();
+        }
+      },
+      1000
+    );
+  }
+  stopExecPageRefresh() {
+    clearInterval(this.execPageRefreshIntervalTimer);
+  }
+
+  // Replay status refresh
+  startReplayStatusRefresh() {
+    this.replayStatusRefreshIntervalTimer = setInterval(
       () => this.checkReplayStatus(),
       1000
     );
   }
-
-  stopReplayStatusPeriodicCheck() {
-    clearInterval(this.replayStatusIntervalTimer);
+  stopReplayStatusRefresh() {
+    clearInterval(this.replayStatusRefreshIntervalTimer);
   }
 
   monitorTabFocus() {
@@ -178,20 +203,22 @@ class MeepContainer extends Component {
     }
   }
 
-  checkPodsPhases() {
+  checkPlatformStatus() {
     // Core pods
     axios
-      .get(`${basepath}/states?long=true&type=core`)
+      .get(`${basepathMonEngine}/states?long=true&type=core`)
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
       })
       .catch(() => {
         this.props.changeCorePodsPhases([]);
       });
+  }
 
+  checkScenarioStatus() {
     // Scenario pods
     axios
-      .get(`${basepath}/states?long=true&type=scenario`)
+      .get(`${basepathMonEngine}/states?long=true&type=scenario&sandbox=${SANDBOX_NAME}`)
       .then(res => {
         var scenarioPodsPhases = res.data.podStatus;
         this.props.changeScenarioPodsPhases(scenarioPodsPhases);
@@ -202,7 +229,7 @@ class MeepContainer extends Component {
 
     // Service maps
     axios
-      .get(`${basepath}/active/serviceMaps`)
+      .get(`${basepathSandboxCtrl}/active/serviceMaps`)
       .then(res => {
         var serviceMaps = res.data;
         this.props.changeServiceMaps(serviceMaps);
@@ -228,7 +255,7 @@ class MeepContainer extends Component {
     }
 
     if (this.props.eventCfgMode || this.props.eventReplayMode) {
-      this.meepReplayApi.getReplayStatus((error, data, response) => {
+      this.meepEventReplayApi.getReplayStatus((error, data, response) => {
         this.getReplayStatusCb(error, data, response);
       });
     }
@@ -238,30 +265,6 @@ class MeepContainer extends Component {
     this.props.changeCurrentPage(targetId);
   }
 
-  // Periodic visualization update handler
-  refreshMeepController() {
-    if (this.props.page === PAGE_EXECUTE && this.props.automaticRefresh) {
-      this.refreshScenario();
-    }
-  }
-
-  startAutomaticRefresh() {
-    _.defer(() => {
-      var value = this.props.refreshInterval;
-      clearInterval(this.refreshIntervalTimer);
-      if (!isNaN(value) && value >= 500 && value <= 60000) {
-        this.refreshIntervalTimer = setInterval(
-          () => this.refreshMeepController(),
-          value
-        );
-      }
-    });
-  }
-
-  stopAutomaticRefresh() {
-    clearInterval(this.refreshIntervalTimer);
-  }
-
   /**
    * Callback function to receive the result of the getActiveScenario operation.
    * @callback module:api/ScenarioExecutionApi~getActiveScenarioCallback
@@ -269,13 +272,9 @@ class MeepContainer extends Component {
    * @param {module:model/Scenario} data The data returned by the service call.
    */
   getActiveScenarioCb(error, data) {
-    if (error !== null) {
-      // console.log(error);
-      // TODO consider showing an alert
-      return;
-    }
-
-    if (!data.deployment) {
+    if ((error !== null) || (!data.deployment)) {
+      this.props.execChangeScenarioState(EXEC_STATE_IDLE);
+      this.props.execChangeOkToTerminate(false);
       return;
     }
 
@@ -362,7 +361,7 @@ class MeepContainer extends Component {
 
   // Refresh Active scenario
   refreshScenario() {
-    this.meepExecApi.getActiveScenario((error, data) =>
+    this.meepActiveScenarioApi.getActiveScenario((error, data) =>
       this.getActiveScenarioCb(error, data)
     );
   }
@@ -415,7 +414,7 @@ class MeepContainer extends Component {
       return (
         <CfgPageContainer
           style={{ width: '100%' }}
-          api={this.meepCfgApi}
+          api={this.meepScenarioConfigurationApi}
           createScenario={name => {
             this.createScenario(TYPE_CFG, name);
           }}
@@ -445,9 +444,11 @@ class MeepContainer extends Component {
           <>
             <ExecPageContainer
               style={{ width: '100%' }}
-              api={this.meepExecApi}
-              replayApi={this.meepReplayApi}
-              cfgApi={this.meepCfgApi}
+              api={this.meepActiveScenarioApi}
+              eventsApi={this.meepEventsApi}
+              replayApi={this.meepEventReplayApi}
+              cfgApi={this.meepScenarioConfigurationApi}
+              sandboxApi={this.meepSandboxControlApi}
               refreshScenario={() => {
                 this.refreshScenario();
               }}

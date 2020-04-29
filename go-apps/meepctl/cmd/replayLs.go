@@ -44,16 +44,16 @@ var replayLsCmd = &cobra.Command{
 }
 
 func init() {
-	replayCmd.AddCommand(replayLsCmd)
-
+	setSandboxFlag(replayLsCmd)
 	replayLsCmd.Flags().BoolP("long", "l", false, "Displays description of each file")
+	replayCmd.AddCommand(replayLsCmd)
 }
 
 func replayGetAll(cobraCmd *cobra.Command) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	long, _ := cobraCmd.Flags().GetBool("long")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

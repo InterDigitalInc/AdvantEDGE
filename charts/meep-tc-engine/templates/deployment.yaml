@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-tc-engine.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-tc-engine.name" . }}
     chart: {{ template "meep-tc-engine.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-tc-engine.name" . }}
         release: {{ .Release.Name }}
@@ -41,6 +39,9 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
+          env:
+            - name: MEEP_SANDBOX_NAME
+              value: {{ .Values.image.env.sandboxName }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage

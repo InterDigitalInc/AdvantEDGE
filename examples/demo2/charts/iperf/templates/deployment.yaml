@@ -2,7 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  labels:
+    release: {{ .Release.Name }}
 spec:
   replicas: 1
   selector:
@@ -11,7 +12,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep.name" . }}
         release: {{ .Release.Name }}

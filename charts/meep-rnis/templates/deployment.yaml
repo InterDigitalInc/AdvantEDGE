@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-rnis.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-rnis.name" . }}
     chart: {{ template "meep-rnis.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-rnis.name" . }}
         release: {{ .Release.Name }}
@@ -42,6 +40,8 @@ spec:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
           env:
+            - name: MEEP_SANDBOX_NAME
+              value: {{ .Values.image.env.sandboxName }}
             - name: MEEP_RNIS_ROOT_URL
               value: {{ .Values.image.env.rooturl }}
           {{- if .Values.codecov.enabled}}

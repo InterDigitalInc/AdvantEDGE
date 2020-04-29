@@ -1,0 +1,22 @@
+{
+  "name": "advant_edge_platform_controller_rest_api",
+  "version": "1.0.0",
+  "description": "This_API_is_the_main_Platform_Controller_API_for_scenario_configuration__sandbox_management_pMicro_servicebr_meep_pfm_ctrl_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_platform_ctrl_pType__UsagebrPlatform_main_interface_used_by_controller_software_to_configure_scenarios_and_manage_sandboxes_in_the_AdvantEDGE_platform_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_addressapi_",
+  "license": "Apache 2.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "superagent": "3.7.0",
+    "querystring": "0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.3.4",
+    "sinon": "1.17.3",
+    "expect.js": "~0.3.1"
+  }
+}
