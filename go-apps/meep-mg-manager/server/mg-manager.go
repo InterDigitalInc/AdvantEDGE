@@ -121,7 +121,7 @@ type lbRulesStore struct {
 
 type MgManager struct {
 	sandboxName  string
-	msgQueue     *mq.MsgQueue
+	mqLocal      *mq.MsgQueue
 	handlerId    int
 	mutex        sync.Mutex
 	networkGraph *dijkstra.Graph
@@ -169,7 +169,7 @@ func Init() (err error) {
 	log.Info("MEEP_SANDBOX_NAME: ", mgm.sandboxName)
 
 	// Create message queue
-	mgm.msgQueue, err = mq.NewMsgQueue(moduleName, mgm.sandboxName, redisAddr)
+	mgm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(mgm.sandboxName), moduleName, mgm.sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -206,8 +206,8 @@ func Init() (err error) {
 func Run() (err error) {
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeGlobal, Handler: msgHandler, UserData: nil}
-	mgm.handlerId, err = mgm.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	mgm.handlerId, err = mgm.mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -278,9 +278,9 @@ func clearScenario() {
 	_ = mgm.lbRulesStore.rc.DBFlush(moduleName)
 
 	// Send LB Rules Update message
-	msg := mgm.msgQueue.CreateMsg(mq.MsgMgLbRulesUpdate, mq.ScopeLocal, moduleTcEngine, mgm.sandboxName)
+	msg := mgm.mqLocal.CreateMsg(mq.MsgMgLbRulesUpdate, moduleTcEngine, mgm.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err := mgm.msgQueue.SendMsg(msg)
+	err := mgm.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -680,9 +680,9 @@ func applyMgSvcMapping() {
 	}
 
 	// Send LB Rules Update message
-	msg := mgm.msgQueue.CreateMsg(mq.MsgMgLbRulesUpdate, mq.ScopeLocal, moduleTcEngine, mgm.sandboxName)
+	msg := mgm.mqLocal.CreateMsg(mq.MsgMgLbRulesUpdate, moduleTcEngine, mgm.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = mgm.msgQueue.SendMsg(msg)
+	err = mgm.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}

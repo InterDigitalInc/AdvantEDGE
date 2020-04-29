@@ -62,7 +62,7 @@ var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
 
 var sandboxName string
-var msgQueue *mq.MsgQueue
+var mqLocal *mq.MsgQueue
 var handlerId int
 var activeModel *mod.Model
 var activeScenarioName string
@@ -102,7 +102,7 @@ func Init() (err error) {
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
 	// Create message queue
-	msgQueue, err = mq.NewMsgQueue(moduleName, sandboxName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -148,8 +148,8 @@ func Init() (err error) {
 func Run() (err error) {
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
-	handlerId, err = msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err

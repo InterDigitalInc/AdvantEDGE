@@ -36,7 +36,7 @@ import (
 const moduleName = "meep-webhook"
 const moduleNamespace = "default"
 
-var msgQueue *mq.MsgQueue
+var mqGlobal *mq.MsgQueue
 var handlerId int
 var model *mod.Model
 
@@ -48,7 +48,7 @@ func main() {
 	log.MeepJSONLogInit("meep-webhook")
 
 	// Create message queue
-	msgQueue, err = mq.NewMsgQueue(moduleName, moduleNamespace, "")
+	mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, "")
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err.Error())
 		return
@@ -101,8 +101,8 @@ func main() {
 	processScenarioChange()
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeGlobal, Handler: msgHandler, UserData: nil}
-	handlerId, err = msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqGlobal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for scenario updates: ", err.Error())
 		return

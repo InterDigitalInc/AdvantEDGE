@@ -48,7 +48,7 @@ func main() {
 	// Initialize Virt Engine
 	err := server.Init()
 	if err != nil {
-		log.Error("Failed to initialize Virt. Manager")
+		log.Error("Failed to initialize Virt. Engine")
 		run = false
 		return
 	}
@@ -56,7 +56,7 @@ func main() {
 	// Start Virt Engine Event Handler thread
 	err = server.Run()
 	if err != nil {
-		log.Error("Failed to start Virt. Manager")
+		log.Error("Failed to start Virt. Engine")
 		run = false
 		return
 	}

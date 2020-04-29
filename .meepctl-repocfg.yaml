@@ -26,7 +26,7 @@ repo:
       meep-mon-engine:
         src: go-apps/meep-mon-engine
         bin: bin/meep-mon-engine
-        chart: charts/core/meep-mon-engine
+        chart: charts/meep-mon-engine
         build-flags:
           - -mod=vendor
         codecov: true
@@ -34,7 +34,7 @@ repo:
       meep-platform-ctrl:
         src: go-apps/meep-platform-ctrl
         bin: bin/meep-platform-ctrl
-        chart: charts/core/meep-platform-ctrl
+        chart: charts/meep-platform-ctrl
         codecov: true
         lint: true
         api: go-apps/meep-platform-ctrl/api/swagger.yaml
@@ -44,17 +44,22 @@ repo:
       meep-virt-engine:
         src: go-apps/meep-virt-engine
         bin: bin/meep-virt-engine
-        chart: charts/core/meep-virt-engine
+        chart: charts/meep-virt-engine
         codecov: true
         lint: true
         docker-data:
-          entrypoint.sh: go-apps/meep-virt-engine/entrypoint.sh
-          sandbox: charts/sandbox
-          scenario: charts/scenario
+          'entrypoint.sh': go-apps/meep-virt-engine/entrypoint.sh
+          meep-loc-serv: charts/meep-loc-serv
+          meep-metrics-engine: charts/meep-metrics-engine
+          meep-mg-manager: charts/meep-mg-manager
+          meep-rnis: charts/meep-rnis
+          meep-sandbox-ctrl: charts/meep-sandbox-ctrl
+          meep-tc-engine: charts/meep-tc-engine
+          meep-virt-chart-templates: charts/meep-virt-chart-templates
       meep-webhook:
         src: go-apps/meep-webhook
         bin: bin/meep-webhook
-        chart: charts/core/meep-webhook
+        chart: charts/meep-webhook
         build-flags:
           - -mod=vendor
         codecov: false
@@ -96,7 +101,7 @@ repo:
       meep-loc-serv:
         src: go-apps/meep-loc-serv
         bin: bin/meep-loc-serv
-        chart: charts/sandbox/meep-loc-serv
+        chart: charts/meep-loc-serv
         build-flags:
           - -mod=vendor
         codecov: false
@@ -105,7 +110,7 @@ repo:
       meep-metrics-engine:
         src: go-apps/meep-metrics-engine
         bin: bin/meep-metrics-engine
-        chart: charts/sandbox/meep-metrics-engine
+        chart: charts/meep-metrics-engine
         build-flags:
           - -mod=vendor
         codecov: false
@@ -114,14 +119,14 @@ repo:
       meep-mg-manager:
         src: go-apps/meep-mg-manager
         bin: bin/meep-mg-manager
-        chart: charts/sandbox/meep-mg-manager
+        chart: charts/meep-mg-manager
         codecov: false
         lint: true
         api: go-apps/meep-mg-manager/api/swagger.yaml
       meep-rnis:
         src: go-apps/meep-rnis
         bin: bin/meep-rnis
-        chart: charts/sandbox/meep-rnis
+        chart: charts/meep-rnis
         build-flags:
           - -mod=vendor
         codecov: false
@@ -130,14 +135,14 @@ repo:
       meep-sandbox-ctrl:
         src: go-apps/meep-sandbox-ctrl
         bin: bin/meep-sandbox-ctrl
-        chart: charts/sandbox/meep-sandbox-ctrl
+        chart: charts/meep-sandbox-ctrl
         codecov: false
         lint: true
         api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
       meep-tc-engine:
         src: go-apps/meep-tc-engine
         bin: bin/meep-tc-engine
-        chart: charts/sandbox/meep-tc-engine
+        chart: charts/meep-tc-engine
         codecov: false
         lint: true
       meep-tc-sidecar:
@@ -151,19 +156,19 @@ repo:
   #------------------------------
   dep:
     meep-couchdb:
-      chart: charts/dep/couchdb
+      chart: charts/couchdb
     meep-docker-registry:
-      chart: charts/dep/docker-registry
+      chart: charts/docker-registry
     meep-grafana:
-      chart: charts/dep/grafana
+      chart: charts/grafana
     meep-influxdb:
-      chart: charts/dep/influxdb
+      chart: charts/influxdb
     meep-kube-state-metrics:
-      chart: charts/dep/kube-state-metrics
+      chart: charts/kube-state-metrics
     meep-ingress:
-      chart: charts/dep/nginx-ingress
+      chart: charts/nginx-ingress
     meep-redis:
-      chart: charts/dep/redis
+      chart: charts/redis
 
   #------------------------------
   #  Packages

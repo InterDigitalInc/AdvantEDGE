@@ -25,8 +25,8 @@ import (
 )
 
 const mqRedisAddr string = "localhost:30380"
-const mqName string = "name"
-const mqNamespace string = "sbox-1"
+const mqModName string = "module-name"
+const mqModNs string = "sbox-1"
 
 const key1 = "key1"
 const val1 = "val1"
@@ -37,36 +37,33 @@ const val3 = "val3"
 
 var RxMsg *Msg = nil
 var RxMsgUpdateCount int = 0
-var RxMsgLocal *Msg = nil
-var RxMsgLocalUpdateCount int = 0
-var RxMsgGlobal *Msg = nil
-var RxMsgGlobalUpdateCount int = 0
-var RxMsgAll *Msg = nil
-var RxMsgAllUpdateCount int = 0
 
 func TestMsgQueueNew(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
-	defer destroyInstance()
 	var mq *MsgQueue
 	var err error
 
 	fmt.Println("Invalid Message Queue")
-	mq, err = NewMsgQueue("", mqNamespace, mqRedisAddr)
+	mq, err = NewMsgQueue("", mqModName, mqModNs, mqRedisAddr)
 	if err == nil || mq != nil {
 		t.Fatalf("Message Queue creation should have failed")
 	}
-	mq, err = NewMsgQueue(mqName, "", mqRedisAddr)
+	mq, err = NewMsgQueue(GetGlobalName(), "", mqModNs, mqRedisAddr)
+	if err == nil || mq != nil {
+		t.Fatalf("Message Queue creation should have failed")
+	}
+	mq, err = NewMsgQueue(GetGlobalName(), mqModName, "", mqRedisAddr)
 	if err == nil || mq != nil {
 		t.Fatalf("Message Queue creation should have failed")
 	}
 
 	fmt.Println("Create Message Queue")
-	mq, err = NewMsgQueue(mqName, mqNamespace, mqRedisAddr)
+	mq, err = NewMsgQueue(GetLocalName(mqModNs), mqModName, mqModNs, mqRedisAddr)
 	if err != nil {
 		t.Fatalf("Unable to create Message Queue")
 	}
-	if mq.name != mqName || mq.namespace != mqNamespace {
+	if mq.name != GetLocalName(mqModNs) || mq.moduleName != mqModName || mq.moduleNamespace != mqModNs {
 		t.Fatalf("Invalid Message Queue")
 	}
 }
@@ -74,13 +71,12 @@ func TestMsgQueueNew(t *testing.T) {
 func TestMsgQueueSendMsg(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
-	defer destroyInstance()
 	var mq *MsgQueue
 	var msg *Msg
 	var err error
 
 	fmt.Println("Create Message Queue")
-	mq, err = NewMsgQueue(mqName, mqNamespace, mqRedisAddr)
+	mq, err = NewMsgQueue(GetLocalName(mqModNs), mqModName, mqModNs, mqRedisAddr)
 	if err != nil {
 		t.Fatalf("Unable to create Message Queue")
 	}
@@ -90,29 +86,24 @@ func TestMsgQueueSendMsg(t *testing.T) {
 	if err == nil {
 		t.Fatalf("SendMsg should have failed")
 	}
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, "", mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxCreate, "", mqModNs)
 	err = mq.SendMsg(msg)
 	if err == nil {
 		t.Fatalf("SendMsg should have failed")
 	}
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, "")
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, "")
 	err = mq.SendMsg(msg)
 	if err == nil {
 		t.Fatalf("SendMsg should have failed")
 	}
-	msg = mq.CreateMsg(MsgSandboxCreate, "invalid", mqName, mqNamespace)
-	err = mq.SendMsg(msg)
-	if err == nil {
-		t.Fatalf("SendMsg should have failed")
-	}
-	msg = mq.CreateMsg("", ScopeGlobal, mqName, mqNamespace)
+	msg = mq.CreateMsg("", mqModName, mqModNs)
 	err = mq.SendMsg(msg)
 	if err == nil {
 		t.Fatalf("SendMsg should have failed")
 	}
 
 	fmt.Println("Send valid Message")
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, mqModNs)
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
@@ -122,329 +113,187 @@ func TestMsgQueueSendMsg(t *testing.T) {
 func TestMsgQueueListen(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
-	defer destroyInstance()
 	var mq *MsgQueue
 	var msg *Msg
 	var err error
 
 	fmt.Println("Create Message Queue")
-	mq, err = NewMsgQueue(mqName, mqNamespace, mqRedisAddr)
+	mq, err = NewMsgQueue(GetLocalName(mqModNs), mqModName, mqModNs, mqRedisAddr)
 	if err != nil {
 		t.Fatalf("Unable to create Message Queue")
 	}
 
-	fmt.Println("Invalid listen")
-	handler := MsgHandler{Scope: ScopeLocal, Handler: nil, UserData: nil}
+	fmt.Println("Invalid handler")
+	handler := MsgHandler{Handler: nil, UserData: nil}
 	_, err = mq.RegisterHandler(handler)
 	if err == nil {
-		t.Fatalf("Listen should have failed")
+		t.Fatalf("Handler registration should have failed")
 	}
-	handler = MsgHandler{Scope: "invalid", Handler: msgHandler, UserData: nil}
-	_, err = mq.RegisterHandler(handler)
-	if err == nil {
-		t.Fatalf("Listen should have failed")
-	}
-	handler = MsgHandler{Scope: ScopeLocal, Handler: msgHandler, UserData: nil}
-	id, err := mq.RegisterHandler(handler)
-	if err != nil {
-		t.Fatalf("Unable to register listener")
-	}
-	mq.UnregisterHandler(id)
 
-	// SCOPE LOCAL
-	fmt.Println("Register message handler for local messages only")
-	handler = MsgHandler{Scope: ScopeLocal, Handler: msgHandler, UserData: nil}
-	id, err = mq.RegisterHandler(handler)
+	fmt.Println("Register message handler")
+	handler = MsgHandler{Handler: msgHandler, UserData: nil}
+	id1, err := mq.RegisterHandler(handler)
 	if err != nil {
-		t.Fatalf("Unable to register listener")
+		t.Fatalf("Unable to register handler")
 	}
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, "invalid", mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, "invalid")
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, mqNamespace)
-	msg.Payload[key1] = val1
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeLocal, mqName, mqNamespace)
-	msg.Payload[key1] = val1
-	msg.Payload[key2] = val2
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	mq.UnregisterHandler(id)
+	mq.UnregisterHandler(id1)
 
-	// SCOPE GLOBAL
-	fmt.Println("Register message handler for global messages only")
-	handler = MsgHandler{Scope: ScopeGlobal, Handler: msgHandler, UserData: nil}
-	id, err = mq.RegisterHandler(handler)
+	fmt.Println("Re-register message handler")
+	handler = MsgHandler{Handler: msgHandler, UserData: nil}
+	id1, err = mq.RegisterHandler(handler)
 	if err != nil {
-		t.Fatalf("Unable to register listener")
+		t.Fatalf("Unable to register handler")
 	}
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, "invalid", mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, "invalid")
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeGlobal, mqName, mqNamespace)
-	msg.Payload[key2] = val2
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	mq.UnregisterHandler(id)
 
-	// SCOPE ALL
-	fmt.Println("Register message handler for local & global messages")
-	handler = MsgHandler{Scope: ScopeAll, Handler: msgHandler, UserData: nil}
-	id, err = mq.RegisterHandler(handler)
-	if err != nil {
-		t.Fatalf("Unable to register listener")
-	}
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, "invalid", mqNamespace)
+	fmt.Println("Send messages with invalid target")
+	msg = mq.CreateMsg(MsgSandboxCreate, "invalid", mqModNs)
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg("", nil, 0) {
+	if !validateRxMsg(nil, 0) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, "invalid")
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, "invalid")
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg("", nil, 0) {
+	if !validateRxMsg(nil, 0) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, "invalid", mqNamespace)
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, "invalid")
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, mqNamespace)
+
+	fmt.Println("Send messages with valid target")
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, mqModNs)
 	msg.Payload[key1] = val1
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg("", msg, 1) {
+	if !validateRxMsg(msg, 1) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeLocal, mqName, mqNamespace)
-	msg.Payload[key2] = val2
-	err = mq.SendMsg(msg)
-	if err != nil {
-		t.Fatalf("Unable to send message")
-	}
-	if !validateRxMsg("", msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeGlobal, mqName, mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxDestroy, mqModName, mqModNs)
 	msg.Payload[key1] = val1
 	msg.Payload[key2] = val2
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg("", msg, 1) {
+	if !validateRxMsg(msg, 1) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeGlobal, mqName, mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, TargetAll)
+	msg.Payload[key1] = val1
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg("", msg, 1) {
+	if !validateRxMsg(msg, 1) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	mq.UnregisterHandler(id)
+	msg = mq.CreateMsg(MsgSandboxDestroy, TargetAll, mqModNs)
+	msg.Payload[key2] = val2
+	err = mq.SendMsg(msg)
+	if err != nil {
+		t.Fatalf("Unable to send message")
+	}
+	if !validateRxMsg(msg, 1) {
+		t.Fatalf("Invalid Rx Message")
+	}
+	resetHandlerData()
+	msg = mq.CreateMsg(MsgSandboxCreate, TargetAll, TargetAll)
+	msg.Payload[key1] = val1
+	msg.Payload[key2] = val2
+	err = mq.SendMsg(msg)
+	if err != nil {
+		t.Fatalf("Unable to send message")
+	}
+	if !validateRxMsg(msg, 1) {
+		t.Fatalf("Invalid Rx Message")
+	}
+	resetHandlerData()
+	mq.UnregisterHandler(id1)
 }
 
 func TestMsgQueueMultipleListen(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
-	defer destroyInstance()
 	var mq *MsgQueue
 	var msg *Msg
 	var err error
 
 	fmt.Println("Create Message Queue")
-	mq, err = NewMsgQueue(mqName, mqNamespace, mqRedisAddr)
+	mq, err = NewMsgQueue(GetLocalName(mqModNs), mqModName, mqModNs, mqRedisAddr)
 	if err != nil {
 		t.Fatalf("Unable to create Message Queue")
 	}
 
 	fmt.Println("Register multiple message handlers")
-	handler := MsgHandler{Scope: ScopeLocal, Handler: msgHandlerLocal, UserData: nil}
+	handler := MsgHandler{Handler: msgHandler, UserData: nil}
 	id1, err := mq.RegisterHandler(handler)
 	if err != nil {
 		t.Fatalf("Unable to register listener")
 	}
-	handler = MsgHandler{Scope: ScopeGlobal, Handler: msgHandlerGlobal, UserData: nil}
+	handler = MsgHandler{Handler: msgHandler, UserData: nil}
 	id2, err := mq.RegisterHandler(handler)
 	if err != nil {
 		t.Fatalf("Unable to register listener")
 	}
-	handler = MsgHandler{Scope: ScopeAll, Handler: msgHandlerAll, UserData: nil}
+	handler = MsgHandler{Handler: msgHandler, UserData: nil}
 	id3, err := mq.RegisterHandler(handler)
 	if err != nil {
 		t.Fatalf("Unable to register listener")
 	}
 
-	fmt.Println("Send messages")
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, "invalid", mqNamespace)
+	fmt.Println("Send messages with invalid target")
+	msg = mq.CreateMsg(MsgSandboxCreate, "invalid", mqModNs)
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg(ScopeLocal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeGlobal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeAll, nil, 0) {
+	if !validateRxMsg(nil, 0) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, "invalid")
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, "invalid")
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg(ScopeLocal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeGlobal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeAll, nil, 0) {
+	if !validateRxMsg(nil, 0) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxCreate, ScopeLocal, mqName, mqNamespace)
+
+	fmt.Println("Send messages with valid target")
+	msg = mq.CreateMsg(MsgSandboxCreate, mqModName, mqModNs)
 	msg.Payload[key1] = val1
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg(ScopeLocal, msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeGlobal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeAll, msg, 1) {
+	if !validateRxMsg(msg, 3) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeGlobal, mqName, mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxDestroy, TargetAll, mqModNs)
 	msg.Payload[key1] = val1
 	msg.Payload[key2] = val2
 	err = mq.SendMsg(msg)
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg(ScopeLocal, nil, 0) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeGlobal, msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeAll, msg, 1) {
+	if !validateRxMsg(msg, 3) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
-	msg = mq.CreateMsg(MsgSandboxDestroy, ScopeAll, mqName, mqNamespace)
+	msg = mq.CreateMsg(MsgSandboxDestroy, mqModName, TargetAll)
 	msg.Payload[key1] = val1
 	msg.Payload[key2] = val2
 	msg.Payload[key3] = val3
@@ -452,13 +301,7 @@ func TestMsgQueueMultipleListen(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to send message")
 	}
-	if !validateRxMsg(ScopeLocal, msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeGlobal, msg, 1) {
-		t.Fatalf("Invalid Rx Message")
-	}
-	if !validateRxMsg(ScopeAll, msg, 2) {
+	if !validateRxMsg(msg, 3) {
 		t.Fatalf("Invalid Rx Message")
 	}
 	resetHandlerData()
@@ -475,77 +318,40 @@ func msgHandler(msg *Msg, userData interface{}) {
 	RxMsg = msg
 }
 
-func msgHandlerLocal(msg *Msg, userData interface{}) {
-	RxMsgLocalUpdateCount++
-	RxMsgLocal = msg
-}
-
-func msgHandlerGlobal(msg *Msg, userData interface{}) {
-	RxMsgGlobalUpdateCount++
-	RxMsgGlobal = msg
-}
-
-func msgHandlerAll(msg *Msg, userData interface{}) {
-	RxMsgAllUpdateCount++
-	RxMsgAll = msg
-}
-
 func resetHandlerData() {
 	RxMsgUpdateCount = 0
-	RxMsgLocalUpdateCount = 0
-	RxMsgGlobalUpdateCount = 0
-	RxMsgAllUpdateCount = 0
 	RxMsg = nil
-	RxMsgLocal = nil
-	RxMsgGlobal = nil
-	RxMsgAll = nil
 }
 
-func validateRxMsg(scope string, msg *Msg, updateCount int) bool {
+func validateRxMsg(msg *Msg, updateCount int) bool {
 	// Give time for the message to arrive
 	time.Sleep(50 * time.Millisecond)
 
-	var rxMsg *Msg
-	var rxMsgUpdateCount int
-	if scope == ScopeLocal {
-		rxMsg = RxMsgLocal
-		rxMsgUpdateCount = RxMsgLocalUpdateCount
-	} else if scope == ScopeGlobal {
-		rxMsg = RxMsgGlobal
-		rxMsgUpdateCount = RxMsgGlobalUpdateCount
-	} else if scope == ScopeAll {
-		rxMsg = RxMsgAll
-		rxMsgUpdateCount = RxMsgAllUpdateCount
-	} else {
-		rxMsg = RxMsg
-		rxMsgUpdateCount = RxMsgUpdateCount
-	}
-
 	// Make sure Message received if expected
-	if updateCount != rxMsgUpdateCount {
+	if updateCount != RxMsgUpdateCount {
 		return false
 	}
 
 	// Validate message contents
 	if msg != nil {
-		if rxMsg == nil ||
-			msg.SrcName != rxMsg.SrcName ||
-			msg.SrcNamespace != rxMsg.SrcNamespace ||
-			msg.DstName != rxMsg.DstName ||
-			msg.DstNamespace != rxMsg.DstNamespace ||
-			msg.Scope != rxMsg.Scope ||
-			msg.Message != rxMsg.Message ||
-			len(msg.Payload) != len(rxMsg.Payload) {
+		if RxMsg == nil ||
+			msg.SrcName != RxMsg.SrcName ||
+			msg.SrcNamespace != RxMsg.SrcNamespace ||
+			msg.DstName != RxMsg.DstName ||
+			msg.DstNamespace != RxMsg.DstNamespace ||
+			msg.Scope != RxMsg.Scope ||
+			msg.Message != RxMsg.Message ||
+			len(msg.Payload) != len(RxMsg.Payload) {
 			return false
 		}
 		if len(msg.Payload) != 0 {
 			for k, v := range msg.Payload {
-				if v != rxMsg.Payload[k] {
+				if v != RxMsg.Payload[k] {
 					return false
 				}
 			}
 		}
-	} else if rxMsg != nil {
+	} else if RxMsg != nil {
 		return false
 	}
 

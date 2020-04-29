@@ -21,8 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -44,7 +44,7 @@ type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	veWatchdog    *wd.Watchdog
 	sandboxStore  *redis.Connector
-	msgQueue      *mq.MsgQueue
+	mqGlobal      *mq.MsgQueue
 }
 
 const scenarioDBName = "scenarios"
@@ -64,11 +64,14 @@ var pfmCtrl *PlatformCtrl
 func Init() (err error) {
 	log.Debug("Init")
 
+	// Seed rand
+	rand.Seed(time.Now().UnixNano())
+
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
 
 	// Create message queue
-	pfmCtrl.msgQueue, err = mq.NewMsgQueue(moduleName, moduleNamespace, redisDBAddr)
+	pfmCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisDBAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -341,15 +344,25 @@ func pcSetScenario(w http.ResponseWriter, r *http.Request) {
 // POST /sandboxes
 func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcCreateSandbox")
-	var err error
-	var sandboxName string
-	var key string
+
+	// Retrieve sandbox config from request body
+	var sandboxConfig dataModel.SandboxConfig
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&sandboxConfig)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Get unique sandbox name
+	var sandboxName string
 	uniqueNameFound := false
-	for i := 0; i < 10; i++ {
-		sandboxName = "sbox-gen-" + strconv.Itoa(i)
-		key = moduleName + ":sandboxes:" + sandboxName
+	retryCount := 3
+	for i := 0; i < retryCount; i++ {
+		// sandboxName = "sbox-" + xid.New().String()
+		sandboxName = "sbox-" + randSeq(6)
+		key := moduleName + ":sandboxes:" + sandboxName
 		if !pfmCtrl.sandboxStore.EntryExists(key) {
 			uniqueNameFound = true
 			break
@@ -363,24 +376,9 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create sandbox in DB
-	fields := make(map[string]interface{})
-	fields["name"] = sandboxName
-	fields["scenarioName"] = ""
-	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	err = createSandbox(sandboxName, &sandboxConfig)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Inform Virt Engine to create sandbox
-	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxCreate, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
-	msg.Payload["sandboxName"] = sandboxName
-	msg.Payload["scenarioName"] = ""
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.msgQueue.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
+		log.Error("Failed to create sandbox with error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -421,24 +419,9 @@ func pcCreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create sandbox in DB
-	fields := make(map[string]interface{})
-	fields["name"] = sandboxName
-	fields["scenarioName"] = sandboxConfig.ScenarioName
-	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	err = createSandbox(sandboxName, &sandboxConfig)
 	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Inform Virt Engine to create sandbox
-	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxCreate, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
-	msg.Payload["sandboxName"] = sandboxName
-	msg.Payload["scenarioName"] = sandboxConfig.ScenarioName
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.msgQueue.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
+		log.Error("Failed to create sandbox with error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -475,10 +458,10 @@ func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Inform Virt Engine to destroy sandbox
-	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxDestroy, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
 	msg.Payload["sandboxName"] = sandboxName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.msgQueue.SendMsg(msg)
+	err = pfmCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -517,10 +500,10 @@ func deleteSandbox(key string, fields map[string]string, userData interface{}) e
 	}
 
 	// Inform Virt Engine to destroy sandbox
-	msg := pfmCtrl.msgQueue.CreateMsg(mq.MsgSandboxDestroy, mq.ScopeGlobal, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
 	msg.Payload["sandboxName"] = sandboxName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.msgQueue.SendMsg(msg)
+	err = pfmCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -596,10 +579,50 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
+// Create new sandbox in store and publish updagte
+func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
+
+	// Create new sandbox key
+	key := moduleName + ":sandboxes:" + sandboxName
+
+	// Create sandbox in DB
+	fields := make(map[string]interface{})
+	fields["name"] = sandboxName
+	fields["scenarioName"] = sandboxConfig.ScenarioName
+	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Inform Virt Engine to create sandbox
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxCreate, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload["sandboxName"] = sandboxName
+	msg.Payload["scenarioName"] = sandboxConfig.ScenarioName
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = pfmCtrl.mqGlobal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
 func getSandboxInfo(key string, fields map[string]string, userData interface{}) error {
 	sandboxList := userData.(*dataModel.SandboxList)
 	var sandbox dataModel.Sandbox
 	sandbox.Name = fields["name"]
 	sandboxList.Sandboxes = append(sandboxList.Sandboxes, sandbox)
 	return nil
+}
+
+var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }

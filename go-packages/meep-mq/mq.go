@@ -37,19 +37,17 @@ type Msg struct {
 }
 
 type MsgHandler struct {
-	Scope    string
 	Handler  func(msg *Msg, userData interface{})
 	UserData interface{}
 }
 
 type MsgQueue struct {
-	name      string
-	namespace string
-	global    string
-	local     string
-	rc        *redis.Connector
-	handlers  map[int]MsgHandler
-	counter   int
+	name            string
+	moduleName      string
+	moduleNamespace string
+	rc              *redis.Connector
+	handlers        map[int]MsgHandler
+	counter         int
 }
 
 // Messages
@@ -77,77 +75,60 @@ const (
 	MsgPong Message = "PONG"
 )
 
-// Scopes
-const (
-	ScopeLocal  = "local"
-	ScopeGlobal = "global"
-	ScopeAll    = "all"
-)
-
+const globalQueueName = "mq:global"
+const localQueueNamePrefix = "mq:"
 const TargetAll = "all"
 const redisTable = 0
-const globalQueueName = "mq:global"
-
-// var lock = &sync.Mutex{}
-
-// var instance *MsgQueue
 
 // MsgQueue - Creates and initialize a Message Queue instance
-func NewMsgQueue(name string, namespace string, addr string) (*MsgQueue, error) {
-	// lock.Lock()
-	// defer lock.Unlock()
+func NewMsgQueue(name string, moduleName string, moduleNamespace string, addr string) (*MsgQueue, error) {
 	var err error
 
-	// Validate name & namespace
-	if name == "" || namespace == "" {
+	// Validate input params
+	if name == "" {
+		err = errors.New("Invalid name")
+		log.Error(err.Error())
+		return nil, err
+	}
+	if moduleName == "" {
 		err = errors.New("Invalid name or namespace")
 		log.Error(err.Error())
 		return nil, err
 	}
+	if moduleNamespace == "" {
+		err = errors.New("Invalid module namespace name or namespace")
+		log.Error(err.Error())
+		return nil, err
+	}
 
-	// Get Message Queue instance
-	// if instance == nil {
-	log.Info("Creating new MsgQueue instance")
-	instance := new(MsgQueue)
-	instance.name = name
-	instance.namespace = namespace
-	instance.global = globalQueueName
-	instance.local = "mq:local-" + namespace
-	instance.counter = 0
-	instance.handlers = make(map[int]MsgHandler)
+	// Create new Message Queue
+	log.Info("Creating new MsgQueue")
+	mq := new(MsgQueue)
+	mq.name = name
+	mq.moduleName = moduleName
+	mq.moduleNamespace = moduleNamespace
+	mq.counter = 0
+	mq.handlers = make(map[int]MsgHandler)
 
 	// Connect to Redis DB
-	instance.rc, err = redis.NewConnector(addr, redisTable)
+	mq.rc, err = redis.NewConnector(addr, redisTable)
 	if err != nil {
 		log.Error("Failed connection to Message Queue redis DB. Error: ", err)
 		return nil, err
 	}
 	log.Info("Connected to Message Queue Redis DB")
-	// }
 
-	return instance, nil
-}
-
-// Private destructor for test purposes
-func destroyInstance() {
-	// lock.Lock()
-	// defer lock.Unlock()
-
-	// if instance != nil {
-	// 	instance.rc.StopListen()
-	// 	_ = instance.rc.Unsubscribe([]string{instance.local, instance.global}...)
-	// 	instance = nil
-	// }
+	return mq, nil
 }
 
 // CreateMsg - Create a new message
-func (mq *MsgQueue) CreateMsg(message Message, scope string, dstName string, dstNamespace string) *Msg {
+func (mq *MsgQueue) CreateMsg(message Message, dstName string, dstNamespace string) *Msg {
 	msg := new(Msg)
-	msg.SrcName = mq.name
-	msg.SrcNamespace = mq.namespace
+	msg.SrcName = mq.moduleName
+	msg.SrcNamespace = mq.moduleNamespace
 	msg.DstName = dstName
 	msg.DstNamespace = dstNamespace
-	msg.Scope = scope
+	msg.Scope = mq.name
 	msg.Message = message
 	msg.Payload = make(map[string]string)
 	return msg
@@ -156,14 +137,14 @@ func (mq *MsgQueue) CreateMsg(message Message, scope string, dstName string, dst
 // SendMsg - Send the provided message
 func (mq *MsgQueue) SendMsg(msg *Msg) error {
 	// Validate message format
-	err := validateMsg(msg)
+	err := mq.validateMsg(msg)
 	if err != nil {
 		log.Error("Message validation failed with err: ", err.Error())
 		return err
 	}
 	// Validate message source
-	if msg.SrcName != mq.name || msg.SrcNamespace != mq.namespace {
-		err = errors.New("Message source not equal to Msg Queue name/namespace")
+	if msg.SrcName != mq.moduleName || msg.SrcNamespace != mq.moduleNamespace {
+		err = errors.New("Message source not equal to Msg Queue module name/namespace")
 		log.Error(err.Error())
 		return err
 	}
@@ -176,21 +157,11 @@ func (mq *MsgQueue) SendMsg(msg *Msg) error {
 		return err
 	}
 
-	// Publish on local queue if scope permits
-	if msg.Scope == ScopeLocal || msg.Scope == ScopeAll {
-		err = mq.rc.Publish(mq.local, string(jsonMsg))
-		if err != nil {
-			log.Error("Failed to publish message on local queue ", mq.local, " with err: ", err.Error())
-			return err
-		}
-	}
-	// Publish on global queue if scope permits
-	if msg.Scope == ScopeGlobal || msg.Scope == ScopeAll {
-		err = mq.rc.Publish(mq.global, string(jsonMsg))
-		if err != nil {
-			log.Error("Failed to publish message on global queue ", mq.global, " with err: ", err.Error())
-			return err
-		}
+	// Publish message on queue
+	err = mq.rc.Publish(mq.name, string(jsonMsg))
+	if err != nil {
+		log.Error("Failed to publish message on queue ", mq.name, " with err: ", err.Error())
+		return err
 	}
 
 	return nil
@@ -198,11 +169,9 @@ func (mq *MsgQueue) SendMsg(msg *Msg) error {
 
 // Register - Add a message handler
 func (mq *MsgQueue) RegisterHandler(handler MsgHandler) (id int, err error) {
-	// lock.Lock()
-	// defer lock.Unlock()
 
 	// Validate handler
-	if !validScope(handler.Scope) || handler.Handler == nil {
+	if handler.Handler == nil {
 		err = errors.New("Invalid handler")
 		return
 	}
@@ -214,7 +183,7 @@ func (mq *MsgQueue) RegisterHandler(handler MsgHandler) (id int, err error) {
 	// Start listening for messages if first handler
 	if len(mq.handlers) == 1 {
 		// Subscribe to channels
-		err = mq.rc.Subscribe([]string{mq.local, mq.global}...)
+		err = mq.rc.Subscribe([]string{mq.name}...)
 		if err != nil {
 			log.Error("Failed to subscribe to channels with err: ", err.Error())
 			delete(mq.handlers, mq.counter)
@@ -249,7 +218,7 @@ func (mq *MsgQueue) UnregisterHandler(id int) {
 	// Stop listening if no more handlers
 	if len(mq.handlers) == 0 {
 		mq.rc.StopListen()
-		_ = mq.rc.Unsubscribe([]string{mq.local, mq.global}...)
+		_ = mq.rc.Unsubscribe([]string{mq.name}...)
 	}
 }
 
@@ -266,32 +235,27 @@ func (mq *MsgQueue) eventHandler(channel string, payload string) {
 	}
 
 	// Validate message format
-	err = validateMsg(msg)
+	err = mq.validateMsg(msg)
 	if err != nil {
 		log.Error("Message validation failed with err: ", err.Error())
 		return
 	}
 	// Validate message destination
-	if (msg.DstName != TargetAll && msg.DstName != mq.name) ||
-		(msg.DstNamespace != TargetAll && msg.DstNamespace != mq.namespace) {
+	if (msg.DstName != TargetAll && msg.DstName != mq.moduleName) ||
+		(msg.DstNamespace != TargetAll && msg.DstNamespace != mq.moduleNamespace) {
 		log.Trace("Ignoring message with other destination")
 		return
 	}
 	log.Trace("Received message: ", PrintMsg(msg))
 
 	// Invoke registered handlers
-	// lock.Lock()
 	for _, handler := range mq.handlers {
-		if (channel == mq.global && (handler.Scope == ScopeGlobal || handler.Scope == ScopeAll)) ||
-			(channel == mq.local && (handler.Scope == ScopeLocal || handler.Scope == ScopeAll)) {
-			handler.Handler(msg, handler.UserData)
-		}
+		handler.Handler(msg, handler.UserData)
 	}
-	// lock.Unlock()
 }
 
 // Validate message format
-func validateMsg(msg *Msg) error {
+func (mq *MsgQueue) validateMsg(msg *Msg) error {
 	if msg == nil {
 		return errors.New("nil message")
 	}
@@ -301,7 +265,7 @@ func validateMsg(msg *Msg) error {
 	if msg.DstName == "" || msg.DstNamespace == "" {
 		return errors.New("Invalid destination")
 	}
-	if !validScope(msg.Scope) {
+	if msg.Scope != mq.name {
 		return errors.New("Invalid scope")
 	}
 	if msg.Message == "" {
@@ -310,9 +274,14 @@ func validateMsg(msg *Msg) error {
 	return nil
 }
 
-// Validate scope
-func validScope(scope string) bool {
-	return scope == ScopeLocal || scope == ScopeGlobal || scope == ScopeAll
+// GetGlobalName - Get global queue name
+func GetGlobalName() string {
+	return globalQueueName
+}
+
+// GetLocalName - Get local namespace-specific queue name
+func GetLocalName(namespace string) string {
+	return localQueueNamePrefix + namespace
 }
 
 // Convert message to string

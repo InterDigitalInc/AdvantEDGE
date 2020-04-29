@@ -157,7 +157,7 @@ type LbRulesStore struct {
 // TcEngine -
 type TcEngine struct {
 	sandboxName  string
-	msgQueue     *mq.MsgQueue
+	mqLocal      *mq.MsgQueue
 	activeModel  *mod.Model
 	netCharStore *NetCharStore
 	lbRulesStore *LbRulesStore
@@ -216,7 +216,7 @@ func Init() (err error) {
 	log.Info("MEEP_SANDBOX_NAME: ", tce.sandboxName)
 
 	// Create message queue
-	tce.msgQueue, err = mq.NewMsgQueue(moduleName, tce.sandboxName, redisAddr)
+	tce.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(tce.sandboxName), moduleName, tce.sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -271,8 +271,8 @@ func Init() (err error) {
 func Run() (err error) {
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
-	tce.handlerId, err = tce.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	tce.handlerId, err = tce.mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
@@ -368,9 +368,9 @@ func processMgSvcMapUpdate() {
 	applyMgSvcMapping()
 
 	// Send TC LB Rules update message to TC Sidecars for enforcement
-	msg := tce.msgQueue.CreateMsg(mq.MsgTcLbRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	msg := tce.mqLocal.CreateMsg(mq.MsgTcLbRulesUpdate, moduleTcSidecar, tce.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = tce.msgQueue.SendMsg(msg)
+	err = tce.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -411,15 +411,15 @@ func stopScenario() {
 	tce.netCharStore.rc.DBFlush(moduleName)
 
 	// Send message to clear TC LB & Net Rules
-	msg := tce.msgQueue.CreateMsg(mq.MsgTcNetRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	msg := tce.mqLocal.CreateMsg(mq.MsgTcNetRulesUpdate, moduleTcSidecar, tce.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err := tce.msgQueue.SendMsg(msg)
+	err := tce.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
-	msg = tce.msgQueue.CreateMsg(mq.MsgTcLbRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	msg = tce.mqLocal.CreateMsg(mq.MsgTcLbRulesUpdate, moduleTcSidecar, tce.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = tce.msgQueue.SendMsg(msg)
+	err = tce.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -607,10 +607,10 @@ func updateComplete() {
 	updateDbState(tce.nextTransactionId)
 
 	// Send TC Net Rules update message to TC Sidecars for enforcement
-	msg := tce.msgQueue.CreateMsg(mq.MsgTcNetRulesUpdate, mq.ScopeLocal, moduleTcSidecar, tce.sandboxName)
+	msg := tce.mqLocal.CreateMsg(mq.MsgTcNetRulesUpdate, moduleTcSidecar, tce.sandboxName)
 	msg.Payload["transaction-id"] = strconv.Itoa(tce.nextTransactionId)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err := tce.msgQueue.SendMsg(msg)
+	err := tce.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}

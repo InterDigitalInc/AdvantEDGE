@@ -122,7 +122,7 @@ var firstTimePass = true
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
-var msgQueue *mq.MsgQueue
+var mqLocal *mq.MsgQueue
 var handlerId int
 var rc *redis.Connector
 var metricStore *ms.MetricStore
@@ -210,7 +210,7 @@ func initMeepSidecar() (err error) {
 	log.Info("MEEP_SCENARIO_NAME: ", scenarioName)
 
 	// Create message queue
-	msgQueue, err = mq.NewMsgQueue(moduleName, sandboxName, redisAddr)
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -256,8 +256,8 @@ func runMeepSidecar() (err error) {
 	refreshLbRules()
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
-	handlerId, err = msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err

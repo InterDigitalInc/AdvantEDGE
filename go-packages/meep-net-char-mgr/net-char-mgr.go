@@ -83,7 +83,7 @@ type NetCharManager struct {
 	rc               *redis.Connector
 	mutex            sync.Mutex
 	config           NetCharConfig
-	msgQueue         *mq.MsgQueue
+	mqLocal          *mq.MsgQueue
 	activeModel      *mod.Model
 	netCharUpdateCb  NetCharUpdateCb
 	updateCompleteCb UpdateCompleteCb
@@ -107,7 +107,7 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	ncm.config.RecalculationPeriod = defaultTickerPeriod
 
 	// Create message queue
-	ncm.msgQueue, err = mq.NewMsgQueue(name, namespace, redisAddr)
+	ncm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(namespace), name, namespace, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return nil, err
@@ -138,8 +138,8 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	log.Info("Connected to Control Listener redis DB")
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: ncm.msgHandler, UserData: nil}
-	ncm.handlerId, err = ncm.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: ncm.msgHandler, UserData: nil}
+	ncm.handlerId, err = ncm.mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return nil, err

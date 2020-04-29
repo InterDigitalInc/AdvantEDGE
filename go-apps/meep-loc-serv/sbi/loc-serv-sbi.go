@@ -32,7 +32,7 @@ const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type LocServSbi struct {
 	sandboxName             string
-	msgQueue                *mq.MsgQueue
+	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
 	updateUserInfoCB        func(string, string, string)
@@ -60,7 +60,7 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 	log.Info("MEEP_SANDBOX_NAME: ", sbi.sandboxName)
 
 	// Create message queue
-	sbi.msgQueue, err = mq.NewMsgQueue(moduleName, sbi.sandboxName, redisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -90,8 +90,8 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 func Run() (err error) {
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeLocal, Handler: msgHandler, UserData: nil}
-	sbi.handlerId, err = sbi.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err

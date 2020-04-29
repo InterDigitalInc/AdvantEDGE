@@ -31,7 +31,7 @@ type Pinger struct {
 	namespace string
 	isStarted bool
 	pongMsg   string
-	msgQueue  *mq.MsgQueue
+	mqGlobal  *mq.MsgQueue
 	handlerId int
 }
 
@@ -54,7 +54,7 @@ func NewPinger(name string, namespace string, dbAddr string) (p *Pinger, err err
 	p.isStarted = false
 
 	// Create message queue
-	p.msgQueue, err = mq.NewMsgQueue(p.name, p.namespace, dbAddr)
+	p.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), p.name, p.namespace, dbAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return nil, err
@@ -68,8 +68,8 @@ func NewPinger(name string, namespace string, dbAddr string) (p *Pinger, err err
 func (p *Pinger) Start() (err error) {
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeGlobal, Handler: p.msgHandler, UserData: nil}
-	p.handlerId, err = p.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: p.msgHandler, UserData: nil}
+	p.handlerId, err = p.mqGlobal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to register message handler: ", err.Error())
 		return err
@@ -83,7 +83,7 @@ func (p *Pinger) Start() (err error) {
 func (p *Pinger) Stop() (err error) {
 	if p.isStarted {
 		p.isStarted = false
-		p.msgQueue.UnregisterHandler(p.handlerId)
+		p.mqGlobal.UnregisterHandler(p.handlerId)
 		log.Debug("Pinger stopped: ", p.name)
 	}
 	return nil
@@ -97,10 +97,10 @@ func (p *Pinger) msgHandler(msg *mq.Msg, userData interface{}) {
 		pingMsg := strings.TrimPrefix(msg.Payload["data"], pingPrefix)
 
 		// Pong
-		pongMsg := p.msgQueue.CreateMsg(mq.MsgPong, msg.Scope, msg.SrcName, msg.SrcNamespace)
+		pongMsg := p.mqGlobal.CreateMsg(mq.MsgPong, msg.SrcName, msg.SrcNamespace)
 		pongMsg.Payload["data"] = pongPrefix + pingMsg
 		log.Trace("TX MSG: ", mq.PrintMsg(msg))
-		err := p.msgQueue.SendMsg(pongMsg)
+		err := p.mqGlobal.SendMsg(pongMsg)
 		if err != nil {
 			log.Error("Failed to send message. Error: ", err.Error())
 		}
@@ -121,10 +121,10 @@ func (p *Pinger) Ping(name string, namespace string, txStr string) (alive bool) 
 		return false
 	}
 	// Ping
-	msg := p.msgQueue.CreateMsg(mq.MsgPing, mq.ScopeGlobal, name, namespace)
+	msg := p.mqGlobal.CreateMsg(mq.MsgPing, name, namespace)
 	msg.Payload["data"] = pingPrefix + txStr
 	log.Trace("TX MSG: ", mq.PrintMsg(msg))
-	err := p.msgQueue.SendMsg(msg)
+	err := p.mqGlobal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 		return alive

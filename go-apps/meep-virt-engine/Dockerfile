@@ -14,8 +14,13 @@
 
 FROM debian:9.6-slim
 
-COPY ./sandbox /templates/sandbox
-COPY ./scenario /templates/scenario
+COPY ./meep-loc-serv /templates/sandbox/meep-loc-serv
+COPY ./meep-metrics-engine /templates/sandbox/meep-metrics-engine
+COPY ./meep-mg-manager /templates/sandbox/meep-mg-manager
+COPY ./meep-rnis /templates/sandbox/meep-rnis
+COPY ./meep-sandbox-ctrl /templates/sandbox/meep-sandbox-ctrl
+COPY ./meep-tc-engine /templates/sandbox/meep-tc-engine
+COPY ./meep-virt-chart-templates /templates/scenario/meep-virt-chart-templates
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
 

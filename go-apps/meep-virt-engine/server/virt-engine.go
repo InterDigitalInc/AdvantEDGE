@@ -38,7 +38,7 @@ const moduleNamespace string = "default"
 
 type VirtEngine struct {
 	wdPinger           *wd.Pinger
-	msgQueue           *mq.MsgQueue
+	mqGlobal           *mq.MsgQueue
 	modelCfg           mod.ModelCfg
 	activeModel        *mod.Model
 	activeScenarioName string
@@ -65,7 +65,7 @@ func Init() (err error) {
 	log.Info("MEEP_ROOT_URL: ", ve.rootUrl)
 
 	// Create message queue
-	ve.msgQueue, err = mq.NewMsgQueue(moduleName, moduleNamespace, redisAddr)
+	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -114,8 +114,8 @@ func Run() (err error) {
 	log.Debug("Starting MEEP Virtualization Engine")
 
 	// Register Message Queue handler
-	handler := mq.MsgHandler{Scope: mq.ScopeGlobal, Handler: msgHandler, UserData: nil}
-	ve.handlerId, err = ve.msgQueue.RegisterHandler(handler)
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	ve.handlerId, err = ve.mqGlobal.RegisterHandler(handler)
 	if err != nil {
 		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err

@@ -46,7 +46,8 @@ type Scenario struct {
 
 type SandboxCtrl struct {
 	sandboxName   string
-	msgQueue      *mq.MsgQueue
+	mqGlobal      *mq.MsgQueue
+	mqLocal       *mq.MsgQueue
 	scenarioStore *couch.Connector
 	replayStore   *couch.Connector
 	modelCfg      mod.ModelCfg
@@ -77,7 +78,7 @@ var sbxCtrl *SandboxCtrl
 func Init() (err error) {
 	log.Debug("Init")
 
-	// Create new Platform Controller
+	// Create new Sandbox Controller
 	sbxCtrl = new(SandboxCtrl)
 
 	// Retrieve Sandbox name from environment variable
@@ -89,13 +90,21 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sbxCtrl.sandboxName)
 
-	// Create message queue
-	sbxCtrl.msgQueue, err = mq.NewMsgQueue(moduleName, sbxCtrl.sandboxName, redisDBAddr)
+	// Create Global message queue
+	sbxCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, sbxCtrl.sandboxName, redisDBAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
 	}
-	log.Info("Message Queue created")
+	log.Info("Global Message Queue created")
+
+	// Create Local message queue
+	sbxCtrl.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbxCtrl.sandboxName), moduleName, sbxCtrl.sandboxName, redisDBAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Local Message Queue created")
 
 	// Create new active scenario model
 	sbxCtrl.modelCfg = mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: activeScenarioUpdateCb, DbAddr: mod.DbAddress}
@@ -215,10 +224,19 @@ func activateScenario(scenarioName string) (err error) {
 		return err
 	}
 
-	// Send Activation message
-	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioActivate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	// Send Activation message to Virt Engine on Global Message Queue
+	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = sbxCtrl.msgQueue.SendMsg(msg)
+	err = sbxCtrl.mqGlobal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+		return err
+	}
+
+	// Send Activation message on local Message Queue
+	msg = sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, sbxCtrl.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 		return err
@@ -287,10 +305,18 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send Activation message
-	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioActivate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	// Send Activation message to Virt Engine on Global Message Queue
+	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = sbxCtrl.msgQueue.SendMsg(msg)
+	err = sbxCtrl.mqGlobal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
+
+	// Send Activation message on local Message Queue
+	msg = sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, sbxCtrl.sandboxName)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -451,10 +477,18 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send Terminate message
-	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioTerminate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+	// Send Terminate message on local Message Queue
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, sbxCtrl.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = sbxCtrl.msgQueue.SendMsg(msg)
+	err = sbxCtrl.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
+
+	// Send Terminate message to Virt Engine on Global Message Queue
+	msg = sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, mq.TargetAll)
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
@@ -1000,9 +1034,11 @@ func ceStopReplayFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func activeScenarioUpdateCb() {
-	msg := sbxCtrl.msgQueue.CreateMsg(mq.MsgScenarioUpdate, mq.ScopeAll, mq.TargetAll, mq.TargetAll)
+
+	// Send Update message on local Message Queue
+	msg := sbxCtrl.mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, sbxCtrl.sandboxName)
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err := sbxCtrl.msgQueue.SendMsg(msg)
+	err := sbxCtrl.mqLocal.SendMsg(msg)
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
