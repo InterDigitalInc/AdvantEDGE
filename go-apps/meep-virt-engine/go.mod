@@ -7,7 +7,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 )
 

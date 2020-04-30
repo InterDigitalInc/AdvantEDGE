@@ -26,7 +26,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -36,13 +35,17 @@ const retryTimerDuration = 10000
 const moduleName string = "meep-virt-engine"
 const moduleNamespace string = "default"
 
+// MQ payload fields
+const fieldSandboxName = "sandbox-name"
+
+// const fieldScenarioName = "scenario-name"
+
 type VirtEngine struct {
 	wdPinger           *wd.Pinger
 	mqGlobal           *mq.MsgQueue
 	modelCfg           mod.ModelCfg
 	activeModel        *mod.Model
 	activeScenarioName string
-	sandboxStore       *redis.Connector
 	sandboxName        string
 	rootUrl            string
 	handlerId          int
@@ -72,14 +75,8 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
-	// Model configuration
-	ve.modelCfg = mod.ModelCfg{
-		Name:   moduleName,
-		Module: moduleName,
-		DbAddr: redisAddr,
-	}
-
 	// Create new Model
+	ve.modelCfg = mod.ModelCfg{Name: moduleName, Module: moduleName, DbAddr: redisAddr}
 	ve.activeModel, err = mod.NewModel(ve.modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -97,14 +94,6 @@ func Init() (err error) {
 		log.Error("Failed watchdog client listen. Error: ", err)
 		return err
 	}
-
-	// Connect to Sandbox Store
-	ve.sandboxStore, err = redis.NewConnector(redisAddr, 0)
-	if err != nil {
-		log.Error("Failed connection to Redis: ", err)
-		return err
-	}
-	log.Info("Connected to Sandbox Store DB")
 
 	return nil
 }
@@ -129,10 +118,10 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
 	case mq.MsgSandboxCreate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		createSandbox(msg.Payload["sandboxName"])
+		createSandbox(msg.Payload[fieldSandboxName])
 	case mq.MsgSandboxDestroy:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		destroySandbox(msg.Payload["sandboxName"])
+		destroySandbox(msg.Payload[fieldSandboxName])
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		activateScenario()

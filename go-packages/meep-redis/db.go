@@ -96,7 +96,7 @@ func (rc *Connector) DBFlush(module string) error {
 
 	// Find all module keys
 	// Process in chunks of 50 matching entries to optimize processing speed & memory
-	keyMatchStr := module + ":*"
+	keyMatchStr := module + "*"
 	for {
 		var keys []string
 		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()

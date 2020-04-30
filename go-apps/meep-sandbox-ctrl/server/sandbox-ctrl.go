@@ -36,8 +36,8 @@ import (
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 )
 
 type Scenario struct {
@@ -54,13 +54,12 @@ type SandboxCtrl struct {
 	activeModel   *mod.Model
 	metricStore   *ms.MetricStore
 	replayMgr     *replay.ReplayMgr
-	sandboxStore  *redis.Connector
+	sandboxStore  *ss.SandboxStore
 }
 
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
 const moduleName = "meep-sandbox-ctrl"
-const platformModuleName = "meep-platform-ctrl"
 const eventTypeMobility = "MOBILITY"
 const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
@@ -145,12 +144,12 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	sbxCtrl.sandboxStore, err = redis.NewConnector(redisDBAddr, 0)
+	sbxCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
 	if err != nil {
-		log.Error("Failed connection to Redis: ", err)
+		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Sandbox Store DB")
+	log.Info("Connected to Sandbox Store")
 
 	return nil
 }
@@ -159,16 +158,15 @@ func Init() (err error) {
 func Run() (err error) {
 
 	// Activate scenario on sandbox startup if required, otherwise wait for activation request
-	key := platformModuleName + ":sandboxes:" + sbxCtrl.sandboxName
-	fields, err := sbxCtrl.sandboxStore.GetEntry(key)
-	if err == nil {
-		scenarioName := fields["scenarioName"]
-		err = activateScenario(scenarioName)
-		if err != nil {
-			log.Error("Failed to activate scenario with err: ", err.Error())
-		} else {
-			log.Info("Successfully activated scenario: ", scenarioName)
-			_ = httpLog.ReInit(moduleName, scenarioName)
+	if sbox, err := sbxCtrl.sandboxStore.Get(sbxCtrl.sandboxName); err == nil && sbox != nil {
+		if sbox.ScenarioName != "" {
+			err = activateScenario(sbox.ScenarioName)
+			if err != nil {
+				log.Error("Failed to activate scenario with err: ", err.Error())
+			} else {
+				log.Info("Successfully activated scenario: ", sbox.ScenarioName)
+				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName)
+			}
 		}
 	}
 
