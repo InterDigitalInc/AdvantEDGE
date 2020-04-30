@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-export const HOST_PATH = location.origin;
-// export const HOST_PATH = 'http://10.3.16.105';
-export const SANDBOX_NAME = 'sbox-1';
-
 // MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
@@ -108,10 +104,6 @@ export const CFG_ELEM_PLACEMENT_ID = 'cfg-elem-placement-id';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
-export const CFG_ELEM_MNC = 'cfg-elem-mnc';
-export const CFG_ELEM_MCC = 'cfg-elem-mcc';
-export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
-export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
@@ -151,13 +143,10 @@ export const EXEC_EVT_REPLAY_FILES = 'exec-evt-replay-files';
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';
 
 export const DOMAIN_TYPE_STR = 'OPERATOR';
-export const DOMAIN_CELL_TYPE_STR = 'OPERATOR-CELL';
 export const PUBLIC_DOMAIN_TYPE_STR = 'PUBLIC';
 export const ZONE_TYPE_STR = 'ZONE';
 export const COMMON_ZONE_TYPE_STR = 'COMMON';
 export const NL_TYPE_STR = 'POA';
-export const POA_TYPE_STR = 'POA';
-export const POA_CELL_TYPE_STR = 'POA-CELL';
 export const DEFAULT_NL_TYPE_STR = 'DEFAULT';
 export const UE_TYPE_STR = 'UE';
 export const FOG_TYPE_STR = 'FOG';
@@ -171,12 +160,8 @@ export const CLOUD_APP_TYPE_STR = 'CLOUD-APP';
 
 export const ELEMENT_TYPE_SCENARIO = 'SCENARIO';
 export const ELEMENT_TYPE_OPERATOR = 'OPERATOR';
-export const ELEMENT_TYPE_OPERATOR_GENERIC = 'OPERATOR GENERIC';
-export const ELEMENT_TYPE_OPERATOR_CELL = 'OPERATOR CELLULAR';
 export const ELEMENT_TYPE_ZONE = 'ZONE';
 export const ELEMENT_TYPE_POA = 'POA';
-export const ELEMENT_TYPE_POA_GENERIC = 'POA GENERIC';
-export const ELEMENT_TYPE_POA_CELL = 'POA CELLULAR';
 export const ELEMENT_TYPE_DC = 'DISTANT CLOUD';
 export const ELEMENT_TYPE_CN = 'CORE NETWORK';
 export const ELEMENT_TYPE_EDGE = 'EDGE';
@@ -269,10 +254,18 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Network Metrics Point-to-Point',
-    value: HOST_PATH + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: location.origin + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Network Metrics Aggregation',
-    value: HOST_PATH + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: location.origin + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Http REST API Logs Aggregation',
+    value: location.origin + '/grafana/d/3/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Http REST API Single Detailed Log',
+    value: location.origin + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light<exec><vars>'
   }
 ];
