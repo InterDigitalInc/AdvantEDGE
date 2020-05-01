@@ -40,8 +40,7 @@ persistentVolume:
     - ReadWriteOnce
   size: 10Gi
   reclaimPolicy: Retain
-  #location: "<WORKDIR>/couchdb"
-  location: "/home/englab/.meep/omt"
+  location: "<WORKDIR>/omt"
 
 persistentVolumeClaim:
   # set to true to use pvc

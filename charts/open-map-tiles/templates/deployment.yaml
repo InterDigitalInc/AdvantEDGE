@@ -44,8 +44,8 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "open-map-tiles.fullname" . }}
 {{- end }}
-{{- with .Values.affinity }}
       terminationGracePeriodSeconds: 5
+{{- if .Values.affinity }}
       affinity:
-{{- toYaml .Values.affinity | nindent 8 }}
+{{- toYaml .Values.affinity | indent 8 }}
 {{- end }}
