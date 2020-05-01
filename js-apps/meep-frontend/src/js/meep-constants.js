@@ -277,10 +277,10 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Http REST API Logs Aggregation',
-    value: HOST_PATH + '/grafana/d/3/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/3/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light'
   },
   {
     label: 'Http REST API Single Detailed Log',
-    value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light'
   }
 ];

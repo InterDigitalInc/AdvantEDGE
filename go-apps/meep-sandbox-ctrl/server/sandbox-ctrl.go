@@ -168,6 +168,7 @@ func Run() (err error) {
 			log.Error("Failed to activate scenario with err: ", err.Error())
 		} else {
 			log.Info("Successfully activated scenario: ", scenarioName)
+			_ = httpLog.ReInit(moduleName, scenarioName)
 		}
 	}
 
@@ -289,8 +290,6 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = httpLog.ReInit(moduleName, scenarioName)
-
 	// Activate scenario & publish
 	err = sbxCtrl.activeModel.SetScenario(scenario)
 	if err != nil {
@@ -304,6 +303,8 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	_ = httpLog.ReInit(moduleName, scenarioName)
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
