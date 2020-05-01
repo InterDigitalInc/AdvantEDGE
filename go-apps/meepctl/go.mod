@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client v0.0.0
 	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
@@ -14,4 +14,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.2
 )
 
-replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client => ../../go-packages/meep-ctrl-engine-client
+replace github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client => ../../go-packages/meep-sandbox-ctrl-client

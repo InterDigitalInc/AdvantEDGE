@@ -19,13 +19,14 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 
 	"github.com/ghodss/yaml"
 	"k8s.io/api/admission/v1beta1"
@@ -39,7 +40,7 @@ import (
 
 const meepOrigin = "scenario"
 
-// Active scenarion name
+// Active scenario name
 var activeScenarioName string
 
 var (
@@ -77,18 +78,26 @@ func init() {
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-	// MEEP Ctrl Engine active scenario update Channel
-	// case channelCtrlActive:
-	case model.ActiveChannel:
-		log.Debug("Event received on channel: ", model.ActiveChannel, " payload: ", payload)
-		// processActiveScenarioUpdate()
-		activeScenarioName = model.GetScenarioName()
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processScenarioChange()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processScenarioChange()
 	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
+}
+
+func processScenarioChange() {
+	// Sync model with data store
+	model.UpdateScenario()
+
+	// Update Active scenrio name
+	activeScenarioName = model.GetScenarioName()
 }
 
 func loadConfig(configFile string) (*Config, error) {
@@ -103,21 +112,18 @@ func loadConfig(configFile string) (*Config, error) {
 	return &cfg, nil
 }
 
-// Retrieve App Name from provided network element name string, if any
-func getAppName(name string) string {
-	names := bytes.Split([]byte(name), []byte("meep-"+activeScenarioName+"-"))
-	if len(names) != 2 {
-		return ""
-	}
-	return string(names[1])
+// Determine if resource is part of the active scenario
+func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
+	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+activeScenarioName+"-")
 }
 
-func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string) (patch []byte, err error) {
+func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
 
 	// Apply labels
 	newLabels := make(map[string]string)
 	newLabels["meepApp"] = meepAppName
 	newLabels["meepOrigin"] = meepOrigin
+	newLabels["meepSandbox"] = sandboxName
 	newLabels["meepScenario"] = activeScenarioName
 	newLabels["processId"] = meepAppName
 
@@ -126,6 +132,9 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	var envVar corev1.EnvVar
 	envVar.Name = "MEEP_POD_NAME"
 	envVar.Value = meepAppName
+	envVars = append(envVars, envVar)
+	envVar.Name = "MEEP_SANDBOX_NAME"
+	envVar.Value = sandboxName
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SCENARIO_NAME"
 	envVar.Value = activeScenarioName
@@ -226,6 +235,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 
 	// Retrieve resource-specific information
 	var resourceName string
+	var releaseName string
 	var template corev1.PodTemplateSpec
 
 	switch req.Kind.Kind {
@@ -240,9 +250,10 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 				},
 			}
 		}
-		log.Info("Deployment Name: ", deployment.Name)
 		resourceName = deployment.Name
+		releaseName = deployment.Labels["release"]
 		template = deployment.Spec.Template
+		log.Info("Deployment Name: ", resourceName, " Release: ", releaseName)
 
 	case "StatefulSet":
 		// Unmarshal StatefulSet
@@ -255,9 +266,10 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 				},
 			}
 		}
-		log.Info("StatefulSet Name: ", statefulset.Name)
 		resourceName = statefulset.Name
+		releaseName = statefulset.Labels["release"]
 		template = statefulset.Spec.Template
+		log.Info("StatefulSet Name: ", resourceName, " Release: ", releaseName)
 
 	default:
 		log.Info("Unsupported admission request Kind[", req.Kind.Kind, "]")
@@ -266,18 +278,16 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 		}
 	}
 
-	// Retrieve App Name from resource name
-	meepAppName := getAppName(resourceName)
-	if meepAppName == "" {
+	// Determine if resource is part of the active scenario
+	if !isScenarioResource(releaseName, req.Namespace, activeScenarioName) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
 		}
 	}
-	log.Info("MEEP App Name: ", meepAppName)
 
 	// Get sidecar patch
-	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, meepAppName)
+	patch, err := getSidecarPatch(template, whsvr.sidecarConfig, resourceName, req.Namespace)
 	if err != nil {
 		return &v1beta1.AdmissionResponse{
 			Result: &metav1.Status{

@@ -1,13 +1,50 @@
-# Default values for meep-ctrl-engine.
+# Default values for meep-virt-engine.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: default
+serviceAccount: meep-virt-engine
 
-service:
-  ip: 10.3.16.136
+deployment:
+  replicas: 1
   port: 80
-  targetPort: 30219
   protocol: TCP
 
-meepOrigin: core  
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+
+image:
+  repository: meep-docker-registry:30001/meep-virt-engine
+  tag: latest
+  pullPolicy: Always      
+  env:
+    rooturl: "http://www.example.com"
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistence:
+  enabled: true
+  accessMode: 'ReadWriteOnce'
+  reclaimPolicy: Retain
+  size: 5Gi
+  location: ''
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If set to "fullname", storageClassName: <template fullname>
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: '-'
+  storageClass: 'fullname'
+
+codecov:
+  enabled: false
+  
+meepOrigin: core

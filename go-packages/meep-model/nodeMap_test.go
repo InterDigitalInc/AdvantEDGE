@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
@@ -30,7 +30,7 @@ func TestNodeMapDomains(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create a scenario structure")
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err := json.Unmarshal([]byte(testScenario), scenario)
 	if err != nil {
 		t.Errorf("Unable to unmarshall scenario")
@@ -83,21 +83,21 @@ func TestNodeMapDomains(t *testing.T) {
 	}
 	// Change an object field via the node
 	testID := "new-test-id"
-	objPtr := n.object.(*ceModel.Domain)
+	objPtr := n.object.(*dataModel.Domain)
 	////fmt.Printf("  node.object ptr %p\n%+v\n", objPtr, *objPtr)
 	objPtr.Id = testID
 	if scenario.Deployment.Domains[1].Id != testID {
 		t.Errorf("Failed changing domain id")
 	}
 	// Change a child field via the node
-	childPtr := n.child.(*[]ceModel.Zone)
+	childPtr := n.child.(*[]dataModel.Zone)
 	//fmt.Printf("  node.child ptr %p\n%+v\n", childPtr, *childPtr)
 	(*childPtr)[0].Id = testID
 	if scenario.Deployment.Domains[1].Zones[0].Id != testID {
 		t.Errorf("Failed changing zone[0] id")
 	}
 	// Change a parent field via the node
-	parentPtr := n.parent.(*ceModel.Deployment)
+	parentPtr := n.parent.(*dataModel.Deployment)
 	//fmt.Printf("  node.parent ptr %p\n%+v\n", parentPtr, *parentPtr)
 	parentPtr.InterDomainLatency = 500
 	if scenario.Deployment.InterDomainLatency != 500 {
@@ -115,7 +115,7 @@ func TestNodeMapZone(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create a scenario structure")
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err := json.Unmarshal([]byte(testScenario), scenario)
 	if err != nil {
 		t.Errorf("Unable to unmarshall scenario")
@@ -159,21 +159,21 @@ func TestNodeMapZone(t *testing.T) {
 
 	// Change an object field via the node
 	testID := "new-test-id"
-	objPtr := n.object.(*ceModel.Zone)
+	objPtr := n.object.(*dataModel.Zone)
 	//fmt.Printf("  node.object ptr %p\n%+v\n", objPtr, *objPtr)
 	objPtr.Id = testID
 	if domain.Zones[1].Id != testID {
 		t.Errorf("Failed changing zone id")
 	}
 	// Change a child field via the node
-	childPtr := n.child.(*[]ceModel.NetworkLocation)
+	childPtr := n.child.(*[]dataModel.NetworkLocation)
 	//fmt.Printf("  node.child ptr %p\n%+v\n", childPtr, *childPtr)
 	(*childPtr)[0].Id = testID
 	if domain.Zones[1].NetworkLocations[0].Id != testID {
 		t.Errorf("Failed changing NetworkLocation[0] id")
 	}
 	// Change a parent field via the node
-	parentPtr := n.parent.(*ceModel.Domain)
+	parentPtr := n.parent.(*dataModel.Domain)
 	//fmt.Printf("  node.parent ptr %p\n%+v\n", parentPtr, *parentPtr)
 	parentPtr.Id = testID
 	if domain.Id != testID {
@@ -191,7 +191,7 @@ func TestNodeMapNetworkLocation(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create a scenario structure")
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err := json.Unmarshal([]byte(testScenario), scenario)
 	if err != nil {
 		t.Errorf("Unable to unmarshall scenario")
@@ -235,21 +235,21 @@ func TestNodeMapNetworkLocation(t *testing.T) {
 
 	// Change an object field via the node
 	testID := "new-test-id"
-	objPtr := n.object.(*ceModel.NetworkLocation)
+	objPtr := n.object.(*dataModel.NetworkLocation)
 	//fmt.Printf("  node.object ptr %p\n%+v\n", objPtr, *objPtr)
 	objPtr.Id = testID
 	if zone.NetworkLocations[1].Id != testID {
 		t.Errorf("Failed changing NL id")
 	}
 	// Change a child field via the node
-	childPtr := n.child.(*[]ceModel.PhysicalLocation)
+	childPtr := n.child.(*[]dataModel.PhysicalLocation)
 	//fmt.Printf("  node.child ptr %p\n%+v\n", childPtr, *childPtr)
 	(*childPtr)[0].Id = testID
 	if zone.NetworkLocations[1].PhysicalLocations[0].Id != testID {
 		t.Errorf("Failed changing PL[0] id")
 	}
 	// Change a parent field via the node
-	parentPtr := n.parent.(*ceModel.Zone)
+	parentPtr := n.parent.(*dataModel.Zone)
 	//fmt.Printf("  node.parent ptr %p\n%+v\n", parentPtr, *parentPtr)
 	parentPtr.Id = testID
 	if zone.Id != testID {
@@ -267,7 +267,7 @@ func TestNodeMapPhysicalLocation(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create a scenario structure")
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err := json.Unmarshal([]byte(testScenario), scenario)
 	if err != nil {
 		t.Errorf("Unable to unmarshall scenario")
@@ -311,21 +311,21 @@ func TestNodeMapPhysicalLocation(t *testing.T) {
 
 	// Change an object field via the node
 	testID := "new-test-id"
-	objPtr := n.object.(*ceModel.PhysicalLocation)
+	objPtr := n.object.(*dataModel.PhysicalLocation)
 	//fmt.Printf("  node.object ptr %p\n%+v\n", objPtr, *objPtr)
 	objPtr.Id = testID
 	if nl.PhysicalLocations[1].Id != testID {
 		t.Errorf("Failed changing PL id")
 	}
 	// Change a child field via the node
-	childPtr := n.child.(*[]ceModel.Process)
+	childPtr := n.child.(*[]dataModel.Process)
 	//fmt.Printf("  node.child ptr %p\n%+v\n", childPtr, *childPtr)
 	(*childPtr)[0].Id = testID
 	if nl.PhysicalLocations[1].Processes[0].Id != testID {
 		t.Errorf("Failed changing Process[0] id")
 	}
 	// Change a parent field via the node
-	parentPtr := n.parent.(*ceModel.NetworkLocation)
+	parentPtr := n.parent.(*dataModel.NetworkLocation)
 	//fmt.Printf("  node.parent ptr %p\n%+v\n", parentPtr, *parentPtr)
 	parentPtr.Id = testID
 	if nl.Id != testID {
@@ -343,7 +343,7 @@ func TestNodeMapProcess(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create a scenario structure")
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err := json.Unmarshal([]byte(testScenario), scenario)
 	if err != nil {
 		t.Errorf("Unable to unmarshall scenario")
@@ -387,14 +387,14 @@ func TestNodeMapProcess(t *testing.T) {
 
 	// Change an object field via the node
 	testID := "new-test-id"
-	objPtr := n.object.(*ceModel.Process)
+	objPtr := n.object.(*dataModel.Process)
 	//fmt.Printf("  node.object ptr %p\n%+v\n", objPtr, *objPtr)
 	objPtr.Id = testID
 	if pl.Processes[1].Id != testID {
 		t.Errorf("Failed changing Process id")
 	}
 	// Change a parent field via the node
-	parentPtr := n.parent.(*ceModel.PhysicalLocation)
+	parentPtr := n.parent.(*dataModel.PhysicalLocation)
 	//fmt.Printf("  node.parent ptr %p\n%+v\n", parentPtr, *parentPtr)
 	parentPtr.Id = testID
 	if pl.Id != testID {

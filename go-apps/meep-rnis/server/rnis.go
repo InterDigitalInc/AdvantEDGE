@@ -41,7 +41,7 @@ const moduleRNIS string = "rnis"
 const logModuleRNIS string = "meep-rnis"
 
 //const module string = "rnis"
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const cellChangeSubscriptionType = "cell_change"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}

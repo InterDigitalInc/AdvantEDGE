@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -29,109 +30,155 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dockerizeCmd represents the dockerize command
-var dockerizeCmd = &cobra.Command{
-	Use:   "dockerize <targets>",
-	Short: "Dockerize core components",
-	Long: `Dockerize core components
+type DockerizeData struct {
+	registry      string
+	gitdir        string
+	coreGoApps    []string
+	sandboxGoApps []string
+}
+
+const dockerizeDesc = `Dockerize core components
 
 AdvantEDGE is composed of a collection of micro-services.
 
 Dockerize command genrates AdvantEDGE Docker images and stores them in
 the local Docker registry.
-Multiple targets can be specified (e.g. meepctl dockerize <target1> <target2>...)
+Multiple targets can be specified (e.g. meepctl dockerize <target1> <target2>...)`
 
-Valid targets:`,
-	Example: `  # Dockerize all components
+const dockerizeExample = `  # Dockerize all components
   meepctl dockerize all
-  # Dockerize meep-ctrl-engine component only
-  meepctl dockerize meep-ctrl-engine`,
+  # Dockerize meep-platform-ctrl component only
+  meepctl dockerize meep-platform-ctrl`
+
+// dockerizeCmd represents the dockerize command
+var dockerizeCmd = &cobra.Command{
+	Use:       "dockerize <targets>",
+	Short:     "Dockerize core components",
+	Long:      dockerizeDesc,
+	Example:   dockerizeExample,
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"all", "meep-ctrl-engine", "meep-webhook", "meep-mg-manager", "meep-mon-engine", "meep-rnis", "meep-loc-serv", "meep-metrics-engine", "meep-tc-engine", "meep-tc-sidecar"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if !utils.ConfigValidate("") {
-			fmt.Println("Fix configuration issues")
-			return
-		}
-
-		targets := args
-		if len(targets) == 0 {
-			fmt.Println("Error: Need to specify at least one target from ", cmd.ValidArgs)
-			fmt.Println("")
-			_ = cmd.Help()
-			return
-		}
-
-		r, _ := cmd.Flags().GetString("registry")
-		v, _ := cmd.Flags().GetBool("verbose")
-		t, _ := cmd.Flags().GetBool("time")
-
-		if v {
-			fmt.Println("Dockerize called")
-			fmt.Println("[arg]  targets:", targets)
-			fmt.Println("[flag] registry:", r)
-			fmt.Println("[flag] verbose:", v)
-			fmt.Println("[flag] time:", t)
-		}
-
-		start := time.Now()
-		if r == "" {
-			r = viper.GetString("meep.registry")
-		}
-		fmt.Println("Using docker registry:", r)
-		for _, target := range targets {
-			if target == "all" {
-				dockerizeAll(r, cmd)
-			} else {
-				dockerize(r, target, cmd)
-			}
-		}
-
-		elapsed := time.Since(start)
-		if t {
-			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-		}
-	},
+	ValidArgs: nil,
+	Run:       dockerizeRun,
 }
+
+var dockerizeData DockerizeData
 
 func init() {
-	var argsStr string
+	// Get targets from repo config file
+	dockerizeData.coreGoApps = utils.GetTargets("repo.core.go-apps")
+	dockerizeData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps")
+
+	// Create the list of valid arguments
+	baseArgs := []string{"all"}
+	configArgs := append(dockerizeData.coreGoApps, dockerizeData.sandboxGoApps...)
+	sort.Strings(configArgs)
+	dockerizeCmd.ValidArgs = append(baseArgs, configArgs...)
+
+	// Add list of arguments to Example usage
+	dockerizeCmd.Example += "\n\nValid Targets:"
 	for _, arg := range dockerizeCmd.ValidArgs {
-		argsStr += "\n  * " + arg
+		dockerizeCmd.Example += "\n  * " + arg
 	}
-	dockerizeCmd.Long += argsStr
 
-	rootCmd.AddCommand(dockerizeCmd)
+	// Set dockerize-specific flags
 	dockerizeCmd.Flags().StringP("registry", "r", "", "Override registry from config file")
+
+	// Add command
+	rootCmd.AddCommand(dockerizeCmd)
 }
 
-func dockerizeAll(registry string, cobraCmd *cobra.Command) {
-	for _, target := range cobraCmd.ValidArgs {
-		if target == "all" {
-			continue
-		}
-		dockerize(registry, target, cobraCmd)
-	}
-}
-
-func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
-	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	gitdir := viper.GetString("meep.gitdir")
-	bindir := gitdir + "/" + target["bin"]
-
-	if len(target) == 0 {
-		fmt.Println("Invalid target:", targetName)
+func dockerizeRun(cmd *cobra.Command, args []string) {
+	if !utils.ConfigValidate("") {
+		fmt.Println("Fix configuration issues")
 		return
 	}
 
+	targets := args
+	if len(targets) == 0 {
+		fmt.Println("Error: Need to specify at least one target")
+		_ = cmd.Usage()
+		return
+	}
+
+	dockerizeData.registry, _ = cmd.Flags().GetString("registry")
+	v, _ := cmd.Flags().GetBool("verbose")
+	t, _ := cmd.Flags().GetBool("time")
+
+	if v {
+		fmt.Println("Dockerize called")
+		fmt.Println("[arg]  targets:", targets)
+		fmt.Println("[flag] registry:", dockerizeData.registry)
+		fmt.Println("[flag] verbose:", v)
+		fmt.Println("[flag] time:", t)
+	}
+
+	start := time.Now()
+
+	// Retrieve registry from config file if not already set
+	if dockerizeData.registry == "" {
+		dockerizeData.registry = viper.GetString("meep.registry")
+	}
+	dockerizeData.registry = strings.TrimSuffix(dockerizeData.registry, "/")
+	fmt.Println("Using docker registry:", dockerizeData.registry)
+
+	// Get config
+	dockerizeData.gitdir = strings.TrimSuffix(viper.GetString("meep.gitdir"), "/")
+
+	// Dockerize microservices
+	for _, target := range targets {
+		if target == "all" {
+			dockerizeAll(cmd)
+		} else {
+			dockerizeTarget(target, cmd)
+		}
+	}
+
+	elapsed := time.Since(start)
+	if t {
+		fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
+	}
+}
+
+func dockerizeAll(cobraCmd *cobra.Command) {
+	for _, target := range dockerizeData.coreGoApps {
+		dockerize(target, "repo.core.go-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range dockerizeData.sandboxGoApps {
+		dockerize(target, "repo.sandbox.go-apps.", cobraCmd)
+		fmt.Println("")
+	}
+}
+
+func dockerizeTarget(targetName string, cobraCmd *cobra.Command) {
+	for _, target := range dockerizeData.coreGoApps {
+		if target == targetName {
+			dockerize(target, "repo.core.go-apps.", cobraCmd)
+			return
+		}
+	}
+	for _, target := range dockerizeData.sandboxGoApps {
+		if target == targetName {
+			dockerize(target, "repo.sandbox.go-apps.", cobraCmd)
+			return
+		}
+	}
+	fmt.Println("Error: Unsupported target: ", targetName)
+}
+
+func dockerize(targetName string, repo string, cobraCmd *cobra.Command) {
+	verbose, _ := cobraCmd.Flags().GetBool("verbose")
+	bindir := dockerizeData.gitdir + "/" + utils.RepoCfg.GetString(repo+targetName+".bin")
+	fmt.Println("--", targetName, "--")
+
 	// copy container data locally
-	data := utils.RepoCfg.GetStringMapString("repo.core." + targetName + ".docker-data")
+	fmt.Println("   + copy docker data")
+	data := utils.RepoCfg.GetStringMapString(repo + targetName + ".docker-data")
 	var err error
 	if len(data) != 0 {
 		for k, v := range data {
 			dstDataDir := bindir + "/" + k
-			srcDataDir := gitdir + "/" + v
+			srcDataDir := dockerizeData.gitdir + "/" + v
 			if _, err = os.Stat(srcDataDir); !os.IsNotExist(err) {
 				if verbose {
 					fmt.Println("    Using: " + srcDataDir + " --> " + dstDataDir)
@@ -140,38 +187,43 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 				_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 				cmd = exec.Command("cp", "-r", srcDataDir, dstDataDir)
 				_, err = utils.ExecuteCmd(cmd, cobraCmd)
+				if err != nil {
+					fmt.Println("Error: Failed to copy data: ", srcDataDir, " --> ", dstDataDir)
+					return
+				}
 			} else {
-				fmt.Println("    Source data not found: " + srcDataDir + " --> " + dstDataDir)
-			}
-		}
-	}
-
-	if err != nil {
-		fmt.Println("Error dockerizing ", targetName)
-	} else {
-		// Obtain checksum of bin folder contents to add as a label in docker image
-		path := gitdir + "/" + target["bin"]
-		cmd := exec.Command("/bin/sh", "-c", "find "+path+" -type f | xargs sha256sum | sort | sha256sum")
-		output, _ := utils.ExecuteCmd(cmd, cobraCmd)
-		checksum := strings.Split(output, " ")
-
-		// dockerize & push to private meep docker registry
-		fmt.Println("dockerizing", targetName)
-		if registry != "" {
-			tag := registry + "/" + targetName
-			cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, path)
-			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-			cmd = exec.Command("docker", "push", tag)
-			_, err := utils.ExecuteCmd(cmd, cobraCmd)
-			if err != nil {
-				fmt.Println("Failed to push", tag, " Error:", err)
+				fmt.Println("Error: Source data not found: ", srcDataDir, " --> ", dstDataDir)
 				return
 			}
-		} else {
-			cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, path)
-			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
+
+	// Obtain checksum of bin folder contents to add as a label in docker image
+	cmd := exec.Command("/bin/sh", "-c", "find "+bindir+" -type f | xargs sha256sum | sort | sha256sum")
+	output, _ := utils.ExecuteCmd(cmd, cobraCmd)
+	checksum := strings.Split(output, " ")
+
+	// dockerize & push to private meep docker registry
+	fmt.Println("   + dockerize " + targetName)
+	if dockerizeData.registry != "" {
+		tag := dockerizeData.registry + "/" + targetName
+		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", tag, bindir)
+		_, err = utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error: Failed to dockerize ", tag, " with error: ", err)
+			return
+		}
+		cmd = exec.Command("docker", "push", tag)
+		_, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			fmt.Println("Error: Failed to push ", tag, " with error: ", err)
+			return
+		}
+	} else {
+		cmd := exec.Command("docker", "build", "--no-cache", "--rm", "--label", "MeepVersion="+checksum[0], "-t", targetName, bindir)
+		_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+	}
+
 	// cleanup data
 	if len(data) != 0 {
 		for k := range data {
@@ -180,5 +232,4 @@ func dockerize(registry string, targetName string, cobraCmd *cobra.Command) {
 			_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 		}
 	}
-
 }

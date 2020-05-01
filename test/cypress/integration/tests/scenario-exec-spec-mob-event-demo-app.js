@@ -110,6 +110,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     cy.log('Create 2nd Mobility event');
@@ -132,6 +133,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     cy.log('Create 3rd Mobility event');
@@ -154,6 +156,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     cy.log('Create 4th Mobility event');
@@ -176,6 +179,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     cy.log('Create 5th Mobility event');
@@ -198,6 +202,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     cy.log('Create 6th Mobility event');
@@ -222,6 +227,7 @@ describe('Scenario Execution', function () {
 
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
 
     // Test events
     // Terminate demo scenario
@@ -262,6 +268,7 @@ describe('Scenario Execution', function () {
     // Go to execution page
     cy.log('Go to execution page');
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);

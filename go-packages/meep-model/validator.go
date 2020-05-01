@@ -20,7 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
 	"github.com/blang/semver"
@@ -41,7 +41,7 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 	var scenarioVersion semver.Version
 
 	// Unmarshal scenario
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err = json.Unmarshal(jsonScenario, scenario)
 	if err != nil {
 		log.Error(err.Error())
@@ -81,7 +81,7 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 
 					// Create new Network Characteristic field and migrate values from EdgeFog
 					if zone.NetChar == nil {
-						zone.NetChar = new(ceModel.NetworkCharacteristics)
+						zone.NetChar = new(dataModel.NetworkCharacteristics)
 						zone.NetChar.Latency = zone.EdgeFogLatency
 						zone.NetChar.LatencyVariation = zone.EdgeFogLatencyVariation
 						zone.NetChar.PacketLoss = zone.EdgeFogPacketLoss

@@ -1,0 +1,35 @@
+{{- if .Values.codecov.enabled}}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: meep-platform-ctrl-codecov-pv
+spec:
+  storageClassName: meep-platform-ctrl-codecov-sc
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/home/englab/.meep/codecov/meep-platform-ctrl"
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: meep-platform-ctrl-codecov-sc
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: meep-platform-ctrl-codecov-pvc
+spec:
+  storageClassName: meep-platform-ctrl-codecov-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+{{- end}}

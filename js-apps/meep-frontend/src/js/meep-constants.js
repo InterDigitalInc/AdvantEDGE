@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+export const HOST_PATH = location.origin;
+// export const HOST_PATH = 'http://10.3.16.105';
+export const SANDBOX_NAME = 'sbox-1';
+
 // MEEP types
 export const TYPE_CFG = 'CFG';
 export const TYPE_EXEC = 'EXEC';
@@ -265,10 +269,18 @@ export const DEFAULT_DASHBOARD_OPTIONS = [
   },
   {
     label: 'Network Metrics Point-to-Point',
-    value: location.origin + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/1/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
   },
   {
     label: 'Network Metrics Aggregation',
-    value: location.origin + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+    value: HOST_PATH + '/grafana/d/2/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Http REST API Logs Aggregation',
+    value: HOST_PATH + '/grafana/d/3/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1s&theme=light<exec><vars>'
+  },
+  {
+    label: 'Http REST API Single Detailed Log',
+    value: HOST_PATH + '/grafana/d/4/metrics-dashboard?orgId=1&var-datasource=meep-influxdb&refresh=1d&theme=light<exec><vars>'
   }
 ];

@@ -42,13 +42,14 @@ var replayStatusCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayStatusCmd)
 	replayCmd.AddCommand(replayStatusCmd)
 }
 
 func replayStatus(cobraCmd *cobra.Command) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

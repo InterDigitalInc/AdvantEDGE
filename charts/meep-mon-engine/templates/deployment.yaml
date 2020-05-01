@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "meep-mon-engine.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "meep-mon-engine.name" . }}
     chart: {{ template "meep-mon-engine.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ template "meep-mon-engine.name" . }}
         release: {{ .Release.Name }}

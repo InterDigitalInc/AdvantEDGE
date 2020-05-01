@@ -17,19 +17,23 @@
 package sbi
 
 import (
+	"errors"
+	"os"
 	"strings"
 
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
-const module string = "loc-serv-sbi"
-const moduleName string = "meep-loc-serv"
-
-const redisAddr string = "meep-redis-master:6379"
+const moduleName string = "meep-loc-serv-sbi"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type LocServSbi struct {
+	sandboxName             string
+	mqLocal                 *mq.MsgQueue
+	handlerId               int
 	activeModel             *mod.Model
 	updateUserInfoCB        func(string, string, string)
 	updateZoneInfoCB        func(string, int, int, int)
@@ -46,8 +50,26 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 	// Create new SBI instance
 	sbi = new(LocServSbi)
 
-	// Create new Model
-	sbi.activeModel, err = mod.NewModel(redisAddr, module, "activeScenario")
+	// Retrieve Sandbox name from environment variable
+	sbi.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sbi.sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sbi.sandboxName)
+
+	// Create message queue
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return err
@@ -58,40 +80,61 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 	sbi.updateAccessPointInfoCB = updateAccessPointInfo
 	sbi.cleanUpCB = cleanUp
 
+	// Initialize service
+	processActiveScenarioUpdate()
+
 	return nil
 }
 
 // Run - MEEP Location Service execution
 func Run() (err error) {
 
-	// Listen for Model updates
-	err = sbi.activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return err
 	}
+
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP Ctrl Engine active scenario update Channel
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
-		if payload == mod.EventTerminate {
-			sbi.cleanUpCB()
-		} else {
-			processActiveScenarioUpdate()
-		}
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioTerminate()
 	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
+}
+
+func processActiveScenarioTerminate() {
+	log.Debug("processActiveScenarioTerminate")
+
+	// Sync with active scenario store
+	sbi.activeModel.UpdateScenario()
+
+	sbi.cleanUpCB()
 }
 
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
+
+	// Sync with active scenario store
+	sbi.activeModel.UpdateScenario()
+	if sbi.activeModel.GetScenarioName() == "" {
+		return
+	}
+
 	uePerNetLocMap := make(map[string]int)
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)

@@ -17,15 +17,23 @@
 package sbi
 
 import (
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	"errors"
+	"os"
+	"strings"
+
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
-const module string = "rnis-sbi"
-const redisAddr string = "meep-redis-master:6379"
+const moduleName string = "meep-rnis-sbi"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type RnisSbi struct {
+	sandboxName          string
+	mqLocal              *mq.MsgQueue
+	handlerId            int
 	activeModel          *mod.Model
 	updateUeEcgiInfoCB   func(string, string, string, string)
 	updateAppEcgiInfoCB  func(string, string, string, string)
@@ -36,13 +44,34 @@ type RnisSbi struct {
 var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
-func Init(updateUeEcgiInfo func(string, string, string, string), updateAppEcgiInfo func(string, string, string, string), updateScenarioName func(string), cleanUp func()) (err error) {
+func Init(updateUeEcgiInfo func(string, string, string, string),
+	updateAppEcgiInfo func(string, string, string, string),
+	updateScenarioName func(string),
+	cleanUp func()) (err error) {
 
 	// Create new SBI instance
 	sbi = new(RnisSbi)
 
-	// Create new Model
-	sbi.activeModel, err = mod.NewModel(redisAddr, module, "activeScenario")
+	// Retrieve Sandbox name from environment variable
+	sbi.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sbi.sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sbi.sandboxName)
+
+	// Create message queue
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return err
@@ -53,36 +82,50 @@ func Init(updateUeEcgiInfo func(string, string, string, string), updateAppEcgiIn
 	sbi.updateScenarioNameCB = updateScenarioName
 	sbi.cleanUpCB = cleanUp
 
+	// Initialize service
+	processActiveScenarioUpdate()
+
 	return nil
 }
 
 // Run - MEEP RNIS execution
 func Run() (err error) {
 
-	// Listen for Model updates
-	err = sbi.activeModel.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to register message queue handler: ", err.Error())
 		return err
 	}
+
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP Ctrl Engine active scenario update Channel
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
-		if payload == mod.EventTerminate {
-			sbi.cleanUpCB()
-		} else {
-			processActiveScenarioUpdate()
-		}
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioUpdate()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processActiveScenarioTerminate()
 	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
+}
+
+func processActiveScenarioTerminate() {
+	log.Debug("processActiveScenarioTerminate")
+
+	// Sync with active scenario store
+	sbi.activeModel.UpdateScenario()
+
+	sbi.cleanUpCB()
 }
 
 func processActiveScenarioUpdate() {
@@ -97,11 +140,11 @@ func processActiveScenarioUpdate() {
 	for _, name := range ueNameList {
 
 		ueParent := sbi.activeModel.GetNodeParent(name)
-		if poa, ok := ueParent.(*ceModel.NetworkLocation); ok {
+		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
 			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
-			if zone, ok := poaParent.(*ceModel.Zone); ok {
+			if zone, ok := poaParent.(*dataModel.Zone); ok {
 				zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-				if domain, ok := zoneParent.(*ceModel.Domain); ok {
+				if domain, ok := zoneParent.(*dataModel.Domain); ok {
 					mnc := ""
 					mcc := ""
 					cellId := ""
@@ -135,14 +178,14 @@ func processActiveScenarioUpdate() {
 	appNameList = append(appNameList, ueAppNameList...)
 	for _, meAppName := range appNameList {
 		meAppParent := sbi.activeModel.GetNodeParent(meAppName)
-		if pl, ok := meAppParent.(*ceModel.PhysicalLocation); ok {
+		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
 			plParent := sbi.activeModel.GetNodeParent(pl.Name)
-			if nl, ok := plParent.(*ceModel.NetworkLocation); ok {
+			if nl, ok := plParent.(*dataModel.NetworkLocation); ok {
 				//nl can be either POA for {FOG or UE} or Zone Default for {Edge
 				nlParent := sbi.activeModel.GetNodeParent(nl.Name)
-				if zone, ok := nlParent.(*ceModel.Zone); ok {
+				if zone, ok := nlParent.(*dataModel.Zone); ok {
 					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-					if domain, ok := zoneParent.(*ceModel.Domain); ok {
+					if domain, ok := zoneParent.(*dataModel.Domain); ok {
 						mnc := ""
 						mcc := ""
 						cellId := ""

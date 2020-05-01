@@ -28,23 +28,24 @@ import (
 	"strings"
 	"time"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	clientv2 "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metrics-engine-notification-client"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	"github.com/gorilla/mux"
 )
 
-const influxDBAddr = "http://meep-influxdb:8086"
+const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const metricEvent = "events"
 const metricNetwork = "network"
 
 const moduleName string = "meep-metrics-engine"
-const redisAddr string = "meep-redis-master:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 const basePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"
@@ -60,6 +61,9 @@ var nextEventSubscriptionIdAvailable int
 var networkSubscriptionMap = map[string]*NetworkRegistration{}
 var eventSubscriptionMap = map[string]*EventRegistration{}
 
+var sandboxName string
+var mqLocal *mq.MsgQueue
+var handlerId int
 var activeModel *mod.Model
 var activeScenarioName string
 var metricStore *ms.MetricStore
@@ -88,6 +92,31 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_METRICS_ROOT_URL: ", rootUrl)
 
+	// Retrieve Sandbox name from environment variable
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+
+	// Create message queue
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
+	// Create new active scenario model
+	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	activeModel, err = mod.NewModel(modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return err
+	}
+
 	// Connect to Metric Store
 	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
 	if err != nil {
@@ -95,17 +124,7 @@ func Init() (err error) {
 		return err
 	}
 
-	// Listen for model updates
-	activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
-		return err
-	}
-	err = activeModel.Listen(eventHandler)
-	if err != nil {
-		log.Error("Failed to listening for model updates: ", err.Error())
-	}
-
+	// Connect to Redis DB to monitor metrics
 	rc, err = redis.NewConnector(redisAddr, METRICS_DB)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
@@ -119,38 +138,53 @@ func Init() (err error) {
 	networkSubscriptionReInit()
 	eventSubscriptionReInit()
 
+	// Initialize metrics engine if scenario already active
+	activateScenarioMetrics()
+
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
+// Run - Start Metrics Engine execution
+func Run() (err error) {
 
-	// MEEP Ctrl Engine active scenario update event
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", mod.ActiveScenarioEvents, " payload: ", payload)
-		processActiveScenarioUpdate(payload)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		activateScenarioMetrics()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		terminateScenarioMetrics()
 	default:
-		log.Warn("Unsupported channel event: ", channel, " payload: ", payload)
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func processActiveScenarioUpdate(event string) {
-	if event == mod.EventTerminate {
-		terminateScenario(activeScenarioName)
-		activeScenarioName = ""
-	} else if event == mod.EventActivate {
-		// Cache name for later deletion
-		activeScenarioName = activeModel.GetScenarioName()
-		activateScenario()
-	} else {
-		log.Debug("Reveived event: ", event, " - Do nothing")
+func activateScenarioMetrics() {
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
+	// Update current active scenario name
+	activeScenarioName = activeModel.GetScenarioName()
+	if activeScenarioName == "" {
+		return
 	}
+
+	// Set new HTTP logger store name
 	_ = httpLog.ReInit(moduleName, activeScenarioName)
 
-}
-
-func activateScenario() {
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
 	if err != nil {
@@ -162,7 +196,7 @@ func activateScenario() {
 	metricStore.Flush()
 
 	//inserting an INIT event at T0
-	var ev ceModel.Event
+	var ev dataModel.Event
 	ev.Name = "Init"
 	ev.Type_ = "OTHER"
 	j, _ := json.Marshal(ev)
@@ -184,15 +218,24 @@ func activateScenario() {
 	}
 }
 
-func terminateScenario(name string) {
+func terminateScenarioMetrics() {
+	// Sync with active scenario store
+	activeModel.UpdateScenario()
+
 	// Terminate snapshot thread
 	metricStore.StopSnapshotThread()
+
+	// Set new HTTP logger store name
+	_ = httpLog.ReInit(moduleName, activeScenarioName)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")
 	if err != nil {
 		log.Error(err.Error())
 	}
+
+	// Reset current active scenario name
+	activeScenarioName = ""
 }
 
 func mePostEventQuery(w http.ResponseWriter, r *http.Request) {

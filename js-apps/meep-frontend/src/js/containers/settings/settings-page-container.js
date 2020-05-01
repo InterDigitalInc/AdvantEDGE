@@ -17,7 +17,7 @@
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
-import { TextField } from '@rmwc/textfield';
+// import { TextField } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
@@ -38,8 +38,8 @@ import {
 import {
   MEEP_HELP_PAGE_SET_URL,
   PAGE_SETTINGS,
-  SET_EXEC_REFRESH_CHECKBOX,
-  SET_EXEC_REFRESH_INT,
+  // SET_EXEC_REFRESH_CHECKBOX,
+  // SET_EXEC_REFRESH_INT,
   SET_VIS_CFG_CHECKBOX,
   SET_VIS_CFG_LABEL,
   SET_RESET_SETTINGS_BUTTON,
@@ -168,7 +168,7 @@ class SettingsPageContainer extends Component {
                 z={2}
                 style={styles.elevation}
               >
-                <div style={styles.section}>
+                {/* <div style={styles.section}>
                   <div style={styles.headline}>
                     <span className="mdc-typography--headline6">
                       Execution:{' '}
@@ -211,7 +211,7 @@ class SettingsPageContainer extends Component {
                       </GridCell>
                     </Grid>
                   </div>
-                </div>
+                </div> */}
 
                 <div style={styles.section}>
                   <div style={styles.headline}>

@@ -43,13 +43,14 @@ var replayStopCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayStopCmd)
 	replayCmd.AddCommand(replayStopCmd)
 }
 
 func replayStop(cobraCmd *cobra.Command, filename string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return
