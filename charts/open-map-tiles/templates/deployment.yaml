@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "open-map-tiles.fullname" . }}
-  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "open-map-tiles.name" . }}
     chart: {{ template "open-map-tiles.chart" . }}
@@ -17,7 +16,6 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-      namespace: {{ .Values.namespace }}
       labels:
         app: {{ include "open-map-tiles.name" . }}
         release: {{ .Release.Name }}
