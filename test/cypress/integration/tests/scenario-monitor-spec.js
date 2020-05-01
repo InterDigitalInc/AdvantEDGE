@@ -38,6 +38,10 @@ describe('Scenario Monitoring', function() {
     let noneStr = 'None';
     let networkMetricsPointToPointStr = 'Network Metrics Point-to-Point';
     let networkMetricsAggregationStr = 'Network Metrics Aggregation';
+    let httploggersAggregationStr = 'Http REST API Logs Aggregation';
+    let httpSingleLogStr = 'Http REST API Single Detailed Log';
+
+
 
     // Go to monitoring page
     cy.log('Go to monitoring page');
@@ -48,6 +52,9 @@ describe('Scenario Monitoring', function() {
     verify(meep.MON_DASHBOARD_SELECT, 'contain', noneStr);
     verify(meep.MON_DASHBOARD_SELECT, 'contain', networkMetricsPointToPointStr);
     verify(meep.MON_DASHBOARD_SELECT, 'contain', networkMetricsAggregationStr);
+    verify(meep.MON_DASHBOARD_SELECT, 'contain', httploggersAggregationStr);
+    verify(meep.MON_DASHBOARD_SELECT, 'contain', httpSingleLogStr);
+
 
     // Open Metrics Dashboard
     select(meep.MON_DASHBOARD_SELECT, networkMetricsPointToPointStr);
