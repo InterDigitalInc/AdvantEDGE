@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "open-map-tiles.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "open-map-tiles.name" . }}
+    chart: {{ template "open-map-tiles.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "open-map-tiles.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ include "open-map-tiles.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}"
+          #image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+{{- if not .Values.persistentVolume.enabled }}
+        - name: data
+          emptyDir: {}
+{{- else }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ template "open-map-tiles.fullname" . }}
+{{- end }}
+      terminationGracePeriodSeconds: 5
+{{- if .Values.affinity }}
+      affinity:
+{{- toYaml .Values.affinity | indent 8 }}
+{{- end }}
