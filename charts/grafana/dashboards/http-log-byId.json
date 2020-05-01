@@ -91,7 +91,7 @@
           "unit": "short",
           "valueMaps": []
         },
-       {
+        {
           "alias": "Method",
           "colorMode": null,
           "colors": [
@@ -232,7 +232,7 @@
           "query": "SELECT body FROM $database.autogen.http WHERE (\"logger_name\" =~ /^$logger_name$/) AND (\"id\"=$http_log_id)",
           "rawQuery": true,
           "refId": "A",
-          "resultFormat": "table",
+          "resultFormat": "table"
         }
       ],
       "thresholds": "",
@@ -297,7 +297,7 @@
           "query": "SELECT resp_body FROM $database.autogen.http WHERE (\"logger_name\" =~ /^$logger_name$/) AND (\"id\"=$http_log_id)",
           "rawQuery": true,
           "refId": "A",
-          "resultFormat": "table",
+          "resultFormat": "table"
         }
       ],
       "thresholds": "",
