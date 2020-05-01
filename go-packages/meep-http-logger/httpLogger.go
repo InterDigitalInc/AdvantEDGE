@@ -31,8 +31,8 @@ import (
 )
 
 var nextUniqueId int32 = 1
-var redisDBAddr string = "meep-redis-master:6379"
-var influxDBAddr string = "http://meep-influxdb:8086"
+var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 var metricStore *ms.MetricStore
 var logComponent = ""
 
