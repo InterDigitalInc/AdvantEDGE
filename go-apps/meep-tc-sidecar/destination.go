@@ -28,8 +28,6 @@ import (
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 )
 
-const moduleMetrics string = "metrics"
-
 type history struct {
 	received int
 	lost     int

@@ -3,6 +3,7 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
@@ -16,6 +17,7 @@ require (
 )
 
 replace (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr => ../../go-packages/meep-data-key-mgr
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model => ../../go-packages/meep-data-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger => ../../go-packages/meep-http-logger
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client => ../../go-packages/meep-loc-serv-notification-client

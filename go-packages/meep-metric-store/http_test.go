@@ -23,7 +23,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const httpStoreName string = "httpStore"
+const httpStoreName string = "http-store"
+const httpStoreNamespace string = "http-ns"
 const httpStoreInfluxAddr string = "http://localhost:30986"
 const httpStoreRedisAddr string = "localhost:30380"
 
@@ -32,9 +33,9 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(httpStoreName, httpStoreInfluxAddr, httpStoreRedisAddr)
+	ms, err := NewMetricStore(httpStoreName, httpStoreNamespace, httpStoreInfluxAddr, httpStoreRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create Metric Store")
+		t.Fatalf("Unable to create Metric Store")
 	}
 
 	fmt.Println("Flush store metrics")
@@ -43,48 +44,48 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	fmt.Println("Set http metrics")
 	err = ms.SetHttpMetric(HttpMetric{"logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101", nil})
 	if err != nil {
-		t.Errorf("Unable to set http metric")
+		t.Fatalf("Unable to set http metric")
 	}
 	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 2, "url2", "endpoint2", "method2", "body2", "respBody2", "202", "102", nil})
 	if err != nil {
-		t.Errorf("Unable to set http metric")
+		t.Fatalf("Unable to set http metric")
 	}
 	err = ms.SetHttpMetric(HttpMetric{"logger1", "TX", 3, "url3", "endpoint3", "method3", "body3", "respBody3", "203", "103", nil})
 	if err != nil {
-		t.Errorf("Unable to set http metric")
+		t.Fatalf("Unable to set http metric")
 	}
 	err = ms.SetHttpMetric(HttpMetric{"logger2", "RX", 4, "url4", "endpoint4", "method4", "body4", "respBody4", "204", "104", nil})
 	if err != nil {
-		t.Errorf("Unable to set http metric")
+		t.Fatalf("Unable to set http metric")
 	}
 
 	fmt.Println("Get http metrics")
 	_, err = ms.GetHttpMetric("logger3", "RX", "", 0)
 	if err == nil {
-		t.Errorf("No metrics should be found for logger3")
+		t.Fatalf("No metrics should be found for logger3")
 	}
 	h, err := ms.GetHttpMetric("logger1", "RX", "", 0)
 	if err != nil || len(h) != 1 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateHttpMetric(h[0], "logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101") {
-		t.Errorf("Invalid http metric")
+		t.Fatalf("Invalid http metric")
 	}
 
 	h, err = ms.GetHttpMetric("logger1", "TX", "", 0)
 	if err != nil || len(h) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	h, err = ms.GetHttpMetric("logger1", "", "", 0)
 	if err != nil || len(h) != 3 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	h, err = ms.GetHttpMetric("", "RX", "", 0)
 	if err != nil || len(h) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 
-	// t.Errorf("DONE")
+	// t.Fatalf("DONE")
 }
 
 func validateHttpMetric(h HttpMetric, loggerName string, direction string, id int32, url string, endpoint string, method string, body string, respBody string, respCode string, procTime string) bool {

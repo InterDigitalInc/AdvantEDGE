@@ -37,6 +37,7 @@ import {
 } from '../../state/ui';
 
 import {
+  SANDBOX_NAME,
   TYPE_EXEC,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
@@ -161,8 +162,9 @@ const ViewForName = ({
     if (selectedUrl.indexOf(passVarsStr) !== -1) {
       selectedUrl = selectedUrl.replace(passVarsStr, '');
       
-      // Remove '-' from scenario name
-      var scenario = scenarioName.replace(/-/g, '');
+      // Prepend sandbox name to scenario name and replace '-' with '_'
+      var sandboxScenario = SANDBOX_NAME + '_' + scenarioName;
+      var scenario = sandboxScenario.replace(/-/g, '_');
 
       var url = new URL(selectedUrl);
       url.searchParams.append('var-database', scenario);

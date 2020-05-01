@@ -17,10 +17,6 @@
 package sbi
 
 import (
-	"errors"
-	"os"
-	"strings"
-
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -44,25 +40,18 @@ type RnisSbi struct {
 var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
-func Init(updateUeEcgiInfo func(string, string, string, string),
+func Init(sandboxName string,
+	updateUeEcgiInfo func(string, string, string, string),
 	updateAppEcgiInfo func(string, string, string, string),
 	updateScenarioName func(string),
 	cleanUp func()) (err error) {
 
 	// Create new SBI instance
 	sbi = new(RnisSbi)
-
-	// Retrieve Sandbox name from environment variable
-	sbi.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sbi.sandboxName == "" {
-		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_SANDBOX_NAME: ", sbi.sandboxName)
+	sbi.sandboxName = sandboxName
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, redisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -70,7 +59,13 @@ func Init(updateUeEcgiInfo func(string, string, string, string),
 	log.Info("Message Queue created")
 
 	// Create new active scenario model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
 	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())

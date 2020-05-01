@@ -23,14 +23,17 @@ import (
 	"strings"
 	"sync"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	"github.com/RyanCarrier/dijkstra"
 )
 
-// const activeScenarioKey = "activeScenarioKey"
-const activeScenarioKey = "meep:active"
+const activeKey = "active"
+
+var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
+var redisTable = 0
 
 const (
 	NetCharScenario     = "SCENARIO"
@@ -50,15 +53,17 @@ const (
 
 // ModelCfg - Model Configuration
 type ModelCfg struct {
-	Name     string
-	Module   string
-	DbAddr   string
-	UpdateCb func()
+	Name      string
+	Namespace string
+	Module    string
+	DbAddr    string
+	UpdateCb  func()
 }
 
 // Model - Implements a Meep Model
 type Model struct {
 	name         string
+	namespace    string
 	module       string
 	Active       bool
 	subscribed   bool
@@ -71,9 +76,6 @@ type Model struct {
 	networkGraph *NetworkGraph
 	lock         sync.RWMutex
 }
-
-var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
-var redisTable = 0
 
 // NewModel - Create a model object
 func NewModel(cfg ModelCfg) (m *Model, err error) {
@@ -90,11 +92,12 @@ func NewModel(cfg ModelCfg) (m *Model, err error) {
 
 	m = new(Model)
 	m.name = cfg.Name
+	m.namespace = cfg.Namespace
 	m.module = cfg.Module
 	m.updateCb = cfg.UpdateCb
 	m.Active = false
 	m.subscribed = false
-	m.activeKey = activeScenarioKey
+	m.activeKey = dkm.GetKeyRoot(m.namespace) + activeKey
 	m.scenario = new(dataModel.Scenario)
 
 	// Process scenario

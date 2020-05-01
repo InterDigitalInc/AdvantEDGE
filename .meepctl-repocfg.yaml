@@ -182,8 +182,14 @@ repo:
       meep-couch:
         src: go-packages/meep-couch
         lint: true
+      meep-data-key-mgr:
+        src: go-packages/meep-data-key-mgr
+        lint: true
       meep-data-model:
         src: go-packages/meep-data-model
+        lint: true
+      meep-http-logger:
+        src: go-packages/meep-http-logger
         lint: true
       meep-loc-serv-client:
         src: go-packages/meep-loc-serv-client
@@ -237,6 +243,9 @@ repo:
       meep-sandbox-ctrl-client:
         src: go-packages/meep-sandbox-ctrl-client
         lint: false
+      meep-sandbox-store:
+        src: go-packages/meep-sandbox-store
+        lint: true
       meep-watchdog:
         src: go-packages/meep-watchdog
         lint: true

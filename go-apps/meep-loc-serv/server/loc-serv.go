@@ -29,6 +29,7 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -38,7 +39,7 @@ import (
 )
 
 const basePath = "/location/v1/"
-const moduleLocServ string = "loc-serv"
+const locServKey string = "loc-serv:"
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -81,9 +82,20 @@ const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 var rc *redis.Connector
 var rootUrl *url.URL
+var sandboxName string
+var baseKey string
 
 // Init - Location Service initialization
 func Init() (err error) {
+
+	// Retrieve Sandbox name from environment variable
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
 	// Retrieve Root URL from environment variable
 	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_LOC_SERV_ROOT_URL")))
@@ -91,6 +103,9 @@ func Init() (err error) {
 		rootUrl = new(url.URL)
 	}
 	log.Info("MEEP_LOC_SERV_ROOT_URL: ", rootUrl)
+
+	// Get base storage key
+	baseKey = dkm.GetKeyRoot(sandboxName) + locServKey
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, LOC_SERV_DB)
@@ -105,7 +120,7 @@ func Init() (err error) {
 	zoneStatusReInit()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
+	return sbi.Init(sandboxName, updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
 }
 
 // Run - Start Location Service
@@ -259,7 +274,7 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 
 			if zoneWarning || apWarning {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+subsIdStr, ".")
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -296,7 +311,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 		if value == userId {
 
 			subsIdStr := strconv.Itoa(subsId)
-			jsonInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeUserSubscription+":"+subsIdStr, ".")
+			jsonInfo, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".")
 			if jsonInfo == "" {
 				return
 			}
@@ -410,7 +425,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 				if zonalSubscriptionEnteringMap[subsId] != "" {
 					subsIdStr := strconv.Itoa(subsId)
 
-					jsonInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".")
+					jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".")
 					if jsonInfo != "" {
 						subscription := convertJsonToZonalSubscription(jsonInfo)
 
@@ -432,7 +447,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 					if zonalSubscriptionTransferringMap[subsId] != "" {
 						subsIdStr := strconv.Itoa(subsId)
 
-						jsonInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".")
+						jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".")
 						if jsonInfo != "" {
 							subscription := convertJsonToZonalSubscription(jsonInfo)
 
@@ -457,7 +472,7 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 				if zonalSubscriptionLeavingMap[subsId] != "" {
 					subsIdStr := strconv.Itoa(subsId)
 
-					jsonInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".")
+					jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".")
 					if jsonInfo != "" {
 
 						subscription := convertJsonToZonalSubscription(jsonInfo)
@@ -493,7 +508,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	var userList UserList
 	response.UserList = &userList
 
-	_ = rc.JSONGetList(zoneIdVar, accessPointIdVar, moduleLocServ+":"+typeUser+":", populateUserList, &userList)
+	_ = rc.JSONGetList(zoneIdVar, accessPointIdVar, baseKey+typeUser+":", populateUserList, &userList)
 	userList.ResourceURL = rootUrl.String() + basePath + "users"
 
 	jsonResponse, err := json.Marshal(response)
@@ -546,7 +561,7 @@ func usersGetById(w http.ResponseWriter, r *http.Request) {
 	var userInfo UserInfo
 	response.UserInfo = &userInfo
 
-	jsonUserInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeUser+":"+vars["userId"], ".")
+	jsonUserInfo, _ := rc.JSONGetEntry(baseKey+typeUser+":"+vars["userId"], ".")
 	if jsonUserInfo == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -582,7 +597,7 @@ func zonesByIdGetAps(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	_ = rc.JSONGetList(interestRealm, "", moduleLocServ+":"+typeZone+":"+vars["zoneId"], populateApList, &apList)
+	_ = rc.JSONGetList(interestRealm, "", baseKey+typeZone+":"+vars["zoneId"], populateApList, &apList)
 	apList.ZoneId = vars["zoneId"]
 	apList.ResourceURL = rootUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
 
@@ -604,7 +619,7 @@ func zonesByIdGetApsById(w http.ResponseWriter, r *http.Request) {
 	var apInfo AccessPointInfo
 	response.AccessPointInfo = &apInfo
 
-	jsonApInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZone+":"+vars["zoneId"]+":"+typeAccessPoint+":"+vars["accessPointId"], ".")
+	jsonApInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+vars["zoneId"]+":"+typeAccessPoint+":"+vars["accessPointId"], ".")
 	if jsonApInfo == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -634,7 +649,7 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 	var zoneList ZoneList
 	response.ZoneList = &zoneList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZone+":", populateZoneList, &zoneList)
+	_ = rc.JSONGetList("", "", baseKey+typeZone+":", populateZoneList, &zoneList)
 	zoneList.ResourceURL = rootUrl.String() + basePath + "zones"
 
 	jsonResponse, err := json.Marshal(response)
@@ -655,7 +670,7 @@ func zonesGetById(w http.ResponseWriter, r *http.Request) {
 	var zoneInfo ZoneInfo
 	response.ZoneInfo = &zoneInfo
 
-	jsonZoneInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZone+":"+vars["zoneId"], ".")
+	jsonZoneInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+vars["zoneId"], ".")
 	if jsonZoneInfo == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -724,7 +739,7 @@ func userTrackingSubDelById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := rc.JSONDelEntry(moduleLocServ+":"+typeUserSubscription+":"+vars["subscriptionId"], ".")
+	err := rc.JSONDelEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -741,7 +756,7 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 	var userTrackingSubList UserTrackingNotificationSubscriptionList
 	response.NotificationSubscriptionList = &userTrackingSubList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeUserSubscription, populateUserTrackingList, &userTrackingSubList)
+	_ = rc.JSONGetList("", "", baseKey+typeUserSubscription, populateUserTrackingList, &userTrackingSubList)
 
 	userTrackingSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking"
 
@@ -763,7 +778,7 @@ func userTrackingSubGetById(w http.ResponseWriter, r *http.Request) {
 	var userTrackingSub UserTrackingSubscription
 	response.UserTrackingSubscription = &userTrackingSub
 
-	jsonUserTrackingSub, _ := rc.JSONGetEntry(moduleLocServ+":"+typeUserSubscription+":"+vars["subscriptionId"], ".")
+	jsonUserTrackingSub, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if jsonUserTrackingSub == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -808,7 +823,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
 	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
+	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -839,7 +854,7 @@ func userTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := vars["subscriptionId"]
 	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
+	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
 	deregisterUser(subsIdStr)
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
@@ -872,7 +887,7 @@ func zonalTrafficSubDelById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := rc.JSONDelEntry(moduleLocServ+":"+typeZonalSubscription+":"+vars["subscriptionId"], ".")
+	err := rc.JSONDelEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -889,7 +904,7 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	var zonalTrafficSubList ZonalTrafficNotificationSubscriptionList
 	response.NotificationSubscriptionList = &zonalTrafficSubList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZonalSubscription, populateZonalTrafficList, &zonalTrafficSubList)
+	_ = rc.JSONGetList("", "", baseKey+typeZonalSubscription, populateZonalTrafficList, &zonalTrafficSubList)
 	zonalTrafficSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic"
 
 	jsonResponse, err := json.Marshal(response)
@@ -910,7 +925,7 @@ func zonalTrafficSubGetById(w http.ResponseWriter, r *http.Request) {
 	var zonalTrafficSub ZonalTrafficSubscription
 	response.ZonalTrafficSubscription = &zonalTrafficSub
 
-	jsonZonalTrafficSub, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZonalSubscription+":"+vars["subscriptionId"], ".")
+	jsonZonalTrafficSub, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if jsonZonalTrafficSub == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -965,7 +980,7 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 
 	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
+	_ = rc.JSONSetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
 
@@ -998,7 +1013,7 @@ func zonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := vars["subscriptionId"]
 	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
+	_ = rc.JSONSetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
 	deregisterZonal(subsIdStr)
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
@@ -1031,7 +1046,7 @@ func zoneStatusDelById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := rc.JSONDelEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
+	err := rc.JSONDelEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1048,7 +1063,7 @@ func zoneStatusGet(w http.ResponseWriter, r *http.Request) {
 	var zoneStatusSubList ZoneStatusNotificationSubscriptionList
 	response.NotificationSubscriptionList = &zoneStatusSubList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneStatusSubList)
+	_ = rc.JSONGetList("", "", baseKey+typeZoneStatusSubscription, populateZoneStatusList, &zoneStatusSubList)
 
 	zoneStatusSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus"
 
@@ -1070,7 +1085,7 @@ func zoneStatusGetById(w http.ResponseWriter, r *http.Request) {
 	var zoneStatusSub ZoneStatusSubscription
 	response.ZoneStatusSubscription = &zoneStatusSub
 
-	jsonZoneStatusSub, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
+	jsonZoneStatusSub, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if jsonZoneStatusSub == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -1114,7 +1129,7 @@ func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 
 	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
+	_ = rc.JSONSetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
 		zoneStatusSub.OperationStatus, subsIdStr)
@@ -1148,7 +1163,7 @@ func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := vars["subscriptionId"]
 	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
-	_ = rc.JSONSetEntry(moduleLocServ+":"+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
+	_ = rc.JSONSetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
 	deregisterZoneStatus(subsIdStr)
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
@@ -1181,7 +1196,7 @@ func populateZoneStatusList(key string, jsonInfo string, dummy1 string, dummy2 s
 /*
 func getCurrentUserLocation(resourceName string) (string, string) {
 
-	jsonUserInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeUser+":"+resourceName, ".")
+	jsonUserInfo, _ := rc.JSONGetEntry(baseKey+typeUser+":"+resourceName, ".")
 
 	if jsonUserInfo != "" {
 		// Unmarshal UserInfo
@@ -1198,7 +1213,7 @@ func getCurrentUserLocation(resourceName string) (string, string) {
 */
 func cleanUp() {
 	log.Info("Terminate all")
-	rc.DBFlush(moduleLocServ)
+	rc.DBFlush(baseKey)
 	nextZonalSubscriptionIdAvailable = 1
 	nextUserSubscriptionIdAvailable = 1
 	nextZoneStatusSubscriptionIdAvailable = 1
@@ -1219,7 +1234,7 @@ func cleanUp() {
 func updateUserInfo(address string, zoneId string, accessPointId string) {
 
 	//get from DB
-	jsonUserInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeUser+":"+address, ".")
+	jsonUserInfo, _ := rc.JSONGetEntry(baseKey+typeUser+":"+address, ".")
 
 	userInfo := new(UserInfo)
 
@@ -1240,7 +1255,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		}
 
 		//updateDB
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
+		_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
 
 	} else {
 		userInfo.Address = address
@@ -1254,7 +1269,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		//userInfo.LocationInfo.Accuracy,
 		//userInfo.ContextLocationInfo,
 		//userInfo.AncillaryInfo)
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
+		_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
 	}
 	checkNotificationRegistrations(USER_TRACKING_AND_ZONAL_TRAFFIC, oldZoneId, zoneId, oldApId, accessPointId, address)
 
@@ -1263,7 +1278,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, nbUsers int) {
 
 	//get from DB
-	jsonZoneInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".")
+	jsonZoneInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+zoneId, ".")
 
 	zoneInfo := new(ZoneInfo)
 	if jsonZoneInfo != "" {
@@ -1279,7 +1294,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 			zoneInfo.NumberOfUsers = int32(nbUsers)
 		}
 		//updateDB
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
+		_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
 	} else {
 		zoneInfo.ZoneId = zoneId
 		zoneInfo.ResourceURL = rootUrl.String() + basePath + "zones/" + zoneId
@@ -1288,7 +1303,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		zoneInfo.NumberOfUnservicableAccessPoints = int32(nbUnsrvAccessPoints)
 		zoneInfo.NumberOfUsers = int32(nbUsers)
 
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
+		_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
 	}
 
 	checkNotificationRegistrations(ZONE_STATUS, zoneId, "", "", strconv.Itoa(nbUsers), "")
@@ -1297,7 +1312,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStatusStr string, nbUsers int) {
 
 	//get from DB
-	jsonApInfo, _ := rc.JSONGetEntry(moduleLocServ+":"+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".")
+	jsonApInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".")
 
 	if jsonApInfo != "" {
 		apInfo := convertJsonToAccessPointInfo(jsonApInfo)
@@ -1310,7 +1325,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 			apInfo.NumberOfUsers = int32(nbUsers)
 		}
 		//updateDB
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
+		_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
 	} else {
 		apInfo := new(AccessPointInfo)
 		apInfo.AccessPointId = apId
@@ -1329,7 +1344,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 		//apInfo.Timezone
 		//apInfo.InterestRealm
 
-		_ = rc.JSONSetEntry(moduleLocServ+":"+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
+		_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
 	}
 	checkNotificationRegistrations(ZONE_STATUS, zoneId, apId, strconv.Itoa(nbUsers), "", "")
 }
@@ -1339,7 +1354,7 @@ func zoneStatusReInit() {
 	//reusing the object response for the get multiple zoneStatusSubscription
 	var zoneList ZoneStatusNotificationSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZoneStatusSubscription, populateZoneStatusList, &zoneList)
+	_ = rc.JSONGetList("", "", baseKey+typeZoneStatusSubscription, populateZoneStatusList, &zoneList)
 
 	maxZoneStatusSubscriptionId := 0
 	for _, zone := range zoneList.ZoneStatusSubscription {
@@ -1382,7 +1397,7 @@ func zonalTrafficReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var zoneList ZonalTrafficNotificationSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeZonalSubscription, populateZonalTrafficList, &zoneList)
+	_ = rc.JSONGetList("", "", baseKey+typeZonalSubscription, populateZonalTrafficList, &zoneList)
 
 	maxZonalSubscriptionId := 0
 	for _, zone := range zoneList.ZonalTrafficSubscription {
@@ -1418,7 +1433,7 @@ func userTrackingReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var userList UserTrackingNotificationSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleLocServ+":"+typeUserSubscription, populateUserTrackingList, &userList)
+	_ = rc.JSONGetList("", "", baseKey+typeUserSubscription, populateUserTrackingList, &userList)
 
 	maxUserSubscriptionId := 0
 	for _, user := range userList.UserTrackingSubscription {

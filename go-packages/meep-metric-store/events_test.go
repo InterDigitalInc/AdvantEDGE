@@ -23,7 +23,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-const eventStoreName string = "eventStore"
+const eventStoreName string = "event-store"
+const eventStoreNamespace string = "event-ns"
 const eventStoreInfluxAddr string = "http://localhost:30986"
 const eventStoreRedisAddr string = "localhost:30380"
 
@@ -32,9 +33,9 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(eventStoreName, eventStoreInfluxAddr, eventStoreRedisAddr)
+	ms, err := NewMetricStore(eventStoreName, eventStoreNamespace, eventStoreInfluxAddr, eventStoreRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create Metric Store")
+		t.Fatalf("Unable to create Metric Store")
 	}
 
 	fmt.Println("Flush store metrics")
@@ -43,73 +44,73 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	fmt.Println("Set event metric")
 	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event1", "event1 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event2", "event2 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event3", "event3 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 	err = ms.SetEventMetric("MOBILITY", EventMetric{nil, "event4", "event4 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 	err = ms.SetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", EventMetric{nil, "event5", "event5 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 	err = ms.SetEventMetric("POAS-IN-RANGE", EventMetric{nil, "event6", "event6 description"})
 	if err != nil {
-		t.Errorf("Unable to set event metric")
+		t.Fatalf("Unable to set event metric")
 	}
 
 	fmt.Println("Get event metrics")
 	_, err = ms.GetEventMetric("MOBILITY", "1ms", 0)
 	if err == nil {
-		t.Errorf("No metrics should be found in the last 1 ms")
+		t.Fatalf("No metrics should be found in the last 1 ms")
 	}
 	eml, err := ms.GetEventMetric("MOBILITY", "", 1)
 	if err != nil || len(eml) != 1 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateEventsMetric(eml[0], "event4", "event4 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("MOBILITY", "", 0)
 	if err != nil || len(eml) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateEventsMetric(eml[0], "event4", "event4 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	if !validateEventsMetric(eml[1], "event1", "event1 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("NETWORK-CHARACTERISTIC-UPDATE", "", 0)
 	if err != nil || len(eml) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateEventsMetric(eml[0], "event5", "event5 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	if !validateEventsMetric(eml[1], "event2", "event2 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	eml, err = ms.GetEventMetric("POAS-IN-RANGE", "", 0)
 	if err != nil || len(eml) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateEventsMetric(eml[0], "event6", "event6 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 	if !validateEventsMetric(eml[1], "event3", "event3 description") {
-		t.Errorf("Invalid event metric")
+		t.Fatalf("Invalid event metric")
 	}
 
-	// t.Errorf("DONE")
+	// t.Fatalf("DONE")
 }
 
 func validateEventsMetric(em EventMetric, event string, description string) bool {

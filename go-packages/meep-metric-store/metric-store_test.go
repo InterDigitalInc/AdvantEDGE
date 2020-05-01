@@ -27,6 +27,7 @@ import (
 const metricStore1Name string = "metric-store-1"
 const metricStore2Name string = "metric-store-2"
 const metricStore3Name string = "metric-store-3"
+const metricStoreNamespace string = "metric-ns"
 const metricStoreInfluxAddr string = "http://localhost:30986"
 const metricStoreRedisAddr string = "localhost:30380"
 
@@ -43,25 +44,32 @@ func TestMetricStoreNew(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Invalid Metric Store address")
-	ms, err := NewMetricStore("", "ExpectedFailure-InvalidStoreAddr", "")
+	ms, err := NewMetricStore("", metricStoreNamespace, "ExpectedFailure-InvalidStoreAddr", "")
 	if err == nil {
-		t.Errorf("Should report error on invalid store addr")
+		t.Fatalf("Should report error on invalid store addr")
 	}
 	if ms != nil {
-		t.Errorf("Should have a nil metric store")
+		t.Fatalf("Should have a nil metric store")
+	}
+	ms, err = NewMetricStore("", "", "", "")
+	if err == nil {
+		t.Fatalf("Should report error on invalid store addr")
+	}
+	if ms != nil {
+		t.Fatalf("Should have a nil metric store")
 	}
 
 	fmt.Println("Create valid Metric Store")
-	ms, err = NewMetricStore("", metricStoreInfluxAddr, metricStoreRedisAddr)
+	ms, err = NewMetricStore("", metricStoreNamespace, metricStoreInfluxAddr, metricStoreRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create Metric Store")
+		t.Fatalf("Unable to create Metric Store")
 	}
 	fmt.Println("Invoke API before setting store")
 	tags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	fields := []string{field1, field2, field3, field4}
 	_, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
 	if err == nil {
-		t.Errorf("API call should fail if no store is set")
+		t.Fatalf("API call should fail if no store is set")
 	}
 	metricList := make([]Metric, 1)
 	metric := &metricList[0]
@@ -70,24 +78,24 @@ func TestMetricStoreNew(t *testing.T) {
 	metric.Fields = map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
 	err = ms.SetInfluxMetric(metricList)
 	if err == nil {
-		t.Errorf("API call should fail if no store is set")
+		t.Fatalf("API call should fail if no store is set")
 	}
 
 	fmt.Println("Set store")
 	err = ms.SetStore(metricStore1Name)
 	if err != nil {
-		t.Errorf("Unable to set Store")
+		t.Fatalf("Unable to set Store")
 	}
 	fmt.Println("Set store2")
 	err = ms.SetStore(metricStore2Name)
 	if err != nil {
-		t.Errorf("Unable to set Store2")
+		t.Fatalf("Unable to set Store2")
 	}
 
 	fmt.Println("Reset store")
 	err = ms.SetStore("")
 	if err != nil {
-		t.Errorf("Unable to reset Store")
+		t.Fatalf("Unable to reset Store")
 	}
 
 	fmt.Println("Invoke API after resetting store")
@@ -95,10 +103,10 @@ func TestMetricStoreNew(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	_, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
 	if err == nil {
-		t.Errorf("API call should fail if no store is set")
+		t.Fatalf("API call should fail if no store is set")
 	}
 
-	// t.Errorf("DONE")
+	// t.Fatalf("DONE")
 }
 
 func TestMetricStoreGetSetInflux(t *testing.T) {
@@ -106,9 +114,9 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(metricStore1Name, metricStoreInfluxAddr, metricStoreRedisAddr)
+	ms, err := NewMetricStore(metricStore1Name, metricStoreNamespace, metricStoreInfluxAddr, metricStoreRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create Metric Store")
+		t.Fatalf("Unable to create Metric Store")
 	}
 
 	fmt.Println("Flush store metrics")
@@ -119,7 +127,7 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields := []string{field1, field2, field3, field4}
 	_, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1)
 	if err == nil {
-		t.Errorf("Net metric should not exist")
+		t.Fatalf("Net metric should not exist")
 	}
 
 	fmt.Println("Set metrics")
@@ -130,13 +138,13 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	metric.Fields = map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
 	err = ms.SetInfluxMetric(metricList)
 	if err != nil {
-		t.Errorf("Failed to set metric")
+		t.Fatalf("Failed to set metric")
 	}
 	metric.Tags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	metric.Fields = map[string]interface{}{field1: false, field2: "val2", field3: 1, field4: 1.1}
 	err = ms.SetInfluxMetric(metricList)
 	if err != nil {
-		t.Errorf("Failed to set metric")
+		t.Fatalf("Failed to set metric")
 	}
 
 	fmt.Println("Get last metric")
@@ -144,10 +152,10 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 1)
 	if err != nil || len(result) != 1 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateMetric(result[0], false, "val2", 1, 1.1) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 
 	fmt.Println("Get all metrics")
@@ -155,13 +163,13 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 0)
 	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateMetric(result[0], false, "val2", 1, 1.1) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 	if !validateMetric(result[1], true, "val1", 0, 0.0) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 
 	fmt.Println("Get all metrics from the last 10 seconds")
@@ -169,13 +177,13 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	_, err = ms.GetInfluxMetric(metric1, tags, fields, "10s", 0)
 	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateMetric(result[0], false, "val2", 1, 1.1) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 	if !validateMetric(result[1], true, "val1", 0, 0.0) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 
 	fmt.Println("Get all metrics from the last millisecond (none)")
@@ -183,10 +191,10 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fields = []string{field1, field2, field3, field4}
 	_, err = ms.GetInfluxMetric(metric1, tags, fields, "1ms", 0)
 	if err == nil {
-		t.Errorf("Net metric list should be empty")
+		t.Fatalf("Net metric list should be empty")
 	}
 
-	// t.Errorf("DONE")
+	// t.Fatalf("DONE")
 }
 
 func TestMetricStoreCopyInflux(t *testing.T) {
@@ -194,9 +202,9 @@ func TestMetricStoreCopyInflux(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create valid Metric Store")
-	ms, err := NewMetricStore(metricStore1Name, metricStoreInfluxAddr, metricStoreRedisAddr)
+	ms, err := NewMetricStore(metricStore1Name, metricStoreNamespace, metricStoreInfluxAddr, metricStoreRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create Metric Store")
+		t.Fatalf("Unable to create Metric Store")
 	}
 
 	fmt.Println("Flush store metrics")
@@ -210,36 +218,36 @@ func TestMetricStoreCopyInflux(t *testing.T) {
 	metric.Fields = map[string]interface{}{field1: true, field2: "val1", field3: 0, field4: 0.0}
 	err = ms.SetInfluxMetric(metricList)
 	if err != nil {
-		t.Errorf("Failed to set metric")
+		t.Fatalf("Failed to set metric")
 	}
 	metric.Tags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	metric.Fields = map[string]interface{}{field1: false, field2: "val2", field3: 1, field4: 1.1}
 	err = ms.SetInfluxMetric(metricList)
 	if err != nil {
-		t.Errorf("Failed to set metric")
+		t.Fatalf("Failed to set metric")
 	}
 
 	fmt.Println("Copy invalid")
 	err = ms.Copy("", metricStore3Name)
 	if err == nil {
-		t.Errorf("Database copy should fail")
+		t.Fatalf("Database copy should fail")
 	}
 	err = ms.Copy(metricStore1Name, "")
 	if err == nil {
-		t.Errorf("Database copy should fail")
+		t.Fatalf("Database copy should fail")
 	}
 
 	fmt.Println("Copy store")
 	err = ms.Copy(metricStore1Name, metricStore3Name)
 	if err != nil {
-		t.Errorf("Failed to copy database")
+		t.Fatalf("Failed to copy database")
 	}
 
 	fmt.Println("Validate copied data")
 	fmt.Println("Set store")
 	err = ms.SetStore(metricStore3Name)
 	if err != nil {
-		t.Errorf("Unable to set Store")
+		t.Fatalf("Unable to set Store")
 	}
 
 	fmt.Println("Get all metrics")
@@ -247,13 +255,13 @@ func TestMetricStoreCopyInflux(t *testing.T) {
 	fields := []string{field1, field2, field3, field4}
 	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 0)
 	if err != nil || len(result) != 2 {
-		t.Errorf("Failed to get metric")
+		t.Fatalf("Failed to get metric")
 	}
 	if !validateMetric(result[0], false, "val2", 1, 1.1) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 	if !validateMetric(result[1], true, "val1", 0, 0.0) {
-		t.Errorf("Invalid result")
+		t.Fatalf("Invalid result")
 	}
 }
 

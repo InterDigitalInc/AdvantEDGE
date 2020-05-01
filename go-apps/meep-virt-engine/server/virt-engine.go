@@ -41,14 +41,12 @@ const fieldSandboxName = "sandbox-name"
 // const fieldScenarioName = "scenario-name"
 
 type VirtEngine struct {
-	wdPinger           *wd.Pinger
-	mqGlobal           *mq.MsgQueue
-	modelCfg           mod.ModelCfg
-	activeModel        *mod.Model
-	activeScenarioName string
-	sandboxName        string
-	rootUrl            string
-	handlerId          int
+	wdPinger            *wd.Pinger
+	mqGlobal            *mq.MsgQueue
+	activeModels        map[string]*mod.Model
+	activeScenarioNames map[string]string
+	rootUrl             string
+	handlerId           int
 }
 
 var ve *VirtEngine
@@ -57,8 +55,10 @@ var ve *VirtEngine
 func Init() (err error) {
 	log.Debug("Initializing MEEP Virtualization Engine")
 	ve = new(VirtEngine)
+	ve.activeModels = make(map[string]*mod.Model)
+	ve.activeScenarioNames = make(map[string]string)
 
-	// Retrieve Sandbox name from environment variable
+	// Retrieve Root URL from environment variable
 	ve.rootUrl = strings.TrimSpace(os.Getenv("MEEP_ROOT_URL"))
 	if ve.rootUrl == "" {
 		err = errors.New("MEEP_ROOT_URL env variable not set")
@@ -75,14 +75,6 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
-	// Create new Model
-	ve.modelCfg = mod.ModelCfg{Name: moduleName, Module: moduleName, DbAddr: redisAddr}
-	ve.activeModel, err = mod.NewModel(ve.modelCfg)
-	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
-		return err
-	}
-
 	// Setup for liveness monitoring
 	ve.wdPinger, err = wd.NewPinger(moduleName, moduleNamespace, redisAddr)
 	if err != nil {
@@ -94,6 +86,8 @@ func Init() (err error) {
 		log.Error("Failed watchdog client listen. Error: ", err)
 		return err
 	}
+
+	// TODO -- Initialize Virt Engine state here
 
 	return nil
 }
@@ -124,43 +118,62 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 		destroySandbox(msg.Payload[fieldSandboxName])
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		activateScenario()
+		activateScenario(msg.Payload[fieldSandboxName])
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		terminateScenario()
+		terminateScenario(msg.Payload[fieldSandboxName])
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
 }
 
-func activateScenario() {
+func activateScenario(sandboxName string) {
+	// Get sandbox-specific active model
+	activeModel := ve.activeModels[sandboxName]
+	if activeModel == nil {
+		log.Error("No active model for sandbox: ", sandboxName)
+		return
+	}
+
 	// Sync with active scenario store
-	ve.activeModel.UpdateScenario()
+	activeModel.UpdateScenario()
 
 	// Cache name for later deletion
-	ve.activeScenarioName = ve.activeModel.GetScenarioName()
+	ve.activeScenarioNames[sandboxName] = activeModel.GetScenarioName()
 
 	// Deploy scenario
-	err := Deploy(ve.sandboxName, ve.activeModel)
+	err := Deploy(sandboxName, activeModel)
 	if err != nil {
 		log.Error("Error creating charts: ", err)
 		return
 	}
 }
 
-func terminateScenario() {
+func terminateScenario(sandboxName string) {
+	// Get sandbox-specific active model
+	activeModel := ve.activeModels[sandboxName]
+	if activeModel == nil {
+		log.Error("No active model for sandbox: ", sandboxName)
+		return
+	}
+
 	// Sync with active scenario store
-	ve.activeModel.UpdateScenario()
+	activeModel.UpdateScenario()
+
+	// Get cached scenario name
+	scenarioName := ve.activeScenarioNames[sandboxName]
 
 	// Process right away and start a ticker to retry until everything is deleted
-	_, _ = deleteReleases(ve.sandboxName, ve.activeScenarioName)
+	_, _ = deleteReleases(sandboxName, scenarioName)
 	ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
 
 	go func() {
 		for range ticker.C {
-			err, chartsToDelete := deleteReleases(ve.sandboxName, ve.activeScenarioName)
+			err, chartsToDelete := deleteReleases(sandboxName, scenarioName)
 			if err == nil && chartsToDelete == 0 {
-				ve.activeScenarioName = ""
+				// Remove modle & cached scenario
+				ve.activeScenarioNames[sandboxName] = ""
+				ve.activeModels[sandboxName] = nil
 				ticker.Stop()
 				return
 			} else {
@@ -172,14 +185,24 @@ func terminateScenario() {
 }
 
 func createSandbox(sandboxName string) {
-	// Store sandbox name if not already stored
-	// TODO -- Required for now to support multiple sandboxes but a single active scenario
-	if ve.sandboxName == "" {
-		ve.sandboxName = sandboxName
+	var err error
+
+	// Create new Model instance
+	modelCfg := mod.ModelCfg{
+		Name:      moduleName,
+		Namespace: sandboxName,
+		Module:    moduleName,
+		DbAddr:    redisAddr,
+		UpdateCb:  nil,
+	}
+	ve.activeModels[sandboxName], err = mod.NewModel(modelCfg)
+	if err != nil {
+		log.Error("Failed to create model: ", err.Error())
+		return
 	}
 
 	// Deploy sandbox
-	err := deploySandbox(sandboxName)
+	err = deploySandbox(sandboxName)
 	if err != nil {
 		log.Error("Error deploying sandbox: ", err)
 		return
@@ -195,9 +218,9 @@ func destroySandbox(sandboxName string) {
 		for range ticker.C {
 			err, chartsToDelete := deleteReleases(sandboxName, "")
 			if err == nil && chartsToDelete == 0 {
-				if sandboxName == ve.sandboxName {
-					ve.sandboxName = ""
-				}
+				// Remove modle & cached scenario
+				ve.activeScenarioNames[sandboxName] = ""
+				ve.activeModels[sandboxName] = nil
 				ticker.Stop()
 				return
 			} else {

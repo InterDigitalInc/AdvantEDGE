@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package metricstore
+package sandboxstore
 
 import (
 	"errors"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
 const redisTable = 0
-const keyRoot = "data:global:sandbox-store:"
+
+// Root key
+var keyRoot = dkm.GetKeyRootGlobal() + "sandbox-store:"
 
 // DB Fields
 const fieldSandboxName = "sbox-name"

@@ -60,6 +60,12 @@ type SandboxCtrl struct {
 const scenarioDBName = "scenarios"
 const replayDBName = "replays"
 const moduleName = "meep-sandbox-ctrl"
+
+// MQ payload fields
+const fieldSandboxName = "sandbox-name"
+const fieldScenarioName = "scenario-name"
+
+// Event types
 const eventTypeMobility = "MOBILITY"
 const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
 const eventTypePoasInRange = "POAS-IN-RANGE"
@@ -106,7 +112,13 @@ func Init() (err error) {
 	log.Info("Local Message Queue created")
 
 	// Create new active scenario model
-	sbxCtrl.modelCfg = mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: activeScenarioUpdateCb, DbAddr: mod.DbAddress}
+	sbxCtrl.modelCfg = mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: sbxCtrl.sandboxName,
+		Module:    moduleName,
+		UpdateCb:  activeScenarioUpdateCb,
+		DbAddr:    mod.DbAddress,
+	}
 	sbxCtrl.activeModel, err = mod.NewModel(sbxCtrl.modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -130,7 +142,7 @@ func Init() (err error) {
 	log.Info("Connected to Replay DB")
 
 	// Connect to Metric Store
-	sbxCtrl.metricStore, err = ms.NewMetricStore("", influxDBAddr, redisDBAddr)
+	sbxCtrl.metricStore, err = ms.NewMetricStore("", sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -165,7 +177,7 @@ func Run() (err error) {
 				log.Error("Failed to activate scenario with err: ", err.Error())
 			} else {
 				log.Info("Successfully activated scenario: ", sbox.ScenarioName)
-				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName)
+				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, sbox.ScenarioName)
 			}
 		}
 	}
@@ -225,6 +237,8 @@ func activateScenario(scenarioName string) (err error) {
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
+	msg.Payload[fieldScenarioName] = scenarioName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
@@ -302,10 +316,12 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = httpLog.ReInit(moduleName, scenarioName)
+	_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName)
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
+	msg.Payload[fieldScenarioName] = scenarioName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
@@ -486,6 +502,8 @@ func ceTerminateScenario(w http.ResponseWriter, r *http.Request) {
 
 	// Send Terminate message to Virt Engine on Global Message Queue
 	msg = sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, mq.TargetAll)
+	msg.Payload[fieldSandboxName] = sbxCtrl.sandboxName
+	msg.Payload[fieldScenarioName] = ""
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = sbxCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
@@ -806,7 +824,7 @@ func ceCreateReplayFileFromScenarioExec(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var tmpMetricStore *ms.MetricStore
-	tmpMetricStore, err = ms.NewMetricStore(replayInfo.ScenarioName, influxDBAddr, redisDBAddr)
+	tmpMetricStore, err = ms.NewMetricStore(replayInfo.ScenarioName, sbxCtrl.sandboxName, influxDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed creating tmp metricStore: ", err)
 		return

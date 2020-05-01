@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
@@ -31,11 +32,11 @@ import (
 
 // var start time.Time
 
-const defaultInfluxDBAddr = "http://meep-influxdb:8086"
+const defaultInfluxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const dbMaxRetryCount = 2
 
 const metricsDb = 0
-const moduleMetrics = "metric-store"
+const metricsKey = "metric-store:"
 
 type Metric struct {
 	Name   string
@@ -46,6 +47,8 @@ type Metric struct {
 // MetricStore - Implements a metric store
 type MetricStore struct {
 	name           string
+	namespace      string
+	baseKey        string
 	addr           string
 	connected      bool
 	influxClient   *influx.Client
@@ -54,10 +57,17 @@ type MetricStore struct {
 }
 
 // NewMetricStore - Creates and initialize a Metric Store instance
-func NewMetricStore(name string, influxAddr string, redisAddr string) (ms *MetricStore, err error) {
+func NewMetricStore(name string, namespace string, influxAddr string, redisAddr string) (ms *MetricStore, err error) {
+	// Validate input
+	if namespace == "" {
+		err = errors.New("Invalid namespace")
+		return nil, err
+	}
 
 	// Create new Metric Store instance
 	ms = new(MetricStore)
+	ms.namespace = namespace
+	ms.baseKey = dkm.GetKeyRoot(namespace) + metricsKey
 
 	// Connect to Redis DB
 	ms.redisClient, err = redis.NewConnector(redisAddr, metricsDb)
@@ -119,11 +129,14 @@ func (ms *MetricStore) connectInfluxDB(addr string) error {
 
 // SetStore -
 func (ms *MetricStore) SetStore(name string) error {
-	// Remove dashes from name
-	storeName := strings.Replace(name, "-", "", -1)
+	var storeName string
 
-	// Create new DB if necessary.
-	if storeName != "" {
+	if name != "" {
+		// Create store name using format: '<namespace>_<name>'
+		// Replace dashes with underscores
+		storeName = strings.Replace(ms.namespace+"_"+name, "-", "_", -1)
+
+		// Create new DB if necessary
 		q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
 		_, err := (*ms.influxClient).Query(q)
 		if err != nil {
@@ -132,7 +145,7 @@ func (ms *MetricStore) SetStore(name string) error {
 		}
 	}
 
-	// Set current store
+	// Update store name
 	ms.name = storeName
 	return nil
 }
@@ -153,21 +166,22 @@ func (ms *MetricStore) Flush() {
 	log.Info(response.Results)
 
 	// Flush Redis DB
-	ms.redisClient.DBFlush(moduleMetrics + ":" + NetMetName)
+	ms.redisClient.DBFlush(ms.baseKey + NetMetName)
 }
 
 // Copy
 func (ms *MetricStore) Copy(src string, dst string) error {
-	// Remove dashes from names
-	srcStoreName := strings.Replace(src, "-", "", -1)
-	dstStoreName := strings.Replace(dst, "-", "", -1)
-
 	// Validate input params
-	if srcStoreName == "" || dstStoreName == "" {
+	if src == "" || dst == "" {
 		err := errors.New("Invalid params: " + src + ", " + dst)
 		log.Error("Error: ", err.Error())
 		return err
 	}
+
+	// Create store name using format: '<namespace>_<name>'
+	// Replace dashes with underscores
+	srcStoreName := strings.Replace(ms.namespace+"_"+src, "-", "_", -1)
+	dstStoreName := strings.Replace(ms.namespace+"_"+dst, "-", "_", -1)
 
 	// Flush destination DB, if any
 	q := influx.NewQuery("DROP SERIES FROM /.*/", dstStoreName, "")
@@ -312,7 +326,7 @@ func (ms *MetricStore) SetRedisMetric(metric string, tagStr string, fields map[s
 	}
 
 	// Store data
-	key := moduleMetrics + ":" + metric + ":" + tagStr
+	key := ms.baseKey + metric + ":" + tagStr
 	err = ms.redisClient.SetEntry(key, fields)
 	if err != nil {
 		log.Error("Failed to set entry with error: ", err.Error())
@@ -323,7 +337,7 @@ func (ms *MetricStore) SetRedisMetric(metric string, tagStr string, fields map[s
 }
 
 // GetRedisMetric - Generic metric getter
-func (ms *MetricStore) GetRedisMetric(metric string, tagStr string, fields []string) (values []map[string]interface{}, err error) {
+func (ms *MetricStore) GetRedisMetric(metric string, tagStr string) (values []map[string]interface{}, err error) {
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
@@ -331,7 +345,7 @@ func (ms *MetricStore) GetRedisMetric(metric string, tagStr string, fields []str
 	}
 
 	// Get latest metrics
-	key := moduleMetrics + ":" + metric + ":" + tagStr
+	key := ms.baseKey + metric + ":" + tagStr
 	err = ms.redisClient.ForEachEntry(key, ms.getMetricsEntryHandler, &values)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
@@ -346,9 +360,6 @@ func (ms *MetricStore) getMetricsEntryHandler(key string, fields map[string]stri
 	for k, v := range fields {
 		values[k] = v
 	}
-
-	// Add key to returned values
-	values["key"] = key
 
 	// Append values list to data
 	data := userData.(*[]map[string]interface{})
