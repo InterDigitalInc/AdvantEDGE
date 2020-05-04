@@ -177,7 +177,7 @@ func Run() (err error) {
 				log.Error("Failed to activate scenario with err: ", err.Error())
 			} else {
 				log.Info("Successfully activated scenario: ", sbox.ScenarioName)
-				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, sbox.ScenarioName)
+				_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, sbox.ScenarioName, redisDBAddr, influxDBAddr)
 			}
 		}
 	}
@@ -316,7 +316,7 @@ func ceActivateScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName)
+	_ = httpLog.ReInit(moduleName, sbxCtrl.sandboxName, scenarioName, redisDBAddr, influxDBAddr)
 
 	// Send Activation message to Virt Engine on Global Message Queue
 	msg := sbxCtrl.mqGlobal.CreateMsg(mq.MsgScenarioActivate, mq.TargetAll, mq.TargetAll)

@@ -199,7 +199,7 @@ func activateScenarioMetrics() {
 	}
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName)
+	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
@@ -242,7 +242,7 @@ func terminateScenarioMetrics() {
 	metricStore.StopSnapshotThread()
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName)
+	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName, redisAddr, influxDBAddr)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")

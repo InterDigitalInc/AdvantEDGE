@@ -44,6 +44,8 @@ const moduleTcEngine string = "meep-tc-engine"
 const mgmKey string = "mg-manager:"
 const typeLb string = "lb"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 const DEFAULT_LB_RULES_DB = 0
 
 const eventTypeStateUpdate = "STATE-UPDATE"
@@ -249,7 +251,7 @@ func processActiveScenarioUpdate() {
 	// Sync with active scenario store
 	mgm.activeModel.UpdateScenario()
 
-	_ = httpLog.ReInit(moduleName, mgm.sandboxName, mgm.activeModel.GetScenarioName())
+	_ = httpLog.ReInit(moduleName, mgm.sandboxName, mgm.activeModel.GetScenarioName(), redisAddr, influxAddr)
 
 	// Handle empty/missing scenario
 	if mgm.activeModel.GetScenarioName() == "" {

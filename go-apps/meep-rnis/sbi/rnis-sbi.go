@@ -24,7 +24,7 @@ import (
 )
 
 const moduleName string = "meep-rnis-sbi"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const redisAddr string = "localhost:30380" //"meep-redis-master.default.svc.cluster.local:6379"
 
 type RnisSbi struct {
 	sandboxName          string
@@ -48,13 +48,23 @@ func Init(sandboxName string,
 
 	// Create new SBI instance
 	sbi = new(RnisSbi)
+
 	sbi.sandboxName = sandboxName
+
+	if sbi.sandboxName == "" {
+		err = errors.New("No sandbox name provided")
+		log.Error(err.Error())
+			return err
+		}
+	}
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
-		return err
+		if !utTesting {
+			return err
+		}
 	}
 	log.Info("Message Queue created")
 
@@ -123,9 +133,25 @@ func processActiveScenarioTerminate() {
 	sbi.cleanUpCB()
 }
 
+func UtProcessActiveScenarioUpdate(scenario []byte) {
+	if sbi.activeModel != nil {
+		_ = sbi.activeModel.SetScenario(scenario)
+	}
+	if scenario != nil {
+		processScenarioUpdate()
+	} else {
+		sbi.cleanUpCB()
+	}
+}
+
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
 
+	sbi.activeModel.UpdateScenario()
+	processScenarioUpdate()
+}
+
+func processScenarioUpdate() {
 	// Update scenario Name that needs to be accessed by the NBI
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
@@ -171,6 +197,7 @@ func processActiveScenarioUpdate() {
 	var appNameList []string
 	appNameList = append(appNameList, meAppNameList...)
 	appNameList = append(appNameList, ueAppNameList...)
+
 	for _, meAppName := range appNameList {
 		meAppParent := sbi.activeModel.GetNodeParent(meAppName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {

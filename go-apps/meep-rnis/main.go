@@ -51,7 +51,7 @@ func main() {
 
 	go func() {
 		// Initialize RNIS
-		err := server.Init()
+		err := server.Init("", "", false)
 		if err != nil {
 			log.Error("Failed to initialize RNI Service")
 			run = false
