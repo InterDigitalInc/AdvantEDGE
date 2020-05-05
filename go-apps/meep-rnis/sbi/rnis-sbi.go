@@ -24,7 +24,7 @@ import (
 )
 
 const moduleName string = "meep-rnis-sbi"
-const redisAddr string = "localhost:30380" //"meep-redis-master.default.svc.cluster.local:6379"
+const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type RnisSbi struct {
 	sandboxName          string
