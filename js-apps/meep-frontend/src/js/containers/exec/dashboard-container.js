@@ -37,7 +37,6 @@ import {
 } from '../../state/ui';
 
 import {
-  SANDBOX_NAME,
   TYPE_EXEC,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
@@ -130,6 +129,7 @@ const getUrl = (dashboardName, dashboardOptions) => {
 };
 
 const ViewForName = ({
+  sandboxName,
   scenarioName,
   selectedSource,
   selectedDest,
@@ -163,7 +163,7 @@ const ViewForName = ({
       selectedUrl = selectedUrl.replace(passVarsStr, '');
       
       // Prepend sandbox name to scenario name and replace '-' with '_'
-      var sandboxScenario = SANDBOX_NAME + '_' + scenarioName;
+      var sandboxScenario = sandboxName + '_' + scenarioName;
       var scenario = sandboxScenario.replace(/-/g, '_');
 
       var url = new URL(selectedUrl);
@@ -303,6 +303,7 @@ class DashboardContainer extends Component {
 
     const view1 = (
       <ViewForName
+        sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
         selectedSource={selectedSource}
         selectedDest={selectedDest}
@@ -313,6 +314,7 @@ class DashboardContainer extends Component {
 
     const view2 = (
       <ViewForName
+        sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
         selectedSource={selectedSource}
         selectedDest={selectedDest}

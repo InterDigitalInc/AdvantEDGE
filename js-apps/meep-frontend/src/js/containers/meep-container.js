@@ -34,7 +34,6 @@ import MonitorPageContainer from './monitor/monitor-page-container';
 
 import {
   HOST_PATH,
-  SANDBOX_NAME,
   TYPE_CFG,
   TYPE_EXEC,
   EXEC_STATE_IDLE,
@@ -57,6 +56,8 @@ import {
 
 import {
   uiChangeCurrentPage,
+  uiExecChangeSandbox,
+  uiExecChangeSandboxList,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
   uiToggleMainDrawer
@@ -86,7 +87,7 @@ import {
 // REST API Clients
 var basepathPlatformCtrl = HOST_PATH + '/platform-ctrl/v1';
 meepPlatformCtrlRestApiClient.ApiClient.instance.basePath = basepathPlatformCtrl.replace(/\/+$/,'');
-var basepathSandboxCtrl = HOST_PATH + '/' + SANDBOX_NAME + '/sandbox-ctrl/v1';
+var basepathSandboxCtrl = HOST_PATH + '/sandbox-ctrl/v1';
 meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
 var basepathMonEngine = HOST_PATH + '/mon-engine/v1';
 meepMonEngineRestApiClient.ApiClient.instance.basePath = basepathMonEngine.replace(/\/+$/,'');
@@ -107,6 +108,7 @@ class MeepContainer extends Component {
 
   componentDidMount() {
     document.title = 'AdvantEDGE';
+    this.setBasepath(this.props.sandbox);
     this.refreshScenario();
     this.startTimers();
     this.monitorTabFocus();
@@ -142,8 +144,11 @@ class MeepContainer extends Component {
     this.execPageRefreshIntervalTimer = setInterval(
       () => {
         if (this.props.page === PAGE_EXECUTE) {
-          this.checkScenarioStatus();
-          this.refreshScenario();
+          this.refreshSandboxList();
+          if (this.props.sandbox) {
+            this.checkScenarioStatus();
+            this.refreshScenario();
+          }
         }
       },
       1000
@@ -218,7 +223,7 @@ class MeepContainer extends Component {
   checkScenarioStatus() {
     // Scenario pods
     axios
-      .get(`${basepathMonEngine}/states?long=true&type=scenario&sandbox=${SANDBOX_NAME}`)
+      .get(`${basepathMonEngine}/states?long=true&type=scenario&sandbox=${this.props.sandbox}`)
       .then(res => {
         var scenarioPodsPhases = res.data.podStatus;
         this.props.changeScenarioPodsPhases(scenarioPodsPhases);
@@ -237,6 +242,29 @@ class MeepContainer extends Component {
       .catch(() => {
         this.props.changeServiceMaps([]);
       });
+  }
+
+  /**
+   * Callback function to receive the result of the getSandboxList operation.
+   * @callback module:api/SandboxControlApi~getSandboxListCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/SandboxList} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getSandboxListCb(error, data) {
+    if (error !== null) {
+      // TODO: consider showing an alert
+      return;
+    }
+
+    // Update list of sandboxes, if any
+    this.props.changeSandboxList(_.map(data.sandboxes, 'name'));
+  }
+
+  refreshSandboxList() {
+    this.meepSandboxControlApi.getSandboxList((error, data, response) => {
+      this.getSandboxListCb(error, data, response);
+    });
   }
 
   /**
@@ -366,6 +394,76 @@ class MeepContainer extends Component {
     );
   }
 
+  // Set sandox-specific API basepath
+  setBasepath(sandboxName) {
+    var sandboxPath = (sandboxName) ? '/' + sandboxName : '';
+    basepathSandboxCtrl = HOST_PATH + sandboxPath + '/sandbox-ctrl/v1';
+    meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
+  }
+
+  /**
+   * Callback function to receive the result of the createSandboxWithName operation.
+   * @callback module:api/SandboxControlApi~createSandboxWithNameCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
+  createSandboxWithNameCb(error) {
+    if (error) {
+      this.props.changeSandbox('');
+      return;
+    }
+
+    // Set active sandbox
+    this.setBasepath(this.props.sandbox);
+    this.refreshScenario();
+  }
+
+  // Create a new sandbox
+  createSandbox(name) {
+    this.props.changeSandbox(name);
+    this.meepSandboxControlApi.createSandboxWithName(name, {}, (error, data, response) => {
+      this.createSandboxWithNameCb(error, data, response);
+    });
+  }
+
+  // Set active sandbox
+  setSandbox(name) {
+    this.setBasepath(name);
+    this.refreshScenario();
+    this.props.changeSandbox(name);
+  }
+
+  /**
+   * Callback function to receive the result of the deleteSandbox operation.
+   * @callback module:api/SandboxControlApi~deleteSandboxCallback
+   * @param {String} error Error message, if any.
+   * @param data This operation does not return a value.
+   * @param {String} response The complete HTTP response.
+   */
+  deleteSandboxCb(error) {
+    if (error !== null) {
+      // TODO consider showing an alert  (i.e. toast)
+      return;
+    }
+
+    // Reset sandbox
+    this.props.changeSandbox(null);
+    this.setBasepath(null);
+
+    // Delete the active scenario
+    this.deleteScenario(TYPE_EXEC);
+    this.props.execChangeScenarioState(EXEC_STATE_IDLE);
+    this.props.execChangeOkToTerminate(false);
+  }
+
+  // Delete the active sandbox
+  deleteSandbox() {
+    this.meepSandboxControlApi.deleteSandbox(this.props.sandbox, (error, data, response) => {
+      this.deleteSandboxCb(error, data, response);
+    });
+  }
+
   // Add new element to scenario
   newScenarioElem(pageType, element, scenarioUpdate) {
     var scenario =
@@ -449,6 +547,17 @@ class MeepContainer extends Component {
               replayApi={this.meepEventReplayApi}
               cfgApi={this.meepScenarioConfigurationApi}
               sandboxApi={this.meepSandboxControlApi}
+              sandbox={this.props.sandbox}
+              sandboxes={this.props.sandboxes}
+              createSandbox={(name) => {
+                this.createSandbox(name);
+              }}
+              setSandbox={(name) => {
+                this.setSandbox(name);
+              }}
+              deleteSandbox={() => {
+                this.deleteSandbox();
+              }}
               refreshScenario={() => {
                 this.refreshScenario();
               }}
@@ -512,6 +621,8 @@ const mapStateToProps = state => {
     exec: state.exec,
     execVis: state.exec.vis,
     page: state.ui.page,
+    sandbox: state.ui.sandbox,
+    sandboxes: state.ui.sandboxes,
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
@@ -529,6 +640,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
+    changeSandbox: name => dispatch(uiExecChangeSandbox(name)),
+    changeSandboxList: list => dispatch(uiExecChangeSandboxList(list)),
     changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
     changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
     changeReplayStatus: status => dispatch(execChangeReplayStatus(status)),

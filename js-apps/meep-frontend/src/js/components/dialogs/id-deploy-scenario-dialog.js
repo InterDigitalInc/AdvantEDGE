@@ -19,7 +19,6 @@ import React, { Component } from 'react';
 import IDDialog from './id-dialog';
 import IDSelect from '../helper-components/id-select';
 import {
-  SANDBOX_NAME,
   MEEP_DLG_DEPLOY_SCENARIO,
   MEEP_DLG_DEPLOY_SCENARIO_SELECT
 } from '../../meep-constants';
@@ -39,19 +38,10 @@ class IDDeployScenarioDialog extends Component {
       return;
     }
 
-    // this.props.api.activateScenario(
-    //   this.state.selectedScenario,
-    //   null,
-    //   this.props.activateScenarioCb
-    // );
-
-    var sandboxConfig = {
-      scenarioName: this.state.selectedScenario
-    };
-    this.props.api.createSandboxWithName(
-      SANDBOX_NAME,
-      sandboxConfig,
-      this.props.createSandboxWithNameCb
+    this.props.api.activateScenario(
+      this.state.selectedScenario,
+      null,
+      this.props.activateScenarioCb
     );
   }
 
@@ -81,5 +71,3 @@ class IDDeployScenarioDialog extends Component {
 }
 
 export default IDDeployScenarioDialog;
-
-//

@@ -173,7 +173,6 @@ func terminateScenario(sandboxName string) {
 			if err == nil && chartsToDelete == 0 {
 				// Remove modle & cached scenario
 				ve.activeScenarioNames[sandboxName] = ""
-				ve.activeModels[sandboxName] = nil
 				ticker.Stop()
 				return
 			} else {

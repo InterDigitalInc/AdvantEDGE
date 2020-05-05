@@ -22,7 +22,6 @@ import { Select } from '@rmwc/select';
 import { Elevation } from '@rmwc/elevation';
 import { Button } from '@rmwc/button';
 import Iframe from 'react-iframe';
-import HeadlineBar from '../../components/headline-bar';
 import { ListEditPane } from './list-edit-pane';
 import IDConfirmDialog from '../../components/dialogs/id-confirm-dialog';
 import { Icon } from '@rmwc/icon';
@@ -112,12 +111,6 @@ const MonitorPageHeadlineBar = props => {
         <GridCell span={12}>
           <Elevation className="component-style" z={2} style={styles.headline}>
             <GridInner>
-              <GridCell align={'middle'} span={4}>
-                <HeadlineBar
-                  titleLabel="Deployed Scenario"
-                  scenarioName={props.scenarioName}
-                />
-              </GridCell>
               <GridCell span={4} align={'middle'}>
                 <Select
                   style={{ width: '100%' }}
@@ -130,7 +123,7 @@ const MonitorPageHeadlineBar = props => {
                   data-cy={MON_DASHBOARD_SELECT}
                 />
               </GridCell>
-              <GridCell span={4} align={'middle'}>
+              <GridCell span={8} align={'middle'}>
                 <div align={'right'}>
                   <Button
                     raised

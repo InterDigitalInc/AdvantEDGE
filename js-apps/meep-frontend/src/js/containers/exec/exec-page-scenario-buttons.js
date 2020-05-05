@@ -25,7 +25,6 @@ import {
   EXEC_BTN_SAVE_SCENARIO,
   EXEC_BTN_DEPLOY,
   EXEC_BTN_TERMINATE,
-  EXEC_BTN_REFRESH,
   EXEC_BTN_EVENT,
   EXEC_BTN_CONFIG
 } from '../../meep-constants';
@@ -65,14 +64,6 @@ class ExecPageScenarioButtons extends Component {
     );
   }
 
-  canRefresh() {
-    return (
-      !this.props.podsPending &&
-      !this.props.podsTerminating &&
-      !this.props.podsTerminated
-    );
-  }
-
   canOpenDashCfg() {
     return (
       !this.props.podsPending &&
@@ -94,7 +85,7 @@ class ExecPageScenarioButtons extends Component {
       <div>
         <Button
           raised
-          style={styles.section1}
+          style={styles.button}
           onClick={this.props.onDeploy}
           disabled={!this.canDeploy()}
           data-cy={EXEC_BTN_DEPLOY}
@@ -103,7 +94,7 @@ class ExecPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={styles.section1}
+          style={styles.button}
           onClick={() => this.props.onSaveScenario()}
           disabled={!this.canSaveScenario()}
           data-cy={EXEC_BTN_SAVE_SCENARIO}
@@ -112,7 +103,7 @@ class ExecPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={styles.section1}
+          style={styles.button}
           onClick={this.props.onTerminate}
           disabled={!this.canTerminate()}
           data-cy={EXEC_BTN_TERMINATE}
@@ -121,16 +112,7 @@ class ExecPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={styles.section1}
-          onClick={this.props.onRefresh}
-          disabled={!this.canRefresh()}
-          data-cy={EXEC_BTN_REFRESH}
-        >
-          REFRESH
-        </Button>
-        <Button
-          raised
-          style={styles.section2}
+          style={styles.buttonWithMargin}
           onClick={this.props.onOpenEventCfg}
           disabled={!this.canOpenEventCfg()}
           data-cy={EXEC_BTN_EVENT}
@@ -139,17 +121,16 @@ class ExecPageScenarioButtons extends Component {
         </Button>
         <Button
           raised
-          style={styles.section1}
+          style={styles.button}
           onClick={this.props.onOpenDashCfg}
           disabled={!this.canOpenDashCfg()}
           data-cy={EXEC_BTN_CONFIG}
         >
           DASHBOARD
         </Button>
-
         <Button
           raised
-          style={styles.section2}
+          style={styles.buttonWithMargin}
           onClick={() => {
             window.open(MEEP_HELP_PAGE_EXEC_URL,'_blank');
           }}
@@ -166,11 +147,11 @@ class ExecPageScenarioButtons extends Component {
 }
 
 const styles = {
-  section1: {
+  button: {
     color: 'white',
     marginRight: 5
   },
-  section2: {
+  buttonWithMargin: {
     color: 'white',
     marginRight: 5,
     marginLeft: 10
