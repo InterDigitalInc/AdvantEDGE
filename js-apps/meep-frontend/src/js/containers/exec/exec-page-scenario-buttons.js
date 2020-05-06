@@ -43,6 +43,7 @@ class ExecPageScenarioButtons extends Component {
 
   canDeploy() {
     return (
+      this.props.sandbox &&
       this.props.podsTerminated &&
       this.props.scenarioState.scenario !== EXEC_STATE_DEPLOYED
     );
@@ -50,6 +51,7 @@ class ExecPageScenarioButtons extends Component {
 
   canTerminate() {
     return (
+      this.props.sandbox &&
       !this.props.podsTerminating &&
       this.props.scenarioState.scenario === EXEC_STATE_DEPLOYED &&
       this.props.okToTerminate
@@ -58,6 +60,7 @@ class ExecPageScenarioButtons extends Component {
 
   canSaveScenario() {
     return (
+      this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
       !this.props.podsTerminated
@@ -66,6 +69,7 @@ class ExecPageScenarioButtons extends Component {
 
   canOpenDashCfg() {
     return (
+      this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
       !this.props.podsTerminated
@@ -74,6 +78,7 @@ class ExecPageScenarioButtons extends Component {
 
   canOpenEventCfg() {
     return (
+      this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
       !this.props.podsTerminated

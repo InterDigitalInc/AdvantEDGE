@@ -70,7 +70,8 @@ import {
   IDC_DIALOG_SAVE_SCENARIO,
   IDC_DIALOG_SAVE_REPLAY,
   MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  NETWORK_CHARACTERISTICS_EVENT,
+  EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
 class ExecPageContainer extends Component {
@@ -406,12 +407,12 @@ class ExecPageContainer extends Component {
                         this.props.setSandbox(e.target.value);
                       }}
                       value={sandbox}
-                      // data-cy={MON_DASHBOARD_SELECT}
+                      data-cy={EXEC_SELECT_SANDBOX}
                     />
                   </GridCell>
                   <GridCell align={'middle'} span={2}>
                     <ExecPageSandboxButtons
-                      sandbox={this.props.sandbox}
+                      sandbox={sandbox}
                       onNewSandbox={() => this.onNewSandbox()}
                       onDeleteSandbox={() => this.onDeleteSandbox()}
                     />
@@ -430,6 +431,7 @@ class ExecPageContainer extends Component {
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
                         <ExecPageScenarioButtons
+                          sandbox={sandbox}
                           onDeploy={() => this.onDeployScenario()}
                           onSaveScenario={() => this.onSaveScenario()}
                           onTerminate={() => this.onTerminateScenario()}

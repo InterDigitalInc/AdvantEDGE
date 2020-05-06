@@ -132,6 +132,8 @@ export const EXEC_STATE_IDLE = 'IDLE';
 export const EXEC_STATE_DEPLOYED = 'DEPLOYED';
 
 // Execution page IDs
+export const EXEC_SELECT_SANDBOX = 'exec-select-sandbox';
+
 export const EXEC_BTN_NEW_SANDBOX = 'exec-btn-new-sandbox';
 export const EXEC_BTN_DELETE_SANDBOX = 'exec-btn-delete-sandbox';
 export const EXEC_BTN_DEPLOY = 'exec-btn-deploy';
