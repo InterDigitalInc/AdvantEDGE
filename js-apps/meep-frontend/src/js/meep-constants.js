@@ -139,7 +139,6 @@ export const EXEC_BTN_DELETE_SANDBOX = 'exec-btn-delete-sandbox';
 export const EXEC_BTN_DEPLOY = 'exec-btn-deploy';
 export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
-export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
 export const EXEC_BTN_CONFIG = 'exec-btn-config';
 export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
