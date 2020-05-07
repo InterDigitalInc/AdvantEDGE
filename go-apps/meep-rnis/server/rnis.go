@@ -118,7 +118,7 @@ func Init(redisDBAddr string, influxDBAddr string) (err error) {
 	}()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(sandboxName, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
+	return sbi.Init(sandboxName, redisAddr, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info

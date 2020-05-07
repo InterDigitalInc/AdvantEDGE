@@ -24,7 +24,6 @@ import (
 )
 
 const moduleName string = "meep-rnis-sbi"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type RnisSbi struct {
 	sandboxName          string
@@ -41,6 +40,7 @@ var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
 func Init(sandboxName string,
+	redisAddr string,
 	updateUeEcgiInfo func(string, string, string, string),
 	updateAppEcgiInfo func(string, string, string, string),
 	updateScenarioName func(string),
@@ -51,20 +51,11 @@ func Init(sandboxName string,
 
 	sbi.sandboxName = sandboxName
 
-	if sbi.sandboxName == "" {
-		err = errors.New("No sandbox name provided")
-		log.Error(err.Error())
-			return err
-		}
-	}
-
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
-		if !utTesting {
-			return err
-		}
+		return err
 	}
 	log.Info("Message Queue created")
 
@@ -131,17 +122,6 @@ func processActiveScenarioTerminate() {
 	sbi.activeModel.UpdateScenario()
 
 	sbi.cleanUpCB()
-}
-
-func UtProcessActiveScenarioUpdate(scenario []byte) {
-	if sbi.activeModel != nil {
-		_ = sbi.activeModel.SetScenario(scenario)
-	}
-	if scenario != nil {
-		processScenarioUpdate()
-	} else {
-		sbi.cleanUpCB()
-	}
 }
 
 func processActiveScenarioUpdate() {

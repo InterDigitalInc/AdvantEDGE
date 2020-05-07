@@ -1,7 +1,4 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-github.com/InterDigitalInc/AdvantEDGE v1.4.0 h1:MnzK3dl4hUvfhZ4wYarVmJzE5IMO2Q63dyDkcQtEv1Q=
-github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0-20200306214341-11d08c83c4d6 h1:MQdqTqVt3SKXO8NM4q4M1rM62lVdenF6SlQXdhkNTPg=
-github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch v0.0.0-20200306214341-11d08c83c4d6/go.mod h1:P/cgQ5p3bN7uWSJ220kznT8YZyURV1HOGHSTrcR7LQg=
 github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db/go.mod h1:RU+6d0CNIRSp6yo1mXLIIrnFa/3LHhvcDVLVJyovptM=
 github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351 h1:1u1XrfCBnY+GijnyU6O1k4odp5TnqZQTsp5v7+n/E4Y=
 github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351/go.mod h1:HxwfbuElTuGf+/uKZfjJrCnv0BmmpkPJDI7gBwj1KkM=
