@@ -22,7 +22,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
-    sandboxName: {{ .SandboxName }}
+    MEEP_SANDBOX_NAME: {{ .SandboxName }}
     
 service:
   name: meep-mg-manager
@@ -36,7 +36,7 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /({{ .SandboxName }}/|)mgm
+        - /{{ .SandboxName }}/mgm
 
   annotations:
     # kubernetes.io/ingress.class: nginx

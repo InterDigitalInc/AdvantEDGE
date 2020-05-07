@@ -45,7 +45,7 @@ type VirtEngine struct {
 	mqGlobal            *mq.MsgQueue
 	activeModels        map[string]*mod.Model
 	activeScenarioNames map[string]string
-	rootUrl             string
+	hostUrl             string
 	handlerId           int
 }
 
@@ -58,14 +58,14 @@ func Init() (err error) {
 	ve.activeModels = make(map[string]*mod.Model)
 	ve.activeScenarioNames = make(map[string]string)
 
-	// Retrieve Root URL from environment variable
-	ve.rootUrl = strings.TrimSpace(os.Getenv("MEEP_ROOT_URL"))
-	if ve.rootUrl == "" {
-		err = errors.New("MEEP_ROOT_URL env variable not set")
+	// Retrieve Host Name from environment variable
+	ve.hostUrl = strings.TrimSpace(os.Getenv("MEEP_HOST_URL"))
+	if ve.hostUrl == "" {
+		err = errors.New("MEEP_HOST_URL env variable not set")
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("MEEP_ROOT_URL: ", ve.rootUrl)
+	log.Info("MEEP_HOST_URL: ", ve.hostUrl)
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)

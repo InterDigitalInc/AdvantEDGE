@@ -14,6 +14,6 @@
 
 FROM debian:9.6-slim
 COPY ./meep-platform-ctrl /meep-platform-ctrl
-COPY ./static /static
-COPY ./api /static/api
+COPY ./frontend /frontend
+COPY ./swagger /swagger
 ENTRYPOINT ["/meep-platform-ctrl"]

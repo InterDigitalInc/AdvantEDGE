@@ -22,7 +22,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
-    sandboxName: {{ .SandboxName }}
+    MEEP_SANDBOX_NAME: {{ .SandboxName }}
     
 service:
   name: meep-tc-engine

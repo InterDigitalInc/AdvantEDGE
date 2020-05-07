@@ -57,6 +57,9 @@ func NewRouter() *mux.Router {
 			Handler(handler)
 	}
 
+	// Path prefix router order is important
+	router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir("./swagger"))))
+
 	return router
 }
 

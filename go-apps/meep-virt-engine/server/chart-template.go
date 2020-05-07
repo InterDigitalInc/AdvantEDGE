@@ -115,7 +115,7 @@ type ScenarioTemplate struct {
 type SandboxTemplate struct {
 	SandboxName string
 	Namespace   string
-	RootUrl     string
+	HostUrl     string
 }
 
 // Service map
@@ -500,7 +500,7 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	var sandboxTemplate SandboxTemplate
 	sandboxTemplate.SandboxName = sandboxName
 	sandboxTemplate.Namespace = sandboxName
-	sandboxTemplate.RootUrl = ve.rootUrl + "/" + sandboxName
+	sandboxTemplate.HostUrl = ve.hostUrl
 
 	// Create sandbox charts
 	chartLocation, err := createChart("meep-loc-serv", sandboxName, "", sandboxTemplate)

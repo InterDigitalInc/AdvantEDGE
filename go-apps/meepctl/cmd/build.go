@@ -168,7 +168,9 @@ func buildJsApp(targetName string, repo string, cobraCmd *cobra.Command) {
 	switch targetName {
 	case "meep-frontend":
 		buildFrontend(targetName, repo, cobraCmd)
-	case "meep-swagger-ui":
+	case "meep-platform-swagger-ui":
+		buildSwaggerUi(targetName, repo, cobraCmd)
+	case "meep-sandbox-swagger-ui":
 		buildSwaggerUi(targetName, repo, cobraCmd)
 	default:
 		fmt.Println("Error: Unsupported JS App: ", targetName)
