@@ -37,7 +37,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const basepathURL = "/rni/v1/"
+const rnisBasePath = "/rni/v1/"
 const rnisKey string = "rnis:"
 const logModuleRNIS string = "meep-rnis"
 
@@ -52,8 +52,9 @@ var currentStoreName = ""
 var RNIS_DB = 5
 
 var rc *redis.Connector
-var rootUrl *url.URL
+var hostUrl *url.URL
 var sandboxName string
+var basePath string
 var baseKey string
 
 var expiryTicker *time.Ticker
@@ -77,12 +78,15 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	// Retrieve Root URL from environment variable
-	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_RNIS_ROOT_URL")))
+	// Retrieve Host URL from environment variable
+	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
 	if err != nil {
-		rootUrl = new(url.URL)
+		hostUrl = new(url.URL)
 	}
-	log.Info("MEEP_RNIS_ROOT_URL: ", rootUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
+
+	// Set base path
+	basePath = "/" + sandboxName + rnisBasePath
 
 	// Get base store key
 	baseKey = dkm.GetKeyRoot(sandboxName) + rnisKey
@@ -501,7 +505,7 @@ func cellChangeSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 	cellChangeSubscription.ExpiryDeadline = cellChangeSubscriptionPost.ExpiryDeadline
 	link := new(Link)
-	link.Self = rootUrl.String() + basepathURL + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
+	link.Self = hostUrl.String() + basePath + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
 	cellChangeSubscription.Links = link
 
 	_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
@@ -656,7 +660,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	subscriptionLinkList := new(SubscriptionLinkList)
 
 	link := new(Link)
-	link.Self = rootUrl.String() + basepathURL + "subscriptions"
+	link.Self = hostUrl.String() + basePath + "subscriptions"
 
 	if subType != "" {
 		link.Self = link.Self + "/" + subType

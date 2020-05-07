@@ -40,10 +40,10 @@ spec:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
           env:
-            - name: MEEP_SANDBOX_NAME
-              value: {{ .Values.image.env.sandboxName }}
-            - name: MEEP_LOC_SERV_ROOT_URL
-              value: {{ .Values.image.env.rooturl }}
+            {{- range $key, $value := .Values.image.env }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage

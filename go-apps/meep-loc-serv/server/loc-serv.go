@@ -38,7 +38,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const basePath = "/location/v1/"
+const LocServBasePath = "/location/v1/"
 const locServKey string = "loc-serv:"
 
 const typeZone = "zone"
@@ -81,8 +81,9 @@ var LOC_SERV_DB = 5
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 var rc *redis.Connector
-var rootUrl *url.URL
+var hostUrl *url.URL
 var sandboxName string
+var basePath string
 var baseKey string
 
 // Init - Location Service initialization
@@ -97,12 +98,15 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	// Retrieve Root URL from environment variable
-	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_LOC_SERV_ROOT_URL")))
+	// Retrieve Host URL from environment variable
+	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
 	if err != nil {
-		rootUrl = new(url.URL)
+		hostUrl = new(url.URL)
 	}
-	log.Info("MEEP_LOC_SERV_ROOT_URL: ", rootUrl)
+	log.Info("MEEP_HOST_URL: ", hostUrl)
+
+	// Set base path
+	basePath = "/" + sandboxName + LocServBasePath
 
 	// Get base storage key
 	baseKey = dkm.GetKeyRoot(sandboxName) + locServKey
@@ -509,7 +513,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	response.UserList = &userList
 
 	_ = rc.JSONGetList(zoneIdVar, accessPointIdVar, baseKey+typeUser+":", populateUserList, &userList)
-	userList.ResourceURL = rootUrl.String() + basePath + "users"
+	userList.ResourceURL = hostUrl.String() + basePath + "users"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -599,7 +603,7 @@ func zonesByIdGetAps(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList(interestRealm, "", baseKey+typeZone+":"+vars["zoneId"], populateApList, &apList)
 	apList.ZoneId = vars["zoneId"]
-	apList.ResourceURL = rootUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
+	apList.ResourceURL = hostUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -650,7 +654,7 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 	response.ZoneList = &zoneList
 
 	_ = rc.JSONGetList("", "", baseKey+typeZone+":", populateZoneList, &zoneList)
-	zoneList.ResourceURL = rootUrl.String() + basePath + "zones"
+	zoneList.ResourceURL = hostUrl.String() + basePath + "zones"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -758,7 +762,7 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", baseKey+typeUserSubscription, populateUserTrackingList, &userTrackingSubList)
 
-	userTrackingSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking"
+	userTrackingSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -821,7 +825,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := strconv.Itoa(newSubsId)
 
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
-	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
+	userTrackingSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
@@ -852,7 +856,7 @@ func userTrackingSubPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	userTrackingSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
+	userTrackingSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
@@ -905,7 +909,7 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	response.NotificationSubscriptionList = &zonalTrafficSubList
 
 	_ = rc.JSONGetList("", "", baseKey+typeZonalSubscription, populateZonalTrafficList, &zonalTrafficSubList)
-	zonalTrafficSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic"
+	zonalTrafficSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -978,7 +982,7 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	}
 	//else, lasts forever or until subscription is deleted
 
-	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
+	zonalTrafficSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
@@ -1011,7 +1015,7 @@ func zonalTrafficSubPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	zonalTrafficSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
+	zonalTrafficSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
@@ -1065,7 +1069,7 @@ func zoneStatusGet(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONGetList("", "", baseKey+typeZoneStatusSubscription, populateZoneStatusList, &zoneStatusSubList)
 
-	zoneStatusSubList.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus"
+	zoneStatusSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus"
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1127,7 +1131,7 @@ func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 	nextZoneStatusSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)
 
-	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
+	zoneStatusSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
@@ -1161,7 +1165,7 @@ func zoneStatusPutById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subsIdStr := vars["subscriptionId"]
-	zoneStatusSub.ResourceURL = rootUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
+	zoneStatusSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
@@ -1261,7 +1265,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		userInfo.Address = address
 		userInfo.ZoneId = zoneId
 		userInfo.AccessPointId = accessPointId
-		userInfo.ResourceURL = rootUrl.String() + basePath + "users/" + address
+		userInfo.ResourceURL = hostUrl.String() + basePath + "users/" + address
 		//unsued optional attributes
 		//userInfo.LocationInfo.Latitude,
 		//userInfo.LocationInfo.Longitude,
@@ -1297,7 +1301,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
 	} else {
 		zoneInfo.ZoneId = zoneId
-		zoneInfo.ResourceURL = rootUrl.String() + basePath + "zones/" + zoneId
+		zoneInfo.ResourceURL = hostUrl.String() + basePath + "zones/" + zoneId
 
 		zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
 		zoneInfo.NumberOfUnservicableAccessPoints = int32(nbUnsrvAccessPoints)
@@ -1329,7 +1333,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 	} else {
 		apInfo := new(AccessPointInfo)
 		apInfo.AccessPointId = apId
-		apInfo.ResourceURL = rootUrl.String() + basePath + "zones/" + zoneId + "/accessPoints/" + apId
+		apInfo.ResourceURL = hostUrl.String() + basePath + "zones/" + zoneId + "/accessPoints/" + apId
 		conType := convertStringToConnectionType(conTypeStr)
 		apInfo.ConnectionType = &conType
 		opStatus := convertStringToOperationStatus(opStatusStr)

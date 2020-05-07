@@ -22,7 +22,7 @@ image:
   tag: latest
   pullPolicy: Always      
   env:
-    rooturl: "http://www.example.com"
+    MEEP_HOST_URL: "http://www.example.com"
 
 service:
   type: ClusterIP

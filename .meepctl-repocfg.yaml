@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.4.2
+version: 1.4.3
 repo:
   name: AdvantEDGE
 
@@ -31,6 +31,7 @@ repo:
           - -mod=vendor
         codecov: true
         lint: true
+        api: go-apps/meep-mon-engine/api/swagger.yaml
       meep-platform-ctrl:
         src: go-apps/meep-platform-ctrl
         bin: bin/meep-platform-ctrl
@@ -39,8 +40,8 @@ repo:
         lint: true
         api: go-apps/meep-platform-ctrl/api/swagger.yaml
         docker-data:
-          api: bin/meep-swagger-ui
-          static: bin/meep-frontend
+          swagger: bin/meep-platform-swagger-ui
+          frontend: bin/meep-frontend
       meep-virt-engine:
         src: go-apps/meep-virt-engine
         bin: bin/meep-virt-engine
@@ -75,12 +76,18 @@ repo:
           meep-platform-ctrl-api: js-packages/meep-platform-ctrl-client
           meep-sandbox-ctrl-api: js-packages/meep-sandbox-ctrl-client
           meep-mon-engine-api: js-packages/meep-mon-engine-client
-      meep-swagger-ui:
+      meep-platform-swagger-ui:
         src: js-apps/meep-swagger-ui
-        bin: bin/meep-swagger-ui
+        bin: bin/meep-platform-swagger-ui
         lint: false
         api-bundle:
           - core.go-apps.meep-platform-ctrl
+          - core.go-apps.meep-mon-engine
+      meep-sandbox-swagger-ui:
+        src: js-apps/meep-swagger-ui
+        bin: bin/meep-sandbox-swagger-ui
+        lint: false
+        api-bundle:
           - sandbox.go-apps.meep-sandbox-ctrl
           - sandbox.go-apps.meep-loc-serv
           - packages.go-packages.meep-loc-serv-notification-client
@@ -139,6 +146,9 @@ repo:
         codecov: false
         lint: true
         api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
+        docker-data:
+          'entrypoint.sh': go-apps/meep-sandbox-ctrl/entrypoint.sh
+          swagger: bin/meep-sandbox-swagger-ui
       meep-tc-engine:
         src: go-apps/meep-tc-engine
         bin: bin/meep-tc-engine
