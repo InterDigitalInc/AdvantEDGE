@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -78,6 +79,7 @@ type NetCharConfig struct {
 type NetCharManager struct {
 	name             string
 	namespace        string
+	baseKey          string
 	isStarted        bool
 	ticker           *time.Ticker
 	rc               *redis.Connector
@@ -103,6 +105,7 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	}
 	ncm.name = name
 	ncm.namespace = namespace
+	ncm.baseKey = dkm.GetKeyRoot(namespace)
 	ncm.isStarted = false
 	ncm.config.RecalculationPeriod = defaultTickerPeriod
 
@@ -115,14 +118,20 @@ func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManage
 	log.Info("Message Queue created")
 
 	// Create new NetCharAlgo
-	ncm.algo, err = NewSegmentAlgorithm(ncm.name, redisAddr)
+	ncm.algo, err = NewSegmentAlgorithm(ncm.name, ncm.namespace, redisAddr)
 	if err != nil {
 		log.Error("Failed to create NetCharAlgo with error: ", err)
 		return nil, err
 	}
 
 	// Create new Model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: name, UpdateCb: nil, DbAddr: redisAddr}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: ncm.namespace,
+		Module:    name,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
 	ncm.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -279,7 +288,7 @@ func (ncm *NetCharManager) updateNetChars() {
 func (ncm *NetCharManager) updateControls() {
 	ncm.mutex.Lock()
 	var controls = make(map[string]interface{})
-	keyName := NetCharControls
+	keyName := ncm.baseKey + NetCharControls
 	err := ncm.rc.ForEachEntry(keyName, ncm.getControlsEntryHandler, controls)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)

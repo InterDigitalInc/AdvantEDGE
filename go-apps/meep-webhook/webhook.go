@@ -40,8 +40,9 @@ import (
 
 const meepOrigin = "scenario"
 
-// Active scenario name
-var activeScenarioName string
+// MQ payload fields
+const fieldSandboxName = "sandbox-name"
+const fieldScenarioName = "scenario-name"
 
 var (
 	runtimeScheme = runtime.NewScheme()
@@ -83,21 +84,13 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processScenarioChange()
+		activeScenarioNames[msg.Payload[fieldSandboxName]] = msg.Payload[fieldScenarioName]
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processScenarioChange()
+		activeScenarioNames[msg.Payload[fieldSandboxName]] = ""
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
-}
-
-func processScenarioChange() {
-	// Sync model with data store
-	model.UpdateScenario()
-
-	// Update Active scenrio name
-	activeScenarioName = model.GetScenarioName()
 }
 
 func loadConfig(configFile string) (*Config, error) {
@@ -114,7 +107,7 @@ func loadConfig(configFile string) (*Config, error) {
 
 // Determine if resource is part of the active scenario
 func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
-	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+activeScenarioName+"-")
+	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+scenarioName+"-")
 }
 
 func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
@@ -124,7 +117,7 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	newLabels["meepApp"] = meepAppName
 	newLabels["meepOrigin"] = meepOrigin
 	newLabels["meepSandbox"] = sandboxName
-	newLabels["meepScenario"] = activeScenarioName
+	newLabels["meepScenario"] = activeScenarioNames[sandboxName]
 	newLabels["processId"] = meepAppName
 
 	// Add environment variables to sidecar containers
@@ -137,7 +130,7 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	envVar.Value = sandboxName
 	envVars = append(envVars, envVar)
 	envVar.Name = "MEEP_SCENARIO_NAME"
-	envVar.Value = activeScenarioName
+	envVar.Value = activeScenarioNames[sandboxName]
 	envVars = append(envVars, envVar)
 
 	var sidecarContainers []corev1.Container
@@ -226,7 +219,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	log.Info("Mutate request Name[", req.Name, "] Kind[", req.Kind, "] Namespace[", req.Namespace, "]")
 
 	// Ignore if no active scenario
-	if activeScenarioName == "" {
+	if activeScenarioNames[req.Namespace] == "" {
 		log.Info("No active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
@@ -279,7 +272,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Determine if resource is part of the active scenario
-	if !isScenarioResource(releaseName, req.Namespace, activeScenarioName) {
+	if !isScenarioResource(releaseName, req.Namespace, activeScenarioNames[req.Namespace]) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,

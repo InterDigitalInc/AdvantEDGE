@@ -41,8 +41,6 @@ describe('Scenario Monitoring', function() {
     let httploggersAggregationStr = 'Http REST API Logs Aggregation';
     let httpSingleLogStr = 'Http REST API Single Detailed Log';
 
-
-
     // Go to monitoring page
     cy.log('Go to monitoring page');
     click(meep.MEEP_TAB_MON);

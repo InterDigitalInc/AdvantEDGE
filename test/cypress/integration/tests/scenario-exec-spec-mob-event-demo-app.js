@@ -20,23 +20,8 @@ import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
 // Import element utils
 import {
   // Field Names
-  FIELD_TYPE,
   FIELD_PARENT,
   FIELD_NAME,
-  FIELD_IMAGE,
-  FIELD_PORT,
-  FIELD_PROTOCOL,
-  FIELD_GROUP,
-  FIELD_SVC_MAP,
-  FIELD_ENV_VAR,
-  FIELD_CMD,
-  FIELD_CMD_ARGS,
-  FIELD_EXT_PORT,
-  FIELD_IS_EXTERNAL,
-  FIELD_CHART_ENABLED,
-  FIELD_CHART_LOC,
-  FIELD_CHART_VAL,
-  FIELD_CHART_GROUP,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
   FIELD_INT_DOM_THROUGPUT,
@@ -65,6 +50,8 @@ describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
+  let sandbox = 'sbox-test';
+  let scenario = 'demo1'
 
   // ------------------------------
   //            TESTS
@@ -77,10 +64,10 @@ describe('Scenario Execution', function () {
 
   // Demo1 scenario testing for mobility event on the demo app output
   it('Deploy DEMO1 scenario - mobility event #1', function () {
-
-    let scenario = 'demo1';
-
     openDefaultMeepUrl();
+
+    // Create Sandbox
+    createSandbox(sandbox);
 
     // Deploy demo scenario
     deployScenario(scenario);
@@ -90,11 +77,9 @@ describe('Scenario Execution', function () {
     //testMobility event was split so that each mobility event can be tested independantly
     cy.log('Create 1st Mobility event');
     createMobilityEvent('ue1', 'zone1-poa2');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
@@ -102,137 +87,127 @@ describe('Scenario Execution', function () {
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone1-poa2');
-
   });
 
   // Demo1 scenario testing  mobility event #2
   it('DEMO1 scenario - mobility event #2', function () {
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     cy.log('Create 2nd Mobility event');
     createMobilityEvent('ue1', 'zone2-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone2-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #3
   it('DEMO1 scenario - mobility event #3', function () {
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     cy.log('Create 3rd Mobility event');
     createMobilityEvent('ue1', 'zone1-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone1-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #4
   it('DEMO1 scenario - mobility event #4', function () {
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     cy.log('Create 4th Mobility event');
     createMobilityEvent('ue2-ext', 'zone1-poa2');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa2');
-
   });
 
   // Demo1 scenario testing  mobility event #5
   it('DEMO1 scenario - mobility event #5', function () {
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     cy.log('Create 5th Mobility event');
     createMobilityEvent('ue2-ext', 'zone2-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone2-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #6
   it('DEMO1 scenario - mobility event #6', function () {
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     cy.log('Create 6th Mobility event');
     createMobilityEvent('ue2-ext', 'zone1-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
     openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa1');
-
   });
 
   // Demo1 scenario terminate
   it('DEMO1 scenario - terminate', function () {
-
-    let scenario = 'demo1';
-
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(1000);
 
     // Test events
     // Terminate demo scenario
     terminateScenario(scenario);
 
+    // Destroy Sandbox
+    destroySandbox(sandbox);
   });
 
   // ------------------------------
@@ -263,6 +238,48 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
   }
 
+  // Create sandbox with provided name
+  function createSandbox(name) {
+    // Go to execution page
+    cy.log('Go to execution page');
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, false);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+
+    // Create sandbox
+    cy.log('Create sandbox: ' + name);
+    click(meep.EXEC_BTN_NEW_SANDBOX);
+    type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
+    click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
+    cy.wait(10000);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+  }
+
+  // Destroy sandbox with provided name
+  function destroySandbox(name) {
+    cy.log('Destroy Sandbox: ' + name);
+    select(meep.EXEC_SELECT_SANDBOX, name);
+    cy.wait(1000);
+    click(meep.EXEC_BTN_DELETE_SANDBOX);
+    click(meep.MEEP_DLG_DELETE_SANDBOX, 'Ok');
+    cy.wait(10000);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, false);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
+  }
+
   // Deploy scenario with provided name
   function deployScenario(name) {
     // Go to execution page
@@ -272,7 +289,6 @@ describe('Scenario Execution', function () {
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
 
     // Deploy scenario
@@ -285,7 +301,6 @@ describe('Scenario Execution', function () {
     verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, true);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', name);
   }
 
@@ -297,7 +312,6 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true, 120000);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
   }

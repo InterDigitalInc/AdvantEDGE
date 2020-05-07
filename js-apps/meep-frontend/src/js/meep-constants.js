@@ -16,7 +16,6 @@
 
 export const HOST_PATH = location.origin;
 // export const HOST_PATH = 'http://10.3.16.105';
-export const SANDBOX_NAME = 'sbox-1';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -43,6 +42,9 @@ export const MEEP_BTN_CANCEL = 'meep-btn-cancel';
 export const MEEP_BTN_APPLY = 'meep-btn-apply';
 
 // Dialog IDs
+export const MEEP_DLG_NEW_SANDBOX = 'meep-dlg-new-sandbox';
+export const MEEP_DLG_NEW_SANDBOX_NAME = 'meep-dlg-new-sandbox-name';
+export const MEEP_DLG_DELETE_SANDBOX = 'meep-dlg-delete-sandbox';
 export const MEEP_DLG_NEW_SCENARIO = 'meep-dlg-new-scenario';
 export const MEEP_DLG_NEW_SCENARIO_NAME = 'meep-dlg-new-scenario-name';
 export const MEEP_DLG_SAVE_SCENARIO = 'meep-dlg-save-scenario';
@@ -66,6 +68,8 @@ export const IDC_DIALOG_SAVE_SCENARIO = 'IDC_DIALOG_SAVE_SCENARIO';
 export const IDC_DIALOG_DELETE_SCENARIO = 'IDC_DIALOG_DELETE_SCENARIO';
 export const IDC_DIALOG_EXPORT_SCENARIO = 'IDC_DIALOG_EXPORT_SCENARIO';
 // EXEC
+export const IDC_DIALOG_NEW_SANDBOX = 'IDC_DIALOG_NEW_SANDBOX';
+export const IDC_DIALOG_DELETE_SANDBOX = 'IDC_DIALOG_DELETE_SANDBOX';
 export const IDC_DIALOG_DEPLOY_SCENARIO = 'IDC_DIALOG_DEPLOY_SCENARIO';
 export const IDC_DIALOG_TERMINATE_SCENARIO = 'IDC_DIALOG_TERMINATE_SCENARIO';
 export const IDC_DIALOG_SAVE_REPLAY = 'IDC_DIALOG_SAVE_REPLAY';
@@ -128,10 +132,13 @@ export const EXEC_STATE_IDLE = 'IDLE';
 export const EXEC_STATE_DEPLOYED = 'DEPLOYED';
 
 // Execution page IDs
+export const EXEC_SELECT_SANDBOX = 'exec-select-sandbox';
+
+export const EXEC_BTN_NEW_SANDBOX = 'exec-btn-new-sandbox';
+export const EXEC_BTN_DELETE_SANDBOX = 'exec-btn-delete-sandbox';
 export const EXEC_BTN_DEPLOY = 'exec-btn-deploy';
 export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
-export const EXEC_BTN_REFRESH = 'exec-btn-refresh';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
 export const EXEC_BTN_CONFIG = 'exec-btn-config';
 export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';

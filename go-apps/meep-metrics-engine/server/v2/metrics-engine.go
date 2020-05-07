@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -46,6 +47,7 @@ const metricNetwork = "network"
 
 const moduleName string = "meep-metrics-engine"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const metricsEngineKey string = "metrics-engine:"
 
 const basePath = "/metrics/v2/"
 const typeNetworkSubscription = "netsubs"
@@ -68,6 +70,7 @@ var activeModel *mod.Model
 var activeScenarioName string
 var metricStore *ms.MetricStore
 var rootUrl *url.URL
+var baseKey string
 
 var rc *redis.Connector
 
@@ -110,7 +113,13 @@ func Init() (err error) {
 	log.Info("Message Queue created")
 
 	// Create new active scenario model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
 	activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -118,11 +127,14 @@ func Init() (err error) {
 	}
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore("", influxDBAddr, redisAddr)
+	metricStore, err = ms.NewMetricStore("", sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
+
+	// Get base store key
+	baseKey = dkm.GetKeyRoot(sandboxName) + metricsEngineKey
 
 	// Connect to Redis DB to monitor metrics
 	rc, err = redis.NewConnector(redisAddr, METRICS_DB)
@@ -183,7 +195,7 @@ func activateScenarioMetrics() {
 	}
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, activeScenarioName)
+	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName)
 
 	// Set Metrics Store
 	err := metricStore.SetStore(activeScenarioName)
@@ -226,7 +238,7 @@ func terminateScenarioMetrics() {
 	metricStore.StopSnapshotThread()
 
 	// Set new HTTP logger store name
-	_ = httpLog.ReInit(moduleName, activeScenarioName)
+	_ = httpLog.ReInit(moduleName, sandboxName, activeScenarioName)
 
 	// Set Metrics Store
 	err := metricStore.SetStore("")
@@ -443,7 +455,7 @@ func createEventSubscription(w http.ResponseWriter, r *http.Request) {
 	response.CallbackReference = eventSubscriptionParams.CallbackReference
 	response.EventQueryParams = eventSubscriptionParams.EventQueryParams
 
-	_ = rc.JSONSetEntry(moduleName+":"+typeEventSubscription+":"+subsIdStr, ".", convertEventSubscriptionToJson(&response))
+	_ = rc.JSONSetEntry(baseKey+typeEventSubscription+":"+subsIdStr, ".", convertEventSubscriptionToJson(&response))
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -488,7 +500,7 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	response.CallbackReference = networkSubscriptionParams.CallbackReference
 	response.NetworkQueryParams = networkSubscriptionParams.NetworkQueryParams
 
-	_ = rc.JSONSetEntry(moduleName+":"+typeNetworkSubscription+":"+subsIdStr, ".", convertNetworkSubscriptionToJson(&response))
+	_ = rc.JSONSetEntry(baseKey+typeNetworkSubscription+":"+subsIdStr, ".", convertNetworkSubscriptionToJson(&response))
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -813,7 +825,7 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response EventSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleName+":"+typeEventSubscription, populateEventList, &response)
+	_ = rc.JSONGetList("", "", baseKey+typeEventSubscription, populateEventList, &response)
 
 	response.ResourceURL = rootUrl.String() + basePath + "metrics/subscriptions/event"
 	jsonResponse, err := json.Marshal(response)
@@ -830,7 +842,7 @@ func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response NetworkSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleName+":"+typeNetworkSubscription, populateNetworkList, &response)
+	_ = rc.JSONGetList("", "", baseKey+typeNetworkSubscription, populateNetworkList, &response)
 
 	response.ResourceURL = rootUrl.String() + basePath + "metrics/subscriptions/network"
 	jsonResponse, err := json.Marshal(response)
@@ -847,7 +859,7 @@ func getEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	jsonResponse, _ := rc.JSONGetEntry(moduleName+":"+typeEventSubscription+":"+vars["subscriptionId"], ".")
+	jsonResponse, _ := rc.JSONGetEntry(baseKey+typeEventSubscription+":"+vars["subscriptionId"], ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -861,7 +873,7 @@ func getNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	jsonResponse, _ := rc.JSONGetEntry(moduleName+":"+typeNetworkSubscription+":"+vars["subscriptionId"], ".")
+	jsonResponse, _ := rc.JSONGetEntry(baseKey+typeNetworkSubscription+":"+vars["subscriptionId"], ".")
 	if jsonResponse == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -875,7 +887,7 @@ func deleteEventSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := rc.JSONDelEntry(moduleName+":"+typeEventSubscription+":"+vars["subscriptionId"], ".")
+	err := rc.JSONDelEntry(baseKey+typeEventSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -893,7 +905,7 @@ func deleteNetworkSubscriptionById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := rc.JSONDelEntry(moduleName+":"+typeNetworkSubscription+":"+vars["subscriptionId"], ".")
+	err := rc.JSONDelEntry(baseKey+typeNetworkSubscription+":"+vars["subscriptionId"], ".")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -911,7 +923,7 @@ func networkSubscriptionReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList NetworkSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleName+":"+typeNetworkSubscription, populateNetworkList, &responseList)
+	_ = rc.JSONGetList("", "", baseKey+typeNetworkSubscription, populateNetworkList, &responseList)
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.NetworkSubscription {
@@ -938,7 +950,7 @@ func eventSubscriptionReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList EventSubscriptionList
 
-	_ = rc.JSONGetList("", "", moduleName+":"+typeEventSubscription, populateEventList, &responseList)
+	_ = rc.JSONGetList("", "", baseKey+typeEventSubscription, populateEventList, &responseList)
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.EventSubscription {

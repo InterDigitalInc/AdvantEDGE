@@ -29,6 +29,7 @@ import (
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -37,7 +38,7 @@ import (
 )
 
 const basepathURL = "/rni/v1/"
-const moduleRNIS string = "rnis"
+const rnisKey string = "rnis:"
 const logModuleRNIS string = "meep-rnis"
 
 //const module string = "rnis"
@@ -52,6 +53,8 @@ var RNIS_DB = 5
 
 var rc *redis.Connector
 var rootUrl *url.URL
+var sandboxName string
+var baseKey string
 
 var expiryTicker *time.Ticker
 
@@ -65,6 +68,15 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 // Init - RNI Service initialization
 func Init() (err error) {
 
+	// Retrieve Sandbox name from environment variable
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+
 	// Retrieve Root URL from environment variable
 	rootUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_RNIS_ROOT_URL")))
 	if err != nil {
@@ -72,6 +84,10 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_RNIS_ROOT_URL: ", rootUrl)
 
+	// Get base store key
+	baseKey = dkm.GetKeyRoot(sandboxName) + rnisKey
+
+	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, RNIS_DB)
 	if err != nil {
 		log.Error("Failed connection to Redis DB. Error: ", err)
@@ -89,13 +105,13 @@ func Init() (err error) {
 	}()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
+	return sbi.Init(sandboxName, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
 func reInit() {
 
-	_ = rc.JSONGetList("", "", moduleRNIS+":"+cellChangeSubscriptionType, repopulateCcSubscriptionMap, nil)
+	_ = rc.JSONGetList("", "", baseKey+cellChangeSubscriptionType, repopulateCcSubscriptionMap, nil)
 
 }
 
@@ -114,7 +130,7 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	newEcgi.Plmn = &plmn
 
 	//get from DB
-	jsonUeEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":UE:"+name, ".")
+	jsonUeEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
 
 	ecgiInfo := new(Ecgi)
 	oldPlmnMnc := ""
@@ -133,7 +149,7 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId[0] != oldCellId {
 		//updateDB
-		_ = rc.JSONSetEntry(moduleRNIS+":UE:"+name, ".", convertEcgiToJson(&newEcgi))
+		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertEcgiToJson(&newEcgi))
 
 		assocId := new(AssociateId)
 		assocId.Type_ = "UE_IPv4_ADDRESS"
@@ -154,7 +170,7 @@ func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	newEcgi.Plmn = &plmn
 
 	//get from DB
-	jsonAppEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":APP:"+name, ".")
+	jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+name, ".")
 
 	oldPlmnMnc := ""
 	oldPlmnMcc := ""
@@ -172,7 +188,7 @@ func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId[0] != oldCellId {
 		//updateDB
-		_ = rc.JSONSetEntry(moduleRNIS+":APP:"+name, ".", convertEcgiToJson(&newEcgi))
+		_ = rc.JSONSetEntry(baseKey+"APP:"+name, ".", convertEcgiToJson(&newEcgi))
 	}
 }
 
@@ -217,7 +233,7 @@ func checkForExpiredSubscriptions() {
 					notif.ExpiryDeadline = &expiryTimeStamp
 
 					go sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
-					_ = delSubscription(moduleRNIS+":"+cellChangeSubscriptionType, subsIdStr)
+					_ = delSubscription(baseKey+cellChangeSubscriptionType, subsIdStr)
 				}
 			}
 		}
@@ -310,7 +326,7 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(moduleRNIS+":"+cellChangeSubscriptionType+":"+subsIdStr, ".")
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -410,7 +426,7 @@ func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	var cellChangeSubscription CellChangeSubscription
 	response.CellChangeSubscription = &cellChangeSubscription
 
-	jsonRespDB, _ := rc.JSONGetEntry(moduleRNIS+":"+cellChangeSubscriptionType+":"+subIdParamStr, ".")
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+cellChangeSubscriptionType+":"+subIdParamStr, ".")
 
 	if jsonRespDB == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -488,7 +504,7 @@ func cellChangeSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	link.Self = rootUrl.String() + basepathURL + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
 	cellChangeSubscription.Links = link
 
-	_ = rc.JSONSetEntry(moduleRNIS+":"+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
+	_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
 	registerCc(cellChangeSubscription, subsIdStr)
 
 	jsonResponse, err := json.Marshal(response)
@@ -531,7 +547,7 @@ func cellChangeSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 
 	registerCc(cellChangeSubscription, subsIdStr)
 
-	_ = rc.JSONSetEntry(moduleRNIS+":"+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
+	_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
 
 	response.CellChangeSubscription = cellChangeSubscription
 	jsonResponse, err := json.Marshal(response)
@@ -555,7 +571,7 @@ func cellChangeSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(moduleRNIS+":"+cellChangeSubscriptionType, vars["subscriptionId"])
+	err := delSubscription(baseKey+cellChangeSubscriptionType, vars["subscriptionId"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -602,7 +618,7 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 		meAppName = strings.TrimSpace(meAppName)
 
 		//get from DB
-		jsonAppEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":APP:"+meAppName, ".")
+		jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+meAppName, ".")
 
 		if jsonAppEcgiInfo != "" {
 
@@ -710,7 +726,7 @@ func subscriptionLinkListSubscriptionsMrGET(w http.ResponseWriter, r *http.Reque
 
 func cleanUp() {
 	log.Info("Terminate all")
-	rc.DBFlush(moduleRNIS)
+	rc.DBFlush(baseKey)
 	nextSubscriptionIdAvailable = 1
 
 	ccSubscriptionMap = map[int]*CellChangeSubscription{}
@@ -720,5 +736,5 @@ func cleanUp() {
 
 func updateStoreName(storeName string) {
 	currentStoreName = storeName
-	_ = httpLog.ReInit(logModuleRNIS, storeName)
+	_ = httpLog.ReInit(logModuleRNIS, sandboxName, storeName)
 }

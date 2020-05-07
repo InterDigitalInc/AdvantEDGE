@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mgModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mg-manager-model"
@@ -41,7 +42,9 @@ import (
 
 const moduleName string = "meep-tc-engine"
 const moduleTcSidecar string = "meep-tc-sidecar"
-const moduleMgManager string = "meep-mg-manager"
+
+const tcEngineKey string = "tc-engine:"
+const mgManagerKey string = "mg-manager:"
 
 const typeNet string = "net"
 const typeLb string = "lb"
@@ -146,12 +149,14 @@ type PodInfo struct {
 
 // NetCharStore -
 type NetCharStore struct {
-	rc *redis.Connector
+	baseKey string
+	rc      *redis.Connector
 }
 
 // LbRulesStore -
 type LbRulesStore struct {
-	rc *redis.Connector
+	baseKey string
+	rc      *redis.Connector
 }
 
 // TcEngine -
@@ -224,7 +229,13 @@ func Init() (err error) {
 	log.Info("Message Queue created")
 
 	// Create new Model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: mod.DbAddress}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: tce.sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    mod.DbAddress,
+	}
 	tce.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -233,6 +244,7 @@ func Init() (err error) {
 
 	// Open Network Characteristics Store
 	tce.netCharStore = new(NetCharStore)
+	tce.netCharStore.baseKey = dkm.GetKeyRoot(tce.sandboxName) + tcEngineKey
 	tce.netCharStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_NET_CHAR_DB)
 	if err != nil {
 		log.Error("Failed connection to Net Char Store Redis DB.  Error: ", err)
@@ -241,10 +253,11 @@ func Init() (err error) {
 	log.Info("Connected to Net Char Store redis DB")
 
 	// Flush any remaining TC Engine rules
-	tce.netCharStore.rc.DBFlush(moduleName)
+	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
 	// Open Load Balancing Rules Store
 	tce.lbRulesStore = new(LbRulesStore)
+	tce.lbRulesStore.baseKey = dkm.GetKeyRoot(tce.sandboxName) + mgManagerKey
 	tce.lbRulesStore.rc, err = redis.NewConnector(redisAddr, DEFAULT_LB_RULES_DB)
 	if err != nil {
 		log.Error("Failed connection to LB Rules Store Redis DB.  Error: ", err)
@@ -336,7 +349,7 @@ func processMgSvcMapUpdate() {
 	}
 
 	// Retrieve LB rules from DB
-	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(moduleMgManager+":"+typeLb, ".")
+	jsonNetElemList, err := tce.lbRulesStore.rc.JSONGetEntry(tce.lbRulesStore.baseKey+typeLb, ".")
 	if err != nil {
 		log.Error(err.Error())
 		return
@@ -408,7 +421,7 @@ func stopScenario() {
 
 	scenarioName = ""
 
-	tce.netCharStore.rc.DBFlush(moduleName)
+	tce.netCharStore.rc.DBFlush(tce.netCharStore.baseKey)
 
 	// Send message to clear TC LB & Net Rules
 	msg := tce.mqLocal.CreateMsg(mq.MsgTcNetRulesUpdate, moduleTcSidecar, tce.sandboxName)
@@ -571,7 +584,7 @@ func addServiceInfo(svcName string, svcPorts []dataModel.ServicePort, mgSvcName 
 func updateDbState(transactionId int) {
 	var dbState = make(map[string]interface{})
 	dbState["transactionIdStored"] = transactionId
-	keyName := moduleName + ":" + typeNet + ":dbState"
+	keyName := tce.netCharStore.baseKey + typeNet + ":dbState"
 	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
@@ -671,7 +684,7 @@ func setFilterRule(filterInfo *FilterInfo) error {
 	m_filter["ifb_uniqueId"] = uniqueId
 	m_filter["filter_uniqueId"] = uniqueId
 
-	keyName := moduleName + ":" + typeNet + ":" + filterInfo.PodName + ":filter:" + uniqueId
+	keyName := tce.netCharStore.baseKey + typeNet + ":" + filterInfo.PodName + ":filter:" + uniqueId
 	err := tce.netCharStore.rc.SetEntry(keyName, m_filter)
 	if err != nil {
 		return err
@@ -690,7 +703,7 @@ func setShapingRule(filterInfo *FilterInfo) error {
 	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
 	m_shape["ifb_uniqueId"] = uniqueId
 
-	keyName := moduleName + ":" + typeNet + ":" + filterInfo.PodName + ":shape:" + uniqueId
+	keyName := tce.netCharStore.baseKey + typeNet + ":" + filterInfo.PodName + ":shape:" + uniqueId
 	err := tce.netCharStore.rc.SetEntry(keyName, m_shape)
 	if err != nil {
 		return err
@@ -722,7 +735,7 @@ func applyMgSvcMapping() {
 				fields[fieldLbSvcPort] = portInfo.Port
 
 				// Make unique key
-				key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
+				key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
 					svcInfo.MgSvc.Name + ":" + strconv.Itoa(int(portInfo.Port))
 				keys[key] = true
 
@@ -757,7 +770,7 @@ func applyMgSvcMapping() {
 			fields[fieldLbSvcPort] = svcMap.SvcPort
 
 			// Make unique key
-			key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
+			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
 				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.NodePort))
 			keys[key] = true
 
@@ -779,7 +792,7 @@ func applyMgSvcMapping() {
 			fields[fieldLbSvcPort] = svcMap.SvcPort
 
 			// Make unique key
-			key := moduleName + ":" + typeLb + ":" + podInfo.Name + ":" +
+			key := tce.netCharStore.baseKey + typeLb + ":" + podInfo.Name + ":" +
 				svcMap.SvcName + ":" + strconv.Itoa(int(svcMap.SvcPort))
 			keys[key] = true
 
@@ -789,7 +802,7 @@ func applyMgSvcMapping() {
 	}
 
 	// Remove old DB entries
-	keyName := moduleName + ":" + typeLb + ":*"
+	keyName := tce.netCharStore.baseKey + typeLb + ":*"
 	err := tce.netCharStore.rc.ForEachEntry(keyName, removeEntryHandler, &keys)
 	if err != nil {
 		log.Error("Failed to remove old entries with err: ", err)
@@ -838,7 +851,7 @@ func getPlatformInfo() {
 				log.Debug("Checking for Pod IPs. podCountReq: ", tce.podCountReq, " podCount:", tce.podCount)
 				log.Info("update on the mappings(pod): ", podIPMap)
 				// Retrieve all pods from k8s api with scenario label
-				pods, err := clientset.CoreV1().Pods("").List(
+				pods, err := clientset.CoreV1().Pods(tce.sandboxName).List(
 					metav1.ListOptions{LabelSelector: fmt.Sprintf("meepScenario=%s", scenarioName)})
 				if err != nil {
 					log.Error("Failed to retrieve pods from k8s API Server. Error: ", err)
@@ -870,7 +883,7 @@ func getPlatformInfo() {
 				log.Info("update on the mappings(svc): ", svcIPMap)
 
 				// Retrieve all services from k8s api with scenario label
-				services, err := clientset.CoreV1().Services("").List(
+				services, err := clientset.CoreV1().Services(tce.sandboxName).List(
 					metav1.ListOptions{})
 				if err != nil {
 					log.Error("Failed to retrieve services from k8s API Server. Error: ", err)

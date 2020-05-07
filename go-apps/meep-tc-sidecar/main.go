@@ -28,6 +28,7 @@ import (
 	"syscall"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -39,7 +40,10 @@ import (
 )
 
 const moduleName string = "meep-tc-sidecar"
-const moduleTcEngine string = "meep-tc-engine"
+
+const tcEngineKey string = "tc-engine:"
+const metricsKey string = "metrics:"
+
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
@@ -126,6 +130,8 @@ var mqLocal *mq.MsgQueue
 var handlerId int
 var rc *redis.Connector
 var metricStore *ms.MetricStore
+var baseKey string
+var metricsBaseKey string
 
 const DEFAULT_SIDECAR_DB = 0
 
@@ -225,6 +231,12 @@ func initMeepSidecar() (err error) {
 	}
 	log.Info("Successfully created new IPTables client")
 
+	// Set base store key
+	baseKey = dkm.GetKeyRoot(sandboxName) + tcEngineKey
+
+	// Set metrics base store key
+	metricsBaseKey = dkm.GetKeyRoot(sandboxName) + metricsKey
+
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
 	if err != nil {
@@ -234,7 +246,7 @@ func initMeepSidecar() (err error) {
 	log.Info("Connected to redis DB")
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr, redisAddr)
+	metricStore, err = ms.NewMetricStore(scenarioName, sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -384,7 +396,7 @@ func refreshLbRules() {
 
 	// Apply pod-specific LB rules stored in DB
 	flushRequired = false
-	keyName := moduleTcEngine + ":" + typeLb + ":" + PodName + ":*"
+	keyName := baseKey + typeLb + ":" + PodName + ":*"
 	err = rc.ForEachEntry(keyName, refreshLbRulesHandler, &chainMap)
 	if err != nil {
 		log.Error("Failed to search and process pod-specific MEEP LB rules. Error: ", err)
@@ -651,12 +663,10 @@ func workRxTxPackets() {
 			tputStats[u.remoteName] = u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
 		}
 
-		key := moduleMetrics + ":" + PodName + ":throughput"
-
+		key := metricsBaseKey + PodName + ":throughput"
 		if rc.EntryExists(key) {
 			_ = rc.SetEntry(key, tputStats)
 		}
-
 		semOptsDests.Unlock()
 
 		time.Sleep(opts.trafficInterval)
@@ -710,7 +720,7 @@ func workLogRxTxData() {
 
 func createPing() ([]podShortElement, error) {
 	var podsToPing []podShortElement
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
 	err := rc.ForEachEntry(keyName, createPingHandler, &podsToPing)
 	if err != nil {
 		return nil, err
@@ -731,7 +741,7 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 }
 
 func createIfbs() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
+	keyName := baseKey + typeNet + ":" + PodName + ":shape*"
 	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
@@ -754,7 +764,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 }
 
 func createFilters() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
 	err := rc.ForEachEntry(keyName, createFiltersHandler, nil)
 	if err != nil {
 		return err
@@ -790,7 +800,7 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 
 func deleteUnusedFilters() {
 	for index, filterNumber := range filters {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter:" + filterNumber
+		keyName := baseKey + typeNet + ":" + PodName + ":filter:" + filterNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("filter removed: ", filterNumber)
 			// Remove old filter
@@ -802,7 +812,7 @@ func deleteUnusedFilters() {
 
 func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape:" + ifbNumber
+		keyName := baseKey + typeNet + ":" + PodName + ":shape:" + ifbNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb

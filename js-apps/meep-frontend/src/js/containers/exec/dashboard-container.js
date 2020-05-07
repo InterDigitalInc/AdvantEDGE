@@ -129,6 +129,7 @@ const getUrl = (dashboardName, dashboardOptions) => {
 };
 
 const ViewForName = ({
+  sandboxName,
   scenarioName,
   selectedSource,
   selectedDest,
@@ -161,8 +162,9 @@ const ViewForName = ({
     if (selectedUrl.indexOf(passVarsStr) !== -1) {
       selectedUrl = selectedUrl.replace(passVarsStr, '');
       
-      // Remove '-' from scenario name
-      var scenario = scenarioName.replace(/-/g, '');
+      // Prepend sandbox name to scenario name and replace '-' with '_'
+      var sandboxScenario = sandboxName + '_' + scenarioName;
+      var scenario = sandboxScenario.replace(/-/g, '_');
 
       var url = new URL(selectedUrl);
       url.searchParams.append('var-database', scenario);
@@ -301,6 +303,7 @@ class DashboardContainer extends Component {
 
     const view1 = (
       <ViewForName
+        sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
         selectedSource={selectedSource}
         selectedDest={selectedDest}
@@ -311,6 +314,7 @@ class DashboardContainer extends Component {
 
     const view2 = (
       <ViewForName
+        sandboxName={this.props.sandbox}
         scenarioName={this.props.scenarioName}
         selectedSource={selectedSource}
         selectedDest={selectedDest}

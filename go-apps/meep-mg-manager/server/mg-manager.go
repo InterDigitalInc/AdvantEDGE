@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -40,6 +41,7 @@ import (
 
 const moduleName string = "meep-mg-manager"
 const moduleTcEngine string = "meep-tc-engine"
+const mgmKey string = "mg-manager:"
 const typeLb string = "lb"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 const DEFAULT_LB_RULES_DB = 0
@@ -121,6 +123,7 @@ type lbRulesStore struct {
 
 type MgManager struct {
 	sandboxName  string
+	baseKey      string
 	mqLocal      *mq.MsgQueue
 	handlerId    int
 	mutex        sync.Mutex
@@ -177,12 +180,21 @@ func Init() (err error) {
 	log.Info("Message Queue created")
 
 	// Create new active scenario model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: mgm.sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
 	mgm.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+
+	// Get base store key
+	mgm.baseKey = dkm.GetKeyRoot(mgm.sandboxName) + mgmKey
 
 	// Open Load Balancing Rules Store
 	mgm.lbRulesStore = new(lbRulesStore)
@@ -194,7 +206,7 @@ func Init() (err error) {
 	log.Info("Connected to LB Rules Store redis DB")
 
 	// Flush module data
-	_ = mgm.lbRulesStore.rc.DBFlush(moduleName)
+	_ = mgm.lbRulesStore.rc.DBFlush(mgm.baseKey)
 
 	// Initialize Edge-LB rules with current active scenario
 	processActiveScenarioUpdate()
@@ -237,7 +249,7 @@ func processActiveScenarioUpdate() {
 	// Sync with active scenario store
 	mgm.activeModel.UpdateScenario()
 
-	_ = httpLog.ReInit(moduleName, mgm.activeModel.GetScenarioName())
+	_ = httpLog.ReInit(moduleName, mgm.sandboxName, mgm.activeModel.GetScenarioName())
 
 	// Handle empty/missing scenario
 	if mgm.activeModel.GetScenarioName() == "" {
@@ -275,7 +287,7 @@ func clearScenario() {
 	mgm.mgInfoMap = make(map[string]*mgInfo)
 
 	// Flush module data and send update
-	_ = mgm.lbRulesStore.rc.DBFlush(moduleName)
+	_ = mgm.lbRulesStore.rc.DBFlush(mgm.baseKey)
 
 	// Send LB Rules Update message
 	msg := mgm.mqLocal.CreateMsg(mq.MsgMgLbRulesUpdate, moduleTcEngine, mgm.sandboxName)
@@ -673,7 +685,7 @@ func applyMgSvcMapping() {
 		log.Error(err.Error())
 		return
 	}
-	err = mgm.lbRulesStore.rc.JSONSetEntry(moduleName+":"+typeLb, ".", string(jsonNetElemList))
+	err = mgm.lbRulesStore.rc.JSONSetEntry(mgm.baseKey+typeLb, ".", string(jsonNetElemList))
 	if err != nil {
 		log.Error(err.Error())
 		return

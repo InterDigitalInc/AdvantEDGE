@@ -44,13 +44,13 @@ func TestNetCharBasic(t *testing.T) {
 	var err error
 	netCharMgr, err = NewNetChar("test", "default", netCharMgrRedisAddr)
 	if err != nil {
-		t.Errorf("Failed to create a NetChar object.")
+		t.Fatalf("Failed to create a NetChar object.")
 		return
 	}
 
 	fmt.Println("Verify NetCharMgr not running")
 	if netCharMgr.IsRunning() {
-		t.Errorf("NetCharMgr should not be running")
+		t.Fatalf("NetCharMgr should not be running")
 	}
 
 	fmt.Println("Register callback functions")
@@ -59,10 +59,10 @@ func TestNetCharBasic(t *testing.T) {
 	fmt.Println("Start NetCharMgr")
 	err = netCharMgr.Start()
 	if err != nil {
-		t.Errorf("Error starting NetCharMgr")
+		t.Fatalf("Error starting NetCharMgr")
 	}
 	if !netCharMgr.IsRunning() {
-		t.Errorf("NetChar not running")
+		t.Fatalf("NetChar not running")
 	}
 
 	fmt.Println("Run NetChar for 100 ms")
@@ -71,6 +71,6 @@ func TestNetCharBasic(t *testing.T) {
 	fmt.Println("Stop NetCharMgr")
 	netCharMgr.Stop()
 	if netCharMgr.IsRunning() {
-		t.Errorf("NetChar should not be running")
+		t.Fatalf("NetChar should not be running")
 	}
 }

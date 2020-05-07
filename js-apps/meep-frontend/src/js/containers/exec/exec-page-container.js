@@ -19,8 +19,10 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import { Select } from '@rmwc/select';
 import DashboardContainer from './dashboard-container';
 import EventContainer from './event-container';
+import ExecPageSandboxButtons from './exec-page-sandbox-buttons';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
@@ -29,6 +31,8 @@ import EventReplayPane from './event-replay-pane';
 
 import ExecTable from './exec-table';
 
+import IDNewSandboxDialog from '../../components/dialogs/id-new-sandbox-dialog';
+import IDDeleteSandboxDialog from '../../components/dialogs/id-delete-sandbox-dialog';
 import IDDeployScenarioDialog from '../../components/dialogs/id-deploy-scenario-dialog';
 import IDTerminateScenarioDialog from '../../components/dialogs/id-terminate-scenario-dialog';
 import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dialog';
@@ -56,17 +60,18 @@ import {
 } from '../../state/exec';
 
 import {
-  SANDBOX_NAME,
-
   // States
   EXEC_STATE_IDLE,
   PAGE_EXECUTE,
+  IDC_DIALOG_NEW_SANDBOX,
+  IDC_DIALOG_DELETE_SANDBOX,
   IDC_DIALOG_DEPLOY_SCENARIO,
   IDC_DIALOG_TERMINATE_SCENARIO,
   IDC_DIALOG_SAVE_SCENARIO,
   IDC_DIALOG_SAVE_REPLAY,
   MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  NETWORK_CHARACTERISTICS_EVENT,
+  EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
 class ExecPageContainer extends Component {
@@ -113,9 +118,6 @@ class ExecPageContainer extends Component {
    * @param {String} error Error message, if any.
    */
   terminateScenarioCb(error) {
-    // Delete sandbox immediately after terminating scenario
-    this.deleteSandbox();
-
     if (error !== null) {
       // TODO consider showing an alert  (i.e. toast)
       return;
@@ -143,40 +145,6 @@ class ExecPageContainer extends Component {
   }
 
   /**
-   * Callback function to receive the result of the createSandboxWithName operation.
-   * @callback module:api/SandboxControlApi~createSandboxWithNameCallback
-   * @param {String} error Error message, if any.
-   * @param data This operation does not return a value.
-   * @param {String} response The complete HTTP response.
-   */
-  createSandboxWithNameCb(error) {
-    if (error) {
-      // TODO: consider showing an alert/toast
-      return;
-    }
-
-    this.props.refreshScenario();
-  }
-
-  /**
-   * Callback function to receive the result of the deleteSandbox operation.
-   * @callback module:api/SandboxControlApi~deleteSandboxCallback
-   * @param {String} error Error message, if any.
-   * @param data This operation does not return a value.
-   * @param {String} response The complete HTTP response.
-   */
-  deleteSandboxCb(error) {
-    if (error !== null) {
-      // TODO consider showing an alert  (i.e. toast)
-      return;
-    }
-
-    this.props.deleteScenario();
-    this.props.changeState(EXEC_STATE_IDLE);
-    this.props.execChangeOkToTerminate(false);
-  }
-
-  /**
    * Callback function to receive the result of the getReplayList operation.
    * @callback module:api/EventReplayApi~getReplayFileListCallback
    * @param {String} error Error message, if any.
@@ -190,6 +158,16 @@ class ExecPageContainer extends Component {
     let replayFiles = data.replayFiles;
     replayFiles.unshift('None');
     this.props.changeReplayFilesList(replayFiles);
+  }
+
+  // Create new sandbox
+  createSandbox(name) {
+    this.props.createSandbox(name);
+  }
+
+  // Destroy active sandbox
+  deleteSandbox() {
+    this.props.deleteSandbox();
   }
 
   saveScenario(scenarioName) {
@@ -243,6 +221,16 @@ class ExecPageContainer extends Component {
       this.getScenarioListDeployCb(error, data, response);
     });
     this.props.changeCurrentDialog(IDC_DIALOG_DEPLOY_SCENARIO);
+  }
+
+  // NEW SANDBOX
+  onNewSandbox() {
+    this.props.changeCurrentDialog(IDC_DIALOG_NEW_SANDBOX);
+  }
+
+  // DELETE SANDBOX
+  onDeleteSandbox() {
+    this.props.changeCurrentDialog(IDC_DIALOG_DELETE_SANDBOX);
   }
 
   // SAVE SCENARIO
@@ -302,14 +290,6 @@ class ExecPageContainer extends Component {
     );
   }
 
-  // Destroy Active sandbox
-  deleteSandbox() {
-    this.props.sandboxApi.deleteSandbox(
-      SANDBOX_NAME,
-      (error, data, response) => this.deleteSandboxCb(error, data, response)
-    );
-  }
-
   showApps(show) {
     this.props.changeShowApps(show);
     _.defer(() => {
@@ -320,6 +300,24 @@ class ExecPageContainer extends Component {
   renderDialogs() {
     return (
       <>
+        <IDNewSandboxDialog
+          title="Create New Sandbox"
+          open={this.props.currentDialog === IDC_DIALOG_NEW_SANDBOX}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          createSandbox={name => this.createSandbox(name)}
+        />
+        
+        <IDDeleteSandboxDialog
+          title="Delete Sandbox"
+          open={this.props.currentDialog === IDC_DIALOG_DELETE_SANDBOX}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          deleteSandbox={() => this.deleteSandbox()}
+        />
+
         <IDDeployScenarioDialog
           title="Open Scenario"
           open={this.props.currentDialog === IDC_DIALOG_DEPLOY_SCENARIO}
@@ -327,16 +325,9 @@ class ExecPageContainer extends Component {
           onClose={() => {
             this.closeDialog();
           }}
-
-          // NOTE: The MEEP Frontend only supports sandbox creation
-          // api={this.props.api}
-          api={this.props.sandboxApi}
-
-          // activateScenarioCb={(error, data, response) =>
-          //   this.activateScenarioCb(error, data, response)
-          // }
-          createSandboxWithNameCb={(error, data, response) =>
-            this.createSandboxWithNameCb(error, data, response)
+          api={this.props.api}
+          activateScenarioCb={(error, data, response) =>
+            this.activateScenarioCb(error, data, response)
           }
         />
 
@@ -377,15 +368,19 @@ class ExecPageContainer extends Component {
     );
   }
 
+
   render() {
     if (this.props.page !== PAGE_EXECUTE) {
       return null;
     }
 
-    const scenarioName =
-      this.props.page === PAGE_EXECUTE
-        ? this.props.execScenarioName
-        : this.props.cfgScenarioName;
+    const sandboxes = (this.props.sandboxes) ? this.props.sandboxes : [];
+    sandboxes.sort();
+    const sandbox = sandboxes.includes(this.props.sandbox) ? this.props.sandbox : '';
+
+    const scenarioName = (this.props.page === PAGE_EXECUTE) ?
+      (this.props.exec.state.scenario !== EXEC_STATE_IDLE) ? this.props.execScenarioName : 'None' :
+      this.props.cfgScenarioName;
 
     const spanLeft = (this.props.eventCreationMode || this.props.eventReplayMode) ? 9 : 12;
     const spanRight = (this.props.eventCreationMode || this.props.eventReplayMode) ? 3 : 0;
@@ -402,20 +397,44 @@ class ExecPageContainer extends Component {
                 style={styles.headline}
               >
                 <GridInner>
-                  <GridCell align={'middle'} span={4}>
-                    <HeadlineBar
-                      titleLabel="Deployed Scenario"
-                      scenarioName={scenarioName}
+                  <GridCell align={'middle'} span={2}>
+                    <Select
+                      style={{ width: '100%' }}
+                      label="Sandbox"
+                      outlined
+                      options={sandboxes}
+                      onChange={(e) => {
+                        this.props.setSandbox(e.target.value);
+                      }}
+                      value={sandbox}
+                      data-cy={EXEC_SELECT_SANDBOX}
                     />
                   </GridCell>
-                  <GridCell align={'middle'} span={8}>
+                  <GridCell align={'middle'} span={2}>
+                    <ExecPageSandboxButtons
+                      sandbox={sandbox}
+                      onNewSandbox={() => this.onNewSandbox()}
+                      onDeleteSandbox={() => this.onDeleteSandbox()}
+                    />
+                  </GridCell>
+                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                    <GridInner style={{ height: '100%', borderLeft: '2px solid #e4e4e4'}}>
+                      <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
+                        <HeadlineBar
+                          titleLabel="Scenario"
+                          scenarioName={scenarioName}
+                        />
+                      </GridCell>
+                    </GridInner>
+                  </GridCell>
+                  <GridCell align={'middle'} span={5}>
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
                         <ExecPageScenarioButtons
+                          sandbox={sandbox}
                           onDeploy={() => this.onDeployScenario()}
                           onSaveScenario={() => this.onSaveScenario()}
                           onTerminate={() => this.onTerminateScenario()}
-                          onRefresh={this.props.refreshScenario}
                           onOpenDashCfg={() => this.onOpenDashCfg()}
                           onOpenEventCfg={() => this.onOpenEventCfg()}
                         />
@@ -443,6 +462,7 @@ class ExecPageContainer extends Component {
                   />
 
                   <DashboardContainer
+                    sandbox={this.props.sandbox}
                     scenarioName={this.props.execScenarioName}
                     onShowAppsChanged={show => this.showApps(show)}
                     showApps={this.props.showApps}
@@ -489,6 +509,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
+    height: 'calc(100% - 20px)',
     padding: 10
   },
   page: {

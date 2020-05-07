@@ -17,8 +17,6 @@
 package sbi
 
 import (
-	"errors"
-	"os"
 	"strings"
 
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
@@ -44,23 +42,15 @@ type LocServSbi struct {
 var sbi *LocServSbi
 
 // Init - Location Service SBI initialization
-func Init(updateUserInfo func(string, string, string), updateZoneInfo func(string, int, int, int),
+func Init(sandboxName string, updateUserInfo func(string, string, string), updateZoneInfo func(string, int, int, int),
 	updateAccessPointInfo func(string, string, string, string, int), cleanUp func()) (err error) {
 
 	// Create new SBI instance
 	sbi = new(LocServSbi)
-
-	// Retrieve Sandbox name from environment variable
-	sbi.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-	if sbi.sandboxName == "" {
-		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_SANDBOX_NAME: ", sbi.sandboxName)
+	sbi.sandboxName = sandboxName
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, redisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -68,7 +58,13 @@ func Init(updateUserInfo func(string, string, string), updateZoneInfo func(strin
 	log.Info("Message Queue created")
 
 	// Create new active scenario model
-	modelCfg := mod.ModelCfg{Name: "activeScenario", Module: moduleName, UpdateCb: nil, DbAddr: redisAddr}
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: sbi.sandboxName,
+		Module:    moduleName,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
 	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
@@ -139,7 +135,7 @@ func processActiveScenarioUpdate() {
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)
 
-	_ = httpLog.ReInit(moduleName, sbi.activeModel.GetScenarioName())
+	_ = httpLog.ReInit(moduleName, sbi.sandboxName, sbi.activeModel.GetScenarioName())
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")

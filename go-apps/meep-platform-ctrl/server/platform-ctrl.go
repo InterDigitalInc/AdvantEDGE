@@ -32,7 +32,7 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -42,8 +42,8 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
+	sandboxStore  *ss.SandboxStore
 	veWatchdog    *wd.Watchdog
-	sandboxStore  *redis.Connector
 	mqGlobal      *mq.MsgQueue
 }
 
@@ -52,6 +52,10 @@ const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const moduleVirtEngineName = "meep-virt-engine"
 const moduleVirtEngineNamespace = "default"
+
+// MQ payload fields
+const fieldSandboxName = "sandbox-name"
+const fieldScenarioName = "scenario-name"
 
 // Declare as variables to enable overwrite in test
 var couchDBAddr = "http://meep-couchdb-svc-couchdb:5984/"
@@ -78,13 +82,13 @@ func Init() (err error) {
 	}
 	log.Info("Message Queue created")
 
-	// Make Scenario DB connection
+	// Connect to Scenario Store
 	pfmCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
 	if err != nil {
-		log.Error("Failed connection to Scenario DB. Error: ", err)
+		log.Error("Failed connection to Scenario Store. Error: ", err)
 		return err
 	}
-	log.Info("Connected to Scenario DB")
+	log.Info("Connected to Scenario Store")
 
 	// Retrieve scenario list from DB
 	_, scenarioList, err := pfmCtrl.scenarioStore.GetDocList()
@@ -114,12 +118,12 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	pfmCtrl.sandboxStore, err = redis.NewConnector(redisDBAddr, 0)
+	pfmCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
 	if err != nil {
-		log.Error("Failed connection to Redis: ", err)
+		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Sandbox Store DB")
+	log.Info("Connected to Sandbox Store")
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
@@ -362,8 +366,7 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < retryCount; i++ {
 		// sandboxName = "sbox-" + xid.New().String()
 		sandboxName = "sbox-" + randSeq(6)
-		key := moduleName + ":sandboxes:" + sandboxName
-		if !pfmCtrl.sandboxStore.EntryExists(key) {
+		if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
 			uniqueNameFound = true
 			break
 		}
@@ -407,11 +410,8 @@ func pcCreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create new sandbox key
-	key := moduleName + ":sandboxes:" + sandboxName
-
 	// Make sure sandbox does not already exist
-	if pfmCtrl.sandboxStore.EntryExists(key) {
+	if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox != nil {
 		err = errors.New("Sandbox already exists")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -440,33 +440,16 @@ func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
 	sandboxName := vars["name"]
 	log.Debug("Sandbox to delete: ", sandboxName)
 
-	// Get sandbox key
-	key := moduleName + ":sandboxes:" + sandboxName
-
 	// Make sure sandbox exists
-	if !pfmCtrl.sandboxStore.EntryExists(key) {
-		err := errors.New("Sandbox not found exists")
+	if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
+		err := errors.New("Sandbox not found")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	// Remove sandbox from DB
-	err := pfmCtrl.sandboxStore.DelEntry(key)
-	if err != nil {
-		log.Error("Entry could not be deleted in DB for sandbox: ", sandboxName, ": ", err)
-	}
-
-	// Inform Virt Engine to destroy sandbox
-	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
-	msg.Payload["sandboxName"] = sandboxName
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.mqGlobal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Delete sandbox
+	deleteSandbox(sandboxName)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -477,38 +460,24 @@ func pcDeleteSandbox(w http.ResponseWriter, r *http.Request) {
 func pcDeleteSandboxList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcDeleteSandboxList")
 
-	// Delete all sandboxes
-	keyMatchStr := moduleName + ":sandboxes:*"
-	err := pfmCtrl.sandboxStore.ForEachEntry(keyMatchStr, deleteSandbox, nil)
-	if err != nil {
+	// Get all sandboxes
+	sboxMap, err := pfmCtrl.sandboxStore.GetAll()
+	if err != nil || sboxMap == nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Delete all sandboxes
+	for _, sbox := range sboxMap {
+		deleteSandbox(sbox.Name)
+	}
+
+	// Flush sandbox store
+	pfmCtrl.sandboxStore.Flush()
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-}
-
-func deleteSandbox(key string, fields map[string]string, userData interface{}) error {
-
-	// Remove sandbox from DB
-	sandboxName := fields["name"]
-	err := pfmCtrl.sandboxStore.DelEntry(key)
-	if err != nil {
-		log.Error("Entry could not be deleted in DB for sandbox: ", sandboxName, ": ", err.Error())
-	}
-
-	// Inform Virt Engine to destroy sandbox
-	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
-	msg.Payload["sandboxName"] = sandboxName
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
-	err = pfmCtrl.mqGlobal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message. Error: ", err.Error())
-	}
-
-	return nil
 }
 
 // Retrieve Sandbox with provided name
@@ -521,11 +490,9 @@ func pcGetSandbox(w http.ResponseWriter, r *http.Request) {
 	sandboxName := vars["name"]
 	log.Debug("Sandbox to retrieve: ", sandboxName)
 
-	// Get sandbox key
-	key := moduleName + ":sandboxes:" + sandboxName
-
-	// Make sure sandbox exists
-	if !pfmCtrl.sandboxStore.EntryExists(key) {
+	// Get sandbox
+	sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName)
+	if sbox == nil {
 		err := errors.New("Sandbox not found")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -534,7 +501,7 @@ func pcGetSandbox(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare response
 	var sandbox dataModel.Sandbox
-	sandbox.Name = sandboxName
+	sandbox.Name = sbox.Name
 
 	// Format response
 	jsonResponse, err := json.Marshal(sandbox)
@@ -555,14 +522,20 @@ func pcGetSandbox(w http.ResponseWriter, r *http.Request) {
 func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 	log.Debug("pcGetSandboxList")
 
-	// Retrieve list of sandboxes
-	var sandboxList dataModel.SandboxList
-	keyMatchStr := moduleName + ":sandboxes:*"
-	err := pfmCtrl.sandboxStore.ForEachEntry(keyMatchStr, getSandboxInfo, &sandboxList)
+	// Get all sandboxes
+	sboxMap, err := pfmCtrl.sandboxStore.GetAll()
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Update sandbox list
+	var sandboxList dataModel.SandboxList
+	for _, sbox := range sboxMap {
+		var sandbox dataModel.Sandbox
+		sandbox.Name = sbox.Name
+		sandboxList.Sandboxes = append(sandboxList.Sandboxes, sandbox)
 	}
 
 	// Format response
@@ -582,14 +555,11 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 // Create new sandbox in store and publish updagte
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
 
-	// Create new sandbox key
-	key := moduleName + ":sandboxes:" + sandboxName
-
 	// Create sandbox in DB
-	fields := make(map[string]interface{})
-	fields["name"] = sandboxName
-	fields["scenarioName"] = sandboxConfig.ScenarioName
-	err = pfmCtrl.sandboxStore.SetEntry(key, fields)
+	sbox := new(ss.Sandbox)
+	sbox.Name = sandboxName
+	sbox.ScenarioName = sandboxConfig.ScenarioName
+	err = pfmCtrl.sandboxStore.Set(sbox)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -597,8 +567,8 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 
 	// Inform Virt Engine to create sandbox
 	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxCreate, moduleVirtEngineName, moduleVirtEngineNamespace)
-	msg.Payload["sandboxName"] = sandboxName
-	msg.Payload["scenarioName"] = sandboxConfig.ScenarioName
+	msg.Payload[fieldSandboxName] = sandboxName
+	msg.Payload[fieldScenarioName] = sandboxConfig.ScenarioName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err = pfmCtrl.mqGlobal.SendMsg(msg)
 	if err != nil {
@@ -609,12 +579,19 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 	return nil
 }
 
-func getSandboxInfo(key string, fields map[string]string, userData interface{}) error {
-	sandboxList := userData.(*dataModel.SandboxList)
-	var sandbox dataModel.Sandbox
-	sandbox.Name = fields["name"]
-	sandboxList.Sandboxes = append(sandboxList.Sandboxes, sandbox)
-	return nil
+func deleteSandbox(sandboxName string) {
+
+	// Remove sandbox from store
+	pfmCtrl.sandboxStore.Del(sandboxName)
+
+	// Inform Virt Engine to destroy sandbox
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
+	msg.Payload[fieldSandboxName] = sandboxName
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	err := pfmCtrl.mqGlobal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message. Error: ", err.Error())
+	}
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")

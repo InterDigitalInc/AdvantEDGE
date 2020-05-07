@@ -39,14 +39,14 @@ var logComponent = ""
 const DirectionRX = "RX"
 const DirectionTX = "TX"
 
-func ReInit(loggerName string, currentStoreName string) error {
+func ReInit(loggerName string, namespace string, currentStoreName string) error {
 
 	log.Info("Reinitialisation of http logger with: ", currentStoreName, " for ", loggerName)
 	logComponent = loggerName
 	if currentStoreName != "" {
 		//currentStoreName located in NBI of RNIS populated by SBI upon new activation
 		var err error
-		metricStore, err = ms.NewMetricStore(currentStoreName, influxDBAddr, redisDBAddr)
+		metricStore, err = ms.NewMetricStore(currentStoreName, namespace, influxDBAddr, redisDBAddr)
 		if err != nil {
 			log.Error("Failed connection to Redis: ", err)
 			return err

@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -34,7 +35,7 @@ const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 const DEFAULT_THROUGHPUT_LINK = 1000.0
 
 const metricsDb = 0
-const moduleMetrics string = "metrics"
+const metricsKey string = "metrics:"
 
 // SegAlgoConfig - Segment Algorithm Config
 type SegAlgoConfig struct {
@@ -112,6 +113,8 @@ type SegAlgoNetElem struct {
 // SegmentAlgorithm -
 type SegmentAlgorithm struct {
 	Name       string
+	Namespace  string
+	BaseKey    string
 	FlowMap    map[string]*SegAlgoFlow
 	SegmentMap map[string]*SegAlgoSegment
 	Config     SegAlgoConfig
@@ -119,11 +122,13 @@ type SegmentAlgorithm struct {
 }
 
 // NewSegmentAlgorithm - Create, Initialize and connect
-func NewSegmentAlgorithm(name string, redisAddr string) (*SegmentAlgorithm, error) {
+func NewSegmentAlgorithm(name string, namespace string, redisAddr string) (*SegmentAlgorithm, error) {
 	// Create new instance & set default config
 	var err error
 	var algo SegmentAlgorithm
 	algo.Name = name
+	algo.Namespace = namespace
+	algo.BaseKey = dkm.GetKeyRoot(namespace) + metricsKey
 	algo.FlowMap = make(map[string]*SegAlgoFlow)
 	algo.SegmentMap = make(map[string]*SegAlgoSegment)
 	algo.Config.MaxBwPerInactiveFlow = 20.0
@@ -141,7 +146,7 @@ func NewSegmentAlgorithm(name string, redisAddr string) (*SegmentAlgorithm, erro
 		log.Error("Failed connection to Metrics redis DB. Error: ", err)
 		return nil, err
 	}
-	_ = algo.rc.DBFlush(moduleMetrics)
+	_ = algo.rc.DBFlush(algo.BaseKey)
 	log.Info("Connected to Metrics redis DB")
 
 	return &algo, nil
@@ -245,7 +250,7 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 	algo.logTimeLapse(&currentTime, "time to print")
 
 	// Update flow with latest metrics
-	keyName := moduleMetrics + ":*:throughput"
+	keyName := algo.BaseKey + "*:throughput"
 	err := algo.rc.ForEachEntry(keyName, algo.getMetricsThroughputEntryHandler, nil)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)
@@ -365,16 +370,16 @@ func (algo *SegmentAlgorithm) createMetricsEntry(srcElem string, dstElem string)
 	creationTime["creationTime"] = time.Now()
 
 	// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-	_ = algo.rc.SetEntry(moduleMetrics+":"+dstElem+":"+srcElem, creationTime)
-	_ = algo.rc.SetEntry(moduleMetrics+":"+dstElem+":throughput", creationTime)
+	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":"+srcElem, creationTime)
+	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":throughput", creationTime)
 }
 
 // deleteMetricsEntries -
 func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 	for _, flow := range algo.FlowMap {
 		// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-		_ = algo.rc.DelEntry(moduleMetrics + ":" + flow.DstNetElem + ":" + flow.SrcNetElem)
-		_ = algo.rc.DelEntry(moduleMetrics + ":" + flow.DstNetElem + ":throughput")
+		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":" + flow.SrcNetElem)
+		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":throughput")
 	}
 }
 
@@ -778,7 +783,7 @@ func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string,
 func (algo *SegmentAlgorithm) getMetricsThroughputEntryHandler(key string, fields map[string]string, userData interface{}) error {
 	subKey := strings.Split(key, ":")
 	for trafficFrom, throughput := range fields {
-		flow := algo.FlowMap[trafficFrom+":"+subKey[1]]
+		flow := algo.FlowMap[trafficFrom+":"+subKey[len(subKey)-2]]
 		if flow != nil {
 			value, _ := strconv.ParseFloat(throughput, 64)
 			flow.CurrentThroughput = value

@@ -63,6 +63,22 @@ export function uiToggleMainDrawer() {
   };
 }
 
+const UI_EXEC_CHANGE_SANDBOX = 'UI_EXEC_CHANGE_SANDBOX';
+export function uiExecChangeSandbox(name) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX,
+    payload: name
+  };
+}
+
+const UI_EXEC_CHANGE_SANDBOX_LIST = 'UI_EXEC_CHANGE_SANDBOX_LIST';
+export function uiExecChangeSandboxList(list) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX_LIST,
+    payload: list
+  };
+}
+
 const UI_EXEC_CHANGE_CURRENT_EVENT = 'UI_EXEC_CHANGE_CURRENT_EVENT';
 export function uiExecChangeCurrentEvent(event) {
   return {
@@ -213,6 +229,10 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { page: action.payload });
   case TOGGLE_MAIN_DRAWER:
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
+  case UI_EXEC_CHANGE_SANDBOX:
+    return updateObject(state, { sandbox: action.payload });
+  case UI_EXEC_CHANGE_SANDBOX_LIST:
+    return updateObject(state, { sandboxes: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
   case UI_CHANGE_DEV_MODE:

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	v1 "k8s.io/api/core/v1"
@@ -32,8 +33,10 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-const moduleMonEngine string = "mon-engine"
 const notFoundStr string = "na"
+const monEngineKey string = "mon-engine:"
+
+var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 
 //index in array
 const EVENT_POD_ADDED = 0
@@ -78,7 +81,7 @@ func Init() (err error) {
 	log.Info("Connected to Mon Engine DB")
 
 	// Empty DB
-	_ = rc.DBFlush(moduleMonEngine)
+	_ = rc.DBFlush(baseKey)
 
 	return nil
 }
@@ -271,7 +274,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	fields["startTime"] = monEngineInfo.StartTime
 
 	// Make unique key
-	key := moduleMonEngine + ":" + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
+	key := baseKey + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
 	err := rc.SetEntry(key, fields)
@@ -283,7 +286,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 
 	// Make unique key
-	key := moduleMonEngine + ":" + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
+	key := baseKey + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
 	err := rc.DelEntry(key)
@@ -356,7 +359,7 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve pod status information
 	var err error
-	keyName := moduleMonEngine + "*"
+	keyName := baseKey + "*"
 	if queryLong == "true" {
 		err = rc.ForEachEntry(keyName, getPodDetails, &allPodsStatus)
 	} else {
