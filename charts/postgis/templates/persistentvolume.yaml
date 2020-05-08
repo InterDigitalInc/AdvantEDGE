@@ -2,9 +2,9 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: {{ template "postgis.fullname" . }}
+  name: {{ template "postgresql.fullname" . }}
   labels:
-    app: {{ template "postgis.name" . }}
+    app: {{ template "postgresql.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -18,5 +18,5 @@ spec:
   persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy }}
   hostPath:
     path: "{{.Values.persistence.location}}"
-  storageClassName: {{ template "postgis.fullname" . }}
+  storageClassName: {{ template "postgresql.fullname" . }}
 {{- end }}

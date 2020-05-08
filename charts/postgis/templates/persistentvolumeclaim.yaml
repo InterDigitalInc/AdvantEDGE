@@ -8,11 +8,11 @@ metadata:
 {{ toYaml .Values.persistence.annotations | indent 4 }}
 {{- end }}
   labels:
-    app: {{ template "postgis.name" . }}
+    app: {{ template "postgresql.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: {{ template "postgis.fullname" . }}
+  name: {{ template "postgresql.fullname" . }}
 spec:
   accessModes:
 {{ toYaml .Values.persistence.accessModes | indent 4 }}
@@ -21,7 +21,7 @@ spec:
   storageClassName: ""
 {{- else }}
 {{- if (eq "fullname" .Values.persistence.storageClass) }}
-  storageClassName: "{{ template "postgis.fullname" . }}"
+  storageClassName: "{{ template "postgresql.fullname" . }}"
 {{- else }}
   storageClassName: "{{ .Values.persistence.storageClass }}"
 {{- end }}
