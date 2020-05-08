@@ -565,8 +565,8 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 		return err
 	}
 
-	// Inform Virt Engine to create sandbox
-	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxCreate, moduleVirtEngineName, moduleVirtEngineNamespace)
+	// Send message to create sandbox
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxCreate, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldSandboxName] = sandboxName
 	msg.Payload[fieldScenarioName] = sandboxConfig.ScenarioName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
@@ -584,8 +584,8 @@ func deleteSandbox(sandboxName string) {
 	// Remove sandbox from store
 	pfmCtrl.sandboxStore.Del(sandboxName)
 
-	// Inform Virt Engine to destroy sandbox
-	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, moduleVirtEngineName, moduleVirtEngineNamespace)
+	// Send message to destroy sandbox
+	msg := pfmCtrl.mqGlobal.CreateMsg(mq.MsgSandboxDestroy, mq.TargetAll, mq.TargetAll)
 	msg.Payload[fieldSandboxName] = sandboxName
 	log.Debug("TX MSG: ", mq.PrintMsg(msg))
 	err := pfmCtrl.mqGlobal.SendMsg(msg)

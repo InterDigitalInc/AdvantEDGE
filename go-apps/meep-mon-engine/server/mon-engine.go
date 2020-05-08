@@ -97,11 +97,11 @@ var expectedSboxPods map[string]*PodStatus
 func Init() (err error) {
 
 	// Retrieve dependency pod list from environment variable
+	expectedDepPods = make(map[string]*PodStatus)
 	depPodsStr := strings.TrimSpace(os.Getenv("MEEP_DEPENDENCY_PODS"))
 	log.Info("MEEP_DEPENDENCY_PODS: ", depPodsStr)
 	if depPodsStr != "" {
 		depPodsList = strings.Split(depPodsStr, ",")
-		expectedDepPods = make(map[string]*PodStatus)
 		for _, pod := range depPodsList {
 			podStatus := new(PodStatus)
 			podStatus.PodType = "core"
@@ -113,11 +113,11 @@ func Init() (err error) {
 	}
 
 	// Retrieve core pod list from environment variable
+	expectedCorePods = make(map[string]*PodStatus)
 	corePodsStr := strings.TrimSpace(os.Getenv("MEEP_CORE_PODS"))
 	log.Info("MEEP_CORE_PODS: ", corePodsStr)
 	if corePodsStr != "" {
 		corePodsList = strings.Split(corePodsStr, ",")
-		expectedCorePods = make(map[string]*PodStatus)
 		for _, pod := range corePodsList {
 			podStatus := new(PodStatus)
 			podStatus.PodType = "core"
@@ -129,11 +129,11 @@ func Init() (err error) {
 	}
 
 	// Retrieve sandbox pod list from environment variable
+	expectedSboxPods = make(map[string]*PodStatus)
 	sboxPodsStr := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_PODS"))
 	log.Info("MEEP_SANDBOX_PODS: ", sboxPodsStr)
 	if sboxPodsStr != "" {
 		sboxPodsList = strings.Split(sboxPodsStr, ",")
-		expectedSboxPods = make(map[string]*PodStatus)
 	}
 
 	// Create message queue
