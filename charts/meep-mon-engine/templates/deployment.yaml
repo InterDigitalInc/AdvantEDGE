@@ -39,6 +39,11 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
+          env:
+            {{- range $key, $value := .Values.image.env }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage

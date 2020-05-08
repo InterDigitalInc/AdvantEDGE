@@ -224,6 +224,10 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
+	case "meep-mon-engine":
+		flags = utils.HelmFlags(nil, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList("repo.dep"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList("repo.core.go-apps"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList("repo.sandbox.go-apps"))
 	case "meep-virt-engine":
 		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
@@ -317,4 +321,22 @@ func deployGetPorts() (string, string) {
 	ports := viper.GetString("meep.ports")
 	p := strings.Split(ports, "/")
 	return p[0], p[1]
+}
+
+func getPodList(target string) string {
+	podListStr := ""
+	podList := utils.GetTargets(target)
+	for _, pod := range podList {
+
+		// Exceptions
+		if pod == "meep-tc-sidecar" {
+			continue
+		}
+
+		if podListStr != "" {
+			podListStr += "\\,"
+		}
+		podListStr += pod
+	}
+	return podListStr
 }
