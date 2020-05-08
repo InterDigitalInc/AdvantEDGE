@@ -301,7 +301,7 @@ persistence:
   ## If defined, PVC must be created manually before volume will be bound
   ## The value is evaluated as a template, so, for example, the name can depend on .Release or .Chart
   ##
-  # existingClaim:
+  existingClaim: false
 
   ## The path the volume will be mounted at, useful when using different
   ## PostgreSQL images.
@@ -313,11 +313,15 @@ persistence:
   ##
   subPath: ""
 
-  # storageClass: "-"
+  storageClass: "fullname"
   accessModes:
     - ReadWriteOnce
   size: 8Gi
   annotations: {}
+
+  reclaimPolicy: Retain
+  #location: "<WORKDIR>/postgis"
+  location: "/home/englab/.meep/postgis"
 
 ## updateStrategy for PostgreSQL StatefulSet and its slaves StatefulSets
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
