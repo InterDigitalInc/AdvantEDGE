@@ -47,6 +47,9 @@ func Init(sandboxName string,
 	cleanUp func()) (err error) {
 
 	// Create new SBI instance
+	if sbi != nil {
+		sbi = nil
+	}
 	sbi = new(RnisSbi)
 
 	sbi.sandboxName = sandboxName
@@ -95,6 +98,11 @@ func Run() (err error) {
 		return err
 	}
 
+	return nil
+}
+
+func Stop() (err error) {
+	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
 }
 

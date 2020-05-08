@@ -69,17 +69,13 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 }
 
 // Init - RNI Service initialization
-func Init(redisDBAddr string, influxDBAddr string) (err error) {
-
-	if redisDBAddr != "" {
-		redisAddr = redisDBAddr
-	}
-	if influxDBAddr != "" {
-		influxAddr = influxDBAddr
-	}
+func Init() (err error) {
 
 	// Retrieve Sandbox name from environment variable
-	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxNameEnv != "" {
+		sandboxName = sandboxNameEnv
+	}
 	if sandboxName == "" {
 		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
 		log.Error(err.Error())
@@ -131,6 +127,11 @@ func reInit() {
 // Run - Start RNIS
 func Run() (err error) {
 	return sbi.Run()
+}
+
+// Stop - Stop RNIS
+func Stop() (err error) {
+	return sbi.Stop()
 }
 
 func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {

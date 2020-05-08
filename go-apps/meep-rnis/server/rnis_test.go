@@ -696,6 +696,7 @@ func TestSuccessSubscriptionCellChange(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -734,6 +735,7 @@ func TestFailSubscriptionCellChange(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -766,6 +768,7 @@ func TestSubscriptionsListGet(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -890,7 +893,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	hostatus := COMPLETED
 	expectedFilter := FilterCriteriaAssocHo{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "1.1.1.1"}, &Plmn{"111", "222"}, []string{"1234567"}, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLink := Link{"/rni/v1/subscriptions/cell_change/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/cell_change/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	expectedExpiry := TimeStamp{1988599770, 0}
 	expectedResponse := InlineResponse201{&CellChangeSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
 
@@ -949,7 +952,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	hostatus := COMPLETED
 	expectedFilter := FilterCriteriaAssocHo{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "2.2.2.2"}, &Plmn{"111", "222"}, []string{"1234567"}, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLink := Link{"/rni/v1/subscriptions/cell_change/" + subscriptionId}
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/cell_change/" + subscriptionId}
 	expectedExpiry := TimeStamp{1988599770, 0}
 	expectedResponse := InlineResponse2004{&CellChangeSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
 
@@ -1091,6 +1094,7 @@ func TestExpiryNotification(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -1146,7 +1150,7 @@ func TestExpiryNotification(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	fmt.Println("Create valid Metric Store to get logs from")
-	metricStore, err := ms.NewMetricStore(currentStoreName, influxTestAddr, redisTestAddr)
+	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create store")
 	}
@@ -1182,6 +1186,7 @@ func TestSubscriptionNotification(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -1245,7 +1250,7 @@ func TestSubscriptionNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
-	metricStore, err := ms.NewMetricStore(currentStoreName, influxTestAddr, redisTestAddr)
+	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
 	if err != nil {
 		t.Fatalf("Failed to create a store")
 	}
@@ -1308,6 +1313,7 @@ func TestSbi(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -1366,24 +1372,24 @@ func TestSbi(t *testing.T) {
 	ueName := "ue1"
 	appName := "zone1-edge1-iperf"
 
-	jsonEcgiInfo, _ := rc.JSONGetEntry(moduleRNIS+":UE:"+ueName, ".")
+	jsonEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
 	if string(jsonEcgiInfo) != expectedUeEcgiStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(moduleRNIS+":APP:"+appName, ".")
+	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
 	if string(jsonEcgiInfo) != expectedAppEcgiStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	updateScenario("mobility1")
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(moduleRNIS+":UE:"+ueName, ".")
+	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
 	if string(jsonEcgiInfo) != expectedUeEcgiStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	jsonEcgiInfo, _ = rc.JSONGetEntry(moduleRNIS+":APP:"+appName, ".")
+	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"APP:"+appName, ".")
 	if string(jsonEcgiInfo) != expectedAppEcgiStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1401,6 +1407,7 @@ func TestPlmnInfoGet(t *testing.T) {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
+	sandboxName = testScenarioName
 
 	err := Init()
 	if err != nil {
@@ -1496,12 +1503,13 @@ func TestPlmnInfoGet(t *testing.T) {
 
 func terminateScenario() {
 	if mqLocal != nil {
+		_ = Stop()
 		msg := mqLocal.CreateMsg(mq.MsgScenarioTerminate, mq.TargetAll, testScenarioName)
 		err := mqLocal.SendMsg(msg)
 		if err != nil {
 			log.Error("Failed to send message: ", err)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -1525,7 +1533,7 @@ func updateScenario(testUpdate string) {
 		}
 	default:
 	}
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 }
 
 func initialiseScenario(testScenario string) {
@@ -1533,7 +1541,14 @@ func initialiseScenario(testScenario string) {
 	//clear DB
 	cleanUp()
 
-	cfg := mod.ModelCfg{Name: testScenarioName, Module: "test-mod", DbAddr: redisAddr}
+	cfg := mod.ModelCfg{
+		Name:      testScenarioName,
+		Namespace: sandboxName,
+		Module:    "test-mod",
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
+
 	var err error
 	m, err = mod.NewModel(cfg)
 	if err != nil {
@@ -1569,7 +1584,7 @@ func initialiseScenario(testScenario string) {
 		return
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 
 }
 
