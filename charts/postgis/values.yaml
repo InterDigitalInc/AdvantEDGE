@@ -9,13 +9,12 @@ global:
 #     - myRegistryKeySecretName
 #   storageClass: myStorageClass
 
-## Bitnami PostgreSQL image version
-## ref: https://hub.docker.com/r/bitnami/postgresql/tags/
+## ref: https://registry.hub.docker.com/r/postgis/postgis/tags
 ##
 image:
   registry: docker.io
-  repository: bitnami/postgresql
-  tag: 11.7.0-debian-10-r98
+  repository: postgis/postgis
+  tag: 12-3.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -79,6 +78,7 @@ volumePermissions:
 ##
 # schedulerName:
 
+
 ## Pod Security Context
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 ##
@@ -105,16 +105,16 @@ rbac:
   create: false
 
 replication:
-  enabled: true
+  enabled: false
   user: repl_user
   password: repl_password
-  slaveReplicas: 2
+  slaveReplicas: 1
   ## Set synchronous commit mode: on, off, remote_apply, remote_write and local
   ## ref: https://www.postgresql.org/docs/9.6/runtime-config-wal.html#GUC-WAL-LEVEL
-  synchronousCommit: "on"
+  synchronousCommit: "off"
   ## From the number of `slaveReplicas` defined above, set the number of those that will have synchronous replication
   ## NOTE: It cannot be > slaveReplicas
-  numSynchronousReplicas: 1
+  numSynchronousReplicas: 0
   ## Replication Cluster application name. Useful for defining multiple replication policies
   applicationName: my_application
 
@@ -210,10 +210,6 @@ extraEnv: []
 #      #!/bin/sh
 #      echo "Do something."
 
-## Specify the PostgreSQL username and password to execute the initdb scripts
-# initdbUser:
-# initdbPassword:
-
 ## ConfigMap with scripts to be run at first boot
 ## NOTE: This will override initdbScripts
 # initdbScriptsConfigMap:
@@ -221,6 +217,10 @@ extraEnv: []
 ## Secret with scripts to be run at first boot (in case it contains sensitive information)
 ## NOTE: This can work along initdbScripts or initdbScriptsConfigMap
 # initdbScriptsSecret:
+
+## Specify the PostgreSQL username and password to execute the initdb scripts
+# initdbUser:
+# initdbPassword:
 
 ## Optional duration in seconds the pod needs to terminate gracefully.
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
@@ -296,7 +296,7 @@ shmVolume:
 ##   GKE, AWS & OpenStack)
 ##
 persistence:
-  enabled: true
+  enabled: false
   ## A manually managed Persistent Volume and Claim
   ## If defined, PVC must be created manually before volume will be bound
   ## The value is evaluated as a template, so, for example, the name can depend on .Release or .Chart
@@ -341,6 +341,15 @@ master:
   podLabels: {}
   podAnnotations: {}
   priorityClassName: ""
+  ## Extra init containers
+  ## Example
+  ##
+  ## extraInitContainers:
+  ##   - name: do-something
+  ##     image: busybox
+  ##     command: ['do', 'something']
+  extraInitContainers: []
+
   ## Additional PostgreSQL Master Volume mounts
   ##
   extraVolumeMounts: []
@@ -383,14 +392,10 @@ slave:
   podLabels: {}
   podAnnotations: {}
   priorityClassName: ""
-  ## Extra init containers
-  ## Example
-  ##
-  ## extraInitContainers:
-  ##   - name: do-something
-  ##     image: busybox
-  ##     command: ['do', 'something']
-  extraInitContainers: []
+  extraInitContainers: |
+    # - name: do-something
+    #   image: busybox
+    #   command: ['do', 'something']
   ## Additional PostgreSQL Slave Volume mounts
   ##
   extraVolumeMounts: []
@@ -474,7 +479,7 @@ readinessProbe:
 ## Configure metrics exporter
 ##
 metrics:
-  enabled: true
+  enabled: false
   # resources: {}
   service:
     type: ClusterIP
