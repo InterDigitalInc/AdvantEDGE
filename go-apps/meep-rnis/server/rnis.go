@@ -42,7 +42,9 @@ const rnisKey string = "rnis:"
 const logModuleRNIS string = "meep-rnis"
 
 //const module string = "rnis"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
+
 const cellChangeSubscriptionType = "cell_change"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}
@@ -70,7 +72,10 @@ func notImplemented(w http.ResponseWriter, r *http.Request) {
 func Init() (err error) {
 
 	// Retrieve Sandbox name from environment variable
-	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxNameEnv != "" {
+		sandboxName = sandboxNameEnv
+	}
 	if sandboxName == "" {
 		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
 		log.Error(err.Error())
@@ -109,7 +114,7 @@ func Init() (err error) {
 	}()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(sandboxName, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
+	return sbi.Init(sandboxName, redisAddr, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
@@ -122,6 +127,11 @@ func reInit() {
 // Run - Start RNIS
 func Run() (err error) {
 	return sbi.Run()
+}
+
+// Stop - Stop RNIS
+func Stop() (err error) {
+	return sbi.Stop()
 }
 
 func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
@@ -154,7 +164,6 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId[0] != oldCellId {
 		//updateDB
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertEcgiToJson(&newEcgi))
-
 		assocId := new(AssociateId)
 		assocId.Type_ = "UE_IPv4_ADDRESS"
 		assocId.Value = name
@@ -380,19 +389,18 @@ func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId st
 		return
 	}
 
-	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
+	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
 }
 
 func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
@@ -405,20 +413,18 @@ func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionI
 		return
 	}
 
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
+	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
 }
 
 func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -453,6 +459,15 @@ func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 
+}
+
+func isSubscriptionIdRegisteredCc(subsIdStr string) bool {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if ccSubscriptionMap[subsId] != nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 func registerCc(cellChangeSubscription *CellChangeSubscription, subsIdStr string) {
@@ -549,19 +564,23 @@ func cellChangeSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	registerCc(cellChangeSubscription, subsIdStr)
+	if isSubscriptionIdRegisteredCc(subsIdStr) {
+		registerCc(cellChangeSubscription, subsIdStr)
 
-	_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
+		_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
 
-	response.CellChangeSubscription = cellChangeSubscription
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		response.CellChangeSubscription = cellChangeSubscription
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, string(jsonResponse))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
 	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
 }
 
 func delSubscription(keyPrefix string, subsId string) error {
@@ -740,5 +759,5 @@ func cleanUp() {
 
 func updateStoreName(storeName string) {
 	currentStoreName = storeName
-	_ = httpLog.ReInit(logModuleRNIS, sandboxName, storeName)
+	_ = httpLog.ReInit(logModuleRNIS, sandboxName, storeName, redisAddr, influxAddr)
 }

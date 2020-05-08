@@ -27,6 +27,7 @@ import (
 
 const moduleName string = "meep-loc-serv-sbi"
 const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 type LocServSbi struct {
 	sandboxName             string
@@ -135,7 +136,7 @@ func processActiveScenarioUpdate() {
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)
 
-	_ = httpLog.ReInit(moduleName, sbi.sandboxName, sbi.activeModel.GetScenarioName())
+	_ = httpLog.ReInit(moduleName, sbi.sandboxName, sbi.activeModel.GetScenarioName(), redisAddr, influxAddr)
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")

@@ -39,14 +39,20 @@ var logComponent = ""
 const DirectionRX = "RX"
 const DirectionTX = "TX"
 
-func ReInit(loggerName string, namespace string, currentStoreName string) error {
+func ReInit(loggerName string, namespace string, currentStoreName string, redisAddr string, influxAddr string) error {
 
+	if redisAddr == "" {
+		redisAddr = redisDBAddr
+	}
+	if influxAddr == "" {
+		redisAddr = influxDBAddr
+	}
 	log.Info("Reinitialisation of http logger with: ", currentStoreName, " for ", loggerName)
 	logComponent = loggerName
 	if currentStoreName != "" {
 		//currentStoreName located in NBI of RNIS populated by SBI upon new activation
 		var err error
-		metricStore, err = ms.NewMetricStore(currentStoreName, namespace, influxDBAddr, redisDBAddr)
+		metricStore, err = ms.NewMetricStore(currentStoreName, namespace, influxAddr, redisAddr)
 		if err != nil {
 			log.Error("Failed connection to Redis: ", err)
 			return err
@@ -70,10 +76,16 @@ func LogTx(url string, method string, body string, resp *http.Response, startTim
 	nextUniqueId++
 
 	responseBodyString := ""
+	responseCode := ""
 
-	if resp.Body != nil {
-		responseData, _ := ioutil.ReadAll(resp.Body)
-		responseBodyString = string(responseData)
+	if resp != nil {
+		if resp.Body != nil {
+			responseData, _ := ioutil.ReadAll(resp.Body)
+			responseBodyString = string(responseData)
+		}
+		responseCode = strconv.Itoa(resp.StatusCode)
+	} else {
+		responseCode = strconv.Itoa(http.StatusInternalServerError)
 	}
 
 	var metric ms.HttpMetric
@@ -85,7 +97,7 @@ func LogTx(url string, method string, body string, resp *http.Response, startTim
 	metric.Method = method
 	metric.Body = body
 	metric.RespBody = responseBodyString
-	metric.RespCode = strconv.Itoa(resp.StatusCode)
+	metric.RespCode = responseCode
 	metric.ProcTime = strconv.Itoa(int(time.Since(startTime) / time.Microsecond))
 
 	err := metricStore.SetHttpMetric(metric)

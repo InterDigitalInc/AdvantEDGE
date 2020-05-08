@@ -24,7 +24,6 @@ import (
 )
 
 const moduleName string = "meep-rnis-sbi"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 
 type RnisSbi struct {
 	sandboxName          string
@@ -41,13 +40,18 @@ var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
 func Init(sandboxName string,
+	redisAddr string,
 	updateUeEcgiInfo func(string, string, string, string),
 	updateAppEcgiInfo func(string, string, string, string),
 	updateScenarioName func(string),
 	cleanUp func()) (err error) {
 
 	// Create new SBI instance
+	if sbi != nil {
+		sbi = nil
+	}
 	sbi = new(RnisSbi)
+
 	sbi.sandboxName = sandboxName
 
 	// Create message queue
@@ -97,6 +101,11 @@ func Run() (err error) {
 	return nil
 }
 
+func Stop() (err error) {
+	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	return nil
+}
+
 // Message Queue handler
 func msgHandler(msg *mq.Msg, userData interface{}) {
 	switch msg.Message {
@@ -126,6 +135,11 @@ func processActiveScenarioTerminate() {
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
 
+	sbi.activeModel.UpdateScenario()
+	processScenarioUpdate()
+}
+
+func processScenarioUpdate() {
 	// Update scenario Name that needs to be accessed by the NBI
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
@@ -171,6 +185,7 @@ func processActiveScenarioUpdate() {
 	var appNameList []string
 	appNameList = append(appNameList, meAppNameList...)
 	appNameList = append(appNameList, ueAppNameList...)
+
 	for _, meAppName := range appNameList {
 		meAppParent := sbi.activeModel.GetNodeParent(meAppName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
