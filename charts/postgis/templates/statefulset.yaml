@@ -430,7 +430,8 @@ spec:
         - name: data
           persistentVolumeClaim:
 {{- with .Values.persistence.existingClaim }}
-            claimName: {{ tpl . $ }}
+            #claimName: {{ tpl . $ }}
+            claimName: {{ template "postgresql.fullname" . }}
 {{- end }}
 {{- else if not .Values.persistence.enabled }}
         - name: data
