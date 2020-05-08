@@ -11,7 +11,7 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client v0.0.0
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
