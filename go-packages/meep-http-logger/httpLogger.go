@@ -88,8 +88,6 @@ func LogTx(url string, method string, body string, resp *http.Response, startTim
 		responseCode = strconv.Itoa(http.StatusInternalServerError)
 	}
 
-
-
 	var metric ms.HttpMetric
 	metric.LoggerName = logComponent
 	metric.Direction = DirectionTX
