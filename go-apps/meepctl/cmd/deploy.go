@@ -202,8 +202,8 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
 	case "meep-open-map-tiles":
 		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
-  case "meep-postgis":
-			flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/postgis/")
+        case "meep-postgis":
+		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/postgis/")
 	case "meep-docker-registry":
 		deployCreateRegistryCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
