@@ -211,7 +211,7 @@ class MeepContainer extends Component {
   checkPlatformStatus() {
     // Core pods
     axios
-      .get(`${basepathMonEngine}/states?long=true&type=core`)
+      .get(`${basepathMonEngine}/states?long=true&type=core&sandbox=all`)
       .then(res => {
         this.props.changeCorePodsPhases(res.data.podStatus);
       })

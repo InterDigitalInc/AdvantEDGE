@@ -328,11 +328,12 @@ func getPodList(target string) string {
 	podList := utils.GetTargets(target)
 	for _, pod := range podList {
 
-		// Exceptions
-		if pod == "meep-tc-sidecar" {
+		// Ignore targets with monitoring disabled
+		if !utils.RepoCfg.GetBool(target + "." + pod + ".monitor") {
 			continue
 		}
 
+		// Append target to pod list string
 		if podListStr != "" {
 			podListStr += "\\,"
 		}
