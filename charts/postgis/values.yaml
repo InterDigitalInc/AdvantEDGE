@@ -45,7 +45,7 @@ image:
 ## volumePermissions: Change the owner of the persist volume mountpoint to RunAsUser:fsGroup
 ##
 volumePermissions:
-  enabled: false
+  enabled: true
   image:
     registry: docker.io
     repository: bitnami/minideb
@@ -301,7 +301,8 @@ persistence:
   ## If defined, PVC must be created manually before volume will be bound
   ## The value is evaluated as a template, so, for example, the name can depend on .Release or .Chart
   ##
-  existingClaim: false
+  ## This chart has been modified to create a PVC with this name
+  existingClaim: meep-postgis
 
   ## The path the volume will be mounted at, useful when using different
   ## PostgreSQL images.
@@ -318,9 +319,8 @@ persistence:
     - ReadWriteOnce
   size: 8Gi
   annotations: {}
-
   reclaimPolicy: Retain
-  #location: "<WORKDIR>/postgis"
+  # location: "<WORKDIR>/postgis"
   location: "/home/englab/.meep/postgis"
 
 ## updateStrategy for PostgreSQL StatefulSet and its slaves StatefulSets
