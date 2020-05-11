@@ -181,6 +181,8 @@ repo:
       chart: charts/redis
     meep-open-map-tiles:
       chart: charts/open-map-tiles
+    meep-postgis:
+      chart: charts/postgis
 
   #------------------------------
   #  Packages

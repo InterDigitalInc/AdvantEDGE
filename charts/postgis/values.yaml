@@ -320,8 +320,8 @@ persistence:
   size: 8Gi
   annotations: {}
   reclaimPolicy: Retain
-  # location: "<WORKDIR>/postgis"
-  location: "/home/englab/.meep/postgis"
+  ## This persistence.location needs to be overriden with --set persistence.location=<path-to-local-workdir>
+  location: "<WORKDIR>/postgis"
 
 ## updateStrategy for PostgreSQL StatefulSet and its slaves StatefulSets
 ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
