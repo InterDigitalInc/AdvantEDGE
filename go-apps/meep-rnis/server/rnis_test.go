@@ -1297,6 +1297,7 @@ func TestSubscriptionNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
+	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
 
 	/******************************
 	 * back to initial state section
