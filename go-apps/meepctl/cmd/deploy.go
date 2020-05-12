@@ -154,6 +154,8 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/omt")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/postgis")
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + deployData.workdir + "]")
@@ -200,6 +202,8 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
 	case "meep-open-map-tiles":
 		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
+	case "meep-postgis":
+		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/postgis/")
 	case "meep-docker-registry":
 		deployCreateRegistryCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")

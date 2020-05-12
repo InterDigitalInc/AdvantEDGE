@@ -44,6 +44,5 @@ spec:
 {{- end }}
       terminationGracePeriodSeconds: 5
 {{- if .Values.affinity }}
-      affinity:
-{{- toYaml .Values.affinity | indent 8 }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
 {{- end }}
