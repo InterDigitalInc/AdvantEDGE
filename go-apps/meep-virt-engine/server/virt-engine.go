@@ -47,6 +47,7 @@ type VirtEngine struct {
 	activeScenarioNames map[string]string
 	hostUrl             string
 	handlerId           int
+	sboxPods            map[string]string
 }
 
 var ve *VirtEngine
@@ -57,6 +58,22 @@ func Init() (err error) {
 	ve = new(VirtEngine)
 	ve.activeModels = make(map[string]*mod.Model)
 	ve.activeScenarioNames = make(map[string]string)
+
+	// Retrieve sandbox pods list from environment variable
+	ve.sboxPods = make(map[string]string)
+	sboxPodsStr := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_PODS"))
+	log.Info("MEEP_SANDBOX_PODS: ", sboxPodsStr)
+	if sboxPodsStr != "" {
+		sboxPodsList := strings.Split(sboxPodsStr, ",")
+		for _, pod := range sboxPodsList {
+			ve.sboxPods[pod] = pod
+		}
+	}
+	if len(ve.sboxPods) == 0 {
+		err = errors.New("MEEP_SANDBOX_PODS env variable does not contain sbox pod list")
+		log.Error(err.Error())
+		return err
+	}
 
 	// Retrieve Host Name from environment variable
 	ve.hostUrl = strings.TrimSpace(os.Getenv("MEEP_HOST_URL"))

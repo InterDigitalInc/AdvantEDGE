@@ -225,11 +225,14 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
 	case "meep-mon-engine":
-		flags = utils.HelmFlags(nil, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList("repo.dep"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList("repo.core.go-apps"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList("repo.sandbox.go-apps"))
+		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
+		flags = utils.HelmFlags(nil, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
 	case "meep-virt-engine":
+		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
 		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
@@ -325,15 +328,8 @@ func deployGetPorts() (string, string) {
 
 func getPodList(target string) string {
 	podListStr := ""
-	podList := utils.GetTargets(target)
+	podList := utils.RepoCfg.GetStringSlice(target)
 	for _, pod := range podList {
-
-		// Ignore targets with monitoring disabled
-		if !utils.RepoCfg.GetBool(target + "." + pod + ".monitor") {
-			continue
-		}
-
-		// Append target to pod list string
 		if podListStr != "" {
 			podListStr += "\\,"
 		}
