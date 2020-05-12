@@ -20,12 +20,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
@@ -33,24 +36,19 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-const notFoundStr string = "na"
-const monEngineKey string = "mon-engine:"
-
-var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
-
-//index in array
-const EVENT_POD_ADDED = 0
-const EVENT_POD_MODIFIED = 1
-const EVENT_POD_DELETED = 2
-
-var pod_event_str = [3]string{"pod added", "pod modified", "pod deleted"}
+type UserData struct {
+	AllPodsStatus PodsStatus
+	ExpectedPods  map[string]*PodStatus
+}
 
 type MonEngineInfo struct {
+	PodType              string
 	PodName              string
 	Namespace            string
 	MeepApp              string
 	MeepOrigin           string
 	MeepScenario         string
+	Release              string
 	Phase                string
 	PodInitialized       string
 	PodReady             string
@@ -65,15 +63,89 @@ type MonEngineInfo struct {
 	StartTime            string
 }
 
+const moduleName = "meep-mon-engine"
+const moduleNamespace = "default"
+const notFoundStr = "na"
+const monEngineKey = "mon-engine:"
+
+// MQ payload fields
+const fieldSandboxName = "sandbox-name"
+
+// index in array
+const EVENT_POD_ADDED = 0
+const EVENT_POD_MODIFIED = 1
+const EVENT_POD_DELETED = 2
+
+var pod_event_str = [3]string{"pod added", "pod modified", "pod deleted"}
 var rc *redis.Connector
-var redisDBAddr = "meep-redis-master:6379"
+var redisAddr = "meep-redis-master:6379"
+var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 var stopChan = make(chan struct{})
+var mqGlobal *mq.MsgQueue
+var handlerId int
+var sandboxStore *ss.SandboxStore
+
+var depPodsList []string
+var corePodsList []string
+var sboxPodsList []string
+
+var expectedDepPods map[string]*PodStatus
+var expectedCorePods map[string]*PodStatus
+var expectedSboxPods map[string]*PodStatus
 
 // Init - Mon Engine initialization
 func Init() (err error) {
 
+	// Retrieve dependency pod list from environment variable
+	expectedDepPods = make(map[string]*PodStatus)
+	depPodsStr := strings.TrimSpace(os.Getenv("MEEP_DEPENDENCY_PODS"))
+	log.Info("MEEP_DEPENDENCY_PODS: ", depPodsStr)
+	if depPodsStr != "" {
+		depPodsList = strings.Split(depPodsStr, ",")
+		for _, pod := range depPodsList {
+			podStatus := new(PodStatus)
+			podStatus.PodType = "core"
+			podStatus.Sandbox = "default"
+			podStatus.Name = pod
+			podStatus.LogicalState = "NotAvailable"
+			expectedDepPods[pod] = podStatus
+		}
+	}
+
+	// Retrieve core pod list from environment variable
+	expectedCorePods = make(map[string]*PodStatus)
+	corePodsStr := strings.TrimSpace(os.Getenv("MEEP_CORE_PODS"))
+	log.Info("MEEP_CORE_PODS: ", corePodsStr)
+	if corePodsStr != "" {
+		corePodsList = strings.Split(corePodsStr, ",")
+		for _, pod := range corePodsList {
+			podStatus := new(PodStatus)
+			podStatus.PodType = "core"
+			podStatus.Sandbox = "default"
+			podStatus.Name = pod
+			podStatus.LogicalState = "NotAvailable"
+			expectedCorePods[pod] = podStatus
+		}
+	}
+
+	// Retrieve sandbox pod list from environment variable
+	expectedSboxPods = make(map[string]*PodStatus)
+	sboxPodsStr := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_PODS"))
+	log.Info("MEEP_SANDBOX_PODS: ", sboxPodsStr)
+	if sboxPodsStr != "" {
+		sboxPodsList = strings.Split(sboxPodsStr, ",")
+	}
+
+	// Create message queue
+	mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
+
 	// Connect to Redis DB
-	rc, err = redis.NewConnector(redisDBAddr, 0)
+	rc, err = redis.NewConnector(redisAddr, 0)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
@@ -83,11 +155,34 @@ func Init() (err error) {
 	// Empty DB
 	_ = rc.DBFlush(baseKey)
 
+	// Connect to Sandbox Store
+	sandboxStore, err = ss.NewSandboxStore(redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Sandbox Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Sandbox Store")
+
 	return nil
 }
 
 // Run - Mon Engine monitoring thread
 func Run() (err error) {
+
+	// Initialize expected pods for existing sandboxes
+	if sboxMap, err := sandboxStore.GetAll(); err == nil {
+		for _, sbox := range sboxMap {
+			addExpectedPods(sbox.Name)
+		}
+	}
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqGlobal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to register MsgQueue handler: ", err.Error())
+		return err
+	}
 
 	// Start thread to watch k8s pods
 	err = k8sConnect()
@@ -101,6 +196,20 @@ func Run() (err error) {
 
 func Stop() {
 	close(stopChan)
+}
+
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgSandboxCreate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		addExpectedPods(msg.Payload[fieldSandboxName])
+	case mq.MsgSandboxDestroy:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		removeExpectedPods(msg.Payload[fieldSandboxName])
+	default:
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
+	}
 }
 
 func connectToAPISvr() (*kubernetes.Clientset, error) {
@@ -123,11 +232,13 @@ func connectToAPISvr() (*kubernetes.Clientset, error) {
 func printfMonEngineInfo(monEngineInfo MonEngineInfo, reason int) {
 
 	log.Debug("Monitoring Engine info *** ", pod_event_str[reason], " *** ",
-		" pod name : ", monEngineInfo.PodName,
+		" podType : ", monEngineInfo.PodType,
+		" podName : ", monEngineInfo.PodName,
 		" namespace : ", monEngineInfo.Namespace,
 		" meepApp : ", monEngineInfo.MeepApp,
 		" meepOrigin : ", monEngineInfo.MeepOrigin,
 		" meepScenario : ", monEngineInfo.MeepScenario,
+		" release : ", monEngineInfo.Release,
 		" phase : ", monEngineInfo.Phase,
 		" podInitialized : ", monEngineInfo.PodInitialized,
 		" podUnschedulable : ", monEngineInfo.PodUnschedulable,
@@ -143,124 +254,125 @@ func printfMonEngineInfo(monEngineInfo MonEngineInfo, reason int) {
 }
 
 func processEvent(obj interface{}, reason int) {
-	if pod, ok := obj.(*v1.Pod); ok {
+	var ok bool
+	var pod *v1.Pod
 
-		var monEngineInfo MonEngineInfo
+	// Validate object type is Pod
+	if pod, ok = obj.(*v1.Pod); !ok {
+		return
+	}
 
-		if reason != EVENT_POD_DELETED {
-			podConditionMsg := ""
-			podScheduled := "False"
-			podReady := "False"
-			podInitialized := "False"
-			podUnschedulable := "False"
-			nbConditions := len(pod.Status.Conditions)
-			for i := 0; i < nbConditions; i++ {
-				switch pod.Status.Conditions[i].Type {
-				case "PodScheduled":
-					podScheduled = string(pod.Status.Conditions[i].Status)
-				case "Ready":
-					podReady = string(pod.Status.Conditions[i].Status)
-					if podReady == "False" {
-						podConditionMsg = string(pod.Status.Conditions[i].Message)
-					}
-				case "Initialized":
-					podInitialized = string(pod.Status.Conditions[i].Status)
-				case "Unschedulable":
-					podUnschedulable = string(pod.Status.Conditions[i].Status)
+	var monEngineInfo MonEngineInfo
+
+	if reason != EVENT_POD_DELETED {
+		podConditionMsg := ""
+		podScheduled := "False"
+		podReady := "False"
+		podInitialized := "False"
+		podUnschedulable := "False"
+		nbConditions := len(pod.Status.Conditions)
+		for i := 0; i < nbConditions; i++ {
+			switch pod.Status.Conditions[i].Type {
+			case "PodScheduled":
+				podScheduled = string(pod.Status.Conditions[i].Status)
+			case "Ready":
+				podReady = string(pod.Status.Conditions[i].Status)
+				if podReady == "False" {
+					podConditionMsg = string(pod.Status.Conditions[i].Message)
 				}
-			}
-
-			nbContainers := len(pod.Status.ContainerStatuses)
-			okContainers := 0
-			restartCount := 0
-			reasonFailureStr := ""
-			for i := 0; i < nbContainers; i++ {
-				if pod.Status.ContainerStatuses[i].Ready {
-					okContainers++
-				} else {
-					if pod.Status.ContainerStatuses[i].State.Waiting != nil {
-						reasonFailureStr = pod.Status.ContainerStatuses[i].State.Waiting.Reason
-					} else if pod.Status.ContainerStatuses[i].State.Terminated != nil {
-						if reasonFailureStr != "" {
-							reasonFailureStr = pod.Status.ContainerStatuses[i].State.Terminated.Reason
-						}
-					}
-				}
-				//only update if the value is greater than 0, and we keep it
-				if restartCount == 0 {
-					restartCount = int(pod.Status.ContainerStatuses[i].RestartCount)
-				}
-			}
-
-			monEngineInfo.PodInitialized = podInitialized
-			monEngineInfo.PodUnschedulable = podUnschedulable
-			monEngineInfo.PodScheduled = podScheduled
-			monEngineInfo.PodReady = podReady
-			monEngineInfo.PodConditionError = podConditionMsg
-			monEngineInfo.ContainerStatusesMsg = reasonFailureStr
-			monEngineInfo.NbOkContainers = okContainers
-			monEngineInfo.NbTotalContainers = nbContainers
-			monEngineInfo.NbPodRestart = restartCount
-		}
-
-		//common for both the add, update and delete
-		monEngineInfo.Phase = string(pod.Status.Phase)
-		monEngineInfo.PodName = pod.Name
-		monEngineInfo.Namespace = pod.Namespace
-		monEngineInfo.MeepApp = pod.Labels["meepApp"]
-		monEngineInfo.MeepOrigin = pod.Labels["meepOrigin"]
-		monEngineInfo.MeepScenario = pod.Labels["meepScenario"]
-		if pod.Labels["meepApp"] != "" {
-			monEngineInfo.MeepApp = pod.Labels["meepApp"]
-		} else {
-			monEngineInfo.MeepApp = notFoundStr
-		}
-		if pod.Labels["meepOrigin"] != "" {
-			monEngineInfo.MeepOrigin = pod.Labels["meepOrigin"]
-		} else {
-			monEngineInfo.MeepOrigin = notFoundStr
-		}
-		if pod.Labels["meepScenario"] != "" {
-			monEngineInfo.MeepScenario = pod.Labels["meepScenario"]
-		} else {
-			monEngineInfo.MeepScenario = notFoundStr
-		}
-		monEngineInfo.LogicalState = monEngineInfo.Phase
-
-		//Phase is Running but might not really be because of some other attributes
-		//start of override section of the LogicalState by specific conditions
-
-		if pod.GetObjectMeta().GetDeletionTimestamp() != nil {
-			monEngineInfo.LogicalState = "Terminating"
-		} else {
-			if monEngineInfo.PodReady != "True" {
-				monEngineInfo.LogicalState = "Pending"
-			} else {
-				if monEngineInfo.NbOkContainers < monEngineInfo.NbTotalContainers {
-					monEngineInfo.LogicalState = "Failed"
-				}
+			case "Initialized":
+				podInitialized = string(pod.Status.Conditions[i].Status)
+			case "Unschedulable":
+				podUnschedulable = string(pod.Status.Conditions[i].Status)
 			}
 		}
-		//end of override section
 
-		printfMonEngineInfo(monEngineInfo, reason)
+		nbContainers := len(pod.Status.ContainerStatuses)
+		okContainers := 0
+		restartCount := 0
+		reasonFailureStr := ""
+		for i := 0; i < nbContainers; i++ {
+			if pod.Status.ContainerStatuses[i].Ready {
+				okContainers++
+			} else if pod.Status.ContainerStatuses[i].State.Waiting != nil {
+				reasonFailureStr = pod.Status.ContainerStatuses[i].State.Waiting.Reason
+			} else if pod.Status.ContainerStatuses[i].State.Terminated != nil && reasonFailureStr != "" {
+				reasonFailureStr = pod.Status.ContainerStatuses[i].State.Terminated.Reason
+			}
+			//only update if the value is greater than 0, and we keep it
+			if restartCount == 0 {
+				restartCount = int(pod.Status.ContainerStatuses[i].RestartCount)
+			}
+		}
 
+		monEngineInfo.PodInitialized = podInitialized
+		monEngineInfo.PodUnschedulable = podUnschedulable
+		monEngineInfo.PodScheduled = podScheduled
+		monEngineInfo.PodReady = podReady
+		monEngineInfo.PodConditionError = podConditionMsg
+		monEngineInfo.ContainerStatusesMsg = reasonFailureStr
+		monEngineInfo.NbOkContainers = okContainers
+		monEngineInfo.NbTotalContainers = nbContainers
+		monEngineInfo.NbPodRestart = restartCount
+	}
+
+	//common for both the add, update and delete
+	monEngineInfo.Phase = string(pod.Status.Phase)
+	monEngineInfo.PodName = pod.Name
+	monEngineInfo.Namespace = pod.Namespace
+	monEngineInfo.MeepApp = pod.Labels["meepApp"]
+	monEngineInfo.MeepScenario = pod.Labels["meepScenario"]
+	if monEngineInfo.Release, ok = pod.Labels["release"]; !ok {
+		monEngineInfo.Release = notFoundStr
+	}
+	if monEngineInfo.MeepApp, ok = pod.Labels["meepApp"]; !ok {
+		monEngineInfo.MeepApp = notFoundStr
+	}
+	if monEngineInfo.MeepOrigin, ok = pod.Labels["meepOrigin"]; !ok {
+		monEngineInfo.MeepOrigin = notFoundStr
+	}
+	if monEngineInfo.MeepScenario, ok = pod.Labels["meepScenario"]; !ok {
+		monEngineInfo.MeepScenario = notFoundStr
+	}
+	monEngineInfo.LogicalState = monEngineInfo.Phase
+	monEngineInfo.PodType = getPodType(monEngineInfo.MeepOrigin, monEngineInfo.Release)
+
+	//Phase is Running but might not really be because of some other attributes
+	//start of override section of the LogicalState by specific conditions
+
+	if pod.GetObjectMeta().GetDeletionTimestamp() != nil {
+		monEngineInfo.LogicalState = "Terminating"
+	} else if monEngineInfo.PodReady != "True" {
+		monEngineInfo.LogicalState = "Pending"
+	} else if monEngineInfo.NbOkContainers < monEngineInfo.NbTotalContainers {
+		monEngineInfo.LogicalState = "Failed"
+	}
+	//end of override section
+
+	printfMonEngineInfo(monEngineInfo, reason)
+
+	// Add, update or remove entry in DB only if core or scenario pod
+	if monEngineInfo.PodType != notFoundStr {
 		if reason == EVENT_POD_DELETED {
 			deleteEntryInDB(monEngineInfo)
 		} else {
 			addOrUpdateEntryInDB(monEngineInfo)
 		}
+	} else {
+		log.Debug("Ignoring non-AdvantEDGE pod: ", monEngineInfo.PodName)
 	}
 }
 
 func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	// Populate rule fields
 	fields := make(map[string]interface{})
+	fields["type"] = monEngineInfo.PodType
 	fields["name"] = monEngineInfo.PodName
 	fields["namespace"] = monEngineInfo.Namespace
 	fields["meepApp"] = monEngineInfo.MeepApp
 	fields["meepOrigin"] = monEngineInfo.MeepOrigin
 	fields["meepScenario"] = monEngineInfo.MeepScenario
+	fields["release"] = monEngineInfo.Release
 	fields["phase"] = monEngineInfo.Phase
 	fields["initialised"] = monEngineInfo.PodInitialized
 	fields["scheduled"] = monEngineInfo.PodScheduled
@@ -274,7 +386,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 	fields["startTime"] = monEngineInfo.StartTime
 
 	// Make unique key
-	key := baseKey + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
+	key := baseKey + monEngineInfo.Namespace + ":" + monEngineInfo.PodType + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
 	err := rc.SetEntry(key, fields)
@@ -286,7 +398,7 @@ func addOrUpdateEntryInDB(monEngineInfo MonEngineInfo) {
 func deleteEntryInDB(monEngineInfo MonEngineInfo) {
 
 	// Make unique key
-	key := baseKey + monEngineInfo.MeepOrigin + ":" + monEngineInfo.Namespace + ":" + monEngineInfo.MeepScenario + ":" + monEngineInfo.MeepApp + ":" + monEngineInfo.PodName
+	key := baseKey + monEngineInfo.Namespace + ":" + monEngineInfo.PodType + ":" + monEngineInfo.PodName
 
 	// Set rule information in DB
 	err := rc.DelEntry(key)
@@ -302,23 +414,6 @@ func k8sConnect() (err error) {
 	if err != nil {
 		log.Error("Failed to connect with k8s API Server. Error: ", err)
 		return err
-	}
-
-	meepOrigin := "core"
-
-	// Retrieve pods from k8s api with scenario label
-	pods, err := clientset.CoreV1().Pods("").List(
-		metav1.ListOptions{LabelSelector: fmt.Sprintf("meepOrigin=%s", meepOrigin)})
-	if err != nil {
-		log.Error("Failed to retrieve services from k8s API Server. Error: ", err)
-		return err
-	}
-
-	// Log currently installed core pods
-	for _, pod := range pods.Items {
-		podName := pod.ObjectMeta.Name
-		podPhase := pod.Status.Phase
-		log.Debug("podName: ", podName, " podPhase: ", podPhase)
 	}
 
 	watchlist := cache.NewListWatchFromClient(clientset.CoreV1().RESTClient(), "pods", v1.NamespaceAll, fields.Everything())
@@ -348,8 +443,8 @@ func k8sConnect() (err error) {
 // Retrieve POD states
 // GET /states
 func meGetStates(w http.ResponseWriter, r *http.Request) {
-	var allPodsStatus PodsStatus
-	var filteredPodsStatus PodsStatus
+	var err error
+	var data UserData
 
 	// Retrieve query parameters
 	query := r.URL.Query()
@@ -357,13 +452,50 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 	querySandbox := query.Get("sandbox")
 	queryLong := query.Get("long")
 
-	// Retrieve pod status information
-	var err error
-	keyName := baseKey + "*"
-	if queryLong == "true" {
-		err = rc.ForEachEntry(keyName, getPodDetails, &allPodsStatus)
+	// Get expected pods list
+	data.ExpectedPods = make(map[string]*PodStatus)
+	if queryType != "scenario" {
+		if querySandbox == "" || querySandbox == "all" {
+			for k, v := range expectedCorePods {
+				data.ExpectedPods[k] = v
+			}
+			for k, v := range expectedDepPods {
+				data.ExpectedPods[k] = v
+			}
+		}
+		if querySandbox != "" || querySandbox == "all" {
+			for k, v := range expectedSboxPods {
+				if v.Sandbox == querySandbox || querySandbox == "all" {
+					data.ExpectedPods[k] = v
+				}
+			}
+		}
+	}
+
+	// Create DB key using query filters
+	sandboxKey := ""
+	if querySandbox == "" {
+		sandboxKey = "default:"
+	} else if querySandbox == "all" {
+		sandboxKey = "*:"
 	} else {
-		err = rc.ForEachEntry(keyName, getPodStatesOnly, &allPodsStatus)
+		sandboxKey = querySandbox + ":"
+	}
+
+	typeKey := ""
+	if queryType != "" {
+		typeKey = queryType + ":"
+	} else {
+		typeKey = "*"
+	}
+
+	keyName := baseKey + sandboxKey + typeKey + "*"
+
+	// Retrieve pod status information from DB
+	if queryLong == "true" {
+		err = rc.ForEachEntry(keyName, getPodDetails, &data)
+	} else {
+		err = rc.ForEachEntry(keyName, getPodStatesOnly, &data)
 	}
 	if err != nil {
 		log.Error(err.Error())
@@ -371,29 +503,15 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Filter results based on query parameters
-	for _, podStatus := range allPodsStatus.PodStatus {
-
-		// Filter on pod type
-		if (podStatus.PodType == notFoundStr) ||
-			(queryType == "core" && podStatus.PodType != "core") ||
-			(queryType == "scenario" && podStatus.PodType != "scenario") {
-			continue
-		}
-
-		// Filter on sandbox
-		if (querySandbox == "" && podStatus.Sandbox != "default") ||
-			(querySandbox != "" && querySandbox != "all" && querySandbox != podStatus.Sandbox) {
-			continue
-		}
-
-		filteredPodsStatus.PodStatus = append(filteredPodsStatus.PodStatus, podStatus)
+	// Add missing pods status
+	for _, podStatus := range data.ExpectedPods {
+		data.AllPodsStatus.PodStatus = append(data.AllPodsStatus.PodStatus, *podStatus)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	// Format response
-	jsonResponse, err := json.Marshal(filteredPodsStatus)
+	jsonResponse, err := json.Marshal(data.AllPodsStatus)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -406,15 +524,13 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPodDetails(key string, fields map[string]string, userData interface{}) error {
-	podsStatus := userData.(*PodsStatus)
+	data := userData.(*UserData)
+
+	// Append pod status
 	var podStatus PodStatus
-	podStatus.PodType = fields["meepOrigin"]
+	podStatus.PodType = fields["type"]
 	podStatus.Sandbox = fields["namespace"]
-	if fields["meepApp"] != notFoundStr {
-		podStatus.Name = fields["meepApp"]
-	} else {
-		podStatus.Name = fields["name"]
-	}
+	podStatus.Name = getPodName(fields["meepApp"], fields["name"])
 	podStatus.Namespace = fields["namespace"]
 	podStatus.MeepApp = fields["meepApp"]
 	podStatus.MeepOrigin = fields["meepOrigin"]
@@ -430,22 +546,90 @@ func getPodDetails(key string, fields map[string]string, userData interface{}) e
 	podStatus.NbPodRestart = fields["nbPodRestart"]
 	podStatus.LogicalState = fields["logicalState"]
 	podStatus.StartTime = fields["startTime"]
+	data.AllPodsStatus.PodStatus = append(data.AllPodsStatus.PodStatus, podStatus)
 
-	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
+	// Remove from expected pods
+	delete(data.ExpectedPods, fields["release"])
+
 	return nil
 }
 
 func getPodStatesOnly(key string, fields map[string]string, userData interface{}) error {
-	podsStatus := userData.(*PodsStatus)
+	data := userData.(*UserData)
+
+	// Append pod status
 	var podStatus PodStatus
-	podStatus.PodType = fields["meepOrigin"]
+	podStatus.PodType = fields["type"]
 	podStatus.Sandbox = fields["namespace"]
-	if fields["meepApp"] != notFoundStr {
-		podStatus.Name = fields["meepApp"]
-	} else {
-		podStatus.Name = fields["name"]
-	}
+	podStatus.Name = getPodName(fields["meepApp"], fields["name"])
 	podStatus.LogicalState = fields["logicalState"]
-	podsStatus.PodStatus = append(podsStatus.PodStatus, podStatus)
+	data.AllPodsStatus.PodStatus = append(data.AllPodsStatus.PodStatus, podStatus)
+
+	// Remove from expected pods
+	delete(data.ExpectedPods, fields["release"])
+
 	return nil
+}
+
+func getPodType(origin string, release string) string {
+	podType := notFoundStr
+	if origin == "core" || origin == "scenario" {
+		podType = origin
+	} else if release != notFoundStr {
+		if _, ok := expectedDepPods[release]; ok {
+			podType = "core"
+		} else if _, ok := expectedCorePods[release]; ok {
+			podType = "core"
+		}
+	}
+	return podType
+}
+
+func getPodName(app string, name string) string {
+	var podName string
+	if app != notFoundStr {
+		podName = app
+	} else {
+		podName = name
+	}
+	return podName
+}
+
+func addExpectedPods(sandboxName string) {
+	for _, pod := range sboxPodsList {
+		// Get sandbox-specific pod name
+		var podName string
+		prefix := "meep-"
+		sandboxPrefix := prefix + sandboxName + "-"
+		if strings.HasPrefix(pod, prefix) {
+			podName = sandboxPrefix + pod[len(prefix):]
+		} else {
+			podName = sandboxPrefix + pod
+		}
+
+		// Add to expected sandbox pods list
+		podStatus := new(PodStatus)
+		podStatus.PodType = "core"
+		podStatus.Sandbox = sandboxName
+		podStatus.Name = podName
+		podStatus.LogicalState = "NotAvailable"
+		expectedSboxPods[podName] = podStatus
+	}
+}
+
+func removeExpectedPods(sandboxName string) {
+	for _, pod := range sboxPodsList {
+		// Get sandbox-specific pod name
+		var podName string
+		prefix := "meep-"
+		sandboxPrefix := prefix + sandboxName + "-"
+		if strings.HasPrefix(pod, prefix) {
+			podName = sandboxPrefix + pod[len(prefix):]
+		} else {
+			podName = sandboxPrefix + pod
+		}
+
+		// Delete from expected list
+		delete(expectedSboxPods, podName)
+	}
 }

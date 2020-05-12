@@ -30,15 +30,19 @@ const SCENARIO_PODS_PHASE_PENDING = 'Pending';
 const serviceMapsSelector = state => state.exec.state.serviceMaps;
 const scenarioPodsPhasesSelector = state => state.exec.state.scenarioPodsPhases;
 const corePodsPhasesSelector = state => state.exec.state.corePodsPhases;
+const sandboxSelector = state => state.ui.sandbox;
+
 
 // returns true if all core pods are in the RUNNING phase
 export const corePodsRunning = createSelector(
   corePodsPhasesSelector,
-  phases => {
+  sandboxSelector,
+  (phases, sandbox) => {
     return _.reduce(
       phases,
-      (status, pod) => {
-        return status && pod.logicalState === CORE_PODS_PHASE_RUNNING;
+      (status, podStatus) => {
+        return status && ((podStatus.sandbox === 'default' || podStatus.sandbox === sandbox) ?
+          podStatus.logicalState === CORE_PODS_PHASE_RUNNING : true);
       },
       true
     );
@@ -47,13 +51,15 @@ export const corePodsRunning = createSelector(
 
 export const corePodsErrors = createSelector(
   corePodsPhasesSelector,
-  phases => {
+  sandboxSelector,
+  (phases, sandbox) => {
     var statii = _.chain(phases)
+      .filter(item => {
+        return (item.sandbox === 'default' || item.sandbox === sandbox) &&
+          item.logicalState !== CORE_PODS_PHASE_RUNNING;
+      })
       .map(p => {
         return { name: p.name, status: p.logicalState };
-      })
-      .filter(item => {
-        return item.status !== CORE_PODS_PHASE_RUNNING;
       })
       .value();
     return statii;

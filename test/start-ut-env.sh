@@ -10,7 +10,7 @@ echo ">>> Installing redis DB for Unit Testing"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-helm install --name meep-ut-redis --set master.service.nodePort=30380 $BASEDIR/../charts/redis/
+helm install --name meep-ut-redis --set meepOrigin="ut" --set master.service.nodePort=30380 $BASEDIR/../charts/redis/
 
 echo ""
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -18,7 +18,7 @@ echo ">>> Installing couch DB for Unit Testing"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-helm install --name meep-ut-couchdb --set service.nodePort=30985 --set persistentVolume.enabled=false --set persistentVolumeClaim.enabled=false $BASEDIR/../charts/couchdb/
+helm install --name meep-ut-couchdb --set meepOrigin="ut" --set service.nodePort=30985 --set persistentVolume.enabled=false --set persistentVolumeClaim.enabled=false $BASEDIR/../charts/couchdb/
 
 echo ""
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
@@ -26,4 +26,4 @@ echo ">>> Installing influx DB for Unit Testing"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-helm install --name meep-ut-influxdb --set service.type=NodePort --set service.apiNodePort=30986 --set service.rpcNodePort=30988 --set persistence.enabled=false --set ingress.enabled=false $BASEDIR/../charts/influxdb/
+helm install --name meep-ut-influxdb --set meepOrigin="ut" --set service.type=NodePort --set service.apiNodePort=30986 --set service.rpcNodePort=30988 --set persistence.enabled=false --set ingress.enabled=false $BASEDIR/../charts/influxdb/
