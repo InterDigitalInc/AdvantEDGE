@@ -40,6 +40,7 @@ import (
 
 const LocServBasePath = "/location/v1/"
 const locServKey string = "loc-serv:"
+const logModuleLocServ string = "meep-loc-serv"
 
 const typeZone = "zone"
 const typeAccessPoint = "accessPoint"
@@ -77,8 +78,10 @@ type ZoneStatusCheck struct {
 }
 
 var LOC_SERV_DB = 5
+var currentStoreName = ""
 
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 var rc *redis.Connector
 var hostUrl *url.URL
@@ -89,8 +92,10 @@ var baseKey string
 // Init - Location Service initialization
 func Init() (err error) {
 
-	// Retrieve Sandbox name from environment variable
-	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxNameEnv != "" {
+		sandboxName = sandboxNameEnv
+	}
 	if sandboxName == "" {
 		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
 		log.Error(err.Error())
@@ -124,12 +129,17 @@ func Init() (err error) {
 	zoneStatusReInit()
 
 	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(sandboxName, updateUserInfo, updateZoneInfo, updateAccessPointInfo, cleanUp)
+	return sbi.Init(sandboxName, redisAddr, updateUserInfo, updateZoneInfo, updateAccessPointInfo, updateStoreName, cleanUp)
 }
 
 // Run - Start Location Service
 func Run() (err error) {
 	return sbi.Run()
+}
+
+// Stop - Stop RNIS
+func Stop() (err error) {
+	return sbi.Stop()
 }
 
 func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
@@ -376,20 +386,18 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 		return
 	}
 
-	resp, err := client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
+	resp, err := client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
 }
 
 func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.ZoneStatusNotification) {
@@ -401,20 +409,18 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 		return
 	}
 
-	resp, err := client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
-
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
+	resp, err := client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
@@ -1115,9 +1121,9 @@ func zoneStatusGetById(w http.ResponseWriter, r *http.Request) {
 func zoneStatusPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response ResponseZoneStatusSubscription
+	var response ResponseZoneStatusSubscription2
 	zoneStatusSub := new(ZoneStatusSubscription)
-	response.ZonalTrafficSubscription = zoneStatusSub
+	response.ZoneStatusSubscription = zoneStatusSub
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&zoneStatusSub)
@@ -1233,6 +1239,15 @@ func cleanUp() {
 	userSubscriptionMap = map[int]string{}
 
 	zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
+
+	updateStoreName("")
+}
+
+func updateStoreName(storeName string) {
+	if currentStoreName != storeName {
+		currentStoreName = storeName
+		_ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
+	}
 }
 
 func updateUserInfo(address string, zoneId string, accessPointId string) {

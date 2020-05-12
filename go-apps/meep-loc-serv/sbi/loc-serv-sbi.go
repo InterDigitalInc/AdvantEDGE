@@ -19,15 +19,12 @@ package sbi
 import (
 	"strings"
 
-	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
 const moduleName string = "meep-loc-serv-sbi"
-const redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
-const influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 type LocServSbi struct {
 	sandboxName             string
@@ -37,14 +34,20 @@ type LocServSbi struct {
 	updateUserInfoCB        func(string, string, string)
 	updateZoneInfoCB        func(string, int, int, int)
 	updateAccessPointInfoCB func(string, string, string, string, int)
+	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
 }
 
 var sbi *LocServSbi
 
 // Init - Location Service SBI initialization
-func Init(sandboxName string, updateUserInfo func(string, string, string), updateZoneInfo func(string, int, int, int),
-	updateAccessPointInfo func(string, string, string, string, int), cleanUp func()) (err error) {
+func Init(sandboxName string,
+	redisAddr string,
+	updateUserInfo func(string, string, string),
+	updateZoneInfo func(string, int, int, int),
+	updateAccessPointInfo func(string, string, string, string, int),
+	updateScenarioName func(string),
+	cleanUp func()) (err error) {
 
 	// Create new SBI instance
 	sbi = new(LocServSbi)
@@ -75,6 +78,7 @@ func Init(sandboxName string, updateUserInfo func(string, string, string), updat
 	sbi.updateUserInfoCB = updateUserInfo
 	sbi.updateZoneInfoCB = updateZoneInfo
 	sbi.updateAccessPointInfoCB = updateAccessPointInfo
+	sbi.updateScenarioNameCB = updateScenarioName
 	sbi.cleanUpCB = cleanUp
 
 	// Initialize service
@@ -128,15 +132,13 @@ func processActiveScenarioUpdate() {
 
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
-	if sbi.activeModel.GetScenarioName() == "" {
-		return
-	}
+
+	scenarioName := sbi.activeModel.GetScenarioName()
+	sbi.updateScenarioNameCB(scenarioName)
 
 	uePerNetLocMap := make(map[string]int)
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)
-
-	_ = httpLog.ReInit(moduleName, sbi.sandboxName, sbi.activeModel.GetScenarioName(), redisAddr, influxAddr)
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
@@ -159,17 +161,17 @@ func processActiveScenarioUpdate() {
 		uePerNetLocMap[netLoc]++
 	}
 
-	// Update POA info
-	poaNameList := sbi.activeModel.GetNodeNames("POA")
+	// Update POA-CELL info
+	poaNameList := sbi.activeModel.GetNodeNames("POA-CELL")
 	for _, name := range poaNameList {
 		ctx := sbi.activeModel.GetNodeContext(name)
 		if ctx == nil {
-			log.Error("Error getting context for POA: " + name)
+			log.Error("Error getting context for POA-CELL: " + name)
 			continue
 		}
 		nodeCtx, ok := ctx.(*mod.NodeContext)
 		if !ok {
-			log.Error("Error casting context for POA: " + name)
+			log.Error("Error casting context for POA-CELL: " + name)
 			continue
 		}
 		zone := nodeCtx.Parents[mod.Zone]
@@ -186,4 +188,9 @@ func processActiveScenarioUpdate() {
 			sbi.updateZoneInfoCB(name, poaPerZoneMap[name], 0, uePerZoneMap[name])
 		}
 	}
+}
+
+func Stop() (err error) {
+	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	return nil
 }
