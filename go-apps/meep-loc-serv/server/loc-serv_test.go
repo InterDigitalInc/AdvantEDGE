@@ -37,9 +37,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const INITIAL = 0
-const UPDATED = 1
-
 //json format using spacing to facilitate reading
 const testScenario string = `
 {

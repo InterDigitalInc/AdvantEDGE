@@ -34,14 +34,14 @@ type LocServSbi struct {
 	updateUserInfoCB        func(string, string, string)
 	updateZoneInfoCB        func(string, int, int, int)
 	updateAccessPointInfoCB func(string, string, string, string, int)
-	updateScenarioNameCB func(string)
+	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
 }
 
 var sbi *LocServSbi
 
 // Init - Location Service SBI initialization
-func Init(sandboxName string, 
+func Init(sandboxName string,
 	redisAddr string,
 	updateUserInfo func(string, string, string),
 	updateZoneInfo func(string, int, int, int),
@@ -134,7 +134,7 @@ func processActiveScenarioUpdate() {
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
-        sbi.updateScenarioNameCB(scenarioName)
+	sbi.updateScenarioNameCB(scenarioName)
 
 	uePerNetLocMap := make(map[string]int)
 	uePerZoneMap := make(map[string]int)
@@ -191,7 +191,6 @@ func processActiveScenarioUpdate() {
 }
 
 func Stop() (err error) {
-        sbi.mqLocal.UnregisterHandler(sbi.handlerId)
-        return nil
+	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	return nil
 }
-

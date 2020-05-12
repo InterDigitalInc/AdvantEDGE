@@ -92,16 +92,16 @@ var baseKey string
 // Init - Location Service initialization
 func Init() (err error) {
 
-        sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
-        if sandboxNameEnv != "" {
-                sandboxName = sandboxNameEnv
-        }
-        if sandboxName == "" {
-                err = errors.New("MEEP_SANDBOX_NAME env variable not set")
-                log.Error(err.Error())
-                return err
-        }
-        log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+	sandboxNameEnv := strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxNameEnv != "" {
+		sandboxName = sandboxNameEnv
+	}
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
 	// Retrieve Host URL from environment variable
 	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
@@ -139,7 +139,7 @@ func Run() (err error) {
 
 // Stop - Stop RNIS
 func Stop() (err error) {
-        return sbi.Stop()
+	return sbi.Stop()
 }
 
 func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
@@ -386,10 +386,10 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 		return
 	}
 
-        jsonNotif, err := json.Marshal(notification)
-        if err != nil {
-                log.Error(err.Error())
-        }
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
 
 	resp, err := client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
@@ -409,10 +409,10 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 		return
 	}
 
-        jsonNotif, err := json.Marshal(notification)
-        if err != nil {
-                log.Error(err.Error())
-        }
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
 
 	resp, err := client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
@@ -1244,8 +1244,8 @@ func cleanUp() {
 }
 
 func updateStoreName(storeName string) {
-        currentStoreName = storeName
-        _ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
+	currentStoreName = storeName
+	_ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
 }
 
 func updateUserInfo(address string, zoneId string, accessPointId string) {
