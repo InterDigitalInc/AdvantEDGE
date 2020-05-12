@@ -21,6 +21,9 @@ spec:
         release: {{ .Release.Name }}
         meepOrigin: {{ .Values.meepOrigin }}
     spec:
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}"
