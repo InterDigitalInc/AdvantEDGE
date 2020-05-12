@@ -1244,8 +1244,10 @@ func cleanUp() {
 }
 
 func updateStoreName(storeName string) {
-	currentStoreName = storeName
-	_ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
+	if currentStoreName != storeName {
+		currentStoreName = storeName
+		_ = httpLog.ReInit(logModuleLocServ, sandboxName, storeName, redisAddr, influxAddr)
+	}
 }
 
 func updateUserInfo(address string, zoneId string, accessPointId string) {
