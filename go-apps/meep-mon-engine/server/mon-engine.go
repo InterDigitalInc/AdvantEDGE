@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -507,6 +508,11 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 	for _, podStatus := range data.ExpectedPods {
 		data.AllPodsStatus.PodStatus = append(data.AllPodsStatus.PodStatus, *podStatus)
 	}
+
+	// Sort pod status slice by name
+	sort.Slice(data.AllPodsStatus.PodStatus, func(i, j int) bool {
+		return data.AllPodsStatus.PodStatus[i].Name < data.AllPodsStatus.PodStatus[j].Name
+	})
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 

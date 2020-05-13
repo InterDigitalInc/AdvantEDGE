@@ -188,7 +188,7 @@ func terminateScenario(sandboxName string) {
 		for range ticker.C {
 			err, chartsToDelete := deleteReleases(sandboxName, scenarioName)
 			if err == nil && chartsToDelete == 0 {
-				// Remove modle & cached scenario
+				// Remove model & cached scenario
 				ve.activeScenarioNames[sandboxName] = ""
 				ticker.Stop()
 				return

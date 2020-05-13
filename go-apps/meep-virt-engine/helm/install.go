@@ -29,12 +29,17 @@ func installCharts(charts []Chart) error {
 	if err != nil {
 		return err
 	}
-	err = install(charts)
-	if err != nil {
-		// Cleanup release
-		cleanReleases(charts)
+
+	for _, chart := range charts {
+		err := install(chart)
+		if err != nil {
+			log.Info("Cleaning installed releases")
+			cleanReleases(charts)
+			return err
+		}
 	}
-	return err
+
+	return nil
 }
 
 func ensureReleases(charts []Chart) error {
@@ -52,31 +57,30 @@ func ensureReleases(charts []Chart) error {
 	return nil
 }
 
-func install(charts []Chart) error {
-	for _, c := range charts {
-		var cmd *exec.Cmd
-		if strings.Trim(c.ValuesFile, " ") == "" {
-			cmd = exec.Command("helm", "install",
-				"--name", c.ReleaseName,
-				"--namespace", c.Namespace,
-				"--set", "nameOverride="+c.Name,
-				"--set", "fullnameOverride="+c.Name,
-				c.Location, "--replace")
-		} else {
-			cmd = exec.Command("helm", "install",
-				"--name", c.ReleaseName,
-				"--namespace", c.Namespace,
-				"--set", "nameOverride="+c.Name,
-				"--set", "fullnameOverride="+c.Name,
-				"-f", c.ValuesFile,
-				c.Location, "--replace")
-		}
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Error("Failed to install Release [" + c.ReleaseName + "] at " + c.Location)
-			log.Error("Error(", err.Error(), "): ", string(out))
-			return err
-		}
+func install(chart Chart) error {
+	log.Debug("Installing chart: " + chart.ReleaseName)
+	var cmd *exec.Cmd
+	if strings.Trim(chart.ValuesFile, " ") == "" {
+		cmd = exec.Command("helm", "install",
+			"--name", chart.ReleaseName,
+			"--namespace", chart.Namespace,
+			"--set", "nameOverride="+chart.Name,
+			"--set", "fullnameOverride="+chart.Name,
+			chart.Location, "--replace")
+	} else {
+		cmd = exec.Command("helm", "install",
+			"--name", chart.ReleaseName,
+			"--namespace", chart.Namespace,
+			"--set", "nameOverride="+chart.Name,
+			"--set", "fullnameOverride="+chart.Name,
+			"-f", chart.ValuesFile,
+			chart.Location, "--replace")
+	}
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Error("Failed to install Release [" + chart.ReleaseName + "] at " + chart.Location)
+		log.Error("Error(", err.Error(), "): ", string(out))
+		return err
 	}
 	return nil
 }
@@ -85,7 +89,6 @@ func cleanReleases(charts []Chart) {
 	var toClean []Chart
 	var cnt int
 	releases, _ := GetReleasesName()
-	// ensure that releases do not exist
 
 	for _, c := range charts {
 		for _, r := range releases {
@@ -97,6 +100,6 @@ func cleanReleases(charts []Chart) {
 	}
 
 	if cnt > 0 {
-		_ = DeleteReleases(toClean)
+		_ = deleteReleases(toClean)
 	}
 }

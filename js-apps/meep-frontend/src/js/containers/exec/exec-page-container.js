@@ -498,7 +498,10 @@ class ExecPageContainer extends Component {
             </Grid>
           </>
         )}
-        <ExecTable />
+        
+        {sandbox && 
+          <ExecTable />
+        }
       </div>
     );
   }
