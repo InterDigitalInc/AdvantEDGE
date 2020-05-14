@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -352,6 +352,35 @@
                           expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
                                 expect(data.cellularPoaConfig.cellId).to.be.a('string');
                             expect(data.cellularPoaConfig.cellId).to.be("");
+                          expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                                expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                  expect(data.geoData.location.type).to.be.a('string');
+                              expect(data.geoData.location.type).to.be("Point");
+                              {
+                                let dataCtr = data.geoData.location.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('number');
+                                  expect(data).to.be();
+                                }
+                              }
+                            expect(data.geoData.radius).to.be.a('number');
+                            expect(data.geoData.radius).to.be();
+                            expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                  expect(data.geoData.path.type).to.be.a('string');
+                              expect(data.geoData.path.type).to.be("LineString");
+                              {
+                                let dataCtr = data.geoData.path.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(Array);
+                                  expect(data).to.be([]);
+                                }
+                              }
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -367,6 +396,35 @@
                               expect(data.type).to.be("UE");
                               expect(data.isExternal).to.be.a('boolean');
                               expect(data.isExternal).to.be(false);
+                              expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                                    expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                      expect(data.geoData.location.type).to.be.a('string');
+                                  expect(data.geoData.location.type).to.be("Point");
+                                  {
+                                    let dataCtr = data.geoData.location.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a('number');
+                                      expect(data).to.be();
+                                    }
+                                  }
+                                expect(data.geoData.radius).to.be.a('number');
+                                expect(data.geoData.radius).to.be();
+                                expect(data.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                      expect(data.geoData.path.type).to.be.a('string');
+                                  expect(data.geoData.path.type).to.be("LineString");
+                                  {
+                                    let dataCtr = data.geoData.path.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(Array);
+                                      expect(data).to.be([]);
+                                    }
+                                  }
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);

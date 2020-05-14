@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **cellularPoaConfig** | [**CellularPoaConfig**](CellularPoaConfig.md) |  | [optional] 
+**geoData** | [**GeoData**](GeoData.md) |  | [optional] 
 **physicalLocations** | [**[PhysicalLocation]**](PhysicalLocation.md) |  | [optional] 
 
 

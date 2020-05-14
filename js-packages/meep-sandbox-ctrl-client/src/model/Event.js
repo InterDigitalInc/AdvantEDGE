@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange'], factory);
+    define(['ApiClient', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/EventScenarioUpdate'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./EventMobility'), require('./EventNetworkCharacteristicsUpdate'), require('./EventOther'), require('./EventPoasInRange'));
+    module.exports = factory(require('../ApiClient'), require('./EventMobility'), require('./EventNetworkCharacteristicsUpdate'), require('./EventOther'), require('./EventPoasInRange'), require('./EventScenarioUpdate'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Event = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.EventMobility, root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate, root.AdvantEdgeSandboxControllerRestApi.EventOther, root.AdvantEdgeSandboxControllerRestApi.EventPoasInRange);
+    root.AdvantEdgeSandboxControllerRestApi.Event = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.EventMobility, root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate, root.AdvantEdgeSandboxControllerRestApi.EventOther, root.AdvantEdgeSandboxControllerRestApi.EventPoasInRange, root.AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate);
   }
-}(this, function(ApiClient, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange) {
+}(this, function(ApiClient, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, EventScenarioUpdate) {
   'use strict';
 
   /**
@@ -74,12 +74,14 @@
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
-      if (data.hasOwnProperty('eventNetworkCharacteristicsUpdate'))
-        obj.eventNetworkCharacteristicsUpdate = EventNetworkCharacteristicsUpdate.constructFromObject(data['eventNetworkCharacteristicsUpdate']);
       if (data.hasOwnProperty('eventMobility'))
         obj.eventMobility = EventMobility.constructFromObject(data['eventMobility']);
+      if (data.hasOwnProperty('eventNetworkCharacteristicsUpdate'))
+        obj.eventNetworkCharacteristicsUpdate = EventNetworkCharacteristicsUpdate.constructFromObject(data['eventNetworkCharacteristicsUpdate']);
       if (data.hasOwnProperty('eventPoasInRange'))
         obj.eventPoasInRange = EventPoasInRange.constructFromObject(data['eventPoasInRange']);
+      if (data.hasOwnProperty('eventScenarioUpdate'))
+        obj.eventScenarioUpdate = EventScenarioUpdate.constructFromObject(data['eventScenarioUpdate']);
       if (data.hasOwnProperty('eventOther'))
         obj.eventOther = EventOther.constructFromObject(data['eventOther']);
     }
@@ -99,19 +101,24 @@
   exports.prototype.type = undefined;
 
   /**
-   * @member {module:model/EventNetworkCharacteristicsUpdate} eventNetworkCharacteristicsUpdate
-   */
-  exports.prototype.eventNetworkCharacteristicsUpdate = undefined;
-
-  /**
    * @member {module:model/EventMobility} eventMobility
    */
   exports.prototype.eventMobility = undefined;
 
   /**
+   * @member {module:model/EventNetworkCharacteristicsUpdate} eventNetworkCharacteristicsUpdate
+   */
+  exports.prototype.eventNetworkCharacteristicsUpdate = undefined;
+
+  /**
    * @member {module:model/EventPoasInRange} eventPoasInRange
    */
   exports.prototype.eventPoasInRange = undefined;
+
+  /**
+   * @member {module:model/EventScenarioUpdate} eventScenarioUpdate
+   */
+  exports.prototype.eventScenarioUpdate = undefined;
 
   /**
    * @member {module:model/EventOther} eventOther
@@ -126,22 +133,28 @@
    */
   exports.TypeEnum = {
     /**
-     * value: "NETWORK-CHARACTERISTICS-UPDATE"
-     * @const
-     */
-    NETWORK_CHARACTERISTICS_UPDATE: "NETWORK-CHARACTERISTICS-UPDATE",
-
-    /**
      * value: "MOBILITY"
      * @const
      */
     MOBILITY: "MOBILITY",
 
     /**
+     * value: "NETWORK-CHARACTERISTICS-UPDATE"
+     * @const
+     */
+    NETWORK_CHARACTERISTICS_UPDATE: "NETWORK-CHARACTERISTICS-UPDATE",
+
+    /**
      * value: "POAS-IN-RANGE"
      * @const
      */
     POAS_IN_RANGE: "POAS-IN-RANGE",
+
+    /**
+     * value: "SCENARIO-UPDATE"
+     * @const
+     */
+    SCENARIO_UPDATE: "SCENARIO-UPDATE",
 
     /**
      * value: "OTHER"

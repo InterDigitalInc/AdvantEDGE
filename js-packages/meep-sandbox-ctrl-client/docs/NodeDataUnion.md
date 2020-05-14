@@ -1,0 +1,8 @@
+# AdvantEdgeSandboxControllerRestApi.NodeDataUnion
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**physicalLocation** | [**PhysicalLocation**](PhysicalLocation.md) |  | [optional] 
+
+

@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 Send events to the deployed scenario
 
-Generate events towards the deployed scenario. <p><p>Events: <li>Mobility: move a node in the emulated network <li>Network Characteristic: change network characteristics dynamically <li>PoAs-In-Range: provide PoAs in range of a UE (used with Application State Transfer)
+Generate events towards the deployed scenario. Events: <li>MOBILITY: move a node in the emulated network <li>NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically <li>POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) <li>SCENARIO-UPDATE: Add/Remove/Modify nodes in active scenario
 
 ### Example
 ```javascript

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,12 @@
         // TODO: update the code to test the property cellularPoaConfig
         expect(instance).to.have.property('cellularPoaConfig');
         // expect(instance.cellularPoaConfig).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property geoData (base name: "geoData")', function() {
+        // TODO: update the code to test the property geoData
+        expect(instance).to.have.property('geoData');
+        // expect(instance.geoData).to.be(expectedValueLiteral);
       });
 
       it('should have the property physicalLocations (base name: "physicalLocations")', function() {

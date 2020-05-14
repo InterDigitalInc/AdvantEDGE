@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ type PhysicalLocation struct {
 	Type_ string `json:"type,omitempty"`
 	// true: Physical location is external to MEEP false: Physical location is internal to MEEP
 	IsExternal              bool     `json:"isExternal,omitempty"`
+	GeoData                 *GeoData `json:"geoData,omitempty"`
 	NetworkLocationsInRange []string `json:"networkLocationsInRange,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`

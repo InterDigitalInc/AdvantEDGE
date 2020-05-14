@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Process'], factory);
+    define(['ApiClient', 'model/GeoData', 'model/Process'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Process'));
+    module.exports = factory(require('../ApiClient'), require('./GeoData'), require('./Process'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.PhysicalLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Process);
+    root.AdvantEdgePlatformControllerRestApi.PhysicalLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.Process);
   }
-}(this, function(ApiClient, Process) {
+}(this, function(ApiClient, GeoData, Process) {
   'use strict';
 
   /**
@@ -78,6 +78,8 @@
         obj.type = ApiClient.convertToType(data['type'], 'String');
       if (data.hasOwnProperty('isExternal'))
         obj.isExternal = ApiClient.convertToType(data['isExternal'], 'Boolean');
+      if (data.hasOwnProperty('geoData'))
+        obj.geoData = GeoData.constructFromObject(data['geoData']);
       if (data.hasOwnProperty('networkLocationsInRange'))
         obj.networkLocationsInRange = ApiClient.convertToType(data['networkLocationsInRange'], ['String']);
       if (data.hasOwnProperty('meta'))
@@ -121,6 +123,11 @@
    * @member {Boolean} isExternal
    */
   exports.prototype.isExternal = undefined;
+
+  /**
+   * @member {module:model/GeoData} geoData
+   */
+  exports.prototype.geoData = undefined;
 
   /**
    * @member {Array.<String>} networkLocationsInRange

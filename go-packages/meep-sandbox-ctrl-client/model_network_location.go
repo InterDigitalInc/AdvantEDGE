@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -45,5 +45,6 @@ type NetworkLocation struct {
 	// Key/Value Pair Map (string, string)
 	UserMeta          map[string]string  `json:"userMeta,omitempty"`
 	CellularPoaConfig *CellularPoaConfig `json:"cellularPoaConfig,omitempty"`
+	GeoData           *GeoData           `json:"geoData,omitempty"`
 	PhysicalLocations []PhysicalLocation `json:"physicalLocations,omitempty"`
 }

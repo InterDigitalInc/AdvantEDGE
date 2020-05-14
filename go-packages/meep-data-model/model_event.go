@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,9 @@ type Event struct {
 	Name string `json:"name,omitempty"`
 	// Event type
 	Type_                             string                             `json:"type,omitempty"`
-	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
 	EventMobility                     *EventMobility                     `json:"eventMobility,omitempty"`
+	EventNetworkCharacteristicsUpdate *EventNetworkCharacteristicsUpdate `json:"eventNetworkCharacteristicsUpdate,omitempty"`
 	EventPoasInRange                  *EventPoasInRange                  `json:"eventPoasInRange,omitempty"`
+	EventScenarioUpdate               *EventScenarioUpdate               `json:"eventScenarioUpdate,omitempty"`
 	EventOther                        *EventOther                        `json:"eventOther,omitempty"`
 }

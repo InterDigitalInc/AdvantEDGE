@@ -565,6 +565,8 @@ definitions:
           type: "string"
       cellularPoaConfig:
         $ref: "#/definitions/CellularPoaConfig"
+      geoData:
+        $ref: "#/definitions/GeoData"
       physicalLocations:
         type: "array"
         items:
@@ -579,6 +581,60 @@ definitions:
         description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
           \ the ID of the eNB serving the cell"
     description: "Cellular POA configuration information"
+  GeoData:
+    type: "object"
+    properties:
+      location:
+        $ref: "#/definitions/Point"
+      radius:
+        type: "number"
+        description: "Optional - Radius (in meters) around the location"
+      path:
+        $ref: "#/definitions/LineString"
+    description: "Geographic data"
+  Point:
+    type: "object"
+    required:
+    - "type"
+    properties:
+      type:
+        type: "string"
+        description: "Must be Point"
+        enum:
+        - "Point"
+      coordinates:
+        type: "array"
+        description: "For a Point, coordinates MUST be an array of two decimal numbers;\
+          \ longitude and latitude precisely in that order"
+        items:
+          type: "number"
+    externalDocs:
+      url: "https://tools.ietf.org/html/rfc7946"
+    description: "A single position in coordinate space (GeoJSON); a position is an\
+      \ array of two numbers"
+  LineString:
+    type: "object"
+    required:
+    - "type"
+    properties:
+      type:
+        type: "string"
+        description: "Must be LineString"
+        enum:
+        - "LineString"
+      coordinates:
+        type: "array"
+        description: "For a LineString, coordinates is an array of two or more positions;\
+          \ a position is an array of two decimal numbers (longitude and latitude\
+          \ precisely in that order)"
+        items:
+          type: "array"
+          items:
+            type: "number"
+    externalDocs:
+      url: "https://tools.ietf.org/html/rfc7946"
+    description: "An array of two or more positions in coordinate space (GeoJSON);\
+      \ a position is an array of two numbers"
   PhysicalLocation:
     type: "object"
     properties:
@@ -601,6 +657,8 @@ definitions:
         type: "boolean"
         description: "true: Physical location is external to MEEP\nfalse: Physical\
           \ location is internal to MEEP"
+      geoData:
+        $ref: "#/definitions/GeoData"
       networkLocationsInRange:
         type: "array"
         items:

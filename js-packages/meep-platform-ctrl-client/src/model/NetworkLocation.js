@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularPoaConfig', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/CellularPoaConfig', 'model/GeoData', 'model/PhysicalLocation'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./GeoData'), require('./PhysicalLocation'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
+    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
   }
-}(this, function(ApiClient, CellularPoaConfig, PhysicalLocation) {
+}(this, function(ApiClient, CellularPoaConfig, GeoData, PhysicalLocation) {
   'use strict';
 
   /**
@@ -90,6 +90,8 @@
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       if (data.hasOwnProperty('cellularPoaConfig'))
         obj.cellularPoaConfig = CellularPoaConfig.constructFromObject(data['cellularPoaConfig']);
+      if (data.hasOwnProperty('geoData'))
+        obj.geoData = GeoData.constructFromObject(data['geoData']);
       if (data.hasOwnProperty('physicalLocations'))
         obj.physicalLocations = ApiClient.convertToType(data['physicalLocations'], [PhysicalLocation]);
     }
@@ -154,6 +156,11 @@
    * @member {module:model/CellularPoaConfig} cellularPoaConfig
    */
   exports.prototype.cellularPoaConfig = undefined;
+
+  /**
+   * @member {module:model/GeoData} geoData
+   */
+  exports.prototype.geoData = undefined;
 
   /**
    * @member {Array.<module:model/PhysicalLocation>} physicalLocations
