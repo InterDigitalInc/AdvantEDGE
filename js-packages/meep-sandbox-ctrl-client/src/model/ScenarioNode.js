@@ -80,8 +80,6 @@
         obj.parent = ApiClient.convertToType(data['parent'], 'String');
       if (data.hasOwnProperty('children'))
         obj.children = ApiClient.convertToType(data['children'], ['String']);
-      if (data.hasOwnProperty('example'))
-        obj.example = ApiClient.convertToType(data['example'], Object);
     }
     return obj;
   }
@@ -114,11 +112,6 @@
    * @member {Array.<String>} children
    */
   exports.prototype.children = undefined;
-
-  /**
-   * @member {Object} example
-   */
-  exports.prototype.example = undefined;
 
 
   /**

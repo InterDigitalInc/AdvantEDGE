@@ -141,7 +141,6 @@
           event.eventScenarioUpdate.nodes[0].nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
           event.eventScenarioUpdate.nodes[0].parent = "";
           event.eventScenarioUpdate.nodes[0].children = [""];
-          event.eventScenarioUpdate.nodes[0].example = ;
           event.eventOther = new AdvantEdgeSandboxControllerRestApi.EventOther();
           event.eventOther.event = "";
 

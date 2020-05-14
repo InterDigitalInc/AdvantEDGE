@@ -66,10 +66,13 @@ const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
 
 // Event types
-const eventTypeMobility = "MOBILITY"
-const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
-const eventTypePoasInRange = "POAS-IN-RANGE"
-const eventTypeOther = "OTHER"
+const (
+	eventTypeMobility       = "MOBILITY"
+	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
+	eventTypePoasInRange    = "POAS-IN-RANGE"
+	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
+	eventTypeOther          = "OTHER"
+)
 
 // Declare as variables to enable overwrite in test
 var couchDBAddr string = "http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/"
@@ -575,6 +578,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventNetworkCharacteristics(event)
 	case eventTypePoasInRange:
 		err, httpStatus, description = sendEventPoasInRange(event)
+	case eventTypeScenarioUpdate:
+		err, httpStatus, description = sendEventScenarioUpdate(event)
 	case eventTypeOther:
 		//ignore the event
 	default:
@@ -703,6 +708,54 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 	} else {
 		err := errors.New("Failed to find UE")
 		return err, http.StatusNotFound, ""
+	}
+	return nil, -1, description
+}
+
+// sendEventScenarioUpdate - Process a scenario update event
+func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
+	var err error
+	var description string
+
+	if event.EventScenarioUpdate == nil {
+		err := errors.New("Malformed request: missing EventScenarioUpdate")
+		return err, http.StatusBadRequest, ""
+	}
+	if len(event.EventScenarioUpdate.Nodes) == 0 {
+		err := errors.New("Malformed request: missing Nodes")
+		return err, http.StatusBadRequest, ""
+	}
+
+	// Perform necessary action on scenario
+	switch event.EventScenarioUpdate.Action {
+	case mod.ScenarioAdd:
+		description = "Added nodes ["
+		for i, node := range event.EventScenarioUpdate.Nodes {
+			if i != 0 {
+				description += ", "
+			}
+			description += node.Name
+		}
+		description += "]"
+		err = sbxCtrl.activeModel.AddScenarioNodes(&event.EventScenarioUpdate.Nodes)
+
+	case mod.ScenarioRemove:
+		description = "Removed nodes ["
+		for i, node := range event.EventScenarioUpdate.Nodes {
+			if i != 0 {
+				description += ", "
+			}
+			description += node.Name
+		}
+		description += "]"
+		err = sbxCtrl.activeModel.RemoveScenarioNodes(&event.EventScenarioUpdate.Nodes)
+
+	default:
+		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
+	}
+
+	if err != nil {
+		return err, http.StatusInternalServerError, ""
 	}
 	return nil, -1, description
 }

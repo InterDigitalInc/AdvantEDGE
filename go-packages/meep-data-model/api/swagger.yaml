@@ -811,7 +811,7 @@ definitions:
         description: List of child node names
         items:
           type: string
-      example: {}
+    example: {}
   ServiceConfig:
     type: object
     properties:

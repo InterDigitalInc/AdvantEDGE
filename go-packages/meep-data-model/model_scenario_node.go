@@ -33,6 +33,5 @@ type ScenarioNode struct {
 	// Parent node name
 	Parent string `json:"parent,omitempty"`
 	// List of child node names
-	Children []string     `json:"children,omitempty"`
-	Example  *interface{} `json:"example,omitempty"`
+	Children []string `json:"children,omitempty"`
 }

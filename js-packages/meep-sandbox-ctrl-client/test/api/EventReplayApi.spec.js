@@ -145,7 +145,6 @@
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].parent = "";
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].children = [""];
-          replayFile.events[0].event.eventScenarioUpdate.nodes[0].example = ;
           replayFile.events[0].event.eventOther = new AdvantEdgeSandboxControllerRestApi.EventOther();
           replayFile.events[0].event.eventOther.event = "";
 
@@ -511,8 +510,6 @@
                             expect(data).to.be("");
                           }
                         }
-                        expect(data.example).to.be.a(Object);
-                        expect(data.example).to.be();
                       }
                     }
                   expect(data.event.eventOther).to.be.a(AdvantEdgeSandboxControllerRestApi.EventOther);

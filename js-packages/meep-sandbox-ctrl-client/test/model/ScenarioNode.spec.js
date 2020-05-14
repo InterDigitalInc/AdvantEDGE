@@ -85,12 +85,6 @@
         // expect(instance.children).to.be(expectedValueLiteral);
       });
 
-      it('should have the property example (base name: "example")', function() {
-        // TODO: update the code to test the property example
-        expect(instance).to.have.property('example');
-        // expect(instance.example).to.be(expectedValueLiteral);
-      });
-
     });
   });
 

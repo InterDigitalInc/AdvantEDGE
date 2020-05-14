@@ -36,6 +36,12 @@ var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
 var redisTable = 0
 
 const (
+	NodeTypePoa     = "POA"
+	NodeTypePoaCell = "POA CELLULAR"
+	NodeTypeUE      = "UE"
+)
+
+const (
 	NetCharScenario     = "SCENARIO"
 	NetCharOperator     = "OPERATOR"
 	NetCharOperatorCell = "OPERATOR CELLULAR"
@@ -49,6 +55,12 @@ const (
 	NetCharCloudApp     = "CLOUD APPLICATION"
 	NetCharEdgeApp      = "EDGE APPLICATION"
 	NetCharUEApp        = "UE APPLICATION"
+)
+
+const (
+	ScenarioAdd    = "ADD"
+	ScenarioRemove = "REMOVE"
+	ScenarioModify = "MODIFY"
 )
 
 // ModelCfg - Model Configuration
@@ -378,6 +390,132 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		err = m.refresh()
 	}
 	return err
+}
+
+// AddScenarioNodes - Add scenario nodes
+func (m *Model) AddScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if nodes == nil {
+		return errors.New("nodes == nil")
+	}
+
+	for _, node := range *nodes {
+		// Make sure node Name is unique
+		n := m.nodeMap.FindByName(node.Name)
+		if n != nil {
+			return errors.New("Element " + node.Name + " already exists in scenario " + m.name)
+		}
+
+		// Find parent
+		parentNode := m.nodeMap.FindByName(node.Parent)
+		if parentNode == nil {
+			return errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
+		}
+
+		// Add element based on type
+		if node.Type_ == NodeTypeUE {
+			// Get parent Network Location node & context information
+			if parentNode.nodeType != NodeTypePoa && parentNode.nodeType != NodeTypePoaCell {
+				return errors.New("Invalid parent type: " + parentNode.nodeType)
+			}
+			nl := parentNode.object.(*dataModel.NetworkLocation)
+
+			// Validate Physical Location
+			if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+				return errors.New("Missing Physical Location for node " + node.Name)
+			}
+			pl := node.NodeDataUnion.PhysicalLocation
+			err = validatePL(pl)
+			if err != nil {
+				return err
+			}
+
+			// Remove any configured processes
+			pl.Processes = make([]dataModel.Process, 0)
+
+			// Add PL to parent NL
+			nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
+
+			// Refresh node map
+			err = m.parseNodes()
+			if err != nil {
+				log.Error(err.Error())
+			}
+		} else {
+			return errors.New("Node type " + node.Type_ + " not supported")
+		}
+	}
+
+	// Update scenario
+	err = m.refresh()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// RemoveScenarioNodes - Remove scenario nodes
+func (m *Model) RemoveScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if nodes == nil {
+		return errors.New("nodes == nil")
+	}
+
+	for _, node := range *nodes {
+		// Find node in scenario
+		n := m.nodeMap.FindByName(node.Name)
+		if n == nil {
+			return errors.New("Element " + node.Name + " not found in scenario " + m.name)
+		}
+
+		// Remove element based on type
+		if node.Type_ == NodeTypeUE {
+
+			// Currently support only PL with no processes
+			pl := n.object.(*dataModel.PhysicalLocation)
+			if pl == nil || len(pl.Processes) != 0 {
+				return errors.New("Cannot remove PL with child processes")
+			}
+
+			// Get parent NL
+			nl := n.parent.(*dataModel.NetworkLocation)
+			if nl == nil {
+				return errors.New("Parent node not found in scenario " + m.name)
+			}
+
+			// Get index of PL to remove
+			var index int
+			for i, pl := range nl.PhysicalLocations {
+				if pl.Name == n.name {
+					index = i
+					break
+				}
+			}
+
+			// Overwrite & truncate to remove PL from list
+			nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
+			nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
+
+			// Refresh node map
+			err = m.parseNodes()
+			if err != nil {
+				log.Error(err.Error())
+			}
+		} else {
+			return errors.New("Node type " + node.Type_ + " not supported")
+		}
+	}
+
+	// Update scenario
+	err = m.refresh()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //GetScenarioName - Get the scenario name
