@@ -23,7 +23,7 @@
 
 package model
 
-// Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided list of nodes. <p>Supported Actions: <li>ADD - Add nodes to scenario. Only the provided nodes are added; child nodes in the node data are ignored. <li>REMOVE - Remove nodes from scenario. Only node names are required for this action; node data is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+// Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided list of nodes. <p>Supported Actions: <li>ADD - Add nodes to scenario. Only the provided nodes are added; child nodes in node data are ignored. <li>REMOVE - Remove nodes from scenario. Only node names are required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
 type EventScenarioUpdate struct {
 	// Action to perform on provided scenario node list
 	Action string `json:"action,omitempty"`

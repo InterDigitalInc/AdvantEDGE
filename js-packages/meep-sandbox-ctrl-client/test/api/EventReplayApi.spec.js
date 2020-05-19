@@ -78,7 +78,6 @@
           replayFile.events[0].event.eventScenarioUpdate = new AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate();
           replayFile.events[0].event.eventScenarioUpdate.action = "ADD";
           replayFile.events[0].event.eventScenarioUpdate.nodes = [new AdvantEdgeSandboxControllerRestApi.ScenarioNode()];
-          replayFile.events[0].event.eventScenarioUpdate.nodes[0].name = "";
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].type = "UE";
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].nodeDataUnion = new AdvantEdgeSandboxControllerRestApi.NodeDataUnion();
           replayFile.events[0].event.eventScenarioUpdate.nodes[0].nodeDataUnion.physicalLocation = new AdvantEdgeSandboxControllerRestApi.PhysicalLocation();
@@ -292,8 +291,6 @@
                       for (let p in dataCtr) {
                         let data = dataCtr[p];
                         expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ScenarioNode);
-                        expect(data.name).to.be.a('string');
-                        expect(data.name).to.be("");
                         expect(data.type).to.be.a('string');
                         expect(data.type).to.be("UE");
                         expect(data.nodeDataUnion).to.be.a(AdvantEdgeSandboxControllerRestApi.NodeDataUnion);

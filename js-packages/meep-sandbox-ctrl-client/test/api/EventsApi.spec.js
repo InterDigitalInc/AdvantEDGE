@@ -74,7 +74,6 @@
           event.eventScenarioUpdate = new AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate();
           event.eventScenarioUpdate.action = "ADD";
           event.eventScenarioUpdate.nodes = [new AdvantEdgeSandboxControllerRestApi.ScenarioNode()];
-          event.eventScenarioUpdate.nodes[0].name = "";
           event.eventScenarioUpdate.nodes[0].type = "UE";
           event.eventScenarioUpdate.nodes[0].nodeDataUnion = new AdvantEdgeSandboxControllerRestApi.NodeDataUnion();
           event.eventScenarioUpdate.nodes[0].nodeDataUnion.physicalLocation = new AdvantEdgeSandboxControllerRestApi.PhysicalLocation();

@@ -729,26 +729,32 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 	// Perform necessary action on scenario
 	switch event.EventScenarioUpdate.Action {
 	case mod.ScenarioAdd:
-		description = "Added nodes ["
-		for i, node := range event.EventScenarioUpdate.Nodes {
-			if i != 0 {
-				description += ", "
+		var names []string
+		names, err = sbxCtrl.activeModel.AddScenarioNodes(&event.EventScenarioUpdate.Nodes)
+		if err == nil {
+			description = "Added nodes ["
+			for i, name := range names {
+				if i != 0 {
+					description += ", "
+				}
+				description += name
 			}
-			description += node.Name
+			description += "]"
 		}
-		description += "]"
-		err = sbxCtrl.activeModel.AddScenarioNodes(&event.EventScenarioUpdate.Nodes)
 
 	case mod.ScenarioRemove:
-		description = "Removed nodes ["
-		for i, node := range event.EventScenarioUpdate.Nodes {
-			if i != 0 {
-				description += ", "
+		var names []string
+		names, err = sbxCtrl.activeModel.RemoveScenarioNodes(&event.EventScenarioUpdate.Nodes)
+		if err == nil {
+			description = "Removed nodes ["
+			for i, name := range names {
+				if i != 0 {
+					description += ", "
+				}
+				description += name
 			}
-			description += node.Name
+			description += "]"
 		}
-		description += "]"
-		err = sbxCtrl.activeModel.RemoveScenarioNodes(&event.EventScenarioUpdate.Nodes)
 
 	default:
 		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)

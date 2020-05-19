@@ -55,12 +55,6 @@
         expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.ScenarioNode);
       });
 
-      it('should have the property name (base name: "name")', function() {
-        // TODO: update the code to test the property name
-        expect(instance).to.have.property('name');
-        // expect(instance.name).to.be(expectedValueLiteral);
-      });
-
       it('should have the property type (base name: "type")', function() {
         // TODO: update the code to test the property type
         expect(instance).to.have.property('type');

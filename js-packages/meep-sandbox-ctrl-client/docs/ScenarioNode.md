@@ -3,7 +3,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**name** | **String** | Node name | [optional] 
 **type** | **String** | Node type | [optional] 
 **nodeDataUnion** | [**NodeDataUnion**](NodeDataUnion.md) |  | [optional] 
 **parent** | **String** | Parent node name | [optional] 

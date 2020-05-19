@@ -25,8 +25,6 @@ package model
 
 // Scenario node object
 type ScenarioNode struct {
-	// Node name
-	Name string `json:"name,omitempty"`
 	// Node type
 	Type_         string         `json:"type,omitempty"`
 	NodeDataUnion *NodeDataUnion `json:"nodeDataUnion,omitempty"`

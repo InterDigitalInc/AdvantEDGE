@@ -393,43 +393,50 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 }
 
 // AddScenarioNodes - Add scenario nodes
-func (m *Model) AddScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error) {
+func (m *Model) AddScenarioNodes(nodes *[]dataModel.ScenarioNode) (names []string, err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	if nodes == nil {
-		return errors.New("nodes == nil")
+		err = errors.New("nodes == nil")
+		return
 	}
 
 	for _, node := range *nodes {
-		// Make sure node Name is unique
-		n := m.nodeMap.FindByName(node.Name)
-		if n != nil {
-			return errors.New("Element " + node.Name + " already exists in scenario " + m.name)
-		}
 
 		// Find parent
 		parentNode := m.nodeMap.FindByName(node.Parent)
 		if parentNode == nil {
-			return errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
+			err = errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
+			return
 		}
 
 		// Add element based on type
 		if node.Type_ == NodeTypeUE {
+
 			// Get parent Network Location node & context information
 			if parentNode.nodeType != NodeTypePoa && parentNode.nodeType != NodeTypePoaCell {
-				return errors.New("Invalid parent type: " + parentNode.nodeType)
+				err = errors.New("Invalid parent type: " + parentNode.nodeType)
+				return
 			}
 			nl := parentNode.object.(*dataModel.NetworkLocation)
 
 			// Validate Physical Location
 			if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
-				return errors.New("Missing Physical Location for node " + node.Name)
+				err = errors.New("Missing Physical Location")
+				return
 			}
 			pl := node.NodeDataUnion.PhysicalLocation
 			err = validatePL(pl)
 			if err != nil {
-				return err
+				return
+			}
+
+			// Make sure node Name is unique
+			n := m.nodeMap.FindByName(pl.Name)
+			if n != nil {
+				err = errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
+				return
 			}
 
 			// Remove any configured processes
@@ -438,53 +445,67 @@ func (m *Model) AddScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error) {
 			// Add PL to parent NL
 			nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
 
+			// Append node name to list of added nodes
+			names = append(names, pl.Name)
+
 			// Refresh node map
 			err = m.parseNodes()
 			if err != nil {
 				log.Error(err.Error())
 			}
 		} else {
-			return errors.New("Node type " + node.Type_ + " not supported")
+			err = errors.New("Node type " + node.Type_ + " not supported")
+			return
 		}
 	}
 
 	// Update scenario
 	err = m.refresh()
-	if err != nil {
-		return err
-	}
-	return nil
+	return
 }
 
 // RemoveScenarioNodes - Remove scenario nodes
-func (m *Model) RemoveScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error) {
+func (m *Model) RemoveScenarioNodes(nodes *[]dataModel.ScenarioNode) (names []string, err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	if nodes == nil {
-		return errors.New("nodes == nil")
+		err = errors.New("nodes == nil")
+		return
 	}
 
 	for _, node := range *nodes {
-		// Find node in scenario
-		n := m.nodeMap.FindByName(node.Name)
-		if n == nil {
-			return errors.New("Element " + node.Name + " not found in scenario " + m.name)
-		}
 
 		// Remove element based on type
 		if node.Type_ == NodeTypeUE {
 
+			// Get node name from request physical location
+			if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+				err = errors.New("Missing Physical Location")
+				return
+			}
+			reqPL := node.NodeDataUnion.PhysicalLocation
+			nodeName := reqPL.Name
+
+			// Find node in scenario
+			n := m.nodeMap.FindByName(nodeName)
+			if n == nil {
+				err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
+				return
+			}
+
 			// Currently support only PL with no processes
 			pl := n.object.(*dataModel.PhysicalLocation)
 			if pl == nil || len(pl.Processes) != 0 {
-				return errors.New("Cannot remove PL with child processes")
+				err = errors.New("Cannot remove PL with child processes")
+				return
 			}
 
 			// Get parent NL
 			nl := n.parent.(*dataModel.NetworkLocation)
 			if nl == nil {
-				return errors.New("Parent node not found in scenario " + m.name)
+				err = errors.New("Parent node not found in scenario " + m.name)
+				return
 			}
 
 			// Get index of PL to remove
@@ -500,22 +521,23 @@ func (m *Model) RemoveScenarioNodes(nodes *[]dataModel.ScenarioNode) (err error)
 			nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
 			nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
 
+			// Append node name to list of removed nodes
+			names = append(names, pl.Name)
+
 			// Refresh node map
 			err = m.parseNodes()
 			if err != nil {
 				log.Error(err.Error())
 			}
 		} else {
-			return errors.New("Node type " + node.Type_ + " not supported")
+			err = errors.New("Node type " + node.Type_ + " not supported")
+			return
 		}
 	}
 
 	// Update scenario
 	err = m.refresh()
-	if err != nil {
-		return err
-	}
-	return nil
+	return
 }
 
 //GetScenarioName - Get the scenario name

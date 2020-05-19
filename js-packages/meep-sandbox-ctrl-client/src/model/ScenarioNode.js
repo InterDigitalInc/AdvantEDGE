@@ -70,8 +70,6 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
-      if (data.hasOwnProperty('name'))
-        obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
       if (data.hasOwnProperty('nodeDataUnion'))
@@ -83,12 +81,6 @@
     }
     return obj;
   }
-
-  /**
-   * Node name
-   * @member {String} name
-   */
-  exports.prototype.name = undefined;
 
   /**
    * Node type
