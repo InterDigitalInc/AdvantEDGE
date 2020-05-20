@@ -1,0 +1,22 @@
+{
+  "name": "advant_edge_gis_engine_rest_api",
+  "version": "1.0.0",
+  "description": "This_API_allows_to_control_geo_spatial_behavior_and_simulation__pMicro_servicebr_meep_gis_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_gis_engine_pType__UsagebrPlatform_runtime_interface_to_control_geo_spatial_behavior_and_simulation_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_addressapi_",
+  "license": "Apache 2.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "superagent": "3.7.0",
+    "querystring": "0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.3.4",
+    "sinon": "1.17.3",
+    "expect.js": "~0.3.1"
+  }
+}

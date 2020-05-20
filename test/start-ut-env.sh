@@ -27,3 +27,11 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
 helm install --name meep-ut-influxdb --set meepOrigin="ut" --set service.type=NodePort --set service.apiNodePort=30986 --set service.rpcNodePort=30988 --set persistence.enabled=false --set ingress.enabled=false $BASEDIR/../charts/influxdb/
+
+echo ""
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>> Installing Postgis DB for Unit Testing"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ""
+
+helm install --name meep-ut-postgis --set meepOrigin="ut" --set securityContext.enabled=false --set master.service.type=NodePort --set master.service.nodePort=30432 --set persistence.enabled=false --set ingress.enabled=false $BASEDIR/../charts/postgis/
