@@ -35,6 +35,55 @@ definitions:
         description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
     description: Cellular domain configuration information
     example: {}
+  GeoData:
+    description: Geographic data
+    type: object
+    properties:
+      location:
+        $ref: '#/definitions/Point'
+      radius:
+        description: Optional - Radius (in meters) around the location
+        type: number
+      path:
+        $ref: '#/definitions/LineString'
+  Point:
+    description: A single position in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be Point
+        type: string
+        enum:
+          - Point
+      coordinates:
+        description: For a Point, coordinates MUST be an array of two decimal numbers; longitude and latitude precisely in that order
+        type: array
+        items:
+          type: number
+  LineString:
+    description: An array of two or more positions in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be LineString
+        type: string
+        enum:
+          - LineString
+      coordinates:
+        description: For a LineString, coordinates is an array of two or more positions; a position is an array of two decimal numbers (longitude and latitude precisely in that order)
+        type: array
+        items:
+          type: array
+          items:
+            type: number
   NodeServiceMaps:
     type: object
     properties:
@@ -159,18 +208,18 @@ definitions:
         type: string
         description: Event type
         enum:
-          - NETWORK-CHARACTERISTICS-UPDATE
           - MOBILITY
+          - NETWORK-CHARACTERISTICS-UPDATE
           - POAS-IN-RANGE
-          - OTHER
-      eventNetworkCharacteristicsUpdate:
-        $ref: '#/definitions/EventNetworkCharacteristicsUpdate'
+          - SCENARIO-UPDATE
       eventMobility:
         $ref: '#/definitions/EventMobility'
+      eventNetworkCharacteristicsUpdate:
+        $ref: '#/definitions/EventNetworkCharacteristicsUpdate'
       eventPoasInRange:
         $ref: '#/definitions/EventPoasInRange'
-      eventOther:
-        $ref: '#/definitions/EventOther'
+      eventScenarioUpdate:
+        $ref: '#/definitions/EventScenarioUpdate'
     description: Event object
     example:
       name: name
@@ -187,6 +236,36 @@ definitions:
           $ref: '#/definitions/Event'
     description: Event list object
     example: {}
+  EventMobility:
+    type: object
+    properties:
+      elementName:
+        type: string
+        description: Name of the network element to be updated
+      dest:
+        type: string
+        description: Destination element identifier
+    description: Mobility Event object
+    example:
+      elementName: ue1
+      dest: poa2
+  EventPoasInRange:
+    type: object
+    properties:
+      ue:
+        type: string
+        description: UE identifier
+      poasInRange:
+        type: array
+        items:
+          type: string
+          description: POAs visible to UE
+    description: POAs In Range Event object
+    example:
+      ue: ue
+      poasInRange:
+        - poa1
+        - poa2
   EventNetworkCharacteristicsUpdate:
     type: object
     properties:
@@ -225,45 +304,29 @@ definitions:
         description: Packet loss percentage
     description: Network Characteristics update Event object
     example: {}
-  EventPoasInRange:
+  EventScenarioUpdate:
     type: object
+    description: >-
+      Scenario Update Event object.<br>
+      Specifies a scenario update action to perform on the provided node.
+
+      <p>Supported Actions:
+      <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored.
+      <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
+      <li>MODIFY - Modifies scenario node.
+
+      <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
     properties:
-      ue:
+      action:
         type: string
-        description: UE identifier
-      poasInRange:
-        type: array
-        items:
-          type: string
-          description: POAs visible to UE
-    description: POAs In Range Event object
-    example:
-      ue: ue
-      poasInRange:
-        - poa1
-        - poa2
-  EventMobility:
-    type: object
-    properties:
-      elementName:
-        type: string
-        description: Name of the network element to be updated
-      dest:
-        type: string
-        description: Destination element identifier
-    description: Mobility Event object
-    example:
-      elementName: ue1
-      dest: poa2
-  EventOther:
-    type: object
-    properties:
-      event:
-        type: string
-        description: Other event string
-    description: Other Event object
-    example:
-      event: event
+        description: Action to perform on provided scenario node
+        enum:
+          - ADD
+          - REMOVE
+          - MODIFY
+      node:
+        $ref: '#/definitions/ScenarioNode'
+    example: {}
   ExternalConfig:
     type: object
     properties:
@@ -368,11 +431,32 @@ definitions:
           type: string
       cellularPoaConfig:
         $ref: '#/definitions/CellularPoaConfig'
+      geoData:
+        $ref: '#/definitions/GeoData'
       physicalLocations:
         type: array
         items:
           $ref: '#/definitions/PhysicalLocation'
     description: Logical network location object
+    example: {}
+  NodeDataUnion:
+    type: object
+    description: |-
+      Union of node data objects
+      NOTE: Only one of the following objects must be filled
+    properties:
+      # deployment:
+      #   $ref: '#/definitions/Deployment'
+      # domain:
+      #   $ref: '#/definitions/Domain'
+      # zone:
+      #   $ref: '#/definitions/Zone'
+      # networkLocation:
+      #   $ref: '#/definitions/NetworkLocation'
+      physicalLocation:
+        $ref: '#/definitions/PhysicalLocation'
+      # process:
+      #   $ref: '#/definitions/Process'
     example: {}
   PhysicalLocation:
     type: object
@@ -397,6 +481,8 @@ definitions:
         description: |-
           true: Physical location is external to MEEP
           false: Physical location is internal to MEEP
+      geoData:
+        $ref: '#/definitions/GeoData'
       networkLocationsInRange:
         type: array
         items:
@@ -535,6 +621,18 @@ definitions:
     example:
       name: name
       state: state
+  Replay:
+    type: object
+    properties:
+      description:
+        type: string
+        description: User description of the content of the replay file.
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/ReplayEvent'
+    description: ReplayEvents from the Replay-file
+    example: {}
   ReplayEvent:
     type: object
     properties:
@@ -549,17 +647,25 @@ definitions:
         $ref: '#/definitions/Event'
     description: Replay event object
     example: {}
-  Replay:
+  ReplayFileList:
     type: object
     properties:
-      description:
-        type: string
-        description: User description of the content of the replay file. 
-      events:
+      replay-files:
         type: array
         items:
-          $ref: '#/definitions/ReplayEvent'
-    description: ReplayEvents from the Replay-file
+          type: string
+    description: Replay-file list
+    example: {}
+  ReplayInfo:
+    type: object
+    properties:
+      scenarioName:
+        type: string
+        description: Scenario name
+      description:
+        type: string
+        description: User description of the replay file
+    description: Scenario information
     example: {}
   ReplayStatus:
     type: object
@@ -588,15 +694,6 @@ definitions:
         description: Time remaining until the next event for the replay file after last event
     description: Replay status object
     example: {}
-  ReplayFileList:
-    type: object
-    properties:
-      replay-files:
-        type: array
-        items:
-          type: string
-    description: Replay-file list
-    example: {}
   Sandbox:
     type: object
     properties:
@@ -620,7 +717,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Sandbox'
-    description: Sandbox list 
+    description: Sandbox list
     example: {}
   Scenario:
     type: object
@@ -656,17 +753,6 @@ definitions:
     example:
       visualization: visualization
       other: other
-  ReplayInfo:
-    type: object
-    properties:
-      scenarioName:
-        type: string
-        description: Scenario name
-      description:
-        type: string
-        description: User description of the replay file
-    description: Scenario information
-    example: {}
   ScenarioList:
     type: object
     properties:
@@ -674,7 +760,27 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Scenario'
-    description: Scenario list 
+    description: Scenario list
+    example: {}
+  ScenarioNode:
+    type: object
+    description: Scenario node object
+    properties:
+      type:
+        type: string
+        description: Node type
+        enum:
+          - UE
+      nodeDataUnion:
+        $ref: '#/definitions/NodeDataUnion'
+      parent:
+        type: string
+        description: Parent node name
+      children:
+        type: array
+        description: List of child node names
+        items:
+          type: string
     example: {}
   ServiceConfig:
     type: object

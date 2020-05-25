@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ActivationInfo', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventOther', 'model/EventPoasInRange', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/ActiveScenarioApi', 'api/EventReplayApi', 'api/EventsApi'], factory);
+    define(['ApiClient', 'model/ActivationInfo', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/Event', 'model/EventMobility', 'model/EventNetworkCharacteristicsUpdate', 'model/EventPoasInRange', 'model/EventScenarioUpdate', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/NodeDataUnion', 'model/NodeServiceMaps', 'model/PhysicalLocation', 'model/Point', 'model/Process', 'model/Replay', 'model/ReplayEvent', 'model/ReplayFileList', 'model/ReplayInfo', 'model/ReplayStatus', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioNode', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/ActiveScenarioApi', 'api/EventReplayApi', 'api/EventsApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventOther'), require('./model/EventPoasInRange'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/ActiveScenarioApi'), require('./api/EventReplayApi'), require('./api/EventsApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/ActivationInfo'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/Event'), require('./model/EventMobility'), require('./model/EventNetworkCharacteristicsUpdate'), require('./model/EventPoasInRange'), require('./model/EventScenarioUpdate'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/NodeDataUnion'), require('./model/NodeServiceMaps'), require('./model/PhysicalLocation'), require('./model/Point'), require('./model/Process'), require('./model/Replay'), require('./model/ReplayEvent'), require('./model/ReplayFileList'), require('./model/ReplayInfo'), require('./model/ReplayStatus'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioNode'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/ActiveScenarioApi'), require('./api/EventReplayApi'), require('./api/EventsApi'));
   }
-}(function(ApiClient, ActivationInfo, CellularDomainConfig, CellularPoaConfig, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventOther, EventPoasInRange, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, NodeServiceMaps, PhysicalLocation, Process, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ServiceConfig, ServicePort, Zone, ActiveScenarioApi, EventReplayApi, EventsApi) {
+}(function(ApiClient, ActivationInfo, CellularDomainConfig, CellularPoaConfig, Deployment, Domain, EgressService, Event, EventMobility, EventNetworkCharacteristicsUpdate, EventPoasInRange, EventScenarioUpdate, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, NetworkCharacteristics, NetworkLocation, NodeDataUnion, NodeServiceMaps, PhysicalLocation, Point, Process, Replay, ReplayEvent, ReplayFileList, ReplayInfo, ReplayStatus, Scenario, ScenarioConfig, ScenarioNode, ServiceConfig, ServicePort, Zone, ActiveScenarioApi, EventReplayApi, EventsApi) {
   'use strict';
 
   /**
@@ -122,20 +122,25 @@
      */
     EventNetworkCharacteristicsUpdate: EventNetworkCharacteristicsUpdate,
     /**
-     * The EventOther model constructor.
-     * @property {module:model/EventOther}
-     */
-    EventOther: EventOther,
-    /**
      * The EventPoasInRange model constructor.
      * @property {module:model/EventPoasInRange}
      */
     EventPoasInRange: EventPoasInRange,
     /**
+     * The EventScenarioUpdate model constructor.
+     * @property {module:model/EventScenarioUpdate}
+     */
+    EventScenarioUpdate: EventScenarioUpdate,
+    /**
      * The ExternalConfig model constructor.
      * @property {module:model/ExternalConfig}
      */
     ExternalConfig: ExternalConfig,
+    /**
+     * The GeoData model constructor.
+     * @property {module:model/GeoData}
+     */
+    GeoData: GeoData,
     /**
      * The GpuConfig model constructor.
      * @property {module:model/GpuConfig}
@@ -147,6 +152,11 @@
      */
     IngressService: IngressService,
     /**
+     * The LineString model constructor.
+     * @property {module:model/LineString}
+     */
+    LineString: LineString,
+    /**
      * The NetworkCharacteristics model constructor.
      * @property {module:model/NetworkCharacteristics}
      */
@@ -157,6 +167,11 @@
      */
     NetworkLocation: NetworkLocation,
     /**
+     * The NodeDataUnion model constructor.
+     * @property {module:model/NodeDataUnion}
+     */
+    NodeDataUnion: NodeDataUnion,
+    /**
      * The NodeServiceMaps model constructor.
      * @property {module:model/NodeServiceMaps}
      */
@@ -166,6 +181,11 @@
      * @property {module:model/PhysicalLocation}
      */
     PhysicalLocation: PhysicalLocation,
+    /**
+     * The Point model constructor.
+     * @property {module:model/Point}
+     */
+    Point: Point,
     /**
      * The Process model constructor.
      * @property {module:model/Process}
@@ -206,6 +226,11 @@
      * @property {module:model/ScenarioConfig}
      */
     ScenarioConfig: ScenarioConfig,
+    /**
+     * The ScenarioNode model constructor.
+     * @property {module:model/ScenarioNode}
+     */
+    ScenarioNode: ScenarioNode,
     /**
      * The ServiceConfig model constructor.
      * @property {module:model/ServiceConfig}

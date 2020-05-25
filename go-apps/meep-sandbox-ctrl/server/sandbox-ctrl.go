@@ -66,10 +66,12 @@ const fieldSandboxName = "sandbox-name"
 const fieldScenarioName = "scenario-name"
 
 // Event types
-const eventTypeMobility = "MOBILITY"
-const eventTypeNetCharUpdate = "NETWORK-CHARACTERISTICS-UPDATE"
-const eventTypePoasInRange = "POAS-IN-RANGE"
-const eventTypeOther = "OTHER"
+const (
+	eventTypeMobility       = "MOBILITY"
+	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
+	eventTypePoasInRange    = "POAS-IN-RANGE"
+	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
+)
 
 // Declare as variables to enable overwrite in test
 var couchDBAddr string = "http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/"
@@ -575,8 +577,8 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventNetworkCharacteristics(event)
 	case eventTypePoasInRange:
 		err, httpStatus, description = sendEventPoasInRange(event)
-	case eventTypeOther:
-		//ignore the event
+	case eventTypeScenarioUpdate:
+		err, httpStatus, description = sendEventScenarioUpdate(event)
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -705,6 +707,57 @@ func sendEventPoasInRange(event dataModel.Event) (error, int, string) {
 		return err, http.StatusNotFound, ""
 	}
 	return nil, -1, description
+}
+
+// sendEventScenarioUpdate - Process a scenario update event
+func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
+	var err error
+	var description string
+
+	if event.EventScenarioUpdate == nil {
+		err := errors.New("Malformed request: missing EventScenarioUpdate")
+		return err, http.StatusBadRequest, ""
+	}
+	if event.EventScenarioUpdate.Node == nil {
+		err := errors.New("Malformed request: missing Node")
+		return err, http.StatusBadRequest, ""
+	}
+
+	// Perform necessary action on scenario
+	switch event.EventScenarioUpdate.Action {
+	case mod.ScenarioAdd:
+		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node)
+		if err == nil {
+
+			description = "Added node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+		}
+
+	case mod.ScenarioRemove:
+		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node)
+		if err == nil {
+			description = "Removed node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
+		}
+
+	default:
+		err = errors.New("Unsupported scenario update action: " + event.EventScenarioUpdate.Action)
+	}
+
+	if err != nil {
+		return err, http.StatusInternalServerError, ""
+	}
+	return nil, -1, description
+}
+
+// Retrieve element name from type-specific structure
+func getScenarioNodeName(node *dataModel.ScenarioNode) string {
+	name := ""
+	if node.Type_ == mod.NodeTypeUE {
+		if node.NodeDataUnion != nil && node.NodeDataUnion.PhysicalLocation != nil {
+			pl := node.NodeDataUnion.PhysicalLocation
+			name = pl.Name
+		}
+	}
+	return name
 }
 
 // Equal tells whether a and b contain the same elements.

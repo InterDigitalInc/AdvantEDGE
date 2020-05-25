@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@
 (function(factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GpuConfig', 'model/IngressService', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/CellularPoaConfig', 'model/Deployment', 'model/Domain', 'model/EgressService', 'model/ExternalConfig', 'model/GeoData', 'model/GpuConfig', 'model/IngressService', 'model/LineString', 'model/NetworkCharacteristics', 'model/NetworkLocation', 'model/PhysicalLocation', 'model/Point', 'model/Process', 'model/Sandbox', 'model/SandboxConfig', 'model/SandboxList', 'model/Scenario', 'model/ScenarioConfig', 'model/ScenarioList', 'model/ServiceConfig', 'model/ServicePort', 'model/Zone', 'api/SandboxControlApi', 'api/ScenarioConfigurationApi'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
+    module.exports = factory(require('./ApiClient'), require('./model/CellularDomainConfig'), require('./model/CellularPoaConfig'), require('./model/Deployment'), require('./model/Domain'), require('./model/EgressService'), require('./model/ExternalConfig'), require('./model/GeoData'), require('./model/GpuConfig'), require('./model/IngressService'), require('./model/LineString'), require('./model/NetworkCharacteristics'), require('./model/NetworkLocation'), require('./model/PhysicalLocation'), require('./model/Point'), require('./model/Process'), require('./model/Sandbox'), require('./model/SandboxConfig'), require('./model/SandboxList'), require('./model/Scenario'), require('./model/ScenarioConfig'), require('./model/ScenarioList'), require('./model/ServiceConfig'), require('./model/ServicePort'), require('./model/Zone'), require('./api/SandboxControlApi'), require('./api/ScenarioConfigurationApi'));
   }
-}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, Deployment, Domain, EgressService, ExternalConfig, GpuConfig, IngressService, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
+}(function(ApiClient, CellularDomainConfig, CellularPoaConfig, Deployment, Domain, EgressService, ExternalConfig, GeoData, GpuConfig, IngressService, LineString, NetworkCharacteristics, NetworkLocation, PhysicalLocation, Point, Process, Sandbox, SandboxConfig, SandboxList, Scenario, ScenarioConfig, ScenarioList, ServiceConfig, ServicePort, Zone, SandboxControlApi, ScenarioConfigurationApi) {
   'use strict';
 
   /**
@@ -107,6 +107,11 @@
      */
     ExternalConfig: ExternalConfig,
     /**
+     * The GeoData model constructor.
+     * @property {module:model/GeoData}
+     */
+    GeoData: GeoData,
+    /**
      * The GpuConfig model constructor.
      * @property {module:model/GpuConfig}
      */
@@ -116,6 +121,11 @@
      * @property {module:model/IngressService}
      */
     IngressService: IngressService,
+    /**
+     * The LineString model constructor.
+     * @property {module:model/LineString}
+     */
+    LineString: LineString,
     /**
      * The NetworkCharacteristics model constructor.
      * @property {module:model/NetworkCharacteristics}
@@ -131,6 +141,11 @@
      * @property {module:model/PhysicalLocation}
      */
     PhysicalLocation: PhysicalLocation,
+    /**
+     * The Point model constructor.
+     * @property {module:model/Point}
+     */
+    Point: Point,
     /**
      * The Process model constructor.
      * @property {module:model/Process}

@@ -130,10 +130,11 @@ paths:
       tags:
       - "Events"
       summary: "Send events to the deployed scenario"
-      description: "Generate events towards the deployed scenario. <p><p>Events: <li>Mobility:\
-        \ move a node in the emulated network <li>Network Characteristic: change network\
-        \ characteristics dynamically <li>PoAs-In-Range: provide PoAs in range of\
-        \ a UE (used with Application State Transfer)"
+      description: "Generate events towards the deployed scenario.\nEvents:\n<li>MOBILITY:\
+        \ move a node in the emulated network\n<li>NETWORK-CHARACTERISTICS-UPDATE:\
+        \ change network characteristics dynamically\n<li>POAS-IN-RANGE: provide PoAs\
+        \ in range of a UE (used with ApplicationState Transfer)\n<li>SCENARIO-UPDATE:\
+        \ Add/Remove/Modify node in active scenario"
       operationId: "sendEvent"
       produces:
       - "application/json"
@@ -636,6 +637,8 @@ definitions:
           type: "string"
       cellularPoaConfig:
         $ref: "#/definitions/CellularPoaConfig"
+      geoData:
+        $ref: "#/definitions/GeoData"
       physicalLocations:
         type: "array"
         items:
@@ -650,6 +653,60 @@ definitions:
         description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
           \ the ID of the eNB serving the cell"
     description: "Cellular POA configuration information"
+  GeoData:
+    type: "object"
+    properties:
+      location:
+        $ref: "#/definitions/Point"
+      radius:
+        type: "number"
+        description: "Optional - Radius (in meters) around the location"
+      path:
+        $ref: "#/definitions/LineString"
+    description: "Geographic data"
+  Point:
+    type: "object"
+    required:
+    - "type"
+    properties:
+      type:
+        type: "string"
+        description: "Must be Point"
+        enum:
+        - "Point"
+      coordinates:
+        type: "array"
+        description: "For a Point, coordinates MUST be an array of two decimal numbers;\
+          \ longitude and latitude precisely in that order"
+        items:
+          type: "number"
+    externalDocs:
+      url: "https://tools.ietf.org/html/rfc7946"
+    description: "A single position in coordinate space (GeoJSON); a position is an\
+      \ array of two numbers"
+  LineString:
+    type: "object"
+    required:
+    - "type"
+    properties:
+      type:
+        type: "string"
+        description: "Must be LineString"
+        enum:
+        - "LineString"
+      coordinates:
+        type: "array"
+        description: "For a LineString, coordinates is an array of two or more positions;\
+          \ a position is an array of two decimal numbers (longitude and latitude\
+          \ precisely in that order)"
+        items:
+          type: "array"
+          items:
+            type: "number"
+    externalDocs:
+      url: "https://tools.ietf.org/html/rfc7946"
+    description: "An array of two or more positions in coordinate space (GeoJSON);\
+      \ a position is an array of two numbers"
   PhysicalLocation:
     type: "object"
     properties:
@@ -672,6 +729,8 @@ definitions:
         type: "boolean"
         description: "true: Physical location is external to MEEP\nfalse: Physical\
           \ location is internal to MEEP"
+      geoData:
+        $ref: "#/definitions/GeoData"
       networkLocationsInRange:
         type: "array"
         items:
@@ -916,18 +975,18 @@ definitions:
         type: "string"
         description: "Event type"
         enum:
-        - "NETWORK-CHARACTERISTICS-UPDATE"
         - "MOBILITY"
+        - "NETWORK-CHARACTERISTICS-UPDATE"
         - "POAS-IN-RANGE"
-        - "OTHER"
-      eventNetworkCharacteristicsUpdate:
-        $ref: "#/definitions/EventNetworkCharacteristicsUpdate"
+        - "SCENARIO-UPDATE"
       eventMobility:
         $ref: "#/definitions/EventMobility"
+      eventNetworkCharacteristicsUpdate:
+        $ref: "#/definitions/EventNetworkCharacteristicsUpdate"
       eventPoasInRange:
         $ref: "#/definitions/EventPoasInRange"
-      eventOther:
-        $ref: "#/definitions/EventOther"
+      eventScenarioUpdate:
+        $ref: "#/definitions/EventScenarioUpdate"
     description: "Event object"
     example:
       name: "name"
@@ -935,6 +994,19 @@ definitions:
       eventMobility:
         elementName: "ue1"
         dest: "poa2"
+  EventMobility:
+    type: "object"
+    properties:
+      elementName:
+        type: "string"
+        description: "Name of the network element to be updated"
+      dest:
+        type: "string"
+        description: "Destination element identifier"
+    description: "Mobility Event object"
+    example:
+      elementName: "ue1"
+      dest: "poa2"
   EventNetworkCharacteristicsUpdate:
     type: "object"
     properties:
@@ -973,19 +1045,6 @@ definitions:
         description: "Packet loss percentage"
     description: "Network Characteristics update Event object"
     example: {}
-  EventMobility:
-    type: "object"
-    properties:
-      elementName:
-        type: "string"
-        description: "Name of the network element to be updated"
-      dest:
-        type: "string"
-        description: "Destination element identifier"
-    description: "Mobility Event object"
-    example:
-      elementName: "ue1"
-      dest: "poa2"
   EventPoasInRange:
     type: "object"
     properties:
@@ -1003,15 +1062,54 @@ definitions:
       poasInRange:
       - "poa1"
       - "poa2"
-  EventOther:
+  EventScenarioUpdate:
     type: "object"
     properties:
-      event:
+      action:
         type: "string"
-        description: "Other event string"
-    description: "Other Event object"
-    example:
-      event: "event"
+        description: "Action to perform on provided scenario node"
+        enum:
+        - "ADD"
+        - "REMOVE"
+        - "MODIFY"
+      node:
+        $ref: "#/definitions/ScenarioNode"
+    description: "Scenario Update Event object.<br> Specifies a scenario update action\
+      \ to perform on the provided node.\n<p>Supported Actions: <li>ADD - Add node\
+      \ to scenario. Only the provided node is added; child nodes in node data are\
+      \ ignored. <li>REMOVE - Remove node from scenario. Only node name is required\
+      \ in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario\
+      \ node.\n<p>NOTE: Current backend implementation supports only a limited subset\
+      \ of scenario update event functionality (add/remove UE only)."
+    example: {}
+  ScenarioNode:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        description: "Node type"
+        enum:
+        - "UE"
+      nodeDataUnion:
+        $ref: "#/definitions/NodeDataUnion"
+      parent:
+        type: "string"
+        description: "Parent node name"
+      children:
+        type: "array"
+        description: "List of child node names"
+        items:
+          type: "string"
+    description: "Scenario node object"
+    example: {}
+  NodeDataUnion:
+    type: "object"
+    properties:
+      physicalLocation:
+        $ref: "#/definitions/PhysicalLocation"
+    description: "Union of node data objects\nNOTE: Only one of the following objects\
+      \ must be filled"
+    example: {}
   ReplayFileList:
     type: "object"
     properties:

@@ -36,6 +36,12 @@ var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
 var redisTable = 0
 
 const (
+	NodeTypePoa     = "POA"
+	NodeTypePoaCell = "POA CELLULAR"
+	NodeTypeUE      = "UE"
+)
+
+const (
 	NetCharScenario     = "SCENARIO"
 	NetCharOperator     = "OPERATOR"
 	NetCharOperatorCell = "OPERATOR CELLULAR"
@@ -49,6 +55,12 @@ const (
 	NetCharCloudApp     = "CLOUD APPLICATION"
 	NetCharEdgeApp      = "EDGE APPLICATION"
 	NetCharUEApp        = "UE APPLICATION"
+)
+
+const (
+	ScenarioAdd    = "ADD"
+	ScenarioRemove = "REMOVE"
+	ScenarioModify = "MODIFY"
 )
 
 // ModelCfg - Model Configuration
@@ -378,6 +390,142 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		err = m.refresh()
 	}
 	return err
+}
+
+// AddScenarioNode - Add scenario node
+func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if node == nil {
+		err = errors.New("node == nil")
+		return
+	}
+
+	// Find parent
+	parentNode := m.nodeMap.FindByName(node.Parent)
+	if parentNode == nil {
+		err = errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
+		return
+	}
+
+	// Add element based on type
+	if node.Type_ == NodeTypeUE {
+
+		// Get parent Network Location node & context information
+		if parentNode.nodeType != NodeTypePoa && parentNode.nodeType != NodeTypePoaCell {
+			err = errors.New("Invalid parent type: " + parentNode.nodeType)
+			return
+		}
+		nl := parentNode.object.(*dataModel.NetworkLocation)
+
+		// Validate Physical Location
+		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+			err = errors.New("Missing Physical Location")
+			return
+		}
+		pl := node.NodeDataUnion.PhysicalLocation
+		err = validatePL(pl)
+		if err != nil {
+			return
+		}
+
+		// Make sure node Name is unique
+		n := m.nodeMap.FindByName(pl.Name)
+		if n != nil {
+			err = errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
+			return
+		}
+
+		// Remove any configured processes
+		pl.Processes = make([]dataModel.Process, 0)
+
+		// Add PL to parent NL
+		nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
+
+		// Refresh node map
+		err = m.parseNodes()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	} else {
+		err = errors.New("Node type " + node.Type_ + " not supported")
+		return
+	}
+
+	// Update scenario
+	err = m.refresh()
+	return
+}
+
+// RemoveScenarioNode - Remove scenario node
+func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if node == nil {
+		err = errors.New("node == nil")
+		return
+	}
+
+	// Remove element based on type
+	if node.Type_ == NodeTypeUE {
+
+		// Get node name from request physical location
+		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+			err = errors.New("Missing Physical Location")
+			return
+		}
+		reqPL := node.NodeDataUnion.PhysicalLocation
+		nodeName := reqPL.Name
+
+		// Find node in scenario
+		n := m.nodeMap.FindByName(nodeName)
+		if n == nil {
+			err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
+			return
+		}
+
+		// Currently support only PL with no processes
+		pl := n.object.(*dataModel.PhysicalLocation)
+		if pl == nil || len(pl.Processes) != 0 {
+			err = errors.New("Cannot remove PL with child processes")
+			return
+		}
+
+		// Get parent NL
+		nl := n.parent.(*dataModel.NetworkLocation)
+		if nl == nil {
+			err = errors.New("Parent node not found in scenario " + m.name)
+			return
+		}
+
+		// Get index of PL to remove
+		var index int
+		for i, pl := range nl.PhysicalLocations {
+			if pl.Name == n.name {
+				index = i
+				break
+			}
+		}
+
+		// Overwrite & truncate to remove PL from list
+		nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
+		nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
+
+		// Refresh node map
+		err = m.parseNodes()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	} else {
+		err = errors.New("Node type " + node.Type_ + " not supported")
+		return
+	}
+
+	// Update scenario
+	err = m.refresh()
+	return
 }
 
 //GetScenarioName - Get the scenario name

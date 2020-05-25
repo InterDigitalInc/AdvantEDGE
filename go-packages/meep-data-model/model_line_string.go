@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@
 
 package model
 
-// Other Event object
-type EventOther struct {
-	// Other event string
-	Event string `json:"event,omitempty"`
+// An array of two or more positions in coordinate space (GeoJSON); a position is an array of two numbers
+type LineString struct {
+	// Must be LineString
+	Type_ string `json:"type"`
+	// For a LineString, coordinates is an array of two or more positions; a position is an array of two decimal numbers (longitude and latitude precisely in that order)
+	Coordinates [][]float32 `json:"coordinates,omitempty"`
 }

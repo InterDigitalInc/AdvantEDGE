@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -119,11 +119,27 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig = new AdvantEdgePlatformControllerRestApi.CellularPoaConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.type = "Point";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.coordinates = [];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.radius = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.type = "LineString";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].type = "UE";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].isExternal = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location.type = "Point";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location.coordinates = [];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.radius = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.type = "LineString";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
@@ -437,6 +453,35 @@
                           expect(data.cellularPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CellularPoaConfig);
                                 expect(data.cellularPoaConfig.cellId).to.be.a('string');
                             expect(data.cellularPoaConfig.cellId).to.be("");
+                          expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
+                                expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
+                                  expect(data.geoData.location.type).to.be.a('string');
+                              expect(data.geoData.location.type).to.be("Point");
+                              {
+                                let dataCtr = data.geoData.location.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('number');
+                                  expect(data).to.be();
+                                }
+                              }
+                            expect(data.geoData.radius).to.be.a('number');
+                            expect(data.geoData.radius).to.be();
+                            expect(data.geoData.path).to.be.a(AdvantEdgePlatformControllerRestApi.LineString);
+                                  expect(data.geoData.path.type).to.be.a('string');
+                              expect(data.geoData.path.type).to.be("LineString");
+                              {
+                                let dataCtr = data.geoData.path.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(Array);
+                                  expect(data).to.be([]);
+                                }
+                              }
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -452,6 +497,35 @@
                               expect(data.type).to.be("UE");
                               expect(data.isExternal).to.be.a('boolean');
                               expect(data.isExternal).to.be(false);
+                              expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
+                                    expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
+                                      expect(data.geoData.location.type).to.be.a('string');
+                                  expect(data.geoData.location.type).to.be("Point");
+                                  {
+                                    let dataCtr = data.geoData.location.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a('number');
+                                      expect(data).to.be();
+                                    }
+                                  }
+                                expect(data.geoData.radius).to.be.a('number');
+                                expect(data.geoData.radius).to.be();
+                                expect(data.geoData.path).to.be.a(AdvantEdgePlatformControllerRestApi.LineString);
+                                      expect(data.geoData.path.type).to.be.a('string');
+                                  expect(data.geoData.path.type).to.be("LineString");
+                                  {
+                                    let dataCtr = data.geoData.path.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(Array);
+                                      expect(data).to.be([]);
+                                    }
+                                  }
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);
@@ -850,6 +924,35 @@
                               expect(data.cellularPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CellularPoaConfig);
                                     expect(data.cellularPoaConfig.cellId).to.be.a('string');
                                 expect(data.cellularPoaConfig.cellId).to.be("");
+                              expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
+                                    expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
+                                      expect(data.geoData.location.type).to.be.a('string');
+                                  expect(data.geoData.location.type).to.be("Point");
+                                  {
+                                    let dataCtr = data.geoData.location.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a('number');
+                                      expect(data).to.be();
+                                    }
+                                  }
+                                expect(data.geoData.radius).to.be.a('number');
+                                expect(data.geoData.radius).to.be();
+                                expect(data.geoData.path).to.be.a(AdvantEdgePlatformControllerRestApi.LineString);
+                                      expect(data.geoData.path.type).to.be.a('string');
+                                  expect(data.geoData.path.type).to.be("LineString");
+                                  {
+                                    let dataCtr = data.geoData.path.coordinates;
+                                    expect(dataCtr).to.be.an(Array);
+                                    expect(dataCtr).to.not.be.empty();
+                                    for (let p in dataCtr) {
+                                      let data = dataCtr[p];
+                                      expect(data).to.be.a(Array);
+                                      expect(data).to.be([]);
+                                    }
+                                  }
                               {
                                 let dataCtr = data.physicalLocations;
                                 expect(dataCtr).to.be.an(Array);
@@ -865,6 +968,35 @@
                                   expect(data.type).to.be("UE");
                                   expect(data.isExternal).to.be.a('boolean');
                                   expect(data.isExternal).to.be(false);
+                                  expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
+                                        expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
+                                          expect(data.geoData.location.type).to.be.a('string');
+                                      expect(data.geoData.location.type).to.be("Point");
+                                      {
+                                        let dataCtr = data.geoData.location.coordinates;
+                                        expect(dataCtr).to.be.an(Array);
+                                        expect(dataCtr).to.not.be.empty();
+                                        for (let p in dataCtr) {
+                                          let data = dataCtr[p];
+                                          expect(data).to.be.a('number');
+                                          expect(data).to.be();
+                                        }
+                                      }
+                                    expect(data.geoData.radius).to.be.a('number');
+                                    expect(data.geoData.radius).to.be();
+                                    expect(data.geoData.path).to.be.a(AdvantEdgePlatformControllerRestApi.LineString);
+                                          expect(data.geoData.path.type).to.be.a('string');
+                                      expect(data.geoData.path.type).to.be("LineString");
+                                      {
+                                        let dataCtr = data.geoData.path.coordinates;
+                                        expect(dataCtr).to.be.an(Array);
+                                        expect(dataCtr).to.not.be.empty();
+                                        for (let p in dataCtr) {
+                                          let data = dataCtr[p];
+                                          expect(data).to.be.a(Array);
+                                          expect(data).to.be([]);
+                                        }
+                                      }
                                   {
                                     let dataCtr = data.networkLocationsInRange;
                                     expect(dataCtr).to.be.an(Array);
@@ -1115,11 +1247,27 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig = new AdvantEdgePlatformControllerRestApi.CellularPoaConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.type = "Point";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.coordinates = [];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.radius = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.type = "LineString";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].type = "UE";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].isExternal = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location.type = "Point";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.location.coordinates = [];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.radius = ;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.type = "LineString";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};

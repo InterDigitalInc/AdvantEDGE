@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ type EventsApiService service
 
 /*
 EventsApiService Send events to the deployed scenario
-Generate events towards the deployed scenario. &lt;p&gt;&lt;p&gt;Events: &lt;li&gt;Mobility: move a node in the emulated network &lt;li&gt;Network Characteristic: change network characteristics dynamically &lt;li&gt;PoAs-In-Range: provide PoAs in range of a UE (used with Application State Transfer)
+Generate events towards the deployed scenario. Events: &lt;li&gt;MOBILITY: move a node in the emulated network &lt;li&gt;NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically &lt;li&gt;POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) &lt;li&gt;SCENARIO-UPDATE: Add/Remove/Modify node in active scenario
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param type_ Event type
  * @param event Event to send to active scenario

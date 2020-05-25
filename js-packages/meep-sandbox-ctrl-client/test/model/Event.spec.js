@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -67,16 +67,16 @@
         // expect(instance.type).to.be(expectedValueLiteral);
       });
 
-      it('should have the property eventNetworkCharacteristicsUpdate (base name: "eventNetworkCharacteristicsUpdate")', function() {
-        // TODO: update the code to test the property eventNetworkCharacteristicsUpdate
-        expect(instance).to.have.property('eventNetworkCharacteristicsUpdate');
-        // expect(instance.eventNetworkCharacteristicsUpdate).to.be(expectedValueLiteral);
-      });
-
       it('should have the property eventMobility (base name: "eventMobility")', function() {
         // TODO: update the code to test the property eventMobility
         expect(instance).to.have.property('eventMobility');
         // expect(instance.eventMobility).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property eventNetworkCharacteristicsUpdate (base name: "eventNetworkCharacteristicsUpdate")', function() {
+        // TODO: update the code to test the property eventNetworkCharacteristicsUpdate
+        expect(instance).to.have.property('eventNetworkCharacteristicsUpdate');
+        // expect(instance.eventNetworkCharacteristicsUpdate).to.be(expectedValueLiteral);
       });
 
       it('should have the property eventPoasInRange (base name: "eventPoasInRange")', function() {
@@ -85,10 +85,10 @@
         // expect(instance.eventPoasInRange).to.be(expectedValueLiteral);
       });
 
-      it('should have the property eventOther (base name: "eventOther")', function() {
-        // TODO: update the code to test the property eventOther
-        expect(instance).to.have.property('eventOther');
-        // expect(instance.eventOther).to.be(expectedValueLiteral);
+      it('should have the property eventScenarioUpdate (base name: "eventScenarioUpdate")', function() {
+        // TODO: update the code to test the property eventScenarioUpdate
+        expect(instance).to.have.property('eventScenarioUpdate');
+        // expect(instance.eventScenarioUpdate).to.be(expectedValueLiteral);
       });
 
     });

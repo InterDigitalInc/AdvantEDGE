@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,10 @@
           replayFile.events[0].time = 0;
           replayFile.events[0].event = new AdvantEdgeSandboxControllerRestApi.Event();
           replayFile.events[0].event.name = "";
-          replayFile.events[0].event.type = "NETWORK-CHARACTERISTICS-UPDATE";
+          replayFile.events[0].event.type = "MOBILITY";
+          replayFile.events[0].event.eventMobility = new AdvantEdgeSandboxControllerRestApi.EventMobility();
+          replayFile.events[0].event.eventMobility.elementName = "";
+          replayFile.events[0].event.eventMobility.dest = "";
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate = new AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate();
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate.elementName = "";
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate.elementType = "SCENARIO";
@@ -69,14 +72,78 @@
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate.latencyVariation = 0;
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate.throughput = 0;
           replayFile.events[0].event.eventNetworkCharacteristicsUpdate.packetLoss = 0.0;
-          replayFile.events[0].event.eventMobility = new AdvantEdgeSandboxControllerRestApi.EventMobility();
-          replayFile.events[0].event.eventMobility.elementName = "";
-          replayFile.events[0].event.eventMobility.dest = "";
           replayFile.events[0].event.eventPoasInRange = new AdvantEdgeSandboxControllerRestApi.EventPoasInRange();
           replayFile.events[0].event.eventPoasInRange.ue = "";
           replayFile.events[0].event.eventPoasInRange.poasInRange = [""];
-          replayFile.events[0].event.eventOther = new AdvantEdgeSandboxControllerRestApi.EventOther();
-          replayFile.events[0].event.eventOther.event = "";
+          replayFile.events[0].event.eventScenarioUpdate = new AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate();
+          replayFile.events[0].event.eventScenarioUpdate.action = "ADD";
+          replayFile.events[0].event.eventScenarioUpdate.node = new AdvantEdgeSandboxControllerRestApi.ScenarioNode();
+          replayFile.events[0].event.eventScenarioUpdate.node.type = "UE";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion = new AdvantEdgeSandboxControllerRestApi.NodeDataUnion();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation = new AdvantEdgeSandboxControllerRestApi.PhysicalLocation();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.id = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.type = "UE";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.isExternal = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData = new AdvantEdgeSandboxControllerRestApi.GeoData();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location = new AdvantEdgeSandboxControllerRestApi.Point();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.type = "Point";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.coordinates = [];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.radius = ;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path = new AdvantEdgeSandboxControllerRestApi.LineString();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type = "LineString";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].id = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].type = "UE-APP";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].isExternal = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].image = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].environment = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].commandArguments = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].commandExe = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig = new AdvantEdgeSandboxControllerRestApi.ServiceConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.meSvcName = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports = [new AdvantEdgeSandboxControllerRestApi.ServicePort()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].externalPort = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig = new AdvantEdgeSandboxControllerRestApi.GpuConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.type = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.count = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].externalPort = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap = [new AdvantEdgeSandboxControllerRestApi.EgressService()];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].name = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].meSvcName = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].ip = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].port = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].protocol = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].status = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartLocation = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartAlternateValues = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartGroup = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].meta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userMeta = {key: ""};
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appLatency = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appLatencyVariation = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appThroughput = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appPacketLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].placementId = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatency = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
 
           instance.createReplayFile(name, replayFile, function(error, data, response) {
             if (error) {
@@ -180,7 +247,12 @@
                       expect(data.event.name).to.be.a('string');
                   expect(data.event.name).to.be("");
                   expect(data.event.type).to.be.a('string');
-                  expect(data.event.type).to.be("NETWORK-CHARACTERISTICS-UPDATE");
+                  expect(data.event.type).to.be("MOBILITY");
+                  expect(data.event.eventMobility).to.be.a(AdvantEdgeSandboxControllerRestApi.EventMobility);
+                        expect(data.event.eventMobility.elementName).to.be.a('string');
+                    expect(data.event.eventMobility.elementName).to.be("");
+                    expect(data.event.eventMobility.dest).to.be.a('string');
+                    expect(data.event.eventMobility.dest).to.be("");
                   expect(data.event.eventNetworkCharacteristicsUpdate).to.be.a(AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate);
                         expect(data.event.eventNetworkCharacteristicsUpdate.elementName).to.be.a('string');
                     expect(data.event.eventNetworkCharacteristicsUpdate.elementName).to.be("");
@@ -194,11 +266,6 @@
                     expect(data.event.eventNetworkCharacteristicsUpdate.throughput).to.be(0);
                     expect(data.event.eventNetworkCharacteristicsUpdate.packetLoss).to.be.a('number');
                     expect(data.event.eventNetworkCharacteristicsUpdate.packetLoss).to.be(0.0);
-                  expect(data.event.eventMobility).to.be.a(AdvantEdgeSandboxControllerRestApi.EventMobility);
-                        expect(data.event.eventMobility.elementName).to.be.a('string');
-                    expect(data.event.eventMobility.elementName).to.be("");
-                    expect(data.event.eventMobility.dest).to.be.a('string');
-                    expect(data.event.eventMobility.dest).to.be("");
                   expect(data.event.eventPoasInRange).to.be.a(AdvantEdgeSandboxControllerRestApi.EventPoasInRange);
                         expect(data.event.eventPoasInRange.ue).to.be.a('string');
                     expect(data.event.eventPoasInRange.ue).to.be("");
@@ -212,9 +279,226 @@
                         expect(data).to.be("");
                       }
                     }
-                  expect(data.event.eventOther).to.be.a(AdvantEdgeSandboxControllerRestApi.EventOther);
-                        expect(data.event.eventOther.event).to.be.a('string');
-                    expect(data.event.eventOther.event).to.be("");
+                  expect(data.event.eventScenarioUpdate).to.be.a(AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate);
+                        expect(data.event.eventScenarioUpdate.action).to.be.a('string');
+                    expect(data.event.eventScenarioUpdate.action).to.be("ADD");
+                    expect(data.event.eventScenarioUpdate.node).to.be.a(AdvantEdgeSandboxControllerRestApi.ScenarioNode);
+                          expect(data.event.eventScenarioUpdate.node.type).to.be.a('string');
+                      expect(data.event.eventScenarioUpdate.node.type).to.be("UE");
+                      expect(data.event.eventScenarioUpdate.node.nodeDataUnion).to.be.a(AdvantEdgeSandboxControllerRestApi.NodeDataUnion);
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation).to.be.a(AdvantEdgeSandboxControllerRestApi.PhysicalLocation);
+                              expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.id).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.id).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.name).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.name).to.be("");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.type).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.type).to.be("UE");
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.isExternal).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.isExternal).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
+                                expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+                                  expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.type).to.be.a('string');
+                              expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.type).to.be("Point");
+                              {
+                                let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('number');
+                                  expect(data).to.be();
+                                }
+                              }
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.radius).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.radius).to.be();
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path).to.be.a(AdvantEdgeSandboxControllerRestApi.LineString);
+                                  expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type).to.be.a('string');
+                              expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type).to.be("LineString");
+                              {
+                                let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates;
+                                expect(dataCtr).to.be.an(Array);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a(Array);
+                                  expect(data).to.be([]);
+                                }
+                              }
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta;
+                            expect(dataCtr).to.be.an(Object);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta;
+                            expect(dataCtr).to.be.an(Object);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a('string');
+                              expect(data).to.be("");
+                            }
+                          }
+                          {
+                            let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes;
+                            expect(dataCtr).to.be.an(Array);
+                            expect(dataCtr).to.not.be.empty();
+                            for (let p in dataCtr) {
+                              let data = dataCtr[p];
+                              expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.Process);
+                              expect(data.id).to.be.a('string');
+                              expect(data.id).to.be("");
+                              expect(data.name).to.be.a('string');
+                              expect(data.name).to.be("");
+                              expect(data.type).to.be.a('string');
+                              expect(data.type).to.be("UE-APP");
+                              expect(data.isExternal).to.be.a('boolean');
+                              expect(data.isExternal).to.be(false);
+                              expect(data.image).to.be.a('string');
+                              expect(data.image).to.be("");
+                              expect(data.environment).to.be.a('string');
+                              expect(data.environment).to.be("");
+                              expect(data.commandArguments).to.be.a('string');
+                              expect(data.commandArguments).to.be("");
+                              expect(data.commandExe).to.be.a('string');
+                              expect(data.commandExe).to.be("");
+                              expect(data.serviceConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+                                    expect(data.serviceConfig.name).to.be.a('string');
+                                expect(data.serviceConfig.name).to.be("");
+                                expect(data.serviceConfig.meSvcName).to.be.a('string');
+                                expect(data.serviceConfig.meSvcName).to.be("");
+                                {
+                                  let dataCtr = data.serviceConfig.ports;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.ServicePort);
+                                    expect(data.protocol).to.be.a('string');
+                                    expect(data.protocol).to.be("");
+                                    expect(data.port).to.be.a('number');
+                                    expect(data.port).to.be(0);
+                                    expect(data.externalPort).to.be.a('number');
+                                    expect(data.externalPort).to.be(0);
+                                  }
+                                }
+                              expect(data.gpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.GpuConfig);
+                                    expect(data.gpuConfig.type).to.be.a('string');
+                                expect(data.gpuConfig.type).to.be("");
+                                expect(data.gpuConfig.count).to.be.a('number');
+                                expect(data.gpuConfig.count).to.be(0);
+                              expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
+                                    {
+                                  let dataCtr = data.externalConfig.ingressServiceMap;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.IngressService);
+                                    expect(data.name).to.be.a('string');
+                                    expect(data.name).to.be("");
+                                    expect(data.port).to.be.a('number');
+                                    expect(data.port).to.be(0);
+                                    expect(data.externalPort).to.be.a('number');
+                                    expect(data.externalPort).to.be(0);
+                                    expect(data.protocol).to.be.a('string');
+                                    expect(data.protocol).to.be("");
+                                  }
+                                }
+                                {
+                                  let dataCtr = data.externalConfig.egressServiceMap;
+                                  expect(dataCtr).to.be.an(Array);
+                                  expect(dataCtr).to.not.be.empty();
+                                  for (let p in dataCtr) {
+                                    let data = dataCtr[p];
+                                    expect(data).to.be.a(AdvantEdgeSandboxControllerRestApi.EgressService);
+                                    expect(data.name).to.be.a('string');
+                                    expect(data.name).to.be("");
+                                    expect(data.meSvcName).to.be.a('string');
+                                    expect(data.meSvcName).to.be("");
+                                    expect(data.ip).to.be.a('string');
+                                    expect(data.ip).to.be("");
+                                    expect(data.port).to.be.a('number');
+                                    expect(data.port).to.be(0);
+                                    expect(data.protocol).to.be.a('string');
+                                    expect(data.protocol).to.be("");
+                                  }
+                                }
+                              expect(data.status).to.be.a('string');
+                              expect(data.status).to.be("");
+                              expect(data.userChartLocation).to.be.a('string');
+                              expect(data.userChartLocation).to.be("");
+                              expect(data.userChartAlternateValues).to.be.a('string');
+                              expect(data.userChartAlternateValues).to.be("");
+                              expect(data.userChartGroup).to.be.a('string');
+                              expect(data.userChartGroup).to.be("");
+                              {
+                                let dataCtr = data.meta;
+                                expect(dataCtr).to.be.an(Object);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('string');
+                                  expect(data).to.be("");
+                                }
+                              }
+                              {
+                                let dataCtr = data.userMeta;
+                                expect(dataCtr).to.be.an(Object);
+                                expect(dataCtr).to.not.be.empty();
+                                for (let p in dataCtr) {
+                                  let data = dataCtr[p];
+                                  expect(data).to.be.a('string');
+                                  expect(data).to.be("");
+                                }
+                              }
+                              expect(data.appLatency).to.be.a('number');
+                              expect(data.appLatency).to.be(0);
+                              expect(data.appLatencyVariation).to.be.a('number');
+                              expect(data.appLatencyVariation).to.be(0);
+                              expect(data.appThroughput).to.be.a('number');
+                              expect(data.appThroughput).to.be(0);
+                              expect(data.appPacketLoss).to.be.a('number');
+                              expect(data.appPacketLoss).to.be(0.0);
+                              expect(data.placementId).to.be.a('string');
+                              expect(data.placementId).to.be("");
+                            }
+                          }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatency).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatency).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput).to.be(0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be.a('number');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be(0.0);
+                      expect(data.event.eventScenarioUpdate.node.parent).to.be.a('string');
+                      expect(data.event.eventScenarioUpdate.node.parent).to.be("");
+                      {
+                        let dataCtr = data.event.eventScenarioUpdate.node.children;
+                        expect(dataCtr).to.be.an(Array);
+                        expect(dataCtr).to.not.be.empty();
+                        for (let p in dataCtr) {
+                          let data = dataCtr[p];
+                          expect(data).to.be.a('string');
+                          expect(data).to.be("");
+                        }
+                      }
               }
             }
 

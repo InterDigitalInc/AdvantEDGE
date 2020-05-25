@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -45,20 +45,32 @@
   var instance;
 
   describe('(package)', function() {
-    describe('EventOther', function() {
+    describe('GeoData', function() {
       beforeEach(function() {
-        instance = new AdvantEdgeSandboxControllerRestApi.EventOther();
+        instance = new AdvantEdgeSandboxControllerRestApi.GeoData();
       });
 
-      it('should create an instance of EventOther', function() {
-        // TODO: update the code to test EventOther
-        expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.EventOther);
+      it('should create an instance of GeoData', function() {
+        // TODO: update the code to test GeoData
+        expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
       });
 
-      it('should have the property event (base name: "event")', function() {
-        // TODO: update the code to test the property event
-        expect(instance).to.have.property('event');
-        // expect(instance.event).to.be(expectedValueLiteral);
+      it('should have the property location (base name: "location")', function() {
+        // TODO: update the code to test the property location
+        expect(instance).to.have.property('location');
+        // expect(instance.location).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property radius (base name: "radius")', function() {
+        // TODO: update the code to test the property radius
+        expect(instance).to.have.property('radius');
+        // expect(instance.radius).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property path (base name: "path")', function() {
+        // TODO: update the code to test the property path
+        expect(instance).to.have.property('path');
+        // expect(instance.path).to.be(expectedValueLiteral);
       });
 
     });

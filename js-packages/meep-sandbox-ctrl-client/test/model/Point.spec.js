@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -30,58 +30,44 @@
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    // AMD.
+    define(['expect.js', '../../src/index'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    if (!root.AdvantEdgeSandboxControllerRestApi) {
-      root.AdvantEdgeSandboxControllerRestApi = {};
-    }
-    root.AdvantEdgeSandboxControllerRestApi.EventOther = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient);
+    factory(root.expect, root.AdvantEdgeSandboxControllerRestApi);
   }
-}(this, function(ApiClient) {
+}(this, function(expect, AdvantEdgeSandboxControllerRestApi) {
   'use strict';
 
-  /**
-   * The EventOther model module.
-   * @module model/EventOther
-   * @version 1.0.0
-   */
+  var instance;
 
-  /**
-   * Constructs a new <code>EventOther</code>.
-   * Other Event object
-   * @alias module:model/EventOther
-   * @class
-   */
-  var exports = function() {
-  };
+  describe('(package)', function() {
+    describe('Point', function() {
+      beforeEach(function() {
+        instance = new AdvantEdgeSandboxControllerRestApi.Point();
+      });
 
-  /**
-   * Constructs a <code>EventOther</code> from a plain JavaScript object, optionally creating a new instance.
-   * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
-   * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/EventOther} obj Optional instance to populate.
-   * @return {module:model/EventOther} The populated <code>EventOther</code> instance.
-   */
-  exports.constructFromObject = function(data, obj) {
-    if (data) {
-      obj = obj || new exports();
-      if (data.hasOwnProperty('event'))
-        obj.event = ApiClient.convertToType(data['event'], 'String');
-    }
-    return obj;
-  }
+      it('should create an instance of Point', function() {
+        // TODO: update the code to test Point
+        expect(instance).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
+      });
 
-  /**
-   * Other event string
-   * @member {String} event
-   */
-  exports.prototype.event = undefined;
+      it('should have the property type (base name: "type")', function() {
+        // TODO: update the code to test the property type
+        expect(instance).to.have.property('type');
+        // expect(instance.type).to.be(expectedValueLiteral);
+      });
 
-  return exports;
+      it('should have the property coordinates (base name: "coordinates")', function() {
+        // TODO: update the code to test the property coordinates
+        expect(instance).to.have.property('coordinates');
+        // expect(instance.coordinates).to.be(expectedValueLiteral);
+      });
+
+    });
+  });
 
 }));

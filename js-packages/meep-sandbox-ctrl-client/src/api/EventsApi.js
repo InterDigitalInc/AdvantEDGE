@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@
 
     /**
      * Send events to the deployed scenario
-     * Generate events towards the deployed scenario. <p><p>Events: <li>Mobility: move a node in the emulated network <li>Network Characteristic: change network characteristics dynamically <li>PoAs-In-Range: provide PoAs in range of a UE (used with Application State Transfer)
+     * Generate events towards the deployed scenario. Events: <li>MOBILITY: move a node in the emulated network <li>NETWORK-CHARACTERISTICS-UPDATE: change network characteristics dynamically <li>POAS-IN-RANGE: provide PoAs in range of a UE (used with ApplicationState Transfer) <li>SCENARIO-UPDATE: Add/Remove/Modify node in active scenario
      * @param {String} type Event type
      * @param {module:model/Event} event Event to send to active scenario
      * @param {module:api/EventsApi~sendEventCallback} callback The callback function, accepting three arguments: error, data, response

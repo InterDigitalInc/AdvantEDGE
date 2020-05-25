@@ -113,3 +113,22 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 	}
 	return validJsonScenario, ValidatorStatusUpdated, err
 }
+
+// Validate the provided PL
+func validatePL(pl *dataModel.PhysicalLocation) error {
+
+	if pl.Id == "" {
+		pl.Id = pl.Name
+	}
+	if pl.Name == "" {
+		return errors.New("Invalid Name")
+	}
+	if pl.Type_ != NodeTypeUE {
+		return errors.New("Unsupported PL Type: " + pl.Type_)
+	}
+	if pl.LinkThroughput == 0 {
+		pl.LinkThroughput = 1000
+	}
+
+	return nil
+}

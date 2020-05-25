@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,10 @@
           var type = "type_example";
           var event = new AdvantEdgeSandboxControllerRestApi.Event();
           event.name = "";
-          event.type = "NETWORK-CHARACTERISTICS-UPDATE";
+          event.type = "MOBILITY";
+          event.eventMobility = new AdvantEdgeSandboxControllerRestApi.EventMobility();
+          event.eventMobility.elementName = "";
+          event.eventMobility.dest = "";
           event.eventNetworkCharacteristicsUpdate = new AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate();
           event.eventNetworkCharacteristicsUpdate.elementName = "";
           event.eventNetworkCharacteristicsUpdate.elementType = "SCENARIO";
@@ -65,14 +68,78 @@
           event.eventNetworkCharacteristicsUpdate.latencyVariation = 0;
           event.eventNetworkCharacteristicsUpdate.throughput = 0;
           event.eventNetworkCharacteristicsUpdate.packetLoss = 0.0;
-          event.eventMobility = new AdvantEdgeSandboxControllerRestApi.EventMobility();
-          event.eventMobility.elementName = "";
-          event.eventMobility.dest = "";
           event.eventPoasInRange = new AdvantEdgeSandboxControllerRestApi.EventPoasInRange();
           event.eventPoasInRange.ue = "";
           event.eventPoasInRange.poasInRange = [""];
-          event.eventOther = new AdvantEdgeSandboxControllerRestApi.EventOther();
-          event.eventOther.event = "";
+          event.eventScenarioUpdate = new AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate();
+          event.eventScenarioUpdate.action = "ADD";
+          event.eventScenarioUpdate.node = new AdvantEdgeSandboxControllerRestApi.ScenarioNode();
+          event.eventScenarioUpdate.node.type = "UE";
+          event.eventScenarioUpdate.node.nodeDataUnion = new AdvantEdgeSandboxControllerRestApi.NodeDataUnion();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation = new AdvantEdgeSandboxControllerRestApi.PhysicalLocation();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.id = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.name = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.type = "UE";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.isExternal = false;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData = new AdvantEdgeSandboxControllerRestApi.GeoData();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location = new AdvantEdgeSandboxControllerRestApi.Point();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.type = "Point";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.location.coordinates = [];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.radius = ;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path = new AdvantEdgeSandboxControllerRestApi.LineString();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type = "LineString";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].id = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].name = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].type = "UE-APP";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].isExternal = false;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].image = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].environment = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].commandArguments = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].commandExe = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig = new AdvantEdgeSandboxControllerRestApi.ServiceConfig();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.name = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.meSvcName = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports = [new AdvantEdgeSandboxControllerRestApi.ServicePort()];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].protocol = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].port = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].serviceConfig.ports[0].externalPort = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig = new AdvantEdgeSandboxControllerRestApi.GpuConfig();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.type = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.count = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].name = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].port = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].externalPort = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].protocol = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap = [new AdvantEdgeSandboxControllerRestApi.EgressService()];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].name = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].meSvcName = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].ip = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].port = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.egressServiceMap[0].protocol = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].status = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartLocation = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartAlternateValues = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userChartGroup = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].meta = {key: ""};
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].userMeta = {key: ""};
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appLatency = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appLatencyVariation = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appThroughput = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].appPacketLoss = 0.0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].placementId = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatency = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
+          event.eventScenarioUpdate.node.parent = "";
+          event.eventScenarioUpdate.node.children = [""];
 
           instance.sendEvent(type, event, function(error, data, response) {
             if (error) {
