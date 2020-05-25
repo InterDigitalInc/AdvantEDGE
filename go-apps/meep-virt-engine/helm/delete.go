@@ -24,13 +24,14 @@ import (
 
 func deleteReleases(charts []Chart) error {
 	for _, c := range charts {
-		go deleteRelease(c)
+		deleteRelease(c)
 	}
 
 	return nil
 }
 
 func deleteRelease(chart Chart) {
+	log.Debug("Deleting release: " + chart.ReleaseName)
 	var cmd = exec.Command("helm", "delete", chart.ReleaseName, "--purge")
 	out, err := cmd.CombinedOutput()
 	if err != nil {

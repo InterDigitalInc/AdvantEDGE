@@ -337,7 +337,6 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 }
 
 func deployCharts(charts []helm.Chart) error {
-
 	err := helm.InstallCharts(charts)
 	if err != nil {
 		return err
@@ -397,13 +396,18 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 
 func newChart(chartName string, sandboxName string, scenarioName string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
+
+	// Create release name by adding sandbox + scenario prefix
+	prefix := "meep-"
+	sandboxPrefix := prefix + sandboxName + "-"
 	if scenarioName == "" {
-		chart.Name = "meep-" + chartName
-		chart.ReleaseName = "meep-" + sandboxName + "-" + chartName
+		prefix := "meep-"
+		chart.ReleaseName = sandboxPrefix + chartName[len(prefix):]
 	} else {
-		chart.Name = chartName
-		chart.ReleaseName = "meep-" + sandboxName + "-" + scenarioName + "-" + chartName
+		chart.ReleaseName = sandboxPrefix + scenarioName + "-" + chartName
 	}
+
+	chart.Name = chartName
 	chart.Namespace = sandboxName
 	chart.Location = chartLocation
 	chart.ValuesFile = valuesFile
@@ -503,47 +507,15 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.HostUrl = ve.hostUrl
 
 	// Create sandbox charts
-	chartLocation, err := createChart("meep-loc-serv", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
+	for pod := range ve.sboxPods {
+		var chartLocation string
+		chartLocation, err = createChart(pod, sandboxName, "", sandboxTemplate)
+		if err != nil {
+			return
+		}
+		chart := newChart(pod, sandboxName, "", chartLocation, "")
+		charts = append(charts, chart)
 	}
-	chart := newChart("loc-serv", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
-
-	chartLocation, err = createChart("meep-rnis", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
-	}
-	chart = newChart("rnis", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
-
-	chartLocation, err = createChart("meep-metrics-engine", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
-	}
-	chart = newChart("metrics-engine", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
-
-	chartLocation, err = createChart("meep-mg-manager", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
-	}
-	chart = newChart("mg-manager", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
-
-	chartLocation, err = createChart("meep-tc-engine", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
-	}
-	chart = newChart("tc-engine", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
-
-	chartLocation, err = createChart("meep-sandbox-ctrl", sandboxName, "", sandboxTemplate)
-	if err != nil {
-		return
-	}
-	chart = newChart("sandbox-ctrl", sandboxName, "", chartLocation, "")
-	charts = append(charts, chart)
 
 	return charts, nil
 }

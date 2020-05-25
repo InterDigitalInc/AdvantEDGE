@@ -22,7 +22,7 @@ image:
   tag: latest
   pullPolicy: Always
   env:
-    # Provide comma-spearated list of expected pods to be monitored
+    # Provide comma-separated list of expected pods to be monitored
     MEEP_DEPENDENCY_PODS: ""
     MEEP_CORE_PODS: ""
     MEEP_SANDBOX_PODS: ""

@@ -31,15 +31,35 @@ repo:
           - -mod=vendor
         codecov: true
         lint: true
-        monitor: true
         api: go-apps/meep-mon-engine/api/swagger.yaml
+        dependency-pods:
+          - meep-couchdb
+          - meep-docker-registry
+          - meep-grafana
+          - meep-ingress
+          - meep-influxdb
+          - meep-kube-state-metrics
+          - meep-open-map-tiles
+          - meep-postgis
+          - meep-redis
+        core-pods:
+          - meep-mon-engine
+          - meep-platform-ctrl
+          - meep-virt-engine
+          - meep-webhook
+        sandbox-pods:
+          - meep-loc-serv
+          - meep-metrics-engine
+          - meep-mg-manager
+          - meep-rnis
+          - meep-sandbox-ctrl
+          - meep-tc-engine
       meep-platform-ctrl:
         src: go-apps/meep-platform-ctrl
         bin: bin/meep-platform-ctrl
         chart: charts/meep-platform-ctrl
         codecov: true
         lint: true
-        monitor: true
         api: go-apps/meep-platform-ctrl/api/swagger.yaml
         docker-data:
           swagger: bin/meep-platform-swagger-ui
@@ -50,7 +70,6 @@ repo:
         chart: charts/meep-virt-engine
         codecov: true
         lint: true
-        monitor: true
         docker-data:
           'entrypoint.sh': go-apps/meep-virt-engine/entrypoint.sh
           meep-loc-serv: charts/meep-loc-serv
@@ -60,6 +79,13 @@ repo:
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
           meep-virt-chart-templates: charts/meep-virt-chart-templates
+        sandbox-pods:
+          - meep-loc-serv
+          - meep-metrics-engine
+          - meep-mg-manager
+          - meep-rnis
+          - meep-sandbox-ctrl
+          - meep-tc-engine
       meep-webhook:
         src: go-apps/meep-webhook
         bin: bin/meep-webhook
@@ -68,7 +94,6 @@ repo:
           - -mod=vendor
         codecov: false
         lint: true
-        monitor: true
 
     # Javascript Applications
     js-apps:
@@ -117,7 +142,6 @@ repo:
           - -mod=vendor
         codecov: false
         lint: true
-        monitor: true
         api: go-apps/meep-loc-serv/api/swagger.yaml
       meep-metrics-engine:
         src: go-apps/meep-metrics-engine
@@ -127,7 +151,6 @@ repo:
           - -mod=vendor
         codecov: false
         lint: true
-        monitor: true
         api: go-apps/meep-metrics-engine/api/v2/swagger.yaml
       meep-mg-manager:
         src: go-apps/meep-mg-manager
@@ -135,7 +158,6 @@ repo:
         chart: charts/meep-mg-manager
         codecov: false
         lint: true
-        monitor: true
         api: go-apps/meep-mg-manager/api/swagger.yaml
       meep-rnis:
         src: go-apps/meep-rnis
@@ -145,7 +167,6 @@ repo:
           - -mod=vendor
         codecov: false
         lint: true
-        monitor: true
         api: go-apps/meep-rnis/api/swagger.yaml
       meep-sandbox-ctrl:
         src: go-apps/meep-sandbox-ctrl
@@ -153,7 +174,6 @@ repo:
         chart: charts/meep-sandbox-ctrl
         codecov: false
         lint: true
-        monitor: true
         api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
         docker-data:
           'entrypoint.sh': go-apps/meep-sandbox-ctrl/entrypoint.sh
@@ -164,13 +184,11 @@ repo:
         chart: charts/meep-tc-engine
         codecov: false
         lint: true
-        monitor: true
       meep-tc-sidecar:
         src: go-apps/meep-tc-sidecar
         bin: bin/meep-tc-sidecar
         codecov: false
         lint: true
-        monitor: false
 
   #------------------------------
   #  Dependencies
@@ -178,31 +196,22 @@ repo:
   dep:
     meep-couchdb:
       chart: charts/couchdb
-      monitor: true
     meep-docker-registry:
       chart: charts/docker-registry
-      monitor: true
     meep-grafana:
       chart: charts/grafana
-      monitor: true
     meep-influxdb:
       chart: charts/influxdb
-      monitor: true
     meep-kube-state-metrics:
       chart: charts/kube-state-metrics
-      monitor: true
     meep-ingress:
       chart: charts/nginx-ingress
-      monitor: true
     meep-redis:
       chart: charts/redis
-      monitor: true
     meep-open-map-tiles:
       chart: charts/open-map-tiles
-      monitor: true
     meep-postgis:
       chart: charts/postgis
-      monitor: true
 
   #------------------------------
   #  Packages

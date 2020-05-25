@@ -22,6 +22,8 @@ image:
   tag: latest
   pullPolicy: Always      
   env:
+    # Provide comma-separated list of pods to create in sandbox
+    MEEP_SANDBOX_PODS: ""
     MEEP_HOST_URL: "http://www.example.com"
 
 service:
