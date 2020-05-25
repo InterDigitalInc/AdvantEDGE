@@ -104,7 +104,7 @@ func (r *ReplayMgr) playEventByIndex() error {
 
 	// Process INIT event
 	isInitEvent := false
-	if replayEvent.Event.Type_ == "INIT" && replayEvent.Event.Name == "Init" {
+	if replayEvent.Event.Type_ == "OTHER" && replayEvent.Event.Name == "Init" {
 
 		// Skip to next event if INIT event should be ignored
 		if r.ignoreInitEvent {
