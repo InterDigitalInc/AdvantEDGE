@@ -9,7 +9,6 @@ Name | Type | Description | Notes
 **eventNetworkCharacteristicsUpdate** | [**EventNetworkCharacteristicsUpdate**](EventNetworkCharacteristicsUpdate.md) |  | [optional] 
 **eventPoasInRange** | [**EventPoasInRange**](EventPoasInRange.md) |  | [optional] 
 **eventScenarioUpdate** | [**EventScenarioUpdate**](EventScenarioUpdate.md) |  | [optional] 
-**eventOther** | [**EventOther**](EventOther.md) |  | [optional] 
 
 
 <a name="TypeEnum"></a>
@@ -23,8 +22,6 @@ Name | Type | Description | Notes
 * `POAS_IN_RANGE` (value: `"POAS-IN-RANGE"`)
 
 * `SCENARIO_UPDATE` (value: `"SCENARIO-UPDATE"`)
-
-* `OTHER` (value: `"OTHER"`)
 
 
 

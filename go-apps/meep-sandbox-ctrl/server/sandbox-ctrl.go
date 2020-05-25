@@ -71,7 +71,6 @@ const (
 	eventTypeNetCharUpdate  = "NETWORK-CHARACTERISTICS-UPDATE"
 	eventTypePoasInRange    = "POAS-IN-RANGE"
 	eventTypeScenarioUpdate = "SCENARIO-UPDATE"
-	eventTypeOther          = "OTHER"
 )
 
 // Declare as variables to enable overwrite in test
@@ -580,8 +579,6 @@ func ceSendEvent(w http.ResponseWriter, r *http.Request) {
 		err, httpStatus, description = sendEventPoasInRange(event)
 	case eventTypeScenarioUpdate:
 		err, httpStatus, description = sendEventScenarioUpdate(event)
-	case eventTypeOther:
-		//ignore the event
 	default:
 		err = errors.New("Unsupported event type")
 		httpStatus = http.StatusBadRequest
@@ -721,39 +718,24 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		err := errors.New("Malformed request: missing EventScenarioUpdate")
 		return err, http.StatusBadRequest, ""
 	}
-	if len(event.EventScenarioUpdate.Nodes) == 0 {
-		err := errors.New("Malformed request: missing Nodes")
+	if event.EventScenarioUpdate.Node == nil {
+		err := errors.New("Malformed request: missing Node")
 		return err, http.StatusBadRequest, ""
 	}
 
 	// Perform necessary action on scenario
 	switch event.EventScenarioUpdate.Action {
 	case mod.ScenarioAdd:
-		var names []string
-		names, err = sbxCtrl.activeModel.AddScenarioNodes(&event.EventScenarioUpdate.Nodes)
+		err = sbxCtrl.activeModel.AddScenarioNode(event.EventScenarioUpdate.Node)
 		if err == nil {
-			description = "Added nodes ["
-			for i, name := range names {
-				if i != 0 {
-					description += ", "
-				}
-				description += name
-			}
-			description += "]"
+
+			description = "Added node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
 		}
 
 	case mod.ScenarioRemove:
-		var names []string
-		names, err = sbxCtrl.activeModel.RemoveScenarioNodes(&event.EventScenarioUpdate.Nodes)
+		err = sbxCtrl.activeModel.RemoveScenarioNode(event.EventScenarioUpdate.Node)
 		if err == nil {
-			description = "Removed nodes ["
-			for i, name := range names {
-				if i != 0 {
-					description += ", "
-				}
-				description += name
-			}
-			description += "]"
+			description = "Removed node [" + getScenarioNodeName(event.EventScenarioUpdate.Node) + "]"
 		}
 
 	default:
@@ -764,6 +746,18 @@ func sendEventScenarioUpdate(event dataModel.Event) (error, int, string) {
 		return err, http.StatusInternalServerError, ""
 	}
 	return nil, -1, description
+}
+
+// Retrieve element name from type-specific structure
+func getScenarioNodeName(node *dataModel.ScenarioNode) string {
+	name := ""
+	if node.Type_ == mod.NodeTypeUE {
+		if node.NodeDataUnion != nil && node.NodeDataUnion.PhysicalLocation != nil {
+			pl := node.NodeDataUnion.PhysicalLocation
+			name = pl.Name
+		}
+	}
+	return name
 }
 
 // Equal tells whether a and b contain the same elements.

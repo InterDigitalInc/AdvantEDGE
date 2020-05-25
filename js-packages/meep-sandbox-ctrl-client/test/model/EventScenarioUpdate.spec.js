@@ -61,10 +61,10 @@
         // expect(instance.action).to.be(expectedValueLiteral);
       });
 
-      it('should have the property nodes (base name: "nodes")', function() {
-        // TODO: update the code to test the property nodes
-        expect(instance).to.have.property('nodes');
-        // expect(instance.nodes).to.be(expectedValueLiteral);
+      it('should have the property node (base name: "node")', function() {
+        // TODO: update the code to test the property node
+        expect(instance).to.have.property('node');
+        // expect(instance.node).to.be(expectedValueLiteral);
       });
 
     });

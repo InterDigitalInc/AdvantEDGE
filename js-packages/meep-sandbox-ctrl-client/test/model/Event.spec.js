@@ -91,12 +91,6 @@
         // expect(instance.eventScenarioUpdate).to.be(expectedValueLiteral);
       });
 
-      it('should have the property eventOther (base name: "eventOther")', function() {
-        // TODO: update the code to test the property eventOther
-        expect(instance).to.have.property('eventOther');
-        // expect(instance.eventOther).to.be(expectedValueLiteral);
-      });
-
     });
   });
 

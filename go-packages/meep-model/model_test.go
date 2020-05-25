@@ -934,53 +934,46 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Add Requests")
 	ue_data := dataModel.NodeDataUnion{}
 	ue_node := dataModel.ScenarioNode{NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	nodes := []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl := dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue1_pl := dataModel.PhysicalLocation{Id: "ue1-id", Name: "ue1", Type_: NodeTypeUE}
 	ue1_data := dataModel.NodeDataUnion{PhysicalLocation: &ue1_pl}
 	ue1_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue1_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue1_node}
-	_, err = m.AddScenarioNodes(&nodes)
+	err = m.AddScenarioNode(&ue1_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
@@ -988,38 +981,33 @@ func TestScenarioUpdate(t *testing.T) {
 	fmt.Println("Invalid Remove Requests")
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{NodeDataUnion: &ue_data}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.RemoveScenarioNodes(&nodes)
+	err = m.RemoveScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.RemoveScenarioNodes(&nodes)
+	err = m.RemoveScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_data = dataModel.NodeDataUnion{}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.RemoveScenarioNodes(&nodes)
+	err = m.RemoveScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Type_: NodeTypeUE}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.RemoveScenarioNodes(&nodes)
+	err = m.RemoveScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
 	ue_pl = dataModel.PhysicalLocation{Id: "ue-id", Name: "ue"}
 	ue_data = dataModel.NodeDataUnion{PhysicalLocation: &ue_pl}
 	ue_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue_data}
-	nodes = []dataModel.ScenarioNode{ue_node}
-	_, err = m.RemoveScenarioNodes(&nodes)
+	err = m.RemoveScenarioNode(&ue_node)
 	if err == nil {
 		t.Fatalf("Action should have failed")
 	}
@@ -1028,9 +1016,8 @@ func TestScenarioUpdate(t *testing.T) {
 	ue3_pl := dataModel.PhysicalLocation{Id: "ue3-id", Name: "ue3", Type_: NodeTypeUE}
 	ue3_data := dataModel.NodeDataUnion{PhysicalLocation: &ue3_pl}
 	ue3_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue3_node}
-	names, err := m.AddScenarioNodes(&nodes)
-	if err != nil || len(names) != 1 {
+	err = m.AddScenarioNode(&ue3_node)
+	if err != nil {
 		t.Fatalf("Error adding nodes")
 	}
 	n := m.nodeMap.FindByName("ue3")
@@ -1046,16 +1033,12 @@ func TestScenarioUpdate(t *testing.T) {
 		t.Fatalf("Failed to add nodes")
 	}
 
-	fmt.Println("Add ue4 & ue5")
+	fmt.Println("Add ue4")
 	ue4_pl := dataModel.PhysicalLocation{Id: "ue4-id", Name: "ue4", Type_: NodeTypeUE}
 	ue4_data := dataModel.NodeDataUnion{PhysicalLocation: &ue4_pl}
 	ue4_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data, Parent: "zone1-poa1"}
-	ue5_pl := dataModel.PhysicalLocation{Id: "ue5-id", Name: "ue5", Type_: NodeTypeUE}
-	ue5_data := dataModel.NodeDataUnion{PhysicalLocation: &ue5_pl}
-	ue5_node := dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue5_data, Parent: "zone1-poa1"}
-	nodes = []dataModel.ScenarioNode{ue4_node, ue5_node}
-	names, err = m.AddScenarioNodes(&nodes)
-	if err != nil || len(names) != 2 {
+	err = m.AddScenarioNode(&ue4_node)
+	if err != nil {
 		t.Fatalf("Error adding nodes")
 	}
 	n = m.nodeMap.FindByName("ue4")
@@ -1070,24 +1053,11 @@ func TestScenarioUpdate(t *testing.T) {
 	if d == nil || d.Name != "ue4" {
 		t.Fatalf("Failed to add nodes")
 	}
-	n = m.nodeMap.FindByName("ue5")
-	if n == nil || n.name != "ue5" {
-		t.Fatalf("Failed to add nodes")
-	}
-	p = n.parent.(*dataModel.NetworkLocation)
-	if p == nil || p.Name != "zone1-poa1" {
-		t.Fatalf("Failed to add nodes")
-	}
-	d = n.object.(*dataModel.PhysicalLocation)
-	if d == nil || d.Name != "ue5" {
-		t.Fatalf("Failed to add nodes")
-	}
 
 	fmt.Println("Remove ue4")
 	ue4_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue4_data}
-	nodes = []dataModel.ScenarioNode{ue4_node}
-	names, err = m.RemoveScenarioNodes(&nodes)
-	if err != nil || len(names) != 1 {
+	err = m.RemoveScenarioNode(&ue4_node)
+	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}
 	n = m.nodeMap.FindByName("ue4")
@@ -1097,17 +1067,11 @@ func TestScenarioUpdate(t *testing.T) {
 
 	fmt.Println("Remove ue3 & ue5")
 	ue3_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue3_data}
-	ue5_node = dataModel.ScenarioNode{Type_: NodeTypeUE, NodeDataUnion: &ue5_data}
-	nodes = []dataModel.ScenarioNode{ue3_node, ue5_node}
-	names, err = m.RemoveScenarioNodes(&nodes)
-	if err != nil || len(names) != 2 {
+	err = m.RemoveScenarioNode(&ue3_node)
+	if err != nil {
 		t.Fatalf("Error removing nodes")
 	}
 	n = m.nodeMap.FindByName("ue3")
-	if n != nil {
-		t.Fatalf("Failed to remove nodes")
-	}
-	n = m.nodeMap.FindByName("ue5")
 	if n != nil {
 		t.Fatalf("Failed to remove nodes")
 	}

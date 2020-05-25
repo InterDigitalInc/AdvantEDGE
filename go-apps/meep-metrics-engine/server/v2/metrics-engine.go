@@ -214,7 +214,7 @@ func activateScenarioMetrics() {
 	//inserting an INIT event at T0
 	var ev dataModel.Event
 	ev.Name = "Init"
-	ev.Type_ = "OTHER"
+	ev.Type_ = "INIT"
 	j, _ := json.Marshal(ev)
 
 	var em ms.EventMetric

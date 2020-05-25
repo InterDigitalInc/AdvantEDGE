@@ -134,7 +134,7 @@ paths:
         \ move a node in the emulated network\n<li>NETWORK-CHARACTERISTICS-UPDATE:\
         \ change network characteristics dynamically\n<li>POAS-IN-RANGE: provide PoAs\
         \ in range of a UE (used with ApplicationState Transfer)\n<li>SCENARIO-UPDATE:\
-        \ Add/Remove/Modify nodes in active scenario"
+        \ Add/Remove/Modify node in active scenario"
       operationId: "sendEvent"
       produces:
       - "application/json"
@@ -979,7 +979,6 @@ definitions:
         - "NETWORK-CHARACTERISTICS-UPDATE"
         - "POAS-IN-RANGE"
         - "SCENARIO-UPDATE"
-        - "OTHER"
       eventMobility:
         $ref: "#/definitions/EventMobility"
       eventNetworkCharacteristicsUpdate:
@@ -988,8 +987,6 @@ definitions:
         $ref: "#/definitions/EventPoasInRange"
       eventScenarioUpdate:
         $ref: "#/definitions/EventScenarioUpdate"
-      eventOther:
-        $ref: "#/definitions/EventOther"
     description: "Event object"
     example:
       name: "name"
@@ -1070,24 +1067,20 @@ definitions:
     properties:
       action:
         type: "string"
-        description: "Action to perform on provided scenario node list"
+        description: "Action to perform on provided scenario node"
         enum:
         - "ADD"
         - "REMOVE"
         - "MODIFY"
-      nodes:
-        type: "array"
-        description: "Scenario node list"
-        items:
-          $ref: "#/definitions/ScenarioNode"
+      node:
+        $ref: "#/definitions/ScenarioNode"
     description: "Scenario Update Event object.<br> Specifies a scenario update action\
-      \ to perform on the provided list of nodes.\n<p>Supported Actions: <li>ADD -\
-      \ Add nodes to scenario. Only the provided nodes are added; child nodes in node\
-      \ data are ignored. <li>REMOVE - Remove nodes from scenario. Only node names\
-      \ are required in node data for this action; parent is ignored. <li>MODIFY -\
-      \ Modifies scenario node.\n<p>NOTE: Current backend implementation supports\
-      \ only a limited subset of scenario update event functionality (add/remove UE\
-      \ only)."
+      \ to perform on the provided node.\n<p>Supported Actions: <li>ADD - Add node\
+      \ to scenario. Only the provided node is added; child nodes in node data are\
+      \ ignored. <li>REMOVE - Remove node from scenario. Only node name is required\
+      \ in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario\
+      \ node.\n<p>NOTE: Current backend implementation supports only a limited subset\
+      \ of scenario update event functionality (add/remove UE only)."
     example: {}
   ScenarioNode:
     type: "object"
@@ -1117,15 +1110,6 @@ definitions:
     description: "Union of node data objects\nNOTE: Only one of the following objects\
       \ must be filled"
     example: {}
-  EventOther:
-    type: "object"
-    properties:
-      event:
-        type: "string"
-        description: "Other event string"
-    description: "Other Event object"
-    example:
-      event: "event"
   ReplayFileList:
     type: "object"
     properties:

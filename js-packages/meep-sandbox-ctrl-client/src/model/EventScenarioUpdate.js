@@ -53,7 +53,7 @@
 
   /**
    * Constructs a new <code>EventScenarioUpdate</code>.
-   * Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided list of nodes. <p>Supported Actions: <li>ADD - Add nodes to scenario. Only the provided nodes are added; child nodes in node data are ignored. <li>REMOVE - Remove nodes from scenario. Only node names are required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+   * Scenario Update Event object.<br> Specifies a scenario update action to perform on the provided node. <p>Supported Actions: <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored. <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored. <li>MODIFY - Modifies scenario node. <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
    * @alias module:model/EventScenarioUpdate
    * @class
    */
@@ -72,23 +72,22 @@
       obj = obj || new exports();
       if (data.hasOwnProperty('action'))
         obj.action = ApiClient.convertToType(data['action'], 'String');
-      if (data.hasOwnProperty('nodes'))
-        obj.nodes = ApiClient.convertToType(data['nodes'], [ScenarioNode]);
+      if (data.hasOwnProperty('node'))
+        obj.node = ScenarioNode.constructFromObject(data['node']);
     }
     return obj;
   }
 
   /**
-   * Action to perform on provided scenario node list
+   * Action to perform on provided scenario node
    * @member {module:model/EventScenarioUpdate.ActionEnum} action
    */
   exports.prototype.action = undefined;
 
   /**
-   * Scenario node list
-   * @member {Array.<module:model/ScenarioNode>} nodes
+   * @member {module:model/ScenarioNode} node
    */
-  exports.prototype.nodes = undefined;
+  exports.prototype.node = undefined;
 
 
   /**

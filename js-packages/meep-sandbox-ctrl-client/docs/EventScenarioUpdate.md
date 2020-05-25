@@ -3,8 +3,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**action** | **String** | Action to perform on provided scenario node list | [optional] 
-**nodes** | [**[ScenarioNode]**](ScenarioNode.md) | Scenario node list | [optional] 
+**action** | **String** | Action to perform on provided scenario node | [optional] 
+**node** | [**ScenarioNode**](ScenarioNode.md) |  | [optional] 
 
 
 <a name="ActionEnum"></a>

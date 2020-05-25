@@ -148,7 +148,6 @@ Class | Method | HTTP request | Description
  - [AdvantEdgeSandboxControllerRestApi.Event](docs/Event.md)
  - [AdvantEdgeSandboxControllerRestApi.EventMobility](docs/EventMobility.md)
  - [AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate](docs/EventNetworkCharacteristicsUpdate.md)
- - [AdvantEdgeSandboxControllerRestApi.EventOther](docs/EventOther.md)
  - [AdvantEdgeSandboxControllerRestApi.EventPoasInRange](docs/EventPoasInRange.md)
  - [AdvantEdgeSandboxControllerRestApi.EventScenarioUpdate](docs/EventScenarioUpdate.md)
  - [AdvantEdgeSandboxControllerRestApi.ExternalConfig](docs/ExternalConfig.md)

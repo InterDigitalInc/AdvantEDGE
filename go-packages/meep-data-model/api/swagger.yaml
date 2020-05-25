@@ -212,7 +212,6 @@ definitions:
           - NETWORK-CHARACTERISTICS-UPDATE
           - POAS-IN-RANGE
           - SCENARIO-UPDATE
-          - OTHER
       eventMobility:
         $ref: '#/definitions/EventMobility'
       eventNetworkCharacteristicsUpdate:
@@ -221,8 +220,6 @@ definitions:
         $ref: '#/definitions/EventPoasInRange'
       eventScenarioUpdate:
         $ref: '#/definitions/EventScenarioUpdate'
-      eventOther:
-        $ref: '#/definitions/EventOther'
     description: Event object
     example:
       name: name
@@ -252,15 +249,6 @@ definitions:
     example:
       elementName: ue1
       dest: poa2
-  EventOther:
-    type: object
-    properties:
-      event:
-        type: string
-        description: Other event string
-    description: Other Event object
-    example:
-      event: event
   EventPoasInRange:
     type: object
     properties:
@@ -320,27 +308,24 @@ definitions:
     type: object
     description: >-
       Scenario Update Event object.<br>
-      Specifies a scenario update action to perform on the provided list of nodes.
+      Specifies a scenario update action to perform on the provided node.
 
       <p>Supported Actions:
-      <li>ADD - Add nodes to scenario. Only the provided nodes are added; child nodes in node data are ignored.
-      <li>REMOVE - Remove nodes from scenario. Only node names are required in node data for this action; parent is ignored.
+      <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored.
+      <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
       <li>MODIFY - Modifies scenario node.
 
       <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
     properties:
       action:
         type: string
-        description: Action to perform on provided scenario node list
+        description: Action to perform on provided scenario node
         enum:
           - ADD
           - REMOVE
           - MODIFY
-      nodes:
-        type: array
-        description: Scenario node list
-        items:
-          $ref: '#/definitions/ScenarioNode'
+      node:
+        $ref: '#/definitions/ScenarioNode'
     example: {}
   ExternalConfig:
     type: object
