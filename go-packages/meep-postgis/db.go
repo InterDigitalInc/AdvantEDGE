@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -33,6 +35,48 @@ const (
 	DbDefault  = "postgres"
 )
 const dbMaxRetryCount int = 2
+
+const (
+	PathModeLoop    = "LOOP"
+	PathModeReverse = "REVERSE"
+	PathModeOnce    = "ONCE"
+)
+
+const (
+	UeTable      = "ue"
+	PoaTable     = "poa"
+	ComputeTable = "compute"
+)
+
+type Ue struct {
+	Id            string
+	Name          string
+	Position      string
+	Path          string
+	PathMode      string
+	PathVelocity  float32
+	PathLength    float32
+	PathIncrement float32
+	PathFraction  float32
+	Poa           string
+	PoaDistance   float32
+	PoaInRange    []string
+}
+
+type Poa struct {
+	Id       string
+	Name     string
+	SubType  string
+	Position string
+	Radius   float32
+}
+
+type Compute struct {
+	Id       string
+	Name     string
+	SubType  string
+	Position string
+}
 
 // Connector - Implements a Postgis SQL DB connector
 type Connector struct {
@@ -78,7 +122,7 @@ func NewConnector(name, namespace, user, pwd, host, port string) (pc *Connector,
 
 	// Ignore DB creation error in case it already exists.
 	// Failure will occur at DB connection if DB was not successfully created.
-	_ = pc.DbCreate(pc.dbName)
+	_ = pc.CreateDb(pc.dbName)
 
 	// Close connection to postgis DB
 	pc.db.Close()
@@ -128,8 +172,8 @@ func (pc *Connector) connectDB(dbName, user, pwd, host, port string) (db *sql.DB
 	return db, nil
 }
 
-// DbCreate -- Create new DB with provided name
-func (pc *Connector) DbCreate(name string) (err error) {
+// CreateDb -- Create new DB with provided name
+func (pc *Connector) CreateDb(name string) (err error) {
 	_, err = pc.db.Exec("CREATE DATABASE " + name)
 	if err != nil {
 		log.Error(err.Error())
@@ -140,37 +184,403 @@ func (pc *Connector) DbCreate(name string) (err error) {
 	return nil
 }
 
-// func DbDeleteTable(tableName string) (err error) {
-// 	_, err = db.Exec("DROP TABLE IF EXISTS " + tableName)
+func (pc *Connector) CreateTables() (err error) {
+	_, err = pc.db.Exec("CREATE EXTENSION IF NOT EXISTS postgis")
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// UE Table
+	_, err = pc.db.Exec(`CREATE TABLE ` + UeTable + ` (
+		id 				varchar(36) 			NOT NULL PRIMARY KEY,
+		name 			varchar(100) 			NOT NULL UNIQUE,
+		position		geometry(POINT,4326)	NOT NULL,
+		path 			geometry(LINESTRING,4326),
+		path_mode       varchar(20)           	NOT NULL DEFAULT 'LOOP',
+		path_velocity   decimal(10,3)         	NOT NULL DEFAULT '0.000',
+		path_length     decimal(10,3)         	NOT NULL DEFAULT '0.000',
+		path_increment  decimal(10,3)         	NOT NULL DEFAULT '0.000',
+		path_fraction   decimal(10,3)         	NOT NULL DEFAULT '0.000',
+		poa				varchar(100)			NOT NULL DEFAULT '',
+		poa_distance    decimal(10,6)         	NOT NULL DEFAULT '0.000000',
+		poa_in_range	varchar(100)[]			NOT NULL DEFAULT array[]::varchar[],
+		start_time		timestamptz 			NOT NULL DEFAULT now()
+	)`)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("Created UE table: ", UeTable)
+
+	// POA Table
+	_, err = pc.db.Exec(`CREATE TABLE ` + PoaTable + ` (
+		id 				varchar(36) 			NOT NULL PRIMARY KEY,
+		name 			varchar(100) 			NOT NULL UNIQUE,
+		type 			varchar(20)				NOT NULL DEFAULT '',
+		radius			decimal(10,1) 			NOT NULL DEFAULT '0.0',
+		position		geometry(POINT,4326)	NOT NULL
+	)`)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("Created POA table: ", PoaTable)
+
+	// Compute Table
+	_, err = pc.db.Exec(`CREATE TABLE ` + ComputeTable + ` (
+		id 				varchar(36) 			NOT NULL PRIMARY KEY,
+		name 			varchar(100) 			NOT NULL UNIQUE,
+		type 			varchar(20)				NOT NULL DEFAULT '',
+		position		geometry(POINT,4326)	NOT NULL
+	)`)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("Created Edge table: ", ComputeTable)
+
+	return nil
+}
+
+func (pc *Connector) DeleteTable(tableName string) (err error) {
+	_, err = pc.db.Exec("DROP TABLE IF EXISTS " + tableName)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("Deleted table: " + tableName)
+	return nil
+}
+
+// func (pc *Connector) AssetExists(name string, assetType AssetType) (exists bool) {
+// 	count := 0
+
+// 	rows, err := pc.db.Query(`select count(*) from `+getTableName(assetType)+` where name = ($1)`, name)
 // 	if err != nil {
 // 		log.Error(err.Error())
-// 		return err
+// 		return false
 // 	}
-// 	log.Info("Deleted table: " + tableName)
-// 	return nil
+// 	defer rows.Close()
+
+// 	// Scan results
+// 	for rows.Next() {
+// 		err = rows.Scan(&count)
+// 	}
+// 	exists = (count != 0)
+// 	return exists
 // }
 
-// func DbCreatePoaTable(tableName string) (err error) {
-// 	_, err = db.Exec("CREATE EXTENSION IF NOT EXISTS postgis")
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 		return err
-// 	}
+// CreateUe - Create new UE
+func (pc *Connector) CreateUe(id string, name string, position string, path string, mode string, velocity float32) (err error) {
+	// Validate input
+	if id == "" {
+		return errors.New("Missing ID")
+	}
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+	if position == "" {
+		return errors.New("Missing Position")
+	}
 
-// 	_, err = db.Exec(`CREATE TABLE ` + tableName + ` (
-// 		id 			varchar(36) 	NOT NULL PRIMARY KEY,
-// 		name 		varchar(100) 	NOT NULL UNIQUE,
-// 		lat			decimal(10,6) 	NOT NULL DEFAULT '0.000000',
-// 		long		decimal(10,6) 	NOT NULL DEFAULT '0.000000',
-// 		alt 		decimal(10,1) 	NOT NULL DEFAULT '0.0',
-// 		radius		decimal(10,1) 	NOT NULL DEFAULT '0.0',
-// 		position	geometry(POINTZ,4326)
-// 		)`)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 		return err
-// 	}
+	if path != "" {
+		// Validate Path parameters
+		if mode == "" {
+			return errors.New("Missing Path Mode")
+		}
 
-// 	log.Info("Created table: ", tableName)
-// 	return nil
-// }
+		// Create UE entry with path
+		query := `INSERT INTO ` + UeTable + ` (id, name, position, path, path_mode, path_velocity)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), ST_GeomFromGeoJSON('` + path + `'), $3, $4)`
+		_, err = pc.db.Exec(query, id, name, mode, velocity)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Calculate UE path length & increment
+		err = pc.refreshUePath(name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	} else {
+		// Create UE entry without path
+		query := `INSERT INTO ` + UeTable + ` (id, name, position)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'))`
+		_, err = pc.db.Exec(query, id, name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	// Refresh UE POA information
+	err = pc.refreshUePoa(name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// CreatePoa - Create new POA
+func (pc *Connector) CreatePoa(id string, name string, subType string, position string, radius float32) (err error) {
+	// Validate input
+	if id == "" {
+		return errors.New("Missing ID")
+	}
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+	if subType == "" {
+		return errors.New("Missing Type")
+	}
+	if position == "" {
+		return errors.New("Missing Position")
+	}
+
+	// Create POA entry
+	query := `INSERT INTO ` + PoaTable + ` (id, name, type, position, radius)
+		VALUES ($1, $2, $3, ST_GeomFromGeoJSON('` + position + `'), $4)`
+	_, err = pc.db.Exec(query, id, name, subType, radius)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// CreateCompute - Create new Compute
+func (pc *Connector) CreateCompute(id string, name string, subType string, position string) (err error) {
+	// Validate input
+	if id == "" {
+		return errors.New("Missing ID")
+	}
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+	if subType == "" {
+		return errors.New("Missing Type")
+	}
+	if position == "" {
+		return errors.New("Missing Position")
+	}
+
+	// Create Compute entry
+	query := `INSERT INTO ` + ComputeTable + ` (id, name, type, position)
+		VALUES ($1, $2, $3, ST_GeomFromGeoJSON('` + position + `'))`
+	_, err = pc.db.Exec(query, id, name, subType)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// GetUe - Get UE information
+func (pc *Connector) GetUe(name string) (ue *Ue, err error) {
+	// Validate input
+	if name == "" {
+		err = errors.New("Missing Name")
+		return nil, err
+	}
+
+	// Get UE entry
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
+			path_mode, path_velocity, path_length, path_increment, path_fraction,
+			poa, poa_distance, poa_in_range
+		FROM `+UeTable+`
+		WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	ue = new(Ue)
+	path := new(string)
+
+	// Scan result
+	rows.Next()
+	err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
+		&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
+		&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Store path
+	if path != nil {
+		ue.Path = *path
+	}
+
+	return ue, nil
+}
+
+// GetPoa - Get POA information
+func (pc *Connector) GetPoa(name string) (poa *Poa, err error) {
+	// Validate input
+	if name == "" {
+		err = errors.New("Missing Name")
+		return nil, err
+	}
+
+	// Get Poa entry
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, type, ST_AsGeoJSON(position), radius
+		FROM `+PoaTable+`
+		WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	poa = new(Poa)
+
+	// Scan result
+	rows.Next()
+	err = rows.Scan(&poa.Id, &poa.Name, &poa.SubType, &poa.Position, &poa.Radius)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	return poa, nil
+}
+
+// GetCompute - Get Compute information
+func (pc *Connector) GetCompute(name string) (compute *Compute, err error) {
+	// Validate input
+	if name == "" {
+		err = errors.New("Missing Name")
+		return nil, err
+	}
+
+	// Get Compute entry
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, type, ST_AsGeoJSON(position)
+		FROM `+ComputeTable+`
+		WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	compute = new(Compute)
+
+	// Scan result
+	rows.Next()
+	err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	return compute, nil
+}
+
+// Recalculate UE path length & increment
+func (pc *Connector) refreshUePath(name string) (err error) {
+	query := `UPDATE ` + UeTable + `
+		SET path_length = selected_ue.path_len,
+			path_increment = selected_ue.path_velocity / selected_ue.path_len,
+			path_fraction = 0
+		FROM (
+			SELECT ST_Length(path::geography) AS path_len, path_velocity
+			FROM ` + UeTable + `
+			WHERE name = ($1)
+		) AS selected_ue
+		WHERE name = ($1)`
+	_, err = pc.db.Exec(query, name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// Recalculate nearest POA & POAs in range for provided UE
+func (pc *Connector) refreshUePoa(name string) (err error) {
+
+	// Calculate distance from provided UE to each POA and check if within range
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT ue.name AS ue, poa.name as poa,
+			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
+			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
+		FROM `+UeTable+`, `+PoaTable+`
+		WHERE ue.name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	defer rows.Close()
+
+	nearestPoa := ""
+	distance := float32(0)
+	poaInRange := []string{}
+
+	// Scan results
+	for rows.Next() {
+		ue := ""
+		poa := ""
+		dist := float32(0)
+		inRange := false
+
+		err := rows.Scan(&ue, &poa, &dist, &inRange)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Add POA if in range
+		if inRange {
+			poaInRange = append(poaInRange, poa)
+		}
+
+		// Set nearest POA
+		if nearestPoa == "" || dist < distance {
+			nearestPoa = poa
+			distance = dist
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Update POA entries fro UE
+	query := `UPDATE ` + UeTable + `
+		SET poa = $2,
+			poa_distance = $3,
+			poa_in_range = $4
+		WHERE name = ($1)`
+	_, err = pc.db.Exec(query, name, nearestPoa, distance, pq.Array(&poaInRange))
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
