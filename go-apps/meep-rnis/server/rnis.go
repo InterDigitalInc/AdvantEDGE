@@ -304,10 +304,8 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 
 			if match && ((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && ((newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc) || (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc)))) {
 				match = true
-
 			} else {
 				match = false
-
 			}
 
 			//loop through all cellIds

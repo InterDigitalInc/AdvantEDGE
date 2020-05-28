@@ -1265,12 +1265,8 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		oldZoneId = userInfo.ZoneId
 		oldApId = userInfo.AccessPointId
 
-		//	if zoneId != "" {
 		userInfo.ZoneId = zoneId
-		//	}
-		//	if accessPointId != "" {
 		userInfo.AccessPointId = accessPointId
-		//	}
 
 		//updateDB
 		_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
