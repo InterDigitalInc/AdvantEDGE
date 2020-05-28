@@ -253,24 +253,6 @@ func (pc *Connector) DeleteTable(tableName string) (err error) {
 	return nil
 }
 
-// func (pc *Connector) AssetExists(name string, assetType AssetType) (exists bool) {
-// 	count := 0
-
-// 	rows, err := pc.db.Query(`select count(*) from `+getTableName(assetType)+` where name = ($1)`, name)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 		return false
-// 	}
-// 	defer rows.Close()
-
-// 	// Scan results
-// 	for rows.Next() {
-// 		err = rows.Scan(&count)
-// 	}
-// 	exists = (count != 0)
-// 	return exists
-// }
-
 // CreateUe - Create new UE
 func (pc *Connector) CreateUe(id string, name string, position string, path string, mode string, velocity float32) (err error) {
 	// Validate input
@@ -350,6 +332,14 @@ func (pc *Connector) CreatePoa(id string, name string, subType string, position 
 		log.Error(err.Error())
 		return err
 	}
+
+	// Refresh All UE POA information
+	err = pc.refreshAllUePoa()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
 	return nil
 }
 
@@ -377,6 +367,124 @@ func (pc *Connector) CreateCompute(id string, name string, subType string, posit
 		log.Error(err.Error())
 		return err
 	}
+	return nil
+}
+
+// UpdateUe - Update existing UE
+func (pc *Connector) UpdateUe(name string, position string, path string, mode string, velocity float32) (err error) {
+	// Validate input
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+
+	if position != "" {
+		// Update UE position
+		query := `UPDATE ` + UeTable + `
+			SET position = ST_GeomFromGeoJSON('` + position + `')
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Refresh UE POA information
+		err = pc.refreshUePoa(name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	if path != "" {
+		// Validate Path parameters
+		if mode == "" {
+			return errors.New("Missing Path Mode")
+		}
+
+		// Update UE position
+		query := `UPDATE ` + UeTable + `
+			SET path = ST_GeomFromGeoJSON('` + path + `'),
+				path_mode = $2,
+				path_velocity = $3
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, name, mode, velocity)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Calculate UE path length & increment
+		err = pc.refreshUePath(name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	return nil
+}
+
+// UpdatePoa - Update existing POA
+func (pc *Connector) UpdatePoa(name string, position string, radius float32) (err error) {
+	// Validate input
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+
+	if position != "" {
+		// Update POA position
+		query := `UPDATE ` + PoaTable + `
+			SET position = ST_GeomFromGeoJSON('` + position + `')
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	if radius != -1 {
+		// Update POA radius
+		query := `UPDATE ` + PoaTable + `
+			SET radius = $2
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, name, radius)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	// Refresh All UE POA information
+	err = pc.refreshAllUePoa()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// UpdateCompute - Update existing Compute
+func (pc *Connector) UpdateCompute(name string, position string) (err error) {
+	// Validate input
+	if name == "" {
+		return errors.New("Missing Name")
+	}
+
+	if position != "" {
+		// Update Compute position
+		query := `UPDATE ` + ComputeTable + `
+			SET position = ST_GeomFromGeoJSON('` + position + `')
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, name)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -501,6 +609,228 @@ func (pc *Connector) GetCompute(name string) (compute *Compute, err error) {
 	return compute, nil
 }
 
+// GetAllUe - Get All UE information
+func (pc *Connector) GetAllUe() (ueMap map[string]*Ue, err error) {
+	// Create UE map
+	ueMap = make(map[string]*Ue)
+
+	// Get UE entries
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
+			path_mode, path_velocity, path_length, path_increment, path_fraction,
+			poa, poa_distance, poa_in_range
+		FROM ` + UeTable)
+	if err != nil {
+		log.Error(err.Error())
+		return ueMap, err
+	}
+	defer rows.Close()
+
+	// Scan results
+	for rows.Next() {
+		ue := new(Ue)
+		path := new(string)
+
+		// Fill UE
+		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
+			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
+			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
+		if err != nil {
+			log.Error(err.Error())
+			return ueMap, err
+		}
+
+		// Store path
+		if path != nil {
+			ue.Path = *path
+		}
+
+		// Add UE to map
+		ueMap[ue.Name] = ue
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	return ueMap, nil
+}
+
+// GetAllPoa - Get all POA information
+func (pc *Connector) GetAllPoa() (poaMap map[string]*Poa, err error) {
+	// Create POA map
+	poaMap = make(map[string]*Poa)
+
+	// Get POA entries
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, type, ST_AsGeoJSON(position), radius
+		FROM ` + PoaTable)
+	if err != nil {
+		log.Error(err.Error())
+		return poaMap, err
+	}
+	defer rows.Close()
+
+	// Scan results
+	for rows.Next() {
+		poa := new(Poa)
+
+		// Fill POA
+		err = rows.Scan(&poa.Id, &poa.Name, &poa.SubType, &poa.Position, &poa.Radius)
+		if err != nil {
+			log.Error(err.Error())
+			return poaMap, err
+		}
+
+		// Add POA to map
+		poaMap[poa.Name] = poa
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	return poaMap, nil
+}
+
+// GetAllCompute - Get all Compute information
+func (pc *Connector) GetAllCompute() (computeMap map[string]*Compute, err error) {
+	// Create Compute map
+	computeMap = make(map[string]*Compute)
+
+	// Get Compute entries
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT id, name, type, ST_AsGeoJSON(position)
+		FROM ` + ComputeTable)
+	if err != nil {
+		log.Error(err.Error())
+		return computeMap, err
+	}
+	defer rows.Close()
+
+	// Scan results
+	for rows.Next() {
+		compute := new(Compute)
+
+		// Fill Compute
+		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
+		if err != nil {
+			log.Error(err.Error())
+			return computeMap, err
+		}
+
+		// Add Compute to map
+		computeMap[compute.Name] = compute
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	return computeMap, nil
+}
+
+// DeleteUe - Delete UE entry
+func (pc *Connector) DeleteUe(name string) (err error) {
+	// Validate input
+	if name == "" {
+		err = errors.New("Missing Name")
+		return err
+	}
+
+	_, err = pc.db.Exec(`DELETE FROM `+UeTable+` WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// DeletePoa - Delete POA entry
+func (pc *Connector) DeletePoa(name string) (err error) {
+	// Validate input
+	if name == "" {
+		err = errors.New("Missing Name")
+		return err
+	}
+
+	_, err = pc.db.Exec(`DELETE FROM `+PoaTable+` WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Refresh All UE POA information
+	err = pc.refreshAllUePoa()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// DeleteCompute - Delete Compute entry
+func (pc *Connector) DeleteCompute(name string) (err error) {
+	// Validate inpuAll
+	if name == "" {
+		err = errors.New("Missing Name")
+		return err
+	}
+
+	_, err = pc.db.Exec(`DELETE FROM `+ComputeTable+` WHERE name = ($1)`, name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// DeleteAllUe - Delete all UE entries
+func (pc *Connector) DeleteAllUe() (err error) {
+	_, err = pc.db.Exec(`DELETE FROM ` + UeTable)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// DeleteAllPoa - Delete all POA entries
+func (pc *Connector) DeleteAllPoa() (err error) {
+	_, err = pc.db.Exec(`DELETE FROM ` + PoaTable)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Refresh All UE POA information
+	err = pc.refreshAllUePoa()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// DeleteAllCompute - Delete all Compute entries
+func (pc *Connector) DeleteAllCompute() (err error) {
+	_, err = pc.db.Exec(`DELETE FROM ` + ComputeTable)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	return nil
+}
+
+// ------------------------ Private Methods -----------------------------------
+
 // Recalculate UE path length & increment
 func (pc *Connector) refreshUePath(name string) (err error) {
 	query := `UPDATE ` + UeTable + `
@@ -577,10 +907,111 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 			poa_distance = $3,
 			poa_in_range = $4
 		WHERE name = ($1)`
-	_, err = pc.db.Exec(query, name, nearestPoa, distance, pq.Array(&poaInRange))
+	_, err = pc.db.Exec(query, name, nearestPoa, distance, pq.Array(poaInRange))
 	if err != nil {
 		log.Error(err.Error())
 		return err
 	}
+	return nil
+}
+
+// Recalculate nearest POA & POAs in range for all UEs
+func (pc *Connector) refreshAllUePoa() (err error) {
+
+	// Calculate distance from provided UE to each POA and check if within range
+	var rows *sql.Rows
+	rows, err = pc.db.Query(`
+		SELECT ue.name AS ue, poa.name as poa,
+			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
+			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
+		FROM ` + UeTable + `, ` + PoaTable)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+	defer rows.Close()
+
+	nearestPoaMap := make(map[string]string)
+	distanceMap := make(map[string]float32)
+	poaInRangeMap := make(map[string][]string)
+
+	// Scan results
+	for rows.Next() {
+		ue := ""
+		poa := ""
+		dist := float32(0)
+		inRange := false
+
+		err := rows.Scan(&ue, &poa, &dist, &inRange)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+
+		// Create map entries for UE if they don't exist yet
+		if _, ok := nearestPoaMap[ue]; !ok {
+			nearestPoaMap[ue] = ""
+			distanceMap[ue] = 0
+			poaInRangeMap[ue] = []string{}
+		}
+
+		// Add POA if in range
+		if inRange {
+			poaInRangeMap[ue] = append(poaInRangeMap[ue], poa)
+		}
+
+		// Set nearest POA
+		if nearestPoaMap[ue] == "" || dist < distanceMap[ue] {
+			nearestPoaMap[ue] = poa
+			distanceMap[ue] = dist
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Error(err)
+	}
+
+	// If no entries found, reset all UE POA info
+	if len(nearestPoaMap) == 0 {
+		rows, err := pc.db.Query(`SELECT name FROM ` + UeTable)
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+		defer rows.Close()
+
+		// Scan results
+		for rows.Next() {
+			ue := ""
+			err := rows.Scan(&ue)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
+			nearestPoaMap[ue] = ""
+			distanceMap[ue] = float32(0)
+			poaInRangeMap[ue] = []string{}
+		}
+		err = rows.Err()
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	// Update POA entries for all UEs
+	for ue, nearestPoa := range nearestPoaMap {
+		query := `UPDATE ` + UeTable + `
+			SET poa = $2,
+				poa_distance = $3,
+				poa_in_range = $4
+			WHERE name = ($1)`
+		_, err = pc.db.Exec(query, ue, nearestPoa, distanceMap[ue], pq.Array(poaInRangeMap[ue]))
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
 	return nil
 }

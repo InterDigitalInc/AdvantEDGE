@@ -32,50 +32,64 @@ const (
 	pcDBHost    = "localhost"
 	pcDBPort    = "30432"
 
+	point1 = "[7.418522,43.734198]"
+	point2 = "[7.421501,43.736978]"
+	point3 = "[7.422441,43.732285]"
+	point4 = "[7.418944,43.732591]"
+
 	ue1Id       = "ue1-id"
 	ue1Name     = "ue1"
+	ue1Loc      = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+	ue1Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point1 + "," + point2 + "," + point3 + "," + point4 + "," + point1 + "]}"
+	ue1PathMode = PathModeLoop
 	ue1Velocity = 5.0
 
 	ue2Id       = "ue2-id"
 	ue2Name     = "ue2"
+	ue2Loc      = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+	ue2Path     = ""
+	ue2PathMode = PathModeLoop
 	ue2Velocity = 0.0
 
 	ue3Id       = "ue3-id"
 	ue3Name     = "ue3"
+	ue3Loc      = "{\"type\":\"Point\",\"coordinates\":" + point4 + "}"
+	ue3Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point4 + "," + point3 + "," + point2 + "]}"
+	ue3PathMode = PathModeLoop
 	ue3Velocity = 25.0
 
 	poa1Id     = "poa1-id"
 	poa1Name   = "poa1"
 	poa1Type   = "POA-CELLULAR"
-	poa1Loc    = "[7.418494,43.733449]"
+	poa1Loc    = "{\"type\":\"Point\",\"coordinates\":[7.418494,43.733449]}"
 	poa1Radius = 160.0
 
 	poa2Id     = "poa2-id"
 	poa2Name   = "poa2"
 	poa2Type   = "POA"
-	poa2Loc    = "[7.421626,43.736983]"
+	poa2Loc    = "{\"type\":\"Point\",\"coordinates\":[7.421626,43.736983]}"
 	poa2Radius = 350.0
 
 	poa3Id     = "poa3-id"
 	poa3Name   = "poa3"
 	poa3Type   = "POA-CELLULAR"
-	poa3Loc    = "[7.422239,43.732972]"
+	poa3Loc    = "{\"type\":\"Point\",\"coordinates\":[7.422239,43.732972]}"
 	poa3Radius = 220.0
 
 	compute1Id   = "compute1-id"
 	compute1Name = "compute1"
 	compute1Type = "EDGE"
+	compute1Loc  = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+
 	compute2Id   = "compute2-id"
 	compute2Name = "compute2"
 	compute2Type = "FOG"
+	compute2Loc  = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+
 	compute3Id   = "compute3-id"
 	compute3Name = "compute3"
 	compute3Type = "EDGE"
-
-	point1 = "[7.418522,43.734198]"
-	point2 = "[7.421501,43.736978]"
-	point3 = "[7.422441,43.732285]"
-	point4 = "[7.418944,43.732591]"
+	compute3Loc  = "{\"type\":\"Point\",\"coordinates\":" + point3 + "}"
 )
 
 func TestPostgisConnectorNew(t *testing.T) {
@@ -105,7 +119,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	fmt.Println("Create valid Postgis Connector")
 	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
 	if err != nil || pc == nil {
-		t.Fatalf("Unable to create postgis Connector")
+		t.Fatalf("Failed to create postgis Connector")
 	}
 
 	// Cleanup
@@ -117,216 +131,453 @@ func TestPostgisConnectorNew(t *testing.T) {
 	fmt.Println("Create Tables")
 	err = pc.CreateTables()
 	if err != nil {
-		t.Fatalf("Unable to create tables")
+		t.Fatalf("Failed to create tables")
 	}
 
 	// Add Invalid UE
 	fmt.Println("Create Invalid UEs")
-	ueLoc := "{\"type\":\"Point\",\"coordinates\":[0,0]}"
-	uePath := "{\"type\":\"LineString\",\"coordinates\":[[0,0],[1,1]]}"
-	ueVelocity := float32(0)
-	err = pc.CreateUe("", ue1Name, ueLoc, uePath, PathModeLoop, ueVelocity)
+	err = pc.CreateUe("", ue1Name, ue1Loc, ue1Path, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
-	err = pc.CreateUe(ue1Id, "", ueLoc, uePath, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, "", ue1Loc, ue1Path, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, "", uePath, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, ue1Name, "", ue1Path, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	ueLocInvalid := "{\"type\":\"Invalid\",\"coordinates\":[0,0]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, uePath, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, ue1Path, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	ueLocInvalid = "{\"type\":\"Point\",\"coordinates\":[]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, uePath, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, ue1Path, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	uePathInvalid := "{\"type\":\"Invalid\",\"coordinates\":[[0,0],[1,1]]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLoc, uePathInvalid, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, uePathInvalid, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	uePathInvalid = "{\"type\":\"LineString\",\"coordinates\":[[0,0],[]]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLoc, uePathInvalid, PathModeLoop, ueVelocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, uePathInvalid, PathModeLoop, ue1Velocity)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 
 	// Make sure POAs don't exist
 	fmt.Println("Verify no POAs present")
-	poa, err := pc.GetPoa(poa1Name)
-	if err == nil || poa != nil {
-		t.Fatalf("POA Get should have failed")
+	poaMap, err := pc.GetAllPoa()
+	if err != nil {
+		t.Fatalf("Failed to get all POA")
 	}
-	poa, err = pc.GetPoa(poa2Name)
-	if err == nil || poa != nil {
-		t.Fatalf("POA Get should have failed")
-	}
-	poa, err = pc.GetPoa(poa3Name)
-	if err == nil || poa != nil {
-		t.Fatalf("POA Get should have failed")
+	if len(poaMap) != 0 {
+		t.Fatalf("No POA should be present")
 	}
 
 	// Make sure UEs don't exist
 	fmt.Println("Verify no UEs present")
-	ue, err := pc.GetUe(ue1Name)
-	if err == nil || ue != nil {
-		t.Fatalf("UE Get should have failed")
+	ueMap, err := pc.GetAllUe()
+	if err != nil {
+		t.Fatalf("Failed to get all UE")
 	}
-	ue, err = pc.GetUe(ue2Name)
-	if err == nil || ue != nil {
-		t.Fatalf("UE Get should have failed")
-	}
-	ue, err = pc.GetUe(ue3Name)
-	if err == nil || ue != nil {
-		t.Fatalf("UE Get should have failed")
+	if len(ueMap) != 0 {
+		t.Fatalf("No UE should be present")
 	}
 
 	// Make sure Computes don't exist
 	fmt.Println("Verify no Computes present")
-	compute, err := pc.GetCompute(compute1Name)
-	if err == nil || compute != nil {
-		t.Fatalf("Computes Get should have failed")
+	computeMap, err := pc.GetAllCompute()
+	if err != nil {
+		t.Fatalf("Failed to get all Compute")
 	}
-	compute, err = pc.GetCompute(compute2Name)
-	if err == nil || compute != nil {
-		t.Fatalf("Computes Get should have failed")
-	}
-	compute, err = pc.GetCompute(compute3Name)
-	if err == nil || compute != nil {
-		t.Fatalf("Computes Get should have failed")
+	if len(computeMap) != 0 {
+		t.Fatalf("No Compute should be present")
 	}
 
 	// Add POA & Validate successfully added
 	fmt.Println("Add POAs & Validate successfully added")
-	poaLoc := "{\"type\":\"Point\",\"coordinates\":" + poa1Loc + "}"
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poaLoc, poa1Radius)
+	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
-	poa, err = pc.GetPoa(poa1Name)
+	poa, err := pc.GetPoa(poa1Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
-	if !validatePoa(poa, poa1Id, poa1Name, poa1Type, poaLoc, poa1Radius) {
+	if !validatePoa(poa, poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius) {
 		t.Fatalf("POA validation failed")
 	}
 
-	poaLoc = "{\"type\":\"Point\",\"coordinates\":" + poa2Loc + "}"
-	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poaLoc, poa2Radius)
+	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	poa, err = pc.GetPoa(poa2Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
-	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poaLoc, poa2Radius) {
+	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius) {
 		t.Fatalf("POA validation failed")
 	}
 
-	poaLoc = "{\"type\":\"Point\",\"coordinates\":" + poa3Loc + "}"
-	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poaLoc, poa3Radius)
+	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	poa, err = pc.GetPoa(poa3Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
-	if !validatePoa(poa, poa3Id, poa3Name, poa3Type, poaLoc, poa3Radius) {
+	if !validatePoa(poa, poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius) {
 		t.Fatalf("POA validation failed")
 	}
 
 	// Add UE & Validate successfully added
 	fmt.Println("Add UEs & Validate successfully added")
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
-	uePath = "{\"type\":\"LineString\",\"coordinates\":[" + point1 + "," + point2 + "," + point3 + "," + point4 + "," + point1 + "]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLoc, uePath, PathModeLoop, ue1Velocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err := pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, uePath, PathModeLoop, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
-	err = pc.CreateUe(ue2Id, ue2Name, ueLoc, "", "", ue2Velocity)
+	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	ue, err = pc.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ueLoc, "", PathModeLoop, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":" + point4 + "}"
-	uePath = "{\"type\":\"LineString\",\"coordinates\":[" + point4 + "," + point3 + "," + point2 + "]}"
-	err = pc.CreateUe(ue3Id, ue3Name, ueLoc, uePath, PathModeLoop, ue3Velocity)
+	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	ue, err = pc.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	fmt.Printf("%+v\n", ue)
-	if !validateUe(ue, ue3Id, ue3Name, ueLoc, uePath, PathModeLoop, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Add Compute & Validate successfully added
 	fmt.Println("Add Computes & Validate successfully added")
-	computeLoc := "{\"type\":\"Point\",\"coordinates\":[0,0]}"
-	err = pc.CreateCompute(compute1Id, compute1Name, compute1Type, computeLoc)
+	err = pc.CreateCompute(compute1Id, compute1Name, compute1Type, compute1Loc)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
-	compute, err = pc.GetCompute(compute1Name)
+	compute, err := pc.GetCompute(compute1Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
-	if !validateCompute(compute, compute1Id, compute1Name, compute1Type, computeLoc) {
+	if !validateCompute(compute, compute1Id, compute1Name, compute1Type, compute1Loc) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	computeLoc = "{\"type\":\"Point\",\"coordinates\":[0,2]}"
-	err = pc.CreateCompute(compute2Id, compute2Name, compute2Type, computeLoc)
+	err = pc.CreateCompute(compute2Id, compute2Name, compute2Type, compute2Loc)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	compute, err = pc.GetCompute(compute2Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
-	if !validateCompute(compute, compute2Id, compute2Name, compute2Type, computeLoc) {
+	if !validateCompute(compute, compute2Id, compute2Name, compute2Type, compute2Loc) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	computeLoc = "{\"type\":\"Point\",\"coordinates\":[2,2]}"
-	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, computeLoc)
+	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
 	if err != nil {
-		t.Fatalf("Unable to create asset")
+		t.Fatalf("Failed to create asset")
 	}
 	compute, err = pc.GetCompute(compute3Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
-	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, computeLoc) {
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
 		t.Fatalf("Compute validation failed")
+	}
+
+	// Update UE position + path & validate update
+	fmt.Println("Update UE position & validate update")
+	ueLoc := "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+	err = pc.UpdateUe(ue1Name, ueLoc, "", "", 0)
+	if err != nil {
+		t.Fatalf("Failed to update UE")
+	}
+	ue, err = pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	fmt.Println("Update UE path & validate update")
+	err = pc.UpdateUe(ue1Name, "", ue3Path, ue3PathMode, ue3Velocity)
+	if err != nil {
+		t.Fatalf("Failed to update UE")
+	}
+	ue, err = pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	fmt.Println("Update UE position + path & validate update")
+	err = pc.UpdateUe(ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	if err != nil {
+		t.Fatalf("Failed to update UE")
+	}
+	ue, err = pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Update POA position + radius & validate update
+	fmt.Println("Update POA position + radius & validate update")
+	poaLoc := "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+	err = pc.UpdatePoa(poa2Name, poaLoc, 1000.0)
+	if err != nil {
+		t.Fatalf("Failed to update POA")
+	}
+	poa, err = pc.GetPoa(poa2Name)
+	if err != nil || poa == nil {
+		t.Fatalf("Failed to get POA")
+	}
+	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poaLoc, 1000.0) {
+		t.Fatalf("POA validation failed")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa2Name, 0.000, []string{poa1Name, poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 391.15466, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name, poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.UpdatePoa(poa2Name, poa2Loc, poa2Radius)
+	if err != nil {
+		t.Fatalf("Failed to update POA")
+	}
+	poa, err = pc.GetPoa(poa2Name)
+	if err != nil || poa == nil {
+		t.Fatalf("Failed to get POA")
+	}
+	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius) {
+		t.Fatalf("POA validation failed")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Update Compute poistion & validate update
+	fmt.Println("Update Compute position & validate update")
+	err = pc.UpdateCompute(compute3Name, compute1Loc)
+	if err != nil {
+		t.Fatalf("Failed to update Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute1Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	err = pc.UpdateCompute(compute3Name, compute3Loc)
+	if err != nil {
+		t.Fatalf("Failed to update Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	// Remove POA & validate updates
+	fmt.Println("Remove POA & validate updates")
+	err = pc.DeletePoa(poa1Name)
+	if err != nil {
+		t.Fatalf("Failed to delete POA")
+	}
+	poa, err = pc.GetPoa(poa1Name)
+	if err == nil || poa != nil {
+		t.Fatalf("POA should no longer exist")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa3Name, 328.98288, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa3Name, 268.81665, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Add POA and validate updates
+	fmt.Println("Add POA & validate updates")
+	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	poa, err = pc.GetPoa(poa1Name)
+	if err != nil || poa == nil {
+		t.Fatalf("Failed to get POA")
+	}
+	if !validatePoa(poa, poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius) {
+		t.Fatalf("POA validation failed")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Remove UE & validate update
+	fmt.Println("Remove UE & validate update")
+	err = pc.DeleteUe(ue2Name)
+	if err != nil {
+		t.Fatalf("Failed to delete UE")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err == nil || ue != nil {
+		t.Fatalf("UE should no longer exist")
+	}
+
+	// Add UE & validate update
+	fmt.Println("Add UE & validate update")
+	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Remove Compute & validate update
+	fmt.Println("Remove Compute & validate update")
+	err = pc.DeleteCompute(compute3Name)
+	if err != nil {
+		t.Fatalf("Failed to delete Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err == nil || compute != nil {
+		t.Fatalf("Compute should no longer exist")
+	}
+
+	// Add Compute & validate update
+	fmt.Println("Add Compute & validate update")
+	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	// Delete all POA & validate updates
+	fmt.Println("Delete all POA & validate updates")
+	err = pc.DeleteAllPoa()
+	if err != nil {
+		t.Fatalf("Failed to delete all POA")
+	}
+	poaMap, err = pc.GetAllPoa()
+	if err != nil || len(poaMap) != 0 {
+		t.Fatalf("POAs should no longer exist")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Delete all UE & validate updates
+	fmt.Println("Delete all UE & validate updates")
+	err = pc.DeleteAllUe()
+	if err != nil {
+		t.Fatalf("Failed to delete all UE")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 0 {
+		t.Fatalf("UE should no longer exist")
+	}
+
+	// Delete all Compute & validate updates
+	fmt.Println("Delete all Compute & validate updates")
+	err = pc.DeleteAllCompute()
+	if err != nil {
+		t.Fatalf("Failed to delete all Compute")
+	}
+	computeMap, err = pc.GetAllCompute()
+	if err != nil || len(computeMap) != 0 {
+		t.Fatalf("Compute should no longer exist")
 	}
 
 	// t.Fatalf("DONE")
