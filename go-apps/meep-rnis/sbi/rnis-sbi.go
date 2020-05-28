@@ -133,14 +133,13 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
+
 	log.Debug("processActiveScenarioUpdate")
 
-	sbi.activeModel.UpdateScenario()
-	processScenarioUpdate()
-}
+	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
 
-func processScenarioUpdate() {
-	// Update scenario Name that needs to be accessed by the NBI
+	sbi.activeModel.UpdateScenario()
+
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
@@ -172,10 +171,25 @@ func processScenarioUpdate() {
 							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
 					}
-
 					sbi.updateUeEcgiInfoCB(name, mnc, mcc, cellId)
 				}
 			}
+		}
+	}
+
+	//only find UEs that were removed, check that former UEs are in new UE list
+	foundOldInNewList := false
+	for _, oldUe := range formerUeNameList {
+		foundOldInNewList = false
+		for _, newUe := range ueNameList {
+			if newUe == oldUe {
+				foundOldInNewList = true
+				break
+			}
+		}
+		if !foundOldInNewList {
+			sbi.updateUeEcgiInfoCB(oldUe, "", "", "")
+			log.Info("Ue removed : ", oldUe)
 		}
 	}
 

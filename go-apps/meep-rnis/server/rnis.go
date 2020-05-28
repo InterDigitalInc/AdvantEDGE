@@ -159,7 +159,6 @@ func updateUeEcgiInfo(name string, mnc string, mcc string, cellId string) {
 		oldPlmnMcc = ecgiInfo.Plmn.Mcc
 		oldCellId = ecgiInfo.CellId[0]
 	}
-
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId[0] != oldCellId {
 		//updateDB
@@ -305,8 +304,10 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 
 			if match && ((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && ((newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc) || (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc)))) {
 				match = true
+
 			} else {
 				match = false
+
 			}
 
 			//loop through all cellIds
@@ -351,14 +352,24 @@ func checkNotificationRegisteredSubscriptions(appId string, assocId *AssociateId
 
 				var newEcgi clientNotif.Ecgi
 				var notifNewPlmn clientNotif.Plmn
-				notifNewPlmn.Mnc = newPlmn.Mnc
-				notifNewPlmn.Mcc = newPlmn.Mcc
+				if newPlmn != nil {
+					notifNewPlmn.Mnc = newPlmn.Mnc
+					notifNewPlmn.Mcc = newPlmn.Mcc
+				} else {
+					notifNewPlmn.Mnc = ""
+					notifNewPlmn.Mcc = ""
+				}
 				newEcgi.Plmn = &notifNewPlmn
 				newEcgi.CellId = []string{newCellId}
 				var oldEcgi clientNotif.Ecgi
 				var notifOldPlmn clientNotif.Plmn
-				notifOldPlmn.Mnc = oldPlmn.Mnc
-				notifOldPlmn.Mcc = oldPlmn.Mcc
+				if oldPlmn != nil {
+					notifOldPlmn.Mnc = oldPlmn.Mnc
+					notifOldPlmn.Mcc = oldPlmn.Mcc
+				} else {
+					notifOldPlmn.Mnc = ""
+					notifOldPlmn.Mcc = ""
+				}
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = []string{oldCellId}
 

@@ -130,6 +130,8 @@ func processActiveScenarioTerminate() {
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
 
+	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
+
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
 
@@ -159,6 +161,22 @@ func processActiveScenarioUpdate() {
 		sbi.updateUserInfoCB(name, zone, netLoc)
 		uePerZoneMap[zone]++
 		uePerNetLocMap[netLoc]++
+	}
+
+	//only find UEs that were removed, check that former UEs are in new UE list
+	foundOldInNewList := false
+	for _, oldUe := range formerUeNameList {
+		foundOldInNewList = false
+		for _, newUe := range ueNameList {
+			if newUe == oldUe {
+				foundOldInNewList = true
+				break
+			}
+		}
+		if !foundOldInNewList {
+			sbi.updateUserInfoCB(oldUe, "", "")
+			log.Info("Ue removed : ", oldUe)
+		}
 	}
 
 	// Update POA-CELL info
