@@ -243,6 +243,15 @@ func (pc *Connector) CreateTables() (err error) {
 	return nil
 }
 
+// DeleteTables - Delete all postgis tables
+func (pc *Connector) DeleteTables() (err error) {
+	_ = pc.DeleteTable(UeTable)
+	_ = pc.DeleteTable(PoaTable)
+	_ = pc.DeleteTable(ComputeTable)
+	return nil
+}
+
+// DeleteTable - Delete postgis table with provided name
 func (pc *Connector) DeleteTable(tableName string) (err error) {
 	_, err = pc.db.Exec("DROP TABLE IF EXISTS " + tableName)
 	if err != nil {
@@ -510,28 +519,34 @@ func (pc *Connector) GetUe(name string) (ue *Ue, err error) {
 	}
 	defer rows.Close()
 
-	ue = new(Ue)
-	path := new(string)
-
 	// Scan result
-	rows.Next()
-	err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
-		&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
-		&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
+	for rows.Next() {
+		ue = new(Ue)
+		path := new(string)
+
+		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
+			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
+			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
+		if err != nil {
+			log.Error(err.Error())
+			return nil, err
+		}
+
+		// Store path
+		if path != nil {
+			ue.Path = *path
+		}
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Error(err)
 	}
 
-	// Store path
-	if path != nil {
-		ue.Path = *path
+	// Return error if not found
+	if ue == nil {
+		err = errors.New("UE not found: " + name)
+		return nil, err
 	}
-
 	return ue, nil
 }
 
@@ -555,20 +570,25 @@ func (pc *Connector) GetPoa(name string) (poa *Poa, err error) {
 	}
 	defer rows.Close()
 
-	poa = new(Poa)
-
 	// Scan result
-	rows.Next()
-	err = rows.Scan(&poa.Id, &poa.Name, &poa.SubType, &poa.Position, &poa.Radius)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
+	for rows.Next() {
+		poa = new(Poa)
+		err = rows.Scan(&poa.Id, &poa.Name, &poa.SubType, &poa.Position, &poa.Radius)
+		if err != nil {
+			log.Error(err.Error())
+			return nil, err
+		}
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Error(err)
 	}
 
+	// Return error if not found
+	if poa == nil {
+		err = errors.New("POA not found: " + name)
+		return nil, err
+	}
 	return poa, nil
 }
 
@@ -592,20 +612,25 @@ func (pc *Connector) GetCompute(name string) (compute *Compute, err error) {
 	}
 	defer rows.Close()
 
-	compute = new(Compute)
-
 	// Scan result
-	rows.Next()
-	err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
-	if err != nil {
-		log.Error(err.Error())
-		return nil, err
+	for rows.Next() {
+		compute = new(Compute)
+		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
+		if err != nil {
+			log.Error(err.Error())
+			return nil, err
+		}
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Error(err)
 	}
 
+	// Return error if not found
+	if compute == nil {
+		err = errors.New("Compute not found: " + name)
+		return nil, err
+	}
 	return compute, nil
 }
 

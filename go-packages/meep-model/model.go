@@ -39,6 +39,8 @@ const (
 	NodeTypePoa     = "POA"
 	NodeTypePoaCell = "POA-CELL"
 	NodeTypeUE      = "UE"
+	NodeTypeEdge    = "EDGE"
+	NodeTypeFog     = "FOG"
 )
 
 const (
