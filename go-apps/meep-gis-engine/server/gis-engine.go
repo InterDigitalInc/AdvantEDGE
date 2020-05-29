@@ -428,27 +428,67 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radiu
 }
 
 func resetAutomation() {
-	ge.automation[AutoTypeMobility] = false
-	ge.automation[AutoTypeMovement] = false
-	ge.automation[AutoTypeNetChar] = false
-	ge.automation[AutoTypePoaInRange] = false
+	_ = setAutomation(AutoTypeMovement, false)
+	_ = setAutomation(AutoTypeMobility, false)
+	_ = setAutomation(AutoTypeNetChar, false)
+	_ = setAutomation(AutoTypePoaInRange, false)
 }
 
 func startAutomation() {
+	log.Debug("Starting automation loop")
 	ge.ticker = time.NewTicker(1000 * time.Millisecond)
-	ge.updateTime = time.Now()
-
 	go func() {
 		for range ge.ticker.C {
-			runAutomationLoop()
+			runAutomation()
 		}
 	}()
 }
 
-func runAutomationLoop() {
+// func stopAutomation() {
+// 	log.Debug("Stopping automation loop")
+// 	if ge.ticker != nil {
+// 		ge.ticker.Stop()
+// 		ge.ticker = nil
+// 	}
+// }
+
+func setAutomation(automationType string, state bool) (err error) {
+	// Validate automation type
+	if _, found := ge.automation[automationType]; !found {
+		return errors.New("Automation type not found")
+	}
+
+	// Type-specific configuration
+	if automationType == AutoTypeNetChar || automationType == AutoTypePoaInRange {
+		return errors.New("Automation type not supported")
+	} else if automationType == AutoTypeMovement {
+		if state {
+			ge.updateTime = time.Now()
+		} else {
+			ge.updateTime = time.Time{}
+		}
+	}
+
+	// Update automation state
+	ge.automation[automationType] = state
+
+	return nil
+}
+
+func runAutomation() {
 	// Movement
 	if ge.automation[AutoTypeMovement] {
 		log.Debug("Auto Movement: updating UE positions")
+
+		// Calculate number of increments (seconds) for position update
+		currentTime := time.Now()
+		increment := float32(currentTime.Sub(ge.updateTime).Seconds())
+
+		// Update all UE positions with increment
+		// ge.pc.Refreash
+
+		// Store new update timestamp
+		ge.updateTime = currentTime
 	}
 
 	// Mobility & POA In Range
@@ -597,24 +637,13 @@ func geSetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
 		log.Debug("Stop automation for type: ", automationType)
 	}
 
-	// Validate automation type
-	if _, found := ge.automation[automationType]; !found {
-		err := errors.New("Automation type not found")
+	// Set automation state
+	err := setAutomation(automationType, automationState)
+	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// Filter unsupported automation types
-	if automationType == AutoTypeNetChar || automationType == AutoTypePoaInRange {
-		err := errors.New("Automation type not supported")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotImplemented)
-		return
-	}
-
-	// Update automation state
-	ge.automation[automationType] = automationState
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

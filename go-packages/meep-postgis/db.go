@@ -854,19 +854,58 @@ func (pc *Connector) DeleteAllCompute() (err error) {
 	return nil
 }
 
+// AdvanceUePosition - Advance UE along path by provided number of increments
+func (pc *Connector) AdvanceUePosition(name string, increment float32) (err error) {
+	// Set new position
+	// query := `UPDATE ` + UeTable + `
+	// SET position = CASE
+	// 		WHEN path_mode='` + PathModeLoop + `' THEN ST_LineInterpolatePoint(path, path_fraction + ($2 * path_increment))
+	// 		ELSE position
+	// 	END,
+	// 	path_fraction = CASE
+	// 		WHEN path_mode='` + PathModeLoop + `' THEN path_fraction + ($2 * path_increment)
+	// 		ELSE path_fraction
+	// 	END
+	// FROM (
+	// 	SELECT
+	// 		ST_Length(path::geography) AS path_len, path_velocity
+	// 	FROM ` + UeTable + `
+	// 	WHERE name = ($1)
+	// ) AS selected_ue
+	// WHERE name = ($1)`
+	query := `UPDATE ` + UeTable + `
+		SET position = ST_LineInterpolatePoint(path, (path_fraction + ($2 * path_increment)) % 1),
+			path_fraction = (path_fraction + ($2 * path_increment)) % 1
+		WHERE name = ($1) AND path_mode='` + PathModeLoop + `'`
+	_, err = pc.db.Exec(query, name, increment)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Refresh UE POA information
+	err = pc.refreshUePoa(name)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// AdvanceUePosition - Advance all UEs along path by provided number of increments
+func (pc *Connector) AdvanceAllUePosition(name string, increment float32) (err error) {
+	return nil
+}
+
 // ------------------------ Private Methods -----------------------------------
 
 // Recalculate UE path length & increment
 func (pc *Connector) refreshUePath(name string) (err error) {
 	query := `UPDATE ` + UeTable + `
-		SET path_length = selected_ue.path_len,
-			path_increment = selected_ue.path_velocity / selected_ue.path_len,
+		SET path_length = ST_Length(path::geography),
+			path_increment = path_velocity / ST_Length(path::geography),
 			path_fraction = 0
-		FROM (
-			SELECT ST_Length(path::geography) AS path_len, path_velocity
-			FROM ` + UeTable + `
-			WHERE name = ($1)
-		) AS selected_ue
 		WHERE name = ($1)`
 	_, err = pc.db.Exec(query, name)
 	if err != nil {
@@ -885,7 +924,7 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 		SELECT ue.name AS ue, poa.name as poa,
 			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
 			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
-		FROM `+UeTable+`, `+PoaTable+`
+		FROM `+UeTable+` AS ue, `+PoaTable+` AS poa
 		WHERE ue.name = ($1)`, name)
 	if err != nil {
 		log.Error(err.Error())
