@@ -247,7 +247,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.25, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -259,7 +259,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -271,7 +271,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.991, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -324,7 +324,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -337,7 +337,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -350,7 +350,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.25, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -375,10 +375,10 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa2Name, 0.000, []string{poa1Name, poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 391.15466, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 391.155, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name, poa2Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.991, []string{poa1Name, poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -397,13 +397,13 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.25, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.991, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -447,13 +447,13 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa3Name, 328.98288, []string{}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa3Name, 328.983, []string{}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa3Name, 268.81665, []string{}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa3Name, 268.817, []string{}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -474,13 +474,13 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.24975, []string{poa1Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, poa1Name, 83.25, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.99091, []string{poa1Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, poa1Name, 101.991, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -505,7 +505,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.08527, []string{poa2Name}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 

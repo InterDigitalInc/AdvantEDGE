@@ -203,7 +203,7 @@ func (pc *Connector) CreateTables() (err error) {
 		path_increment  decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		path_fraction   decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		poa				varchar(100)			NOT NULL DEFAULT '',
-		poa_distance    decimal(10,6)         	NOT NULL DEFAULT '0.000000',
+		poa_distance    decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		poa_in_range	varchar(100)[]			NOT NULL DEFAULT array[]::varchar[],
 		start_time		timestamptz 			NOT NULL DEFAULT now()
 	)`)

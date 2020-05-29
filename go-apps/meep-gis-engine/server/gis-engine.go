@@ -37,13 +37,18 @@ const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
 
+type Asset struct {
+	allocated bool
+	assetType string
+}
+
 type GisEngine struct {
-	sandboxName       string
-	mqLocal           *mq.MsgQueue
-	handlerId         int
-	activeModel       *mod.Model
-	pc                *postgis.Connector
-	unallocatedAssets map[string]string
+	sandboxName string
+	mqLocal     *mq.MsgQueue
+	handlerId   int
+	activeModel *mod.Model
+	pc          *postgis.Connector
+	assets      map[string]Asset
 }
 
 var ge *GisEngine
@@ -51,7 +56,7 @@ var ge *GisEngine
 // Init - GIS Engine initialization
 func Init() (err error) {
 	ge = new(GisEngine)
-	ge.unallocatedAssets = make(map[string]string)
+	ge.assets = make(map[string]Asset)
 
 	// Retrieve Sandbox name from environment variable
 	ge.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -146,67 +151,36 @@ func processScenarioActivate() {
 
 	// Retrieve & process Assets in active scenario
 	assetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog)
-
-	for _, assetName := range assetList {
-		nodeType := ge.activeModel.GetNodeType(assetName)
-		if nodeType == mod.NodeTypeUE {
-			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-
-			// Parse Geo Data
-			position, path, _, err := parseGeoData(pl.GeoData)
-			if err != nil {
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-
-			// Create UE
-			err = ge.pc.CreateUe(pl.Id, assetName, position, path, postgis.PathModeLoop, 0.000)
-			if err != nil {
-				log.Error(err.Error())
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-		} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
-			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
-
-			// Parse Geo Data
-			position, _, radius, err := parseGeoData(nl.GeoData)
-			if err != nil {
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-
-			// Create POA
-			err = ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
-			if err != nil {
-				log.Error(err.Error())
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-		} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
-			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-
-			// Parse Geo Data
-			position, _, _, err := parseGeoData(pl.GeoData)
-			if err != nil {
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-
-			// Create Compute
-			err = ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
-			if err != nil {
-				log.Error(err.Error())
-				ge.unallocatedAssets[assetName] = nodeType
-				continue
-			}
-		}
-	}
+	addAssets(assetList)
 }
 
 func processScenarioUpdate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
+
+	// Get latest asset list
+	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog)
+	newAssets := make(map[string]bool)
+	var assetsToAdd []string
+	var assetsToRemove []string
+
+	// Compare with GIS Engine asset list to identify assets that should be added or removed from DB
+	for _, assetName := range newAssetList {
+		newAssets[assetName] = true
+		asset, found := ge.assets[assetName]
+		if !found || !asset.allocated {
+			assetsToAdd = append(assetsToAdd, assetName)
+		}
+	}
+	for assetName := range ge.assets {
+		if _, found := newAssets[assetName]; !found {
+			assetsToRemove = append(assetsToRemove, assetName)
+		}
+	}
+
+	// Add & remove assets from model update
+	addAssets(assetsToAdd)
+	removeAssets(assetsToRemove)
 }
 
 func processScenarioTerminate() {
@@ -219,7 +193,106 @@ func processScenarioTerminate() {
 	_ = ge.pc.DeleteAllCompute()
 
 	// Clear unallocated asset list
-	ge.unallocatedAssets = make(map[string]string)
+	log.Debug("GeoData deleted for all assets")
+	ge.assets = make(map[string]Asset)
+}
+
+func addAssets(assetList []string) {
+	for _, assetName := range assetList {
+		// Get node type
+		nodeType := ge.activeModel.GetNodeType(assetName)
+
+		// Default asset to unallocated state
+		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
+
+		if nodeType == mod.NodeTypeUE {
+			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
+
+			// Parse Geo Data
+			position, path, _, err := parseGeoData(pl.GeoData)
+			if err != nil {
+				continue
+			}
+
+			// Create UE
+			err = ge.pc.CreateUe(pl.Id, assetName, position, path, postgis.PathModeLoop, 0.000)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			log.Debug("GeoData stored for UE: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+		} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
+
+			// Parse Geo Data
+			position, _, radius, err := parseGeoData(nl.GeoData)
+			if err != nil {
+				continue
+			}
+
+			// Create POA
+			err = ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			log.Debug("GeoData stored for POA: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+		} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
+
+			// Parse Geo Data
+			position, _, _, err := parseGeoData(pl.GeoData)
+			if err != nil {
+				continue
+			}
+
+			// Create Compute
+			err = ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+			log.Debug("GeoData stored for Compute: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+		}
+	}
+}
+
+func removeAssets(assetList []string) {
+	for _, assetName := range assetList {
+		// Get asset node type
+		nodeType := ge.assets[assetName].assetType
+
+		// Remove asset
+		delete(ge.assets, assetName)
+
+		if nodeType == mod.NodeTypeUE {
+			log.Debug("GeoData deleted for UE: ", assetName)
+			err := ge.pc.DeleteUe(assetName)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+		} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+			log.Debug("GeoData deleted for POA: ", assetName)
+			err := ge.pc.DeletePoa(assetName)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+		} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+			log.Debug("GeoData deleted for Compute: ", assetName)
+			err := ge.pc.DeleteCompute(assetName)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
+		} else {
+			log.Error("Asset not found in scenario model")
+		}
+	}
 }
 
 func parseGeoData(geoData *dataModel.GeoData) (position string, path string, radius float32, err error) {
@@ -314,30 +387,6 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radiu
 	return
 }
 
-// func getPositionString(point *Point) (position string) {
-// 	if point != nil {
-// 		positionBytes, err := json.Marshal(point)
-// 		if err != nil {
-// 			log.Error(err.Error())
-// 			return ""
-// 		}
-// 		position = string(positionBytes)
-// 	}
-// 	return position
-// }
-
-// func getPathString(lineString *LineString) (path string) {
-// 	if lineString != nil {
-// 		pathBytes, err := json.Marshal(lineString)
-// 		if err != nil {
-// 			log.Error(err.Error())
-// 			return ""
-// 		}
-// 		path = string(pathBytes)
-// 	}
-// 	return path
-// }
-
 // ----------------------------  REST API  ------------------------------------
 
 func geGetAutomationState(w http.ResponseWriter, r *http.Request) {
@@ -364,7 +413,8 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get node type then remove it from the DB
 	nodeType := ge.activeModel.GetNodeType(assetName)
 	if nodeType == mod.NodeTypeUE {
-		ge.unallocatedAssets[assetName] = nodeType
+		log.Debug("GeoData deleted for UE: ", assetName)
+		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
 		err := ge.pc.DeleteUe(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -372,7 +422,8 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
-		ge.unallocatedAssets[assetName] = nodeType
+		log.Debug("GeoData deleted for POA: ", assetName)
+		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
 		err := ge.pc.DeletePoa(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -380,7 +431,8 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
-		ge.unallocatedAssets[assetName] = nodeType
+		log.Debug("GeoData deleted for Compute: ", assetName)
+		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
 		err := ge.pc.DeleteCompute(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -648,7 +700,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Create/Update asset in DB
 	nodeType := ge.activeModel.GetNodeType(assetName)
 	if nodeType == mod.NodeTypeUE {
-		if _, found := ge.unallocatedAssets[assetName]; found {
+		if !ge.assets[assetName].allocated {
 			// Create UE
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 			err := ge.pc.CreateUe(pl.Id, assetName, position, path, postgis.PathModeLoop, 0.000)
@@ -657,7 +709,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			delete(ge.unallocatedAssets, assetName)
+			log.Debug("GeoData stored for UE: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
 		} else {
 			// Update UE
 			err := ge.pc.UpdateUe(assetName, position, path, postgis.PathModeLoop, 0.000)
@@ -668,7 +721,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
-		if _, found := ge.unallocatedAssets[assetName]; found {
+		if !ge.assets[assetName].allocated {
 			// Create POA
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
 			err := ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
@@ -677,7 +730,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			delete(ge.unallocatedAssets, assetName)
+			log.Debug("GeoData stored for POA: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
 		} else {
 			// Update POA
 			err := ge.pc.UpdatePoa(assetName, position, radius)
@@ -688,7 +742,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
-		if _, found := ge.unallocatedAssets[assetName]; found {
+		if !ge.assets[assetName].allocated {
 			// Create Compute
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 			err := ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
@@ -697,7 +751,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			delete(ge.unallocatedAssets, assetName)
+			log.Debug("GeoData stored for Compute: ", assetName)
+			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
 		} else {
 			// Update Compute
 			err := ge.pc.UpdateCompute(assetName, position)
