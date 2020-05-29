@@ -17,38 +17,62 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
+	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	"github.com/gorilla/mux"
 )
 
 const moduleName = "meep-gis-engine"
 const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
+
+const (
+	AutoTypeMovement   = "MOVEMENT"
+	AutoTypeMobility   = "MOBILITY"
+	AutoTypeNetChar    = "NETWORK-CHARACTERISTICS-UPDATE"
+	AutoTypePoaInRange = "POAS-IN-RANGE"
+)
 
 type Asset struct {
 	allocated bool
 	assetType string
 }
 
+type PoaInfo struct {
+	poa        string
+	distance   float32
+	poaInRange []string
+}
+
 type GisEngine struct {
-	sandboxName string
-	mqLocal     *mq.MsgQueue
-	handlerId   int
-	activeModel *mod.Model
-	pc          *postgis.Connector
-	assets      map[string]Asset
+	sandboxName    string
+	mqLocal        *mq.MsgQueue
+	handlerId      int
+	sboxCtrlClient *sbox.APIClient
+	activeModel    *mod.Model
+	pc             *postgis.Connector
+	assets         map[string]Asset
+	uePoaInfo      map[string]PoaInfo
+	automation     map[string]bool
+	ticker         *time.Ticker
+	updateTime     time.Time
 }
 
 var ge *GisEngine
@@ -57,6 +81,12 @@ var ge *GisEngine
 func Init() (err error) {
 	ge = new(GisEngine)
 	ge.assets = make(map[string]Asset)
+	ge.uePoaInfo = make(map[string]PoaInfo)
+	ge.automation = make(map[string]bool)
+	resetAutomation()
+	startAutomation()
+
+	// timer := time.NewTimer(time.Second)
 
 	// Retrieve Sandbox name from environment variable
 	ge.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -74,6 +104,16 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Create Sandbox Controller REST API client
+	sboxCfg := sbox.NewConfiguration()
+	sboxCfg.BasePath = sboxCtrlBasepath
+	ge.sboxCtrlClient = sbox.NewAPIClient(sboxCfg)
+	if ge.sboxCtrlClient == nil {
+		err := errors.New("Failed to create Sandbox Ctrl REST API client")
+		return err
+	}
+	log.Info("Sandbox Ctrl REST API client created")
 
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
@@ -387,21 +427,197 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radiu
 	return
 }
 
+func resetAutomation() {
+	ge.automation[AutoTypeMobility] = false
+	ge.automation[AutoTypeMovement] = false
+	ge.automation[AutoTypeNetChar] = false
+	ge.automation[AutoTypePoaInRange] = false
+}
+
+func startAutomation() {
+	ge.ticker = time.NewTicker(1000 * time.Millisecond)
+	ge.updateTime = time.Now()
+
+	go func() {
+		for range ge.ticker.C {
+			runAutomationLoop()
+		}
+	}()
+}
+
+func runAutomationLoop() {
+	// Movement
+	if ge.automation[AutoTypeMovement] {
+		log.Debug("Auto Movement: updating UE positions")
+	}
+
+	// Mobility & POA In Range
+	if ge.automation[AutoTypeMobility] || ge.automation[AutoTypePoaInRange] {
+		// Get all UE POA information
+		ueMap, err := ge.pc.GetAllUe()
+		if err == nil {
+			for _, ue := range ueMap {
+				// Get last POA info
+				poaInfo, found := ge.uePoaInfo[ue.Name]
+
+				// Send mobility event if necessary
+				if ge.automation[AutoTypeMobility] {
+					if !found || poaInfo.poa != ue.Poa {
+						var event sbox.Event
+						var mobilityEvent sbox.EventMobility
+						event.Type_ = AutoTypeMobility
+						mobilityEvent.ElementName = ue.Name
+						mobilityEvent.Dest = ue.Poa
+						event.EventMobility = &mobilityEvent
+
+						go func() {
+							_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+							if err != nil {
+								log.Error(err)
+							}
+						}()
+					}
+				}
+
+				// Send POA in range event if necessary
+				if ge.automation[AutoTypePoaInRange] {
+					updateRequired := false
+					if len(poaInfo.poaInRange) != len(ue.PoaInRange) {
+						updateRequired = true
+					} else {
+						sort.Strings(poaInfo.poaInRange)
+						sort.Strings(ue.PoaInRange)
+						for i, poa := range poaInfo.poaInRange {
+							if poa != ue.PoaInRange[i] {
+								updateRequired = true
+							}
+						}
+					}
+
+					if updateRequired {
+						var event sbox.Event
+						var poasInRangeEvent sbox.EventPoasInRange
+						event.Type_ = AutoTypePoaInRange
+						poasInRangeEvent = sbox.EventPoasInRange{Ue: ue.Name, PoasInRange: ue.PoaInRange}
+						event.EventPoasInRange = &poasInRangeEvent
+
+						go func() {
+							_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+							if err != nil {
+								log.Error(err)
+							}
+						}()
+					}
+				}
+
+				// Update POA info
+				ge.uePoaInfo[ue.Name] = PoaInfo{poa: ue.Poa, distance: ue.PoaDistance, poaInRange: ue.PoaInRange}
+			}
+		} else {
+			log.Error(err.Error())
+		}
+	}
+
+	// Net Char
+	if ge.automation[AutoTypeNetChar] {
+		log.Debug("Auto Net Char: updating network characteristics")
+	}
+}
+
 // ----------------------------  REST API  ------------------------------------
 
 func geGetAutomationState(w http.ResponseWriter, r *http.Request) {
+	log.Debug("Get all automation states")
+
+	var automationList AutomationStateList
+	for automation, state := range ge.automation {
+		var automationState AutomationState
+		automationState.Type_ = automation
+		automationState.Active = state
+		automationList.States = append(automationList.States, automationState)
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(&automationList)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func geGetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
+	// Get automation type from request path parameters
+	vars := mux.Vars(r)
+	automationType := vars["type"]
+	log.Debug("Get automation state for type: ", automationType)
+
+	// Get automation state
+	var automationState AutomationState
+	automationState.Type_ = automationType
+	if state, found := ge.automation[automationType]; found {
+		automationState.Active = state
+	} else {
+		err := errors.New("Automation type not found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Format response
+	jsonResponse, err := json.Marshal(&automationState)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func geSetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
+	// Get automation type from request path parameters
+	vars := mux.Vars(r)
+	automationType := vars["type"]
+
+	// Retrieve requested state from query parameters
+	query := r.URL.Query()
+	automationState, _ := strconv.ParseBool(query.Get("run"))
+	if automationState {
+		log.Debug("Start automation for type: ", automationType)
+	} else {
+		log.Debug("Stop automation for type: ", automationType)
+	}
+
+	// Validate automation type
+	if _, found := ge.automation[automationType]; !found {
+		err := errors.New("Automation type not found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Filter unsupported automation types
+	if automationType == AutoTypeNetChar || automationType == AutoTypePoaInRange {
+		err := errors.New("Automation type not supported")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotImplemented)
+		return
+	}
+
+	// Update automation state
+	ge.automation[automationType] = automationState
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
+	w.WriteHeader(http.StatusOK)
 }
 
 func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
