@@ -39,7 +39,6 @@ const dbMaxRetryCount int = 2
 const (
 	PathModeLoop    = "LOOP"
 	PathModeReverse = "REVERSE"
-	PathModeOnce    = "ONCE"
 )
 
 const (
@@ -857,26 +856,21 @@ func (pc *Connector) DeleteAllCompute() (err error) {
 // AdvanceUePosition - Advance UE along path by provided number of increments
 func (pc *Connector) AdvanceUePosition(name string, increment float32) (err error) {
 	// Set new position
-	// query := `UPDATE ` + UeTable + `
-	// SET position = CASE
-	// 		WHEN path_mode='` + PathModeLoop + `' THEN ST_LineInterpolatePoint(path, path_fraction + ($2 * path_increment))
-	// 		ELSE position
-	// 	END,
-	// 	path_fraction = CASE
-	// 		WHEN path_mode='` + PathModeLoop + `' THEN path_fraction + ($2 * path_increment)
-	// 		ELSE path_fraction
-	// 	END
-	// FROM (
-	// 	SELECT
-	// 		ST_Length(path::geography) AS path_len, path_velocity
-	// 	FROM ` + UeTable + `
-	// 	WHERE name = ($1)
-	// ) AS selected_ue
-	// WHERE name = ($1)`
 	query := `UPDATE ` + UeTable + `
-		SET position = ST_LineInterpolatePoint(path, (path_fraction + ($2 * path_increment)) % 1),
-			path_fraction = (path_fraction + ($2 * path_increment)) % 1
-		WHERE name = ($1) AND path_mode='` + PathModeLoop + `'`
+	SET position =
+		CASE
+			WHEN path_mode='` + PathModeLoop + `' THEN
+				ST_LineInterpolatePoint(path, (path_fraction + ($2 * path_increment)) %1)
+			WHEN path_mode='` + PathModeReverse + `' THEN
+				CASE
+					WHEN 1 < (path_fraction + ($2 * path_increment)) %2 THEN
+						ST_LineInterpolatePoint(path, 1 - ((path_fraction + ($2 * path_increment)) %1))
+					ELSE 
+						ST_LineInterpolatePoint(path, (path_fraction + ($2 * path_increment)) %1)
+				END
+		END,
+		path_fraction = path_fraction + ($2 * path_increment)
+	WHERE name = ($1) AND path_velocity > 0`
 	_, err = pc.db.Exec(query, name, increment)
 	if err != nil {
 		log.Error(err.Error())
@@ -894,7 +888,36 @@ func (pc *Connector) AdvanceUePosition(name string, increment float32) (err erro
 }
 
 // AdvanceUePosition - Advance all UEs along path by provided number of increments
-func (pc *Connector) AdvanceAllUePosition(name string, increment float32) (err error) {
+func (pc *Connector) AdvanceAllUePosition(increment float32) (err error) {
+	// Set new position
+	query := `UPDATE ` + UeTable + `
+	SET position =
+		CASE
+			WHEN path_mode='` + PathModeLoop + `' THEN
+				ST_LineInterpolatePoint(path, (path_fraction + ($1 * path_increment)) %1)
+			WHEN path_mode='` + PathModeReverse + `' THEN
+				CASE
+					WHEN 1 < (path_fraction + ($1 * path_increment)) %2 THEN
+						ST_LineInterpolatePoint(path, 1 - ((path_fraction + ($1 * path_increment)) %1))
+					ELSE 
+						ST_LineInterpolatePoint(path, (path_fraction + ($1 * path_increment)) %1)
+				END
+		END,
+		path_fraction = (path_fraction + ($1 * path_increment)) %2
+	WHERE path_velocity > 0`
+	_, err = pc.db.Exec(query, increment)
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
+	// Refresh all UE POA information
+	err = pc.refreshAllUePoa()
+	if err != nil {
+		log.Error(err.Error())
+		return err
+	}
+
 	return nil
 }
 

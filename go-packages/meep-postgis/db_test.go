@@ -55,7 +55,7 @@ const (
 	ue3Name     = "ue3"
 	ue3Loc      = "{\"type\":\"Point\",\"coordinates\":" + point4 + "}"
 	ue3Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point4 + "," + point3 + "," + point2 + "]}"
-	ue3PathMode = PathModeLoop
+	ue3PathMode = PathModeReverse
 	ue3Velocity = 25.0
 
 	poa1Id     = "poa1-id"
@@ -534,71 +534,148 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	// Advance UE1 along path and validate UE
-	fmt.Println("Advance UE1 along path and validate UE")
+	// Advance UE1 along Looping path and validate UE
+	fmt.Println("Advance UE1 along looping path and validate UE")
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":[7.419547938,43.735155405]}"
+	ue1AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.419547938,43.735155405]}"
 	err = pc.AdvanceUePosition(ue1Name, 25.0)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to advance UE")
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.1, poa1Name, 207.738, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.1, poa1Name, 207.738, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":[7.421527545,43.736845475]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421527545,43.736845475]}"
 	err = pc.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to advance UE")
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.3, poa2Name, 17.216, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.3, poa2Name, 17.216, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":[7.422078743,43.73409359]}"
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.422078743,43.73409359]}"
 	err = pc.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to advance UE")
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.5, poa3Name, 125.284, []string{poa2Name, poa3Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.5, poa3Name, 125.284, []string{poa2Name, poa3Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
 	err = pc.AdvanceUePosition(ue1Name, 125.0)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to advance UE")
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	fmt.Printf("%+v\n", ue)
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0, poa1Name, 83.25, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 1, poa1Name, 83.25, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419547938,43.735155405]}"
+	err = pc.AdvanceUePosition(ue1Name, 25.0)
+	if err != nil {
+		t.Fatalf("Failed to advance UE")
+	}
+	ue, err = pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 1.1, poa1Name, 207.738, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
 	ueLoc = "{\"type\":\"Point\",\"coordinates\":[7.419547938,43.735155405]}"
-	err = pc.AdvanceUePosition(ue1Name, 25.0)
+	err = pc.AdvanceUePosition(ue1Name, 250.0)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to advance UE")
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.1, poa1Name, 207.738, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 2.1, poa1Name, 207.738, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Advance UE3 along Reverse path and validate UE
+	fmt.Println("Advance UE3 along reverse path and validate UE")
+
+	ue3AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.421867621,43.735147626]}"
+	err = pc.AdvanceUePosition(ue3Name, 25.0)
+	if err != nil {
+		t.Fatalf("Failed to advance UE")
+	}
+	ue, err = pc.GetUe(ue3Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.775, poa2Name, 204.85, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421639501,43.736286525]}"
+	err = pc.AdvanceUePosition(ue3Name, 10.0)
+	if err != nil {
+		t.Fatalf("Failed to advance UE")
+	}
+	ue, err = pc.GetUe(ue3Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 1.085, poa2Name, 77.391, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419580405,43.732535312]}"
+	err = pc.AdvanceUePosition(ue3Name, 32.0)
+	if err != nil {
+		t.Fatalf("Failed to advance UE")
+	}
+	ue, err = pc.GetUe(ue3Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 2.077, poa1Name, 134.039, []string{poa1Name, poa3Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Advance all UEs along path
+	fmt.Println("Advance all UEs along path")
+
+	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421527545,43.736845475]}"
+	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.422026843,43.73232124]}"
+	err = pc.AdvanceAllUePosition(50.0)
+	if err != nil {
+		t.Fatalf("Failed to advance UE")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.3, poa2Name, 17.216, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 1.627, poa3Name, 74.297, []string{poa3Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
