@@ -321,7 +321,6 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 
 	//check all that applies
 	for subsId, value := range userSubscriptionMap {
-
 		if value == userId {
 
 			subsIdStr := strconv.Itoa(subsId)
@@ -339,7 +338,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			zonal.CallbackData = subscription.ClientCorrelator
 
 			if newZoneId != oldZoneId {
-				if userSubscriptionEnteringMap[subsId] != "" {
+				if userSubscriptionEnteringMap[subsId] != "" && newZoneId != "" {
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
 					event := new(clientNotifOMA.UserEventType)
@@ -1266,12 +1265,8 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		oldZoneId = userInfo.ZoneId
 		oldApId = userInfo.AccessPointId
 
-		if zoneId != "" {
-			userInfo.ZoneId = zoneId
-		}
-		if accessPointId != "" {
-			userInfo.AccessPointId = accessPointId
-		}
+		userInfo.ZoneId = zoneId
+		userInfo.AccessPointId = accessPointId
 
 		//updateDB
 		_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
