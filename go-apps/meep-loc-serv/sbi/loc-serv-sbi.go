@@ -26,6 +26,16 @@ import (
 
 const moduleName string = "meep-loc-serv-sbi"
 
+type SbiCfg struct {
+	SandboxName    string
+	RedisAddr      string
+	UserInfoCb     func(string, string, string)
+	ZoneInfoCb     func(string, int, int, int)
+	ApInfoCb       func(string, string, string, string, int)
+	ScenarioNameCb func(string)
+	CleanUpCb      func()
+}
+
 type LocServSbi struct {
 	sandboxName             string
 	mqLocal                 *mq.MsgQueue
@@ -41,20 +51,14 @@ type LocServSbi struct {
 var sbi *LocServSbi
 
 // Init - Location Service SBI initialization
-func Init(sandboxName string,
-	redisAddr string,
-	updateUserInfo func(string, string, string),
-	updateZoneInfo func(string, int, int, int),
-	updateAccessPointInfo func(string, string, string, string, int),
-	updateScenarioName func(string),
-	cleanUp func()) (err error) {
+func Init(cfg SbiCfg) (err error) {
 
 	// Create new SBI instance
 	sbi = new(LocServSbi)
-	sbi.sandboxName = sandboxName
+	sbi.sandboxName = cfg.SandboxName
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -67,7 +71,7 @@ func Init(sandboxName string,
 		Namespace: sbi.sandboxName,
 		Module:    moduleName,
 		UpdateCb:  nil,
-		DbAddr:    redisAddr,
+		DbAddr:    cfg.RedisAddr,
 	}
 	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
@@ -75,11 +79,11 @@ func Init(sandboxName string,
 		return err
 	}
 
-	sbi.updateUserInfoCB = updateUserInfo
-	sbi.updateZoneInfoCB = updateZoneInfo
-	sbi.updateAccessPointInfoCB = updateAccessPointInfo
-	sbi.updateScenarioNameCB = updateScenarioName
-	sbi.cleanUpCB = cleanUp
+	sbi.updateUserInfoCB = cfg.UserInfoCb
+	sbi.updateZoneInfoCB = cfg.ZoneInfoCb
+	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
+	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
+	sbi.cleanUpCB = cfg.CleanUpCb
 
 	// Initialize service
 	processActiveScenarioUpdate()

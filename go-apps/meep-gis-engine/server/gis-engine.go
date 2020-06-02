@@ -249,13 +249,18 @@ func addAssets(assetList []string) {
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 
 			// Parse Geo Data
-			position, path, _, err := parseGeoData(pl.GeoData)
+			position, _, path, mode, velocity, err := parseGeoData(pl.GeoData)
 			if err != nil {
 				continue
 			}
 
+			// Set default EOP mode to LOOP if not provided
+			if mode == "" {
+				mode = postgis.PathModeLoop
+			}
+
 			// Create UE
-			err = ge.pc.CreateUe(pl.Id, assetName, position, path, postgis.PathModeLoop, 0.000)
+			err = ge.pc.CreateUe(pl.Id, assetName, position, path, mode, velocity)
 			if err != nil {
 				log.Error(err.Error())
 				continue
@@ -266,7 +271,7 @@ func addAssets(assetList []string) {
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
 
 			// Parse Geo Data
-			position, _, radius, err := parseGeoData(nl.GeoData)
+			position, radius, _, _, _, err := parseGeoData(nl.GeoData)
 			if err != nil {
 				continue
 			}
@@ -283,7 +288,7 @@ func addAssets(assetList []string) {
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 
 			// Parse Geo Data
-			position, _, _, err := parseGeoData(pl.GeoData)
+			position, _, _, _, _, err := parseGeoData(pl.GeoData)
 			if err != nil {
 				continue
 			}
@@ -335,7 +340,7 @@ func removeAssets(assetList []string) {
 	}
 }
 
-func parseGeoData(geoData *dataModel.GeoData) (position string, path string, radius float32, err error) {
+func parseGeoData(geoData *dataModel.GeoData) (position string, radius float32, path string, mode string, velocity float32, err error) {
 	// Validate GeoData
 	if geoData == nil {
 		err = errors.New("geoData == nil")
@@ -352,6 +357,13 @@ func parseGeoData(geoData *dataModel.GeoData) (position string, path string, rad
 		position = string(positionBytes)
 	}
 
+	// Get Radius
+	radius = geoData.Radius
+	if radius < 0 {
+		err = errors.New("radius < 0")
+		return
+	}
+
 	// Get path
 	if geoData.Path != nil {
 		var pathBytes []byte
@@ -362,12 +374,24 @@ func parseGeoData(geoData *dataModel.GeoData) (position string, path string, rad
 		path = string(pathBytes)
 	}
 
-	// Get Radius
-	radius = geoData.Radius
+	// Get Path Mode
+	mode = geoData.EopMode
+	if mode != "" && mode != postgis.PathModeLoop && mode != postgis.PathModeReverse {
+		err = errors.New("Unsupported end-of-path mode: " + mode)
+		return
+	}
+
+	// Get velocity
+	velocity = geoData.Velocity
+	if velocity < 0 {
+		err = errors.New("velocity < 0")
+		return
+	}
+
 	return
 }
 
-func parseGeoDataAsset(geoData *GeoDataAsset) (position string, path string, radius float32, err error) {
+func parseGeoDataAsset(geoData *GeoDataAsset) (position string, radius float32, path string, mode string, velocity float32, err error) {
 	// Validate GeoData
 	if geoData == nil {
 		err = errors.New("geoData == nil")
@@ -384,6 +408,13 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (position string, path string, rad
 		position = string(positionBytes)
 	}
 
+	// Get Radius
+	radius = geoData.Radius
+	if radius < 0 {
+		err = errors.New("radius < 0")
+		return
+	}
+
 	// Get path
 	if geoData.Path != nil {
 		var pathBytes []byte
@@ -394,12 +425,24 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (position string, path string, rad
 		path = string(pathBytes)
 	}
 
-	// Get Radius
-	radius = geoData.Radius
+	// Get Path Mode
+	mode = geoData.EopMode
+	if mode != "" && mode != postgis.PathModeLoop && mode != postgis.PathModeReverse {
+		err = errors.New("Unsupported end-of-path mode: " + mode)
+		return
+	}
+
+	// Get velocity
+	velocity = geoData.Velocity
+	if velocity < 0 {
+		err = errors.New("velocity < 0")
+		return
+	}
+
 	return
 }
 
-func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radius float32) (err error) {
+func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, path string, mode string, velocity float32) (err error) {
 	if geoData == nil {
 		return errors.New("geoData == nil")
 	}
@@ -413,6 +456,9 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radiu
 		}
 	}
 
+	// Fill Radius
+	geoData.Radius = radius
+
 	// Fill geodata path
 	if path != "" {
 		geoData.Path = new(LineString)
@@ -422,16 +468,27 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, path string, radiu
 		}
 	}
 
-	// Fill Radius
-	geoData.Radius = radius
+	// Fill EOP mode
+	geoData.EopMode = mode
+
+	// Fill Velocity
+	geoData.Velocity = velocity
+
 	return
 }
 
 func resetAutomation() {
+	// Stop automation if running
 	_ = setAutomation(AutoTypeMovement, false)
 	_ = setAutomation(AutoTypeMobility, false)
 	_ = setAutomation(AutoTypeNetChar, false)
 	_ = setAutomation(AutoTypePoaInRange, false)
+
+	// Reset automation
+	ge.automation[AutoTypeMovement] = false
+	ge.automation[AutoTypeMobility] = false
+	ge.automation[AutoTypeNetChar] = false
+	ge.automation[AutoTypePoaInRange] = false
 }
 
 func startAutomation() {
@@ -485,7 +542,10 @@ func runAutomation() {
 		increment := float32(currentTime.Sub(ge.updateTime).Seconds())
 
 		// Update all UE positions with increment
-		// ge.pc.Refreash
+		err := ge.pc.AdvanceAllUePosition(increment)
+		if err != nil {
+			log.Error(err)
+		}
 
 		// Store new update timestamp
 		ge.updateTime = currentTime
@@ -719,7 +779,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 		for _, ue := range ueMap {
 			var asset GeoDataAsset
 			asset.AssetName = ue.Name
-			err = fillGeoDataAsset(&asset, ue.Position, ue.Path, 0)
+			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -744,7 +804,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			}
 			var asset GeoDataAsset
 			asset.AssetName = poa.Name
-			err = fillGeoDataAsset(&asset, poa.Position, "", poa.Radius)
+			err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -769,7 +829,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			}
 			var asset GeoDataAsset
 			asset.AssetName = compute.Name
-			err = fillGeoDataAsset(&asset, compute.Position, "", 0)
+			err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -817,10 +877,8 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create GeoData Asset to return
-	var position string
-	var path string
-	var geoData GeoDataAsset
-	geoData.AssetName = assetName
+	var asset GeoDataAsset
+	asset.AssetName = assetName
 
 	// Retrieve geodata from postgis using asset name & type
 	nodeType := ge.activeModel.GetNodeType(assetName)
@@ -832,8 +890,12 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		position = ue.Position
-		path = ue.Path
+		err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
 		// Get POA information
 		poa, err := ge.pc.GetPoa(assetName)
@@ -842,8 +904,12 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		position = poa.Position
-		geoData.Radius = poa.Radius
+		err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
 		// Get Compute information
 		compute, err := ge.pc.GetCompute(assetName)
@@ -852,7 +918,12 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		position = compute.Position
+		err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else {
 		err := errors.New("Asset has invalid node type")
 		log.Error(err.Error())
@@ -860,30 +931,8 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fill geodata location
-	if position != "" {
-		geoData.Location = new(Point)
-		err := json.Unmarshal([]byte(position), geoData.Location)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	// Fill geodata path
-	if path != "" {
-		geoData.Path = new(LineString)
-		err := json.Unmarshal([]byte(path), geoData.Path)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-	}
-
 	// Format response
-	jsonResponse, err := json.Marshal(&geoData)
+	jsonResponse, err := json.Marshal(&asset)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -927,7 +976,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse Geo Data Asset
-	position, path, radius, err := parseGeoDataAsset(&geoData)
+	position, radius, path, mode, velocity, err := parseGeoDataAsset(&geoData)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -948,7 +997,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		if !ge.assets[assetName].allocated {
 			// Create UE
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-			err := ge.pc.CreateUe(pl.Id, assetName, position, path, postgis.PathModeLoop, 0.000)
+			err := ge.pc.CreateUe(pl.Id, assetName, position, path, mode, velocity)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -958,7 +1007,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
 		} else {
 			// Update UE
-			err := ge.pc.UpdateUe(assetName, position, path, postgis.PathModeLoop, 0.000)
+			err := ge.pc.UpdateUe(assetName, position, path, mode, velocity)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)

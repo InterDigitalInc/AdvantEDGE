@@ -76,6 +76,10 @@
         obj.radius = ApiClient.convertToType(data['radius'], 'Number');
       if (data.hasOwnProperty('path'))
         obj.path = LineString.constructFromObject(data['path']);
+      if (data.hasOwnProperty('eopMode'))
+        obj.eopMode = ApiClient.convertToType(data['eopMode'], 'String');
+      if (data.hasOwnProperty('velocity'))
+        obj.velocity = ApiClient.convertToType(data['velocity'], 'Number');
     }
     return obj;
   }
@@ -95,6 +99,38 @@
    * @member {module:model/LineString} path
    */
   exports.prototype.path = undefined;
+
+  /**
+   * End-of-Path mode: <li>LOOP: When path endpoint is reached, start over from the beginning <li>REVERSE: When path endpoint is reached, return on the reverse path
+   * @member {module:model/GeoData.EopModeEnum} eopMode
+   */
+  exports.prototype.eopMode = undefined;
+
+  /**
+   * Speed of movement along path in m/s
+   * @member {Number} velocity
+   */
+  exports.prototype.velocity = undefined;
+
+
+  /**
+   * Allowed values for the <code>eopMode</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.EopModeEnum = {
+    /**
+     * value: "LOOP"
+     * @const
+     */
+    LOOP: "LOOP",
+
+    /**
+     * value: "REVERSE"
+     * @const
+     */
+    REVERSE: "REVERSE"
+  };
 
   return exports;
 

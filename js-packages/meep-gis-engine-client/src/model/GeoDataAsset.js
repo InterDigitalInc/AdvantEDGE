@@ -102,6 +102,18 @@
    */
   exports.prototype.path = undefined;
 
+  /**
+   * End-of-Path mode: <li>LOOP: When path endpoint is reached, start over from the beginning <li>REVERSE: When path endpoint is reached, return on the reverse path
+   * @member {module:model/GeoData.EopModeEnum} eopMode
+   */
+  exports.prototype.eopMode = undefined;
+
+  /**
+   * Speed of movement along path in m/s
+   * @member {Number} velocity
+   */
+  exports.prototype.velocity = undefined;
+
   return exports;
 
 }));

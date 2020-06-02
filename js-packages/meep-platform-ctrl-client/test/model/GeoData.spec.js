@@ -73,6 +73,18 @@
         // expect(instance.path).to.be(expectedValueLiteral);
       });
 
+      it('should have the property eopMode (base name: "eopMode")', function() {
+        // TODO: update the code to test the property eopMode
+        expect(instance).to.have.property('eopMode');
+        // expect(instance.eopMode).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property velocity (base name: "velocity")', function() {
+        // TODO: update the code to test the property velocity
+        expect(instance).to.have.property('velocity');
+        // expect(instance.velocity).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

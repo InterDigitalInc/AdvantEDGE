@@ -118,6 +118,10 @@
                       expect(data).to.be([]);
                     }
                   }
+                expect(data.eopMode).to.be.a('string');
+                expect(data.eopMode).to.be("LOOP");
+                expect(data.velocity).to.be.a('number');
+                expect(data.velocity).to.be();
                 expect(data.assetName).to.be.a('string');
                 expect(data.assetName).to.be("");
               }
@@ -171,6 +175,10 @@
                   expect(data).to.be([]);
                 }
               }
+            expect(data.eopMode).to.be.a('string');
+            expect(data.eopMode).to.be("LOOP");
+            expect(data.velocity).to.be.a('number');
+            expect(data.velocity).to.be();
             expect(data.assetName).to.be.a('string');
             expect(data.assetName).to.be("");
 
@@ -194,6 +202,8 @@
           geoData.path = new AdvantEdgeGisEngineRestApi.LineString();
           geoData.path.type = "LineString";
           geoData.path.coordinates = [[]];
+          geoData.eopMode = "LOOP";
+          geoData.velocity = ;
           geoData.assetName = "";
 
           instance.updateGeoDataByName(assetName, geoData, function(error, data, response) {

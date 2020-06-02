@@ -46,6 +46,18 @@ definitions:
         type: number
       path:
         $ref: '#/definitions/LineString'
+      eopMode:
+        description: >-
+          End-of-Path mode:
+          <li>LOOP: When path endpoint is reached, start over from the beginning
+          <li>REVERSE: When path endpoint is reached, return on the reverse path
+        type: string
+        enum:
+          - LOOP
+          - REVERSE
+      velocity:
+        description: Speed of movement along path in m/s
+        type: number
   Point:
     description: A single position in coordinate space (GeoJSON); a position is an array of two numbers
     type: object

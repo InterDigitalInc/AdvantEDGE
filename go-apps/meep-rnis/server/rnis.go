@@ -113,15 +113,29 @@ func Init() (err error) {
 		}
 	}()
 
-	//sbi is the sole responsible of updating the userInfo, zoneInfo and apInfo structures
-	return sbi.Init(sandboxName, redisAddr, updateUeEcgiInfo, updateAppEcgiInfo, updateStoreName, cleanUp)
+	// Initialize SBI
+	sbiCfg := sbi.SbiCfg{
+		SandboxName:    sandboxName,
+		RedisAddr:      redisAddr,
+		UeEcgiInfoCb:   updateUeEcgiInfo,
+		AppEcgiInfoCb:  updateAppEcgiInfo,
+		ScenarioNameCb: updateStoreName,
+		CleanUpCb:      cleanUp,
+	}
+	err = sbi.Init(sbiCfg)
+	if err != nil {
+		log.Error("Failed initialize SBI. Error: ", err)
+		return err
+	}
+	log.Info("SBI Initialized")
+
+	return nil
 }
 
 // reInit - finds the value already in the DB to repopulate local stored info
 func reInit() {
-
-	_ = rc.JSONGetList("", "", baseKey+cellChangeSubscriptionType, repopulateCcSubscriptionMap, nil)
-
+	keyName := baseKey + cellChangeSubscriptionType + "*"
+	_ = rc.ForEachJSONEntry(keyName, repopulateCcSubscriptionMap, nil)
 }
 
 // Run - Start RNIS
@@ -253,7 +267,7 @@ func checkForExpiredSubscriptions() {
 
 }
 
-func repopulateCcSubscriptionMap(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
+func repopulateCcSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
 
 	var subscription CellChangeSubscription
 

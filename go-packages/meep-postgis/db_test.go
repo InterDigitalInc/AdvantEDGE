@@ -679,51 +679,51 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("UE validation failed")
 	}
 
-	// // Delete all POA & validate updates
-	// fmt.Println("Delete all POA & validate updates")
-	// err = pc.DeleteAllPoa()
-	// if err != nil {
-	// 	t.Fatalf("Failed to delete all POA")
-	// }
-	// poaMap, err = pc.GetAllPoa()
-	// if err != nil || len(poaMap) != 0 {
-	// 	t.Fatalf("POAs should no longer exist")
-	// }
-	// ueMap, err = pc.GetAllUe()
-	// if err != nil || len(ueMap) != 3 {
-	// 	t.Fatalf("Failed to get all UE")
-	// }
-	// if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.000, "", 0.000, []string{}) {
-	// 	t.Fatalf("UE validation failed")
-	// }
-	// if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
-	// 	t.Fatalf("UE validation failed")
-	// }
-	// if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 0.000, "", 0.000, []string{}) {
-	// 	t.Fatalf("UE validation failed")
-	// }
+	// Delete all POA & validate updates
+	fmt.Println("Delete all POA & validate updates")
+	err = pc.DeleteAllPoa()
+	if err != nil {
+		t.Fatalf("Failed to delete all POA")
+	}
+	poaMap, err = pc.GetAllPoa()
+	if err != nil || len(poaMap) != 0 {
+		t.Fatalf("POAs should no longer exist")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 3 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.004, 0.3, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.031, 1.627, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
 
-	// // Delete all UE & validate updates
-	// fmt.Println("Delete all UE & validate updates")
-	// err = pc.DeleteAllUe()
-	// if err != nil {
-	// 	t.Fatalf("Failed to delete all UE")
-	// }
-	// ueMap, err = pc.GetAllUe()
-	// if err != nil || len(ueMap) != 0 {
-	// 	t.Fatalf("UE should no longer exist")
-	// }
+	// Delete all UE & validate updates
+	fmt.Println("Delete all UE & validate updates")
+	err = pc.DeleteAllUe()
+	if err != nil {
+		t.Fatalf("Failed to delete all UE")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 0 {
+		t.Fatalf("UE should no longer exist")
+	}
 
-	// // Delete all Compute & validate updates
-	// fmt.Println("Delete all Compute & validate updates")
-	// err = pc.DeleteAllCompute()
-	// if err != nil {
-	// 	t.Fatalf("Failed to delete all Compute")
-	// }
-	// computeMap, err = pc.GetAllCompute()
-	// if err != nil || len(computeMap) != 0 {
-	// 	t.Fatalf("Compute should no longer exist")
-	// }
+	// Delete all Compute & validate updates
+	fmt.Println("Delete all Compute & validate updates")
+	err = pc.DeleteAllCompute()
+	if err != nil {
+		t.Fatalf("Failed to delete all Compute")
+	}
+	computeMap, err = pc.GetAllCompute()
+	if err != nil || len(computeMap) != 0 {
+		t.Fatalf("Compute should no longer exist")
+	}
 
 	// t.Fatalf("DONE")
 }
