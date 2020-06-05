@@ -21,9 +21,13 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-rnis-sbi"
+const geModuleName string = "meep-gis-engine"
+const postgisUser string = "postgres"
+const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
@@ -39,6 +43,7 @@ type RnisSbi struct {
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	activeModel          *mod.Model
+	pc                   *postgis.Connector
 	updateUeEcgiInfoCB   func(string, string, string, string)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateScenarioNameCB func(string)
@@ -55,8 +60,11 @@ func Init(cfg SbiCfg) (err error) {
 		sbi = nil
 	}
 	sbi = new(RnisSbi)
-
 	sbi.sandboxName = cfg.SandboxName
+	sbi.updateUeEcgiInfoCB = cfg.UeEcgiInfoCb
+	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
+	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
+	sbi.cleanUpCB = cfg.CleanUpCb
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -80,10 +88,13 @@ func Init(cfg SbiCfg) (err error) {
 		return err
 	}
 
-	sbi.updateUeEcgiInfoCB = cfg.UeEcgiInfoCb
-	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
-	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
-	sbi.cleanUpCB = cfg.CleanUpCb
+	// Connect to Postgis DB
+	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed to create postgis connector with error: ", err.Error())
+		return err
+	}
+	log.Info("Postgis Connector created")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -122,6 +133,9 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
+	case mq.MsgGeUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -182,16 +196,15 @@ func processActiveScenarioUpdate() {
 	}
 
 	//only find UEs that were removed, check that former UEs are in new UE list
-	foundOldInNewList := false
 	for _, oldUe := range formerUeNameList {
-		foundOldInNewList = false
+		found := false
 		for _, newUe := range ueNameList {
 			if newUe == oldUe {
-				foundOldInNewList = true
+				found = true
 				break
 			}
 		}
-		if !foundOldInNewList {
+		if !found {
 			sbi.updateUeEcgiInfoCB(oldUe, "", "", "")
 			log.Info("Ue removed : ", oldUe)
 		}
@@ -239,5 +252,25 @@ func processActiveScenarioUpdate() {
 			}
 		}
 	}
+}
 
+func processGisEngineUpdate(assetMap map[string]string) {
+	for assetName, assetType := range assetMap {
+		// Only process UE updates
+		if assetType == postgis.TypeUe {
+			if assetName == postgis.AllAssets {
+				ueMap, err := sbi.pc.GetAllUe()
+				if err == nil {
+					for _, ue := range ueMap {
+						log.Debug("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+					}
+				}
+			} else {
+				ue, err := sbi.pc.GetUe(assetName)
+				if err == nil {
+					log.Debug("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+				}
+			}
+		}
+	}
 }
