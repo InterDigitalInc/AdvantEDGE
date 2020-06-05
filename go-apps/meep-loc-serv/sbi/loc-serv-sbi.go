@@ -17,21 +17,28 @@
 package sbi
 
 import (
+	"encoding/json"
+	"errors"
 	"strings"
 
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-loc-serv-sbi"
+const geModuleName string = "meep-gis-engine"
+const postgisUser string = "postgres"
+const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UserInfoCb     func(string, string, string)
+	UserInfoCb     func(string, string, string, *float32, *float32)
 	ZoneInfoCb     func(string, int, int, int)
-	ApInfoCb       func(string, string, string, string, int)
+	ApInfoCb       func(string, string, string, string, int, *float32, *float32)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
 }
@@ -41,9 +48,10 @@ type LocServSbi struct {
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
-	updateUserInfoCB        func(string, string, string)
+	pc                      *postgis.Connector
+	updateUserInfoCB        func(string, string, string, *float32, *float32)
 	updateZoneInfoCB        func(string, int, int, int)
-	updateAccessPointInfoCB func(string, string, string, string, int)
+	updateAccessPointInfoCB func(string, string, string, string, int, *float32, *float32)
 	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
 }
@@ -56,6 +64,11 @@ func Init(cfg SbiCfg) (err error) {
 	// Create new SBI instance
 	sbi = new(LocServSbi)
 	sbi.sandboxName = cfg.SandboxName
+	sbi.updateUserInfoCB = cfg.UserInfoCb
+	sbi.updateZoneInfoCB = cfg.ZoneInfoCb
+	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
+	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
+	sbi.cleanUpCB = cfg.CleanUpCb
 
 	// Create message queue
 	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
@@ -78,12 +91,15 @@ func Init(cfg SbiCfg) (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+	log.Info("Active Scenario Model created")
 
-	sbi.updateUserInfoCB = cfg.UserInfoCb
-	sbi.updateZoneInfoCB = cfg.ZoneInfoCb
-	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
-	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
-	sbi.cleanUpCB = cfg.CleanUpCb
+	// Connect to Postgis DB
+	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed to create postgis connector with error: ", err.Error())
+		return err
+	}
+	log.Info("Postgis Connector created")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -98,9 +114,10 @@ func Run() (err error) {
 	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
 	sbi.handlerId, err = sbi.mqLocal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		log.Error("Failed to register local Msg Queue listener: ", err.Error())
 		return err
 	}
+	log.Info("Registered local Msg Queue listener")
 
 	return nil
 }
@@ -117,6 +134,9 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
+	case mq.MsgGeUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -133,8 +153,7 @@ func processActiveScenarioTerminate() {
 
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
-
-	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
+	previousUeNameList := sbi.activeModel.GetNodeNames("UE")
 
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
@@ -146,39 +165,41 @@ func processActiveScenarioUpdate() {
 	uePerZoneMap := make(map[string]int)
 	poaPerZoneMap := make(map[string]int)
 
+	// Get all UE & POA positions
+	ueMap, _ := sbi.pc.GetAllUe()
+	poaMap, _ := sbi.pc.GetAllPoa()
+
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
-		ctx := sbi.activeModel.GetNodeContext(name)
-		if ctx == nil {
-			log.Error("Error getting context for UE: " + name)
+		zone, netLoc, err := getNetworkLocation(name)
+		if err != nil {
+			log.Error(err.Error())
 			continue
 		}
-		nodeCtx, ok := ctx.(*mod.NodeContext)
-		if !ok {
-			log.Error("Error casting context for UE: " + name)
-			continue
-		}
-		zone := nodeCtx.Parents[mod.Zone]
-		netLoc := nodeCtx.Parents[mod.NetLoc]
 
-		sbi.updateUserInfoCB(name, zone, netLoc)
+		var longitude *float32
+		var latitude *float32
+		if ue, found := ueMap[name]; found {
+			longitude, latitude = parsePosition(ue.Position)
+		}
+
+		sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
 		uePerZoneMap[zone]++
 		uePerNetLocMap[netLoc]++
 	}
 
-	//only find UEs that were removed, check that former UEs are in new UE list
-	foundOldInNewList := false
-	for _, oldUe := range formerUeNameList {
-		foundOldInNewList = false
+	// Update UEs that were removed
+	for _, oldUe := range previousUeNameList {
+		found := false
 		for _, newUe := range ueNameList {
 			if newUe == oldUe {
-				foundOldInNewList = true
+				found = true
 				break
 			}
 		}
-		if !foundOldInNewList {
-			sbi.updateUserInfoCB(oldUe, "", "")
+		if !found {
+			sbi.updateUserInfoCB(oldUe, "", "", nil, nil)
 			log.Info("Ue removed : ", oldUe)
 		}
 	}
@@ -186,20 +207,19 @@ func processActiveScenarioUpdate() {
 	// Update POA-CELL info
 	poaNameList := sbi.activeModel.GetNodeNames("POA-CELL")
 	for _, name := range poaNameList {
-		ctx := sbi.activeModel.GetNodeContext(name)
-		if ctx == nil {
-			log.Error("Error getting context for POA-CELL: " + name)
+		zone, netLoc, err := getNetworkLocation(name)
+		if err != nil {
+			log.Error(err.Error())
 			continue
 		}
-		nodeCtx, ok := ctx.(*mod.NodeContext)
-		if !ok {
-			log.Error("Error casting context for POA-CELL: " + name)
-			continue
-		}
-		zone := nodeCtx.Parents[mod.Zone]
-		netLoc := nodeCtx.Parents[mod.NetLoc]
 
-		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "SERVICEABLE", uePerNetLocMap[netLoc])
+		var longitude *float32
+		var latitude *float32
+		if poa, found := poaMap[name]; found {
+			longitude, latitude = parsePosition(poa.Position)
+		}
+
+		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "SERVICEABLE", uePerNetLocMap[netLoc], longitude, latitude)
 		poaPerZoneMap[zone]++
 	}
 
@@ -209,6 +229,139 @@ func processActiveScenarioUpdate() {
 		if name != "" && !strings.Contains(name, "-COMMON") {
 			sbi.updateZoneInfoCB(name, poaPerZoneMap[name], 0, uePerZoneMap[name])
 		}
+	}
+}
+
+func processGisEngineUpdate(assetMap map[string]string) {
+	for assetName, assetType := range assetMap {
+		if assetType == postgis.TypeUe {
+			if assetName == postgis.AllAssets {
+				updateAllUserPosition()
+			} else {
+				updateUserPosition(assetName)
+			}
+		} else if assetType == postgis.TypePoa {
+			if assetName == postgis.AllAssets {
+				updateAllApPosition()
+			} else {
+				updateApPosition(assetName)
+			}
+		}
+	}
+}
+
+func getNetworkLocation(name string) (zone string, netLoc string, err error) {
+	ctx := sbi.activeModel.GetNodeContext(name)
+	if ctx == nil {
+		err = errors.New("Error getting context for: " + name)
+		return
+	}
+	nodeCtx, ok := ctx.(*mod.NodeContext)
+	if !ok {
+		err = errors.New("Error casting context for: " + name)
+		return
+	}
+	zone = nodeCtx.Parents[mod.Zone]
+	netLoc = nodeCtx.Parents[mod.NetLoc]
+	return zone, netLoc, nil
+}
+
+func parsePosition(position string) (longitude *float32, latitude *float32) {
+	var point dataModel.Point
+	err := json.Unmarshal([]byte(position), &point)
+	if err != nil {
+		return nil, nil
+	}
+	return &point.Coordinates[0], &point.Coordinates[1]
+}
+
+func updateUserPosition(name string) {
+	// Get network location
+	zone, netLoc, err := getNetworkLocation(name)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get position
+	var longitude *float32
+	var latitude *float32
+	ue, err := sbi.pc.GetUe(name)
+	if err == nil {
+		longitude, latitude = parsePosition(ue.Position)
+	}
+
+	// Update info
+	sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
+}
+
+func updateAllUserPosition() {
+	// Get all positions
+	ueMap, _ := sbi.pc.GetAllUe()
+
+	// Update info
+	ueNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range ueNameList {
+		// Get network location
+		zone, netLoc, err := getNetworkLocation(name)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+
+		// Get position
+		var longitude *float32
+		var latitude *float32
+		if ue, found := ueMap[name]; found {
+			longitude, latitude = parsePosition(ue.Position)
+		}
+
+		sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
+	}
+}
+
+func updateApPosition(name string) {
+	// Get network location
+	zone, netLoc, err := getNetworkLocation(name)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get position
+	var longitude *float32
+	var latitude *float32
+	poa, err := sbi.pc.GetPoa(name)
+	if err == nil {
+		longitude, latitude = parsePosition(poa.Position)
+	}
+
+	// Update info
+	sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "", -1, longitude, latitude)
+}
+
+func updateAllApPosition() {
+	// Get all positions
+	poaMap, _ := sbi.pc.GetAllPoa()
+
+	// Update info
+	poaNameList := sbi.activeModel.GetNodeNames("POA-CELL")
+	for _, name := range poaNameList {
+		// Get network location
+		zone, netLoc, err := getNetworkLocation(name)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+
+		// Get position
+		var longitude *float32
+		var latitude *float32
+		if poa, found := poaMap[name]; found {
+			longitude, latitude = parsePosition(poa.Position)
+		}
+
+		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "", -1, longitude, latitude)
 	}
 }
 

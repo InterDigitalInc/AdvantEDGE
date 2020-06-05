@@ -165,7 +165,29 @@ func Run() (err error) {
 		return err
 	}
 
+	// Register Postgis listener
+	err = ge.pc.SetListener(gisHandler)
+	if err != nil {
+		log.Error("Failed to register Postgis listener: ", err.Error())
+		return err
+	}
+	log.Info("Registered Postgis listener")
+
 	return nil
+}
+
+// Postgis handler
+func gisHandler(updateType string, assetName string) {
+	// Create & fill gis update message
+	msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
+	msg.Payload[assetName] = updateType
+	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+
+	// Send message on local Msg Queue
+	err := ge.mqLocal.SendMsg(msg)
+	if err != nil {
+		log.Error("Failed to send message with error: ", err.Error())
+	}
 }
 
 // Message Queue handler

@@ -1305,7 +1305,7 @@ func updateStoreName(storeName string) {
 	}
 }
 
-func updateUserInfo(address string, zoneId string, accessPointId string) {
+func updateUserInfo(address string, zoneId string, accessPointId string, longitude *float32, latitude *float32) {
 	var oldZoneId string
 	var oldApId string
 
@@ -1323,10 +1323,20 @@ func updateUserInfo(address string, zoneId string, accessPointId string) {
 		oldZoneId = userInfo.ZoneId
 		oldApId = userInfo.AccessPointId
 	}
-
-	// Update info
 	userInfo.ZoneId = zoneId
 	userInfo.AccessPointId = accessPointId
+
+	// Update position
+	if longitude == nil || latitude == nil {
+		userInfo.LocationInfo = nil
+	} else {
+		if userInfo.LocationInfo == nil {
+			userInfo.LocationInfo = new(LocationInfo)
+			userInfo.LocationInfo.Accuracy = 1
+		}
+		userInfo.LocationInfo.Longitude = *longitude
+		userInfo.LocationInfo.Latitude = *latitude
+	}
 
 	// Update User info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
@@ -1361,7 +1371,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 	checkNotificationRegistrations(ZONE_STATUS, zoneId, "", "", strconv.Itoa(nbUsers), "")
 }
 
-func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStatusStr string, nbUsers int) {
+func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStatusStr string, nbUsers int, longitude *float32, latitude *float32) {
 	// Get AP Info from DB
 	jsonApInfo, _ := rc.JSONGetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".")
 	apInfo := convertJsonToAccessPointInfo(jsonApInfo)
@@ -1382,6 +1392,18 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 	}
 	if nbUsers != -1 {
 		apInfo.NumberOfUsers = int32(nbUsers)
+	}
+
+	// Update position
+	if longitude == nil || latitude == nil {
+		apInfo.LocationInfo = nil
+	} else {
+		if apInfo.LocationInfo == nil {
+			apInfo.LocationInfo = new(LocationInfo)
+			apInfo.LocationInfo.Accuracy = 1
+		}
+		apInfo.LocationInfo.Longitude = *longitude
+		apInfo.LocationInfo.Latitude = *latitude
 	}
 
 	// Update AP info in DB & Send notifications

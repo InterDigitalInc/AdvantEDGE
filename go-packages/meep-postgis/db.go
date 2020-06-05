@@ -27,24 +27,38 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// DB Config
 const (
-	DbHost     = "meep-postgis.default.svc.cluster.local"
-	DbPort     = "5432"
-	DbUser     = ""
-	DbPassword = ""
-	DbDefault  = "postgres"
+	DbHost              = "meep-postgis.default.svc.cluster.local"
+	DbPort              = "5432"
+	DbUser              = ""
+	DbPassword          = ""
+	DbDefault           = "postgres"
+	DbMaxRetryCount int = 2
 )
-const dbMaxRetryCount int = 2
 
+const (
+	AllAssets = "ALL"
+)
+
+// Path modes
 const (
 	PathModeLoop    = "LOOP"
 	PathModeReverse = "REVERSE"
 )
 
+// DB Table Names
 const (
 	UeTable      = "ue"
 	PoaTable     = "poa"
 	ComputeTable = "compute"
+)
+
+// Asset Types
+const (
+	TypeUe      = "UE"
+	TypePoa     = "POA"
+	TypeCompute = "COMPUTE"
 )
 
 type Ue struct {
@@ -84,6 +98,7 @@ type Connector struct {
 	dbName    string
 	db        *sql.DB
 	connected bool
+	updateCb  func(string, string)
 }
 
 // NewConnector - Creates and initializes a Postgis connector
@@ -103,7 +118,7 @@ func NewConnector(name, namespace, user, pwd, host, port string) (pc *Connector,
 	}
 
 	// Connect to Postgis DB
-	for retry := 0; retry <= dbMaxRetryCount; retry++ {
+	for retry := 0; retry <= DbMaxRetryCount; retry++ {
 		pc.db, err = pc.connectDB("", user, pwd, host, port)
 		if err == nil {
 			break
@@ -171,6 +186,17 @@ func (pc *Connector) connectDB(dbName, user, pwd, host, port string) (db *sql.DB
 	return db, nil
 }
 
+func (pc *Connector) SetListener(listener func(string, string)) error {
+	pc.updateCb = listener
+	return nil
+}
+
+func (pc *Connector) notifyListener(cbType string, assetName string) {
+	if pc.updateCb != nil {
+		go pc.updateCb(cbType, assetName)
+	}
+}
+
 // CreateDb -- Create new DB with provided name
 func (pc *Connector) CreateDb(name string) (err error) {
 	_, err = pc.db.Exec("CREATE DATABASE " + name)
@@ -199,8 +225,8 @@ func (pc *Connector) CreateTables() (err error) {
 		path_mode       varchar(20)           	NOT NULL DEFAULT 'LOOP',
 		path_velocity   decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		path_length     decimal(10,3)         	NOT NULL DEFAULT '0.000',
-		path_increment  decimal(10,3)         	NOT NULL DEFAULT '0.000',
-		path_fraction   decimal(10,3)         	NOT NULL DEFAULT '0.000',
+		path_increment  decimal(10,6)         	NOT NULL DEFAULT '0.000000',
+		path_fraction   decimal(10,6)         	NOT NULL DEFAULT '0.000000',
 		poa				varchar(100)			NOT NULL DEFAULT '',
 		poa_distance    decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		poa_in_range	varchar(100)[]			NOT NULL DEFAULT array[]::varchar[],
@@ -313,6 +339,9 @@ func (pc *Connector) CreateUe(id string, name string, position string, path stri
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, name)
+
 	return nil
 }
 
@@ -348,6 +377,10 @@ func (pc *Connector) CreatePoa(id string, name string, subType string, position 
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, AllAssets)
+	pc.notifyListener(TypePoa, name)
+
 	return nil
 }
 
@@ -375,6 +408,10 @@ func (pc *Connector) CreateCompute(id string, name string, subType string, posit
 		log.Error(err.Error())
 		return err
 	}
+
+	// Notify listener
+	pc.notifyListener(TypeCompute, name)
+
 	return nil
 }
 
@@ -430,6 +467,9 @@ func (pc *Connector) UpdateUe(name string, position string, path string, mode st
 		}
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, name)
+
 	return nil
 }
 
@@ -471,6 +511,10 @@ func (pc *Connector) UpdatePoa(name string, position string, radius float32) (er
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, AllAssets)
+	pc.notifyListener(TypePoa, name)
+
 	return nil
 }
 
@@ -492,6 +536,9 @@ func (pc *Connector) UpdateCompute(name string, position string) (err error) {
 			return err
 		}
 	}
+
+	// Notify listener
+	pc.notifyListener(TypeCompute, name)
 
 	return nil
 }
@@ -771,6 +818,9 @@ func (pc *Connector) DeleteUe(name string) (err error) {
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, name)
+
 	return nil
 }
 
@@ -795,6 +845,10 @@ func (pc *Connector) DeletePoa(name string) (err error) {
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, AllAssets)
+	pc.notifyListener(TypePoa, name)
+
 	return nil
 }
 
@@ -812,6 +866,9 @@ func (pc *Connector) DeleteCompute(name string) (err error) {
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeCompute, name)
+
 	return nil
 }
 
@@ -822,6 +879,10 @@ func (pc *Connector) DeleteAllUe() (err error) {
 		log.Error(err.Error())
 		return err
 	}
+
+	// Notify listener
+	pc.notifyListener(TypeUe, "")
+
 	return nil
 }
 
@@ -840,6 +901,10 @@ func (pc *Connector) DeleteAllPoa() (err error) {
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, AllAssets)
+	pc.notifyListener(TypePoa, AllAssets)
+
 	return nil
 }
 
@@ -850,6 +915,10 @@ func (pc *Connector) DeleteAllCompute() (err error) {
 		log.Error(err.Error())
 		return err
 	}
+
+	// Notify listener
+	pc.notifyListener(TypeCompute, AllAssets)
+
 	return nil
 }
 
@@ -884,6 +953,9 @@ func (pc *Connector) AdvanceUePosition(name string, increment float32) (err erro
 		return err
 	}
 
+	// Notify listener
+	pc.notifyListener(TypeUe, name)
+
 	return nil
 }
 
@@ -917,6 +989,9 @@ func (pc *Connector) AdvanceAllUePosition(increment float32) (err error) {
 		log.Error(err.Error())
 		return err
 	}
+
+	// Notify listener
+	pc.notifyListener(TypeUe, AllAssets)
 
 	return nil
 }
