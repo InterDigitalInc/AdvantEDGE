@@ -132,7 +132,7 @@ func NewConnector(name, namespace, user, pwd, host, port string) (pc *Connector,
 
 	// Create sandbox DB if it does not exist
 	// Use format: '<namespace>_<name>' & replace dashes with underscores
-	pc.dbName = strings.Replace(namespace+"_"+name, "-", "_", -1)
+	pc.dbName = strings.ToLower(strings.Replace(namespace+"_"+name, "-", "_", -1))
 
 	// Ignore DB creation error in case it already exists.
 	// Failure will occur at DB connection if DB was not successfully created.

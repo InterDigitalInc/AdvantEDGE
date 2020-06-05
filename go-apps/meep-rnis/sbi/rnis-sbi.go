@@ -32,6 +32,8 @@ const postgisPwd string = "pwd"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
+	PostgisHost    string
+	PostgisPort    string
 	UeEcgiInfoCb   func(string, string, string, string)
 	AppEcgiInfoCb  func(string, string, string, string)
 	ScenarioNameCb func(string)
@@ -89,7 +91,7 @@ func Init(cfg SbiCfg) (err error) {
 	}
 
 	// Connect to Postgis DB
-	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, "", "")
+	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
 	if err != nil {
 		log.Error("Failed to create postgis connector with error: ", err.Error())
 		return err
