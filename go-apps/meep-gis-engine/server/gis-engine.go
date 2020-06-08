@@ -538,7 +538,7 @@ func setAutomation(automationType string, state bool) (err error) {
 	}
 
 	// Type-specific configuration
-	if automationType == AutoTypeNetChar || automationType == AutoTypePoaInRange {
+	if automationType == AutoTypeNetChar {
 		return errors.New("Automation type not supported")
 	} else if automationType == AutoTypeMovement {
 		if state {
