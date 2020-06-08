@@ -10,12 +10,13 @@ GOAPPS=(
 )
 
 GOPKGS=(
+    meep-couch
+    meep-metric-store
     meep-model
     meep-mq
     meep-net-char-mgr
-    meep-metric-store
+    meep-postgis
     meep-watchdog
-    meep-couch
 )
 
 echo ""
