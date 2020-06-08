@@ -36,6 +36,7 @@ const (
 	point2 = "[7.421501,43.736978]"
 	point3 = "[7.422441,43.732285]"
 	point4 = "[7.418944,43.732591]"
+	point5 = "[7.417135,43.731531]"
 
 	ue1Id       = "ue1-id"
 	ue1Name     = "ue1"
@@ -58,9 +59,16 @@ const (
 	ue3PathMode = PathModeReverse
 	ue3Velocity = 25.0
 
+	ue4Id       = "ue4-id"
+	ue4Name     = "ue4"
+	ue4Loc      = "{\"type\":\"Point\",\"coordinates\":" + point5 + "}"
+	ue4Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point5 + "," + point4 + "," + point1 + "]}"
+	ue4PathMode = PathModeReverse
+	ue4Velocity = 10.0
+
 	poa1Id     = "poa1-id"
 	poa1Name   = "poa1"
-	poa1Type   = "POA-CELLULAR"
+	poa1Type   = "POA-CELL"
 	poa1Loc    = "{\"type\":\"Point\",\"coordinates\":[7.418494,43.733449]}"
 	poa1Radius = 160.0
 
@@ -72,7 +80,7 @@ const (
 
 	poa3Id     = "poa3-id"
 	poa3Name   = "poa3"
-	poa3Type   = "POA-CELLULAR"
+	poa3Type   = "POA-CELL"
 	poa3Loc    = "{\"type\":\"Point\",\"coordinates\":[7.422239,43.732972]}"
 	poa3Radius = 220.0
 
@@ -134,6 +142,46 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("Failed to create tables")
 	}
 
+	// Cleanup
+	err = pc.DeleteTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// t.Fatalf("DONE")
+}
+
+func TestPostgisCreateUe(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid Postgis Connector")
+	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	if err != nil || pc == nil {
+		t.Fatalf("Failed to create postgis Connector")
+	}
+
+	// Cleanup
+	_ = pc.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = pc.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// Make sure UEs don't exist
+	fmt.Println("Verify no UEs present")
+	ueMap, err := pc.GetAllUe()
+	if err != nil {
+		t.Fatalf("Failed to get all UE")
+	}
+	if len(ueMap) != 0 {
+		t.Fatalf("No UE should be present")
+	}
+
 	// Add Invalid UE
 	fmt.Println("Create Invalid UEs")
 	err = pc.CreateUe("", ue1Name, ue1Loc, ue1Path, PathModeLoop, ue1Velocity)
@@ -169,6 +217,116 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("UE creation should have failed")
 	}
 
+	// Add UE & Validate successfully added
+	fmt.Println("Add UEs & Validate successfully added")
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err := pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue3Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue4Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Remove UE & validate update
+	fmt.Println("Remove UE & validate update")
+	err = pc.DeleteUe(ue2Name)
+	if err != nil {
+		t.Fatalf("Failed to delete UE")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err == nil || ue != nil {
+		t.Fatalf("UE should no longer exist")
+	}
+
+	// Add UE & validate update
+	fmt.Println("Add UE & validate update")
+	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Delete all UE & validate updates
+	fmt.Println("Delete all UE & validate updates")
+	err = pc.DeleteAllUe()
+	if err != nil {
+		t.Fatalf("Failed to delete all UE")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 0 {
+		t.Fatalf("UE should no longer exist")
+	}
+
+	// t.Fatalf("DONE")
+}
+
+func TestPostgisCreatePoa(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid Postgis Connector")
+	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	if err != nil || pc == nil {
+		t.Fatalf("Failed to create postgis Connector")
+	}
+
+	// Cleanup
+	_ = pc.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = pc.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
 	// Make sure POAs don't exist
 	fmt.Println("Verify no POAs present")
 	poaMap, err := pc.GetAllPoa()
@@ -177,26 +335,6 @@ func TestPostgisConnectorNew(t *testing.T) {
 	}
 	if len(poaMap) != 0 {
 		t.Fatalf("No POA should be present")
-	}
-
-	// Make sure UEs don't exist
-	fmt.Println("Verify no UEs present")
-	ueMap, err := pc.GetAllUe()
-	if err != nil {
-		t.Fatalf("Failed to get all UE")
-	}
-	if len(ueMap) != 0 {
-		t.Fatalf("No UE should be present")
-	}
-
-	// Make sure Computes don't exist
-	fmt.Println("Verify no Computes present")
-	computeMap, err := pc.GetAllCompute()
-	if err != nil {
-		t.Fatalf("Failed to get all Compute")
-	}
-	if len(computeMap) != 0 {
-		t.Fatalf("No Compute should be present")
 	}
 
 	// Add POA & Validate successfully added
@@ -237,42 +375,74 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("POA validation failed")
 	}
 
-	// Add UE & Validate successfully added
-	fmt.Println("Add UEs & Validate successfully added")
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	// Remove POA & validate updates
+	fmt.Println("Remove POA & validate updates")
+	err = pc.DeletePoa(poa1Name)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to delete POA")
 	}
-	ue, err := pc.GetUe(ue1Name)
-	if err != nil || ue == nil {
-		t.Fatalf("Failed to get UE")
-	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
-		t.Fatalf("UE validation failed")
+	poa, err = pc.GetPoa(poa1Name)
+	if err == nil || poa != nil {
+		t.Fatalf("POA should no longer exist")
 	}
 
-	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	// Add POA and validate updates
+	fmt.Println("Add POA & validate updates")
+	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
 	if err != nil {
 		t.Fatalf("Failed to create asset")
 	}
-	ue, err = pc.GetUe(ue2Name)
-	if err != nil || ue == nil {
-		t.Fatalf("Failed to get UE")
+	poa, err = pc.GetPoa(poa1Name)
+	if err != nil || poa == nil {
+		t.Fatalf("Failed to get POA")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
-		t.Fatalf("UE validation failed")
+	if !validatePoa(poa, poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius) {
+		t.Fatalf("POA validation failed")
 	}
 
-	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	// Delete all POA & validate updates
+	fmt.Println("Delete all POA & validate updates")
+	err = pc.DeleteAllPoa()
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to delete all POA")
 	}
-	ue, err = pc.GetUe(ue3Name)
-	if err != nil || ue == nil {
-		t.Fatalf("Failed to get UE")
+	poaMap, err = pc.GetAllPoa()
+	if err != nil || len(poaMap) != 0 {
+		t.Fatalf("POAs should no longer exist")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
-		t.Fatalf("UE validation failed")
+
+	// t.Fatalf("DONE")
+}
+
+func TestPostgisCreateCompute(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid Postgis Connector")
+	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	if err != nil || pc == nil {
+		t.Fatalf("Failed to create postgis Connector")
+	}
+
+	// Cleanup
+	_ = pc.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = pc.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// Make sure Computes don't exist
+	fmt.Println("Verify no Computes present")
+	computeMap, err := pc.GetAllCompute()
+	if err != nil {
+		t.Fatalf("Failed to get all Compute")
+	}
+	if len(computeMap) != 0 {
+		t.Fatalf("No Compute should be present")
 	}
 
 	// Add Compute & Validate successfully added
@@ -313,8 +483,174 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	// Update UE position + path & validate update
-	fmt.Println("Update UE position & validate update")
+	// Update Compute poistion & validate update
+	fmt.Println("Update Compute position & validate update")
+	err = pc.UpdateCompute(compute3Name, compute1Loc)
+	if err != nil {
+		t.Fatalf("Failed to update Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute1Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	err = pc.UpdateCompute(compute3Name, compute3Loc)
+	if err != nil {
+		t.Fatalf("Failed to update Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	// Remove Compute & validate update
+	fmt.Println("Remove Compute & validate update")
+	err = pc.DeleteCompute(compute3Name)
+	if err != nil {
+		t.Fatalf("Failed to delete Compute")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err == nil || compute != nil {
+		t.Fatalf("Compute should no longer exist")
+	}
+
+	// Add Compute & validate update
+	fmt.Println("Add Compute & validate update")
+	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	compute, err = pc.GetCompute(compute3Name)
+	if err != nil || compute == nil {
+		t.Fatalf("Failed to get Compute")
+	}
+	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
+		t.Fatalf("Compute validation failed")
+	}
+
+	// Delete all Compute & validate updates
+	fmt.Println("Delete all Compute & validate updates")
+	err = pc.DeleteAllCompute()
+	if err != nil {
+		t.Fatalf("Failed to delete all Compute")
+	}
+	computeMap, err = pc.GetAllCompute()
+	if err != nil || len(computeMap) != 0 {
+		t.Fatalf("Compute should no longer exist")
+	}
+
+	// t.Fatalf("DONE")
+}
+
+func TestPostgisPoaSelection(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid Postgis Connector")
+	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	if err != nil || pc == nil {
+		t.Fatalf("Failed to create postgis Connector")
+	}
+
+	// Cleanup
+	_ = pc.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = pc.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// Add POAs first
+	fmt.Println("Add POAs")
+	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+
+	// Add UEs & Validate POA selection
+	fmt.Println("Add UEs & Validate POA selection")
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err := pc.GetUe(ue1Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue2Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue3Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	err = pc.CreateUe(ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	ue, err = pc.GetUe(ue4Name)
+	if err != nil || ue == nil {
+		t.Fatalf("Failed to get UE")
+	}
+	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa1Name, 239.585, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+
+	// Add Compute & Validate successfully added
+	fmt.Println("Add Computes & Validate successfully added")
+	err = pc.CreateCompute(compute1Id, compute1Name, compute1Type, compute1Loc)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreateCompute(compute2Id, compute2Name, compute2Type, compute2Loc)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+
+	// Update UE position + path & validate POA selection
+	fmt.Println("Update UE position & validate POA selection")
 	ueLoc := "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
 	err = pc.UpdateUe(ue1Name, ueLoc, "", "", 0)
 	if err != nil {
@@ -354,31 +690,34 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("UE validation failed")
 	}
 
-	// Update POA position + radius & validate update
-	fmt.Println("Update POA position + radius & validate update")
+	// Update POA position + radius & validate POA selection
+	fmt.Println("Update POA position + radius & validate POA selection")
 	poaLoc := "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
 	err = pc.UpdatePoa(poa2Name, poaLoc, 1000.0)
 	if err != nil {
 		t.Fatalf("Failed to update POA")
 	}
-	poa, err = pc.GetPoa(poa2Name)
+	poa, err := pc.GetPoa(poa2Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
 	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poaLoc, 1000.0) {
 		t.Fatalf("POA validation failed")
 	}
-	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 3 {
+	ueMap, err := pc.GetAllUe()
+	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa2Name, 0.000, []string{poa1Name, poa2Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name, poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 391.155, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name, poa2Name}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 316.692, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -394,7 +733,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("POA validation failed")
 	}
 	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 3 {
+	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
@@ -406,31 +745,8 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
-
-	// Update Compute poistion & validate update
-	fmt.Println("Update Compute position & validate update")
-	err = pc.UpdateCompute(compute3Name, compute1Loc)
-	if err != nil {
-		t.Fatalf("Failed to update Compute")
-	}
-	compute, err = pc.GetCompute(compute3Name)
-	if err != nil || compute == nil {
-		t.Fatalf("Failed to get Compute")
-	}
-	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute1Loc) {
-		t.Fatalf("Compute validation failed")
-	}
-
-	err = pc.UpdateCompute(compute3Name, compute3Loc)
-	if err != nil {
-		t.Fatalf("Failed to update Compute")
-	}
-	compute, err = pc.GetCompute(compute3Name)
-	if err != nil || compute == nil {
-		t.Fatalf("Failed to get Compute")
-	}
-	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
-		t.Fatalf("Compute validation failed")
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
+		t.Fatalf("UE validation failed")
 	}
 
 	// Remove POA & validate updates
@@ -444,7 +760,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("POA should no longer exist")
 	}
 	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 3 {
+	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa3Name, 328.983, []string{}) {
@@ -454,6 +770,9 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("UE validation failed")
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa3Name, 268.817, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -471,7 +790,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 		t.Fatalf("POA validation failed")
 	}
 	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 3 {
+	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
 	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
@@ -483,55 +802,89 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
 		t.Fatalf("UE validation failed")
 	}
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
 
-	// Remove UE & validate update
-	fmt.Println("Remove UE & validate update")
-	err = pc.DeleteUe(ue2Name)
+	// Delete all POA & validate updates
+	fmt.Println("Delete all POA & validate updates")
+	err = pc.DeleteAllPoa()
 	if err != nil {
-		t.Fatalf("Failed to delete UE")
+		t.Fatalf("Failed to delete all POA")
 	}
-	ue, err = pc.GetUe(ue2Name)
-	if err == nil || ue != nil {
-		t.Fatalf("UE should no longer exist")
+	poaMap, err := pc.GetAllPoa()
+	if err != nil || len(poaMap) != 0 {
+		t.Fatalf("POAs should no longer exist")
+	}
+	ueMap, err = pc.GetAllUe()
+	if err != nil || len(ueMap) != 4 {
+		t.Fatalf("Failed to get all UE")
+	}
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
+	}
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, "", 0.000, []string{}) {
+		t.Fatalf("UE validation failed")
 	}
 
-	// Add UE & validate update
-	fmt.Println("Add UE & validate update")
+	// t.Fatalf("DONE")
+}
+
+func TestPostgisMovement(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	// Create Connector
+	fmt.Println("Create valid Postgis Connector")
+	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	if err != nil || pc == nil {
+		t.Fatalf("Failed to create postgis Connector")
+	}
+
+	// Cleanup
+	_ = pc.DeleteTables()
+
+	// Create tables
+	fmt.Println("Create Tables")
+	err = pc.CreateTables()
+	if err != nil {
+		t.Fatalf("Failed to create tables")
+	}
+
+	// Add POAs first
+	fmt.Println("Add POAs")
+	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
+
+	// Add UEs & Validate POA selection
+	fmt.Println("Add UEs & Validate POA selection")
+	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	if err != nil {
+		t.Fatalf("Failed to create asset")
+	}
 	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
 	if err != nil {
 		t.Fatalf("Failed to create asset")
 	}
-	ue, err = pc.GetUe(ue2Name)
-	if err != nil || ue == nil {
-		t.Fatalf("Failed to get UE")
-	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
-		t.Fatalf("UE validation failed")
-	}
-
-	// Remove Compute & validate update
-	fmt.Println("Remove Compute & validate update")
-	err = pc.DeleteCompute(compute3Name)
-	if err != nil {
-		t.Fatalf("Failed to delete Compute")
-	}
-	compute, err = pc.GetCompute(compute3Name)
-	if err == nil || compute != nil {
-		t.Fatalf("Compute should no longer exist")
-	}
-
-	// Add Compute & validate update
-	fmt.Println("Add Compute & validate update")
-	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
 	if err != nil {
 		t.Fatalf("Failed to create asset")
-	}
-	compute, err = pc.GetCompute(compute3Name)
-	if err != nil || compute == nil {
-		t.Fatalf("Failed to get Compute")
-	}
-	if !validateCompute(compute, compute3Id, compute3Name, compute3Type, compute3Loc) {
-		t.Fatalf("Compute validation failed")
 	}
 
 	// Advance UE1 along Looping path and validate UE
@@ -542,11 +895,11 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err := pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.09035, poa1Name, 195.134, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.09035, poa2Name, 276.166, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -598,11 +951,11 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 1.12034, poa1Name, 234.446, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 1.12034, poa2Name, 235.784, []string{poa2Name}) {
 		t.Fatalf("UE validation failed")
 	}
 
-	ueLoc = "{\"type\":\"Point\",\"coordinates\":[7.418766584,43.734426245]}"
+	ueLoc := "{\"type\":\"Point\",\"coordinates\":[7.418766584,43.734426245]}"
 	err = pc.AdvanceUePosition(ue1Name, 250.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
@@ -666,7 +1019,7 @@ func TestPostgisConnectorNew(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err := pc.GetAllUe()
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -678,52 +1031,6 @@ func TestPostgisConnectorNew(t *testing.T) {
 	}
 	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 1.608046, poa3Name, 73.962, []string{poa3Name}) {
 		t.Fatalf("UE validation failed")
-	}
-
-	// Delete all POA & validate updates
-	fmt.Println("Delete all POA & validate updates")
-	err = pc.DeleteAllPoa()
-	if err != nil {
-		t.Fatalf("Failed to delete all POA")
-	}
-	poaMap, err = pc.GetAllPoa()
-	if err != nil || len(poaMap) != 0 {
-		t.Fatalf("POAs should no longer exist")
-	}
-	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 3 {
-		t.Fatalf("Failed to get all UE")
-	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.20454, "", 0.000, []string{}) {
-		t.Fatalf("UE validation failed")
-	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
-		t.Fatalf("UE validation failed")
-	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 1.608046, "", 0.000, []string{}) {
-		t.Fatalf("UE validation failed")
-	}
-
-	// Delete all UE & validate updates
-	fmt.Println("Delete all UE & validate updates")
-	err = pc.DeleteAllUe()
-	if err != nil {
-		t.Fatalf("Failed to delete all UE")
-	}
-	ueMap, err = pc.GetAllUe()
-	if err != nil || len(ueMap) != 0 {
-		t.Fatalf("UE should no longer exist")
-	}
-
-	// Delete all Compute & validate updates
-	fmt.Println("Delete all Compute & validate updates")
-	err = pc.DeleteAllCompute()
-	if err != nil {
-		t.Fatalf("Failed to delete all Compute")
-	}
-	computeMap, err = pc.GetAllCompute()
-	if err != nil || len(computeMap) != 0 {
-		t.Fatalf("Compute should no longer exist")
 	}
 
 	// t.Fatalf("DONE")

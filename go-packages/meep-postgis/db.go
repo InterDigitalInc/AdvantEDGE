@@ -61,6 +61,14 @@ const (
 	TypeCompute = "COMPUTE"
 )
 
+// POA Types
+const (
+	PoaTypeGeneric = "POA"
+	PoaTypeCell4g  = "POA-CELL"
+	PoaTypeCell5g  = "POA-CELL-5G"
+	PoaTypeWifi    = "POA-WIFI"
+)
+
 type Ue struct {
 	Id            string
 	Name          string
@@ -89,6 +97,18 @@ type Compute struct {
 	Name     string
 	SubType  string
 	Position string
+}
+
+type PoaInfo struct {
+	Distance float32
+	SubType  string
+	InRange  bool
+}
+
+type UePoaInfo struct {
+	PoaInRange []string
+	PoaInfoMap map[string]*PoaInfo
+	CurrentPoa string
 }
 
 // Connector - Implements a Postgis SQL DB connector
@@ -1019,7 +1039,7 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	// Calculate distance from provided UE to each POA and check if within range
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT ue.name AS ue, poa.name as poa,
+		SELECT ue.name AS ue, ue.poa AS cur_poa, poa.name as poa, poa.type AS type,
 			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
 			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
 		FROM `+UeTable+` AS ue, `+PoaTable+` AS poa
@@ -1030,46 +1050,55 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	}
 	defer rows.Close()
 
-	nearestPoa := ""
-	distance := float32(0)
 	poaInRange := []string{}
+	poaInfoMap := make(map[string]*PoaInfo)
+	currentPoa := ""
 
 	// Scan results
 	for rows.Next() {
 		ue := ""
-		poa := ""
+		curPoa := ""
+		poaName := ""
+		poaType := ""
 		dist := float32(0)
 		inRange := false
 
-		err := rows.Scan(&ue, &poa, &dist, &inRange)
+		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange)
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
 
-		// Add POA if in range
+		// Store POA Info
+		currentPoa = curPoa
+		poaInfo := new(PoaInfo)
+		poaInfo.Distance = dist
+		poaInfo.SubType = poaType
 		if inRange {
-			poaInRange = append(poaInRange, poa)
+			poaInfo.InRange = true
+			poaInRange = append(poaInRange, poaName)
 		}
-
-		// Set nearest POA
-		if nearestPoa == "" || dist < distance {
-			nearestPoa = poa
-			distance = dist
-		}
+		poaInfoMap[poaName] = poaInfo
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Error(err)
 	}
 
-	// Update POA entries fro UE
+	// Select POA
+	selectedPoa := selectPoa(currentPoa, poaInRange, poaInfoMap)
+	distance := float32(0)
+	if selectedPoa != "" {
+		distance = poaInfoMap[selectedPoa].Distance
+	}
+
+	// Update POA entries for UE
 	query := `UPDATE ` + UeTable + `
 		SET poa = $2,
 			poa_distance = $3,
 			poa_in_range = $4
 		WHERE name = ($1)`
-	_, err = pc.db.Exec(query, name, nearestPoa, distance, pq.Array(poaInRange))
+	_, err = pc.db.Exec(query, name, selectedPoa, distance, pq.Array(poaInRange))
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -1083,7 +1112,7 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 	// Calculate distance from provided UE to each POA and check if within range
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT ue.name AS ue, poa.name as poa,
+		SELECT ue.name AS ue, ue.poa AS cur_poa, poa.name as poa, poa.type AS type,
 			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
 			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
 		FROM ` + UeTable + `, ` + PoaTable)
@@ -1093,48 +1122,52 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 	}
 	defer rows.Close()
 
-	nearestPoaMap := make(map[string]string)
-	distanceMap := make(map[string]float32)
-	poaInRangeMap := make(map[string][]string)
+	uePoaInfoMap := make(map[string]*UePoaInfo)
 
 	// Scan results
 	for rows.Next() {
 		ue := ""
-		poa := ""
+		curPoa := ""
+		poaName := ""
+		poaType := ""
 		dist := float32(0)
 		inRange := false
 
-		err := rows.Scan(&ue, &poa, &dist, &inRange)
+		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange)
 		if err != nil {
 			log.Error(err.Error())
 			return err
 		}
 
-		// Create map entries for UE if they don't exist yet
-		if _, ok := nearestPoaMap[ue]; !ok {
-			nearestPoaMap[ue] = ""
-			distanceMap[ue] = 0
-			poaInRangeMap[ue] = []string{}
+		// Get/Create new UE-specific POA Info
+		uePoaInfo, found := uePoaInfoMap[ue]
+		if !found {
+			uePoaInfo = new(UePoaInfo)
+			uePoaInfo.PoaInRange = []string{}
+			uePoaInfo.PoaInfoMap = make(map[string]*PoaInfo)
+			uePoaInfo.CurrentPoa = ""
+			uePoaInfoMap[ue] = uePoaInfo
 		}
 
-		// Add POA if in range
+		// Store POA Info
+		uePoaInfo.CurrentPoa = curPoa
+		poaInfo := new(PoaInfo)
+		poaInfo.Distance = dist
+		poaInfo.SubType = poaType
 		if inRange {
-			poaInRangeMap[ue] = append(poaInRangeMap[ue], poa)
+			poaInfo.InRange = true
+			uePoaInfo.PoaInRange = append(uePoaInfo.PoaInRange, poaName)
 		}
-
-		// Set nearest POA
-		if nearestPoaMap[ue] == "" || dist < distanceMap[ue] {
-			nearestPoaMap[ue] = poa
-			distanceMap[ue] = dist
-		}
+		uePoaInfo.PoaInfoMap[poaName] = poaInfo
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Error(err)
 	}
 
-	// If no entries found, reset all UE POA info
-	if len(nearestPoaMap) == 0 {
+	// If no POAs found, reset all UE POA info
+	if len(uePoaInfoMap) == 0 {
+		// Get list of UES
 		rows, err := pc.db.Query(`SELECT name FROM ` + UeTable)
 		if err != nil {
 			log.Error(err.Error())
@@ -1142,7 +1175,6 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 		}
 		defer rows.Close()
 
-		// Scan results
 		for rows.Next() {
 			ue := ""
 			err := rows.Scan(&ue)
@@ -1151,9 +1183,12 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 				return err
 			}
 
-			nearestPoaMap[ue] = ""
-			distanceMap[ue] = float32(0)
-			poaInRangeMap[ue] = []string{}
+			// Create new UE-specific POA Info
+			uePoaInfo := new(UePoaInfo)
+			uePoaInfo.PoaInRange = []string{}
+			uePoaInfo.PoaInfoMap = make(map[string]*PoaInfo)
+			uePoaInfo.CurrentPoa = ""
+			uePoaInfoMap[ue] = uePoaInfo
 		}
 		err = rows.Err()
 		if err != nil {
@@ -1161,14 +1196,22 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 		}
 	}
 
-	// Update POA entries for all UEs
-	for ue, nearestPoa := range nearestPoaMap {
+	// Select & update POA for all UEs
+	for ue, uePoaInfo := range uePoaInfoMap {
+		// Select POA
+		selectedPoa := selectPoa(uePoaInfo.CurrentPoa, uePoaInfo.PoaInRange, uePoaInfo.PoaInfoMap)
+		distance := float32(0)
+		if selectedPoa != "" {
+			distance = uePoaInfo.PoaInfoMap[selectedPoa].Distance
+		}
+
+		// Update in DB
 		query := `UPDATE ` + UeTable + `
 			SET poa = $2,
 				poa_distance = $3,
 				poa_in_range = $4
 			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, ue, nearestPoa, distanceMap[ue], pq.Array(poaInRangeMap[ue]))
+		_, err = pc.db.Exec(query, ue, selectedPoa, distance, pq.Array(uePoaInfo.PoaInRange))
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -1176,4 +1219,68 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 	}
 
 	return nil
+}
+
+// POA Selection Algorithm
+func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*PoaInfo) (selectedPoa string) {
+	if len(poaInRange) == 0 {
+		// Stay on current POA if it still exists
+		if _, found := poaInfoMap[currentPoa]; found {
+			selectedPoa = currentPoa
+		} else {
+			// Get nearest POA
+			for poa, poaInfo := range poaInfoMap {
+				if selectedPoa == "" || poaInfo.Distance < poaInfoMap[selectedPoa].Distance {
+					selectedPoa = poa
+				}
+			}
+		}
+	} else if len(poaInRange) == 1 {
+		// Select only available POA
+		selectedPoa = poaInRange[0]
+	} else {
+		// Stay on current POA until out of range or more localized RAT is in range
+		// Start with current POA as selected POA, if still in range
+		currentPoaType := ""
+		currentPoaInfo, found := poaInfoMap[currentPoa]
+		if found && currentPoaInfo.InRange {
+			currentPoaType = currentPoaInfo.SubType
+			selectedPoa = currentPoa
+		}
+
+		// Look for closest POA in range with a more localized RAT
+		for poa, poaInfo := range poaInfoMap {
+			if selectedPoa == "" || (comparePoaTypes(poaInfo.SubType, currentPoaType) > 0 &&
+				poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
+				selectedPoa = poa
+			}
+		}
+	}
+
+	return selectedPoa
+}
+
+func comparePoaTypes(poaTypeA string, poaTypeB string) int {
+	poaTypeAPriority := getPoaTypePriority(poaTypeA)
+	poaTypeBPriority := getPoaTypePriority(poaTypeB)
+	if poaTypeAPriority == poaTypeBPriority {
+		return 0
+	} else if poaTypeAPriority < poaTypeBPriority {
+		return -1
+	}
+	return 1
+}
+
+func getPoaTypePriority(poaType string) int {
+	priority := 0
+	if poaType == PoaTypeGeneric {
+		priority = 1
+	} else if poaType == PoaTypeCell4g {
+		priority = 2
+	} else if poaType == PoaTypeCell5g {
+		priority = 3
+	} else if poaType == PoaTypeWifi {
+		priority = 4
+	}
+	return priority
 }
