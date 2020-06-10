@@ -14,6 +14,7 @@
 
 FROM debian:9.6-slim
 
+COPY ./meep-gis-engine /templates/sandbox/meep-gis-engine
 COPY ./meep-loc-serv /templates/sandbox/meep-loc-serv
 COPY ./meep-metrics-engine /templates/sandbox/meep-metrics-engine
 COPY ./meep-mg-manager /templates/sandbox/meep-mg-manager

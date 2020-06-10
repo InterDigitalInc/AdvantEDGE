@@ -89,6 +89,8 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path = new AdvantEdgeSandboxControllerRestApi.LineString();
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type = "LineString";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};

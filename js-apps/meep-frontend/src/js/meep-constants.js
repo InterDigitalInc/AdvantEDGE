@@ -158,13 +158,13 @@ export const EXEC_EVT_REPLAY_FILES = 'exec-evt-replay-files';
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';
 
 export const DOMAIN_TYPE_STR = 'OPERATOR';
-export const DOMAIN_CELL_TYPE_STR = 'OPERATOR-CELL';
+export const DOMAIN_CELL_TYPE_STR = 'OPERATOR-CELLULAR';
 export const PUBLIC_DOMAIN_TYPE_STR = 'PUBLIC';
 export const ZONE_TYPE_STR = 'ZONE';
 export const COMMON_ZONE_TYPE_STR = 'COMMON';
 export const NL_TYPE_STR = 'POA';
 export const POA_TYPE_STR = 'POA';
-export const POA_CELL_TYPE_STR = 'POA-CELL';
+export const POA_CELL_TYPE_STR = 'POA-CELLULAR';
 export const DEFAULT_NL_TYPE_STR = 'DEFAULT';
 export const UE_TYPE_STR = 'UE';
 export const FOG_TYPE_STR = 'FOG';

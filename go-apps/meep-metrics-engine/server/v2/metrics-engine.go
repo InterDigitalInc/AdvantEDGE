@@ -516,7 +516,7 @@ func createNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
-func populateEventList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
+func populateEventList(key string, jsonInfo string, userData interface{}) error {
 	subList := userData.(*EventSubscriptionList)
 	var subInfo EventSubscription
 
@@ -529,7 +529,7 @@ func populateEventList(key string, jsonInfo string, dummy1 string, dummy2 string
 	return nil
 }
 
-func populateNetworkList(key string, jsonInfo string, dummy1 string, dummy2 string, userData interface{}) error {
+func populateNetworkList(key string, jsonInfo string, userData interface{}) error {
 	subList := userData.(*NetworkSubscriptionList)
 	var subInfo NetworkSubscription
 
@@ -829,7 +829,8 @@ func getEventSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response EventSubscriptionList
 
-	_ = rc.JSONGetList("", "", baseKey+typeEventSubscription, populateEventList, &response)
+	keyName := baseKey + typeEventSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateEventList, &response)
 
 	response.ResourceURL = hostUrl.String() + basePath + "metrics/subscriptions/event"
 	jsonResponse, err := json.Marshal(response)
@@ -846,7 +847,8 @@ func getNetworkSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response NetworkSubscriptionList
 
-	_ = rc.JSONGetList("", "", baseKey+typeNetworkSubscription, populateNetworkList, &response)
+	keyName := baseKey + typeNetworkSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateNetworkList, &response)
 
 	response.ResourceURL = hostUrl.String() + basePath + "metrics/subscriptions/network"
 	jsonResponse, err := json.Marshal(response)
@@ -927,7 +929,8 @@ func networkSubscriptionReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList NetworkSubscriptionList
 
-	_ = rc.JSONGetList("", "", baseKey+typeNetworkSubscription, populateNetworkList, &responseList)
+	keyName := baseKey + typeNetworkSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateNetworkList, &responseList)
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.NetworkSubscription {
@@ -954,7 +957,8 @@ func eventSubscriptionReInit() {
 	//reusing the object response for the get multiple zonalSubscription
 	var responseList EventSubscriptionList
 
-	_ = rc.JSONGetList("", "", baseKey+typeEventSubscription, populateEventList, &responseList)
+	keyName := baseKey + typeEventSubscription + "*"
+	_ = rc.ForEachJSONEntry(keyName, populateEventList, &responseList)
 
 	maxSubscriptionId := 0
 	for _, response := range responseList.EventSubscription {

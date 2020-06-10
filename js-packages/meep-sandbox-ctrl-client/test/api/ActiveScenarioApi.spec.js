@@ -381,6 +381,10 @@
                                   expect(data).to.be([]);
                                 }
                               }
+                            expect(data.geoData.eopMode).to.be.a('string');
+                            expect(data.geoData.eopMode).to.be("LOOP");
+                            expect(data.geoData.velocity).to.be.a('number');
+                            expect(data.geoData.velocity).to.be();
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -425,6 +429,10 @@
                                       expect(data).to.be([]);
                                     }
                                   }
+                                expect(data.geoData.eopMode).to.be.a('string');
+                                expect(data.geoData.eopMode).to.be("LOOP");
+                                expect(data.geoData.velocity).to.be.a('number');
+                                expect(data.geoData.velocity).to.be();
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);

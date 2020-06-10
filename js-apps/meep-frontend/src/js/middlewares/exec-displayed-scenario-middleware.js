@@ -65,7 +65,7 @@ const getImageForType = type => {
     return 'cloud-outline-black.svg';
   case 'OPERATOR':
     return 'fog-idcc.svg';
-  case 'OPERATOR-CELL':
+  case 'OPERATOR-CELLULAR':
     return 'fog-idcc.svg';
   case 'COMMON':
     return 'tower-02-idcc.svg';

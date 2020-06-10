@@ -70,6 +70,9 @@ const (
 	MsgTcLbRulesUpdate  Message = "TC-LB-RULES-UPDATE"
 	MsgTcNetRulesUpdate Message = "TC-NET-RULES-UPDATE"
 
+	// GIS Engine
+	MsgGeUpdate Message = "GIS-ENGINE-UPDATE"
+
 	// Watchdog
 	MsgPing Message = "PING"
 	MsgPong Message = "PONG"

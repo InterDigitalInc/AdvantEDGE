@@ -195,6 +195,8 @@ paths:
       responses:
         200:
           description: "OK"
+          schema:
+            $ref: "#/definitions/Sandbox"
         400:
           description: "Bad request"
         404:
@@ -591,6 +593,17 @@ definitions:
         description: "Optional - Radius (in meters) around the location"
       path:
         $ref: "#/definitions/LineString"
+      eopMode:
+        type: "string"
+        description: "End-of-Path mode: <li>LOOP: When path endpoint is reached, start\
+          \ over from the beginning <li>REVERSE: When path endpoint is reached, return\
+          \ on the reverse path"
+        enum:
+        - "LOOP"
+        - "REVERSE"
+      velocity:
+        type: "number"
+        description: "Speed of movement along path in m/s"
     description: "Geographic data"
   Point:
     type: "object"

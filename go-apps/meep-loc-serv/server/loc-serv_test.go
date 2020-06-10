@@ -211,7 +211,7 @@ const testScenario string = `
 							{
 								"id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
 								"name": "zone1-poa-cell1",
-								"type": "POA-CELL",
+								"type": "POA-CELLULAR",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,
@@ -371,7 +371,7 @@ const testScenario string = `
 							{
 								"id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
 								"name": "zone1-poa-cell2",
-								"type": "POA-CELL",
+								"type": "POA-CELLULAR",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,
@@ -509,6 +509,8 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
+const postgisTestHost = "localhost"
+const postgisTestPort = "30432"
 const testScenarioName = "testScenario"
 
 var m *mod.Model
@@ -518,10 +520,7 @@ func TestZonalSuccessSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -557,10 +556,7 @@ func TestFailZonalSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -590,10 +586,7 @@ func TestZonalSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -862,10 +855,7 @@ func TestUserSuccessSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -901,10 +891,7 @@ func TestFailUserSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -934,10 +921,7 @@ func TestUserSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1204,10 +1188,7 @@ func TestZoneStatusSuccessSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1243,10 +1224,7 @@ func TestFailZoneStatusSubscription(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1276,10 +1254,7 @@ func TestZoneStatusSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1550,10 +1525,7 @@ func TestUserInfo(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1646,10 +1618,7 @@ func TestZoneInfo(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1742,10 +1711,7 @@ func TestAPInfo(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1842,10 +1808,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -1944,10 +1907,7 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	mod.DbAddress = redisTestAddr
-	redisAddr = redisTestAddr
-	influxAddr = influxTestAddr
-	sandboxName = testScenarioName
+	initializeVars()
 
 	err := Init()
 	if err != nil {
@@ -2157,6 +2117,15 @@ func updateScenario(testUpdate string) {
 	default:
 	}
 	time.Sleep(100 * time.Millisecond)
+}
+
+func initializeVars() {
+	mod.DbAddress = redisTestAddr
+	redisAddr = redisTestAddr
+	influxAddr = influxTestAddr
+	postgisHost = postgisTestHost
+	postgisPort = postgisTestPort
+	sandboxName = testScenarioName
 }
 
 func initialiseScenario(testScenario string) {

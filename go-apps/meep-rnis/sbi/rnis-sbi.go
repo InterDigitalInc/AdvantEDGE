@@ -21,15 +21,31 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-rnis-sbi"
+const geModuleName string = "meep-gis-engine"
+const postgisUser string = "postgres"
+const postgisPwd string = "pwd"
+
+type SbiCfg struct {
+	SandboxName    string
+	RedisAddr      string
+	PostgisHost    string
+	PostgisPort    string
+	UeEcgiInfoCb   func(string, string, string, string)
+	AppEcgiInfoCb  func(string, string, string, string)
+	ScenarioNameCb func(string)
+	CleanUpCb      func()
+}
 
 type RnisSbi struct {
 	sandboxName          string
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	activeModel          *mod.Model
+	pc                   *postgis.Connector
 	updateUeEcgiInfoCB   func(string, string, string, string)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateScenarioNameCB func(string)
@@ -39,23 +55,21 @@ type RnisSbi struct {
 var sbi *RnisSbi
 
 // Init - RNI Service SBI initialization
-func Init(sandboxName string,
-	redisAddr string,
-	updateUeEcgiInfo func(string, string, string, string),
-	updateAppEcgiInfo func(string, string, string, string),
-	updateScenarioName func(string),
-	cleanUp func()) (err error) {
+func Init(cfg SbiCfg) (err error) {
 
 	// Create new SBI instance
 	if sbi != nil {
 		sbi = nil
 	}
 	sbi = new(RnisSbi)
-
-	sbi.sandboxName = sandboxName
+	sbi.sandboxName = cfg.SandboxName
+	sbi.updateUeEcgiInfoCB = cfg.UeEcgiInfoCb
+	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
+	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
+	sbi.cleanUpCB = cfg.CleanUpCb
 
 	// Create message queue
-	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	sbi.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sbi.sandboxName), moduleName, sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to create Message Queue with error: ", err)
 		return err
@@ -65,10 +79,10 @@ func Init(sandboxName string,
 	// Create new active scenario model
 	modelCfg := mod.ModelCfg{
 		Name:      "activeScenario",
-		Namespace: sandboxName,
+		Namespace: sbi.sandboxName,
 		Module:    moduleName,
 		UpdateCb:  nil,
-		DbAddr:    redisAddr,
+		DbAddr:    cfg.RedisAddr,
 	}
 	sbi.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
@@ -76,10 +90,13 @@ func Init(sandboxName string,
 		return err
 	}
 
-	sbi.updateUeEcgiInfoCB = updateUeEcgiInfo
-	sbi.updateAppEcgiInfoCB = updateAppEcgiInfo
-	sbi.updateScenarioNameCB = updateScenarioName
-	sbi.cleanUpCB = cleanUp
+	// Connect to Postgis DB
+	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
+	if err != nil {
+		log.Error("Failed to create postgis connector with error: ", err.Error())
+		return err
+	}
+	log.Info("Postgis Connector created")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -118,6 +135,9 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
+	case mq.MsgGeUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -178,16 +198,15 @@ func processActiveScenarioUpdate() {
 	}
 
 	//only find UEs that were removed, check that former UEs are in new UE list
-	foundOldInNewList := false
 	for _, oldUe := range formerUeNameList {
-		foundOldInNewList = false
+		found := false
 		for _, newUe := range ueNameList {
 			if newUe == oldUe {
-				foundOldInNewList = true
+				found = true
 				break
 			}
 		}
-		if !foundOldInNewList {
+		if !found {
 			sbi.updateUeEcgiInfoCB(oldUe, "", "", "")
 			log.Info("Ue removed : ", oldUe)
 		}
@@ -235,5 +254,27 @@ func processActiveScenarioUpdate() {
 			}
 		}
 	}
+}
 
+func processGisEngineUpdate(assetMap map[string]string) {
+	for assetName, assetType := range assetMap {
+		// Only process UE updates
+		// NOTE: RNIS requires distance measurements to calculate Timing Advance. Because timing advance
+		//       is not yet implemented, the distance measurements are simply logged here for now.
+		if assetType == postgis.TypeUe {
+			if assetName == postgis.AllAssets {
+				ueMap, err := sbi.pc.GetAllUe()
+				if err == nil {
+					for _, ue := range ueMap {
+						log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+					}
+				}
+			} else {
+				ue, err := sbi.pc.GetUe(assetName)
+				if err == nil {
+					log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+				}
+			}
+		}
+	}
 }

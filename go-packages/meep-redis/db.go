@@ -179,7 +179,7 @@ func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, 
 	return nil
 }
 
-func (rc *Connector) ForEachJSONEntry(keyMatchStr string, param1 string, param2 string, entryHandler func(string, string, string, string, interface{}) error, userData interface{}) error {
+func (rc *Connector) ForEachJSONEntry(keyMatchStr string, entryHandler func(string, string, interface{}) error, userData interface{}) error {
 	var cursor uint64
 	var err error
 
@@ -200,7 +200,7 @@ func (rc *Connector) ForEachJSONEntry(keyMatchStr string, param1 string, param2 
 				}
 
 				// Invoke handler to process entry
-				err = entryHandler(keys[i], jsonInfo, param1, param2, userData)
+				err = entryHandler(keys[i], jsonInfo, userData)
 				if err != nil {
 					return err
 				}
@@ -252,21 +252,6 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 		return "", err
 	}
 	return json, nil
-}
-
-// JSONGetList -
-func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string, entryHandler func(string, string, string, string, interface{}) error, dataList interface{}) error {
-	if !rc.connected {
-		return errors.New("Redis Connector is disconnected (JSONGetList)")
-	}
-
-	keyName := elementPath + "*"
-	err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
-	if err != nil {
-		log.Error("keyName: ", keyName, ": ", err.Error())
-		return err
-	}
-	return nil
 }
 
 // JSONSetEntry - update existing entry from DB or create a new one if it doesnt't exist

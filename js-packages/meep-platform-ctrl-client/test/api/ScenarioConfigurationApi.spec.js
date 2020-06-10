@@ -127,6 +127,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.type = "LineString";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.eopMode = "LOOP";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -140,6 +142,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.type = "LineString";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
@@ -482,6 +486,10 @@
                                   expect(data).to.be([]);
                                 }
                               }
+                            expect(data.geoData.eopMode).to.be.a('string');
+                            expect(data.geoData.eopMode).to.be("LOOP");
+                            expect(data.geoData.velocity).to.be.a('number');
+                            expect(data.geoData.velocity).to.be();
                           {
                             let dataCtr = data.physicalLocations;
                             expect(dataCtr).to.be.an(Array);
@@ -526,6 +534,10 @@
                                       expect(data).to.be([]);
                                     }
                                   }
+                                expect(data.geoData.eopMode).to.be.a('string');
+                                expect(data.geoData.eopMode).to.be("LOOP");
+                                expect(data.geoData.velocity).to.be.a('number');
+                                expect(data.geoData.velocity).to.be();
                               {
                                 let dataCtr = data.networkLocationsInRange;
                                 expect(dataCtr).to.be.an(Array);
@@ -953,6 +965,10 @@
                                       expect(data).to.be([]);
                                     }
                                   }
+                                expect(data.geoData.eopMode).to.be.a('string');
+                                expect(data.geoData.eopMode).to.be("LOOP");
+                                expect(data.geoData.velocity).to.be.a('number');
+                                expect(data.geoData.velocity).to.be();
                               {
                                 let dataCtr = data.physicalLocations;
                                 expect(dataCtr).to.be.an(Array);
@@ -997,6 +1013,10 @@
                                           expect(data).to.be([]);
                                         }
                                       }
+                                    expect(data.geoData.eopMode).to.be.a('string');
+                                    expect(data.geoData.eopMode).to.be("LOOP");
+                                    expect(data.geoData.velocity).to.be.a('number');
+                                    expect(data.geoData.velocity).to.be();
                                   {
                                     let dataCtr = data.networkLocationsInRange;
                                     expect(dataCtr).to.be.an(Array);
@@ -1255,6 +1275,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.type = "LineString";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.path.coordinates = [[]];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.eopMode = "LOOP";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations = [new AdvantEdgePlatformControllerRestApi.PhysicalLocation()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].id = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].name = "";
@@ -1268,6 +1290,8 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path = new AdvantEdgePlatformControllerRestApi.LineString();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.type = "LineString";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.path.coordinates = [[]];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};

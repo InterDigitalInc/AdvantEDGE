@@ -48,6 +48,7 @@ repo:
           - meep-virt-engine
           - meep-webhook
         sandbox-pods:
+          - meep-gis-engine
           - meep-loc-serv
           - meep-metrics-engine
           - meep-mg-manager
@@ -72,6 +73,7 @@ repo:
         lint: true
         docker-data:
           'entrypoint.sh': go-apps/meep-virt-engine/entrypoint.sh
+          meep-gis-engine: charts/meep-gis-engine
           meep-loc-serv: charts/meep-loc-serv
           meep-metrics-engine: charts/meep-metrics-engine
           meep-mg-manager: charts/meep-mg-manager
@@ -80,6 +82,7 @@ repo:
           meep-tc-engine: charts/meep-tc-engine
           meep-virt-chart-templates: charts/meep-virt-chart-templates
         sandbox-pods:
+          - meep-gis-engine
           - meep-loc-serv
           - meep-metrics-engine
           - meep-mg-manager
@@ -118,6 +121,7 @@ repo:
         lint: false
         api-bundle:
           - sandbox.go-apps.meep-sandbox-ctrl
+          - sandbox.go-apps.meep-gis-engine
           - sandbox.go-apps.meep-loc-serv
           - packages.go-packages.meep-loc-serv-notification-client
           - sandbox.go-apps.meep-rnis
@@ -134,6 +138,13 @@ repo:
 
     # Go Applications
     go-apps:
+      meep-gis-engine:
+        src: go-apps/meep-gis-engine
+        bin: bin/meep-gis-engine
+        chart: charts/meep-gis-engine
+        codecov: false
+        lint: true
+        api: go-apps/meep-gis-engine/api/swagger.yaml
       meep-loc-serv:
         src: go-apps/meep-loc-serv
         bin: bin/meep-loc-serv
@@ -267,6 +278,9 @@ repo:
         lint: true
       meep-net-char-mgr:
         src: go-packages/meep-net-char-mgr
+        lint: true
+      meep-postgis:
+        src: go-packages/meep-postgis
         lint: true
       meep-redis:
         src: go-packages/meep-redis

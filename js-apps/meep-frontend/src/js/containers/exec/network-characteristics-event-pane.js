@@ -61,7 +61,10 @@ import {
   PREFIX_APP,
 
   // Layout type
-  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT
+  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
+
+  DOMAIN_TYPE_STR,
+  DOMAIN_CELL_TYPE_STR
 } from '../../meep-constants';
 
 import {
@@ -317,8 +320,8 @@ class NetworkCharacteristicsEventPane extends Component {
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR' || type === 'OPERATOR-CELL') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN' || elemType === 'OPERATOR-CELL';
+        if (type === 'DOMAIN' || type === DOMAIN_TYPE_STR || type === DOMAIN_CELL_TYPE_STR) {
+          return elemType === 'DOMAIN' || elemType === DOMAIN_TYPE_STR || elemType === DOMAIN_CELL_TYPE_STR;
         }
         if (elemType === 'ZONE') {
           return this.state.currentElementType.startsWith(elemType);

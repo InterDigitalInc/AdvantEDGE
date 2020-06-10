@@ -93,6 +93,8 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path = new AdvantEdgeSandboxControllerRestApi.LineString();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.type = "LineString";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.path.coordinates = [[]];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
@@ -324,6 +326,10 @@
                                   expect(data).to.be([]);
                                 }
                               }
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode).to.be.a('string');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode).to.be("LOOP");
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be.a('number');
+                            expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity).to.be();
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange;
                             expect(dataCtr).to.be.an(Array);
