@@ -24,6 +24,7 @@ import { Checkbox } from '@rmwc/checkbox';
 import * as d3 from 'd3';
 
 import IDSelect from '../../components/helper-components/id-select';
+import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
 import Iframe from 'react-iframe';
 
@@ -39,6 +40,7 @@ import {
 import {
   TYPE_EXEC,
   VIEW_NAME_NONE,
+  MAP_VIEW,
   NET_TOPOLOGY_VIEW,
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
@@ -136,6 +138,19 @@ const ViewForName = ({
   viewName,
   dashboardOptions
 }) => {
+
+  // Handle Map view
+  if (viewName === MAP_VIEW) {
+    return (
+      <div style={{ height: '80vh' }}>
+        <IDCMap
+          width='100%'
+          height='100%'
+          onEditElement={() => { }}
+        />
+      </div>
+    );
+  }
 
   // Handle Network Topology view
   if (viewName === NET_TOPOLOGY_VIEW) {
@@ -326,6 +341,7 @@ class DashboardContainer extends Component {
     // Populate Dashboard view list using links from monitoring tab
     var dashboardViewsList = [
       VIEW_NAME_NONE,
+      MAP_VIEW,
       NET_TOPOLOGY_VIEW
     ];
     this.populateDashboardList(dashboardViewsList, DEFAULT_DASHBOARD_OPTIONS);

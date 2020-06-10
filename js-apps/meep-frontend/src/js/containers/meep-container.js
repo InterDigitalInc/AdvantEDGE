@@ -24,6 +24,7 @@ import { updateObject, deepCopy } from '../util/object-util';
 import * as meepPlatformCtrlRestApiClient from '../../../../../js-packages/meep-platform-ctrl-client/src/index.js';
 import * as meepSandboxCtrlRestApiClient from '../../../../../js-packages/meep-sandbox-ctrl-client/src/index.js';
 import * as meepMonEngineRestApiClient from '../../../../../js-packages/meep-mon-engine-client/src/index.js';
+import * as meepGisEngineRestApiClient from '../../../../../js-packages/meep-gis-engine-client/src/index.js';
 
 import MeepDrawer from './meep-drawer';
 import MeepTopBar from '../components/meep-top-bar';
@@ -68,6 +69,8 @@ import {
   execChangeScenarioState,
   execChangeScenarioPodsPhases,
   execChangeServiceMaps,
+  execChangeMapUeList,
+  execChangeMapPoaList,
   execChangeVisData,
   execChangeTable,
   execChangeCorePodsPhases,
@@ -91,6 +94,8 @@ var basepathSandboxCtrl = HOST_PATH + '/sandbox-ctrl/v1';
 meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
 var basepathMonEngine = HOST_PATH + '/mon-engine/v1';
 meepMonEngineRestApiClient.ApiClient.instance.basePath = basepathMonEngine.replace(/\/+$/,'');
+var basepathGisEngine = HOST_PATH + '/gis/v1';
+meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
 
 class MeepContainer extends Component {
   constructor(props) {
@@ -104,6 +109,7 @@ class MeepContainer extends Component {
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
+    this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
   }
 
   componentDidMount() {
@@ -148,6 +154,7 @@ class MeepContainer extends Component {
           if (this.props.sandbox) {
             this.checkScenarioStatus();
             this.refreshScenario();
+            this.refreshMap();
           }
         }
       },
@@ -394,11 +401,80 @@ class MeepContainer extends Component {
     );
   }
 
+  /**
+   * Callback function to receive the result of the getAssetData operation.
+   * @callback module:api/GeospatialDataApi~getAssetDataCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getUeAssetDataCb(error, data) {
+    if (error !== null || data.geoDataAssets === null) {
+      console.log('Failed to get assets');
+      return;
+    }
+
+    let ueList = [];
+
+    // Process UE list
+    for (let i = 0; i < data.geoDataAssets.length; i++) {
+      let ue = data.geoDataAssets[i];
+      ueList.push(ue.location);
+    }
+
+    console.log(ueList);
+
+    // Update UE list
+    this.props.execChangeMapUeList(ueList);
+
+    // // Store & Process deployed scenario
+    // this.setScenario(TYPE_EXEC, data);
+  }
+
+  /**
+   * Callback function to receive the result of the getAssetData operation.
+   * @callback module:api/GeospatialDataApi~getAssetDataCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getPoaAssetDataCb(error, data) {
+    if (error !== null || data.geoDataAssets === null) {
+      console.log('Failed to get assets');
+      return;
+    }
+
+    console.log(data.geoDataAssets);
+
+    // Process POA list
+    for (let i = 0; i < data.geoDataAssets.length; i++) {
+      let poa = data.geoDataAssets[i];
+
+    }
+
+    // Update 
+
+    // // Store & Process deployed scenario
+    // this.setScenario(TYPE_EXEC, data);
+  }
+
+  // Refresh Map
+  refreshMap() {
+    this.meepGeoDataApi.getAssetData({assetType: 'UE'}, (error, data) =>
+      this.getUeAssetDataCb(error, data)
+    );
+    this.meepGeoDataApi.getAssetData({assetType: 'POA'}, (error, data) =>
+      this.getPoaAssetDataCb(error, data)
+    );
+  }
+
   // Set sandox-specific API basepath
   setBasepath(sandboxName) {
     var sandboxPath = (sandboxName) ? '/' + sandboxName : '';
     basepathSandboxCtrl = HOST_PATH + sandboxPath + '/sandbox-ctrl/v1';
     meepSandboxCtrlRestApiClient.ApiClient.instance.basePath = basepathSandboxCtrl.replace(/\/+$/,'');
+    basepathGisEngine = HOST_PATH + sandboxPath + '/gis/v1';
+    meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.replace(/\/+$/,'');
   }
 
   /**
@@ -653,6 +729,8 @@ const mapDispatchToProps = dispatch => {
     changeServiceMaps: maps => dispatch(execChangeServiceMaps(maps)),
     execChangeVisData: data => dispatch(execChangeVisData(data)),
     execChangeTable: table => dispatch(execChangeTable(table)),
+    execChangeMapUeList: list => dispatch(execChangeMapUeList(list)),
+    execChangeMapPoaList: list => dispatch(execChangeMapPoaList(list)),
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),

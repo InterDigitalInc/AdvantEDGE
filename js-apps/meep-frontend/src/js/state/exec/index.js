@@ -22,6 +22,7 @@ import { typeReducer } from './type-reducer';
 import { stateReducer } from './state-reducer';
 import { scenarioReducer } from './scenario-reducer';
 import { displayedScenarioReducer } from './displayed-scenario-reducer';
+import { execMapReducer } from './map-reducer';
 import { execVisReducer } from './vis-reducer';
 import { execTableReducer } from './table-reducer';
 import { execSelectedScenarioElement } from './selected-scenario-element';
@@ -46,6 +47,7 @@ export * from './type-reducer';
 export * from './state-reducer';
 export * from './scenario-reducer';
 export * from './displayed-scenario-reducer';
+export * from './map-reducer';
 export * from './vis-reducer';
 export * from './table-reducer';
 export * from './selected-scenario-element';
@@ -151,6 +153,7 @@ const execReducer = combineReducers({
   state: stateReducer,
   scenario: scenarioReducer,
   displayedScenario: displayedScenarioReducer,
+  map: execMapReducer,
   vis: execVisReducer,
   table: execTableReducer,
   selectedScenarioElement: execSelectedScenarioElement,

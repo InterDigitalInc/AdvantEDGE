@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export const HOST_PATH = location.origin;
-// export const HOST_PATH = 'http://10.3.16.105';
+// export const HOST_PATH = location.origin;
+export const HOST_PATH = 'http://10.3.16.105';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -263,6 +263,7 @@ export const id = label => {
 };
 
 export const VIEW_NAME_NONE = 'None';
+export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const MOBILITY_EVENT = 'MOBILITY';
