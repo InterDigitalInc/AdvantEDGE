@@ -107,8 +107,8 @@ paths:
       parameters:
       - name: "assetType"
         in: "query"
-        description: "Filter by asset type (e.g. ue, poa, poa-cellular, edge, fog,\
-          \ etc.)"
+        description: "Filter by asset type (i.e. UE, POA, POA-CELLULAR, EDGE, FOG,\
+          \ CLOUD)"
         required: false
         type: "string"
         x-exportParamName: "AssetType"

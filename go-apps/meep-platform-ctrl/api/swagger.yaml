@@ -195,6 +195,8 @@ paths:
       responses:
         200:
           description: "OK"
+          schema:
+            $ref: "#/definitions/Sandbox"
         400:
           description: "Bad request"
         404:

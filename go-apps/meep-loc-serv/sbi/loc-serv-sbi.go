@@ -206,8 +206,8 @@ func processActiveScenarioUpdate() {
 		}
 	}
 
-	// Update POA-CELL info
-	poaNameList := sbi.activeModel.GetNodeNames("POA-CELL")
+	// Update POA Cellular info
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaCell)
 	for _, name := range poaNameList {
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
@@ -244,9 +244,9 @@ func processGisEngineUpdate(assetMap map[string]string) {
 			}
 		} else if assetType == postgis.TypePoa {
 			if assetName == postgis.AllAssets {
-				updateAllApPosition()
+				updateAllAccessPointPosition()
 			} else {
-				updateApPosition(assetName)
+				updateAccessPointPosition(assetName)
 			}
 		}
 	}
@@ -322,7 +322,7 @@ func updateAllUserPosition() {
 	}
 }
 
-func updateApPosition(name string) {
+func updateAccessPointPosition(name string) {
 	// Get network location
 	zone, netLoc, err := getNetworkLocation(name)
 	if err != nil {
@@ -342,12 +342,12 @@ func updateApPosition(name string) {
 	sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "", -1, longitude, latitude)
 }
 
-func updateAllApPosition() {
+func updateAllAccessPointPosition() {
 	// Get all positions
 	poaMap, _ := sbi.pc.GetAllPoa()
 
 	// Update info
-	poaNameList := sbi.activeModel.GetNodeNames("POA-CELL")
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaCell)
 	for _, name := range poaNameList {
 		// Get network location
 		zone, netLoc, err := getNetworkLocation(name)

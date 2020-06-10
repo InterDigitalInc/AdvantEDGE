@@ -259,18 +259,20 @@ func processActiveScenarioUpdate() {
 func processGisEngineUpdate(assetMap map[string]string) {
 	for assetName, assetType := range assetMap {
 		// Only process UE updates
+		// NOTE: RNIS requires distance measurements to calculate Timing Advance. Because timing advance
+		//       is not yet implemented, the distance measurements are simply logged here for now.
 		if assetType == postgis.TypeUe {
 			if assetName == postgis.AllAssets {
 				ueMap, err := sbi.pc.GetAllUe()
 				if err == nil {
 					for _, ue := range ueMap {
-						log.Debug("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+						log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
 					}
 				}
 			} else {
 				ue, err := sbi.pc.GetUe(assetName)
 				if err == nil {
-					log.Debug("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
+					log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
 				}
 			}
 		}

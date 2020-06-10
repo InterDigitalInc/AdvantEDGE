@@ -66,7 +66,7 @@
      * Callback function to receive the result of the createSandbox operation.
      * @callback module:api/SandboxControlApi~createSandboxCallback
      * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
+     * @param {module:model/Sandbox} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -75,6 +75,7 @@
      * Create a new sandbox with a server-generated name
      * @param {module:model/SandboxConfig} config Sandbox configuration information
      * @param {module:api/SandboxControlApi~createSandboxCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/Sandbox}
      */
     this.createSandbox = function(config, callback) {
       var postBody = config;
@@ -99,7 +100,7 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = null;
+      var returnType = Sandbox;
 
       return this.apiClient.callApi(
         '/sandboxes', 'POST',

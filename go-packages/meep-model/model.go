@@ -37,10 +37,11 @@ var redisTable = 0
 
 const (
 	NodeTypePoa     = "POA"
-	NodeTypePoaCell = "POA-CELL"
+	NodeTypePoaCell = "POA-CELLULAR"
 	NodeTypeUE      = "UE"
 	NodeTypeEdge    = "EDGE"
 	NodeTypeFog     = "FOG"
+	NodeTypeCloud   = "DC"
 )
 
 const (

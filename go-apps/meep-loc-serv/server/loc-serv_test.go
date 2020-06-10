@@ -211,7 +211,7 @@ const testScenario string = `
 							{
 								"id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
 								"name": "zone1-poa-cell1",
-								"type": "POA-CELL",
+								"type": "POA-CELLULAR",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,
@@ -371,7 +371,7 @@ const testScenario string = `
 							{
 								"id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
 								"name": "zone1-poa-cell2",
-								"type": "POA-CELL",
+								"type": "POA-CELLULAR",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,

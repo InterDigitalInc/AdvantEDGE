@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ func main() {
 
 		// Start GIS Engine REST API Server
 		router := server.NewRouter()
-		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
+		methods := handlers.AllowedMethods([]string{"DELETE", "GET", "POST"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
 		run = false

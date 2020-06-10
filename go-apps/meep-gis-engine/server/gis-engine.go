@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ const (
 )
 
 type Asset struct {
-	allocated bool
-	assetType string
+	assetType       string
+	geoDataAssigned bool
 }
 
 type PoaInfo struct {
@@ -212,7 +212,7 @@ func processScenarioActivate() {
 	ge.activeModel.UpdateScenario()
 
 	// Retrieve & process Assets in active scenario
-	assetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog)
+	assetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	addAssets(assetList)
 }
 
@@ -221,7 +221,7 @@ func processScenarioUpdate() {
 	ge.activeModel.UpdateScenario()
 
 	// Get latest asset list
-	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog)
+	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	newAssets := make(map[string]bool)
 	var assetsToAdd []string
 	var assetsToRemove []string
@@ -230,7 +230,7 @@ func processScenarioUpdate() {
 	for _, assetName := range newAssetList {
 		newAssets[assetName] = true
 		asset, found := ge.assets[assetName]
-		if !found || !asset.allocated {
+		if !found || !asset.geoDataAssigned {
 			assetsToAdd = append(assetsToAdd, assetName)
 		}
 	}
@@ -254,7 +254,7 @@ func processScenarioTerminate() {
 	_ = ge.pc.DeleteAllPoa()
 	_ = ge.pc.DeleteAllCompute()
 
-	// Clear unallocated asset list
+	// Clear asset list
 	log.Debug("GeoData deleted for all assets")
 	ge.assets = make(map[string]Asset)
 }
@@ -264,10 +264,10 @@ func addAssets(assetList []string) {
 		// Get node type
 		nodeType := ge.activeModel.GetNodeType(assetName)
 
-		// Default asset to unallocated state
-		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
+		// Default asset geodata to unassigned state
+		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
 
-		if nodeType == mod.NodeTypeUE {
+		if isUe(nodeType) {
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 
 			// Parse Geo Data
@@ -288,8 +288,8 @@ func addAssets(assetList []string) {
 				continue
 			}
 			log.Debug("GeoData stored for UE: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
-		} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
+		} else if isPoa(nodeType) {
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
 
 			// Parse Geo Data
@@ -305,8 +305,8 @@ func addAssets(assetList []string) {
 				continue
 			}
 			log.Debug("GeoData stored for POA: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
-		} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
+		} else if isCompute(nodeType) {
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 
 			// Parse Geo Data
@@ -322,7 +322,7 @@ func addAssets(assetList []string) {
 				continue
 			}
 			log.Debug("GeoData stored for Compute: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
 		}
 	}
 }
@@ -335,21 +335,21 @@ func removeAssets(assetList []string) {
 		// Remove asset
 		delete(ge.assets, assetName)
 
-		if nodeType == mod.NodeTypeUE {
+		if isUe(nodeType) {
 			log.Debug("GeoData deleted for UE: ", assetName)
 			err := ge.pc.DeleteUe(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
-		} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+		} else if isPoa(nodeType) {
 			log.Debug("GeoData deleted for POA: ", assetName)
 			err := ge.pc.DeletePoa(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
-		} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+		} else if isCompute(nodeType) {
 			log.Debug("GeoData deleted for Compute: ", assetName)
 			err := ge.pc.DeleteCompute(assetName)
 			if err != nil {
@@ -497,6 +497,18 @@ func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, pa
 	geoData.Velocity = velocity
 
 	return
+}
+
+func isUe(nodeType string) bool {
+	return nodeType == mod.NodeTypeUE
+}
+
+func isPoa(nodeType string) bool {
+	return nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell
+}
+
+func isCompute(nodeType string) bool {
+	return nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge || nodeType == mod.NodeTypeCloud
 }
 
 func resetAutomation() {
@@ -739,27 +751,27 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	// Get node type then remove it from the DB
 	nodeType := ge.activeModel.GetNodeType(assetName)
-	if nodeType == mod.NodeTypeUE {
+	if isUe(nodeType) {
 		log.Debug("GeoData deleted for UE: ", assetName)
-		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
+		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
 		err := ge.pc.DeleteUe(assetName)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+	} else if isPoa(nodeType) {
 		log.Debug("GeoData deleted for POA: ", assetName)
-		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
+		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
 		err := ge.pc.DeletePoa(assetName)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+	} else if isCompute(nodeType) {
 		log.Debug("GeoData deleted for Compute: ", assetName)
-		ge.assets[assetName] = Asset{allocated: false, assetType: nodeType}
+		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
 		err := ge.pc.DeleteCompute(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -790,7 +802,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	var assetList GeoDataAssetList
 
 	// Get all UEs
-	if assetType == "" || assetType == mod.NodeTypeUE {
+	if assetType == "" || isUe(assetType) {
 		ueMap, err := ge.pc.GetAllUe()
 		if err != nil {
 			log.Error(err.Error())
@@ -812,7 +824,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get all POAs
-	if assetType == "" || assetType == mod.NodeTypePoa || assetType == mod.NodeTypePoaCell {
+	if assetType == "" || isPoa(assetType) {
 		poaMap, err := ge.pc.GetAllPoa()
 		if err != nil {
 			log.Error(err.Error())
@@ -837,7 +849,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get all Computes
-	if assetType == "" || assetType == mod.NodeTypeFog || assetType == mod.NodeTypeEdge {
+	if assetType == "" || isCompute(assetType) {
 		computeMap, err := ge.pc.GetAllCompute()
 		if err != nil {
 			log.Error(err.Error())
@@ -904,7 +916,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve geodata from postgis using asset name & type
 	nodeType := ge.activeModel.GetNodeType(assetName)
-	if nodeType == mod.NodeTypeUE {
+	if isUe(nodeType) {
 		// Get UE information
 		ue, err := ge.pc.GetUe(assetName)
 		if err != nil {
@@ -918,7 +930,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
+	} else if isPoa(nodeType) {
 		// Get POA information
 		poa, err := ge.pc.GetPoa(assetName)
 		if err != nil {
@@ -932,7 +944,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
+	} else if isCompute(nodeType) {
 		// Get Compute information
 		compute, err := ge.pc.GetCompute(assetName)
 		if err != nil {
@@ -1015,8 +1027,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	// Create/Update asset in DB
 	nodeType := ge.activeModel.GetNodeType(assetName)
-	if nodeType == mod.NodeTypeUE {
-		if !ge.assets[assetName].allocated {
+	if isUe(nodeType) {
+		if !ge.assets[assetName].geoDataAssigned {
 			// Create UE
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 			err := ge.pc.CreateUe(pl.Id, assetName, position, path, mode, velocity)
@@ -1026,7 +1038,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Debug("GeoData stored for UE: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
 		} else {
 			// Update UE
 			err := ge.pc.UpdateUe(assetName, position, path, mode, velocity)
@@ -1036,8 +1048,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell {
-		if !ge.assets[assetName].allocated {
+	} else if isPoa(nodeType) {
+		if !ge.assets[assetName].geoDataAssigned {
 			// Create POA
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
 			err := ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
@@ -1047,7 +1059,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Debug("GeoData stored for POA: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
 		} else {
 			// Update POA
 			err := ge.pc.UpdatePoa(assetName, position, radius)
@@ -1057,8 +1069,8 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge {
-		if !ge.assets[assetName].allocated {
+	} else if isCompute(nodeType) {
+		if !ge.assets[assetName].geoDataAssigned {
 			// Create Compute
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
 			err := ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
@@ -1068,7 +1080,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Debug("GeoData stored for Compute: ", assetName)
-			ge.assets[assetName] = Asset{allocated: true, assetType: nodeType}
+			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
 		} else {
 			// Update Compute
 			err := ge.pc.UpdateCompute(assetName, position)

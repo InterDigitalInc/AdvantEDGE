@@ -52,7 +52,7 @@
     describe('SandboxControlApi', function() {
       describe('createSandbox', function() {
         it('should call createSandbox successfully', function(done) {
-          // TODO: uncomment, update parameter values for createSandbox call
+          // TODO: uncomment, update parameter values for createSandbox call and complete the assertions
           /*
           var config = new AdvantEdgePlatformControllerRestApi.SandboxConfig();
           config.scenarioName = "";
@@ -62,6 +62,10 @@
               done(error);
               return;
             }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Sandbox);
+            expect(data.name).to.be.a('string');
+            expect(data.name).to.be("");
 
             done();
           });
