@@ -409,23 +409,21 @@ class MeepContainer extends Component {
    * @param {String} response The complete HTTP response.
    */
   getUeAssetDataCb(error, data) {
-    if (error !== null || data.geoDataAssets === null) {
-      console.log('Failed to get assets');
+    if (error !== null || data.geoDataAssets === undefined) {
       return;
     }
 
-    let ueList = [];
+    // // Process UE list
+    // let ueList = [];
+    // for (let i = 0; i < data.geoDataAssets.length; i++) {
+    //   let ue = data.geoDataAssets[i];
+    //   ueList.push(ue.location);
+    // }
 
-    // Process UE list
-    for (let i = 0; i < data.geoDataAssets.length; i++) {
-      let ue = data.geoDataAssets[i];
-      ueList.push(ue.location);
-    }
-
-    console.log(ueList);
+    // console.log(data.geoDataAssets);
 
     // Update UE list
-    this.props.execChangeMapUeList(ueList);
+    this.props.execChangeMapUeList(_.sortBy(data.geoDataAssets, ['assetName']));
 
     // // Store & Process deployed scenario
     // this.setScenario(TYPE_EXEC, data);
@@ -439,20 +437,21 @@ class MeepContainer extends Component {
    * @param {String} response The complete HTTP response.
    */
   getPoaAssetDataCb(error, data) {
-    if (error !== null || data.geoDataAssets === null) {
-      console.log('Failed to get assets');
+    if (error !== null || data.geoDataAssets === undefined) {
       return;
     }
 
-    console.log(data.geoDataAssets);
+    // // Process POA list
+    // let poaList = [];
+    // for (let i = 0; i < data.geoDataAssets.length; i++) {
+    //   let poa = data.geoDataAssets[i];
+    //   poaList.push(poa.location);
+    // }
 
-    // Process POA list
-    for (let i = 0; i < data.geoDataAssets.length; i++) {
-      let poa = data.geoDataAssets[i];
+    // console.log(data.geoDataAssets);
 
-    }
-
-    // Update 
+    // Update POA list
+    this.props.execChangeMapPoaList(_.sortBy(data.geoDataAssets, ['assetName']));
 
     // // Store & Process deployed scenario
     // this.setScenario(TYPE_EXEC, data);
