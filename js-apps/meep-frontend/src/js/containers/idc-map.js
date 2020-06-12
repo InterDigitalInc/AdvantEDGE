@@ -21,9 +21,13 @@ import L from 'leaflet';
 import 'mapbox-gl';
 import 'mapbox-gl-leaflet';
 import deepEqual from 'deep-equal';
+import { updateObject } from '../util/object-util';
 import {
   execChangeMap
 } from '../state/exec';
+import {
+  uiExecChangeSandboxCfg
+} from '../state/ui';
 
 class IDCMap extends Component {
   constructor(props) {
@@ -34,11 +38,59 @@ class IDCMap extends Component {
   }
 
   componentDidMount() {
+    this.createMap();
+  }
+
+  componentWillUnmount() {
+    this.destroyMap();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.sandbox !== this.props.sandbox) {
+      this.destroyMap();
+      this.createMap();
+      this.updateMarkers();
+    }
+  }
+
+  shouldComponentUpdate(nextProps) {
+    // Check for map size update
+    let width = this.thisRef.current.offsetWidth;
+    let height = this.thisRef.current.offsetHeight;
+    if ((width && this.width !== width) || (height && this.height !== height)) {
+      this.width = width;
+      this.height = height;
+      // console.log('Map view resized to: ' + width + 'x' + height);
+      this.map.invalidateSize();
+      return true;
+    }
+
+    // Update if sandbox changed
+    if (nextProps.sandbox !== this.props.sandbox) {
+      return true;
+    }
+
+    // Update if map changed
+    if (!deepEqual(nextProps.execMap, this.props.execMap)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  createMap() {
+    // Get stored configuration
+    var cfg = this.props.sandboxCfg[this.props.sandboxName];
+    var lat = cfg.center ? cfg.center.lat : 43.73752;
+    var lng = cfg.center ? cfg.center.lng : 7.42892;
+    var zoom = cfg.zoom ? cfg.zoom : 15;
+    var baselayerName = cfg.baselayerName ? cfg.baselayerName : 'Positron';
+ 
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
     this.map = L.map(domNode, {
-      center: [43.73752,7.42892],
-      zoom: 15,
+      center: [lat,lng],
+      zoom: zoom,
       minZoom: 15,
       maxZoom: 18,
       drawControl: true
@@ -57,10 +109,10 @@ class IDCMap extends Component {
     };
 
     // Create Layer Group Overlays
-    this.ueOverlay = L.layerGroup();
-    this.poaOverlay = L.layerGroup();
-    this.poaRangeOverlay = L.layerGroup();
-    this.computeOverlay = L.layerGroup();
+    this.ueOverlay = L.layerGroup([],{name: 'ueOverlay'});
+    this.poaOverlay = L.layerGroup([],{name: 'poaOverlay'});
+    this.poaRangeOverlay = L.layerGroup([],{name: 'poaRangeOverlay'});
+    this.computeOverlay = L.layerGroup([],{name: 'computeOverlay'});
     var overlays = {
       'UE': this.ueOverlay,
       'POA': this.poaOverlay,
@@ -82,7 +134,76 @@ class IDCMap extends Component {
     this.computeOverlay.addTo(this.map);
 
     // Set default base layer
-    positronBaselayer.addTo(this.map);
+    var baselayer = baselayers[baselayerName] ? baselayers[baselayerName] : positronBaselayer;
+    baselayer.addTo(this.map);
+
+    // Handlers
+    var _this = this;
+    this.map.on('zoomend', function() {_this.updateZoom(this);});
+    this.map.on('moveend', function() {_this.updateCenter(this);});
+    this.map.on('baselayerchange', function(e) {_this.updateBaseLayer(e);});
+  }
+
+  destroyMap() {
+    if (this.map) {
+      this.map.remove();
+    }
+  }
+
+  updateZoom(map) {
+    var zoom = map.getZoom();
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    sandboxCfg[this.props.sandboxName]['zoom'] = zoom;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
+  updateCenter(map) {
+    var center = map.getCenter();
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    sandboxCfg[this.props.sandboxName]['center'] = center;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
+  updateBaseLayer(event) {
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    sandboxCfg[this.props.sandboxName]['baselayerName'] = event.name;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
+  setUeMarker(ue) {
+    var latlng = L.latLng(L.GeoJSON.coordsToLatLng(ue.location.coordinates));
+
+    // Find existing UE marker
+    var existingMarker;
+    this.ueOverlay.eachLayer((marker) => {
+      if (marker.options.myId === ue.assetName){
+        existingMarker = marker;
+        return;
+      }
+    });
+
+    if (existingMarker === undefined) {
+      // Creating new UE marker
+      var m = L.marker(latlng, {
+        myId: ue.assetName,
+        eopMode: ue.eopMode,
+        velocity: ue.velocity,
+        opacity: '0.5',
+        draggable: false
+      });
+      m.bindTooltip(ue.assetName).openTooltip();
+
+      // Click handler
+      var _this = this;
+      m.on('click', function() {_this.clickUeMarker(this);});
+
+      // Add to map overlay
+      m.addTo(this.ueOverlay);
+      // console.log('UE ' + id + ' added @ ' + latlng.toString());
+    } else {
+      // Update UE position
+      existingMarker.setLatLng(latlng);
+    }
   }
 
   setPoaMarker(poa) {
@@ -107,10 +228,10 @@ class IDCMap extends Component {
       var m = L.marker(latlng, {
         myId: poa.assetName,
         myCircle: c,
-        title: poa.assetName,
         opacity: '0.5',
-        draggable: true
+        draggable: false
       });
+      m.bindTooltip(poa.assetName).openTooltip();
 
       // Click handler
       var _this = this;
@@ -127,40 +248,48 @@ class IDCMap extends Component {
     }
   }
 
-  setUeMarker(ue) {
-    var latlng = L.latLng(L.GeoJSON.coordsToLatLng(ue.location.coordinates));
+  setComputeMarker(compute) {
+    var latlng = L.latLng(L.GeoJSON.coordsToLatLng(compute.location.coordinates));
 
-    // Find existing UE marker
+    // Find existing COMPUTE marker
     var existingMarker;
-    this.ueOverlay.eachLayer((marker) => {
-      if (marker.options.myId === ue.assetName){
+    this.computeOverlay.eachLayer((marker) => {
+      if (marker.options.myId === compute.assetName){
         existingMarker = marker;
         return;
       }
     });
 
     if (existingMarker === undefined) {
-      // Creating new UE marker
+      // Creating new COMPUTE marker
       var m = L.marker(latlng, {
-        myId: ue.assetName,
-        eopMode: ue.eopMode,
-        velocity: ue.velocity,
-        title: ue.assetName,
+        myId: compute.assetName,
         opacity: '0.5',
-        draggable: true
+        draggable: false
       });
+      m.bindTooltip(compute.assetName).openTooltip();
 
       // Click handler
       var _this = this;
-      m.on('click', function() {_this.clickUeMarker(this);});
+      m.on('click', function() {_this.clickComputeMarker(this);});
 
       // Add to map overlay
-      m.addTo(this.ueOverlay);
-      // console.log('UE ' + id + ' added @ ' + latlng.toString());
+      m.addTo(this.computeOverlay);
+      // console.log('Compute ' + id + ' added @ ' + latlng.toString());
     } else {
-      // Update UE position
+      // Update COMPUTE position
       existingMarker.setLatLng(latlng);
     }
+  }
+
+  // UE Marker Event Handler
+  clickUeMarker(marker) {
+    var latlng = marker.getLatLng();
+    var msg = '<b>UE: ' + marker.options.myId + '</b><br>';
+    msg += 'eopMode: ' + marker.options.eopMode + '<br>';
+    msg += 'velocity: ' + marker.options.velocity + ' m/s<br>';
+    msg += latlng.toString();
+    this.showPopup(latlng, msg);
   }
 
   // POA Marker Event Handler
@@ -173,11 +302,9 @@ class IDCMap extends Component {
   }
 
   // UE Marker Event Handler
-  clickUeMarker(marker) {
+  clickComputeMarker(marker) {
     var latlng = marker.getLatLng();
-    var msg = '<b>UE: ' + marker.options.myId + '</b><br>';
-    msg += 'eopMode: ' + marker.options.eopMode + '<br>';
-    msg += 'velocity: ' + marker.options.velocity + ' m/s<br>';
+    var msg = '<b>Compute: ' + marker.options.myId + '</b><br>';
     msg += latlng.toString();
     this.showPopup(latlng, msg);
   }
@@ -191,41 +318,63 @@ class IDCMap extends Component {
       .openOn(this.map);
   }
 
-  shouldComponentUpdate(nextProps) {
-    // Check for map size update
-    let width = this.thisRef.current.offsetWidth;
-    let height = this.thisRef.current.offsetHeight;
-    if ((width && this.width !== width) || (height && this.height !== height)) {
-      this.width = width;
-      this.height = height;
-      // console.log('Map view resized to: ' + width + 'x' + height);
-      this.map.invalidateSize();
-      return true;
+  updateMarkers() {
+    if (!this.map) {
+      return;
     }
 
-    // Render if asset list or positions updated
-    return !deepEqual(nextProps.execMap, this.props.execMap);
+    // Set UE markers
+    let ueList = this.props.execMap.ueList;
+    var ueMap = {};
+    for (let i = 0; i < ueList.length; i++) {
+      let ue = ueList[i];
+      this.setUeMarker(ue);
+      ueMap[ue.assetName] = true;
+    }
+
+    // Remove old UE markers
+    this.ueOverlay.eachLayer((marker) => {
+      if (!ueMap[marker.options.myId]) {
+        marker.removeFrom(this.ueOverlay);
+      }
+    });
+
+    // Set POA markers
+    let poaList = this.props.execMap.poaList;
+    var poaMap = {};
+    for (let i = 0; i < poaList.length; i++) {
+      let poa = poaList[i];
+      this.setPoaMarker(poa);
+      poaMap[poa.assetName] = true;
+    }
+
+    // Remove old POA markers
+    this.poaOverlay.eachLayer((marker) => {
+      if (!poaMap[marker.options.myId]) {
+        marker.options.myCircle.removeFrom(this.poaRangeOverlay);
+        marker.removeFrom(this.poaOverlay);
+      }
+    });
+
+    // Set COMPUTE markers
+    let computeList = this.props.execMap.computeList;
+    var computeMap = {};
+    for (let i = 0; i < computeList.length; i++) {
+      let compute = computeList[i];
+      this.setComputeMarker(compute);
+      computeMap[compute.assetName] = true;
+    }
+
+    // Remove old COMPUTE markers
+    this.computeOverlay.eachLayer((marker) => {
+      if (!computeMap[marker.options.myId]) {
+        marker.removeFrom(this.computeOverlay);
+      }
+    });
   }
 
   render() {
-    if (this.map) {
-      // Set POA markers
-      let poaList = this.props.execMap.poaList;
-      for (let i = 0; i < poaList.length; i++) {
-        this.setPoaMarker(poaList[i]);
-      }
-
-      // TODO -- Remove old POA markers
-
-      // Set UE markers
-      let ueList = this.props.execMap.ueList;
-      for (let i = 0; i < ueList.length; i++) {
-        this.setUeMarker(ueList[i]);
-      }
-
-      // TODO -- Remove old UE markers
-    }
-
+    this.updateMarkers();
     return (
       <div ref={this.thisRef} style={{ height: '100%' }}>
         Map Component
@@ -236,13 +385,16 @@ class IDCMap extends Component {
 
 const mapStateToProps = state => {
   return {
-    execMap: state.exec.map
+    execMap: state.exec.map,
+    sandbox: state.ui.sandbox,
+    sandboxCfg: state.ui.sandboxCfg
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeExecMap: map => dispatch(execChangeMap(map))
+    changeExecMap: map => dispatch(execChangeMap(map)),
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
   };
 };
 

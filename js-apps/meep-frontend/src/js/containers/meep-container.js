@@ -59,6 +59,7 @@ import {
   uiChangeCurrentPage,
   uiExecChangeSandbox,
   uiExecChangeSandboxList,
+  uiExecChangeSandboxCfg,
   uiExecChangeEventCreationMode,
   uiExecChangeEventReplayMode,
   uiToggleMainDrawer
@@ -71,6 +72,7 @@ import {
   execChangeServiceMaps,
   execChangeMapUeList,
   execChangeMapPoaList,
+  execChangeMapComputeList,
   execChangeVisData,
   execChangeTable,
   execChangeCorePodsPhases,
@@ -265,7 +267,8 @@ class MeepContainer extends Component {
     }
 
     // Update list of sandboxes, if any
-    this.props.changeSandboxList(_.map(data.sandboxes, 'name'));
+    var orderedSandboxList = _.map(data.sandboxes, 'name');
+    this.props.changeSandboxList(orderedSandboxList);
   }
 
   refreshSandboxList() {
@@ -409,24 +412,12 @@ class MeepContainer extends Component {
    * @param {String} response The complete HTTP response.
    */
   getUeAssetDataCb(error, data) {
-    if (error !== null || data.geoDataAssets === undefined) {
+    if (error !== null) {
       return;
     }
-
-    // // Process UE list
-    // let ueList = [];
-    // for (let i = 0; i < data.geoDataAssets.length; i++) {
-    //   let ue = data.geoDataAssets[i];
-    //   ueList.push(ue.location);
-    // }
-
-    // console.log(data.geoDataAssets);
-
+    
     // Update UE list
-    this.props.execChangeMapUeList(_.sortBy(data.geoDataAssets, ['assetName']));
-
-    // // Store & Process deployed scenario
-    // this.setScenario(TYPE_EXEC, data);
+    this.props.execChangeMapUeList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
   }
 
   /**
@@ -437,24 +428,28 @@ class MeepContainer extends Component {
    * @param {String} response The complete HTTP response.
    */
   getPoaAssetDataCb(error, data) {
-    if (error !== null || data.geoDataAssets === undefined) {
+    if (error !== null) {
       return;
     }
 
-    // // Process POA list
-    // let poaList = [];
-    // for (let i = 0; i < data.geoDataAssets.length; i++) {
-    //   let poa = data.geoDataAssets[i];
-    //   poaList.push(poa.location);
-    // }
-
-    // console.log(data.geoDataAssets);
-
     // Update POA list
-    this.props.execChangeMapPoaList(_.sortBy(data.geoDataAssets, ['assetName']));
+    this.props.execChangeMapPoaList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
+  }
 
-    // // Store & Process deployed scenario
-    // this.setScenario(TYPE_EXEC, data);
+  /**
+   * Callback function to receive the result of the getAssetData operation.
+   * @callback module:api/GeospatialDataApi~getAssetDataCallback
+   * @param {String} error Error message, if any.
+   * @param {module:model/GeoDataAssetList} data The data returned by the service call.
+   * @param {String} response The complete HTTP response.
+   */
+  getComputeAssetDataCb(error, data) {
+    if (error !== null) {
+      return;
+    }
+
+    // Update Compute list
+    this.props.execChangeMapComputeList(data.geoDataAssets ? _.sortBy(data.geoDataAssets, ['assetName']) : []);
   }
 
   // Refresh Map
@@ -464,6 +459,9 @@ class MeepContainer extends Component {
     );
     this.meepGeoDataApi.getAssetData({assetType: 'POA'}, (error, data) =>
       this.getPoaAssetDataCb(error, data)
+    );
+    this.meepGeoDataApi.getAssetData({assetType: 'COMPUTE'}, (error, data) =>
+      this.getComputeAssetDataCb(error, data)
     );
   }
 
@@ -506,6 +504,7 @@ class MeepContainer extends Component {
   setSandbox(name) {
     this.setBasepath(name);
     this.refreshScenario();
+    this.refreshMap();
     this.props.changeSandbox(name);
   }
 
@@ -698,12 +697,11 @@ const mapStateToProps = state => {
     page: state.ui.page,
     sandbox: state.ui.sandbox,
     sandboxes: state.ui.sandboxes,
+    sandboxCfg: state.ui.sandboxCfg,
     automaticRefresh: state.ui.automaticRefresh,
     refreshInterval: state.ui.refreshInterval,
     devMode: state.ui.devMode,
     mainDrawerOpen: state.ui.mainDrawerOpen,
-    dashboardView1: state.ui.dashboardView1,
-    dashboardView2: state.ui.dashboardView2,
     eventReplayMode: state.ui.eventReplayMode,
     eventCfgMode: state.ui.eventCfgMode,
     corePodsRunning: corePodsRunning(state),
@@ -717,6 +715,7 @@ const mapDispatchToProps = dispatch => {
     changeCurrentPage: page => dispatch(uiChangeCurrentPage(page)),
     changeSandbox: name => dispatch(uiExecChangeSandbox(name)),
     changeSandboxList: list => dispatch(uiExecChangeSandboxList(list)),
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
     changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
     changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode)),
     changeReplayStatus: status => dispatch(execChangeReplayStatus(status)),
@@ -730,6 +729,7 @@ const mapDispatchToProps = dispatch => {
     execChangeTable: table => dispatch(execChangeTable(table)),
     execChangeMapUeList: list => dispatch(execChangeMapUeList(list)),
     execChangeMapPoaList: list => dispatch(execChangeMapPoaList(list)),
+    execChangeMapComputeList: list => dispatch(execChangeMapComputeList(list)),
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),

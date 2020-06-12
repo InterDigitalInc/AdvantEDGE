@@ -43,7 +43,10 @@ const initialState = {
   eventReplayLoop: false,
   replayFiles: [],
   replayFileSelected: '',
-  replayFileDesc: ''
+  replayFileDesc: '',
+  sandbox: '',
+  sandboxes: [],
+  sandboxCfg: {}
 };
 
 // Change the current page
@@ -76,6 +79,14 @@ export function uiExecChangeSandboxList(list) {
   return {
     type: UI_EXEC_CHANGE_SANDBOX_LIST,
     payload: list
+  };
+}
+
+const UI_EXEC_CHANGE_SANDBOX_CFG = 'UI_EXEC_CHANGE_SANDBOX_CFG';
+export function uiExecChangeSandboxCfg(cfg) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX_CFG,
+    payload: cfg
   };
 }
 
@@ -233,6 +244,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { sandbox: action.payload });
   case UI_EXEC_CHANGE_SANDBOX_LIST:
     return updateObject(state, { sandboxes: action.payload });
+  case UI_EXEC_CHANGE_SANDBOX_CFG:
+    return updateObject(state, { sandboxCfg: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
   case UI_CHANGE_DEV_MODE:

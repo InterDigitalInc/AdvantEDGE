@@ -71,7 +71,8 @@ var AdvantEdgeGisEngineRestApi = require('advant_edge_gis_engine_rest_api');
 var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
 
 var opts = { 
-  'assetType': "assetType_example" // String | Filter by asset type (i.e. UE, POA, POA-CELLULAR, EDGE, FOG, CLOUD)
+  'assetType': "assetType_example", // String | Filter by asset type
+  'subType': "subType_example" // String | Filter by asset sub type
 };
 
 var callback = function(error, data, response) {
@@ -88,7 +89,8 @@ apiInstance.getAssetData(opts, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **assetType** | **String**| Filter by asset type (i.e. UE, POA, POA-CELLULAR, EDGE, FOG, CLOUD) | [optional] 
+ **assetType** | **String**| Filter by asset type | [optional] 
+ **subType** | **String**| Filter by asset sub type | [optional] 
 
 ### Return type
 

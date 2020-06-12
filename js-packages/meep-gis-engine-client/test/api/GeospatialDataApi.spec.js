@@ -75,6 +75,7 @@
           /*
           var opts = {};
           opts.assetType = "assetType_example";
+          opts.subType = "subType_example";
 
           instance.getAssetData(opts, function(error, data, response) {
             if (error) {
@@ -124,6 +125,10 @@
                 expect(data.velocity).to.be();
                 expect(data.assetName).to.be.a('string');
                 expect(data.assetName).to.be("");
+                expect(data.assetType).to.be.a('string');
+                expect(data.assetType).to.be("UE");
+                expect(data.subType).to.be.a('string');
+                expect(data.subType).to.be("UE");
               }
             }
 
@@ -181,6 +186,10 @@
             expect(data.velocity).to.be();
             expect(data.assetName).to.be.a('string');
             expect(data.assetName).to.be("");
+            expect(data.assetType).to.be.a('string');
+            expect(data.assetType).to.be("UE");
+            expect(data.subType).to.be.a('string');
+            expect(data.subType).to.be("UE");
 
             done();
           });
@@ -205,6 +214,8 @@
           geoData.eopMode = "LOOP";
           geoData.velocity = ;
           geoData.assetName = "";
+          geoData.assetType = "UE";
+          geoData.subType = "UE";
 
           instance.updateGeoDataByName(assetName, geoData, function(error, data, response) {
             if (error) {

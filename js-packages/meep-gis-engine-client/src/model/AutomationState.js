@@ -79,7 +79,7 @@
 
   /**
    * Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
-   * @member {String} type
+   * @member {module:model/AutomationState.TypeEnum} type
    */
   exports.prototype.type = undefined;
 
@@ -88,6 +88,32 @@
    * @member {Boolean} active
    */
   exports.prototype.active = undefined;
+
+
+  /**
+   * Allowed values for the <code>type</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.TypeEnum = {
+    /**
+     * value: "MOBILITY"
+     * @const
+     */
+    MOBILITY: "MOBILITY",
+
+    /**
+     * value: "MOVEMENT"
+     * @const
+     */
+    MOVEMENT: "MOVEMENT",
+
+    /**
+     * value: "POAS-IN-RANGE"
+     * @const
+     */
+    POAS_IN_RANGE: "POAS-IN-RANGE"
+  };
 
   return exports;
 

@@ -34,7 +34,8 @@ import {
   uiExecChangeDashboardView1,
   uiExecChangeDashboardView2,
   uiExecChangeSourceNodeSelected,
-  uiExecChangeDestNodeSelected
+  uiExecChangeDestNodeSelected,
+  uiExecChangeSandboxCfg
 } from '../../state/ui';
 
 import {
@@ -44,6 +45,7 @@ import {
   NET_TOPOLOGY_VIEW,
   DEFAULT_DASHBOARD_OPTIONS
 } from '../../meep-constants';
+import { updateObject } from '../../util/object-util';
 
 const styles = {
   button: {
@@ -144,9 +146,7 @@ const ViewForName = ({
     return (
       <div style={{ height: '80vh' }}>
         <IDCMap
-          width='100%'
-          height='100%'
-          onEditElement={() => { }}
+          sandboxName={sandboxName}
         />
       </div>
     );
@@ -274,6 +274,22 @@ class DashboardContainer extends Component {
     clearInterval(this.dataTimer);
   }
 
+  componentDidUpdate() {
+    // Create sandbox config if it does not exist
+    const sandboxName = this.props.sandbox;
+    const sandboxCfg = this.props.sandboxCfg;
+    if (!sandboxName || (sandboxCfg && sandboxCfg[sandboxName])) {
+      return;
+    } else {
+      var newSandboxCfg = updateObject({}, sandboxCfg);
+      newSandboxCfg[sandboxName] = {
+        dashboardView1: NET_TOPOLOGY_VIEW,
+        dashboardView2: VIEW_NAME_NONE
+      };
+      this.props.changeSandboxCfg(newSandboxCfg);
+    }
+  }
+
   getRoot() {
     return d3.hierarchy(this.props.displayedScenario, getScenarioNodeChildren);
   }
@@ -291,6 +307,38 @@ class DashboardContainer extends Component {
     }
   }
 
+  getView1() {
+    const sandboxName = this.props.sandbox;
+    const sandboxCfg = this.props.sandboxCfg;
+    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView1) {
+      return sandboxCfg[sandboxName].dashboardView1;
+    } else {
+      return VIEW_NAME_NONE;
+    }
+  }
+
+  getView2() {
+    const sandboxName = this.props.sandbox;
+    const sandboxCfg = this.props.sandboxCfg;
+    if (sandboxCfg && sandboxCfg[sandboxName] && sandboxCfg[sandboxName].dashboardView2) {
+      return sandboxCfg[sandboxName].dashboardView2;
+    } else {
+      return VIEW_NAME_NONE;
+    }
+  }
+
+  changeView1(viewName) {
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    sandboxCfg[this.props.sandbox].dashboardView1 = viewName;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
+  changeView2(viewName) {
+    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+    sandboxCfg[this.props.sandbox].dashboardView2 = viewName;
+    this.props.changeSandboxCfg(sandboxCfg);
+  }
+
   render() {
     this.keyForSvg++;
     const root = this.getRoot();
@@ -301,10 +349,10 @@ class DashboardContainer extends Component {
 
     const selectedSource = appIds.includes(this.props.sourceNodeSelected) ? this.props.sourceNodeSelected : 'None';
     const selectedDest = appIds.includes(this.props.destNodeSelected) ? this.props.destNodeSelected : 'None';
-    const view1Name = this.props.view1Name;
-    const view2Name = this.props.view2Name;
-    const view1Present = this.props.view1Name !== VIEW_NAME_NONE;
-    const view2Present = this.props.view2Name !== VIEW_NAME_NONE;
+    const view1Name = this.getView1();
+    const view2Name = this.getView2();
+    const view1Present = view1Name !== VIEW_NAME_NONE;
+    const view2Present = view2Name !== VIEW_NAME_NONE;
 
     let span1 = 12;
     let span2 = 12;
@@ -364,8 +412,8 @@ class DashboardContainer extends Component {
             this.props.changeDestNodeSelected(nodeId)
           }
           dashboardViewsList={dashboardViewsList}
-          changeView1={viewName => this.props.changeView1(viewName)}
-          changeView2={viewName => this.props.changeView2(viewName)}
+          changeView1={viewName => this.changeView1(viewName)}
+          changeView2={viewName => this.changeView2(viewName)}
           changeShowApps={checked => this.changeShowApps(checked)}
           showApps={this.props.showApps}
         />
@@ -413,6 +461,7 @@ const mapStateToProps = state => {
     scenarioState: state.exec.state.scenario,
     view1Name: state.ui.dashboardView1,
     view2Name: state.ui.dashboardView2,
+    sandboxCfg: state.ui.sandboxCfg,
     dashboardOptions: state.monitor.dashboardOptions
   };
 };
@@ -422,7 +471,8 @@ const mapDispatchToProps = dispatch => {
     changeSourceNodeSelected: src => dispatch(uiExecChangeSourceNodeSelected(src)),
     changeDestNodeSelected: dest => dispatch(uiExecChangeDestNodeSelected(dest)),
     changeView1: name => dispatch(uiExecChangeDashboardView1(name)),
-    changeView2: name => dispatch(uiExecChangeDashboardView2(name))
+    changeView2: name => dispatch(uiExecChangeDashboardView2(name)),
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
   };
 };
 

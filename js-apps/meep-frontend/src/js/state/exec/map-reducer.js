@@ -18,7 +18,8 @@ import { updateObject } from '../../util/object-util';
 
 const initialState = {
   ueList: [],
-  poaList: []
+  poaList: [],
+  computeList: []
 };
 
 // CHANGE_MAP
@@ -48,6 +49,15 @@ export function execChangeMapPoaList(poaList) {
   };
 }
 
+// CHANGE_COMPUTE_LIST
+const CHANGE_COMPUTE_LIST = 'CHANGE_COMPUTE_LIST';
+export function execChangeMapComputeList(computeList) {
+  return {
+    type: CHANGE_COMPUTE_LIST,
+    payload: computeList
+  };
+}
+
 export function execMapReducer(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_MAP:
@@ -56,6 +66,8 @@ export function execMapReducer(state = initialState, action) {
     return updateObject(state, { ueList: action.payload });
   case CHANGE_POA_LIST:
     return updateObject(state, { poaList: action.payload });
+  case CHANGE_COMPUTE_LIST:
+    return updateObject(state, { computeList: action.payload });
   default:
     return state;
   }

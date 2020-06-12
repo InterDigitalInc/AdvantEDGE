@@ -50,6 +50,12 @@ const (
 	AutoTypePoaInRange = "POAS-IN-RANGE"
 )
 
+const (
+	AssetTypeUe      = "UE"
+	AssetTypePoa     = "POA"
+	AssetTypeCompute = "COMPUTE"
+)
+
 type Asset struct {
 	assetType       string
 	geoDataAssigned bool
@@ -535,14 +541,6 @@ func startAutomation() {
 	}()
 }
 
-// func stopAutomation() {
-// 	log.Debug("Stopping automation loop")
-// 	if ge.ticker != nil {
-// 		ge.ticker.Stop()
-// 		ge.ticker = nil
-// 	}
-// }
-
 func setAutomation(automationType string, state bool) (err error) {
 	// Validate automation type
 	if _, found := ge.automation[automationType]; !found {
@@ -793,16 +791,21 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	// Retrieve asset type from query parameters
 	query := r.URL.Query()
 	assetType := query.Get("assetType")
-	if assetType == "" {
-		log.Debug("Get GeoData for all assets")
-	} else {
-		log.Debug("Get GeoData for all assets of type: ", assetType)
+	subType := query.Get("subType")
+	assetTypeStr := "*"
+	if assetType != "" {
+		assetTypeStr = assetType
 	}
+	subTypeStr := "*"
+	if subType != "" {
+		subTypeStr = subType
+	}
+	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "]")
 
 	var assetList GeoDataAssetList
 
 	// Get all UEs
-	if assetType == "" || isUe(assetType) {
+	if assetType == "" || assetType == AssetTypeUe {
 		ueMap, err := ge.pc.GetAllUe()
 		if err != nil {
 			log.Error(err.Error())
@@ -811,8 +814,14 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, ue := range ueMap {
+			// Filter subtype
+			if subType != "" && subType != mod.NodeTypeUE {
+				continue
+			}
 			var asset GeoDataAsset
 			asset.AssetName = ue.Name
+			asset.AssetType = AssetTypeUe
+			asset.SubType = mod.NodeTypeUE
 			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
 			if err != nil {
 				log.Error(err.Error())
@@ -824,7 +833,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get all POAs
-	if assetType == "" || isPoa(assetType) {
+	if assetType == "" || assetType == AssetTypePoa {
 		poaMap, err := ge.pc.GetAllPoa()
 		if err != nil {
 			log.Error(err.Error())
@@ -833,11 +842,14 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, poa := range poaMap {
-			if assetType != "" && assetType != poa.SubType {
+			// Filter subtype
+			if subType != "" && subType != poa.SubType {
 				continue
 			}
 			var asset GeoDataAsset
 			asset.AssetName = poa.Name
+			asset.AssetType = AssetTypePoa
+			asset.SubType = poa.SubType
 			err = fillGeoDataAsset(&asset, poa.Position, poa.Radius, "", "", 0)
 			if err != nil {
 				log.Error(err.Error())
@@ -849,7 +861,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get all Computes
-	if assetType == "" || isCompute(assetType) {
+	if assetType == "" || assetType == AssetTypeCompute {
 		computeMap, err := ge.pc.GetAllCompute()
 		if err != nil {
 			log.Error(err.Error())
@@ -858,11 +870,14 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, compute := range computeMap {
-			if assetType != "" && assetType != compute.SubType {
+			// Filter subtype
+			if subType != "" && subType != compute.SubType {
 				continue
 			}
 			var asset GeoDataAsset
 			asset.AssetName = compute.Name
+			asset.AssetType = AssetTypeCompute
+			asset.SubType = compute.SubType
 			err = fillGeoDataAsset(&asset, compute.Position, 0, "", "", 0)
 			if err != nil {
 				log.Error(err.Error())
@@ -916,8 +931,11 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve geodata from postgis using asset name & type
 	nodeType := ge.activeModel.GetNodeType(assetName)
+	asset.SubType = nodeType
+
 	if isUe(nodeType) {
 		// Get UE information
+		asset.AssetType = AssetTypeUe
 		ue, err := ge.pc.GetUe(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -932,6 +950,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if isPoa(nodeType) {
 		// Get POA information
+		asset.AssetType = AssetTypePoa
 		poa, err := ge.pc.GetPoa(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -946,6 +965,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if isCompute(nodeType) {
 		// Get Compute information
+		asset.AssetType = AssetTypeCompute
 		compute, err := ge.pc.GetCompute(assetName)
 		if err != nil {
 			log.Error(err.Error())
@@ -1008,6 +1028,12 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if geoData.AssetType != AssetTypeUe && geoData.AssetType != AssetTypePoa && geoData.AssetType != AssetTypeCompute {
+		err := errors.New("Missing or invalid asset type")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Parse Geo Data Asset
 	position, radius, path, mode, velocity, err := parseGeoDataAsset(&geoData)
@@ -1027,7 +1053,18 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 
 	// Create/Update asset in DB
 	nodeType := ge.activeModel.GetNodeType(assetName)
-	if isUe(nodeType) {
+
+	// Validate subtype
+	if (geoData.AssetType == AssetTypeUe && !isUe(nodeType)) ||
+		(geoData.AssetType == AssetTypePoa && !isPoa(nodeType)) ||
+		(geoData.AssetType == AssetTypeCompute && !isCompute(nodeType)) {
+		err := errors.New("AssetType invalid for selected asset subType")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if geoData.AssetType == AssetTypeUe {
 		if !ge.assets[assetName].geoDataAssigned {
 			// Create UE
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
@@ -1048,7 +1085,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if isPoa(nodeType) {
+	} else if geoData.AssetType == AssetTypePoa {
 		if !ge.assets[assetName].geoDataAssigned {
 			// Create POA
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
@@ -1069,7 +1106,7 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if isCompute(nodeType) {
+	} else if geoData.AssetType == AssetTypeCompute {
 		if !ge.assets[assetName].geoDataAssigned {
 			// Create Compute
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
