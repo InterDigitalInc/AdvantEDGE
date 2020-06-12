@@ -109,6 +109,7 @@ repo:
           meep-sandbox-ctrl-api: js-packages/meep-sandbox-ctrl-client
           meep-mon-engine-api: js-packages/meep-mon-engine-client
           meep-metrics-engine-api: js-packages/meep-metrics-engine-client
+          meep-gis-engine-api: js-packages/meep-gis-engine-client
       meep-platform-swagger-ui:
         src: js-apps/meep-swagger-ui
         bin: bin/meep-platform-swagger-ui
