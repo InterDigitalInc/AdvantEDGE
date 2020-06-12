@@ -386,8 +386,22 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Prepare response
+	var sandbox dataModel.Sandbox
+	sandbox.Name = sandboxName
+
+	// Format response
+	jsonResponse, err := json.Marshal(sandbox)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Create new Sandbox with provided name
@@ -426,8 +440,22 @@ func pcCreateSandboxWithName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Prepare response
+	var sandbox dataModel.Sandbox
+	sandbox.Name = sandboxName
+
+	// Format response
+	jsonResponse, err := json.Marshal(sandbox)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 // Delete Sandbox with provided name

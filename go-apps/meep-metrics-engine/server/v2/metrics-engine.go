@@ -335,6 +335,130 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
+func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Debug("mePostHttpQuery")
+
+	// Retrieve network metric query parameters from request body
+	var params HttpQueryParams
+	if r.Body == nil {
+		err := errors.New("Request body is missing")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&params)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Make sure metrics store is up
+	if metricStore == nil {
+		err := errors.New("No active scenario to get metrics from")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Parse tags
+	tags := make(map[string]string)
+	for _, tag := range params.Tags {
+		tags[tag.Name] = tag.Value
+	}
+
+	// Get scope
+	duration := ""
+	limit := 0
+	if params.Scope != nil {
+		duration = params.Scope.Duration
+		limit = int(params.Scope.Limit)
+	}
+	// Get metrics
+	valuesArray, err := metricStore.GetInfluxMetric(ms.HttpLogMetricName, tags, params.Fields, duration, limit)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(valuesArray) == 0 {
+		err := errors.New("No matching metrics found")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	// Prepare & send response
+	var response HttpMetricList
+	response.Name = "http metrics"
+	response.Columns = append(params.Fields, "time")
+	response.Values = make([]HttpMetric, len(valuesArray))
+	for index, values := range valuesArray {
+		metric := &response.Values[index]
+		metric.Time = values["time"].(string)
+		if values[ms.HttpLoggerName] != nil {
+			if val, ok := values[ms.HttpLoggerName].(string); ok {
+				metric.LoggerName = val
+			}
+		}
+		if values[ms.HttpLoggerDirection] != nil {
+			if val, ok := values[ms.HttpLoggerDirection].(string); ok {
+				metric.Direction = val
+			}
+		}
+
+		if values[ms.HttpLogId] != nil {
+			metric.Id = ms.JsonNumToInt32(values[ms.HttpLogId].(json.Number))
+		}
+		if values[ms.HttpLogEndpoint] != nil {
+			if val, ok := values[ms.HttpLogEndpoint].(string); ok {
+				metric.Endpoint = val
+			}
+		}
+		if values[ms.HttpUrl] != nil {
+			if val, ok := values[ms.HttpUrl].(string); ok {
+				metric.Url = val
+			}
+		}
+		if values[ms.HttpMethod] != nil {
+			if val, ok := values[ms.HttpMethod].(string); ok {
+				metric.Method = val
+			}
+		}
+		if values[ms.HttpBody] != nil {
+			if val, ok := values[ms.HttpBody].(string); ok {
+				metric.Body = val
+			}
+		}
+		if values[ms.HttpRespBody] != nil {
+			if val, ok := values[ms.HttpRespBody].(string); ok {
+				metric.RespBody = val
+			}
+		}
+		if values[ms.HttpRespCode] != nil {
+			if val, ok := values[ms.HttpRespCode].(string); ok {
+				metric.RespCode = val
+			}
+		}
+		if values[ms.HttpProcTime] != nil {
+			if val, ok := values[ms.HttpProcTime].(string); ok {
+				metric.ProcTime = val
+			}
+		}
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
 func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	log.Debug("mePostNetworkQuery")

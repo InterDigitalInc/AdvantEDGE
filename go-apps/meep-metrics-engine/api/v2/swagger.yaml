@@ -22,6 +22,31 @@ consumes:
 produces:
 - "application/json"
 paths:
+  /metrics/query/http:
+    post:
+      tags:
+      - "Metrics"
+      description: "Returns Http metrics according to specificed parameters"
+      operationId: "postHttpQuery"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "params"
+        description: "Query parameters"
+        required: true
+        schema:
+          $ref: "#/definitions/HttpQueryParams"
+        x-exportParamName: "Params"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/HttpMetricList"
+        404:
+          description: "Not found"
+        500:
+          description: "Internal server error"
   /metrics/query/network:
     post:
       tags:
@@ -239,6 +264,207 @@ paths:
         500:
           description: "Internal server error"
 definitions:
+  HttpQueryParams:
+    type: "object"
+    properties:
+      tags:
+        type: "array"
+        description: "Tag names to match in query. Supported values:<br> <li>logger_name:\
+          \ Logger instances that issued the http notification or processed the request\
+          \ <li>direction: Notification or Request type of http metric"
+        items:
+          $ref: "#/definitions/Tag"
+      fields:
+        type: "array"
+        description: "Field names to return in query response. Supported values:<br>\
+          \ <li>id: Http metrics identifier<br> <li>endpoint: Http metrics queried\
+          \ endpoint<br> <li>url: Http metrics queried endpoint with query parameters<br>\
+          \ <li>method: Http metrics method<br> <li>resp_code: Http metrics response\
+          \ status code<br> <li>resp_body: Http metrics response body<br> <li>body:\
+          \ Http metrics body<br> <li>proc_time: Request processing time in ms"
+        items:
+          type: "string"
+          description: "Queried value"
+          enum:
+          - "id"
+          - "endpoint"
+          - "url"
+          - "method"
+          - "resp_code"
+          - "resp_body"
+          - "body"
+          - "proc_time"
+          - "logger_name"
+          - "direction"
+      scope:
+        $ref: "#/definitions/Scope"
+    description: "Http metrics query parameters"
+    example:
+      scope:
+        duration: "10s"
+        limit: 60
+      fields:
+      - "id"
+      - "endpoint"
+      - "url"
+      - "method"
+      - "resp_code"
+      - "resp_body"
+      - "body"
+      - "proc_time"
+      - "logger_name"
+      - "direction"
+      tags:
+      - name: "logger_name"
+        value: "meep-loc-serv"
+      - name: "direction"
+        value: "RX"
+  Tag:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "src"
+        description: "Tag name"
+      value:
+        type: "string"
+        example: "ue1-iperf"
+        description: "Tag value"
+    description: "Filtering query parameter"
+    example:
+      name: "src"
+      value: "ue1-iperf"
+  Scope:
+    type: "object"
+    properties:
+      limit:
+        type: "integer"
+        example: 60
+        description: "Maximum number of points in the response"
+      duration:
+        type: "string"
+        example: "10s"
+        description: "Length of time range (specify s for seconds, m for minutes,\
+          \ d for days)"
+    description: "Query scope (time / number of points)"
+    example:
+      duration: "10s"
+      limit: 60
+  HttpMetricList:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        example: "http metrics"
+        description: "Response name"
+      columns:
+        type: "array"
+        description: "columns included in response based on queried values"
+        items:
+          type: "string"
+          description: "Queried value"
+      values:
+        type: "array"
+        items:
+          $ref: "#/definitions/HttpMetric"
+    description: "Http metrics query response"
+    example:
+      columns:
+      - "time"
+      - "id"
+      - "endpoint"
+      - "url"
+      - "method"
+      - "resp_code"
+      - "resp_body"
+      - "body"
+      - "proc_time"
+      - "logger_name"
+      - "direction"
+      values:
+      - time: "2019-11-24T12:45:00-5:00"
+        id: 5
+        endpoint: "/location/v1/subscription/userTracking"
+        url: "/location/v1/subscription/userTracking?validQueryParam"
+        method: "GET"
+        resp_code: 200
+        resp_body: {}
+        body: {}
+        proc_time: 345
+        logger_name: "loc-serv"
+        direction: "RX"
+      - time: "2019-11-24T12:45:00-5:00"
+        id: 6
+        endpoint: "/location/v1/subscription/userTracking"
+        url: "/location/v1/subscription/userTracking?validQueryParam"
+        method: "GET"
+        resp_code: 200
+        resp_body: {}
+        body: {}
+        proc_time: 456
+        logger_name: "loc-serv"
+        direction: "RX"
+      name: "http metrics"
+  HttpMetric:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        example: "2019-11-24T12:45:00-5:00"
+        description: "Time of http metrics"
+      id:
+        type: "integer"
+        example: 5
+        description: "Http metrics identifier"
+      endpoint:
+        type: "string"
+        example: "/location/v1/subscription/userTracking"
+        description: "Http metrics queried endpoint"
+      url:
+        type: "string"
+        example: "/location/v1/subscription/userTracking?validQueryParam"
+        description: "Http metrics queried endpoint with query parameters"
+      method:
+        type: "string"
+        example: "GET"
+        description: "Http metrics method"
+      resp_code:
+        type: "string"
+        example: "200"
+        description: "Http metrics response status code"
+      resp_body:
+        type: "string"
+        example: "{}"
+        description: "Http metrics response body"
+      body:
+        type: "string"
+        example: "{}"
+        description: "Http metrics body"
+      proc_time:
+        type: "string"
+        example: "345"
+        description: "Request processing time in ms"
+      logger_name:
+        type: "string"
+        example: "loc-serv"
+        description: "Service processing the http metric"
+      direction:
+        type: "string"
+        example: "Request"
+        description: "Http type"
+    description: "Value of a single http metric"
+    example:
+      time: "2019-11-24T12:45:00-5:00"
+      id: 5
+      endpoint: "/location/v1/subscription/userTracking"
+      url: "/location/v1/subscription/userTracking?validQueryParam"
+      method: "GET"
+      resp_code: 200
+      resp_body: {}
+      body: {}
+      proc_time: 345
+      logger_name: "loc-serv"
+      direction: "Request"
   NetworkQueryParams:
     type: "object"
     properties:
@@ -282,37 +508,6 @@ definitions:
         value: "ue1-iperf"
       - name: "dest"
         value: "zone1-fog1-iperf"
-  Tag:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        example: "src"
-        description: "Tag name"
-      value:
-        type: "string"
-        example: "ue1-iperf"
-        description: "Tag value"
-    description: "Filtering query parameter"
-    example:
-      name: "src"
-      value: "ue1-iperf"
-  Scope:
-    type: "object"
-    properties:
-      limit:
-        type: "integer"
-        example: 60
-        description: "Maximum number of points in the response"
-      duration:
-        type: "string"
-        example: "10s"
-        description: "Length of time range (specify s for seconds, m for minutes,\
-          \ d for days)"
-    description: "Query scope (time / number of points)"
-    example:
-      duration: "10s"
-      limit: 60
   NetworkMetricList:
     type: "object"
     properties:

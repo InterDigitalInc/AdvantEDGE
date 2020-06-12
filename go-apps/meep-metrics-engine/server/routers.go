@@ -98,6 +98,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"PostHttpQuery",
+		strings.ToUpper("Post"),
+		"/metrics/v2/metrics/query/http",
+		v2.PostHttpQuery,
+	},
+
+	Route{
 		"PostNetworkQuery",
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/query/network",
