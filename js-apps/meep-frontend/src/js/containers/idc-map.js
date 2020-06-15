@@ -23,12 +23,11 @@ import 'mapbox-gl-leaflet';
 import deepEqual from 'deep-equal';
 import { updateObject } from '../util/object-util';
 import {
-  execChangeMap
-} from '../state/exec';
-import {
+  uiCfgChangeMapCfg,
   uiExecChangeSandboxCfg
 } from '../state/ui';
 import {
+  TYPE_CFG,
   HOST_PATH,
   DEFAULT_MAP_LATITUDE,
   DEFAULT_MAP_LONGITUDE,
@@ -77,16 +76,24 @@ class IDCMap extends Component {
     }
 
     // Update if map changed
-    if (!deepEqual(nextProps.execMap, this.props.execMap)) {
+    if (!deepEqual(this.getMap(nextProps), this.getMap(this.props))) {
       return true;
     }
 
     return false;
   }
 
+  getMap(props) {
+    return (this.props.type === TYPE_CFG) ? props.cfgPageMap : props.execPageMap;
+  }
+
+  getCfg() {
+    return (this.props.type === TYPE_CFG) ? this.props.mapCfg : this.props.sandboxCfg[this.props.sandboxName];
+  }
+
   createMap() {
     // Get stored configuration
-    var cfg = this.props.sandboxCfg[this.props.sandboxName];
+    var cfg = this.getCfg();
     var lat = cfg.center ? cfg.center.lat : DEFAULT_MAP_LATITUDE;
     var lng = cfg.center ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
     var zoom = cfg.zoom ? cfg.zoom : DEFAULT_MAP_ZOOM;
@@ -159,24 +166,28 @@ class IDCMap extends Component {
     }
   }
 
+  updateCfg(cfg) {
+    if (this.props.type === TYPE_CFG) {
+      this.props.changeMapCfg(updateObject(this.getCfg(), cfg));
+    } else {
+      var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+      if (sandboxCfg[this.props.sandboxName]) {
+        sandboxCfg[this.props.sandboxName] = updateObject(sandboxCfg[this.props.sandboxName], cfg);
+        this.props.changeSandboxCfg(sandboxCfg);
+      }
+    }
+  }
+
   updateZoom(map) {
-    var zoom = map.getZoom();
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandboxName]['zoom'] = zoom;
-    this.props.changeSandboxCfg(sandboxCfg);
+    this.updateCfg({zoom: map.getZoom()});
   }
 
   updateCenter(map) {
-    var center = map.getCenter();
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandboxName]['center'] = center;
-    this.props.changeSandboxCfg(sandboxCfg);
+    this.updateCfg({center: map.getCenter()});
   }
 
   updateBaseLayer(event) {
-    var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-    sandboxCfg[this.props.sandboxName]['baselayerName'] = event.name;
-    this.props.changeSandboxCfg(sandboxCfg);
+    this.updateCfg({baselayerName: event.name});
   }
 
   setUeMarker(ue) {
@@ -360,14 +371,19 @@ class IDCMap extends Component {
     if (!this.map) {
       return;
     }
+    var map = this.getMap(this.props);
+    if (!map) {
+      return;
+    }
 
     // Set UE markers
-    let ueList = this.props.execMap.ueList;
     var ueMap = {};
-    for (let i = 0; i < ueList.length; i++) {
-      let ue = ueList[i];
-      this.setUeMarker(ue);
-      ueMap[ue.assetName] = true;
+    if (map.ueList) {
+      for (let i = 0; i < map.ueList.length; i++) {
+        let ue = map.ueList[i];
+        this.setUeMarker(ue);
+        ueMap[ue.assetName] = true;
+      }
     }
 
     // Remove old UE markers
@@ -381,12 +397,13 @@ class IDCMap extends Component {
     });
 
     // Set POA markers
-    let poaList = this.props.execMap.poaList;
     var poaMap = {};
-    for (let i = 0; i < poaList.length; i++) {
-      let poa = poaList[i];
-      this.setPoaMarker(poa);
-      poaMap[poa.assetName] = true;
+    if (map.poaList) {
+      for (let i = 0; i < map.poaList.length; i++) {
+        let poa = map.poaList[i];
+        this.setPoaMarker(poa);
+        poaMap[poa.assetName] = true;
+      }
     }
 
     // Remove old POA markers
@@ -398,12 +415,13 @@ class IDCMap extends Component {
     });
 
     // Set COMPUTE markers
-    let computeList = this.props.execMap.computeList;
     var computeMap = {};
-    for (let i = 0; i < computeList.length; i++) {
-      let compute = computeList[i];
-      this.setComputeMarker(compute);
-      computeMap[compute.assetName] = true;
+    if (map.computeList) {
+      for (let i = 0; i < map.computeList.length; i++) {
+        let compute = map.computeList[i];
+        this.setComputeMarker(compute);
+        computeMap[compute.assetName] = true;
+      }
     }
 
     // Remove old COMPUTE markers
@@ -426,15 +444,17 @@ class IDCMap extends Component {
 
 const mapStateToProps = state => {
   return {
-    execMap: state.exec.map,
+    cfgPageMap: state.cfg.map,
+    execPageMap: state.exec.map,
     sandbox: state.ui.sandbox,
-    sandboxCfg: state.ui.sandboxCfg
+    sandboxCfg: state.ui.sandboxCfg,
+    mapCfg: state.ui.mapCfg
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeExecMap: map => dispatch(execChangeMap(map)),
+    changeMapCfg: cfg => dispatch(uiCfgChangeMapCfg(cfg)),
     changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
   };
 };

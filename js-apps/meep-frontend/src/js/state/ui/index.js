@@ -19,12 +19,15 @@ import {
   PAGE_CONFIGURE,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
-  MOBILITY_EVENT
+  MOBILITY_EVENT,
+  CFG_VIEW_NETWORK
 } from '../../meep-constants';
 
 const initialState = {
   page: PAGE_CONFIGURE,
   mainDrawerOpen: true,
+  cfgView: CFG_VIEW_NETWORK,
+  mapCfg: {},
   eventCreationMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
@@ -63,6 +66,22 @@ export function uiToggleMainDrawer() {
   return {
     type: TOGGLE_MAIN_DRAWER,
     payload: null
+  };
+}
+
+const UI_CFG_CHANGE_VIEW = 'UI_CFG_CHANGE_VIEW';
+export function uiCfgChangeView(view) {
+  return {
+    type: UI_CFG_CHANGE_VIEW,
+    payload: view
+  };
+}
+
+const UI_CFG_CHANGE_MAP_CFG = 'UI_CFG_CHANGE_MAP_CFG';
+export function uiCfgChangeMapCfg(cfg) {
+  return {
+    type: UI_CFG_CHANGE_MAP_CFG,
+    payload: cfg
   };
 }
 
@@ -240,6 +259,10 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { page: action.payload });
   case TOGGLE_MAIN_DRAWER:
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
+  case UI_CFG_CHANGE_VIEW:
+    return updateObject(state, { cfgView: action.payload });
+  case UI_CFG_CHANGE_MAP_CFG:
+    return updateObject(state, { mapCfg: action.payload });
   case UI_EXEC_CHANGE_SANDBOX:
     return updateObject(state, { sandbox: action.payload });
   case UI_EXEC_CHANGE_SANDBOX_LIST:

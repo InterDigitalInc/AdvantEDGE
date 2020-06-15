@@ -20,6 +20,8 @@ import React, { Component } from 'react';
 import * as YAML from 'yamljs';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import IDSelect from '../../components/helper-components/id-select';
+import IDCMap from '../idc-map';
 import IDCVis from '../idc-vis';
 import CfgNetworkElementContainer from './cfg-network-element-container';
 import CfgPageScenarioButtons from './cfg-page-scenario-buttons';
@@ -45,7 +47,8 @@ import {
 } from '../../state/cfg';
 
 import {
-  uiChangeCurrentDialog
+  uiChangeCurrentDialog,
+  uiCfgChangeView
 } from '../../state/ui';
 
 import {
@@ -53,6 +56,9 @@ import {
   CFG_STATE_LOADED,
   CFG_STATE_NEW,
   CFG_STATE_IDLE,
+  CFG_VIEW_NETWORK,
+  CFG_VIEW_MAP,
+  CFG_VIEW_TYPE,
   PAGE_CONFIGURE,
   ELEMENT_TYPE_SCENARIO,
   IDC_DIALOG_OPEN_SCENARIO,
@@ -585,13 +591,26 @@ class CfgPageContainer extends Component {
                 style={styles.headline}
               >
                 <GridInner>
-                  <GridCell align={'middle'} span={4}>
-                    <HeadlineBar
-                      titleLabel="Scenario"
-                      scenarioName={this.props.scenarioName}
-                    />
+                  <IDSelect
+                    label="View"
+                    span={2}
+                    options={[CFG_VIEW_NETWORK, CFG_VIEW_MAP]}
+                    onChange={(e) => this.props.changeView(e.target.value)}
+                    value={this.props.cfgView}
+                    disabled={false}
+                    cydata={CFG_VIEW_TYPE}
+                  />
+                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                    <GridInner style={{ marginLeft: 10, height: '100%', borderLeft: '2px solid #e4e4e4'}}>
+                      <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
+                        <HeadlineBar
+                          titleLabel="Scenario"
+                          scenarioName={this.props.scenarioName}
+                        />
+                      </GridCell>
+                    </GridInner>
                   </GridCell>
-                  <GridCell align={'middle'} span={8}>
+                  <GridCell align={'middle'} span={7}>
                     <GridInner align={'right'}>
                       <GridCell span={12}>
                         <CfgPageScenarioButtons
@@ -629,12 +648,19 @@ class CfgPageContainer extends Component {
                 <GridCell span={8}>
                   <Elevation className="component-style" z={2}>
                     <div style={{ padding: 10, height: '70vh' }}>
-                      <IDCVis
-                        type={TYPE_CFG}
-                        width='100%'
-                        height='100%'
-                        onEditElement={elem => this.onEditElement(elem)}
-                      />
+                      {this.props.cfgView === CFG_VIEW_NETWORK && (
+                        <IDCVis
+                          type={TYPE_CFG}
+                          width='100%'
+                          height='100%'
+                          onEditElement={elem => this.onEditElement(elem)}
+                        />
+                      )}
+                      {this.props.cfgView === CFG_VIEW_MAP && (
+                        <IDCMap
+                          type={TYPE_CFG}
+                        />
+                      )}
                     </div>
                   </Elevation>
                 </GridCell>
@@ -695,6 +721,7 @@ const mapStateToProps = state => {
   return {
     cfg: state.cfg,
     cfgState: state.cfg.state,
+    cfgView: state.ui.cfgView,
     configuredElement: state.cfg.elementConfiguration.configuredElement,
     table: state.cfg.table,
     selectedElements: state.cfg.table.selected,
@@ -715,7 +742,8 @@ const mapDispatchToProps = dispatch => {
     changeCurrentDialog: type => dispatch(uiChangeCurrentDialog(type)),
     changeScenarioList: scenarios => dispatch(cfgChangeScenarioList(scenarios)),
     changeState: s => dispatch(cfgChangeState(s)),
-    changeScenario: scenario => dispatch(cfgChangeScenario(scenario))
+    changeScenario: scenario => dispatch(cfgChangeScenario(scenario)),
+    changeView: view => dispatch(uiCfgChangeView(view))
   };
 };
 

@@ -146,6 +146,7 @@ const ViewForName = ({
     return (
       <div style={{ height: '80vh' }}>
         <IDCMap
+          type={TYPE_EXEC}
           sandboxName={sandboxName}
         />
       </div>

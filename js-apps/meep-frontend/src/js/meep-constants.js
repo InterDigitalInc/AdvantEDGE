@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export const HOST_PATH = location.origin;
-// export const HOST_PATH = 'http://10.3.16.105';
+// export const HOST_PATH = location.origin;
+export const HOST_PATH = 'http://10.3.16.105';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -83,8 +83,14 @@ export const CFG_STATE_IDLE = 'IDLE';
 export const CFG_STATE_NEW = 'NEW';
 export const CFG_STATE_LOADED = 'LOADED';
 
+// Configuration page views
+export const CFG_VIEW_NETWORK = 'Network';
+export const CFG_VIEW_MAP = 'Map';
+
 // Configuration page IDs
 export const CFG_VIS = 'cfg-vis';
+
+export const CFG_VIEW_TYPE = 'cfg-view-type';
 
 export const CFG_BTN_NEW_SCENARIO = 'cfg-btn-new-scenario';
 export const CFG_BTN_OPEN_SCENARIO = 'cfg-btn-open-scenario';

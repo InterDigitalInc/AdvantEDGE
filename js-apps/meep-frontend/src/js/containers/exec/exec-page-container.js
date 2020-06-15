@@ -19,7 +19,7 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
-import { Select } from '@rmwc/select';
+import IDSelect from '../../components/helper-components/id-select';
 import DashboardContainer from './dashboard-container';
 import EventContainer from './event-container';
 import ExecPageSandboxButtons from './exec-page-sandbox-buttons';
@@ -397,19 +397,15 @@ class ExecPageContainer extends Component {
                 style={styles.headline}
               >
                 <GridInner>
-                  <GridCell align={'middle'} span={2}>
-                    <Select
-                      style={{ width: '100%' }}
-                      label="Sandbox"
-                      outlined
-                      options={sandboxes}
-                      onChange={(e) => {
-                        this.props.setSandbox(e.target.value);
-                      }}
-                      value={sandbox}
-                      data-cy={EXEC_SELECT_SANDBOX}
-                    />
-                  </GridCell>
+                  <IDSelect
+                    label="Sandbox"
+                    span={2}
+                    options={sandboxes}
+                    onChange={(e) => this.props.setSandbox(e.target.value)}
+                    value={sandbox}
+                    disabled={false}
+                    cydata={EXEC_SELECT_SANDBOX}
+                  />
                   <GridCell align={'middle'} span={2}>
                     <ExecPageSandboxButtons
                       sandbox={sandbox}
