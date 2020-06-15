@@ -24,18 +24,14 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Http metrics query response
+type HttpMetricList struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Response name
+	Name string `json:"name,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	// columns included in response based on queried values
+	Columns []string `json:"columns,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
+	Values []HttpMetric `json:"values,omitempty"`
 }

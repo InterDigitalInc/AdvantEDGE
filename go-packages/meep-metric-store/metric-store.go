@@ -266,11 +266,20 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	// Tags
 	tagStr := ""
 	for k, v := range tags {
+		mv := strings.Split(v, ",")
+
 		if tagStr == "" {
-			tagStr = " WHERE " + k + "='" + v + "'"
+			tagStr = " WHERE (" // + k + "='" + v + "'"
 		} else {
-			tagStr += " AND " + k + "='" + v + "'"
+			tagStr += " AND (" //+ k + "='" + v + "'"
 		}
+		for i, v := range mv {
+			if i != 0 {
+				tagStr += " OR "
+			}
+			tagStr += k + "='" + v + "'"
+		}
+		tagStr += ")"
 	}
 	if duration != "" {
 		if tagStr == "" {

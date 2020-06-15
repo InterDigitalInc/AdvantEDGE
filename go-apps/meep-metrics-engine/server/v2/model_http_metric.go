@@ -24,18 +24,39 @@
 
 package server
 
-import (
-	"net/http"
-)
+// Value of a single http metric
+type HttpMetric struct {
 
-func PostEventQuery(w http.ResponseWriter, r *http.Request) {
-	mePostEventQuery(w, r)
-}
+	// Time of http metrics
+	Time string `json:"time,omitempty"`
 
-func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
-	mePostHttpQuery(w, r)
-}
+	// Http metrics identifier
+	Id int32 `json:"id,omitempty"`
 
-func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {
-	mePostNetworkQuery(w, r)
+	// Http metrics queried endpoint
+	Endpoint string `json:"endpoint,omitempty"`
+
+	// Http metrics queried endpoint with query parameters
+	Url string `json:"url,omitempty"`
+
+	// Http metrics method
+	Method string `json:"method,omitempty"`
+
+	// Http metrics response status code
+	RespCode string `json:"resp_code,omitempty"`
+
+	// Http metrics response body
+	RespBody string `json:"resp_body,omitempty"`
+
+	// Http metrics body
+	Body string `json:"body,omitempty"`
+
+	// Request processing time in ms
+	ProcTime string `json:"proc_time,omitempty"`
+
+	// Service processing the http metric
+	LoggerName string `json:"logger_name,omitempty"`
+
+	// Http type
+	Direction string `json:"direction,omitempty"`
 }
