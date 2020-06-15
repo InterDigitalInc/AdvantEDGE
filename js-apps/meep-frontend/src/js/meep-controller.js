@@ -16,6 +16,8 @@
 
 // Import CSS
 import 'material-design-icons/iconfont/material-icons.css';
+import 'leaflet/dist/leaflet.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import 'vis/dist/vis.min.css';
 import '../css/meep-controller.scss';
 

@@ -75,6 +75,10 @@
       GeoData.constructFromObject(data, obj);
       if (data.hasOwnProperty('assetName'))
         obj.assetName = ApiClient.convertToType(data['assetName'], 'String');
+      if (data.hasOwnProperty('assetType'))
+        obj.assetType = ApiClient.convertToType(data['assetType'], 'String');
+      if (data.hasOwnProperty('subType'))
+        obj.subType = ApiClient.convertToType(data['subType'], 'String');
     }
     return obj;
   }
@@ -84,6 +88,18 @@
    * @member {String} assetName
    */
   exports.prototype.assetName = undefined;
+
+  /**
+   * Asset type
+   * @member {module:model/GeoDataAsset.AssetTypeEnum} assetType
+   */
+  exports.prototype.assetType = undefined;
+
+  /**
+   * Asset sub-type
+   * @member {module:model/GeoDataAsset.SubTypeEnum} subType
+   */
+  exports.prototype.subType = undefined;
 
   // Implement GeoData interface:
   /**
@@ -113,6 +129,76 @@
    * @member {Number} velocity
    */
   exports.prototype.velocity = undefined;
+
+
+  /**
+   * Allowed values for the <code>assetType</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.AssetTypeEnum = {
+    /**
+     * value: "UE"
+     * @const
+     */
+    UE: "UE",
+
+    /**
+     * value: "POA"
+     * @const
+     */
+    POA: "POA",
+
+    /**
+     * value: "COMPUTE"
+     * @const
+     */
+    COMPUTE: "COMPUTE"
+  };
+
+
+  /**
+   * Allowed values for the <code>subType</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.SubTypeEnum = {
+    /**
+     * value: "UE"
+     * @const
+     */
+    UE: "UE",
+
+    /**
+     * value: "POA"
+     * @const
+     */
+    POA: "POA",
+
+    /**
+     * value: "POA-CELLULAR"
+     * @const
+     */
+    POA_CELLULAR: "POA-CELLULAR",
+
+    /**
+     * value: "EDGE"
+     * @const
+     */
+    EDGE: "EDGE",
+
+    /**
+     * value: "FOG"
+     * @const
+     */
+    FOG: "FOG",
+
+    /**
+     * value: "CLOUD"
+     * @const
+     */
+    CLOUD: "CLOUD"
+  };
 
   return exports;
 

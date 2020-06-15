@@ -121,7 +121,8 @@
      * Get geospatial data
      * Get geospatial data for all assets present in database
      * @param {Object} opts Optional parameters
-     * @param {String} opts.assetType Filter by asset type (i.e. UE, POA, POA-CELLULAR, EDGE, FOG, CLOUD)
+     * @param {module:model/String} opts.assetType Filter by asset type
+     * @param {module:model/String} opts.subType Filter by asset sub type
      * @param {module:api/GeospatialDataApi~getAssetDataCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/GeoDataAssetList}
      */
@@ -134,6 +135,7 @@
       };
       var queryParams = {
         'assetType': opts['assetType'],
+        'subType': opts['subType'],
       };
       var collectionQueryParams = {
       };

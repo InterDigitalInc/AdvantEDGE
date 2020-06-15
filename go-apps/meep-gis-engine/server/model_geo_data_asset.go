@@ -41,4 +41,10 @@ type GeoDataAsset struct {
 
 	// Name of geospatial asset
 	AssetName string `json:"assetName,omitempty"`
+
+	// Asset type
+	AssetType string `json:"assetType,omitempty"`
+
+	// Asset sub-type
+	SubType string `json:"subType,omitempty"`
 }

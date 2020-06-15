@@ -56,6 +56,10 @@ paths:
           \ when list of POAs in range changes."
         required: true
         type: "string"
+        enum:
+        - "MOBILITY"
+        - "MOVEMENT"
+        - "POAS-IN-RANGE"
         x-exportParamName: "Type_"
       responses:
         200:
@@ -83,6 +87,10 @@ paths:
           \ when list of POAs in range changes"
         required: true
         type: "string"
+        enum:
+        - "MOBILITY"
+        - "MOVEMENT"
+        - "POAS-IN-RANGE"
         x-exportParamName: "Type_"
       - name: "run"
         in: "query"
@@ -107,11 +115,28 @@ paths:
       parameters:
       - name: "assetType"
         in: "query"
-        description: "Filter by asset type (i.e. UE, POA, POA-CELLULAR, EDGE, FOG,\
-          \ CLOUD)"
+        description: "Filter by asset type"
         required: false
         type: "string"
+        enum:
+        - "UE"
+        - "POA"
+        - "COMPUTE"
         x-exportParamName: "AssetType"
+        x-optionalDataType: "String"
+      - name: "subType"
+        in: "query"
+        description: "Filter by asset sub type"
+        required: false
+        type: "string"
+        enum:
+        - "UE"
+        - "POA"
+        - "POA-CELLULAR"
+        - "EDGE"
+        - "FOG"
+        - "CLOUD"
+        x-exportParamName: "SubType"
         x-optionalDataType: "String"
       responses:
         200:
@@ -217,12 +242,16 @@ definitions:
           \ - Advances UEs along configured paths using previous position & velocity\
           \ as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller\
           \ when list of POAs in range changes"
+        enum:
+        - "MOBILITY"
+        - "MOVEMENT"
+        - "POAS-IN-RANGE"
       active:
         type: "boolean"
         description: "Automation feature state"
     example:
       active: true
-      type: "type"
+      type: "MOBILITY"
   GeoDataAssetList:
     type: "object"
     properties:
@@ -239,6 +268,23 @@ definitions:
         assetName:
           type: "string"
           description: "Name of geospatial asset"
+        assetType:
+          type: "string"
+          description: "Asset type"
+          enum:
+          - "UE"
+          - "POA"
+          - "COMPUTE"
+        subType:
+          type: "string"
+          description: "Asset sub-type"
+          enum:
+          - "UE"
+          - "POA"
+          - "POA-CELLULAR"
+          - "EDGE"
+          - "FOG"
+          - "CLOUD"
     - $ref: "#/definitions/GeoData"
     description: "List of geospatial data"
   GeoData:

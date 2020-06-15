@@ -114,7 +114,7 @@
     /**
      * Get automation state
      * Get automation state for the given automation type
-     * @param {String} type Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes.
+     * @param {module:model/String} type Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes.
      * @param {module:api/AutomationApi~getAutomationStateByNameCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/AutomationState}
      */
@@ -162,7 +162,7 @@
     /**
      * Set automation state
      * Set automation state for the given automation type \\
-     * @param {String} type Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
+     * @param {module:model/String} type Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
      * @param {Boolean} run Automation state (e.g. true=running, false=stopped)
      * @param {module:api/AutomationApi~setAutomationStateByNameCallback} callback The callback function, accepting three arguments: error, data, response
      */

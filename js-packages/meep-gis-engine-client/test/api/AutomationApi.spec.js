@@ -70,7 +70,7 @@
                 let data = dataCtr[p];
                 expect(data).to.be.a(AdvantEdgeGisEngineRestApi.AutomationState);
                 expect(data.type).to.be.a('string');
-                expect(data.type).to.be("");
+                expect(data.type).to.be("MOBILITY");
                 expect(data.active).to.be.a('boolean');
                 expect(data.active).to.be(false);
               }
@@ -97,7 +97,7 @@
             // TODO: update response assertions
             expect(data).to.be.a(AdvantEdgeGisEngineRestApi.AutomationState);
             expect(data.type).to.be.a('string');
-            expect(data.type).to.be("");
+            expect(data.type).to.be("MOBILITY");
             expect(data.active).to.be.a('boolean');
             expect(data.active).to.be(false);
 

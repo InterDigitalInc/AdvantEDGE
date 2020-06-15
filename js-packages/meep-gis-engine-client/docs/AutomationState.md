@@ -7,3 +7,16 @@ Name | Type | Description | Notes
 **active** | **Boolean** | Automation feature state | [optional] 
 
 
+<a name="TypeEnum"></a>
+## Enum: TypeEnum
+
+
+* `MOBILITY` (value: `"MOBILITY"`)
+
+* `MOVEMENT` (value: `"MOVEMENT"`)
+
+* `POAS_IN_RANGE` (value: `"POAS-IN-RANGE"`)
+
+
+
+

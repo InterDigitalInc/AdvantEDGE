@@ -61,6 +61,18 @@
         // expect(instance.assetName).to.be(expectedValueLiteral);
       });
 
+      it('should have the property assetType (base name: "assetType")', function() {
+        // TODO: update the code to test the property assetType
+        expect(instance).to.have.property('assetType');
+        // expect(instance.assetType).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property subType (base name: "subType")', function() {
+        // TODO: update the code to test the property subType
+        expect(instance).to.have.property('subType');
+        // expect(instance.subType).to.be(expectedValueLiteral);
+      });
+
     });
   });
 
