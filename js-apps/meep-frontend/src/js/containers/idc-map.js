@@ -109,12 +109,14 @@ class IDCMap extends Component {
     };
 
     // Create Layer Group Overlays
-    this.ueOverlay = L.layerGroup([],{name: 'ueOverlay'});
-    this.poaOverlay = L.layerGroup([],{name: 'poaOverlay'});
-    this.poaRangeOverlay = L.layerGroup([],{name: 'poaRangeOverlay'});
-    this.computeOverlay = L.layerGroup([],{name: 'computeOverlay'});
+    this.ueOverlay = L.layerGroup();
+    this.uePathOverlay = L.layerGroup();
+    this.poaOverlay = L.layerGroup();
+    this.poaRangeOverlay = L.layerGroup();
+    this.computeOverlay = L.layerGroup();
     var overlays = {
       'UE': this.ueOverlay,
+      'UE Path': this.uePathOverlay,
       'POA': this.poaOverlay,
       'POA Range': this.poaRangeOverlay,
       'Compute': this.computeOverlay
@@ -129,6 +131,7 @@ class IDCMap extends Component {
     // Initialize map & layers
     this.layerCtrl.addTo(this.map);
     this.ueOverlay.addTo(this.map);
+    this.uePathOverlay.addTo(this.map);
     this.poaOverlay.addTo(this.map);
     this.poaRangeOverlay.addTo(this.map);
     this.computeOverlay.addTo(this.map);
@@ -172,6 +175,7 @@ class IDCMap extends Component {
 
   setUeMarker(ue) {
     var latlng = L.latLng(L.GeoJSON.coordsToLatLng(ue.location.coordinates));
+    var p = ue.path ? L.GeoJSON.geometryToLayer(ue.path) : null;
 
     // Find existing UE marker
     var existingMarker;
@@ -183,12 +187,12 @@ class IDCMap extends Component {
     });
 
     if (existingMarker === undefined) {
-      // Creating new UE marker
+      // Create new UE marker & path
       var m = L.marker(latlng, {
         myId: ue.assetName,
+        path: p,
         eopMode: ue.eopMode,
         velocity: ue.velocity,
-        opacity: '0.5',
         draggable: false
       });
       m.bindTooltip(ue.assetName).openTooltip();
@@ -199,10 +203,22 @@ class IDCMap extends Component {
 
       // Add to map overlay
       m.addTo(this.ueOverlay);
+      if (p) {
+        p.addTo(this.uePathOverlay);
+      }
       // console.log('UE ' + id + ' added @ ' + latlng.toString());
     } else {
-      // Update UE position
+      // Update UE position & path
       existingMarker.setLatLng(latlng);
+
+      // Update path
+      if (existingMarker.options.path) {
+        existingMarker.options.path.removeFrom(this.uePathOverlay);
+      }
+      if (p) {
+        existingMarker.options.path = p;
+        p.addTo(this.uePathOverlay);
+      }
     }
   }
 
@@ -335,6 +351,9 @@ class IDCMap extends Component {
     // Remove old UE markers
     this.ueOverlay.eachLayer((marker) => {
       if (!ueMap[marker.options.myId]) {
+        if (marker.options.path) {
+          marker.options.path.removeFrom(this.uePathOverlay);
+        }
         marker.removeFrom(this.ueOverlay);
       }
     });
