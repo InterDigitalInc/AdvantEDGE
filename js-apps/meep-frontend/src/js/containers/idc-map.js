@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,12 @@ import {
 import {
   uiExecChangeSandboxCfg
 } from '../state/ui';
+import {
+  HOST_PATH,
+  DEFAULT_MAP_LATITUDE,
+  DEFAULT_MAP_LONGITUDE,
+  DEFAULT_MAP_ZOOM
+} from '../meep-constants';
 
 class IDCMap extends Component {
   constructor(props) {
@@ -81,9 +87,9 @@ class IDCMap extends Component {
   createMap() {
     // Get stored configuration
     var cfg = this.props.sandboxCfg[this.props.sandboxName];
-    var lat = cfg.center ? cfg.center.lat : 43.73752;
-    var lng = cfg.center ? cfg.center.lng : 7.42892;
-    var zoom = cfg.zoom ? cfg.zoom : 15;
+    var lat = cfg.center ? cfg.center.lat : DEFAULT_MAP_LATITUDE;
+    var lng = cfg.center ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
+    var zoom = cfg.zoom ? cfg.zoom : DEFAULT_MAP_ZOOM;
     var baselayerName = cfg.baselayerName ? cfg.baselayerName : 'Positron';
  
     // Create Map instance
@@ -97,10 +103,10 @@ class IDCMap extends Component {
     });
 
     // Create GL Baselayers
-    var positronBaselayer = L.mapboxGL({style: 'http://10.3.16.105:30080/styles/positron/style.json'});
-    var darkBaselayer = L.mapboxGL({style: 'http://10.3.16.105:30080/styles/dark-matter/style.json'});
-    var klokBaselayer = L.mapboxGL({style: 'http://10.3.16.105:30080/styles/klokantech-basic/style.json'});
-    var osmBaselayer = L.mapboxGL({style: 'http://10.3.16.105:30080/styles/osm-bright/style.json'});
+    var positronBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/positron/style.json'});
+    var darkBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/dark-matter/style.json'});
+    var klokBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/klokantech-basic/style.json'});
+    var osmBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/osm-bright/style.json'});
     var baselayers = {
       'Positron': positronBaselayer,
       'Black Matter': darkBaselayer,
@@ -115,11 +121,11 @@ class IDCMap extends Component {
     this.poaRangeOverlay = L.layerGroup();
     this.computeOverlay = L.layerGroup();
     var overlays = {
-      'UE': this.ueOverlay,
-      'UE Path': this.uePathOverlay,
-      'POA': this.poaOverlay,
-      'POA Range': this.poaRangeOverlay,
-      'Compute': this.computeOverlay
+      'terminal': this.ueOverlay,
+      'terminal-path': this.uePathOverlay,
+      'poa': this.poaOverlay,
+      'poa-coverage': this.poaRangeOverlay,
+      'compute': this.computeOverlay
     };
     
     // Create Layer Controller
@@ -180,7 +186,7 @@ class IDCMap extends Component {
     // Find existing UE marker
     var existingMarker;
     this.ueOverlay.eachLayer((marker) => {
-      if (marker.options.myId === ue.assetName){
+      if (marker.options.meep.ue.id === ue.assetName){
         existingMarker = marker;
         return;
       }
@@ -189,10 +195,14 @@ class IDCMap extends Component {
     if (existingMarker === undefined) {
       // Create new UE marker & path
       var m = L.marker(latlng, {
-        myId: ue.assetName,
-        path: p,
-        eopMode: ue.eopMode,
-        velocity: ue.velocity,
+        meep: {
+          ue: {
+            id: ue.assetName,
+            path: p,
+            eopMode: ue.eopMode,
+            velocity: ue.velocity
+          }
+        },
         draggable: false
       });
       m.bindTooltip(ue.assetName).openTooltip();
@@ -212,11 +222,11 @@ class IDCMap extends Component {
       existingMarker.setLatLng(latlng);
 
       // Update path
-      if (existingMarker.options.path) {
-        existingMarker.options.path.removeFrom(this.uePathOverlay);
+      if (existingMarker.options.meep.ue.path) {
+        existingMarker.options.meep.ue.path.removeFrom(this.uePathOverlay);
       }
       if (p) {
-        existingMarker.options.path = p;
+        existingMarker.options.meep.ue.path = p;
         p.addTo(this.uePathOverlay);
       }
     }
@@ -228,7 +238,7 @@ class IDCMap extends Component {
     // Find existing POA marker
     var existingMarker;
     this.poaOverlay.eachLayer((marker) => {
-      if (marker.options.myId === poa.assetName){
+      if (marker.options.meep.poa.id === poa.assetName){
         existingMarker = marker;
         return;
       }
@@ -237,13 +247,21 @@ class IDCMap extends Component {
     if (existingMarker === undefined) {
       // Create new POA marker & circle
       var c = L.circle(latlng, {
-        myId: poa.assetName,
+        meep: {
+          range: {
+            id: poa.assetName
+          }
+        },
         radius: poa.radius,
         opacity: '0.5'
       });
       var m = L.marker(latlng, {
-        myId: poa.assetName,
-        myCircle: c,
+        meep: {
+          poa: {
+            id: poa.assetName,
+            range: c
+          }
+        },
         opacity: '0.5',
         draggable: false
       });
@@ -260,7 +278,7 @@ class IDCMap extends Component {
     } else {
       // Update POA position
       existingMarker.setLatLng(latlng);
-      existingMarker.options.myCircle.setLatLng(latlng);
+      existingMarker.options.meep.poa.range.setLatLng(latlng);
     }
   }
 
@@ -270,7 +288,7 @@ class IDCMap extends Component {
     // Find existing COMPUTE marker
     var existingMarker;
     this.computeOverlay.eachLayer((marker) => {
-      if (marker.options.myId === compute.assetName){
+      if (marker.options.meep.compute.id === compute.assetName){
         existingMarker = marker;
         return;
       }
@@ -279,7 +297,11 @@ class IDCMap extends Component {
     if (existingMarker === undefined) {
       // Creating new COMPUTE marker
       var m = L.marker(latlng, {
-        myId: compute.assetName,
+        meep: {
+          compute: {
+            id: compute.assetName
+          }
+        },
         opacity: '0.5',
         draggable: false
       });
@@ -301,9 +323,9 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   clickUeMarker(marker) {
     var latlng = marker.getLatLng();
-    var msg = '<b>UE: ' + marker.options.myId + '</b><br>';
-    msg += 'eopMode: ' + marker.options.eopMode + '<br>';
-    msg += 'velocity: ' + marker.options.velocity + ' m/s<br>';
+    var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
+    msg += 'path-mode: ' + marker.options.meep.ue.eopMode + '<br>';
+    msg += 'velocity: ' + marker.options.meep.ue.velocity + ' m/s<br>';
     msg += latlng.toString();
     this.showPopup(latlng, msg);
   }
@@ -311,8 +333,8 @@ class IDCMap extends Component {
   // POA Marker Event Handler
   clickPoaMarker(marker) {
     var latlng = marker.getLatLng();
-    var msg = '<b>POA: ' + marker.options.myId + '</b><br>';
-    msg += 'radius: ' + marker.options.myCircle.options.radius + ' m<br>';
+    var msg = '<b>id: ' + marker.options.meep.poa.id + '</b><br>';
+    msg += 'radius: ' + marker.options.meep.poa.range.options.radius + ' m<br>';
     msg += latlng.toString();
     this.showPopup(latlng, msg);
   }
@@ -320,7 +342,7 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   clickComputeMarker(marker) {
     var latlng = marker.getLatLng();
-    var msg = '<b>Compute: ' + marker.options.myId + '</b><br>';
+    var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
     msg += latlng.toString();
     this.showPopup(latlng, msg);
   }
@@ -350,9 +372,9 @@ class IDCMap extends Component {
 
     // Remove old UE markers
     this.ueOverlay.eachLayer((marker) => {
-      if (!ueMap[marker.options.myId]) {
-        if (marker.options.path) {
-          marker.options.path.removeFrom(this.uePathOverlay);
+      if (!ueMap[marker.options.meep.ue.id]) {
+        if (marker.options.meep.ue.path) {
+          marker.options.meep.ue.path.removeFrom(this.uePathOverlay);
         }
         marker.removeFrom(this.ueOverlay);
       }
@@ -369,8 +391,8 @@ class IDCMap extends Component {
 
     // Remove old POA markers
     this.poaOverlay.eachLayer((marker) => {
-      if (!poaMap[marker.options.myId]) {
-        marker.options.myCircle.removeFrom(this.poaRangeOverlay);
+      if (!poaMap[marker.options.meep.poa.id]) {
+        marker.options.meep.poa.range.removeFrom(this.poaRangeOverlay);
         marker.removeFrom(this.poaOverlay);
       }
     });
@@ -386,7 +408,7 @@ class IDCMap extends Component {
 
     // Remove old COMPUTE markers
     this.computeOverlay.eachLayer((marker) => {
-      if (!computeMap[marker.options.myId]) {
+      if (!computeMap[marker.options.meep.compute.id]) {
         marker.removeFrom(this.computeOverlay);
       }
     });
