@@ -273,13 +273,13 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 		} else {
 			tagStr += " AND (" //+ k + "='" + v + "'"
 		}
-                for i, v := range mv {
+		for i, v := range mv {
 			if i != 0 {
 				tagStr += " OR "
 			}
-              		tagStr += k + "='" + v + "'"
+			tagStr += k + "='" + v + "'"
 		}
-		tagStr += ")";
+		tagStr += ")"
 	}
 	if duration != "" {
 		if tagStr == "" {

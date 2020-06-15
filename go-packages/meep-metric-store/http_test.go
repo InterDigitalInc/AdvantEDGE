@@ -84,6 +84,10 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	if err != nil || len(h) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
+	h, err = ms.GetHttpMetric("logger1,logger2", "RX", "", 0)
+	if err != nil || len(h) != 2 {
+		t.Fatalf("Failed to get metric")
+	}
 
 	// t.Fatalf("DONE")
 }
