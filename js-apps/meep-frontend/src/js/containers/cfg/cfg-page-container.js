@@ -135,10 +135,7 @@ class CfgPageContainer extends Component {
     }
 
     // Add/update element in scenario
-    if (
-      this.props.cfg.elementConfiguration.configurationMode ===
-      CFG_ELEM_MODE_NEW
-    ) {
+    if (this.props.cfg.elementConfiguration.configurationMode === CFG_ELEM_MODE_NEW) {
       this.props.newScenarioElem(element, true);
     } else {
       this.props.updateScenarioElem(element);

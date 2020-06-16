@@ -64,6 +64,11 @@ export const FIELD_MCC = 'mcc';
 export const FIELD_MNC = 'mnc';
 export const FIELD_DEFAULT_CELL_ID = 'defaultCellId';
 export const FIELD_CELL_ID = 'cellId';
+export const FIELD_GEO_LOCATION = 'location';
+export const FIELD_GEO_RADIUS = 'radius';
+export const FIELD_GEO_PATH = 'path';
+export const FIELD_GEO_EOP_MODE = 'eopMode';
+export const FIELD_GEO_VELOCITY = 'velocity';
 export const FIELD_CHART_ENABLED = 'userChartEnabled';
 export const FIELD_CHART_LOC = 'userChartLocation';
 export const FIELD_CHART_VAL = 'userChartAlternateValues';
@@ -132,66 +137,31 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_MCC, '');
   setElemFieldVal(elem, FIELD_DEFAULT_CELL_ID, '');
   setElemFieldVal(elem, FIELD_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_GEO_LOCATION, '');
+  setElemFieldVal(elem, FIELD_GEO_RADIUS, '');
+  setElemFieldVal(elem, FIELD_GEO_PATH, '');
+  setElemFieldVal(elem, FIELD_GEO_EOP_MODE, '');
+  setElemFieldVal(elem, FIELD_GEO_VELOCITY, '');
   setElemFieldVal(elem, FIELD_CHART_ENABLED, false);
   setElemFieldVal(elem, FIELD_CHART_LOC, '');
   setElemFieldVal(elem, FIELD_CHART_VAL, '');
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, DEFAULT_LATENCY_INTER_DOMAIN);
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTER_DOMAIN
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_THROUGPUT,
-    DEFAULT_THROUGHPUT_INTER_DOMAIN
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_INTER_DOMAIN
-  );
+  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_THROUGPUT, DEFAULT_THROUGHPUT_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_PKT_LOSS, DEFAULT_PACKET_LOSS_INTER_DOMAIN);
   setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY, DEFAULT_LATENCY_INTER_ZONE);
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTER_ZONE
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_THROUGPUT,
-    DEFAULT_THROUGHPUT_INTER_ZONE
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_INTER_ZONE
-  );
+  setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTER_ZONE);
+  setElemFieldVal(elem, FIELD_INT_ZONE_THROUGPUT, DEFAULT_THROUGHPUT_INTER_ZONE);
+  setElemFieldVal(elem, FIELD_INT_ZONE_PKT_LOSS, DEFAULT_PACKET_LOSS_INTER_ZONE);
   setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY, DEFAULT_LATENCY_INTRA_ZONE);
-  setElemFieldVal(
-    elem,
-    FIELD_INTRA_ZONE_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTRA_ZONE
-  );
+  setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTRA_ZONE);
   setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGPUT, DEFAULT_THROUGHPUT_INTRA_ZONE);
   setElemFieldVal(elem, FIELD_INTRA_ZONE_PKT_LOSS, DEFAULT_PACKET_LOSS_INTRA_ZONE);
   setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, DEFAULT_LATENCY_TERMINAL_LINK);
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_TERMINAL_LINK
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_THROUGPUT,
-    DEFAULT_THROUGHPUT_TERMINAL_LINK
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_TERMINAL_LINK
-  );
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR, DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT, DEFAULT_THROUGHPUT_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, DEFAULT_PACKET_LOSS_TERMINAL_LINK);
   setElemFieldVal(elem, FIELD_LINK_LATENCY, DEFAULT_LATENCY_LINK);
   setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, DEFAULT_LATENCY_JITTER_LINK);
   setElemFieldVal(elem, FIELD_LINK_THROUGPUT, DEFAULT_THROUGHPUT_LINK);

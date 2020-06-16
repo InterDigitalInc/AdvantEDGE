@@ -122,6 +122,11 @@ export const CFG_ELEM_MNC = 'cfg-elem-mnc';
 export const CFG_ELEM_MCC = 'cfg-elem-mcc';
 export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
 export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
+export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
+export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
+export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
+export const CFG_ELEM_GEO_EOP_MODE = 'cfg-elem-eop-mode';
+export const CFG_ELEM_GEO_VELOCITY = 'cfg-elem-velocity';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
@@ -229,6 +234,10 @@ export const DEFAULT_LATENCY_DC = 0;
 
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';
+
+// End-of-path modes
+export const GEO_EOP_MODE_LOOP = 'LOOP';
+export const GEO_EOP_MODE_REVERSE = 'REVERSE';
 
 // Monitoring Page IDs
 export const MON_DASHBOARD_SELECT = 'mon-dashboard-select';
