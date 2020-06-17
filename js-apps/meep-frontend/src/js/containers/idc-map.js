@@ -22,17 +22,24 @@ import 'mapbox-gl';
 import 'mapbox-gl-leaflet';
 import deepEqual from 'deep-equal';
 import { updateObject } from '../util/object-util';
+import { execChangeTable } from '../state/exec';
+import { cfgChangeTable } from '../state/cfg';
 import {
   uiCfgChangeMapCfg,
   uiExecChangeSandboxCfg
 } from '../state/ui';
 import {
   TYPE_CFG,
+  TYPE_EXEC,
   HOST_PATH,
   DEFAULT_MAP_LATITUDE,
   DEFAULT_MAP_LONGITUDE,
   DEFAULT_MAP_ZOOM
 } from '../meep-constants';
+import {
+  FIELD_NAME,
+  getElemFieldVal
+} from '../util/elem-utils';
 
 class IDCMap extends Component {
   constructor(props) {
@@ -89,6 +96,58 @@ class IDCMap extends Component {
 
   getCfg() {
     return (this.props.type === TYPE_CFG) ? this.props.mapCfg : this.props.sandboxCfg[this.props.sandboxName];
+  }
+
+  updateCfg(cfg) {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      this.props.changeMapCfg(updateObject(this.getCfg(), cfg));
+      break;
+    case TYPE_EXEC:
+      var sandboxCfg = updateObject({}, this.props.sandboxCfg);
+      if (sandboxCfg[this.props.sandboxName]) {
+        sandboxCfg[this.props.sandboxName] = updateObject(sandboxCfg[this.props.sandboxName], cfg);
+        this.props.changeSandboxCfg(sandboxCfg);
+      }
+      break;
+    default:
+      break;
+    }
+  }
+
+  changeTable(table) {
+    switch (this.props.type) {
+    case TYPE_CFG:
+      this.props.changeCfgTable(table);
+      break;
+    case TYPE_EXEC:
+      this.props.changeExecTable(table);
+      break;
+    default:
+      break;
+    }
+  }
+
+  editElement(name) {
+    // Update selected nodes in table
+    const table = updateObject({}, this.props.cfgTable);
+    const elem = this.getElementByName(table.entries, name);
+    table.selected = elem ? [elem.id] : [];
+    this.changeTable(table);
+
+    // Open selected element in element configuration pane
+    if (this.props.type === TYPE_CFG) {
+      this.props.onEditElement(elem);
+    }
+  }
+
+  getElementByName(entries, name) {
+    for (var i = 0; i < entries.length; i++) {
+      if (getElemFieldVal(entries[i], FIELD_NAME) === name) {
+        return entries[i];
+      }
+    }
+    return null;
   }
 
   createMap() {
@@ -155,9 +214,12 @@ class IDCMap extends Component {
 
     // Handlers
     var _this = this;
-    this.map.on('zoomend', function() {_this.updateZoom(this);});
-    this.map.on('moveend', function() {_this.updateCenter(this);});
-    this.map.on('baselayerchange', function(e) {_this.updateBaseLayer(e);});
+    this.map.on('zoomend', function() {_this.setZoom(this);});
+    this.map.on('moveend', function() {_this.setCenter(this);});
+    this.map.on('baselayerchange', function(e) {_this.setBaseLayer(e);});
+
+    // Add asset markers
+    this.updateMarkers();
   }
 
   destroyMap() {
@@ -166,27 +228,15 @@ class IDCMap extends Component {
     }
   }
 
-  updateCfg(cfg) {
-    if (this.props.type === TYPE_CFG) {
-      this.props.changeMapCfg(updateObject(this.getCfg(), cfg));
-    } else {
-      var sandboxCfg = updateObject({}, this.props.sandboxCfg);
-      if (sandboxCfg[this.props.sandboxName]) {
-        sandboxCfg[this.props.sandboxName] = updateObject(sandboxCfg[this.props.sandboxName], cfg);
-        this.props.changeSandboxCfg(sandboxCfg);
-      }
-    }
-  }
-
-  updateZoom(map) {
+  setZoom(map) {
     this.updateCfg({zoom: map.getZoom()});
   }
 
-  updateCenter(map) {
+  setCenter(map) {
     this.updateCfg({center: map.getCenter()});
   }
 
-  updateBaseLayer(event) {
+  setBaseLayer(event) {
     this.updateCfg({baselayerName: event.name});
   }
 
@@ -333,29 +383,38 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   clickUeMarker(marker) {
-    var latlng = marker.getLatLng();
-    var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
-    msg += 'path-mode: ' + marker.options.meep.ue.eopMode + '<br>';
-    msg += 'velocity: ' + marker.options.meep.ue.velocity + ' m/s<br>';
-    msg += latlng.toString();
-    this.showPopup(latlng, msg);
+    this.editElement(marker.options.meep.ue.id);
+    if (this.props.type === TYPE_EXEC) {
+      var latlng = marker.getLatLng();
+      var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
+      msg += 'path-mode: ' + marker.options.meep.ue.eopMode + '<br>';
+      msg += 'velocity: ' + marker.options.meep.ue.velocity + ' m/s<br>';
+      msg += latlng.toString();
+      this.showPopup(latlng, msg);
+    }
   }
 
   // POA Marker Event Handler
   clickPoaMarker(marker) {
-    var latlng = marker.getLatLng();
-    var msg = '<b>id: ' + marker.options.meep.poa.id + '</b><br>';
-    msg += 'radius: ' + marker.options.meep.poa.range.options.radius + ' m<br>';
-    msg += latlng.toString();
-    this.showPopup(latlng, msg);
+    this.editElement(marker.options.meep.poa.id);
+    if (this.props.type === TYPE_EXEC) {
+      var latlng = marker.getLatLng();
+      var msg = '<b>id: ' + marker.options.meep.poa.id + '</b><br>';
+      msg += 'radius: ' + marker.options.meep.poa.range.options.radius + ' m<br>';
+      msg += latlng.toString();
+      this.showPopup(latlng, msg);
+    }
   }
 
   // UE Marker Event Handler
   clickComputeMarker(marker) {
-    var latlng = marker.getLatLng();
-    var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
-    msg += latlng.toString();
-    this.showPopup(latlng, msg);
+    this.editElement(marker.options.meep.compute.id);
+    if (this.props.type === TYPE_EXEC) {
+      var latlng = marker.getLatLng();
+      var msg = '<b>id: ' + marker.options.meep.compute.id + '</b><br>';
+      msg += latlng.toString();
+      this.showPopup(latlng, msg);
+    }
   }
 
   // Show position popup
@@ -448,14 +507,18 @@ const mapStateToProps = state => {
     execPageMap: state.exec.map,
     sandbox: state.ui.sandbox,
     sandboxCfg: state.ui.sandboxCfg,
-    mapCfg: state.ui.mapCfg
+    mapCfg: state.ui.mapCfg,
+    cfgTable: state.cfg.table,
+    execTable: state.exec.table
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     changeMapCfg: cfg => dispatch(uiCfgChangeMapCfg(cfg)),
-    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg))
+    changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
+    changeExecTable: table => dispatch(execChangeTable(table)),
+    changeCfgTable: table => dispatch(cfgChangeTable(table))
   };
 };
 

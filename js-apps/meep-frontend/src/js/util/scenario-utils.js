@@ -169,6 +169,9 @@ export function parseScenario(scenario) {
 
   var nodes = new Array();
   var edges = new Array();
+  var ueList = new Array();
+  var poaList = new Array();
+  var computeList = new Array();
 
   // Add scenario to graph and table
   addScenarioNode(scenario, nodes);
@@ -199,13 +202,15 @@ export function parseScenario(scenario) {
 
         // Add Network Location to graph and table (ignore default network location)
         if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) === -1) {
-          const parent =
-            domain.type === PUBLIC_DOMAIN_TYPE_STR
-              ? scenario
-              : zone.type === COMMON_ZONE_TYPE_STR
-                ? domain
-                : zone;
+          const parent = domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario :
+            zone.type === COMMON_ZONE_TYPE_STR ? domain : zone;
           addNlNode(nl, parent, nodes, edges);
+
+          // Add NL with geodata to map
+          if (nl.geoData && nl.geoData.location) {
+            var nlGeoDataAsset = updateObject({assetName: nl.name, assetType: 'POA', subType: nl.type}, nl.geoData);
+            poaList.push(nlGeoDataAsset);
+          }
         }
 
         // Physical Locations
@@ -213,15 +218,22 @@ export function parseScenario(scenario) {
           var pl = nl.physicalLocations[l];
 
           // Add Physical Location to graph and table
-          const parent =
-            domain.type === PUBLIC_DOMAIN_TYPE_STR
-              ? scenario
-              : zone.type === COMMON_ZONE_TYPE_STR
-                ? domain
-                : nl.type === DEFAULT_NL_TYPE_STR
-                  ? zone
-                  : nl;
+          const parent = domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario :
+            zone.type === COMMON_ZONE_TYPE_STR ? domain :
+              nl.type === DEFAULT_NL_TYPE_STR ? zone : nl;
           addPlNode(pl, parent, nodes, edges);
+
+          // Add PL with geodata to map
+          if (pl.geoData && pl.geoData.location) {
+            var plGeoDataAsset = updateObject({assetName: pl.name, subType: pl.type}, pl.geoData);
+            if (pl.type === ELEMENT_TYPE_UE) {
+              plGeoDataAsset.assetType = 'UE';
+              ueList.push(plGeoDataAsset);
+            } else {
+              plGeoDataAsset.assetType = 'COMPUTE';
+              computeList.push(plGeoDataAsset);
+            }
+          }
 
           // Processes
           for (var m in pl.processes) {
@@ -248,7 +260,13 @@ export function parseScenario(scenario) {
   visData.nodes = new vis.DataSet(nodes);
   visData.edges = new vis.DataSet(edges);
 
-  return { table: table, visData: visData };
+  // Update map data
+  var mapData = {};
+  mapData.ueList = _.sortBy(ueList, ['assetName']);
+  mapData.poaList = _.sortBy(poaList, ['assetName']);
+  mapData.computeList = _.sortBy(computeList, ['assetName']);
+
+  return { table: table, visData: visData, mapData: mapData };
 }
 
 function findIdInScenario(scenario, uniqueId) {

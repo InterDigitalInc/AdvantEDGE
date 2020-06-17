@@ -22,51 +22,51 @@ const initialState = {
   computeList: []
 };
 
-// CHANGE_MAP
-const EXEC_CHANGE_MAP = 'EXEC_CHANGE_MAP';
-export function execChangeMap(map) {
+// CFG_CHANGE_MAP
+const CFG_CHANGE_MAP = 'CFG_CHANGE_MAP';
+export function cfgChangeMap(map) {
   return {
-    type: EXEC_CHANGE_MAP,
+    type: CFG_CHANGE_MAP,
     payload: map
   };
 }
 
-// EXEC_CHANGE_UE_LIST
-const EXEC_CHANGE_UE_LIST = 'EXEC_CHANGE_UE_LIST';
-export function execChangeMapUeList(ueList) {
+// CFG_CHANGE_UE_LIST
+const CFG_CHANGE_UE_LIST = 'CFG_CHANGE_UE_LIST';
+export function cfgChangeMapUeList(ueList) {
   return {
-    type: EXEC_CHANGE_UE_LIST,
+    type: CFG_CHANGE_UE_LIST,
     payload: ueList
   };
 }
 
-// EXEC_CHANGE_POA_LIST
-const EXEC_CHANGE_POA_LIST = 'EXEC_CHANGE_POA_LIST';
-export function execChangeMapPoaList(poaList) {
+// CFG_CHANGE_POA_LIST
+const CFG_CHANGE_POA_LIST = 'CFG_CHANGE_POA_LIST';
+export function cfgChangeMapPoaList(poaList) {
   return {
-    type: EXEC_CHANGE_POA_LIST,
+    type: CFG_CHANGE_POA_LIST,
     payload: poaList
   };
 }
 
-// EXEC_CHANGE_COMPUTE_LIST
-const EXEC_CHANGE_COMPUTE_LIST = 'EXEC_CHANGE_COMPUTE_LIST';
-export function execChangeMapComputeList(computeList) {
+// CHANGE_COMPUTE_LIST
+const CFG_CHANGE_COMPUTE_LIST = 'CFG_CHANGE_COMPUTE_LIST';
+export function cfgChangeMapComputeList(computeList) {
   return {
-    type: EXEC_CHANGE_COMPUTE_LIST,
+    type: CFG_CHANGE_COMPUTE_LIST,
     payload: computeList
   };
 }
 
-export function execMapReducer(state = initialState, action) {
+export function cfgMapReducer(state = initialState, action) {
   switch (action.type) {
-  case EXEC_CHANGE_MAP:
+  case CFG_CHANGE_MAP:
     return action.payload;
-  case EXEC_CHANGE_UE_LIST:
+  case CFG_CHANGE_UE_LIST:
     return updateObject(state, { ueList: action.payload });
-  case EXEC_CHANGE_POA_LIST:
+  case CFG_CHANGE_POA_LIST:
     return updateObject(state, { poaList: action.payload });
-  case EXEC_CHANGE_COMPUTE_LIST:
+  case CFG_CHANGE_COMPUTE_LIST:
     return updateObject(state, { computeList: action.payload });
   default:
     return state;

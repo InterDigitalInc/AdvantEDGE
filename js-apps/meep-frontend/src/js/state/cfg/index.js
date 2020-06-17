@@ -18,6 +18,7 @@ import { combineReducers } from 'redux';
 import { typeReducer } from './type-reducer';
 import { stateReducer } from './state-reducer';
 import { scenarioReducer } from './scenario-reducer';
+import { cfgMapReducer } from './map-reducer';
 import { cfgVisReducer } from './vis-reducer';
 import { cfgTableReducer } from './table-reducer';
 import { cfgElementConfigurationReducer } from './element-configuration';
@@ -26,6 +27,7 @@ import { cfgApiResultsReducer } from './api-results';
 export * from './type-reducer';
 export * from './state-reducer';
 export * from './scenario-reducer';
+export * from './map-reducer';
 export * from './vis-reducer';
 export * from './table-reducer';
 export * from './element-configuration';
@@ -35,6 +37,7 @@ const cfgReducer = combineReducers({
   type: typeReducer,
   state: stateReducer,
   scenario: scenarioReducer,
+  map: cfgMapReducer,
   vis: cfgVisReducer,
   table: cfgTableReducer,
   elementConfiguration: cfgElementConfigurationReducer,

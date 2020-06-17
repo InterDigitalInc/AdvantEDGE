@@ -86,7 +86,8 @@ import {
 import {
   cfgChangeScenario,
   cfgChangeVisData,
-  cfgChangeTable
+  cfgChangeTable,
+  cfgChangeMap
 } from '../state/cfg';
 
 // REST API Clients
@@ -342,11 +343,13 @@ class MeepContainer extends Component {
     // Parse Scenario object to retrieve visualization data and scenario table
     var page = pageType === TYPE_CFG ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
+    var updatedMapData = updateObject({}, parsedScenario.mapData);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     var updatedTable = updateObject(page.table, parsedScenario.table);
 
     // Dispatch state updates
     if (pageType === TYPE_CFG) {
+      this.props.cfgChangeMap(updatedMapData);
       this.props.cfgChangeVisData(updatedVisData);
       this.props.cfgChangeTable(updatedTable);
 
@@ -540,10 +543,7 @@ class MeepContainer extends Component {
 
   // Add new element to scenario
   newScenarioElem(pageType, element, scenarioUpdate) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
     if (scenarioUpdate) {
@@ -553,10 +553,7 @@ class MeepContainer extends Component {
 
   // Update element in scenario
   updateScenarioElem(pageType, element) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     updateElementInScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -564,10 +561,7 @@ class MeepContainer extends Component {
 
   // Delete element in scenario (also deletes child elements)
   deleteScenarioElem(pageType, element) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     removeElementFromScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -730,6 +724,7 @@ const mapDispatchToProps = dispatch => {
     execChangeMapUeList: list => dispatch(execChangeMapUeList(list)),
     execChangeMapPoaList: list => dispatch(execChangeMapPoaList(list)),
     execChangeMapComputeList: list => dispatch(execChangeMapComputeList(list)),
+    cfgChangeMap: map => dispatch(cfgChangeMap(map)),
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),

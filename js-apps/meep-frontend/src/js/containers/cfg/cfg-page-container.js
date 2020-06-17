@@ -656,6 +656,7 @@ class CfgPageContainer extends Component {
                       {this.props.cfgView === CFG_VIEW_MAP && (
                         <IDCMap
                           type={TYPE_CFG}
+                          onEditElement={elem => this.onEditElement(elem)}
                         />
                       )}
                     </div>
