@@ -20,7 +20,7 @@ import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Button } from '@rmwc/button';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import { TextField, TextFieldIcon, TextFieldHelperText } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
 
@@ -448,6 +448,13 @@ const CfgTextField = props => {
         outlined
         style={{ width: '100%', marginBottom: 0 }}
         label={props.label}
+        withLeadingIcon={!props.icon ? null : 
+          <TextFieldIcon
+            tabIndex="0"
+            icon={props.icon}
+            onClick={props.onIconClick}
+          />
+        }
         type={props.type}
         onChange={event => {
           var err = props.validate ? props.validate(event.target.value) : null;
@@ -647,7 +654,7 @@ const UserChartFields = ({ element, onUpdate }) => {
 };
 
 // Display element-specific form fields
-const TypeRelatedFormFields = ({ onUpdate, element }) => {
+const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
@@ -730,10 +737,12 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         <Grid>
           <CfgTextFieldCell
             span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
             onUpdate={onUpdate}
             element={element}
             validate={validateLocation}
-            label="Location Coordinates"
+            label='Location Coordinates'
             fieldName={FIELD_GEO_LOCATION}
             cydata={CFG_ELEM_GEO_LOCATION}
           />
@@ -742,7 +751,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
             onUpdate={onUpdate}
             element={element}
             isNumber={true}
-            label="Radius (m)"
+            label='Radius (m)'
             validate={validateNumber}
             fieldName={FIELD_GEO_RADIUS}
             cydata={CFG_ELEM_GEO_RADIUS}
@@ -761,10 +770,12 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         <Grid>
           <CfgTextFieldCell
             span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
             onUpdate={onUpdate}
             element={element}
             validate={validateLocation}
-            label="Location Coordinates"
+            label='Location Coordinates'
             fieldName={FIELD_GEO_LOCATION}
             cydata={CFG_ELEM_GEO_LOCATION}
           />
@@ -773,7 +784,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
             onUpdate={onUpdate}
             element={element}
             isNumber={true}
-            label="Radius (m)"
+            label='Radius (m)'
             validate={validateNumber}
             fieldName={FIELD_GEO_RADIUS}
             cydata={CFG_ELEM_GEO_RADIUS}
@@ -800,25 +811,29 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         <Grid>
           <CfgTextFieldCell
             span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
             onUpdate={onUpdate}
             element={element}
             validate={validateLocation}
-            label="Location Coordinates"
+            label='Location Coordinates'
             fieldName={FIELD_GEO_LOCATION}
             cydata={CFG_ELEM_GEO_LOCATION}
           />
           <CfgTextFieldCell
             span={12}
+            icon='location_on'
+            onIconClick={onEditPath}
             onUpdate={onUpdate}
             element={element}
             validate={validateGeoPath}
-            label="Path Coordinates"
+            label='Path Coordinates'
             fieldName={FIELD_GEO_PATH}
             cydata={CFG_ELEM_GEO_PATH}
           />
           <GridCell span={6} style={{ paddingTop: 16 }}>
             <IDSelect
-              label="End-of-Path Mode"
+              label='End-of-Path Mode'
               span={12}
               options={EOP_MODES}
               onChange={elem => onUpdate(FIELD_GEO_EOP_MODE, elem.target.value, null)}
@@ -833,7 +848,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
             element={element}
             validate={validateNumber}
             isNumber={true}
-            label="Velocity (m/s)"
+            label='Velocity (m/s)'
             fieldName={FIELD_GEO_VELOCITY}
             cydata={CFG_ELEM_GEO_VELOCITY}
           />
@@ -853,10 +868,12 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
         <Grid>
           <CfgTextFieldCell
             span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
             onUpdate={onUpdate}
             element={element}
             validate={validateLocation}
-            label="Location Coordinates"
+            label='Location Coordinates'
             fieldName={FIELD_GEO_LOCATION}
             cydata={CFG_ELEM_GEO_LOCATION}
           />
@@ -1381,6 +1398,16 @@ export class CfgNetworkElementContainer extends Component {
     this.props.cfgElemUpdate(elem);
   }
 
+  onEditLocation() {
+    var elem = updateObject({}, this.props.configuredElement);
+    this.props.onEditLocation(elem);
+  }
+
+  onEditPath() {
+    var elem = updateObject({}, this.props.configuredElement);
+    this.props.onEditPath(elem);
+  }
+
   render() {
     const element = this.props.configuredElement;
     return (
@@ -1427,9 +1454,9 @@ export class CfgNetworkElementContainer extends Component {
 
             <TypeRelatedFormFields
               element={element}
-              onUpdate={(name, val, err) => {
-                this.onUpdateElement(name, val, err);
-              }}
+              onUpdate={(name, val, err) => this.onUpdateElement(name, val, err)}
+              onEditLocation={() => this.onEditLocation()}
+              onEditPath={() => this.onEditPath()}
             />
 
             <div

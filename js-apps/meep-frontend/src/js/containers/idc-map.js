@@ -20,10 +20,15 @@ import ReactDOM from 'react-dom';
 import L from 'leaflet';
 import 'mapbox-gl';
 import 'mapbox-gl-leaflet';
+import '@geoman-io/leaflet-geoman-free';
 import deepEqual from 'deep-equal';
 import { updateObject } from '../util/object-util';
 import { execChangeTable } from '../state/exec';
-import { cfgChangeTable } from '../state/cfg';
+import {
+  cfgChangeTable,
+  cfgElemUpdate,
+  cfgElemEdit
+} from '../state/cfg';
 import {
   uiCfgChangeMapCfg,
   uiExecChangeSandboxCfg
@@ -34,11 +39,22 @@ import {
   HOST_PATH,
   DEFAULT_MAP_LATITUDE,
   DEFAULT_MAP_LONGITUDE,
-  DEFAULT_MAP_ZOOM
+  DEFAULT_MAP_ZOOM,
+  ELEMENT_TYPE_UE,
+  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_FOG,
+  ELEMENT_TYPE_EDGE,
+  ELEMENT_TYPE_DC
 } from '../meep-constants';
 import {
   FIELD_NAME,
-  getElemFieldVal
+  FIELD_TYPE,
+  FIELD_GEO_LOCATION,
+  FIELD_GEO_PATH,
+  getElemFieldVal,
+  setElemFieldVal,
+  setElemFieldErr
 } from '../util/elem-utils';
 
 class IDCMap extends Component {
@@ -66,7 +82,7 @@ class IDCMap extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    // Check for map size update
+    // Map size update
     let width = this.thisRef.current.offsetWidth;
     let height = this.thisRef.current.offsetHeight;
     if ((width && this.width !== width) || (height && this.height !== height)) {
@@ -77,12 +93,17 @@ class IDCMap extends Component {
       return true;
     }
 
-    // Update if sandbox changed
+    // Target element change
+    if (nextProps.configuredElement !== this.props.configuredElement) {
+      return true;
+    }
+
+    // Sandbox changed
     if (nextProps.sandbox !== this.props.sandbox) {
       return true;
     }
 
-    // Update if map changed
+    // Map changed
     if (!deepEqual(this.getMap(nextProps), this.getMap(this.props))) {
       return true;
     }
@@ -220,6 +241,32 @@ class IDCMap extends Component {
 
     // Add asset markers
     this.updateMarkers();
+
+    if (this.props.type === TYPE_CFG) {
+      // Draw Controls -- add leaflet-geoman controls with some options to the map
+      this.map.pm.addControls({
+        position: 'topleft',
+        drawMarker: false, // adds button to draw markers
+        drawCircleMarker: false, // adds button to draw circle markers
+        drawPolyline: false, // adds button to draw rectangle
+        drawRectangle: false, // adds button to draw rectangle
+        drawPolygon: false, // adds button to draw polygon
+        drawCircle: false, // adds button to draw circle
+        editMode: false, // adds button to toggle edit mode for all layers
+        dragMode: false, // adds button to toggle drag mode for all layers
+        cutPolygon: false, // adds button to cut a hole in a polygon
+        removalMode: false, // adds a button to remove layers
+        pinningOption: false,	// $$ adds a button to toggle the Pinning Option
+        snappingOption:	false	// $$ adds a button to toggle the Snapping Option
+      });
+
+      // Map handlers
+      this.map.on('pm:globaleditmodetoggled', e => this.onEditModeToggle(e));
+      this.map.on('pm:globaldragmodetoggled', e => this.onDragModeToggle(e));
+      this.map.on('pm:globalremovalmodetoggled', e => this.onRemovalModeToggle(e));
+      this.map.on('pm:create', e => this.onLayerCreated(e));
+      this.map.on('pm:remove', e => this.onLayerRemoved(e));
+    }
   }
 
   destroyMap() {
@@ -243,6 +290,7 @@ class IDCMap extends Component {
   setUeMarker(ue) {
     var latlng = L.latLng(L.GeoJSON.coordsToLatLng(ue.location.coordinates));
     var p = ue.path ? L.GeoJSON.geometryToLayer(ue.path) : null;
+    console.log(p);
 
     // Find existing UE marker
     var existingMarker;
@@ -264,13 +312,30 @@ class IDCMap extends Component {
             velocity: ue.velocity
           }
         },
-        draggable: false
+        draggable: true,
+        pmIgnore: false
       });
       m.bindTooltip(ue.assetName).openTooltip();
 
-      // Click handler
+      // Handlers
       var _this = this;
       m.on('click', function() {_this.clickUeMarker(this);});
+      // m.on('dragend', function(e) {_this.onLayerMoved(this, e);});
+      // m.on('pm:edit', e => console.log(e));
+      // m.on('pm:update', e => console.log(e));
+      // m.on('pm:edit', e => _this.onLayerEdited(this, e));
+      // m.on('pm:update', e => _this.onLayerEdited(this, e));
+      if (p) {
+        p.on('dragend', function(e) {_this.onLayerMoved(this, e);});
+        p.on('move', function(e) {_this.onLayerMoved(this, e);});
+
+        p.on('pm:dragend', e => _this.onLayerMoved(this, e));
+        p.on('pm:edit', e => _this.onLayerEdited(this, e));
+        p.on('pm:update', e => _this.onLayerEdited(this, e));
+        p.on('pm:markerdragend', e => _this.onLayerMoved(this, e));
+      }
+
+      console.log(m);
 
       // Add to map overlay
       m.addTo(this.ueOverlay);
@@ -314,7 +379,8 @@ class IDCMap extends Component {
           }
         },
         radius: poa.radius,
-        opacity: '0.5'
+        opacity: '0.5',
+        pmIgnore: true
       });
       var m = L.marker(latlng, {
         meep: {
@@ -324,13 +390,16 @@ class IDCMap extends Component {
           }
         },
         opacity: '0.5',
-        draggable: false
+        draggable: true,
+        pmIgnore: false
       });
       m.bindTooltip(poa.assetName).openTooltip();
 
-      // Click handler
+      // Handlers
       var _this = this;
-      m.on('click', function(e) {_this.clickPoaMarker(this,e);});
+      m.on('click', function() {_this.clickPoaMarker(this);});
+      m.on('dragend', e => _this.onLayerMoved(this, e));
+      m.on('pm:edit', e => _this.onLayerEdited(this, e));
 
       // Add to map overlay
       m.addTo(this.poaOverlay);
@@ -364,13 +433,16 @@ class IDCMap extends Component {
           }
         },
         opacity: '0.5',
-        draggable: false
+        draggable: true,
+        pmIgnore: false
       });
       m.bindTooltip(compute.assetName).openTooltip();
 
-      // Click handler
+      // Handlers
       var _this = this;
       m.on('click', function() {_this.clickComputeMarker(this);});
+      m.on('pm:dragend', e => _this.onLayerMoved(this, e));
+      m.on('pm:edit', e => _this.onLayerEdited(this, e));
 
       // Add to map overlay
       m.addTo(this.computeOverlay);
@@ -430,9 +502,74 @@ class IDCMap extends Component {
     if (!this.map) {
       return;
     }
-    var map = this.getMap(this.props);
+
+    // Get copy of map data 
+    var map = updateObject({}, this.getMap(this.props));
     if (!map) {
       return;
+    }
+
+    // Update Configured element geodata, if any
+    if (this.props.configuredElement) {
+      var location = getElemFieldVal(this.props.configuredElement, FIELD_GEO_LOCATION);
+      if (location) {
+        var name = getElemFieldVal(this.props.configuredElement, FIELD_NAME);
+        var type = getElemFieldVal(this.props.configuredElement, FIELD_TYPE);
+        var geoDataAsset;
+
+        switch (type) {
+        case ELEMENT_TYPE_UE:
+          for (let i = 0; i < map.ueList.length; i++) {
+            if (map.ueList[i].assetName === name) {
+              geoDataAsset = map.ueList[i];
+              break;
+            }
+          }
+          if (!geoDataAsset) {
+            geoDataAsset = {assetName: name, assetType: 'UE', subType: type};
+            map.ueList.push(geoDataAsset);
+          }
+          geoDataAsset.location = {type: 'Point', coordinates: JSON.parse(location)};
+
+          var path = getElemFieldVal(this.props.configuredElement, FIELD_GEO_PATH);
+          geoDataAsset.path = !path ? null : {type: 'LineString', coordinates: JSON.parse(path)};
+          return;
+
+        case ELEMENT_TYPE_POA:
+        case ELEMENT_TYPE_POA_CELL:
+          for (let i = 0; i < map.poaList.length; i++) {
+            if (map.poaList[i].assetName === name) {
+              geoDataAsset = map.poaList[i];
+              break;
+            }
+          }
+          if (!geoDataAsset) {
+            geoDataAsset = {assetName: name, assetType: 'POA', subType: type};
+            map.poaList.push(geoDataAsset);
+          }
+          geoDataAsset.location = {type: 'Point', coordinates: JSON.parse(location)};
+          return;
+
+        case ELEMENT_TYPE_FOG:
+        case ELEMENT_TYPE_EDGE:
+        case ELEMENT_TYPE_DC:
+          for (let i = 0; i < map.computeList.length; i++) {
+            if (map.computeList[i].assetName === name) {
+              geoDataAsset = map.computeList[i];
+              break;
+            }
+          }
+          if (!geoDataAsset) {
+            geoDataAsset = {assetName: name, assetType: 'COMPUTE', subType: type};
+            map.computeList.push(geoDataAsset);
+          }
+          geoDataAsset.location = {type: 'Point', coordinates: JSON.parse(location)};
+          return;
+
+        default:
+          return;
+        }
+      }
     }
 
     // Set UE markers
@@ -491,8 +628,232 @@ class IDCMap extends Component {
     });
   }
 
+  onEditModeToggle(e) {
+    var targetElemName = getElemFieldVal(this.props.configuredElement, FIELD_NAME);
+    if (e.enabled) {
+      this.setTarget(targetElemName);
+    } else {
+      this.updateTargetGeoData(targetElemName);
+    }
+  }
+
+  onDragModeToggle(e) {
+    var targetElemName = getElemFieldVal(this.props.configuredElement, FIELD_NAME);
+    if (e.enabled) {
+      this.setTarget(targetElemName);
+    } else {
+      this.updateTargetGeoData(targetElemName);
+    }
+  }
+
+  onRemovalModeToggle(e) {
+    console.log('onRemovalModeToggle');
+    var targetElemName = getElemFieldVal(this.props.configuredElement, FIELD_NAME);
+    if (e.enabled) {
+      this.setTarget(targetElemName);
+    } else {
+      this.updateTargetGeoData(targetElemName);
+    }
+  }
+
+  // onDraw(e) {
+  //   console.log('onDraw');
+  //   console.log(e);
+  //   var marker = this.findMarker(this.props.configuredElement);
+  //   if (marker) {
+  //     if (e.shape === 'Marker') {
+  //       // Disable marker drawing if it already exists
+  //       this.map.pm.disableDraw('Marker');
+  //     } else if (e.shape === 'Line') {
+  //       var meepOptions = marker.options.meep;
+  //       if (meepOptions && meepOptions.ue && meepOptions.ue.path) {
+  //         // Disable path drawing if it already exists
+  //         this.map.pm.disableDraw('Line');
+  //       }
+  //     }
+  //   }
+  // }
+
+  onLayerCreated(e) {
+    console.log('onLayerCreated');
+    console.log(e);
+  }
+
+  onLayerRemoved( e) {
+    console.log('onLayerRemoved');
+    console.log(e);
+    this.removeMarker(this.props.configuredElement);
+    // var marker = this.findMarker(this.props.configuredElement);
+  }
+
+  onLayerEdited(layer, e) {
+    console.log('onLayerEdited');
+    console.log(e);
+  }
+
+  onLayerMoved(layer, e) {
+    console.log('onLayerMoved');
+    console.log(e);
+  }
+
+  updateConfiguredElement(name, val, err) {
+    var updatedElem = updateObject({}, this.props.configuredElement);
+    setElemFieldVal(updatedElem, name, val);
+    setElemFieldErr(updatedElem, name, err);
+    console.log(updatedElem);
+    this.props.cfgElemUpdate(updatedElem);
+  }
+
+  updateTargetGeoData(targetElemName) {
+    if (targetElemName) {
+      console.log('Updating geodata for: ', targetElemName);
+
+      // var mapCfg = updateObject({}, this.getMap(this.props));
+      var markerInfo = this.getMarkerInfo(targetElemName);
+      if (markerInfo && markerInfo.marker) {
+        // Update target element geodata location
+        // var coords = L.GeoJSON.latLngToCoords(markerInfo.marker.getLatLng());
+        // mapCfg.ueList
+
+        console.log(markerInfo.marker.getLatLng());
+        this.updateConfiguredElement(FIELD_GEO_LOCATION, JSON.stringify(L.GeoJSON.latLngToCoords(markerInfo.marker.getLatLng())), null);
+
+        // geoData: !location ? null : {
+        //   location: {
+        //     type: 'Point',
+        //     coordinates: JSON.parse(location)
+        //   }
+        // },
+
+        if (markerInfo.type === 'UE' && markerInfo.marker.options.meep.ue.path) {
+          // Update geodata path
+          
+        }
+      } else {
+        // Remove geodata
+
+      }
+    }
+  
+  }
+
+  getMarkerInfo(name) {
+    var marker;
+    for (marker of Object.values(this.ueOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.ue.id === name)) {
+        return {marker: marker, type: 'UE'};
+      }
+    }
+    for (marker of Object.values(this.poaOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.poa.id === name)) {
+        return {marker: marker, type: 'POA'};
+      }
+    }
+    for (marker of Object.values(this.computeOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.compute.id === name)) {
+        return {marker: marker, type: 'COMPUTE'};
+      }
+    }
+    return null;
+  }
+
+  removeMarker(name) {
+    var marker;
+    for (marker of Object.values(this.ueOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.ue.id === name)) {
+        marker.removeFrom(this.ueOverlay);
+        return;
+      }
+    }
+    for (marker of Object.values(this.poaOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.poa.id === name)) {
+        marker.removeFrom(this.poaOverlay);
+        return;
+      }
+    }
+    for (marker of Object.values(this.computeOverlay._layers)) {
+      if (marker.options.meep && (marker.options.meep.compute.id === name)) {
+        marker.removeFrom(this.computeOverlay);
+        return;
+      }
+    }
+  }
+
+  setTarget(name) {
+    // Disable changes on all markers except target
+    this.ueOverlay.eachLayer((marker) => {
+      if (marker.pm && (!name || marker.options.meep.ue.id !== name)) {
+        marker.pm.disable();
+        var path = marker.options.meep.ue.path;
+        if (path && path.pm) {
+          path.pm.disable();
+        }
+      }
+    });
+    this.poaOverlay.eachLayer((marker) => {
+      if (marker.pm && (!name || marker.options.meep.poa.id !== name)) {
+        marker.pm.disable();
+      }
+    });
+    this.computeOverlay.eachLayer((marker) => {
+      if (marker.pm && (!name || marker.options.meep.compute.id !== name)) {
+        marker.pm.disable();
+      }
+    });
+  }
+
+  updateEditControls() {
+    if (this.props.type !== TYPE_CFG || !this.map) {
+      return;
+    }
+
+    var drawMarkerEnabled = false;
+    var drawPolylineEnabled = false;
+    var editModeEnabled = false;
+    var dragModeEnabled = false;
+    var removalModeEnabled = false;
+
+    // Get target element name
+    var targetElemName = getElemFieldVal(this.props.configuredElement, FIELD_NAME);
+
+    if (targetElemName) {
+      var markerInfo = this.getMarkerInfo(targetElemName);
+      if (markerInfo && markerInfo.marker) {
+        // Enable path creation if UE with no path
+        if ((markerInfo.type === 'UE') && !markerInfo.marker.options.meep.ue.path) {
+          drawPolylineEnabled = true;
+        }
+        editModeEnabled = true;
+        dragModeEnabled = true;
+        removalModeEnabled = true;
+      } else {
+        // Enable marker creation
+        drawMarkerEnabled = true;
+      }
+
+    }
+
+    // Enable necessary controls
+    this.map.pm.addControls({
+      drawMarker: drawMarkerEnabled,
+      drawPolyline: drawPolylineEnabled,
+      editMode: editModeEnabled,
+      dragMode: dragModeEnabled,
+      removalMode: removalModeEnabled
+    });
+
+    // If in drawMarker mode, enable it by default
+    // if (drawMarkerEnabled) {
+    //   this.map.pm.enableDraw('Marker');
+    // }
+
+    // Set target element & disable edit on all other markers
+    this.setTarget(targetElemName);
+  }
+
   render() {
     this.updateMarkers();
+    this.updateEditControls();
     return (
       <div ref={this.thisRef} style={{ height: '100%' }}>
         Map Component
@@ -509,7 +870,8 @@ const mapStateToProps = state => {
     sandboxCfg: state.ui.sandboxCfg,
     mapCfg: state.ui.mapCfg,
     cfgTable: state.cfg.table,
-    execTable: state.exec.table
+    execTable: state.exec.table,
+    configuredElement: state.cfg.elementConfiguration.configuredElement
   };
 };
 
@@ -518,7 +880,9 @@ const mapDispatchToProps = dispatch => {
     changeMapCfg: cfg => dispatch(uiCfgChangeMapCfg(cfg)),
     changeSandboxCfg: cfg => dispatch(uiExecChangeSandboxCfg(cfg)),
     changeExecTable: table => dispatch(execChangeTable(table)),
-    changeCfgTable: table => dispatch(cfgChangeTable(table))
+    changeCfgTable: table => dispatch(cfgChangeTable(table)),
+    cfgElemUpdate: element => dispatch(cfgElemUpdate(element)),
+    changeCfgElement: element => dispatch(cfgElemEdit(element))
   };
 };
 

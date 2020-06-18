@@ -176,6 +176,18 @@ class CfgPageContainer extends Component {
     this.props.cfgElemClear();
   }
 
+  // Edit Location
+  onEditLocation(elem) {
+    console.log('Edit Location');
+    console.log(elem.name);
+  }
+
+  // Edit Path
+  onEditPath(elem) {
+    console.log('Edit Path');
+    console.log(elem.name);
+  }
+
   findIndexByKeyValue(_array, key, value) {
     for (var i = 0; i < _array.length; i++) {
       if (getElemFieldVal(_array[i], key) === value) {
@@ -671,6 +683,8 @@ class CfgPageContainer extends Component {
                       onDeleteElement={elem => this.onDeleteElement(elem)}
                       onApplyCloneElement={elem => this.onApplyCloneElement(elem)}
                       onCancelElement={() => this.onCancelElement()}
+                      onEditLocation={elem => this.onEditLocation(elem)}
+                      onEditPath={elem => this.onEditPath(elem)}
                     />
                   </Elevation>
                 </GridCell>

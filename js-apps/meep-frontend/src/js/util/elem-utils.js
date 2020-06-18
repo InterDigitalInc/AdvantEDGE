@@ -99,19 +99,23 @@ export const FIELD_APP_THROUGPUT = 'appThroughput';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 
 export const getElemFieldVal = (elem, field) => {
-  return elem[field] ? elem[field].val : null;
+  return (elem && elem[field]) ? elem[field].val : null;
 };
 
 export const setElemFieldVal = (elem, field, val) => {
-  elem[field] = { val: val, err: null };
+  if (elem) {
+    elem[field] = { val: val, err: null };
+  }
 };
 
 export const getElemFieldErr = (elem, field) => {
-  return elem[field] ? elem[field].err : null;
+  return (elem && elem[field]) ? elem[field].err : null;
 };
 
 export const setElemFieldErr = (elem, field, err) => {
-  elem[field].err = err;
+  if (elem) {
+    elem[field].err = err;
+  }
 };
 
 export const createElem = name => {
