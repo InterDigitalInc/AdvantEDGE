@@ -102,17 +102,16 @@ func deleteRun(cmd *cobra.Command, args []string) {
 }
 
 func deleteApps(apps []string, cobraCmd *cobra.Command) {
-	messages := make(chan string)
+	altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 	for _, app := range apps {
-		go k8sDelete(app, cobraCmd, messages)
-	}
-
-	for i := 0; i < len(apps); i++ {
-		fmt.Println(<-messages)
+		if !altServer && app == "meep-alt-ingress" {
+			continue
+		}
+		k8sDelete(app, cobraCmd)
 	}
 }
 
-func k8sDelete(component string, cobraCmd *cobra.Command, messages chan string) {
+func k8sDelete(component string, cobraCmd *cobra.Command) {
 	// If release exist
 	exist, _ := utils.IsHelmRelease(component, cobraCmd)
 	if exist {
@@ -121,8 +120,5 @@ func k8sDelete(component string, cobraCmd *cobra.Command, messages chan string) 
 		if err != nil {
 			fmt.Println("Helm delete failed with Error: ", err)
 		}
-		messages <- "Deleted " + component
-	} else {
-		messages <- "Missing " + component
 	}
 }

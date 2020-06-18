@@ -1,0 +1,40 @@
+{{- if .Values.altIngress.enabled -}}
+{{- $serviceName := include "meep-mg-manager.fullname" . -}}
+{{- $servicePort := .Values.service.port -}}
+{{- $path := .Values.altIngress.path -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "meep-mg-manager.fullname" . }}-alt
+  labels:
+    app: {{ template "meep-mg-manager.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.altIngress.labels }}
+{{ toYaml .Values.altIngress.labels | indent 4 }}
+{{- end }}
+  annotations:
+    {{- range $key, $value := .Values.altIngress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    {{- range .Values.altIngress.hosts }}
+    - http:
+        paths:
+          {{- range $path := .paths }}
+          - path: {{ $path }}
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+          {{- end -}}
+      {{- if .name }}
+      host: {{ .name }}
+      {{- end }}
+    {{- end -}}
+  {{- if .Values.altIngress.tls }}
+  tls:
+{{ toYaml .Values.altIngress.tls | indent 4 }}
+  {{- end -}}
+{{- end -}}

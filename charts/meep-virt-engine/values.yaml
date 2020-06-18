@@ -20,11 +20,12 @@ affinity:
 image:
   repository: meep-docker-registry:30001/meep-virt-engine
   tag: latest
-  pullPolicy: Always      
+  pullPolicy: Always
   env:
     # Provide comma-separated list of pods to create in sandbox
     MEEP_SANDBOX_PODS: ""
     MEEP_HOST_URL: "http://www.example.com"
+    MEEP_ALT_SERVER: "false"
 
 service:
   type: ClusterIP
@@ -48,5 +49,5 @@ persistence:
 
 codecov:
   enabled: false
-  
+
 meepOrigin: core

@@ -1,32 +1,31 @@
-{{- if .Values.codecov.enabled}}
+{{- if .Values.user.frontend.enabled}}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: meep-platform-ctrl-codecov-pv
+  name: meep-platform-ctrl-user-frontend-pv
 spec:
-  storageClassName: meep-platform-ctrl-codecov-sc
+  storageClassName: meep-platform-ctrl-user-frontend-sc
   capacity:
     storage: 100Mi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: {{ .Values.codecov.location }}
-
+    path: {{ .Values.user.frontend.location }}
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: meep-platform-ctrl-codecov-sc
+  name: meep-platform-ctrl-user-frontend-sc
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: meep-platform-ctrl-codecov-pvc
+  name: meep-platform-ctrl-user-frontend-pvc
 spec:
-  storageClassName: meep-platform-ctrl-codecov-sc
+  storageClassName: meep-platform-ctrl-user-frontend-sc
   accessModes:
     - ReadWriteOnce
   resources:
