@@ -121,7 +121,9 @@ class CfgPageContainer extends Component {
   // EDIT
   onEditElement(element) {
     if (element !== null) {
-      this.props.cfgElemEdit(element);
+      if (!this.props.configuredElement || (element.id !== this.props.configuredElement.id)) {
+        this.props.cfgElemEdit(element);
+      }
     } else {
       this.props.cfgElemClear();
     }

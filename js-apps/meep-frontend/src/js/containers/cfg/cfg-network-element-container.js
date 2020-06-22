@@ -228,6 +228,14 @@ const validateInt = val => {
   return val.indexOf('.') === -1 ? null : 'Must be an integer';
 };
 
+const validatePositiveInt = val => {
+  const intError = validateInt(val);
+  if (intError) {
+    return intError;
+  }
+  return val >= 0 ? null : 'Must be a positive integer';
+};
+
 const validatePath = val => {
   /*eslint-disable */
   if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
@@ -295,9 +303,8 @@ const validateCellularCellId = val => {
 
 const validateLocation = val => {
   if (val) {
-    // TODO -- Validate location format
     try {
-      JSON.parse(val);
+      L.GeoJSON.coordsToLatLng(JSON.parse(val));
     } catch(e) {
       return '[longitude,latitude]';
     }
@@ -309,7 +316,7 @@ const validateGeoPath = val => {
   if (val) {
     // TODO -- Validate location format
     try {
-      JSON.parse(val);
+      L.GeoJSON.coordsToLatLngs(JSON.parse(val),0);
     } catch(e) {
       return '[[longitude,latitude],...]';
     }
@@ -752,7 +759,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             element={element}
             isNumber={true}
             label='Radius (m)'
-            validate={validateNumber}
+            validate={validatePositiveInt}
             fieldName={FIELD_GEO_RADIUS}
             cydata={CFG_ELEM_GEO_RADIUS}
           />
