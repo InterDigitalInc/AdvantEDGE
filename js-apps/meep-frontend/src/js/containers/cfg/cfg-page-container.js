@@ -180,14 +180,20 @@ class CfgPageContainer extends Component {
 
   // Edit Location
   onEditLocation(elem) {
-    console.log('Edit Location');
-    console.log(elem.name);
+    this.toggleCfgView();
   }
 
   // Edit Path
   onEditPath(elem) {
-    console.log('Edit Path');
-    console.log(elem.name);
+    this.toggleCfgView();
+  }
+
+  toggleCfgView() {
+    if (this.props.cfgView === CFG_VIEW_NETWORK) {
+      this.props.changeView(CFG_VIEW_MAP);
+    } else {
+      this.props.changeView(CFG_VIEW_NETWORK);
+    }
   }
 
   findIndexByKeyValue(_array, key, value) {
