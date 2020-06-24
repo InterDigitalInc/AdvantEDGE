@@ -76,11 +76,11 @@ var versionData VersionData
 
 func init() {
 	// Get targets from repo config file
-	versionData.coreApps = utils.GetTargets("repo.core.go-apps")
-	// versionData.coreApps = append(versionData.coreApps, utils.GetTargets("repo.sandbox.go-apps")...)
+	versionData.coreApps = utils.GetTargets("repo.core.go-apps", "")
+	//versionData.coreApps = append(versionData.coreApps, utils.GetTargets("repo.sandbox.go-apps", "")...)
 	sort.Strings(versionData.coreApps)
 
-	versionData.depApps = utils.GetTargets("repo.dep")
+	versionData.depApps = utils.GetTargets("repo.dep", "")
 	sort.Strings(versionData.depApps)
 
 	// Configure the list of valid arguments

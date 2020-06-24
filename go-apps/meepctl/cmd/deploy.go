@@ -20,9 +20,9 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meepctl/utils"
 
@@ -71,8 +71,8 @@ var deployData DeployData
 
 func init() {
 	// Get targets from repo config file
-	deployData.coreApps = utils.GetTargets("repo.core.go-apps")
-	deployData.depApps = utils.GetTargets("repo.dep")
+	deployData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
+	deployData.depApps = utils.GetTargets("repo.dep", "deploy")
 
 	// Configure the list of valid arguments
 	deployCmd.ValidArgs = []string{"dep", "core"}

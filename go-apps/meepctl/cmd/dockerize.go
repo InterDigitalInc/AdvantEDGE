@@ -65,8 +65,8 @@ var dockerizeData DockerizeData
 
 func init() {
 	// Get targets from repo config file
-	dockerizeData.coreGoApps = utils.GetTargets("repo.core.go-apps")
-	dockerizeData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps")
+	dockerizeData.coreGoApps = utils.GetTargets("repo.core.go-apps", "dockerize")
+	dockerizeData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps", "dockerize")
 
 	// Create the list of valid arguments
 	baseArgs := []string{"all"}

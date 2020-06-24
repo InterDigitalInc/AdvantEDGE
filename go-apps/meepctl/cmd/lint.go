@@ -64,11 +64,11 @@ var lintData LintData
 
 func init() {
 	// Get targets from repo config file
-	lintData.coreGoApps = utils.GetTargets("repo.core.go-apps")
-	lintData.coreJsApps = utils.GetTargets("repo.core.js-apps")
-	lintData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps")
-	lintData.goPackages = utils.GetTargets("repo.packages.go-packages")
-	lintData.jsPackages = utils.GetTargets("repo.packages.js-packages")
+	lintData.coreGoApps = utils.GetTargets("repo.core.go-apps", "lint")
+	lintData.coreJsApps = utils.GetTargets("repo.core.js-apps", "lint")
+	lintData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps", "lint")
+	lintData.goPackages = utils.GetTargets("repo.packages.go-packages", "lint")
+	lintData.jsPackages = utils.GetTargets("repo.packages.js-packages", "lint")
 
 	// Create the list of valid arguments
 	baseArgs := []string{"all"}

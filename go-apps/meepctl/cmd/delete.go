@@ -56,8 +56,8 @@ var deleteData DeleteData
 
 func init() {
 	// Get targets from repo config file
-	deleteData.coreApps = utils.GetTargets("repo.core.go-apps")
-	deleteData.depApps = utils.GetTargets("repo.dep")
+	deleteData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
+	deleteData.depApps = utils.GetTargets("repo.dep", "deploy")
 
 	// Configure the list of valid arguments
 	deleteCmd.ValidArgs = []string{"dep", "core"}

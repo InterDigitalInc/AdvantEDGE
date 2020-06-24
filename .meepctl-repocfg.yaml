@@ -49,6 +49,12 @@ repo:
         # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: true
         # supports linting
@@ -88,6 +94,12 @@ repo:
         bin: bin/meep-platform-ctrl
         # location of deployment chart
         chart: charts/meep-platform-ctrl
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: true
         # supports linting
@@ -107,6 +119,12 @@ repo:
         bin: bin/meep-virt-engine
         # location of deployment chart
         chart: charts/meep-virt-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: true
         # supports linting
@@ -143,6 +161,12 @@ repo:
         # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -155,6 +179,14 @@ repo:
         src: js-apps/meep-frontend
         # location of binary
         bin: bin/meep-frontend
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        # -> bundled with meep-platform-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete
+        # -> deployed via meep-platform-ctrl
+        deploy: false
         # supports linting
         lint: true
         # local project dependencies
@@ -168,6 +200,12 @@ repo:
         src: js-apps/meep-swagger-ui
         # location of binary
         bin: bin/meep-platform-swagger-ui
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize -> bundled with meep-platform-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete -> deployed via meep-platform-ctrl
+        deploy: false
         # supports linting
         lint: false
         # list of platform level swagger specs
@@ -179,6 +217,12 @@ repo:
         src: js-apps/meep-swagger-ui
         # location of binary
         bin: bin/meep-sandbox-swagger-ui
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize -> bundled with meep-sandbox-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete -> deployed via meep-sandbox-ctrl
+        deploy: false
         # supports linting
         lint: false
         # list of sandbox level swagger specs
@@ -208,6 +252,12 @@ repo:
         bin: bin/meep-gis-engine
         # location of deployment chart
         chart: charts/meep-gis-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -224,6 +274,12 @@ repo:
         # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -240,6 +296,12 @@ repo:
         # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -253,6 +315,12 @@ repo:
         bin: bin/meep-mg-manager
         # location of deployment chart
         chart: charts/meep-mg-manager
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -269,6 +337,12 @@ repo:
         # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -282,6 +356,12 @@ repo:
         bin: bin/meep-sandbox-ctrl
         # location of deployment chart
         chart: charts/meep-sandbox-ctrl
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -298,6 +378,12 @@ repo:
         bin: bin/meep-tc-engine
         # location of deployment chart
         chart: charts/meep-tc-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -307,6 +393,12 @@ repo:
         src: go-apps/meep-tc-sidecar
         # location of binary
         bin: bin/meep-tc-sidecar
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: false
         # supports linting
@@ -317,34 +409,94 @@ repo:
   #------------------------------
   dep:
     meep-couchdb:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/couchdb
     meep-docker-registry:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/docker-registry
     meep-grafana:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/grafana
     meep-influxdb:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/influxdb
     meep-kube-state-metrics:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/kube-state-metrics
     meep-ingress:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/nginx-ingress
     meep-alt-ingress:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/nginx-ingress
       values: charts/nginx-ingress/alt-values.yaml
     meep-redis:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/redis
     meep-open-map-tiles:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/open-map-tiles
     meep-postgis:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
       # location of deployment chart
       chart: charts/postgis
 
