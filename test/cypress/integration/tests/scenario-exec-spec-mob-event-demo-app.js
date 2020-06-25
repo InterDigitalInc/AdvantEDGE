@@ -95,7 +95,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 2nd Mobility event');
@@ -116,7 +116,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 3rd Mobility event');
@@ -137,7 +137,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 4th Mobility event');
@@ -158,7 +158,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 5th Mobility event');
@@ -179,7 +179,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 6th Mobility event');
@@ -200,7 +200,7 @@ describe('Scenario Execution', function () {
     click(meep.MEEP_TAB_EXEC);
     cy.wait(1000);
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
-    cy.wait(1000);
+    cy.wait(3000);
 
     // Test events
     // Terminate demo scenario
