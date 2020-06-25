@@ -179,12 +179,12 @@ class CfgPageContainer extends Component {
   }
 
   // Edit Location
-  onEditLocation(elem) {
+  onEditLocation() {
     this.toggleCfgView();
   }
 
   // Edit Path
-  onEditPath(elem) {
+  onEditPath() {
     this.toggleCfgView();
   }
 

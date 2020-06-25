@@ -26,6 +26,7 @@ import { Typography } from '@rmwc/typography';
 
 import { updateObject } from '../../util/object-util';
 import { createUniqueName } from '../../util/elem-utils';
+import L from 'leaflet';
 
 import IDSelect from '../../components/helper-components/id-select';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
