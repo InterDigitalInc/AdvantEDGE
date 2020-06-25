@@ -73,27 +73,34 @@ import {
   FIELD_TYPE,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
-  FIELD_INT_DOM_THROUGPUT,
+  FIELD_INT_DOM_LATENCY_DIST,
+  FIELD_INT_DOM_THROUGHPUT_DL,
+  FIELD_INT_DOM_THROUGHPUT_UL,
   FIELD_INT_DOM_PKT_LOSS,
   FIELD_INT_ZONE_LATENCY,
   FIELD_INT_ZONE_LATENCY_VAR,
-  FIELD_INT_ZONE_THROUGPUT,
+  FIELD_INT_ZONE_THROUGHPUT_DL,
+  FIELD_INT_ZONE_THROUGHPUT_UL,
   FIELD_INT_ZONE_PKT_LOSS,
   FIELD_INTRA_ZONE_LATENCY,
   FIELD_INTRA_ZONE_LATENCY_VAR,
-  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_THROUGHPUT_DL,
+  FIELD_INTRA_ZONE_THROUGHPUT_UL,
   FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
-  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_THROUGHPUT_DL,
+  FIELD_TERM_LINK_THROUGHPUT_UL,
   FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
+  FIELD_LINK_THROUGHPUT_DL,
+  FIELD_LINK_THROUGHPUT_UL,
   FIELD_LINK_PKT_LOSS,
   FIELD_APP_LATENCY,
   FIELD_APP_LATENCY_VAR,
-  FIELD_APP_THROUGPUT,
+  FIELD_APP_THROUGHPUT_DL,
+  FIELD_APP_THROUGHPUT_UL,
   FIELD_APP_PKT_LOSS,
   getElemFieldVal,
   setElemFieldVal,
@@ -158,12 +165,13 @@ class NetworkCharacteristicsEventPane extends Component {
       type: this.props.currentEvent,
       eventNetworkCharacteristicsUpdate: {
         elementName: getElemFieldVal(element, FIELD_NAME),
-        elementType: neType
+        elementType: neType,
+        netChar: {}
       }
     };
 
     // Retrieve and set net characteristics from element
-    this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate, element);
+    this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate.netChar, element);
 
     // trigger event with this.props.api
     this.props.api.sendEvent(this.props.currentEvent, ncEvent, error => {
@@ -231,43 +239,52 @@ class NetworkCharacteristicsEventPane extends Component {
     // Retrieve field names
     var latencyFieldName = null;
     var latencyVarFieldName = null;
-    var throughputFieldName = null;
+    var latencyDistFieldName = null;
+    var throughputDlFieldName = null;
+    var throughputUlFieldName = null;
     var packetLossFieldName = null;
     switch (this.currentPrefix()) {
     case PREFIX_INT_DOM:
       latencyFieldName = FIELD_INT_DOM_LATENCY;
       latencyVarFieldName = FIELD_INT_DOM_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_DOM_THROUGPUT;
+      latencyDistFieldName = FIELD_INT_DOM_LATENCY_DIST;
+      throughputDlFieldName = FIELD_INT_DOM_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INT_DOM_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INT_DOM_PKT_LOSS;
       break;
     case PREFIX_INT_ZONE:
       latencyFieldName = FIELD_INT_ZONE_LATENCY;
       latencyVarFieldName = FIELD_INT_ZONE_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_ZONE_THROUGPUT;
+      throughputDlFieldName = FIELD_INT_ZONE_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INT_ZONE_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INT_ZONE_PKT_LOSS;
       break;
     case PREFIX_INTRA_ZONE:
       latencyFieldName = FIELD_INTRA_ZONE_LATENCY;
       latencyVarFieldName = FIELD_INTRA_ZONE_LATENCY_VAR;
-      throughputFieldName = FIELD_INTRA_ZONE_THROUGPUT;
+      throughputDlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INTRA_ZONE_PKT_LOSS;
       break;
     case PREFIX_TERM_LINK:
       latencyFieldName = FIELD_TERM_LINK_LATENCY;
       latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
-      throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+      throughputDlFieldName = FIELD_TERM_LINK_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_TERM_LINK_THROUGHPUT_UL;
       packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
       break;
     case PREFIX_LINK:
       latencyFieldName = FIELD_LINK_LATENCY;
       latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
-      throughputFieldName = FIELD_LINK_THROUGPUT;
+      throughputDlFieldName = FIELD_LINK_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_LINK_THROUGHPUT_UL;
       packetLossFieldName = FIELD_LINK_PKT_LOSS;
       break;
     case PREFIX_APP:
       latencyFieldName = FIELD_APP_LATENCY;
       latencyVarFieldName = FIELD_APP_LATENCY_VAR;
-      throughputFieldName = FIELD_APP_THROUGPUT;
+      throughputDlFieldName = FIELD_APP_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_APP_THROUGHPUT_UL;
       packetLossFieldName = FIELD_APP_PKT_LOSS;
       break;
     default:
@@ -277,7 +294,11 @@ class NetworkCharacteristicsEventPane extends Component {
     // Update net characteristics
     netChar.latency = getElemFieldVal(element, latencyFieldName);
     netChar.latencyVariation = getElemFieldVal(element, latencyVarFieldName);
-    netChar.throughput = getElemFieldVal(element, throughputFieldName);
+    if (latencyDistFieldName) {
+      netChar.latencyDistribution = getElemFieldVal(element, latencyDistFieldName);
+    }
+    netChar.throughputDl = getElemFieldVal(element, throughputDlFieldName);
+    netChar.throughputUl = getElemFieldVal(element, throughputUlFieldName);
     netChar.packetLoss = getElemFieldVal(element, packetLossFieldName);
   }
 

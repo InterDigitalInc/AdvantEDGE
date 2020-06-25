@@ -15,7 +15,7 @@
  */
 
 export const HOST_PATH = location.origin;
-// export const HOST_PATH = 'http://10.3.16.105';
+//export const HOST_PATH = 'http://10.3.16.150';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -133,8 +133,10 @@ export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
 export const CFG_ELEM_CHART_ALT_VAL = 'cfg-elem-chart-alt-val';
 export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
 export const CFG_ELEM_LATENCY_VAR = 'cfg-elem-latency-var';
+export const CFG_ELEM_LATENCY_DIST = 'cfg-elem-latency-dist';
 export const CFG_ELEM_PKT_LOSS = 'cfg-elem-pkt-loss';
-export const CFG_ELEM_THROUGHPUT = 'cfg-elem-throughput';
+export const CFG_ELEM_THROUGHPUT_DL = 'cfg-elem-throughput-dl';
+export const CFG_ELEM_THROUGHPUT_UL = 'cfg-elem-throughput-ul';
 export const CFG_ELEM_INGRESS_SVC_MAP = 'cfg-elem-ingress-svc-map';
 export const CFG_ELEM_EGRESS_SVC_MAP = 'cfg-elem-egress-svc-map';
 
@@ -209,27 +211,34 @@ export const ELEMENT_TYPE_CLOUD_APP = 'CLOUD APPLICATION';
 // Default latencies per physical location type
 export const DEFAULT_LATENCY_INTER_DOMAIN = 50;
 export const DEFAULT_LATENCY_JITTER_INTER_DOMAIN = 10;
-export const DEFAULT_THROUGHPUT_INTER_DOMAIN = 1000;
+export const DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN = 'Normal';
+export const DEFAULT_THROUGHPUT_DL_INTER_DOMAIN = 1000;
+export const DEFAULT_THROUGHPUT_UL_INTER_DOMAIN = 1000;
 export const DEFAULT_PACKET_LOSS_INTER_DOMAIN = 0;
 export const DEFAULT_LATENCY_INTER_ZONE = 6;
 export const DEFAULT_LATENCY_JITTER_INTER_ZONE = 2;
-export const DEFAULT_THROUGHPUT_INTER_ZONE = 1000;
+export const DEFAULT_THROUGHPUT_DL_INTER_ZONE = 1000;
+export const DEFAULT_THROUGHPUT_UL_INTER_ZONE = 1000;
 export const DEFAULT_PACKET_LOSS_INTER_ZONE = 0;
 export const DEFAULT_LATENCY_INTRA_ZONE = 5;
 export const DEFAULT_LATENCY_JITTER_INTRA_ZONE = 1;
-export const DEFAULT_THROUGHPUT_INTRA_ZONE = 1000;
+export const DEFAULT_THROUGHPUT_DL_INTRA_ZONE = 1000;
+export const DEFAULT_THROUGHPUT_UL_INTRA_ZONE = 1000;
 export const DEFAULT_PACKET_LOSS_INTRA_ZONE = 0;
 export const DEFAULT_LATENCY_TERMINAL_LINK = 1;
 export const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1;
-export const DEFAULT_THROUGHPUT_TERMINAL_LINK = 1000;
+export const DEFAULT_THROUGHPUT_DL_TERMINAL_LINK = 1000;
+export const DEFAULT_THROUGHPUT_UL_TERMINAL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 0;
 export const DEFAULT_LATENCY_LINK = 0;
 export const DEFAULT_LATENCY_JITTER_LINK = 0;
-export const DEFAULT_THROUGHPUT_LINK = 1000;
+export const DEFAULT_THROUGHPUT_DL_LINK = 1000;
+export const DEFAULT_THROUGHPUT_UL_LINK = 1000;
 export const DEFAULT_PACKET_LOSS_LINK = 0;
 export const DEFAULT_LATENCY_APP = 0;
 export const DEFAULT_LATENCY_JITTER_APP = 0;
-export const DEFAULT_THROUGHPUT_APP = 1000;
+export const DEFAULT_THROUGHPUT_DL_APP = 1000;
+export const DEFAULT_THROUGHPUT_UL_APP = 1000;
 export const DEFAULT_PACKET_LOSS_APP = 0;
 export const DEFAULT_LATENCY_DC = 0;
 

@@ -55,6 +55,12 @@
         expect(instance).to.be.a(AdvantEdgePlatformControllerRestApi.Deployment);
       });
 
+      it('should have the property netChar (base name: "netChar")', function() {
+        // TODO: update the code to test the property netChar
+        expect(instance).to.have.property('netChar');
+        // expect(instance.netChar).to.be(expectedValueLiteral);
+      });
+
       it('should have the property interDomainLatency (base name: "interDomainLatency")', function() {
         // TODO: update the code to test the property interDomainLatency
         expect(instance).to.have.property('interDomainLatency');

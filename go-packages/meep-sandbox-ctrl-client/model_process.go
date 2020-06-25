@@ -56,14 +56,15 @@ type Process struct {
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 	// Key/Value Pair Map (string, string)
-	UserMeta map[string]string `json:"userMeta,omitempty"`
-	// Latency in ms caused by the application
+	UserMeta map[string]string       `json:"userMeta,omitempty"`
+	NetChar  *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	AppLatency int32 `json:"appLatency,omitempty"`
-	// Latency variation in ms caused by the application
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
 	AppLatencyVariation int32 `json:"appLatencyVariation,omitempty"`
-	// The limit of the traffic supported by the application
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
 	AppThroughput int32 `json:"appThroughput,omitempty"`
-	// Packet lost (in terms of percentage) caused by the application
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	AppPacketLoss float64 `json:"appPacketLoss,omitempty"`
 	// Identifier used for process placement in AdvantEDGE cluster
 	PlacementId string `json:"placementId,omitempty"`

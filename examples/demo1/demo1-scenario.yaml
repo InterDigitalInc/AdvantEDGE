@@ -1,17 +1,27 @@
-version: 1.4.0
+on: 1.5.0
 name: demo1
 deployment:
-    interDomainLatency: 50
-    interDomainLatencyVariation: 5
-    interDomainThroughput: 1000
+    netChar:
+        latency: 50
+        latencyVariation: 5
+        latencyDistribution: Normal
+        throughputDl: 1000
+        throughputUl: 1000
+        throughput: null
+        packetLoss: null
     domains:
         -
             id: PUBLIC
             name: PUBLIC
             type: PUBLIC
-            interZoneLatency: 6
-            interZoneLatencyVariation: 2
-            interZoneThroughput: 1000000
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000000
+                throughputUl: 1000000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
             zones:
                 -
                     id: PUBLIC-COMMON
@@ -20,17 +30,24 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
-                        throughput: 1000000
+                        latencyDistribution: null
+                        throughput: null
+                        throughputDl: null
+                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
                             id: PUBLIC-COMMON-DEFAULT
                             name: PUBLIC-COMMON-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 50000
+                                throughputUl: 50000
+                                packetLoss: 1
+                                latencyDistribution: null
+                                throughput: null
                             physicalLocations:
                                 -
                                     id: cloud1
@@ -52,6 +69,7 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -81,6 +99,7 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -97,7 +116,9 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -105,9 +126,14 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
                     interFogLatency: null
                     interFogLatencyVariation: null
                     interFogThroughput: null
@@ -122,6 +148,9 @@ deployment:
                     edgeFogPacketLoss: null
                     meta: null
                     userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
             interZonePacketLoss: null
             meta: null
             userMeta: null
@@ -130,9 +159,14 @@ deployment:
             id: operator1
             name: operator1
             type: OPERATOR
-            interZoneLatency: 15
-            interZoneLatencyVariation: 3
-            interZoneThroughput: 1000
+            netChar:
+                latency: 15
+                latencyVariation: 3
+                throughputDl: 1000
+                throughputUl: 1000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
             zones:
                 -
                     id: operator1-COMMON
@@ -141,20 +175,32 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
-                        throughput: 1000000
+                        latencyDistribution: null
+                        throughput: null
+                        throughputDl: null
+                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
                             id: operator1-COMMON-DEFAULT
                             name: operator1-COMMON-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 50000
+                                throughputUl: 50000
+                                packetLoss: 1
+                                latencyDistribution: null
+                                throughput: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
                     interFogLatency: null
                     interFogLatencyVariation: null
@@ -177,17 +223,24 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
-                        throughput: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        throughputDl: null
+                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
                             id: zone1-DEFAULT
                             name: zone1-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 50000
+                                throughputUl: 50000
+                                packetLoss: 1
+                                latencyDistribution: null
+                                throughput: null
                             physicalLocations:
                                 -
                                     id: zone1-edge1
@@ -209,6 +262,7 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -238,6 +292,7 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -254,7 +309,9 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -262,16 +319,26 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
                         -
                             id: zone1-poa1
                             name: zone1-poa1
                             type: POA
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 1000
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
                                     id: zone1-fog1
@@ -293,6 +360,7 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -322,6 +390,7 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -338,7 +407,9 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -358,6 +429,7 @@ deployment:
                                             image: 'meep-docker-registry:30001/iperf-client'
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             environment: null
                                             serviceConfig: null
@@ -374,7 +446,9 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -416,6 +490,7 @@ deployment:
                                                         externalPort: 31223
                                                         protocol: UDP
                                                 egressServiceMap: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             image: null
                                             environment: null
                                             commandArguments: null
@@ -433,6 +508,8 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -440,21 +517,34 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
                         -
                             id: zone1-poa2
                             name: zone1-poa2
                             type: POA
-                            terminalLinkLatency: 10
-                            terminalLinkLatencyVariation: 2
-                            terminalLinkThroughput: 50
+                            netChar:
+                                latency: 10
+                                latencyVariation: 2
+                                throughputDl: 50
+                                throughputUl: 50
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
                     interFogLatency: null
                     interFogLatencyVariation: null
@@ -477,17 +567,24 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
-                        throughput: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        throughputDl: null
+                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
                             id: zone2-DEFAULT
                             name: zone2-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 50000
+                                throughputUl: 50000
+                                packetLoss: 1
+                                latencyDistribution: null
+                                throughput: null
                             physicalLocations:
                                 -
                                     id: zone2-edge1
@@ -509,6 +606,7 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -538,6 +636,7 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
+                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -554,7 +653,9 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
+                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
                                     meta: null
                                     userMeta: null
@@ -562,20 +663,34 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
-                            meta: null
-                            userMeta: null
-                            cellularPoaConfig: null
-                        -
-                            id: zone2-poa1
-                            name: zone2-poa1
-                            type: POA
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 20
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
                             cellularPoaConfig: null
+                            geoData: null
+                        -
+                            id: zone2-poa1
+                            name: zone2-poa1
+                            type: POA
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 20
+                                throughputUl: 20
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
                     interFogLatency: null
                     interFogLatencyVariation: null
@@ -591,13 +706,20 @@ deployment:
                     edgeFogPacketLoss: null
                     meta: null
                     userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
             interZonePacketLoss: null
             meta: null
             userMeta: null
             cellularDomainConfig: null
+    interDomainLatency: null
+    interDomainLatencyVariation: null
+    interDomainThroughput: null
     interDomainPacketLoss: null
     meta: null
     userMeta: null
 id: null
 description: null
 config: null
+

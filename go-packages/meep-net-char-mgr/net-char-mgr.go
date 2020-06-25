@@ -35,7 +35,7 @@ const NetCharControls string = "net-char-controls"
 const NetCharControlChannel string = NetCharControls
 
 // Callback function types
-type NetCharUpdateCb func(string, string, float64, float64, float64, float64)
+type NetCharUpdateCb func(string, string, float64, float64, float64, string, float64)
 type UpdateCompleteCb func()
 
 // NetChar Interface
@@ -59,6 +59,17 @@ type NetChar struct {
 	Jitter     float64
 	PacketLoss float64
 	Throughput float64
+	Distribution string
+}
+
+// NetChar
+type ElemNetChar struct {
+        Latency    float64
+        Jitter     float64
+        Distribution string
+        PacketLoss float64
+        ThroughputUl float64
+        ThroughputDl float64
 }
 
 // FlowNetChar
@@ -275,7 +286,7 @@ func (ncm *NetCharManager) updateNetChars() {
 	if len(updatedNetCharList) != 0 {
 		for _, flowNetChar := range updatedNetCharList {
 			if ncm.netCharUpdateCb != nil {
-				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.PacketLoss)
+				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.Distribution,/*flowNetChar.MyNetChar.Distribution,*/ flowNetChar.MyNetChar.PacketLoss)
 			}
 		}
 		if ncm.updateCompleteCb != nil {

@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/NetworkCharacteristics'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./NetworkCharacteristics'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient);
+    root.AdvantEdgeSandboxControllerRestApi.EventNetworkCharacteristicsUpdate = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
   }
-}(this, function(ApiClient) {
+}(this, function(ApiClient, NetworkCharacteristics) {
   'use strict';
 
   /**
@@ -74,14 +74,8 @@
         obj.elementName = ApiClient.convertToType(data['elementName'], 'String');
       if (data.hasOwnProperty('elementType'))
         obj.elementType = ApiClient.convertToType(data['elementType'], 'String');
-      if (data.hasOwnProperty('latency'))
-        obj.latency = ApiClient.convertToType(data['latency'], 'Number');
-      if (data.hasOwnProperty('latencyVariation'))
-        obj.latencyVariation = ApiClient.convertToType(data['latencyVariation'], 'Number');
-      if (data.hasOwnProperty('throughput'))
-        obj.throughput = ApiClient.convertToType(data['throughput'], 'Number');
-      if (data.hasOwnProperty('packetLoss'))
-        obj.packetLoss = ApiClient.convertToType(data['packetLoss'], 'Number');
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
     }
     return obj;
   }
@@ -99,28 +93,9 @@
   exports.prototype.elementType = undefined;
 
   /**
-   * Latency in ms
-   * @member {Number} latency
+   * @member {module:model/NetworkCharacteristics} netChar
    */
-  exports.prototype.latency = undefined;
-
-  /**
-   * Latency variation in ms
-   * @member {Number} latencyVariation
-   */
-  exports.prototype.latencyVariation = undefined;
-
-  /**
-   * Throughput limit
-   * @member {Number} throughput
-   */
-  exports.prototype.throughput = undefined;
-
-  /**
-   * Packet loss percentage
-   * @member {Number} packetLoss
-   */
-  exports.prototype.packetLoss = undefined;
+  exports.prototype.netChar = undefined;
 
 
   /**

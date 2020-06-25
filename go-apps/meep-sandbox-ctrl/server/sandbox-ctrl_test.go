@@ -215,7 +215,7 @@ func testSendEvent(t *testing.T) {
 
 	// valid request
 	nc.ElementName = "zone1-poa1"
-	nc.Latency = 2
+	nc.NetChar.Latency = 2
 	j, err = json.Marshal(ev)
 	if err != nil {
 		t.Errorf(err.Error())

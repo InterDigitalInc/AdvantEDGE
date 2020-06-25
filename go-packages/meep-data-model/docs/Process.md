@@ -20,10 +20,11 @@ Name | Type | Description | Notes
 **UserChartGroup** | **string** | Chart supplemental information related to the group (service) | [optional] [default to null]
 **Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **UserMeta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
-**AppLatency** | **int32** | Latency in ms caused by the application | [optional] [default to null]
-**AppLatencyVariation** | **int32** | Latency variation in ms caused by the application | [optional] [default to null]
-**AppThroughput** | **int32** | The limit of the traffic supported by the application | [optional] [default to null]
-**AppPacketLoss** | **float64** | Packet lost (in terms of percentage) caused by the application | [optional] [default to null]
+**NetChar** | [***NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] [default to null]
+**AppLatency** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latency | [optional] [default to null]
+**AppLatencyVariation** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] [default to null]
+**AppThroughput** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] [default to null]
+**AppPacketLoss** | **float64** | **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss | [optional] [default to null]
 **PlacementId** | **string** | Identifier used for process placement in AdvantEDGE cluster | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

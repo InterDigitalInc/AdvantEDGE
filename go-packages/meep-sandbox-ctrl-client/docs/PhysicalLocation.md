@@ -12,10 +12,11 @@ Name | Type | Description | Notes
 **Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **UserMeta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **Processes** | [**[]Process**](Process.md) |  | [optional] [default to null]
-**LinkLatency** | **int32** | Latency in ms between the physical location and the network (wired interface, air interface) | [optional] [default to null]
-**LinkLatencyVariation** | **int32** | Latency variation in ms between the physical location and the network (wired interface, air interface) | [optional] [default to null]
-**LinkThroughput** | **int32** | The limit of the traffic supported between the physical location and the network (wired interface, air interface) | [optional] [default to null]
-**LinkPacketLoss** | **float64** | Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface) | [optional] [default to null]
+**NetChar** | [***NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] [default to null]
+**LinkLatency** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latency | [optional] [default to null]
+**LinkLatencyVariation** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] [default to null]
+**LinkThroughput** | **int32** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] [default to null]
+**LinkPacketLoss** | **float64** | **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

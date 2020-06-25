@@ -5,10 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **elementName** | **String** | Name of the network element to be updated | [optional] 
 **elementType** | **String** | Type of the network element to be updated | [optional] 
-**latency** | **Number** | Latency in ms | [optional] 
-**latencyVariation** | **Number** | Latency variation in ms | [optional] 
-**throughput** | **Number** | Throughput limit | [optional] 
-**packetLoss** | **Number** | Packet loss percentage | [optional] 
+**netChar** | [**NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] 
 
 
 <a name="ElementTypeEnum"></a>

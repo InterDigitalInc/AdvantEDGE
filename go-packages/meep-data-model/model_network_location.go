@@ -30,14 +30,15 @@ type NetworkLocation struct {
 	// Network location name
 	Name string `json:"name,omitempty"`
 	// Network location type
-	Type_ string `json:"type,omitempty"`
-	// Latency in ms for all terminal links within network location
+	Type_   string                  `json:"type,omitempty"`
+	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	TerminalLinkLatency int32 `json:"terminalLinkLatency,omitempty"`
-	// Latency variation in ms for all terminal links within network location
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
 	TerminalLinkLatencyVariation int32 `json:"terminalLinkLatencyVariation,omitempty"`
-	// The limit of the traffic supported for all terminal links within the network location
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
 	TerminalLinkThroughput int32 `json:"terminalLinkThroughput,omitempty"`
-	// Packet lost (in terms of percentage) for all terminal links within the network location
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	TerminalLinkPacketLoss float64 `json:"terminalLinkPacketLoss,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`

@@ -24,19 +24,24 @@ import {
   FIELD_NAME,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
-  FIELD_INT_DOM_THROUGPUT,
+  FIELD_INT_DOM_LATENCY_DIST,
+  FIELD_INT_DOM_THROUGHPUT_DL,
+  FIELD_INT_DOM_THROUGHPUT_UL,
   FIELD_INT_DOM_PKT_LOSS,
   FIELD_INT_ZONE_LATENCY,
   FIELD_INT_ZONE_LATENCY_VAR,
-  FIELD_INT_ZONE_THROUGPUT,
+  FIELD_INT_ZONE_THROUGHPUT_DL,
+  FIELD_INT_ZONE_THROUGHPUT_UL,
   FIELD_INT_ZONE_PKT_LOSS,
   FIELD_INTRA_ZONE_LATENCY,
   FIELD_INTRA_ZONE_LATENCY_VAR,
-  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_THROUGHPUT_DL,
+  FIELD_INTRA_ZONE_THROUGHPUT_UL,
   FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
-  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_THROUGHPUT_DL,
+  FIELD_TERM_LINK_THROUGHPUT_UL,
   FIELD_TERM_LINK_PKT_LOSS,
 
   getElemFieldVal,
@@ -162,7 +167,7 @@ describe('Scenario Execution', function () {
     // Go to execution page
     cy.log('Go to execution page');
     click(meep.MEEP_TAB_EXEC);
-    cy.wait(1000);
+    cy.wait(5000);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
@@ -174,7 +179,7 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, name);
     click(meep.MEEP_DLG_DEPLOY_SCENARIO, 'Ok');
-    cy.wait(1000);
+    cy.wait(10000);
     verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
@@ -186,7 +191,7 @@ describe('Scenario Execution', function () {
     cy.log('Terminate Scenario: ' + name);
     click(meep.EXEC_BTN_TERMINATE);
     click(meep.MEEP_DLG_TERMINATE_SCENARIO, 'Ok');
-    cy.wait(1000);
+    cy.wait(10000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true, 120000);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
@@ -219,13 +224,13 @@ describe('Scenario Execution', function () {
   // Create Network Characteristic events
   function testNetCharEvent(scenario) {
     cy.log('Create & Validate Network Characteristic event');
-    createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
-    createNetCharEvent('OPERATOR GENERIC', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000);
-    createNetCharEvent('POA GENERIC', 'zone1-poa1', 2, 3, 4, 10000);
-    createNetCharEvent('POA GENERIC', 'zone1-poa2', 40, 5, 2, 20000);
-    createNetCharEvent('POA GENERIC', 'zone2-poa1', 0, 0, 1, 15000);
+    createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000, 'Pareto');
+    createNetCharEvent('OPERATOR GENERIC', 'operator1', 10, 3, 2, 90000, '');
+    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000, '');
+    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000, '');
+    createNetCharEvent('POA GENERIC', 'zone1-poa1', 2, 3, 4, 10000, '');
+    createNetCharEvent('POA GENERIC', 'zone1-poa2', 40, 5, 2, 20000, '');
+    createNetCharEvent('POA GENERIC', 'zone2-poa1', 0, 0, 1, 15000, '');
   }
 
   // Create a Mobility event
@@ -244,7 +249,7 @@ describe('Scenario Execution', function () {
   }
 
   // Create a Network Characteristic event
-  function createNetCharEvent(elemType, name, l, lv, pl, tp) {
+  function createNetCharEvent(elemType, name, l, lv, pl, tp, dist) {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
@@ -256,12 +261,16 @@ describe('Scenario Execution', function () {
     type(meep.CFG_ELEM_LATENCY, l);
     type(meep.CFG_ELEM_LATENCY_VAR, lv);
     type(meep.CFG_ELEM_PKT_LOSS, pl);
-    type(meep.CFG_ELEM_THROUGHPUT, tp);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, tp);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, tp-1);
+    if (dist != '') {
+      select(meep.CFG_ELEM_LATENCY_DIST, dist);
+    }
     click(meep.MEEP_BTN_APPLY);
 
     // Validate event
     cy.wait(1000);
-    validateNetCharEvent(elemType, name, l, lv, pl, tp);
+    validateNetCharEvent(elemType, name, l, lv, pl, tp, tp-1, dist);
   }
 
   // Retrieve Element entry from Application table
@@ -286,7 +295,7 @@ describe('Scenario Execution', function () {
   }
 
   // Validate that network characteristics were correctly applied
-  function validateNetCharEvent(elemType, name, l, lv, pl, tp) {
+  function validateNetCharEvent(elemType, name, l, lv, pl, tpDl, tpUl, dist) {
     cy.window().then((win) => {
       var entry = getEntry(win.meepStore.getState().exec.table.entries, name);
       assert.isNotNull(entry);
@@ -296,25 +305,31 @@ describe('Scenario Execution', function () {
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_DIST), dist);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_UL), tpUl);
+
           break;
         case 'OPERATOR GENERIC':
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGHPUT_UL), tpUl);
           break;
         case 'ZONE':
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), tpUl);
           break;
         case 'POA GENERIC':
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), tpUl);
           break;
         default:
           assert.isOk(false, 'Unsupported element type');

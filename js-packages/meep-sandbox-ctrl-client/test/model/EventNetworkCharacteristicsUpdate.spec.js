@@ -67,28 +67,10 @@
         // expect(instance.elementType).to.be(expectedValueLiteral);
       });
 
-      it('should have the property latency (base name: "latency")', function() {
-        // TODO: update the code to test the property latency
-        expect(instance).to.have.property('latency');
-        // expect(instance.latency).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property latencyVariation (base name: "latencyVariation")', function() {
-        // TODO: update the code to test the property latencyVariation
-        expect(instance).to.have.property('latencyVariation');
-        // expect(instance.latencyVariation).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property throughput (base name: "throughput")', function() {
-        // TODO: update the code to test the property throughput
-        expect(instance).to.have.property('throughput');
-        // expect(instance.throughput).to.be(expectedValueLiteral);
-      });
-
-      it('should have the property packetLoss (base name: "packetLoss")', function() {
-        // TODO: update the code to test the property packetLoss
-        expect(instance).to.have.property('packetLoss');
-        // expect(instance.packetLoss).to.be(expectedValueLiteral);
+      it('should have the property netChar (base name: "netChar")', function() {
+        // TODO: update the code to test the property netChar
+        expect(instance).to.have.property('netChar');
+        // expect(instance.netChar).to.be(expectedValueLiteral);
       });
 
     });

@@ -157,6 +157,12 @@
         // expect(instance.userMeta).to.be(expectedValueLiteral);
       });
 
+      it('should have the property netChar (base name: "netChar")', function() {
+        // TODO: update the code to test the property netChar
+        expect(instance).to.have.property('netChar');
+        // expect(instance.netChar).to.be(expectedValueLiteral);
+      });
+
       it('should have the property appLatency (base name: "appLatency")', function() {
         // TODO: update the code to test the property appLatency
         expect(instance).to.have.property('appLatency');

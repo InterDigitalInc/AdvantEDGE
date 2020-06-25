@@ -26,13 +26,14 @@ package client
 
 // Network deployment object
 type Deployment struct {
-	// Latency in ms between domains
+	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	InterDomainLatency int32 `json:"interDomainLatency,omitempty"`
-	// Latency variation in ms between domains
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
 	InterDomainLatencyVariation int32 `json:"interDomainLatencyVariation,omitempty"`
-	// The limit of the traffic supported between domains
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
 	InterDomainThroughput int32 `json:"interDomainThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between domains
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	InterDomainPacketLoss float64 `json:"interDomainPacketLoss,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`

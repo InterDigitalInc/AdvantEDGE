@@ -338,19 +338,22 @@ definitions:
   Deployment:
     type: "object"
     properties:
+      netChar:
+        $ref: "#/definitions/NetworkCharacteristics"
       interDomainLatency:
         type: "integer"
-        description: "Latency in ms between domains"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
       interDomainLatencyVariation:
         type: "integer"
-        description: "Latency variation in ms between domains"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation"
       interDomainThroughput:
         type: "integer"
-        description: "The limit of the traffic supported between domains"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl\
+          \ and throughputDl"
       interDomainPacketLoss:
         type: "number"
         format: "double"
-        description: "Packet lost (in terms of percentage) between domains"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
@@ -366,6 +369,42 @@ definitions:
         items:
           $ref: "#/definitions/Domain"
     description: "Network deployment object"
+    example: {}
+  NetworkCharacteristics:
+    type: "object"
+    properties:
+      latency:
+        type: "integer"
+        description: "Latency in ms"
+      latencyVariation:
+        type: "integer"
+        description: "Latency variation in ms"
+      latencyDistribution:
+        type: "string"
+        description: "Latency distribution. Can only be set in the Scenario Deployment\
+          \ network characteristics, ignored otherwise. Latency distribution is set\
+          \ for the whole network and applied to every end-to-end traffic flows. Default\
+          \ value is 'Normal' distribution."
+        enum:
+        - "Normal"
+        - "Pareto"
+        - "Paretonormal"
+        - "Uniform"
+      throughput:
+        type: "integer"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by throughputUl\
+          \ and throughputDl"
+      throughputDl:
+        type: "integer"
+        description: "Downlink throughput limit in Mbps"
+      throughputUl:
+        type: "integer"
+        description: "Uplink throughput limit in Mbps"
+      packetLoss:
+        type: "number"
+        format: "double"
+        description: "Packet loss percentage"
+    description: "Network characteristics object"
     example: {}
   Domain:
     type: "object"
@@ -383,21 +422,22 @@ definitions:
         - "OPERATOR"
         - "OPERATOR-CELLULAR"
         - "PUBLIC"
+      netChar:
+        $ref: "#/definitions/NetworkCharacteristics"
       interZoneLatency:
         type: "integer"
-        description: "Latency in ms between zones within domain"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
       interZoneLatencyVariation:
         type: "integer"
-        description: "Latency variation in ms between zones within domain"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation"
       interZoneThroughput:
         type: "integer"
-        description: "The limit of the traffic supported between zones within the\
-          \ domain"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl\
+          \ and throughputDl"
       interZonePacketLoss:
         type: "number"
         format: "double"
-        description: "Packet lost (in terms of percentage) between zones within the\
-          \ domain"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
@@ -505,24 +545,6 @@ definitions:
           $ref: "#/definitions/NetworkLocation"
     description: "Logical zone (MEC network) object"
     example: {}
-  NetworkCharacteristics:
-    type: "object"
-    properties:
-      latency:
-        type: "integer"
-        description: "Latency in ms"
-      latencyVariation:
-        type: "integer"
-        description: "Latency variation in ms"
-      throughput:
-        type: "integer"
-        description: "Throughput limit in Mbps"
-      packetLoss:
-        type: "number"
-        format: "double"
-        description: "Packet loss percentage"
-    description: "Network characteristics object"
-    example: {}
   NetworkLocation:
     type: "object"
     properties:
@@ -539,22 +561,22 @@ definitions:
         - "POA"
         - "POA-CELLULAR"
         - "DEFAULT"
+      netChar:
+        $ref: "#/definitions/NetworkCharacteristics"
       terminalLinkLatency:
         type: "integer"
-        description: "Latency in ms for all terminal links within network location"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
       terminalLinkLatencyVariation:
         type: "integer"
-        description: "Latency variation in ms for all terminal links within network\
-          \ location"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation"
       terminalLinkThroughput:
         type: "integer"
-        description: "The limit of the traffic supported for all terminal links within\
-          \ the network location"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl\
+          \ and throughputDl"
       terminalLinkPacketLoss:
         type: "number"
         format: "double"
-        description: "Packet lost (in terms of percentage) for all terminal links\
-          \ within the network location"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"
@@ -691,23 +713,22 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Process"
+      netChar:
+        $ref: "#/definitions/NetworkCharacteristics"
       linkLatency:
         type: "integer"
-        description: "Latency in ms between the physical location and the network\
-          \ (wired interface, air interface)"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
       linkLatencyVariation:
         type: "integer"
-        description: "Latency variation in ms between the physical location and the\
-          \ network (wired interface, air interface)"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation"
       linkThroughput:
         type: "integer"
-        description: "The limit of the traffic supported between the physical location\
-          \ and the network (wired interface, air interface)"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl\
+          \ and throughputDl"
       linkPacketLoss:
         type: "number"
         format: "double"
-        description: "Packet lost (in terms of percentage) between the physical location\
-          \ and the network (wired interface, air interface)"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
     description: "Physical location object"
     example: {}
   Process:
@@ -774,19 +795,22 @@ definitions:
         description: "Key/Value Pair Map (string, string)"
         additionalProperties:
           type: "string"
+      netChar:
+        $ref: "#/definitions/NetworkCharacteristics"
       appLatency:
         type: "integer"
-        description: "Latency in ms caused by the application"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latency"
       appLatencyVariation:
         type: "integer"
-        description: "Latency variation in ms caused by the application"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation"
       appThroughput:
         type: "integer"
-        description: "The limit of the traffic supported by the application"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl\
+          \ and throughputDl"
       appPacketLoss:
         type: "number"
         format: "double"
-        description: "Packet lost (in terms of percentage) caused by the application"
+        description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
       placementId:
         type: "string"
         description: "Identifier used for process placement in AdvantEDGE cluster"

@@ -73,6 +73,12 @@
         // expect(instance.type).to.be(expectedValueLiteral);
       });
 
+      it('should have the property netChar (base name: "netChar")', function() {
+        // TODO: update the code to test the property netChar
+        expect(instance).to.have.property('netChar');
+        // expect(instance.netChar).to.be(expectedValueLiteral);
+      });
+
       it('should have the property terminalLinkLatency (base name: "terminalLinkLatency")', function() {
         // TODO: update the code to test the property terminalLinkLatency
         expect(instance).to.have.property('terminalLinkLatency');

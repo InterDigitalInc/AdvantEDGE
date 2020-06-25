@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/GeoData', 'model/Process'], factory);
+    define(['ApiClient', 'model/GeoData', 'model/NetworkCharacteristics', 'model/Process'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./GeoData'), require('./Process'));
+    module.exports = factory(require('../ApiClient'), require('./GeoData'), require('./NetworkCharacteristics'), require('./Process'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.PhysicalLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.Process);
+    root.AdvantEdgePlatformControllerRestApi.PhysicalLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.Process);
   }
-}(this, function(ApiClient, GeoData, Process) {
+}(this, function(ApiClient, GeoData, NetworkCharacteristics, Process) {
   'use strict';
 
   /**
@@ -88,6 +88,8 @@
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       if (data.hasOwnProperty('processes'))
         obj.processes = ApiClient.convertToType(data['processes'], [Process]);
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('linkLatency'))
         obj.linkLatency = ApiClient.convertToType(data['linkLatency'], 'Number');
       if (data.hasOwnProperty('linkLatencyVariation'))
@@ -152,25 +154,30 @@
   exports.prototype.processes = undefined;
 
   /**
-   * Latency in ms between the physical location and the network (wired interface, air interface)
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latency
    * @member {Number} linkLatency
    */
   exports.prototype.linkLatency = undefined;
 
   /**
-   * Latency variation in ms between the physical location and the network (wired interface, air interface)
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
    * @member {Number} linkLatencyVariation
    */
   exports.prototype.linkLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
    * @member {Number} linkThroughput
    */
   exports.prototype.linkThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
    * @member {Number} linkPacketLoss
    */
   exports.prototype.linkPacketLoss = undefined;

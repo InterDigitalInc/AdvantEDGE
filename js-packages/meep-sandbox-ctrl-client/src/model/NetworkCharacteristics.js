@@ -74,8 +74,14 @@
         obj.latency = ApiClient.convertToType(data['latency'], 'Number');
       if (data.hasOwnProperty('latencyVariation'))
         obj.latencyVariation = ApiClient.convertToType(data['latencyVariation'], 'Number');
+      if (data.hasOwnProperty('latencyDistribution'))
+        obj.latencyDistribution = ApiClient.convertToType(data['latencyDistribution'], 'String');
       if (data.hasOwnProperty('throughput'))
         obj.throughput = ApiClient.convertToType(data['throughput'], 'Number');
+      if (data.hasOwnProperty('throughputDl'))
+        obj.throughputDl = ApiClient.convertToType(data['throughputDl'], 'Number');
+      if (data.hasOwnProperty('throughputUl'))
+        obj.throughputUl = ApiClient.convertToType(data['throughputUl'], 'Number');
       if (data.hasOwnProperty('packetLoss'))
         obj.packetLoss = ApiClient.convertToType(data['packetLoss'], 'Number');
     }
@@ -95,16 +101,66 @@
   exports.prototype.latencyVariation = undefined;
 
   /**
-   * Throughput limit in Mbps
+   * Latency distribution. Can only be set in the Scenario Deployment network characteristics, ignored otherwise. Latency distribution is set for the whole network and applied to every end-to-end traffic flows. Default value is 'Normal' distribution.
+   * @member {module:model/NetworkCharacteristics.LatencyDistributionEnum} latencyDistribution
+   */
+  exports.prototype.latencyDistribution = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by throughputUl and throughputDl
    * @member {Number} throughput
    */
   exports.prototype.throughput = undefined;
+
+  /**
+   * Downlink throughput limit in Mbps
+   * @member {Number} throughputDl
+   */
+  exports.prototype.throughputDl = undefined;
+
+  /**
+   * Uplink throughput limit in Mbps
+   * @member {Number} throughputUl
+   */
+  exports.prototype.throughputUl = undefined;
 
   /**
    * Packet loss percentage
    * @member {Number} packetLoss
    */
   exports.prototype.packetLoss = undefined;
+
+
+  /**
+   * Allowed values for the <code>latencyDistribution</code> property.
+   * @enum {String}
+   * @readonly
+   */
+  exports.LatencyDistributionEnum = {
+    /**
+     * value: "Normal"
+     * @const
+     */
+    normal: "Normal",
+
+    /**
+     * value: "Pareto"
+     * @const
+     */
+    pareto: "Pareto",
+
+    /**
+     * value: "Paretonormal"
+     * @const
+     */
+    paretonormal: "Paretonormal",
+
+    /**
+     * value: "Uniform"
+     * @const
+     */
+    uniform: "Uniform"
+  };
 
   return exports;
 

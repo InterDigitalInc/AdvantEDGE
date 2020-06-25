@@ -17,34 +17,40 @@
 import React from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
-
-import { firstLetterUpper } from '../../util/string-manipulation';
+import { Select } from '@rmwc/select';
 
 import {
   // Field Names
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
-  FIELD_INT_DOM_THROUGPUT,
+  FIELD_INT_DOM_LATENCY_DIST,
+  FIELD_INT_DOM_THROUGHPUT_DL,
+  FIELD_INT_DOM_THROUGHPUT_UL,
   FIELD_INT_DOM_PKT_LOSS,
   FIELD_INT_ZONE_LATENCY,
   FIELD_INT_ZONE_LATENCY_VAR,
-  FIELD_INT_ZONE_THROUGPUT,
+  FIELD_INT_ZONE_THROUGHPUT_DL,
+  FIELD_INT_ZONE_THROUGHPUT_UL,
   FIELD_INT_ZONE_PKT_LOSS,
   FIELD_INTRA_ZONE_LATENCY,
   FIELD_INTRA_ZONE_LATENCY_VAR,
-  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_THROUGHPUT_DL,
+  FIELD_INTRA_ZONE_THROUGHPUT_UL,
   FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
-  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_THROUGHPUT_DL,
+  FIELD_TERM_LINK_THROUGHPUT_UL,
   FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
+  FIELD_LINK_THROUGHPUT_DL,
+  FIELD_LINK_THROUGHPUT_UL,
   FIELD_LINK_PKT_LOSS,
   FIELD_APP_LATENCY,
   FIELD_APP_LATENCY_VAR,
-  FIELD_APP_THROUGPUT,
+  FIELD_APP_THROUGHPUT_DL,
+  FIELD_APP_THROUGHPUT_UL,
   FIELD_APP_PKT_LOSS,
   getElemFieldVal,
   getElemFieldErr
@@ -53,8 +59,10 @@ import {
 import {
   CFG_ELEM_LATENCY,
   CFG_ELEM_LATENCY_VAR,
+  CFG_ELEM_LATENCY_DIST,
   CFG_ELEM_PKT_LOSS,
-  CFG_ELEM_THROUGHPUT,
+  CFG_ELEM_THROUGHPUT_DL,
+  CFG_ELEM_THROUGHPUT_UL,
 
   // NC Group Prefixes
   PREFIX_INT_DOM,
@@ -169,17 +177,24 @@ const validateThroughput = val => {
 const TableLayout = props => {
   return (
     <div>
-      <Grid>
-        <GridCell span="6">{props.latencyComponent}</GridCell>
+      <Grid style={{ marginBottom: 10 }}>
+        <GridCell span="4">{props.latencyComponent}</GridCell>
 
-        <GridCell span="6">{props.latencyVariationComponent}</GridCell>
+        <GridCell span="4">{props.latencyVariationComponent}</GridCell>
+
+        <GridCell span="4">{props.packetLossComponent}</GridCell>
       </Grid>
 
       <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="6">{props.packetLossComponent}</GridCell>
-
-        <GridCell span="6">{props.throughputComponent}</GridCell>
+        <GridCell span="12">{props.latencyDistributionComponent}</GridCell>
       </Grid>
+
+      <Grid style={{ marginBottom: 10 }}>
+        <GridCell span="6">{props.throughputDlComponent}</GridCell>
+
+        <GridCell span="6">{props.throughputUlComponent}</GridCell>
+      </Grid>
+
     </div>
   );
 };
@@ -187,12 +202,16 @@ const TableLayout = props => {
 const SingleColumnLayout = props => {
   return (
     <div>
-      <Grid>
+      <Grid style={{ marginBottom: 10 }}>
         <GridCell span="12">{props.latencyComponent}</GridCell>
       </Grid>
 
-      <Grid>
+      <Grid style={{ marginBottom: 10 }}>
         <GridCell span="12">{props.latencyVariationComponent}</GridCell>
+      </Grid>
+
+      <Grid style={{ marginBottom: 10 }}>
+        <GridCell span="12">{props.latencyDistributionComponent}</GridCell>
       </Grid>
 
       <Grid style={{ marginBottom: 10 }}>
@@ -200,8 +219,13 @@ const SingleColumnLayout = props => {
       </Grid>
 
       <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.throughputComponent}</GridCell>
+        <GridCell span="12">{props.throughputDlComponent}</GridCell>
       </Grid>
+
+      <Grid style={{ marginBottom: 10 }}>
+        <GridCell span="12">{props.throughputUlComponent}</GridCell>
+      </Grid>
+
     </div>
   );
 };
@@ -218,10 +242,6 @@ const NCLayout = props => {
 };
 
 const NCGroup = ({ prefix, onUpdate, element }) => {
-  const formLabel = valueName => {
-    const space = prefix ? ' ' : '';
-    return firstLetterUpper(prefix) + space + valueName;
-  };
 
   const handleEvent = (event, fieldName, validate) => {
     var err = validate ? validate(event.target.value) : null;
@@ -236,43 +256,52 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
   // Retrieve field names
   var latencyFieldName = null;
   var latencyVarFieldName = null;
-  var throughputFieldName = null;
+  var latencyDistFieldName = null;
+  var throughputDlFieldName = null;
+  var throughputUlFieldName = null;
   var packetLossFieldName = null;
   switch (prefix) {
   case PREFIX_INT_DOM:
     latencyFieldName = FIELD_INT_DOM_LATENCY;
     latencyVarFieldName = FIELD_INT_DOM_LATENCY_VAR;
-    throughputFieldName = FIELD_INT_DOM_THROUGPUT;
+    latencyDistFieldName = FIELD_INT_DOM_LATENCY_DIST;
+    throughputDlFieldName = FIELD_INT_DOM_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_INT_DOM_THROUGHPUT_UL;
     packetLossFieldName = FIELD_INT_DOM_PKT_LOSS;
     break;
   case PREFIX_INT_ZONE:
     latencyFieldName = FIELD_INT_ZONE_LATENCY;
     latencyVarFieldName = FIELD_INT_ZONE_LATENCY_VAR;
-    throughputFieldName = FIELD_INT_ZONE_THROUGPUT;
+    throughputDlFieldName = FIELD_INT_ZONE_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_INT_ZONE_THROUGHPUT_UL;
     packetLossFieldName = FIELD_INT_ZONE_PKT_LOSS;
     break;
   case PREFIX_INTRA_ZONE:
     latencyFieldName = FIELD_INTRA_ZONE_LATENCY;
     latencyVarFieldName = FIELD_INTRA_ZONE_LATENCY_VAR;
-    throughputFieldName = FIELD_INTRA_ZONE_THROUGPUT;
+    throughputDlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_UL;
     packetLossFieldName = FIELD_INTRA_ZONE_PKT_LOSS;
     break;
   case PREFIX_TERM_LINK:
     latencyFieldName = FIELD_TERM_LINK_LATENCY;
     latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
-    throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+    throughputDlFieldName = FIELD_TERM_LINK_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_TERM_LINK_THROUGHPUT_UL;
     packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
     break;
   case PREFIX_LINK:
     latencyFieldName = FIELD_LINK_LATENCY;
     latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
-    throughputFieldName = FIELD_LINK_THROUGPUT;
+    throughputDlFieldName = FIELD_LINK_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_LINK_THROUGHPUT_UL;
     packetLossFieldName = FIELD_LINK_PKT_LOSS;
     break;
   case PREFIX_APP:
     latencyFieldName = FIELD_APP_LATENCY;
     latencyVarFieldName = FIELD_APP_LATENCY_VAR;
-    throughputFieldName = FIELD_APP_THROUGPUT;
+    throughputDlFieldName = FIELD_APP_THROUGHPUT_DL;
+    throughputUlFieldName = FIELD_APP_THROUGHPUT_UL;
     packetLossFieldName = FIELD_APP_PKT_LOSS;
     break;
   default:
@@ -284,7 +313,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
       <TextField
         outlined
         style={{ width: '100%' }}
-        label={formLabel('Latency') + ' (ms)'}
+        label={'Latency (ms)'}
         onChange={e => handleEvent(e, latencyFieldName, validateLatency)}
         value={getElemFieldVal(element, latencyFieldName)}
         invalid={getElemFieldErr(element, latencyFieldName) ? true : false}
@@ -301,7 +330,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
       <TextField
         outlined
         style={{ width: '100%' }}
-        label={formLabel('Latency Variation') + ' (ms)'}
+        label={'Jitter (ms)'}
         onChange={e =>
           handleEvent(e, latencyVarFieldName, validateLatencyVariation)
         }
@@ -315,12 +344,30 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     </>
   );
 
+  const latencyDistributionComponent = (
+    <>
+      <Select
+        outlined
+        style={{ width: '100%' }}
+        label="Latency Distribution"
+        value={getElemFieldVal(element, latencyDistFieldName)}
+        options={['Normal', 'Pareto', 'ParetoNormal', 'Uniform']}
+        onChange={e => onUpdate(latencyDistFieldName, e.target.value, null)}
+        data-cy={CFG_ELEM_LATENCY_DIST}
+      />
+      <TextFieldHelperText validationMsg={true}>
+        <span>{getElemFieldErr(element, latencyDistFieldName)}</span>
+      </TextFieldHelperText>
+    </>
+  );
+
+
   const packetLossComponent = (
     <>
       <TextField
         outlined
         style={{ width: '100%' }}
-        label={formLabel('Packet Loss') + ' (%)'}
+        label={'Packet Loss (%)'}
         onChange={e => handleEvent(e, packetLossFieldName, validatePacketLoss)}
         value={getElemFieldVal(element, packetLossFieldName)}
         invalid={getElemFieldErr(element, packetLossFieldName) ? true : false}
@@ -332,31 +379,62 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     </>
   );
 
-  const throughputComponent = (
+  const throughputDlComponent = (
     <>
       <TextField
         outlined
         style={{ width: '100%' }}
-        label={formLabel('Throughput') + ' Mbps'}
-        onChange={e => handleEvent(e, throughputFieldName, validateThroughput)}
-        value={getElemFieldVal(element, throughputFieldName)}
-        invalid={getElemFieldErr(element, throughputFieldName) ? true : false}
-        data-cy={CFG_ELEM_THROUGHPUT}
+        label={'DL Throughput (Mbps)'}
+        onChange={e => handleEvent(e, throughputDlFieldName, validateThroughput)}
+        value={getElemFieldVal(element, throughputDlFieldName)}
+        invalid={getElemFieldErr(element, throughputDlFieldName) ? true : false}
+        data-cy={CFG_ELEM_THROUGHPUT_DL}
       />
       <TextFieldHelperText validationMsg={true}>
-        <span>{getElemFieldErr(element, throughputFieldName)}</span>
+        <span>{getElemFieldErr(element, throughputDlFieldName)}</span>
       </TextFieldHelperText>
     </>
   );
 
-  return (
-    <NCLayout
-      latencyComponent={latencyComponent}
-      latencyVariationComponent={latencyVariationComponent}
-      packetLossComponent={packetLossComponent}
-      throughputComponent={throughputComponent}
-    ></NCLayout>
+  const throughputUlComponent = (
+    <>
+      <TextField
+        outlined
+        style={{ width: '100%' }}
+        label={'UL Throughput (Mbps)'}
+        onChange={e => handleEvent(e, throughputUlFieldName, validateThroughput)}
+        value={getElemFieldVal(element, throughputUlFieldName)}
+        invalid={getElemFieldErr(element, throughputUlFieldName) ? true : false}
+        data-cy={CFG_ELEM_THROUGHPUT_UL}
+      />
+      <TextFieldHelperText validationMsg={true}>
+        <span>{getElemFieldErr(element, throughputUlFieldName)}</span>
+      </TextFieldHelperText>
+    </>
   );
+
+  if (prefix === PREFIX_INT_DOM) {
+    return (
+      <NCLayout
+        latencyComponent={latencyComponent}
+        latencyVariationComponent={latencyVariationComponent}
+        latencyDistributionComponent={latencyDistributionComponent}
+        packetLossComponent={packetLossComponent}
+        throughputDlComponent={throughputDlComponent}
+        throughputUlComponent={throughputUlComponent}
+      ></NCLayout>
+    );
+  } else {
+    return (
+      <NCLayout
+        latencyComponent={latencyComponent}
+        latencyVariationComponent={latencyVariationComponent}
+        packetLossComponent={packetLossComponent}
+        throughputDlComponent={throughputDlComponent}
+        throughputUlComponent={throughputUlComponent}
+      ></NCLayout>
+    );
+  }
 };
 
 export default NCGroup;

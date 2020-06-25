@@ -29,8 +29,14 @@ type NetworkCharacteristics struct {
 	Latency int32 `json:"latency,omitempty"`
 	// Latency variation in ms
 	LatencyVariation int32 `json:"latencyVariation,omitempty"`
-	// Throughput limit in Mbps
+	// Latency distribution. Can only be set in the Scenario Deployment network characteristics, ignored otherwise. Latency distribution is set for the whole network and applied to every end-to-end traffic flows. Default value is 'Normal' distribution.
+	LatencyDistribution string `json:"latencyDistribution,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by throughputUl and throughputDl
 	Throughput int32 `json:"throughput,omitempty"`
+	// Downlink throughput limit in Mbps
+	ThroughputDl int32 `json:"throughputDl,omitempty"`
+	// Uplink throughput limit in Mbps
+	ThroughputUl int32 `json:"throughputUl,omitempty"`
 	// Packet loss percentage
 	PacketLoss float64 `json:"packetLoss,omitempty"`
 }

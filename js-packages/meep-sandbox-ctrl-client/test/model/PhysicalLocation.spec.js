@@ -109,6 +109,12 @@
         // expect(instance.processes).to.be(expectedValueLiteral);
       });
 
+      it('should have the property netChar (base name: "netChar")', function() {
+        // TODO: update the code to test the property netChar
+        expect(instance).to.have.property('netChar');
+        // expect(instance.netChar).to.be(expectedValueLiteral);
+      });
+
       it('should have the property linkLatency (base name: "linkLatency")', function() {
         // TODO: update the code to test the property linkLatency
         expect(instance).to.have.property('linkLatency');
