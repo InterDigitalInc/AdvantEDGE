@@ -575,7 +575,8 @@ export function updateElementInScenario(scenario, element) {
               coordinates: JSON.parse(path)
             };
             pl.geoData.eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE);
-            pl.geoData.velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+            const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+            pl.geoData.velocity = velocity ? velocity : null;
 
             pl.label = name;
             pl.name = name;
@@ -1098,7 +1099,8 @@ export function createPL(uniqueId, name, type, element) {
       coordinates: JSON.parse(path)
     };
     pl.geoData.eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE);
-    pl.geoData.velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+    const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+    pl.geoData.velocity = velocity ? velocity : null;
   }
 
   return pl;

@@ -324,7 +324,9 @@ class MeepContainer extends Component {
     // TODO set a timer of 2 seconds
     this.props.execChangeScenarioState(EXEC_STATE_DEPLOYED);
     setTimeout(() => {
-      this.props.execChangeOkToTerminate(true);
+      if (this.props.exec.state.scenario === EXEC_STATE_DEPLOYED) {
+        this.props.execChangeOkToTerminate(true);
+      }
     }, 2000);
   }
 

@@ -210,10 +210,10 @@ class IDCMap extends Component {
   createMap() {
     // Get stored configuration
     var cfg = this.getCfg();
-    var lat = cfg.center ? cfg.center.lat : DEFAULT_MAP_LATITUDE;
-    var lng = cfg.center ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
-    var zoom = cfg.zoom ? cfg.zoom : DEFAULT_MAP_ZOOM;
-    var baselayerName = cfg.baselayerName ? cfg.baselayerName : DEFAULT_MAP_STYLE;
+    var lat = (cfg && cfg.center) ? cfg.center.lat : DEFAULT_MAP_LATITUDE;
+    var lng = (cfg && cfg.center) ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
+    var zoom = (cfg && cfg.zoom) ? cfg.zoom : DEFAULT_MAP_ZOOM;
+    var baselayerName = (cfg && cfg.baselayerName) ? cfg.baselayerName : DEFAULT_MAP_STYLE;
  
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
