@@ -40,9 +40,6 @@ import {
   TYPE_CFG,
   TYPE_EXEC,
   HOST_PATH,
-  DEFAULT_MAP_LATITUDE,
-  DEFAULT_MAP_LONGITUDE,
-  DEFAULT_MAP_ZOOM,
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_POA_CELL,
@@ -73,6 +70,12 @@ const OPACITY_POA_RANGE = 0.4;
 const OPACITY_COMPUTE = 0.6;
 const OPACITY_BACKGROUND = 0.35;
 const OPACITY_TARGET = 1;
+
+const DEFAULT_MAP_STYLE = 'Positron';
+const DEFAULT_MAP_LATITUDE = 0;
+const DEFAULT_MAP_LONGITUDE = 0;
+const DEFAULT_MAP_ZOOM = 2;
+
 
 class IDCMap extends Component {
   constructor(props) {
@@ -210,15 +213,15 @@ class IDCMap extends Component {
     var lat = cfg.center ? cfg.center.lat : DEFAULT_MAP_LATITUDE;
     var lng = cfg.center ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
     var zoom = cfg.zoom ? cfg.zoom : DEFAULT_MAP_ZOOM;
-    var baselayerName = cfg.baselayerName ? cfg.baselayerName : 'Positron';
-
+    var baselayerName = cfg.baselayerName ? cfg.baselayerName : DEFAULT_MAP_STYLE;
+ 
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
     this.map = L.map(domNode, {
       center: [lat,lng],
       zoom: zoom,
-      minZoom: 15,
-      maxZoom: 18,
+      minZoom: 2,
+      maxZoom: 20,
       drawControl: true
     });
     this.map.attributionControl.addAttribution('<a href="https://www.maptiler.com/copyright/?_ga=2.45788834.742970109.1593090041-1523068243.1593090041" target="_blank">© MapTiler</a>');

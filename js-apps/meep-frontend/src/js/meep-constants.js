@@ -285,11 +285,6 @@ export const NET_TOPOLOGY_VIEW = 'Network Topology';
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
-// Default Map Values
-export const DEFAULT_MAP_LATITUDE = 43.73752;
-export const DEFAULT_MAP_LONGITUDE = 7.42892;
-export const DEFAULT_MAP_ZOOM = 15;
-
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [
   {
