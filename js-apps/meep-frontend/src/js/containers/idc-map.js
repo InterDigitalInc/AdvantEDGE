@@ -221,6 +221,8 @@ class IDCMap extends Component {
       maxZoom: 18,
       drawControl: true
     });
+    this.map.attributionControl.addAttribution('<a href="https://www.maptiler.com/copyright/?_ga=2.45788834.742970109.1593090041-1523068243.1593090041" target="_blank">© MapTiler</a>');
+    this.map.attributionControl.addAttribution('<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>');
 
     // Create GL Baselayers
     var positronBaselayer = L.mapboxGL({style: HOST_PATH + '/map/styles/positron/style.json'});
