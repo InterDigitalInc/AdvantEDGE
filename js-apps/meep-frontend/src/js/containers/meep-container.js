@@ -112,6 +112,7 @@ class MeepContainer extends Component {
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
+    this.meepEventAutomationApi = new meepGisEngineRestApiClient.AutomationApi();
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
   }
 
@@ -612,6 +613,7 @@ class MeepContainer extends Component {
               style={{ width: '100%' }}
               api={this.meepActiveScenarioApi}
               eventsApi={this.meepEventsApi}
+              automationApi={this.meepEventAutomationApi}
               replayApi={this.meepEventReplayApi}
               cfgApi={this.meepScenarioConfigurationApi}
               sandboxApi={this.meepSandboxControlApi}

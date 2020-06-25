@@ -27,6 +27,7 @@ import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
 import EventCreationPane from './event-creation-pane';
+import EventAutomationPane from './event-automation-pane';
 import EventReplayPane from './event-replay-pane';
 
 import ExecTable from './exec-table';
@@ -44,6 +45,7 @@ import { execChangeScenarioList, execVisFilteredData } from '../../state/exec';
 import {
   uiChangeCurrentDialog,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventAutomationMode,
   uiExecChangeEventReplayMode,
   uiExecChangeDashCfgMode,
   uiExecChangeEventCfgMode,
@@ -258,6 +260,11 @@ class ExecPageContainer extends Component {
     this.props.changeEventCreationMode(false);
   }
 
+  // CLOSE EVENT AUTOMATION PANE
+  onQuitEventAutomationMode() {
+    this.props.changeEventAutomationMode(false);
+  }
+
   // CLOSE REPLAY EVENT PANE
   onQuitEventReplayMode() {
     this.props.changeEventReplayMode(false);
@@ -382,8 +389,9 @@ class ExecPageContainer extends Component {
       (this.props.exec.state.scenario !== EXEC_STATE_IDLE) ? this.props.execScenarioName : 'None' :
       this.props.cfgScenarioName;
 
-    const spanLeft = (this.props.eventCreationMode || this.props.eventReplayMode) ? 9 : 12;
-    const spanRight = (this.props.eventCreationMode || this.props.eventReplayMode) ? 3 : 0;
+    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode;
+    const spanLeft = eventPaneOpen ? 9 : 12;
+    const spanRight = eventPaneOpen ? 3 : 0;
     return (
       <div style={{ width: '100%' }}>
         {this.renderDialogs()}
@@ -469,7 +477,7 @@ class ExecPageContainer extends Component {
               </GridCell>
               <GridCell
                 span={spanRight}
-                hidden={!this.props.eventCreationMode && !this.props.eventReplayMode}
+                hidden={!eventPaneOpen}
                 style={styles.inner}
               >
                 <Elevation className="component-style" z={2}>
@@ -488,6 +496,13 @@ class ExecPageContainer extends Component {
                       this.props.refreshScenario();
                     }}
                     onClose={() => this.onQuitEventCreationMode()}
+                  />
+                </Elevation>
+                <Elevation className="component-style" z={2}>
+                  <EventAutomationPane
+                    api={this.props.automationApi}
+                    hide={!this.props.eventAutomationMode}
+                    onClose={() => this.onQuitEventAutomationMode()}
                   />
                 </Elevation>
               </GridCell>
@@ -528,6 +543,7 @@ const mapStateToProps = state => {
     scenario: state.exec.scenario,
     scenarios: state.exec.apiResults.scenarios,
     eventCreationMode: state.ui.eventCreationMode,
+    eventAutomationMode: state.ui.eventAutomationMode,
     eventReplayMode: state.ui.eventReplayMode,
     dashCfgMode: state.ui.dashCfgMode,
     eventCfgMode: state.ui.eventCfgMode,
@@ -546,6 +562,7 @@ const mapDispatchToProps = dispatch => {
     changeScenarioName: name => dispatch(execChangeScenarioName(name)),
     changeState: s => dispatch(execChangeScenarioState(s)),
     changeEventCreationMode: val => dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
+    changeEventAutomationMode: mode => dispatch(uiExecChangeEventAutomationMode(mode)),
     changeEventReplayMode: val => dispatch(uiExecChangeEventReplayMode(val)), // (true or false)
     changeDashCfgMode: val => dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
     changeEventCfgMode: val => dispatch(uiExecChangeEventCfgMode(val)), // (true or false)

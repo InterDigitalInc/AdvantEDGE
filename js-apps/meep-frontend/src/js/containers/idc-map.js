@@ -615,23 +615,20 @@ class IDCMap extends Component {
       this.updateTargetMarker(map);
     }
 
-    // Set UE markers
-    var ueMap = {};
-    if (map.ueList) {
-      for (let i = 0; i < map.ueList.length; i++) {
-        let ue = map.ueList[i];
-        this.setUeMarker(ue);
-        ueMap[ue.assetName] = true;
+    // Set COMPUTE markers
+    var computeMap = {};
+    if (map.computeList) {
+      for (let i = 0; i < map.computeList.length; i++) {
+        let compute = map.computeList[i];
+        this.setComputeMarker(compute);
+        computeMap[compute.assetName] = true;
       }
     }
 
-    // Remove old UE markers
-    this.ueOverlay.eachLayer((marker) => {
-      if (!ueMap[marker.options.meep.ue.id]) {
-        if (marker.options.meep.ue.path) {
-          marker.options.meep.ue.path.removeFrom(this.uePathOverlay);
-        }
-        marker.removeFrom(this.ueOverlay);
+    // Remove old COMPUTE markers
+    this.computeOverlay.eachLayer((marker) => {
+      if (!computeMap[marker.options.meep.compute.id]) {
+        marker.removeFrom(this.computeOverlay);
       }
     });
 
@@ -653,22 +650,25 @@ class IDCMap extends Component {
       }
     });
 
-    // Set COMPUTE markers
-    var computeMap = {};
-    if (map.computeList) {
-      for (let i = 0; i < map.computeList.length; i++) {
-        let compute = map.computeList[i];
-        this.setComputeMarker(compute);
-        computeMap[compute.assetName] = true;
+    // Set UE markers
+    var ueMap = {};
+    if (map.ueList) {
+      for (let i = 0; i < map.ueList.length; i++) {
+        let ue = map.ueList[i];
+        this.setUeMarker(ue);
+        ueMap[ue.assetName] = true;
       }
     }
 
-    // Remove old COMPUTE markers
-    this.computeOverlay.eachLayer((marker) => {
-      if (!computeMap[marker.options.meep.compute.id]) {
-        marker.removeFrom(this.computeOverlay);
+    // Remove old UE markers
+    this.ueOverlay.eachLayer((marker) => {
+      if (!ueMap[marker.options.meep.ue.id]) {
+        if (marker.options.meep.ue.path) {
+          marker.options.meep.ue.path.removeFrom(this.uePathOverlay);
+        }
+        marker.removeFrom(this.ueOverlay);
       }
-    });
+    });   
   }
 
   onEditModeToggle(e) {

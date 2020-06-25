@@ -29,6 +29,10 @@ const initialState = {
   cfgView: CFG_VIEW_NETWORK,
   mapCfg: {},
   eventCreationMode: false,
+  eventAutomationMode: false,
+  automationMovementMode: false,
+  automationMobilityMode: false,
+  automationPoasInRangeMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   devMode: false,
@@ -124,6 +128,38 @@ export function uiExecChangeEventCreationMode(val) {
     payload: val
   };
 }
+
+const UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE = 'UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE';
+export function uiExecChangeEventAutomationMode(val) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE,
+    payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE = 'UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE';
+export const uiExecChangeAutomationMovementMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE = 'UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE';
+export const uiExecChangeAutomationMobilityMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE = 'UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE';
+export const uiExecChangeAutomationPoasInRangeMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE,
+    payload: val
+  };
+};
 
 const UI_EXEC_CHANGE_EVENT_REPLAY_MODE = 'UI_EXEC_CHANGE_EVENT_REPLAY_MODE';
 export function uiExecChangeEventReplayMode(val) {
@@ -277,6 +313,14 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { currentDialog: action.payload });
   case UI_EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE:
+    return updateObject(state, { eventAutomationMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE:
+    return updateObject(state, { automationMovementMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE:
+    return updateObject(state, { automationMobilityMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE:
+    return updateObject(state, { automationPoasInRangeMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_REPLAY_MODE:
     return updateObject(state, { eventReplayMode: action.payload });
   case UI_EXEC_CHANGE_DASH_CFG_MODE:

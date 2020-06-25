@@ -153,6 +153,7 @@ export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
 export const EXEC_BTN_CONFIG = 'exec-btn-config';
 export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
+export const EXEC_BTN_AUTOMATION = 'exec-btn-automation';
 export const EXEC_BTN_AUTO_REPLAY = 'exec-btn-auto-replay';
 export const EXEC_BTN_SAVE_REPLAY = 'exec-btn-save-replay';
 export const EXEC_BTN_REPLAY_START = 'exec-btn-replay-start';
