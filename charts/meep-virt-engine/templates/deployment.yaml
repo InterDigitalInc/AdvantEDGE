@@ -29,9 +29,9 @@ spec:
             claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "meep-virt-engine.fullname" . }}{{- end }}
         {{- end -}}
         {{- if .Values.user.values.enabled}}
-          - name: user-values-storage
-            persistentVolumeClaim:
-              claimName: meep-virt-engine-user-values-pvc
+        - name: user-values-storage
+          persistentVolumeClaim:
+            claimName: meep-virt-engine-user-values-pvc
         {{- end}}
         {{- if .Values.codecov.enabled}}
         - name: codecov-storage
@@ -58,8 +58,8 @@ spec:
             - name: data
               mountPath: /data/
             {{- if .Values.user.values.enabled}}
-              - name: user-values-storage
-                mountPath: {{ .Values.user.values.mountpath }}
+            - name: user-values-storage
+              mountPath: {{ .Values.user.values.mountpath }}
             {{- end}}
             {{- if .Values.codecov.enabled}}
             - name: codecov-storage

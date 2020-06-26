@@ -296,6 +296,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-virt-engine":
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
+		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
