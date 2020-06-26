@@ -19,6 +19,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -169,7 +170,7 @@ func deployCore(cobraCmd *cobra.Command) {
 	// Code coverage storage
 	deployCodeCovStorage(cobraCmd)
 
-	userValueDir := deployData.workdir+"/user/values"
+	userValueDir := deployData.workdir + "/user/values"
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
 		userValues := false
@@ -236,10 +237,9 @@ func deployDep(cobraCmd *cobra.Command) {
 
 func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobra.Command) [][]string {
 	var flags [][]string
-	flags := make([][]string, 0)
 
 	nodeIp := viper.GetString("node.ip")
-	userValueDir := deployData.workdir+"/user/values"
+	userValueDir := deployData.workdir + "/user/values"
 
 	userValueFile := userValueDir + "/" + targetName + ".yaml"
 	if _, err := os.Stat(userValueFile); err == nil {
