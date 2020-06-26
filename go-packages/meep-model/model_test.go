@@ -318,7 +318,7 @@ func TestUpdateNetChar(t *testing.T) {
 
 	var nc dataModel.EventNetworkCharacteristicsUpdate
 	nc.ElementName = "demo1"
-	nc.ElementType = "SCENARIO"
+	nc.ElementType = NodeTypeScenario
 	var netChar dataModel.NetworkCharacteristics
 	netChar.Latency = 1
 	netChar.LatencyVariation = 2
@@ -351,7 +351,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "operator1"
-	nc.ElementType = "OPERATOR"
+	nc.ElementType = NodeTypeOperator
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -375,7 +375,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1"
-	nc.ElementType = "ZONE"
+	nc.ElementType = NodeTypeZone
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -399,7 +399,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1-poa1"
-	nc.ElementType = "POA"
+	nc.ElementType = NodeTypePoa
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -423,7 +423,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1-fog1"
-	nc.ElementType = "FOG"
+	nc.ElementType = NodeTypeFog
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -447,7 +447,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1-edge1"
-	nc.ElementType = "EDGE"
+	nc.ElementType = NodeTypeEdge
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -471,7 +471,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "ue1"
-	nc.ElementType = "UE"
+	nc.ElementType = NodeTypeUE
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -495,7 +495,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "cloud1"
-	nc.ElementType = "DISTANT CLOUD"
+	nc.ElementType = NodeTypeCloud
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -519,7 +519,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "zone1-edge1-iperf"
-	nc.ElementType = "EDGE APPLICATION"
+	nc.ElementType = NodeTypeEdgeApp
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -543,7 +543,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "ue1-iperf"
-	nc.ElementType = "UE APPLICATION"
+	nc.ElementType = NodeTypeUEApp
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -567,7 +567,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "cloud1-iperf"
-	nc.ElementType = "CLOUD APPLICATION"
+	nc.ElementType = NodeTypeCloudApp
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
@@ -591,7 +591,7 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 
 	nc.ElementName = "Not-a-Name"
-	nc.ElementType = "POA"
+	nc.ElementType = NodeTypePoa
 	err = m.UpdateNetChar(&nc)
 	if err == nil {
 		t.Fatalf("Update " + nc.ElementType + " should fail")
