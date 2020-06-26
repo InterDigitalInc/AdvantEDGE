@@ -38,6 +38,7 @@
     "webpack-serve": "^0.3.1"
   },
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "2.5.0",
     "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",
     "axios": "^0.18.0",

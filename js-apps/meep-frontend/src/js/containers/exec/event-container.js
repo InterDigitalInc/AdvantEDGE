@@ -23,11 +23,13 @@ import { Typography } from '@rmwc/typography';
 
 import {
   uiExecChangeEventCreationMode,
+  uiExecChangeEventAutomationMode,
   uiExecChangeEventReplayMode
 } from '../../state/ui';
 
 import {
   EXEC_BTN_MANUAL_REPLAY,
+  EXEC_BTN_AUTOMATION,
   EXEC_BTN_AUTO_REPLAY,
   EXEC_BTN_SAVE_REPLAY
 } from '../../meep-constants';
@@ -85,12 +87,21 @@ class EventContainer extends Component {
   // CREATE EVENT PANE
   onCreateEvent() {
     this.props.changeEventCreationMode(true);
+    this.props.changeEventAutomationMode(false);
+    this.props.changeEventReplayMode(false);
+  }
+
+  // EVENT AUTOMATION PANE
+  onAutomateEvent() {
+    this.props.changeEventCreationMode(false);
+    this.props.changeEventAutomationMode(true);
     this.props.changeEventReplayMode(false);
   }
 
   // SHOW REPLAY EVENT PANE
   onReplayEvent() {
     this.props.changeEventCreationMode(false);
+    this.props.changeEventAutomationMode(false);
     this.props.changeEventReplayMode(true);
 
     // Refresh 
@@ -128,6 +139,14 @@ class EventContainer extends Component {
                   data-cy={EXEC_BTN_MANUAL_REPLAY}
                 >
                   MANUAL
+                </Button>
+                <Button
+                  outlined
+                  style={styles.button}
+                  onClick={() => this.onAutomateEvent()}
+                  data-cy={EXEC_BTN_AUTOMATION}
+                >
+                  AUTOMATION
                 </Button>
                 <Button
                   outlined
@@ -179,6 +198,7 @@ class EventContainer extends Component {
 const mapStateToProps = state => {
   return {
     eventCreationMode: state.exec.eventCreationMode,
+    eventAutomationMode: state.exec.eventAutomationMode,
     eventReplayMode: state.exec.eventReplayMode,
     replayStatus: state.exec.state.replayStatus
   };
@@ -187,6 +207,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     changeEventCreationMode: mode => dispatch(uiExecChangeEventCreationMode(mode)),
+    changeEventAutomationMode: mode => dispatch(uiExecChangeEventAutomationMode(mode)),
     changeEventReplayMode: mode => dispatch(uiExecChangeEventReplayMode(mode))
   };
 };

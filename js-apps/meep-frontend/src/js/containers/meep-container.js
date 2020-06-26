@@ -86,7 +86,8 @@ import {
 import {
   cfgChangeScenario,
   cfgChangeVisData,
-  cfgChangeTable
+  cfgChangeTable,
+  cfgChangeMap
 } from '../state/cfg';
 
 // REST API Clients
@@ -111,6 +112,7 @@ class MeepContainer extends Component {
     this.meepActiveScenarioApi = new meepSandboxCtrlRestApiClient.ActiveScenarioApi();
     this.meepEventsApi = new meepSandboxCtrlRestApiClient.EventsApi();
     this.meepEventReplayApi = new meepSandboxCtrlRestApiClient.EventReplayApi();
+    this.meepEventAutomationApi = new meepGisEngineRestApiClient.AutomationApi();
     this.meepGeoDataApi = new meepGisEngineRestApiClient.GeospatialDataApi();
   }
 
@@ -322,7 +324,9 @@ class MeepContainer extends Component {
     // TODO set a timer of 2 seconds
     this.props.execChangeScenarioState(EXEC_STATE_DEPLOYED);
     setTimeout(() => {
-      this.props.execChangeOkToTerminate(true);
+      if (this.props.exec.state.scenario === EXEC_STATE_DEPLOYED) {
+        this.props.execChangeOkToTerminate(true);
+      }
     }, 2000);
   }
 
@@ -342,11 +346,13 @@ class MeepContainer extends Component {
     // Parse Scenario object to retrieve visualization data and scenario table
     var page = pageType === TYPE_CFG ? this.props.cfg : this.props.exec;
     var parsedScenario = parseScenario(page.scenario);
+    var updatedMapData = updateObject({}, parsedScenario.mapData);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
     var updatedTable = updateObject(page.table, parsedScenario.table);
 
     // Dispatch state updates
     if (pageType === TYPE_CFG) {
+      this.props.cfgChangeMap(updatedMapData);
       this.props.cfgChangeVisData(updatedVisData);
       this.props.cfgChangeTable(updatedTable);
 
@@ -540,10 +546,7 @@ class MeepContainer extends Component {
 
   // Add new element to scenario
   newScenarioElem(pageType, element, scenarioUpdate) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     addElementToScenario(updatedScenario, element);
     if (scenarioUpdate) {
@@ -553,10 +556,7 @@ class MeepContainer extends Component {
 
   // Update element in scenario
   updateScenarioElem(pageType, element) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     updateElementInScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -564,10 +564,7 @@ class MeepContainer extends Component {
 
   // Delete element in scenario (also deletes child elements)
   deleteScenarioElem(pageType, element) {
-    var scenario =
-      pageType === TYPE_CFG
-        ? this.props.cfg.scenario
-        : this.props.exec.scenario;
+    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
     var updatedScenario = updateObject({}, scenario);
     removeElementFromScenario(updatedScenario, element);
     this.changeScenario(pageType, updatedScenario);
@@ -618,6 +615,7 @@ class MeepContainer extends Component {
               style={{ width: '100%' }}
               api={this.meepActiveScenarioApi}
               eventsApi={this.meepEventsApi}
+              automationApi={this.meepEventAutomationApi}
               replayApi={this.meepEventReplayApi}
               cfgApi={this.meepScenarioConfigurationApi}
               sandboxApi={this.meepSandboxControlApi}
@@ -730,6 +728,7 @@ const mapDispatchToProps = dispatch => {
     execChangeMapUeList: list => dispatch(execChangeMapUeList(list)),
     execChangeMapPoaList: list => dispatch(execChangeMapPoaList(list)),
     execChangeMapComputeList: list => dispatch(execChangeMapComputeList(list)),
+    cfgChangeMap: map => dispatch(cfgChangeMap(map)),
     cfgChangeVisData: data => dispatch(cfgChangeVisData(data)),
     cfgChangeTable: data => dispatch(cfgChangeTable(data)),
     execChangeOkToTerminate: ok => dispatch(execChangeOkToTerminate(ok)),

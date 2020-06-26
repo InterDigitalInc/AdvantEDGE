@@ -83,8 +83,14 @@ export const CFG_STATE_IDLE = 'IDLE';
 export const CFG_STATE_NEW = 'NEW';
 export const CFG_STATE_LOADED = 'LOADED';
 
+// Configuration page views
+export const CFG_VIEW_NETWORK = 'Network';
+export const CFG_VIEW_MAP = 'Map';
+
 // Configuration page IDs
 export const CFG_VIS = 'cfg-vis';
+
+export const CFG_VIEW_TYPE = 'cfg-view-type';
 
 export const CFG_BTN_NEW_SCENARIO = 'cfg-btn-new-scenario';
 export const CFG_BTN_OPEN_SCENARIO = 'cfg-btn-open-scenario';
@@ -116,6 +122,11 @@ export const CFG_ELEM_MNC = 'cfg-elem-mnc';
 export const CFG_ELEM_MCC = 'cfg-elem-mcc';
 export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
 export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
+export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
+export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
+export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
+export const CFG_ELEM_GEO_EOP_MODE = 'cfg-elem-eop-mode';
+export const CFG_ELEM_GEO_VELOCITY = 'cfg-elem-velocity';
 export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
@@ -142,6 +153,7 @@ export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
 export const EXEC_BTN_CONFIG = 'exec-btn-config';
 export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
+export const EXEC_BTN_AUTOMATION = 'exec-btn-automation';
 export const EXEC_BTN_AUTO_REPLAY = 'exec-btn-auto-replay';
 export const EXEC_BTN_SAVE_REPLAY = 'exec-btn-save-replay';
 export const EXEC_BTN_REPLAY_START = 'exec-btn-replay-start';
@@ -224,6 +236,10 @@ export const DEFAULT_LATENCY_DC = 0;
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';
 
+// End-of-path modes
+export const GEO_EOP_MODE_LOOP = 'LOOP';
+export const GEO_EOP_MODE_REVERSE = 'REVERSE';
+
 // Monitoring Page IDs
 export const MON_DASHBOARD_SELECT = 'mon-dashboard-select';
 export const MON_DASHBOARD_IFRAME = 'mon-dashboard-iframe';
@@ -268,11 +284,6 @@ export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
-
-// Default Map Values
-export const DEFAULT_MAP_LATITUDE = 43.73752;
-export const DEFAULT_MAP_LONGITUDE = 7.42892;
-export const DEFAULT_MAP_ZOOM = 15;
 
 // Default Dashboard list
 export const DEFAULT_DASHBOARD_OPTIONS = [

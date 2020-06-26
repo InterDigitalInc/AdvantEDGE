@@ -42,6 +42,11 @@ import {
   FIELD_MNC,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_GEO_LOCATION,
+  FIELD_GEO_RADIUS,
+  FIELD_GEO_PATH,
+  FIELD_GEO_EOP_MODE,
+  FIELD_GEO_VELOCITY,
   FIELD_CHART_ENABLED,
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
@@ -164,6 +169,9 @@ export function parseScenario(scenario) {
 
   var nodes = new Array();
   var edges = new Array();
+  var ueList = new Array();
+  var poaList = new Array();
+  var computeList = new Array();
 
   // Add scenario to graph and table
   addScenarioNode(scenario, nodes);
@@ -194,13 +202,15 @@ export function parseScenario(scenario) {
 
         // Add Network Location to graph and table (ignore default network location)
         if (nl.name.indexOf(DEFAULT_NL_TYPE_STR) === -1) {
-          const parent =
-            domain.type === PUBLIC_DOMAIN_TYPE_STR
-              ? scenario
-              : zone.type === COMMON_ZONE_TYPE_STR
-                ? domain
-                : zone;
+          const parent = domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario :
+            zone.type === COMMON_ZONE_TYPE_STR ? domain : zone;
           addNlNode(nl, parent, nodes, edges);
+
+          // Add NL with geodata to map
+          if (nl.geoData && nl.geoData.location) {
+            var nlGeoDataAsset = updateObject({assetName: nl.name, assetType: 'POA', subType: nl.type}, nl.geoData);
+            poaList.push(nlGeoDataAsset);
+          }
         }
 
         // Physical Locations
@@ -208,15 +218,22 @@ export function parseScenario(scenario) {
           var pl = nl.physicalLocations[l];
 
           // Add Physical Location to graph and table
-          const parent =
-            domain.type === PUBLIC_DOMAIN_TYPE_STR
-              ? scenario
-              : zone.type === COMMON_ZONE_TYPE_STR
-                ? domain
-                : nl.type === DEFAULT_NL_TYPE_STR
-                  ? zone
-                  : nl;
+          const parent = domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario :
+            zone.type === COMMON_ZONE_TYPE_STR ? domain :
+              nl.type === DEFAULT_NL_TYPE_STR ? zone : nl;
           addPlNode(pl, parent, nodes, edges);
+
+          // Add PL with geodata to map
+          if (pl.geoData && pl.geoData.location) {
+            var plGeoDataAsset = updateObject({assetName: pl.name, subType: pl.type}, pl.geoData);
+            if (pl.type === ELEMENT_TYPE_UE) {
+              plGeoDataAsset.assetType = 'UE';
+              ueList.push(plGeoDataAsset);
+            } else {
+              plGeoDataAsset.assetType = 'COMPUTE';
+              computeList.push(plGeoDataAsset);
+            }
+          }
 
           // Processes
           for (var m in pl.processes) {
@@ -243,7 +260,13 @@ export function parseScenario(scenario) {
   visData.nodes = new vis.DataSet(nodes);
   visData.edges = new vis.DataSet(edges);
 
-  return { table: table, visData: visData };
+  // Update map data
+  var mapData = {};
+  mapData.ueList = _.sortBy(ueList, ['assetName']);
+  mapData.poaList = _.sortBy(poaList, ['assetName']);
+  mapData.computeList = _.sortBy(computeList, ['assetName']);
+
+  return { table: table, visData: visData, mapData: mapData };
 }
 
 function findIdInScenario(scenario, uniqueId) {
@@ -319,88 +342,56 @@ export function addElementToScenario(scenario, element) {
 
   // Prepare network element to be added to scenario
   switch (type) {
-  case ELEMENT_TYPE_OPERATOR: {
+  case ELEMENT_TYPE_OPERATOR:
     scenarioElement = createDomain(uniqueId, name, element);
     break;
-  }
-  case ELEMENT_TYPE_OPERATOR_CELL: {
+  case ELEMENT_TYPE_OPERATOR_CELL:
     scenarioElement = createDomainCell(uniqueId, name, element);
     break;
-  }
-  case ELEMENT_TYPE_ZONE: {
+  case ELEMENT_TYPE_ZONE:
     scenarioElement = createZone(uniqueId, name, element);
     break;
-  }
-  case ELEMENT_TYPE_POA_CELL: {
+  case ELEMENT_TYPE_POA_CELL:
     scenarioElement = createPoaCell(uniqueId, name, element);
     break;
-  }
-  case ELEMENT_TYPE_POA: {
+  case ELEMENT_TYPE_POA:
     scenarioElement = createPoa(uniqueId, name, element);
     break;
-  }
-  case ELEMENT_TYPE_DC: {
-    setElemFieldVal(
-      element,
-      FIELD_PARENT,
-      PUBLIC_DOMAIN_TYPE_STR +
-        '-' +
-        COMMON_ZONE_TYPE_STR +
-        '-' +
-        DEFAULT_NL_TYPE_STR
-    );
+  case ELEMENT_TYPE_DC:
+    setElemFieldVal(element, FIELD_PARENT,
+      PUBLIC_DOMAIN_TYPE_STR + '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR);
     scenarioElement = createPL(uniqueId, name, DC_TYPE_STR, element);
     break;
-  }
-  case ELEMENT_TYPE_CN: {
-    setElemFieldVal(
-      element,
-      FIELD_PARENT,
+  case ELEMENT_TYPE_CN:
+    setElemFieldVal(element, FIELD_PARENT,
       (parent += '-' + COMMON_ZONE_TYPE_STR + '-' + DEFAULT_NL_TYPE_STR)
     );
     scenarioElement = createPL(uniqueId, name, CN_TYPE_STR, element);
     break;
-  }
-  case ELEMENT_TYPE_EDGE: {
-    setElemFieldVal(
-      element,
-      FIELD_PARENT,
-      (parent += '-' + DEFAULT_NL_TYPE_STR)
-    );
+  case ELEMENT_TYPE_EDGE:
+    setElemFieldVal(element, FIELD_PARENT, (parent += '-' + DEFAULT_NL_TYPE_STR));
     scenarioElement = createPL(uniqueId, name, EDGE_TYPE_STR, element);
     break;
-  }
-  case ELEMENT_TYPE_FOG: {
+  case ELEMENT_TYPE_FOG:
     scenarioElement = createPL(uniqueId, name, FOG_TYPE_STR, element);
     break;
-  }
-  case ELEMENT_TYPE_UE: {
+  case ELEMENT_TYPE_UE:
     scenarioElement = createPL(uniqueId, name, UE_TYPE_STR, element);
     break;
-  }
-
-  case ELEMENT_TYPE_MECSVC: {
+  case ELEMENT_TYPE_MECSVC:
     scenarioElement = createProcess(uniqueId, name, MEC_SVC_TYPE_STR, element);
     break;
-  }
-
-  case ELEMENT_TYPE_UE_APP: {
+  case ELEMENT_TYPE_UE_APP:
     scenarioElement = createProcess(uniqueId, name, UE_APP_TYPE_STR, element);
     break;
-  }
-
-  case ELEMENT_TYPE_EDGE_APP: {
+  case ELEMENT_TYPE_EDGE_APP:
     scenarioElement = createProcess(uniqueId, name, EDGE_APP_TYPE_STR, element);
     break;
-  }
-
-  case ELEMENT_TYPE_CLOUD_APP: {
+  case ELEMENT_TYPE_CLOUD_APP:
     scenarioElement = createProcess(uniqueId, name, CLOUD_APP_TYPE_STR, element);
     break;
-  }
-  default: {
+  default:
     break;
-  }
   }
 
   // Find parent node
@@ -462,44 +453,20 @@ export function updateElementInScenario(scenario, element) {
 
   // Find element in scenario
   if (scenario.name === name) {
-    scenario.deployment.interDomainLatency = getElemFieldVal(
-      element,
-      FIELD_INT_DOM_LATENCY
-    );
-    scenario.deployment.interDomainLatencyVariation = getElemFieldVal(
-      element,
-      FIELD_INT_DOM_LATENCY_VAR
-    );
-    scenario.deployment.interDomainThroughput = getElemFieldVal(
-      element,
-      FIELD_INT_DOM_THROUGPUT
-    );
-    scenario.deployment.interDomainPacketLoss = getElemFieldVal(
-      element,
-      FIELD_INT_DOM_PKT_LOSS
-    );
+    scenario.deployment.interDomainLatency = getElemFieldVal(element, FIELD_INT_DOM_LATENCY);
+    scenario.deployment.interDomainLatencyVariation = getElemFieldVal(element, FIELD_INT_DOM_LATENCY_VAR);
+    scenario.deployment.interDomainThroughput = getElemFieldVal(element, FIELD_INT_DOM_THROUGPUT);
+    scenario.deployment.interDomainPacketLoss = getElemFieldVal(element, FIELD_INT_DOM_PKT_LOSS);
     return;
   }
 
   for (var i in scenario.deployment.domains) {
     var domain = scenario.deployment.domains[i];
     if (domain.id === id) {
-      domain.interZoneLatency = getElemFieldVal(
-        element,
-        FIELD_INT_ZONE_LATENCY
-      );
-      domain.interZoneLatencyVariation = getElemFieldVal(
-        element,
-        FIELD_INT_ZONE_LATENCY_VAR
-      );
-      domain.interZoneThroughput = getElemFieldVal(
-        element,
-        FIELD_INT_ZONE_THROUGPUT
-      );
-      domain.interZonePacketLoss = getElemFieldVal(
-        element,
-        FIELD_INT_ZONE_PKT_LOSS
-      );
+      domain.interZoneLatency = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY);
+      domain.interZoneLatencyVariation = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR);
+      domain.interZoneThroughput = getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT);
+      domain.interZonePacketLoss = getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS);
 
       if (domain.type === DOMAIN_CELL_TYPE_STR) {
         var cellularDomainConfig = {
@@ -537,18 +504,9 @@ export function updateElementInScenario(scenario, element) {
       if (zone.id === id) {
         if (zone.netChar) {
           zone.netChar.latency = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY);
-          zone.netChar.latencyVariation = getElemFieldVal(
-            element,
-            FIELD_INTRA_ZONE_LATENCY_VAR
-          );
-          zone.netChar.throughput = getElemFieldVal(
-            element,
-            FIELD_INTRA_ZONE_THROUGPUT
-          );
-          zone.netChar.packetLoss = getElemFieldVal(
-            element,
-            FIELD_INTRA_ZONE_PKT_LOSS
-          );
+          zone.netChar.latencyVariation = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY_VAR);
+          zone.netChar.throughput = getElemFieldVal( element, FIELD_INTRA_ZONE_THROUGPUT);
+          zone.netChar.packetLoss = getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS);
         }
 
         //if zone name changed, other elements created based on that name must also be updated (default ones)
@@ -568,29 +526,27 @@ export function updateElementInScenario(scenario, element) {
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.id === id) {
-          nl.terminalLinkLatency = getElemFieldVal(
-            element,
-            FIELD_TERM_LINK_LATENCY
-          );
-          nl.terminalLinkLatencyVariation = getElemFieldVal(
-            element,
-            FIELD_TERM_LINK_LATENCY_VAR
-          );
-          nl.terminalLinkThroughput = getElemFieldVal(
-            element,
-            FIELD_TERM_LINK_THROUGPUT
-          );
-          nl.terminalLinkPacketLoss = getElemFieldVal(
-            element,
-            FIELD_TERM_LINK_PKT_LOSS
-          );
+          nl.terminalLinkLatency = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY);
+          nl.terminalLinkLatencyVariation = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR);
+          nl.terminalLinkThroughput = getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT);
+          nl.terminalLinkPacketLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
+
           if (nl.type === POA_CELL_TYPE_STR) {
             var cellularPoaConfig = {
               cellId: getElemFieldVal(element, FIELD_CELL_ID)
             };
-
             nl.cellularPoaConfig = cellularPoaConfig;
           }
+
+          if (!nl.geoData) {
+            nl.geoData = {};
+          }
+          var nlLocation = getElemFieldVal(element, FIELD_GEO_LOCATION);
+          nl.geoData.location = !nlLocation ? null : {
+            type: 'Point',
+            coordinates: JSON.parse(nlLocation)
+          };
+          nl.geoData.radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
 
           nl.label = name;
           nl.name = name;
@@ -601,12 +557,27 @@ export function updateElementInScenario(scenario, element) {
           var pl = nl.physicalLocations[l];
           if (pl.id === id) {
             pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
-            pl.linkLatencyVariation = getElemFieldVal(
-              element,
-              FIELD_LINK_LATENCY_VAR
-            );
+            pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
             pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
             pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+
+            if (!pl.geoData) {
+              pl.geoData = {};
+            }
+            var plLocation = getElemFieldVal(element, FIELD_GEO_LOCATION);
+            pl.geoData.location = !plLocation ? null : {
+              type: 'Point',
+              coordinates: JSON.parse(plLocation)
+            };
+            var path = getElemFieldVal(element, FIELD_GEO_PATH);
+            pl.geoData.path = !path ? null : {
+              type: 'LineString',
+              coordinates: JSON.parse(path)
+            };
+            pl.geoData.eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE);
+            const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+            pl.geoData.velocity = velocity ? velocity : null;
+
             pl.label = name;
             pl.name = name;
             return;
@@ -813,9 +784,7 @@ export function createNewScenario(name) {
     name: name,
     deployment: {
       interDomainLatency: parseInt(DEFAULT_LATENCY_INTER_DOMAIN),
-      interDomainLatencyVariation: parseInt(
-        DEFAULT_LATENCY_JITTER_INTER_DOMAIN
-      ),
+      interDomainLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_INTER_DOMAIN),
       interDomainThroughput: parseInt(DEFAULT_THROUGHPUT_INTER_DOMAIN),
       interDomainPacketLoss: parseInt(DEFAULT_PACKET_LOSS_INTER_DOMAIN),
       domains: name === 'None' ? [] : [createDefaultDomain()]
@@ -853,59 +822,38 @@ export function createProcess(uniqueId, name, type, element) {
   if (isExternal) {
     process.externalConfig = {
       ingressServiceMap: getIngressServiceMapArray(
-        getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)
-      ),
+        getElemFieldVal(element, FIELD_INGRESS_SVC_MAP)),
       egressServiceMap: getEgressServiceMapArray(
-        getElemFieldVal(element, FIELD_EGRESS_SVC_MAP)
-      )
+        getElemFieldVal(element, FIELD_EGRESS_SVC_MAP))
     };
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   } else if (getElemFieldVal(element, FIELD_CHART_ENABLED)) {
     process.userChartLocation = getElemFieldVal(element, FIELD_CHART_LOC);
-    process.userChartAlternateValues = getElemFieldVal(
-      element,
-      FIELD_CHART_VAL
-    );
+    process.userChartAlternateValues = getElemFieldVal(element, FIELD_CHART_VAL);
     process.userChartGroup = getElemFieldVal(element, FIELD_CHART_GROUP);
   } else {
     process.image = getElemFieldVal(element, FIELD_IMAGE);
     process.environment = getElemFieldVal(element, FIELD_ENV_VAR);
     process.commandArguments = getElemFieldVal(element, FIELD_CMD_ARGS);
     process.commandExe = getElemFieldVal(element, FIELD_CMD);
-    process.serviceConfig =
-      isNaN(port) || !port
-        ? null
-        : {
-          name: name,
-          meSvcName: getElemFieldVal(element, FIELD_GROUP),
-          // TODO -- Add frontend support for multiple ports
-          ports: [
-            {
-              protocol:
-                getElemFieldVal(element, FIELD_PROTOCOL) === ''
-                  ? null
-                  : getElemFieldVal(element, FIELD_PROTOCOL).toUpperCase(),
-              port:
-                getElemFieldVal(element, FIELD_PORT) === ''
-                  ? null
-                  : getElemFieldVal(element, FIELD_PORT),
-              externalPort:
-                getElemFieldVal(element, FIELD_EXT_PORT) === ''
-                  ? null
-                  : getElemFieldVal(element, FIELD_EXT_PORT)
-            }
-          ]
-        };
-    process.gpuConfig =
-      isNaN(gpuCount) || !gpuCount
-        ? null
-        : {
-          type:
-            getElemFieldVal(element, FIELD_GPU_TYPE) === ''
-              ? null
-              : getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
-          count: gpuCount
-        };
+    process.serviceConfig = isNaN(port) || !port ? null : {
+      name: name,
+      meSvcName: getElemFieldVal(element, FIELD_GROUP),
+      // TODO -- Add frontend support for multiple ports
+      ports: [{
+        protocol: getElemFieldVal(element, FIELD_PROTOCOL) === '' ? null :
+          getElemFieldVal(element, FIELD_PROTOCOL).toUpperCase(),
+        port: getElemFieldVal(element, FIELD_PORT) === '' ? null :
+          getElemFieldVal(element, FIELD_PORT),
+        externalPort: getElemFieldVal(element, FIELD_EXT_PORT) === '' ? null :
+          getElemFieldVal(element, FIELD_EXT_PORT)
+      }]
+    };
+    process.gpuConfig = isNaN(gpuCount) || !gpuCount ? null : {
+      type: getElemFieldVal(element, FIELD_GPU_TYPE) === '' ? null :
+        getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
+      count: gpuCount
+    };
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   }
 
@@ -1014,10 +962,7 @@ export function createDomain(uniqueId, name, element) {
     name: name,
     type: DOMAIN_TYPE_STR,
     interZoneLatency: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY),
-    interZoneLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_INT_ZONE_LATENCY_VAR
-    ),
+    interZoneLatencyVariation: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR),
     interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),
     interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),
     zones: [createDefaultZone(name)]
@@ -1031,10 +976,7 @@ export function createDomainCell(uniqueId, name, element) {
     name: name,
     type: DOMAIN_CELL_TYPE_STR,
     interZoneLatency: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY),
-    interZoneLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_INT_ZONE_LATENCY_VAR
-    ),
+    interZoneLatencyVariation: getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR),
     interZoneThroughput: getElemFieldVal(element, FIELD_INT_ZONE_THROUGPUT),
     interZonePacketLoss: getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS),
     zones: [createDefaultZone(name)],
@@ -1062,17 +1004,22 @@ export function createDefaultDomain() {
 }
 
 export function createPoa(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
   var nl = {
     id: uniqueId,
     name: name,
     type: POA_TYPE_STR,
     terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
-    terminalLinkLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_TERM_LINK_LATENCY_VAR
-    ),
+    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
     terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
     terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: getElemFieldVal(element, FIELD_GEO_RADIUS)
+    },
     physicalLocations: []
   };
 
@@ -1080,20 +1027,25 @@ export function createPoa(uniqueId, name, element) {
 }
 
 export function createPoaCell(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
   var nl = {
     id: uniqueId,
     name: name,
     type: POA_CELL_TYPE_STR,
     terminalLinkLatency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
-    terminalLinkLatencyVariation: getElemFieldVal(
-      element,
-      FIELD_TERM_LINK_LATENCY_VAR
-    ),
+    terminalLinkLatencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
     terminalLinkThroughput: getElemFieldVal(element, FIELD_TERM_LINK_THROUGPUT),
     terminalLinkPacketLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS),
     physicalLocations: [],
     cellularPoaConfig: {
       cellId: getElemFieldVal(element, FIELD_CELL_ID)
+    },
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: getElemFieldVal(element, FIELD_GEO_RADIUS)
     }
   };
 
@@ -1107,17 +1059,17 @@ export function createDefaultNL(zoneName) {
     name: nlName,
     type: DEFAULT_NL_TYPE_STR,
     terminalLinkLatency: parseInt(DEFAULT_LATENCY_TERMINAL_LINK),
-    terminalLinkLatencyVariation: parseInt(
-      DEFAULT_LATENCY_JITTER_TERMINAL_LINK
-    ),
+    terminalLinkLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_TERMINAL_LINK),
     terminalLinkThroughput: parseInt(DEFAULT_THROUGHPUT_TERMINAL_LINK),
     terminalLinkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_TERMINAL_LINK),
+    geoData: null,
     physicalLocations: []
   };
   return nl;
 }
 
 export function createPL(uniqueId, name, type, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
   var pl = {
     id: uniqueId,
     name: name,
@@ -1127,12 +1079,29 @@ export function createPL(uniqueId, name, type, element) {
     linkLatencyVariation: parseInt(DEFAULT_LATENCY_JITTER_LINK),
     linkThroughput: parseInt(DEFAULT_THROUGHPUT_LINK),
     linkPacketLoss: parseInt(DEFAULT_PACKET_LOSS_LINK),
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      }
+    },
     processes: []
   };
   pl.linkLatency = getElemFieldVal(element, FIELD_LINK_LATENCY);
   pl.linkLatencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
   pl.linkThroughput = getElemFieldVal(element, FIELD_LINK_THROUGPUT);
   pl.linkPacketLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+
+  var path = getElemFieldVal(element, FIELD_GEO_PATH);
+  if (path && pl.geoData) {
+    pl.geoData.path = {
+      type: 'LineString',
+      coordinates: JSON.parse(path)
+    };
+    pl.geoData.eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE);
+    const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
+    pl.geoData.velocity = velocity ? velocity : null;
+  }
 
   return pl;
 }
@@ -1178,26 +1147,10 @@ export function getElementFromScenario(scenario, elementId) {
   // Check if scenario deployment is being requested
   if (scenario.name === elementId) {
     setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_SCENARIO);
-    setElemFieldVal(
-      elem,
-      FIELD_INT_DOM_LATENCY,
-      scenario.deployment.interDomainLatency || 0
-    );
-    setElemFieldVal(
-      elem,
-      FIELD_INT_DOM_LATENCY_VAR,
-      scenario.deployment.interDomainLatencyVariation || 0
-    );
-    setElemFieldVal(
-      elem,
-      FIELD_INT_DOM_THROUGPUT,
-      scenario.deployment.interDomainThroughput || 0
-    );
-    setElemFieldVal(
-      elem,
-      FIELD_INT_DOM_PKT_LOSS,
-      scenario.deployment.interDomainPacketLoss || 0
-    );
+    setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, scenario.deployment.interDomainLatency || 0);
+    setElemFieldVal(elem, FIELD_INT_DOM_LATENCY_VAR, scenario.deployment.interDomainLatencyVariation || 0);
+    setElemFieldVal(elem, FIELD_INT_DOM_THROUGPUT, scenario.deployment.interDomainThroughput || 0);
+    setElemFieldVal(elem, FIELD_INT_DOM_PKT_LOSS, scenario.deployment.interDomainPacketLoss || 0);
     return elem;
   }
 
@@ -1219,26 +1172,10 @@ export function getElementFromScenario(scenario, elementId) {
 
       setElemFieldVal(elem, FIELD_NAME, domain.name);
       setElemFieldVal(elem, FIELD_PARENT, scenario.name);
-      setElemFieldVal(
-        elem,
-        FIELD_INT_ZONE_LATENCY,
-        domain.interZoneLatency || 0
-      );
-      setElemFieldVal(
-        elem,
-        FIELD_INT_ZONE_LATENCY_VAR,
-        domain.interZoneLatencyVariation || 0
-      );
-      setElemFieldVal(
-        elem,
-        FIELD_INT_ZONE_THROUGPUT,
-        domain.interZoneThroughput || 0
-      );
-      setElemFieldVal(
-        elem,
-        FIELD_INT_ZONE_PKT_LOSS,
-        domain.interZonePacketLoss || 0
-      );
+      setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY, domain.interZoneLatency || 0);
+      setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY_VAR, domain.interZoneLatencyVariation || 0);
+      setElemFieldVal(elem, FIELD_INT_ZONE_THROUGPUT, domain.interZoneThroughput || 0);
+      setElemFieldVal(elem, FIELD_INT_ZONE_PKT_LOSS, domain.interZonePacketLoss || 0);
 
       //only valid for OPERATOR_CELL
       if (domain.cellularDomainConfig) {
@@ -1255,29 +1192,13 @@ export function getElementFromScenario(scenario, elementId) {
       if (zone.id === elementId) {
         setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_ZONE);
         setElemFieldVal(elem, FIELD_NAME, zone.name);
-        setElemFieldVal(
-          elem,
-          FIELD_PARENT,
-          domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name : domain.name
-        );
+        setElemFieldVal(elem, FIELD_PARENT, domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name : domain.name);
 
         if (zone.netChar) {
           setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY, zone.netChar.latency || 0);
-          setElemFieldVal(
-            elem,
-            FIELD_INTRA_ZONE_LATENCY_VAR,
-            zone.netChar.latencyVariation || 0
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_INTRA_ZONE_THROUGPUT,
-            zone.netChar.throughput || 0
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_INTRA_ZONE_PKT_LOSS,
-            zone.netChar.packetLoss || 0
-          );
+          setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY_VAR, zone.netChar.latencyVariation || 0);
+          setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGPUT, zone.netChar.throughput || 0);
+          setElemFieldVal(elem, FIELD_INTRA_ZONE_PKT_LOSS, zone.netChar.packetLoss || 0);
         }
         return elem;
       }
@@ -1297,42 +1218,21 @@ export function getElementFromScenario(scenario, elementId) {
           }
 
           setElemFieldVal(elem, FIELD_NAME, nl.name);
-          setElemFieldVal(
-            elem,
-            FIELD_PARENT,
-            domain.type === PUBLIC_DOMAIN_TYPE_STR
-              ? scenario.name
-              : zone.type === COMMON_ZONE_TYPE_STR
-                ? domain.name
-                : zone.name
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_TERM_LINK_LATENCY,
-            nl.terminalLinkLatency || 0
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_TERM_LINK_LATENCY_VAR,
-            nl.terminalLinkLatencyVariation || 0
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_TERM_LINK_THROUGPUT,
-            nl.terminalLinkThroughput || 0
-          );
-          setElemFieldVal(
-            elem,
-            FIELD_TERM_LINK_PKT_LOSS,
-            nl.terminalLinkPacketLoss || 0
-          );
+          setElemFieldVal(elem, FIELD_PARENT, domain.type === PUBLIC_DOMAIN_TYPE_STR ?
+            scenario.name : zone.type === COMMON_ZONE_TYPE_STR ? domain.name : zone.name);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, nl.terminalLinkLatency || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR, nl.terminalLinkLatencyVariation || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_THROUGPUT, nl.terminalLinkThroughput || 0);
+          setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, nl.terminalLinkPacketLoss || 0);
           //only valid for POA_CELL
           if (nl.cellularPoaConfig) {
-            setElemFieldVal(
-              elem,
-              FIELD_CELL_ID,
-              nl.cellularPoaConfig.cellId || ''
-            );
+            setElemFieldVal(elem, FIELD_CELL_ID, nl.cellularPoaConfig.cellId || '');
+          }
+          if (nl.geoData) {
+            if (nl.geoData.location) {
+              setElemFieldVal(elem, FIELD_GEO_LOCATION, JSON.stringify(nl.geoData.location.coordinates) || '');
+            }
+            setElemFieldVal(elem, FIELD_GEO_RADIUS, nl.geoData.radius || '');
           }
           return elem;
         }
@@ -1360,30 +1260,26 @@ export function getElementFromScenario(scenario, elementId) {
               break;
             }
             setElemFieldVal(elem, FIELD_NAME, pl.name);
-            setElemFieldVal(
-              elem,
-              FIELD_PARENT,
-              domain.type === PUBLIC_DOMAIN_TYPE_STR
-                ? scenario.name
-                : zone.type === COMMON_ZONE_TYPE_STR
-                  ? domain.name
-                  : nl.type === DEFAULT_NL_TYPE_STR
-                    ? zone.name
-                    : nl.name
-            );
+            setElemFieldVal(elem, FIELD_PARENT, domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name :
+              zone.type === COMMON_ZONE_TYPE_STR ? domain.name :
+                nl.type === DEFAULT_NL_TYPE_STR ? zone.name : nl.name);
             setElemFieldVal(elem, FIELD_LINK_LATENCY, pl.linkLatency || 0);
-            setElemFieldVal(
-              elem,
-              FIELD_LINK_LATENCY_VAR,
-              pl.linkLatencyVariation || 0
-            );
-            setElemFieldVal(
-              elem,
-              FIELD_LINK_THROUGPUT,
-              pl.linkThroughput || DEFAULT_THROUGHPUT_LINK
-            );
+            setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, pl.linkLatencyVariation || 0);
+            setElemFieldVal(elem, FIELD_LINK_THROUGPUT, pl.linkThroughput || DEFAULT_THROUGHPUT_LINK);
             setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.linkPacketLoss || 0);
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
+
+            if (pl.geoData) {
+              if (pl.geoData.location) {
+                setElemFieldVal(elem, FIELD_GEO_LOCATION, JSON.stringify(pl.geoData.location.coordinates) || '');
+              }
+              if (pl.geoData.path) {
+                setElemFieldVal(elem, FIELD_GEO_PATH, JSON.stringify(pl.geoData.path.coordinates) || '');
+              }
+              setElemFieldVal(elem, FIELD_GEO_EOP_MODE, pl.geoData.eopMode || '');
+              setElemFieldVal(elem, FIELD_GEO_VELOCITY, pl.geoData.velocity || '');
+            }
+
             return elem;
           }
 
@@ -1410,120 +1306,46 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_NAME, process.name);
 
               setElemFieldVal(elem, FIELD_APP_LATENCY, process.appLatency || 0);
-              setElemFieldVal(
-                elem,
-                FIELD_APP_LATENCY_VAR,
-                process.appLatencyVariation || 0
-              );
-              setElemFieldVal(
-                elem,
-                FIELD_APP_THROUGPUT,
-                process.appThroughput || DEFAULT_THROUGHPUT_APP
-              );
-              setElemFieldVal(
-                elem,
-                FIELD_APP_PKT_LOSS,
-                process.appPacketLoss || 0
-              );
+              setElemFieldVal(elem, FIELD_APP_LATENCY_VAR, process.appLatencyVariation || 0);
+              setElemFieldVal(elem, FIELD_APP_THROUGPUT, process.appThroughput || DEFAULT_THROUGHPUT_APP);
+              setElemFieldVal(elem, FIELD_APP_PKT_LOSS, process.appPacketLoss || 0);
 
               if (process.userChartLocation) {
                 setElemFieldVal(elem, FIELD_CHART_ENABLED, true);
-                setElemFieldVal(
-                  elem,
-                  FIELD_CHART_LOC,
-                  process.userChartLocation || ''
-                );
-                setElemFieldVal(
-                  elem,
-                  FIELD_CHART_VAL,
-                  process.userChartAlternateValues || ''
-                );
-                setElemFieldVal(
-                  elem,
-                  FIELD_CHART_GROUP,
-                  process.userChartGroup || ''
-                );
+                setElemFieldVal(elem, FIELD_CHART_LOC, process.userChartLocation || '');
+                setElemFieldVal(elem, FIELD_CHART_VAL, process.userChartAlternateValues || '');
+                setElemFieldVal(elem, FIELD_CHART_GROUP, process.userChartGroup || '');
               } else {
                 setElemFieldVal(elem, FIELD_IMAGE, process.image || '');
                 setElemFieldVal(elem, FIELD_ENV_VAR, process.environment || '');
                 setElemFieldVal(elem, FIELD_CMD, process.commandExe || '');
-                setElemFieldVal(
-                  elem,
-                  FIELD_CMD_ARGS,
-                  process.commandArguments || ''
-                );
-                setElemFieldVal(
-                  elem,
-                  FIELD_IS_EXTERNAL,
-                  process.isExternal || false
-                );
-                setElemFieldVal(
-                  elem,
-                  FIELD_PLACEMENT_ID,
-                  process.placementId || ''
-                );
+                setElemFieldVal(elem, FIELD_CMD_ARGS, process.commandArguments || '');
+                setElemFieldVal(elem, FIELD_IS_EXTERNAL, process.isExternal || false);
+                setElemFieldVal(elem, FIELD_PLACEMENT_ID, process.placementId || '');
 
                 if (process.serviceConfig) {
-                  setElemFieldVal(
-                    elem,
-                    FIELD_PORT,
-                    process.serviceConfig.ports[0].port || ''
-                  );
-                  setElemFieldVal(
-                    elem,
-                    FIELD_PROTOCOL,
-                    process.serviceConfig.ports[0].protocol || ''
-                  );
-                  setElemFieldVal(
-                    elem,
-                    FIELD_GROUP,
-                    process.serviceConfig.meSvcName || ''
-                  );
-                  setElemFieldVal(
-                    elem,
-                    FIELD_EXT_PORT,
-                    process.serviceConfig.ports[0].externalPort || ''
-                  );
+                  setElemFieldVal(elem, FIELD_PORT, process.serviceConfig.ports[0].port || '');
+                  setElemFieldVal(elem, FIELD_PROTOCOL, process.serviceConfig.ports[0].protocol || '');
+                  setElemFieldVal(elem, FIELD_GROUP, process.serviceConfig.meSvcName || '');
+                  setElemFieldVal(elem, FIELD_EXT_PORT, process.serviceConfig.ports[0].externalPort || '');
                 }
 
                 if (process.gpuConfig) {
-                  setElemFieldVal(
-                    elem,
-                    FIELD_GPU_COUNT,
-                    process.gpuConfig.count || ''
-                  );
-                  setElemFieldVal(
-                    elem,
-                    FIELD_GPU_TYPE,
-                    process.gpuConfig.type || ''
-                  );
+                  setElemFieldVal(elem, FIELD_GPU_COUNT, process.gpuConfig.count || '');
+                  setElemFieldVal(elem, FIELD_GPU_TYPE, process.gpuConfig.type || '');
                 }
               }
 
               if (process.externalConfig) {
                 if (process.externalConfig.ingressServiceMap) {
-                  setElemFieldVal(
-                    elem,
-                    FIELD_INGRESS_SVC_MAP,
-                    getIngressServiceMapStr(
-                      process.externalConfig.ingressServiceMap
-                    )
-                  );
+                  setElemFieldVal(elem, FIELD_INGRESS_SVC_MAP,
+                    getIngressServiceMapStr(process.externalConfig.ingressServiceMap));
                 }
                 if (process.externalConfig.egressServiceMap) {
-                  setElemFieldVal(
-                    elem,
-                    FIELD_EGRESS_SVC_MAP,
-                    getEgressServiceMapStr(
-                      process.externalConfig.egressServiceMap
-                    )
-                  );
+                  setElemFieldVal(elem, FIELD_EGRESS_SVC_MAP,
+                    getEgressServiceMapStr(process.externalConfig.egressServiceMap));
                 }
-                setElemFieldVal(
-                  elem,
-                  FIELD_PLACEMENT_ID,
-                  process.placementId || ''
-                );
+                setElemFieldVal(elem, FIELD_PLACEMENT_ID, process.placementId || '');
               }
               return elem;
             }

@@ -63,7 +63,7 @@ class ExecPageScenarioButtons extends Component {
       this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
-      !this.props.podsTerminated
+      this.props.okToTerminate
     );
   }
 
@@ -72,7 +72,7 @@ class ExecPageScenarioButtons extends Component {
       this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
-      !this.props.podsTerminated
+      this.props.okToTerminate
     );
   }
 
@@ -81,7 +81,7 @@ class ExecPageScenarioButtons extends Component {
       this.props.sandbox &&
       !this.props.podsPending &&
       !this.props.podsTerminating &&
-      !this.props.podsTerminated
+      this.props.okToTerminate
     );
   }
 
