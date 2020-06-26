@@ -515,7 +515,19 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 		if err != nil {
 			return
 		}
-		chart := newChart(pod, sandboxName, "", chartLocation, "")
+		// validate if there is user value override
+		userValueFile := "/user-values/" + pod + ".yaml"
+		if _, err := os.Stat(userValueFile); err != nil {
+			// path/to/file does not exists
+			// Note: according to https://helm.sh/docs/chart_template_guide/values_files/
+			//       the order of precedence is: (lowest) default values.yaml
+			//                                            then user value file
+			//                                            then individual --set params (highest)
+			//       Therefore, --set flags may interfere with user overrides
+			userValueFile = ""
+		}
+
+		chart := newChart(pod, sandboxName, "", chartLocation, userValueFile)
 		charts = append(charts, chart)
 	}
 
