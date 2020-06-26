@@ -41,7 +41,7 @@ type Route struct {
 
 type Routes []Route
 
-func NewRouter() *mux.Router {
+func NewRouter(feDir string, swDir string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	// subrouter := router.PathPrefix("/platform-ctrl/").Subrouter()
@@ -56,8 +56,12 @@ func NewRouter() *mux.Router {
 	}
 
 	// Path prefix router order is important
-	router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir("./swagger"))))
-	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./frontend/"))))
+	if swDir != "" {
+		router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir(swDir))))
+	}
+	if feDir != "" {
+		router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir(feDir))))
+	}
 
 	return router
 }

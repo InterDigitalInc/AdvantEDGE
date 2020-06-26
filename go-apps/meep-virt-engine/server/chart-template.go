@@ -116,6 +116,7 @@ type SandboxTemplate struct {
 	SandboxName string
 	Namespace   string
 	HostUrl     string
+	AltServer   string
 }
 
 // Service map
@@ -505,6 +506,7 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.SandboxName = sandboxName
 	sandboxTemplate.Namespace = sandboxName
 	sandboxTemplate.HostUrl = ve.hostUrl
+	sandboxTemplate.AltServer = ve.altServer
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {

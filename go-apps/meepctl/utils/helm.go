@@ -72,10 +72,8 @@ func HelmDelete(name string, cobraCmd *cobra.Command) (err error) {
 		err = errors.New("Error deleting component [" + name + "]")
 		fmt.Println(err)
 	} else {
-		if verbose {
-			r := FormatResult("Deleted "+name, elapsed, cobraCmd)
-			fmt.Println(r)
-		}
+		r := FormatResult("Deleted "+name, elapsed, cobraCmd)
+		fmt.Println(r)
 	}
 	if verbose {
 		fmt.Println("Result: " + string(out))

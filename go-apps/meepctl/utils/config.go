@@ -353,11 +353,14 @@ func ConfigIsIpv4(host string) bool {
 	return true
 }
 
-// GetTargets retreives the keys at the provided repo location
-func GetTargets(repo string) []string {
+// GetTargets retreives the keys based on group and operation type
+//  operation == "" returns the whole group
+func GetTargets(group string, operation string) []string {
 	targets := []string{}
-	for target := range RepoCfg.GetStringMapString(repo) {
-		targets = append(targets, target)
+	for target := range RepoCfg.GetStringMapString(group) {
+		if RepoCfg.GetBool(group+"."+target+"."+operation) || operation == "" {
+			targets = append(targets, target)
+		}
 	}
 	sort.Strings(targets)
 	return targets

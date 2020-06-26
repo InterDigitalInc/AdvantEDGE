@@ -17,6 +17,22 @@ repo:
   name: AdvantEDGE
 
   #------------------------------
+  #  Deployment
+  #------------------------------
+  deployment:
+    # enable the alternate HTTP server
+    #   - serves AdvantEDGE FE on alternate port 8080 instead of default 80/443
+    #   - useful in conjunction with user.frontend=true &&
+    #     when limiting endpoints exposed on public network
+    alt-server: false
+    # user supplied resources
+    user:
+      # user supplied frontend UI located @ .meep/user/frontend
+      frontend: false
+      # user supplied swagger UI located @ .meep/user/swagger
+      swagger: false
+
+  #------------------------------
   #  Core Subsystem
   #------------------------------
   core:
@@ -24,14 +40,28 @@ repo:
     # Go Applications
     go-apps:
       meep-mon-engine:
+        # location of source code
         src: go-apps/meep-mon-engine
+        # location of binary
         bin: bin/meep-mon-engine
+        # location of deployment chart
         chart: charts/meep-mon-engine
+        # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: true
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-mon-engine/api/swagger.yaml
+        # list of dependencies pods to monitor
         dependency-pods:
           - meep-couchdb
           - meep-docker-registry
@@ -42,11 +72,13 @@ repo:
           - meep-open-map-tiles
           - meep-postgis
           - meep-redis
+        # list of paltform pods to monitor
         core-pods:
           - meep-mon-engine
           - meep-platform-ctrl
           - meep-virt-engine
           - meep-webhook
+        # list of sandbox pods to monitor
         sandbox-pods:
           - meep-gis-engine
           - meep-loc-serv
@@ -56,23 +88,52 @@ repo:
           - meep-sandbox-ctrl
           - meep-tc-engine
       meep-platform-ctrl:
+        # location of source code
         src: go-apps/meep-platform-ctrl
+        # location of binary
         bin: bin/meep-platform-ctrl
+        # location of deployment chart
         chart: charts/meep-platform-ctrl
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: true
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-platform-ctrl/api/swagger.yaml
+        # AdvantEDGE resources included in Docker container image
         docker-data:
+          # location of AdvantEDGE swagger files
           swagger: bin/meep-platform-swagger-ui
+          # location of AdvantEDGE frontend
           frontend: bin/meep-frontend
       meep-virt-engine:
+        # location of source code
         src: go-apps/meep-virt-engine
+        # location of binary
         bin: bin/meep-virt-engine
+        # location of deployment chart
         chart: charts/meep-virt-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: true
+        # supports linting
         lint: true
+        # AdvantEDGE resources included in Docker container image
         docker-data:
+          # entrypoint script
           'entrypoint.sh': go-apps/meep-virt-engine/entrypoint.sh
+          # AdvantEDGE micro-service charts
           meep-gis-engine: charts/meep-gis-engine
           meep-loc-serv: charts/meep-loc-serv
           meep-metrics-engine: charts/meep-metrics-engine
@@ -81,6 +142,7 @@ repo:
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
           meep-virt-chart-templates: charts/meep-virt-chart-templates
+        # list of sandbox specific pods
         sandbox-pods:
           - meep-gis-engine
           - meep-loc-serv
@@ -90,36 +152,80 @@ repo:
           - meep-sandbox-ctrl
           - meep-tc-engine
       meep-webhook:
+        # location of source code
         src: go-apps/meep-webhook
+        # location of binary
         bin: bin/meep-webhook
+        # location of deployment chart
         chart: charts/meep-webhook
+        # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
 
     # Javascript Applications
     js-apps:
       meep-frontend:
+        # location of source code
         src: js-apps/meep-frontend
+        # location of binary
         bin: bin/meep-frontend
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        # -> bundled with meep-platform-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete
+        # -> deployed via meep-platform-ctrl
+        deploy: false
+        # supports linting
         lint: true
+        # local project dependencies
         local-deps:
           meep-platform-ctrl-api: js-packages/meep-platform-ctrl-client
           meep-sandbox-ctrl-api: js-packages/meep-sandbox-ctrl-client
           meep-mon-engine-api: js-packages/meep-mon-engine-client
           meep-gis-engine-api: js-packages/meep-gis-engine-client
       meep-platform-swagger-ui:
+        # location of source code
         src: js-apps/meep-swagger-ui
+        # location of binary
         bin: bin/meep-platform-swagger-ui
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize -> bundled with meep-platform-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete -> deployed via meep-platform-ctrl
+        deploy: false
+        # supports linting
         lint: false
+        # list of platform level swagger specs
         api-bundle:
           - core.go-apps.meep-platform-ctrl
           - core.go-apps.meep-mon-engine
       meep-sandbox-swagger-ui:
+        # location of source code
         src: js-apps/meep-swagger-ui
+        # location of binary
         bin: bin/meep-sandbox-swagger-ui
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize -> bundled with meep-sandbox-ctrl
+        dockerize: false
+        # enable meepctl deploy/delete -> deployed via meep-sandbox-ctrl
+        deploy: false
+        # supports linting
         lint: false
+        # list of sandbox level swagger specs
         api-bundle:
           - sandbox.go-apps.meep-sandbox-ctrl
           - sandbox.go-apps.meep-gis-engine
@@ -140,66 +246,162 @@ repo:
     # Go Applications
     go-apps:
       meep-gis-engine:
+        # location of source code
         src: go-apps/meep-gis-engine
+        # location of binary
         bin: bin/meep-gis-engine
+        # location of deployment chart
         chart: charts/meep-gis-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-gis-engine/api/swagger.yaml
       meep-loc-serv:
+        # location of source code
         src: go-apps/meep-loc-serv
+        # location of binary
         bin: bin/meep-loc-serv
+        # location of deployment chart
         chart: charts/meep-loc-serv
+        # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-loc-serv/api/swagger.yaml
       meep-metrics-engine:
+        # location of source code
         src: go-apps/meep-metrics-engine
+        # location of binary
         bin: bin/meep-metrics-engine
+        # location of deployment chart
         chart: charts/meep-metrics-engine
+        # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-metrics-engine/api/v2/swagger.yaml
       meep-mg-manager:
+        # location of source code
         src: go-apps/meep-mg-manager
+        # location of binary
         bin: bin/meep-mg-manager
+        # location of deployment chart
         chart: charts/meep-mg-manager
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-mg-manager/api/swagger.yaml
       meep-rnis:
+        # location of source code
         src: go-apps/meep-rnis
+        # location of binary
         bin: bin/meep-rnis
+        # location of deployment chart
         chart: charts/meep-rnis
+        # extra build flags
         build-flags:
           - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-rnis/api/swagger.yaml
       meep-sandbox-ctrl:
+        # location of source code
         src: go-apps/meep-sandbox-ctrl
+        # location of binary
         bin: bin/meep-sandbox-ctrl
+        # location of deployment chart
         chart: charts/meep-sandbox-ctrl
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
+        # location of API specification
         api: go-apps/meep-sandbox-ctrl/api/swagger.yaml
         docker-data:
           'entrypoint.sh': go-apps/meep-sandbox-ctrl/entrypoint.sh
           swagger: bin/meep-sandbox-swagger-ui
       meep-tc-engine:
+        # location of source code
         src: go-apps/meep-tc-engine
+        # location of binary
         bin: bin/meep-tc-engine
+        # location of deployment chart
         chart: charts/meep-tc-engine
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
       meep-tc-sidecar:
+        # location of source code
         src: go-apps/meep-tc-sidecar
+        # location of binary
         bin: bin/meep-tc-sidecar
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
         codecov: false
+        # supports linting
         lint: true
 
   #------------------------------
@@ -207,22 +409,95 @@ repo:
   #------------------------------
   dep:
     meep-couchdb:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/couchdb
     meep-docker-registry:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/docker-registry
     meep-grafana:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/grafana
     meep-influxdb:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/influxdb
     meep-kube-state-metrics:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/kube-state-metrics
     meep-ingress:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/nginx-ingress
+    meep-alt-ingress:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
+      chart: charts/nginx-ingress
+      values: charts/nginx-ingress/alt-values.yaml
     meep-redis:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/redis
     meep-open-map-tiles:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/open-map-tiles
     meep-postgis:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: true
+      # location of deployment chart
       chart: charts/postgis
 
   #------------------------------
@@ -233,91 +508,148 @@ repo:
     # Go Packages
     go-packages:
       meep-couch:
+        # location of source code
         src: go-packages/meep-couch
+        # supports linting
         lint: true
       meep-data-key-mgr:
+        # location of source code
         src: go-packages/meep-data-key-mgr
+        # supports linting
         lint: true
       meep-data-model:
+        # location of source code
         src: go-packages/meep-data-model
+        # supports linting
         lint: true
       meep-http-logger:
+        # location of source code
         src: go-packages/meep-http-logger
+        # supports linting
         lint: true
       meep-loc-serv-client:
+        # location of source code
         src: go-packages/meep-loc-serv-client
+        # supports linting
         lint: false
       meep-loc-serv-notification-client:
+        # location of source code
         src: go-packages/meep-loc-serv-notification-client
+        # supports linting
         lint: false
+        # location of API specification
         api: go-packages/meep-loc-serv-notification-client/api/swagger.yaml
       meep-logger:
+        # location of source code
         src: go-packages/meep-logger
+        # supports linting
         lint: true
       meep-metrics-engine-notification-client:
+        # location of source code
         src: go-packages/meep-metrics-engine-notification-client
+        # supports linting
         lint: false
+        # location of API specification
         api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
       meep-metric-store:
+        # location of source code
         src: go-packages/meep-metric-store
+        # supports linting
         lint: true
       meep-mg-app-client:
+        # location of source code
         src: go-packages/meep-mg-app-client
+        # supports linting
         lint: false
+        # location of API specification
         api: go-packages/meep-mg-app-client/api/swagger.yaml
       meep-mg-manager-client:
+        # location of source code
         src: go-packages/meep-mg-manager-client
+        # supports linting
         lint: false
       meep-mg-manager-model:
+        # location of source code
         src: go-packages/meep-mg-manager-model
+        # supports linting
         lint: true
       meep-model:
+        # location of source code
         src: go-packages/meep-model
+        # supports linting
         lint: true
       meep-mq:
+        # location of source code
         src: go-packages/meep-mq
+        # supports linting
         lint: true
       meep-net-char-mgr:
+        # location of source code
         src: go-packages/meep-net-char-mgr
+        # supports linting
         lint: true
       meep-postgis:
+        # location of source code
         src: go-packages/meep-postgis
+        # supports linting
         lint: true
       meep-redis:
+        # location of source code
         src: go-packages/meep-redis
+        # supports linting
         lint: true
       meep-replay-manager:
+        # location of source code
         src: go-packages/meep-replay-manager
+        # supports linting
         lint: true
       meep-rnis-client:
+        # location of source code
         src: go-packages/meep-rnis-client
+        # supports linting
         lint: false
       meep-rnis-notification-client:
+        # location of source code
         src: go-packages/meep-rnis-notification-client
+        # supports linting
         lint: false
+        # location of API specification
         api: go-packages/meep-rnis-notification-client/api/swagger.yaml
       meep-sandbox-ctrl-client:
+        # location of source code
         src: go-packages/meep-sandbox-ctrl-client
+        # supports linting
         lint: false
       meep-sandbox-store:
+        # location of source code
         src: go-packages/meep-sandbox-store
+        # supports linting
         lint: true
       meep-watchdog:
+        # location of source code
         src: go-packages/meep-watchdog
+        # supports linting
         lint: true
 
     # Javascript Packages
     js-packages:
       meep-metrics-engine-client:
+        # location of source code
         src: js-packages/meep-metrics-engine-client
+        # supports linting
         lint: false
       meep-mon-engine-client:
+        # location of source code
         src: js-packages/meep-mon-engine-client
+        # supports linting
         lint: false
       meep-platform-ctrl-client:
+        # location of source code
         src: js-packages/meep-platform-ctrl-client
+        # supports linting
         lint: false
       meep-sandbox-ctrl-client:
+        # location of source code
         src: js-packages/meep-sandbox-ctrl-client
+        # supports linting
         lint: false
-

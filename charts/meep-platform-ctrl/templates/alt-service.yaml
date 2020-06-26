@@ -1,7 +1,8 @@
+{{- if .Values.altService.enabled}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "meep-platform-ctrl.fullname" . }}
+  name: {{ template "meep-platform-ctrl.fullname" . }}-alt
   labels:
     app: {{ template "meep-platform-ctrl.name" . }}
     chart: {{ template "meep-platform-ctrl.chart" . }}
@@ -9,14 +10,15 @@ metadata:
     heritage: {{ .Release.Service }}
     meepOrigin: {{ .Values.meepOrigin }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.altService.type }}
   selector:
     app: {{ template "meep-platform-ctrl.name" . }}
     release: {{ .Release.Name }}
     meepOrigin: {{ .Values.meepOrigin }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.deployment.port }}
-      {{- if .Values.nodePort }}
-      nodePort: {{ .Values.service.nodePort }}
+    - port: {{ .Values.altService.port }}
+      targetPort: {{ .Values.deployment.altPort }}
+      {{- if .Values.altService.nodePort }}
+      nodePort: {{ .Values.altService.nodePort }}
       {{- end }}
+{{- end}}

@@ -91,7 +91,7 @@ class IDCMap extends Component {
     var lng = cfg.center ? cfg.center.lng : DEFAULT_MAP_LONGITUDE;
     var zoom = cfg.zoom ? cfg.zoom : DEFAULT_MAP_ZOOM;
     var baselayerName = cfg.baselayerName ? cfg.baselayerName : 'Positron';
- 
+
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
     this.map = L.map(domNode, {
@@ -103,10 +103,10 @@ class IDCMap extends Component {
     });
 
     // Create GL Baselayers
-    var positronBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/positron/style.json'});
-    var darkBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/dark-matter/style.json'});
-    var klokBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/klokantech-basic/style.json'});
-    var osmBaselayer = L.mapboxGL({style: HOST_PATH + ':30080/styles/osm-bright/style.json'});
+    var positronBaselayer = L.mapboxGL({style: HOST_PATH + '/styles/positron/style.json'});
+    var darkBaselayer = L.mapboxGL({style: HOST_PATH + '/styles/dark-matter/style.json'});
+    var klokBaselayer = L.mapboxGL({style: HOST_PATH + '/styles/klokantech-basic/style.json'});
+    var osmBaselayer = L.mapboxGL({style: HOST_PATH + '/styles/osm-bright/style.json'});
     var baselayers = {
       'Positron': positronBaselayer,
       'Black Matter': darkBaselayer,
@@ -127,7 +127,7 @@ class IDCMap extends Component {
       'poa-coverage': this.poaRangeOverlay,
       'compute': this.computeOverlay
     };
-    
+
     // Create Layer Controller
     this.layerCtrl = L.control.layers(baselayers, overlays);
 

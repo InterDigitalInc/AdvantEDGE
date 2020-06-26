@@ -63,9 +63,9 @@ var buildData BuildData
 
 func init() {
 	// Get targets from repo config file
-	buildData.coreGoApps = utils.GetTargets("repo.core.go-apps")
-	buildData.coreJsApps = utils.GetTargets("repo.core.js-apps")
-	buildData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps")
+	buildData.coreGoApps = utils.GetTargets("repo.core.go-apps", "build")
+	buildData.coreJsApps = utils.GetTargets("repo.core.js-apps", "build")
+	buildData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps", "build")
 
 	// Create the list of valid arguments
 	baseArgs := []string{"all"}

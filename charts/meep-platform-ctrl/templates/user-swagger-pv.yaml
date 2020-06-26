@@ -1,32 +1,31 @@
-{{- if .Values.codecov.enabled}}
+{{- if .Values.user.swagger.enabled}}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: meep-platform-ctrl-codecov-pv
+  name: meep-platform-ctrl-user-swagger-pv
 spec:
-  storageClassName: meep-platform-ctrl-codecov-sc
+  storageClassName: meep-platform-ctrl-user-swagger-sc
   capacity:
     storage: 100Mi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: {{ .Values.codecov.location }}
-
+    path: {{ .Values.user.swagger.location }}
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: meep-platform-ctrl-codecov-sc
+  name: meep-platform-ctrl-user-swagger-sc
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: meep-platform-ctrl-codecov-pvc
+  name: meep-platform-ctrl-user-swagger-pvc
 spec:
-  storageClassName: meep-platform-ctrl-codecov-sc
+  storageClassName: meep-platform-ctrl-user-swagger-sc
   accessModes:
     - ReadWriteOnce
   resources:
