@@ -169,8 +169,15 @@ func deployCore(cobraCmd *cobra.Command) {
 	// Code coverage storage
 	deployCodeCovStorage(cobraCmd)
 
+	userValueDir := deployData.workdir+"/user/values"
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
+		userValues := false
+		userValueFile := userValueDir + "/" + app + ".yaml"
+		if _, err := os.Stat(userValueFile); err == nil {
+			// path/to/file exists
+			userValues = true
+		}
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
@@ -192,6 +199,15 @@ func deployCore(cobraCmd *cobra.Command) {
 			// deployment level flag - not all apps use it
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.location="+deployData.workdir+"/user/swagger")
+		}
+		if userValues {
+			// user provided overriding values
+			// Note: according to https://helm.sh/docs/chart_template_guide/values_files/
+			//       the order of precedence is: (lowest) default values.yaml
+			//                                            then user value file
+			//                                            then individual --set params (highest)
+			//       Therefore, the --set flags inserted by meepctl may interfere with user overrides
+			coreFlags = utils.HelmFlags(coreFlags, "-f", userValueFile)
 		}
 		if altServer {
 			// deployment level flag - not all apps use it
@@ -220,28 +236,42 @@ func deployDep(cobraCmd *cobra.Command) {
 
 func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobra.Command) [][]string {
 	var flags [][]string
+	flags := make([][]string, 0)
+
 	nodeIp := viper.GetString("node.ip")
+	userValueDir := deployData.workdir+"/user/values"
+
+	userValueFile := userValueDir + "/" + targetName + ".yaml"
+	if _, err := os.Stat(userValueFile); err == nil {
+		// path/to/file exists
+		// Note: according to https://helm.sh/docs/chart_template_guide/values_files/
+		//       the order of precedence is: (lowest) default values.yaml
+		//                                            then user value file
+		//                                            then individual --set params (highest)
+		//       Therefore, the --set flags inserted by meepctl may interfere with user overrides
+		flags = utils.HelmFlags(flags, "-f", userValueFile)
+	}
 
 	switch targetName {
 	case "meep-couchdb":
-		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
+		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
 	case "meep-open-map-tiles":
-		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
+		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
 	case "meep-postgis":
-		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/postgis/")
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
 	case "meep-docker-registry":
 		deployCreateRegistryCerts(chart, cobraCmd)
-		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
 	case "meep-grafana":
 		deploySetGrafanaValues(chart, cobraCmd)
-		flags = utils.HelmFlags(nil, "--set", "persistentVolume.location="+deployData.workdir+"/grafana/")
+		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/grafana/")
 		flags = utils.HelmFlags(flags, "--values", deployData.workdir+"/tmp/grafana-values.yaml")
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
 	case "meep-influxdb":
-		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
 	case "meep-ingress":
 		deployCreateIngressCerts(chart, cobraCmd)
 		httpPort, httpsPort := deployGetPorts()
@@ -260,19 +290,19 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--values", values)
 	case "meep-mon-engine":
 		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
-		flags = utils.HelmFlags(nil, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
 	case "meep-virt-engine":
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
-		flags = utils.HelmFlags(nil, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_ALT_SERVER=\""+strconv.FormatBool(altServer)+"\"")
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
-		flags = utils.HelmFlags(nil, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")
+		flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")
 		flags = utils.HelmFlags(flags, "--set", "sidecar.image.tag="+deployData.tag)
 		flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 		flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)

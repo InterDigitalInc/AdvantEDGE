@@ -46,6 +46,8 @@ repo:
         bin: bin/meep-mon-engine
         # location of deployment chart
         chart: charts/meep-mon-engine
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-mon-engine.yaml
         # extra build flags
         build-flags:
           - -mod=vendor
@@ -94,6 +96,8 @@ repo:
         bin: bin/meep-platform-ctrl
         # location of deployment chart
         chart: charts/meep-platform-ctrl
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-platform-ctrl.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -119,6 +123,8 @@ repo:
         bin: bin/meep-virt-engine
         # location of deployment chart
         chart: charts/meep-virt-engine
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-virt-engine.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -158,6 +164,8 @@ repo:
         bin: bin/meep-webhook
         # location of deployment chart
         chart: charts/meep-webhook
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-webhook.yaml
         # extra build flags
         build-flags:
           - -mod=vendor
@@ -252,6 +260,8 @@ repo:
         bin: bin/meep-gis-engine
         # location of deployment chart
         chart: charts/meep-gis-engine
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-gis-engine.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -271,6 +281,8 @@ repo:
         bin: bin/meep-loc-serv
         # location of deployment chart
         chart: charts/meep-loc-serv
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-loc-serv.yaml
         # extra build flags
         build-flags:
           - -mod=vendor
@@ -293,6 +305,8 @@ repo:
         bin: bin/meep-metrics-engine
         # location of deployment chart
         chart: charts/meep-metrics-engine
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-metrics-engine.yaml
         # extra build flags
         build-flags:
           - -mod=vendor
@@ -315,6 +329,8 @@ repo:
         bin: bin/meep-mg-manager
         # location of deployment chart
         chart: charts/meep-mg-manager
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-mg-manager.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -334,6 +350,8 @@ repo:
         bin: bin/meep-rnis
         # location of deployment chart
         chart: charts/meep-rnis
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-rnis.yaml
         # extra build flags
         build-flags:
           - -mod=vendor
@@ -356,6 +374,8 @@ repo:
         bin: bin/meep-sandbox-ctrl
         # location of deployment chart
         chart: charts/meep-sandbox-ctrl
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-sandbox-ctrl.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -378,6 +398,8 @@ repo:
         bin: bin/meep-tc-engine
         # location of deployment chart
         chart: charts/meep-tc-engine
+        # user supplied value file located @ .meep/user/values
+        chart-user-values: meep-tc-engine.yaml
         # enable meepctl build
         build: true
         # enable meepctl dockerize
@@ -417,6 +439,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/couchdb
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-couchdb.yaml
     meep-docker-registry:
       # enable meepctl build -> deps are never built
       build: false
@@ -426,6 +450,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/docker-registry
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-docker-registry.yaml
     meep-grafana:
       # enable meepctl build -> deps are never built
       build: false
@@ -435,6 +461,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/grafana
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-grafana.yaml
     meep-influxdb:
       # enable meepctl build -> deps are never built
       build: false
@@ -444,6 +472,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/influxdb
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-influxdb.yaml
     meep-kube-state-metrics:
       # enable meepctl build -> deps are never built
       build: false
@@ -453,6 +483,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/kube-state-metrics
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-kube-state-metrics.yaml
     meep-ingress:
       # enable meepctl build -> deps are never built
       build: false
@@ -462,6 +494,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/nginx-ingress
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-ingress.yaml
     meep-alt-ingress:
       # enable meepctl build -> deps are never built
       build: false
@@ -471,7 +505,10 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/nginx-ingress
+      # uses different default values
       values: charts/nginx-ingress/alt-values.yaml
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-alt-ingress.yaml
     meep-redis:
       # enable meepctl build -> deps are never built
       build: false
@@ -481,6 +518,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/redis
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-redis.yaml
     meep-open-map-tiles:
       # enable meepctl build -> deps are never built
       build: false
@@ -490,6 +529,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/open-map-tiles
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-open-map-tiles.yaml
     meep-postgis:
       # enable meepctl build -> deps are never built
       build: false
@@ -499,6 +540,8 @@ repo:
       deploy: true
       # location of deployment chart
       chart: charts/postgis
+      # user supplied value file located @ .meep/user/values
+      chart-user-values: meep-postgis.yaml
 
   #------------------------------
   #  Packages
