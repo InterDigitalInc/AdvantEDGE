@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/Domain'], factory);
+    define(['ApiClient', 'model/Domain', 'model/NetworkCharacteristics'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./Domain'));
+    module.exports = factory(require('../ApiClient'), require('./Domain'), require('./NetworkCharacteristics'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Deployment = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.Domain);
+    root.AdvantEdgeSandboxControllerRestApi.Deployment = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.Domain, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics);
   }
-}(this, function(ApiClient, Domain) {
+}(this, function(ApiClient, Domain, NetworkCharacteristics) {
   'use strict';
 
   /**
@@ -70,6 +70,8 @@
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('interDomainLatency'))
         obj.interDomainLatency = ApiClient.convertToType(data['interDomainLatency'], 'Number');
       if (data.hasOwnProperty('interDomainLatencyVariation'))
@@ -89,25 +91,30 @@
   }
 
   /**
-   * Latency in ms between domains
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latency
    * @member {Number} interDomainLatency
    */
   exports.prototype.interDomainLatency = undefined;
 
   /**
-   * Latency variation in ms between domains
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
    * @member {Number} interDomainLatencyVariation
    */
   exports.prototype.interDomainLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between domains
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
    * @member {Number} interDomainThroughput
    */
   exports.prototype.interDomainThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between domains
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
    * @member {Number} interDomainPacketLoss
    */
   exports.prototype.interDomainPacketLoss = undefined;

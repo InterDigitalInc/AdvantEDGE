@@ -101,10 +101,11 @@ var opts = struct {
 
 // NetChar
 type NetChar struct {
-	Latency    string
-	Jitter     string
-	PacketLoss string
-	Throughput string
+	Latency      string
+	Jitter       string
+	PacketLoss   string
+	Throughput   string
+	Distribution string
 }
 
 var pinger *Pinger
@@ -880,6 +881,8 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	delay := shape["delay"]
 	delayVariation := shape["delayVariation"]
 	delayCorrelation := shape["delayCorrelation"]
+	distribution := shape["distribution"]
+
 	loss := shape["packetLoss"]
 	var lossInteger string
 	var lossFraction string
@@ -899,9 +902,17 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	dataRate := shape["dataRate"]
 
 	//tc qdisc change dev $ifb$ifbnumber handle 1:0 root netem delay $delay$ms loss $loss$prcent
-	normalDistributionStr := ""
+	distributionStr := ""
 	if delayVariation != "0" {
-		normalDistributionStr = "distribution normal"
+		if distribution != "" {
+			//special case for uniform, which is not specifying a distribution (respecting netem description of a uniform distribution)
+			if distribution != "uniform" {
+				distributionStr = "distribution " + distribution
+			}
+		} else {
+			distributionStr = "distribution normal"
+			distribution = "normal"
+		}
 	}
 
 	nc := netcharMap[ifbNumber]
@@ -910,8 +921,8 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 		netcharMap[ifbNumber] = nc
 	}
 	//only apply if an update is needed
-	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate {
-		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
+	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate || (delayVariation != "0" && nc.Distribution != distribution) {
+		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + distributionStr + " loss " + lossInteger + "." + lossFraction + "%"
 		if dataRate != "" && dataRate != "0" {
 			str = str + " rate " + dataRate + "bit"
 		}
@@ -921,11 +932,13 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 			return false, err
 		}
 
+		log.Info("Tc log update: ", str)
 		//store the new values
 		nc.Latency = delay
 		nc.Jitter = delayVariation
 		nc.PacketLoss = loss
 		nc.Throughput = dataRate
+		nc.Distribution = distribution
 		return true, nil
 	}
 

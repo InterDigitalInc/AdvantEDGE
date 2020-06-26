@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularDomainConfig', 'model/Zone'], factory);
+    define(['ApiClient', 'model/CellularDomainConfig', 'model/NetworkCharacteristics', 'model/Zone'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CellularDomainConfig'), require('./Zone'));
+    module.exports = factory(require('../ApiClient'), require('./CellularDomainConfig'), require('./NetworkCharacteristics'), require('./Zone'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Domain = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.CellularDomainConfig, root.AdvantEdgeSandboxControllerRestApi.Zone);
+    root.AdvantEdgeSandboxControllerRestApi.Domain = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.CellularDomainConfig, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.Zone);
   }
-}(this, function(ApiClient, CellularDomainConfig, Zone) {
+}(this, function(ApiClient, CellularDomainConfig, NetworkCharacteristics, Zone) {
   'use strict';
 
   /**
@@ -76,6 +76,8 @@
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('interZoneLatency'))
         obj.interZoneLatency = ApiClient.convertToType(data['interZoneLatency'], 'Number');
       if (data.hasOwnProperty('interZoneLatencyVariation'))
@@ -115,25 +117,30 @@
   exports.prototype.type = undefined;
 
   /**
-   * Latency in ms between zones within domain
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latency
    * @member {Number} interZoneLatency
    */
   exports.prototype.interZoneLatency = undefined;
 
   /**
-   * Latency variation in ms between zones within domain
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
    * @member {Number} interZoneLatencyVariation
    */
   exports.prototype.interZoneLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported between zones within the domain
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
    * @member {Number} interZoneThroughput
    */
   exports.prototype.interZoneThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) between zones within the domain
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
    * @member {Number} interZonePacketLoss
    */
   exports.prototype.interZonePacketLoss = undefined;

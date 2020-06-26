@@ -613,14 +613,17 @@ func sendEventNetworkCharacteristics(event dataModel.Event) (error, int, string)
 		return err, http.StatusBadRequest, ""
 	}
 
-	netChar := event.EventNetworkCharacteristicsUpdate
-	description := "[" + netChar.ElementName + "] update " +
-		"latency=" + strconv.Itoa(int(netChar.Latency)) + "ms " +
-		"jitter=" + strconv.Itoa(int(netChar.LatencyVariation)) + "ms " +
-		"throughput=" + strconv.Itoa(int(netChar.Throughput)) + "Mbps " +
-		"packet-loss=" + strconv.FormatFloat(netChar.PacketLoss, 'f', -1, 64) + "% "
+	netCharEvent := event.EventNetworkCharacteristicsUpdate
 
-	err := sbxCtrl.activeModel.UpdateNetChar(netChar)
+	description := "[" + netCharEvent.ElementName + "] update " +
+		"latency=" + strconv.Itoa(int(netCharEvent.NetChar.Latency)) + "ms " +
+		"jitter=" + strconv.Itoa(int(netCharEvent.NetChar.LatencyVariation)) + "ms " +
+		"distribution=" + netCharEvent.NetChar.LatencyDistribution + " " +
+		"throughputDl=" + strconv.Itoa(int(netCharEvent.NetChar.ThroughputDl)) + "Mbps " +
+		"throughputUl=" + strconv.Itoa(int(netCharEvent.NetChar.ThroughputUl)) + "Mbps " +
+		"packet-loss=" + strconv.FormatFloat(netCharEvent.NetChar.PacketLoss, 'f', -1, 64) + "% "
+
+	err := sbxCtrl.activeModel.UpdateNetChar(netCharEvent)
 	if err != nil {
 		return err, http.StatusInternalServerError, ""
 	}

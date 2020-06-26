@@ -323,10 +323,10 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 
 	// Find the element
 	if ncType == NetCharScenario {
-		m.scenario.Deployment.InterDomainLatency = nc.Latency
-		m.scenario.Deployment.InterDomainLatencyVariation = nc.LatencyVariation
-		m.scenario.Deployment.InterDomainThroughput = nc.Throughput
-		m.scenario.Deployment.InterDomainPacketLoss = nc.PacketLoss
+		if m.scenario.Deployment.NetChar == nil {
+			m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		m.scenario.Deployment.NetChar = nc.NetChar
 		updated = true
 	} else {
 		n := m.nodeMap.FindByName(ncName)
@@ -336,41 +336,38 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		}
 		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
 			domain := n.object.(*dataModel.Domain)
-			domain.InterZoneLatency = nc.Latency
-			domain.InterZoneLatencyVariation = nc.LatencyVariation
-			domain.InterZoneThroughput = nc.Throughput
-			domain.InterZonePacketLoss = nc.PacketLoss
+			if domain.NetChar == nil {
+				domain.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			domain.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharZone {
 			zone := n.object.(*dataModel.Zone)
 			if zone.NetChar == nil {
 				zone.NetChar = new(dataModel.NetworkCharacteristics)
 			}
-			zone.NetChar.Latency = nc.Latency
-			zone.NetChar.LatencyVariation = nc.LatencyVariation
-			zone.NetChar.Throughput = nc.Throughput
-			zone.NetChar.PacketLoss = nc.PacketLoss
+			zone.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
 			nl := n.object.(*dataModel.NetworkLocation)
-			nl.TerminalLinkLatency = nc.Latency
-			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
-			nl.TerminalLinkThroughput = nc.Throughput
-			nl.TerminalLinkPacketLoss = nc.PacketLoss
+			if nl.NetChar == nil {
+				nl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			nl.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
 			pl := n.object.(*dataModel.PhysicalLocation)
-			pl.LinkLatency = nc.Latency
-			pl.LinkLatencyVariation = nc.LatencyVariation
-			pl.LinkThroughput = nc.Throughput
-			pl.LinkPacketLoss = nc.PacketLoss
+			if pl.NetChar == nil {
+				pl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			pl.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
 			proc := n.object.(*dataModel.Process)
-			proc.AppLatency = nc.Latency
-			proc.AppLatencyVariation = nc.LatencyVariation
-			proc.AppThroughput = nc.Throughput
-			proc.AppPacketLoss = nc.PacketLoss
+			if proc.NetChar == nil {
+				proc.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			proc.NetChar = nc.NetChar
 			updated = true
 		} else {
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +

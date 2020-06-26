@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularPoaConfig', 'model/GeoData', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/CellularPoaConfig', 'model/GeoData', 'model/NetworkCharacteristics', 'model/PhysicalLocation'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./GeoData'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./GeoData'), require('./NetworkCharacteristics'), require('./PhysicalLocation'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
+    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
   }
-}(this, function(ApiClient, CellularPoaConfig, GeoData, PhysicalLocation) {
+}(this, function(ApiClient, CellularPoaConfig, GeoData, NetworkCharacteristics, PhysicalLocation) {
   'use strict';
 
   /**
@@ -76,6 +76,8 @@
         obj.name = ApiClient.convertToType(data['name'], 'String');
       if (data.hasOwnProperty('type'))
         obj.type = ApiClient.convertToType(data['type'], 'String');
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('terminalLinkLatency'))
         obj.terminalLinkLatency = ApiClient.convertToType(data['terminalLinkLatency'], 'Number');
       if (data.hasOwnProperty('terminalLinkLatencyVariation'))
@@ -117,25 +119,30 @@
   exports.prototype.type = undefined;
 
   /**
-   * Latency in ms for all terminal links within network location
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latency
    * @member {Number} terminalLinkLatency
    */
   exports.prototype.terminalLinkLatency = undefined;
 
   /**
-   * Latency variation in ms for all terminal links within network location
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
    * @member {Number} terminalLinkLatencyVariation
    */
   exports.prototype.terminalLinkLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported for all terminal links within the network location
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
    * @member {Number} terminalLinkThroughput
    */
   exports.prototype.terminalLinkThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) for all terminal links within the network location
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
    * @member {Number} terminalLinkPacketLoss
    */
   exports.prototype.terminalLinkPacketLoss = undefined;

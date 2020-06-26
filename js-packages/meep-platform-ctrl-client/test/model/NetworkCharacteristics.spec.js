@@ -67,10 +67,28 @@
         // expect(instance.latencyVariation).to.be(expectedValueLiteral);
       });
 
+      it('should have the property latencyDistribution (base name: "latencyDistribution")', function() {
+        // TODO: update the code to test the property latencyDistribution
+        expect(instance).to.have.property('latencyDistribution');
+        // expect(instance.latencyDistribution).to.be(expectedValueLiteral);
+      });
+
       it('should have the property throughput (base name: "throughput")', function() {
         // TODO: update the code to test the property throughput
         expect(instance).to.have.property('throughput');
         // expect(instance.throughput).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property throughputDl (base name: "throughputDl")', function() {
+        // TODO: update the code to test the property throughputDl
+        expect(instance).to.have.property('throughputDl');
+        // expect(instance.throughputDl).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property throughputUl (base name: "throughputUl")', function() {
+        // TODO: update the code to test the property throughputUl
+        expect(instance).to.have.property('throughputUl');
+        // expect(instance.throughputUl).to.be(expectedValueLiteral);
       });
 
       it('should have the property packetLoss (base name: "packetLoss")', function() {

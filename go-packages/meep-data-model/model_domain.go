@@ -30,14 +30,15 @@ type Domain struct {
 	// Domain name
 	Name string `json:"name,omitempty"`
 	// Domain type
-	Type_ string `json:"type,omitempty"`
-	// Latency in ms between zones within domain
+	Type_   string                  `json:"type,omitempty"`
+	NetChar *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	InterZoneLatency int32 `json:"interZoneLatency,omitempty"`
-	// Latency variation in ms between zones within domain
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
 	InterZoneLatencyVariation int32 `json:"interZoneLatencyVariation,omitempty"`
-	// The limit of the traffic supported between zones within the domain
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
 	InterZoneThroughput int32 `json:"interZoneThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between zones within the domain
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	InterZonePacketLoss float64 `json:"interZonePacketLoss,omitempty"`
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`

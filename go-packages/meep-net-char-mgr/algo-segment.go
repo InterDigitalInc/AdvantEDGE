@@ -107,7 +107,7 @@ type SegAlgoNetElem struct {
 	PoaName           string
 	ZoneName          string
 	DomainName        string
-	ConfiguredNetChar NetChar
+	ConfiguredNetChar ElemNetChar
 }
 
 // SegmentAlgorithm -
@@ -208,14 +208,22 @@ func (algo *SegmentAlgorithm) ProcessScenario(model *mod.Model) error {
 			element.ZoneName = nodeCtx.Parents[mod.Zone]
 		}
 
+		deployment := model.GetNodeParent(element.DomainName).(*dataModel.Deployment)
+
 		// Set max App Net chars (use default if set to 0)
-		element.ConfiguredNetChar.Throughput = float64(proc.AppThroughput)
-		if element.ConfiguredNetChar.Throughput == 0 {
-			element.ConfiguredNetChar.Throughput = DEFAULT_THROUGHPUT_LINK
+		element.ConfiguredNetChar.Latency = float64(proc.NetChar.Latency)
+		element.ConfiguredNetChar.Jitter = float64(proc.NetChar.LatencyVariation)
+		element.ConfiguredNetChar.Distribution = deployment.NetChar.LatencyDistribution //set global value
+		element.ConfiguredNetChar.ThroughputDl = float64(proc.NetChar.ThroughputUl)
+		element.ConfiguredNetChar.ThroughputUl = float64(proc.NetChar.ThroughputUl)
+		element.ConfiguredNetChar.PacketLoss = float64(proc.NetChar.PacketLoss)
+
+		if element.ConfiguredNetChar.ThroughputUl == 0 {
+			element.ConfiguredNetChar.ThroughputUl = DEFAULT_THROUGHPUT_LINK
 		}
-		element.ConfiguredNetChar.Latency = float64(proc.AppLatency)
-		element.ConfiguredNetChar.Jitter = float64(proc.AppLatencyVariation)
-		element.ConfiguredNetChar.PacketLoss = float64(proc.AppPacketLoss)
+		if element.ConfiguredNetChar.ThroughputDl == 0 {
+			element.ConfiguredNetChar.ThroughputDl = DEFAULT_THROUGHPUT_LINK
+		}
 
 		// Add element to list
 		netElemList = append(netElemList, *element)
@@ -269,29 +277,37 @@ func (algo *SegmentAlgorithm) CalculateNetChar() []FlowNetChar {
 			if algo.Config.LogVerbose {
 				log.Info("Update allocated bandwidth for ", flow.Name, " to ", flow.MaxPlannedThroughput, " from ", flow.AllocatedThroughput)
 			}
-
-			flow.AllocatedThroughput = flow.MaxPlannedThroughput
-			flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
-			flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
-			flow.AppliedNetChar.Throughput = flow.AllocatedThroughput
-			updateNeeded = true
+			if flow.MaxPlannedThroughput >= 0 {
+				flow.AllocatedThroughput = flow.MaxPlannedThroughput
+				flow.AllocatedThroughputLowerBound = flow.MaxPlannedLowerBound
+				flow.AllocatedThroughputUpperBound = flow.MaxPlannedUpperBound
+				flow.AppliedNetChar.Throughput = flow.AllocatedThroughput
+				updateNeeded = true
+				if flow.MaxPlannedThroughput == 0 {
+					log.Error("Impossible 0 result: ", printFlow(flow))
+				}
+			} else {
+				log.Error("Impossible negative result: ", printFlow(flow))
+			}
 		}
 
 		if (flow.ComputedLatency != flow.AppliedNetChar.Latency) ||
 			(flow.ComputedJitter != flow.AppliedNetChar.Jitter) ||
-			(flow.ComputedPacketLoss != flow.AppliedNetChar.PacketLoss) {
+			(flow.ComputedPacketLoss != flow.AppliedNetChar.PacketLoss) ||
+			(flow.ConfiguredNetChar.Distribution != flow.AppliedNetChar.Distribution) {
 			if algo.Config.LogVerbose {
-				log.Info("Update other netchars for ", flow.Name, " to ", flow.ComputedLatency, "-", flow.ComputedJitter, "-", flow.ComputedPacketLoss, " from ", flow.AppliedNetChar.Latency, "-", flow.AppliedNetChar.Jitter, "-", flow.AppliedNetChar.PacketLoss)
+				log.Info("Update other netchars for ", flow.Name, " to ", flow.ComputedLatency, "-", flow.ComputedJitter, "-", flow.ComputedPacketLoss, " from ", flow.AppliedNetChar.Latency, "-", flow.AppliedNetChar.Jitter, "-", flow.AppliedNetChar.PacketLoss, "-", flow.AppliedNetChar.Distribution)
 			}
 
 			flow.AppliedNetChar.Latency = flow.ComputedLatency
 			flow.AppliedNetChar.Jitter = flow.ComputedJitter
 			flow.AppliedNetChar.PacketLoss = flow.ComputedPacketLoss
+			flow.AppliedNetChar.Distribution = flow.ConfiguredNetChar.Distribution
 			updateNeeded = true
 		}
 
 		if updateNeeded {
-			netchar := NetChar{flow.AppliedNetChar.Latency, flow.AppliedNetChar.Jitter, flow.AppliedNetChar.PacketLoss, flow.AppliedNetChar.Throughput}
+			netchar := NetChar{flow.AppliedNetChar.Latency, flow.AppliedNetChar.Jitter, flow.AppliedNetChar.PacketLoss, flow.AppliedNetChar.Throughput, flow.ConfiguredNetChar.Distribution}
 			flowNetChar := FlowNetChar{flow.SrcNetElem, flow.DstNetElem, netchar}
 			updatedNetCharList = append(updatedNetCharList, flowNetChar)
 		}
@@ -400,13 +416,16 @@ func (algo *SegmentAlgorithm) populateFlow(flowName string, srcElement *SegAlgoN
 
 	// Set maxBw to the minimum of the 2 ends if a max is not forced
 	if maxBw == 0 {
-		if srcElement.ConfiguredNetChar.Throughput < destElement.ConfiguredNetChar.Throughput {
-			maxBw = srcElement.ConfiguredNetChar.Throughput
+		if srcElement.ConfiguredNetChar.ThroughputUl < destElement.ConfiguredNetChar.ThroughputDl {
+			maxBw = srcElement.ConfiguredNetChar.ThroughputUl
 		} else {
-			maxBw = destElement.ConfiguredNetChar.Throughput
+			maxBw = destElement.ConfiguredNetChar.ThroughputDl
 		}
 	}
+
 	flow.ConfiguredNetChar.Throughput = maxBw
+	//using distribution to pass it down, since it is global, they all have the same data at this point, so use any elements distribution
+	flow.ConfiguredNetChar.Distribution = srcElement.ConfiguredNetChar.Distribution
 	flow.ConfiguredNetChar.Latency = 0
 	flow.ConfiguredNetChar.Jitter = 0
 	flow.ConfiguredNetChar.PacketLoss = 0
@@ -438,7 +457,6 @@ func (algo *SegmentAlgorithm) comparePath(oldPath *SegAlgoPath, newPath *SegAlgo
 func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, model *mod.Model) *SegAlgoPath {
 
 	direction := ""
-	segmentName := ""
 	var segment *SegAlgoSegment
 
 	path := new(SegAlgoPath)
@@ -446,22 +464,18 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	//app segment ul, dl
 	direction = "uplink"
-	segmentName = srcElement.Name + direction
-	segment = algo.createSegment(segmentName, flowName, srcElement.Name, model)
+	segment = algo.createSegment(srcElement.Name, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 	direction = "downlink"
-	segmentName = destElement.Name + direction
-	segment = algo.createSegment(segmentName, flowName, destElement.Name, model)
+	segment = algo.createSegment(destElement.Name, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 
 	//node segment ul, dl
 	direction = "uplink"
-	segmentName = srcElement.PhyLocName + direction
-	segment = algo.createSegment(segmentName, flowName, srcElement.PhyLocName, model)
+	segment = algo.createSegment(srcElement.PhyLocName, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 	direction = "downlink"
-	segmentName = destElement.PhyLocName + direction
-	segment = algo.createSegment(segmentName, flowName, destElement.PhyLocName, model)
+	segment = algo.createSegment(destElement.PhyLocName, direction, flowName, model)
 	path.Segments = append(path.Segments, segment)
 
 	//if on same node, return
@@ -472,15 +486,13 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	//network location ul, dl
 	if srcElement.Type == "UE" {
 		direction = "uplink"
-		segmentName = srcElement.PoaName + direction
-		segment = algo.createSegment(segmentName, flowName, srcElement.PoaName, model)
+		segment = algo.createSegment(srcElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 	}
 
 	if destElement.Type == "UE" {
 		direction = "downlink"
-		segmentName = destElement.PoaName + direction
-		segment = algo.createSegment(segmentName, flowName, destElement.PoaName, model)
+		segment = algo.createSegment(destElement.PoaName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 	}
 
@@ -492,16 +504,14 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	//zone ul, dl
 	if srcElement.Type != "DC" {
 		direction = "uplink"
-		segmentName = srcElement.ZoneName + direction
-		segment = algo.createSegment(segmentName, flowName, srcElement.ZoneName, model)
+		segment = algo.createSegment(srcElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
 
 	if destElement.Type != "DC" {
 		direction = "downlink"
-		segmentName = destElement.ZoneName + direction
-		segment = algo.createSegment(segmentName, flowName, destElement.ZoneName, model)
+		segment = algo.createSegment(destElement.ZoneName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
@@ -514,16 +524,14 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	//domain ul, dl
 	if srcElement.Type != "DC" {
 		direction = "uplink"
-		segmentName = srcElement.DomainName + direction
-		segment = algo.createSegment(segmentName, flowName, srcElement.DomainName, model)
+		segment = algo.createSegment(srcElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
 
 	if destElement.Type != "DC" {
 		direction = "downlink"
-		segmentName = destElement.DomainName + direction
-		segment = algo.createSegment(segmentName, flowName, destElement.DomainName, model)
+		segment = algo.createSegment(destElement.DomainName, direction, flowName, model)
 		path.Segments = append(path.Segments, segment)
 
 	}
@@ -533,207 +541,24 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 		return path
 	}
 
-	//cloud ul, dl
-	if srcElement.Type == "DC" {
-		direction = "uplink"
-		segmentName = model.GetScenarioName() + "-cloud-" + direction
-		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
-		path.Segments = append(path.Segments, segment)
+	//interdomain
 
-	}
+	//computing twice while in the interdomain
+	direction = "uplink"
+	segment = algo.createSegment(model.GetScenarioName(), direction, flowName, model)
+	path.Segments = append(path.Segments, segment)
 
-	if destElement.Type == "DC" {
-		direction = "downlink"
-		segmentName = model.GetScenarioName() + "-cloud-" + direction
-		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
-		path.Segments = append(path.Segments, segment)
-
-	}
+	direction = "downlink"
+	segment = algo.createSegment(model.GetScenarioName(), direction, flowName, model)
+	path.Segments = append(path.Segments, segment)
 
 	return path
 }
-
-/*
-
-// createPath -
-func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNetElem, destElement *SegAlgoNetElem, model *mod.Model) *SegAlgoPath {
-
-	//Tier 1 -- check if they are in the same poa
-	//Tier 2 -- check if they are in the same zone, but different poa
-	//Tier 3 -- check if they are in the same domain, but different zone
-	//Tier 4 -- check if they are in different domains
-
-	direction := ""
-	segmentName := ""
-	var segment *SegAlgoSegment
-
-	path := new(SegAlgoPath)
-	path.Name = flowName
-
-	//Tier 1
-	if srcElement.PoaName != "" {
-		//segments from element to POA
-		//2 possibilities
-		//UE->POA
-		//segments for srcElement(app) -> 1A. UE-Node uplink-> 2A. POA-TermLink uplink
-		//FOG-POA
-		//segments for srcElement(app) -> 1B. FogNode uplink
-		direction = "uplink"
-		//segment 1A or 1B
-		segmentName = srcElement.PhyLocName + "-" + direction
-		segment = algo.createSegment(segmentName, flowName, srcElement.PhyLocName, model)
-		path.Segments = append(path.Segments, segment)
-
-		if srcElement.Type == "UE" {
-			//segment 2A
-			segmentName = srcElement.PoaName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, srcElement.PoaName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-	}
-
-	if destElement.PoaName != "" {
-		//segments from POA to element
-		//2 possibilities
-		//POA->FOG
-		//3A. Fog-Node downlink -> dstElement(app)
-		//POA-UE
-		//2B. POA-TermLink downlink -> 3B. UE-Node downlink -> dstElement(app)
-		direction = "downlink"
-		if destElement.Type == "UE" {
-			//segment 2B
-			segmentName = destElement.PoaName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, destElement.PoaName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-
-		//segment 3A or 3B
-		segmentName = destElement.PhyLocName + "-" + direction
-		segment = algo.createSegment(segmentName, flowName, destElement.PhyLocName, model)
-		path.Segments = append(path.Segments, segment)
-	}
-
-	//Tier 2
-	//if same zone, different POA, OR no POA at all (Edge-Edge)
-	if (srcElement.PoaName != destElement.PoaName) || (srcElement.PoaName == "" && destElement.PoaName == "") {
-		//segments to intraZone backbone
-		//2 possibilities
-		//EDGE->IntraZoneBackbone
-		//srcElement(app) -> 1A. Edge-Node uplink -> 2A. IntraZone uplink
-		//POA->IntraZoneBackbone
-		//2B. IntraZone uplink
-		direction = "uplink"
-		if srcElement.Type == "EDGE" {
-			//segment 1A
-			segmentName = srcElement.PhyLocName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, srcElement.PhyLocName, model)
-			path.Segments = append(path.Segments, segment)
-
-			//segment 2A
-			segmentName = srcElement.ZoneName + "-" + srcElement.PhyLocName + "-" + direction
-		} else {
-			//segment 2B
-			segmentName = srcElement.ZoneName + "-" + srcElement.PoaName + "-" + direction
-		}
-		if srcElement.ZoneName != "" {
-			segment = algo.createSegment(segmentName, flowName, srcElement.ZoneName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-
-		//segments from intraZone backbone
-		//2 possibilities
-		//IntraZoneBackbone->EDGE
-		//3A. IntraZone downlink -> 4A. Edge-Node downlink -> srcElement(app)
-		//IntraZoneBackbone->POA
-		//3B. IntraZone downlink
-		direction = "downlink"
-		if destElement.Type == "EDGE" {
-			//segment 4A
-			segmentName = destElement.PhyLocName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, destElement.PhyLocName, model)
-			path.Segments = append(path.Segments, segment)
-
-			//segment 3A
-			segmentName = destElement.ZoneName + "-" + destElement.PhyLocName + "-" + direction
-		} else {
-			//segment 3B
-			segmentName = destElement.ZoneName + "-" + destElement.PoaName + "-" + direction
-		}
-		if destElement.ZoneName != "" {
-			segment = algo.createSegment(segmentName, flowName, destElement.ZoneName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-	}
-
-	//Tier 3
-	if srcElement.ZoneName != destElement.ZoneName {
-		//segments to interZone backbone
-		//1 possibility
-		//Zone->InterZoneBackbone
-		//1A. Zone uplink -> InterZone backbone (if zone exist)
-		direction = "uplink"
-		//segment 1A
-		if srcElement.ZoneName != "" {
-			segmentName = srcElement.ZoneName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, srcElement.DomainName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-
-		//segments from interZone backbone
-		//1 possibility
-		//InterZoneBackbone->Zone
-		//2A. InterZone backbone -> Zone downlink (if zone exist)
-		direction = "downlink"
-		//segment 2A
-		if destElement.ZoneName != "" {
-			segmentName = destElement.ZoneName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, destElement.DomainName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-	}
-
-	//Tier 4
-	if srcElement.DomainName != destElement.DomainName {
-		//segments to interDomain backbone
-		//1 possibility
-		//InterZoneBackbone->InterDomainBackbone
-		//1A. InterZone backbone -> Domain backbone
-		direction = "uplink"
-		//segment 1A
-		segmentName = srcElement.DomainName + "-" + direction
-		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
-		path.Segments = append(path.Segments, segment)
-
-		//segments from interDomain backbone
-		//1 possibility
-		//InterDomainBackbone->InterZoneBackbone
-		//2A. Domain backbone -> InterZone backbone
-		direction = "downlink"
-		//segment 2A
-		segmentName = destElement.DomainName + "-" + direction
-		segment = algo.createSegment(segmentName, flowName, model.GetScenarioName(), model)
-		path.Segments = append(path.Segments, segment)
-
-		//when going through interdomain, either from/to the cloud or another domain, if not cloud, already handled in other tiers sections
-		if destElement.Type == "CLOUD" {
-			segmentName = destElement.PhyLocName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, destElement.PhyLocName, model)
-			path.Segments = append(path.Segments, segment)
-		} else if srcElement.Type == "CLOUD" {
-			direction = "uplink"
-			segmentName = srcElement.PhyLocName + "-" + direction
-			segment = algo.createSegment(segmentName, flowName, srcElement.PhyLocName, model)
-			path.Segments = append(path.Segments, segment)
-		}
-	}
-
-	return path
-}
-*/
 
 // createSegment -
-func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string, elemName string, model *mod.Model) *SegAlgoSegment {
+func (algo *SegmentAlgorithm) createSegment(elemName string, direction string, flowName string, model *mod.Model) *SegAlgoSegment {
 	// Create new segment if it does not exist
+	segmentName := elemName + direction
 	segment := algo.SegmentMap[segmentName]
 	if segment == nil {
 		segment = new(SegAlgoSegment)
@@ -741,9 +566,19 @@ func (algo *SegmentAlgorithm) createSegment(segmentName string, flowName string,
 
 		// Retrieve max throughput from model using model scenario element name
 		nc := getNetChars(elemName, model)
-		segment.ConfiguredNetChar = nc
+		ncThroughput := 0.0
+		if direction == "uplink" {
+			ncThroughput = float64(nc.ThroughputUl)
+		} else {
+			ncThroughput = float64(nc.ThroughputDl)
+		}
 
-		maxThroughput := nc.Throughput
+		segment.ConfiguredNetChar.Latency = float64(nc.Latency)
+		segment.ConfiguredNetChar.Jitter = float64(nc.LatencyVariation)
+		segment.ConfiguredNetChar.PacketLoss = float64(nc.PacketLoss)
+		segment.ConfiguredNetChar.Throughput = float64(ncThroughput)
+
+		maxThroughput := ncThroughput
 		// Initialize segment-specific BW attributes from Algo config
 		if algo.Config.IsPercentage {
 			segment.MaxBwPerInactiveFlow = algo.Config.MaxBwPerInactiveFlow * maxThroughput / 100
@@ -955,6 +790,9 @@ func recalculateSegmentBw(segment *SegAlgoSegment, flowsToEvaluate []*SegAlgoFlo
 	//update or not the throughput
 	for _, flow := range flowsToEvaluate {
 		if flow.PlannedThroughput < flow.MaxPlannedThroughput {
+			if flow.PlannedThroughput <= 0 {
+				log.Error("Max : ", flow.PlannedThroughput, "---", flow.MaxPlannedThroughput)
+			}
 			flow.MaxPlannedThroughput = flow.PlannedThroughput
 			flow.MaxPlannedLowerBound = flow.PlannedLowerBound
 			flow.MaxPlannedUpperBound = flow.PlannedUpperBound
@@ -997,7 +835,10 @@ func updateMaxFairShareBwPerFlow(segment *SegAlgoSegment) {
 }
 
 // getNetChars - Retrieve all network characteristics from model for provided element name
-func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
+func getNetChars(elemName string, model *mod.Model) *dataModel.NetworkCharacteristics {
+
+	nc := new(dataModel.NetworkCharacteristics)
+
 	// Get Node
 	node := model.GetNode(elemName)
 	if node == nil {
@@ -1005,56 +846,30 @@ func getNetChars(elemName string, model *mod.Model) (nc NetChar) {
 		return nc
 	}
 
-	maxThroughput := 0.0
-	latency := 0.0
-	jitter := 0.0
-	packetLoss := 0.0
 	// Get max throughput based on Node Type, as well as other netcharse
 	if p, ok := node.(*dataModel.Process); ok {
-		maxThroughput = float64(p.AppThroughput)
-		latency = float64(p.AppLatency)
-		jitter = float64(p.AppLatencyVariation)
-		packetLoss = float64(p.AppPacketLoss)
+		nc = p.NetChar
 	} else if pl, ok := node.(*dataModel.PhysicalLocation); ok {
-		maxThroughput = float64(pl.LinkThroughput)
-		latency = float64(pl.LinkLatency)
-		jitter = float64(pl.LinkLatencyVariation)
-		packetLoss = float64(pl.LinkPacketLoss)
+		nc = pl.NetChar
 	} else if nl, ok := node.(*dataModel.NetworkLocation); ok {
-		maxThroughput = float64(nl.TerminalLinkThroughput)
-		latency = float64(nl.TerminalLinkLatency)
-		jitter = float64(nl.TerminalLinkLatencyVariation)
-		packetLoss = float64(nl.TerminalLinkPacketLoss)
+		nc = nl.NetChar
 	} else if zone, ok := node.(*dataModel.Zone); ok {
-		if zone.NetChar != nil {
-			maxThroughput = float64(zone.NetChar.Throughput)
-			latency = float64(zone.NetChar.Latency)
-			jitter = float64(zone.NetChar.LatencyVariation)
-			packetLoss = float64(zone.NetChar.PacketLoss)
-		}
+		nc = zone.NetChar
 	} else if domain, ok := node.(*dataModel.Domain); ok {
-		maxThroughput = float64(domain.InterZoneThroughput)
-		latency = float64(domain.InterZoneLatency)
-		jitter = float64(domain.InterZoneLatencyVariation)
-		packetLoss = float64(domain.InterZonePacketLoss)
+		nc = domain.NetChar
 	} else if deployment, ok := node.(*dataModel.Deployment); ok {
-		maxThroughput = float64(deployment.InterDomainThroughput)
-		latency = float64(deployment.InterDomainLatency)
-		jitter = float64(deployment.InterDomainLatencyVariation)
-		packetLoss = float64(deployment.InterDomainPacketLoss)
+		nc = deployment.NetChar
 	} else {
 		log.Error("Error casting element: " + elemName)
 	}
 
 	// For compatiblity reasons, set to default value if 0
-	if maxThroughput == 0 {
-		maxThroughput = DEFAULT_THROUGHPUT_LINK
+	if nc.ThroughputUl == 0 {
+		nc.ThroughputUl = DEFAULT_THROUGHPUT_LINK
 	}
-
-	nc.Throughput = maxThroughput
-	nc.Latency = latency
-	nc.Jitter = jitter
-	nc.PacketLoss = packetLoss
+	if nc.ThroughputDl == 0 {
+		nc.ThroughputDl = DEFAULT_THROUGHPUT_LINK
+	}
 
 	return nc
 }
@@ -1083,6 +898,7 @@ func printFlow(flow *SegAlgoFlow) string {
 	s2t := fmt.Sprintf("%f", flow.ConfiguredNetChar.Throughput)
 	s2l := fmt.Sprintf("%f", flow.ConfiguredNetChar.Latency)
 	s2j := fmt.Sprintf("%f", flow.ConfiguredNetChar.Jitter)
+	s2d := flow.ConfiguredNetChar.Distribution
 	s2p := fmt.Sprintf("%f", flow.ConfiguredNetChar.PacketLoss)
 	s3a := fmt.Sprintf("%f", flow.AllocatedThroughput)
 	s4a := fmt.Sprintf("%f", flow.AllocatedThroughputLowerBound)
@@ -1100,8 +916,9 @@ func printFlow(flow *SegAlgoFlow) string {
 	s8l := fmt.Sprintf("%f", flow.AppliedNetChar.Latency)
 	s8j := fmt.Sprintf("%f", flow.AppliedNetChar.Jitter)
 	s8p := fmt.Sprintf("%f", flow.AppliedNetChar.PacketLoss)
+	s8d := flow.AppliedNetChar.Distribution
 
-	str := s1 + ": " + "Current: " + s6 + " - Configured: [" + s2t + "-" + s2l + "-" + s2j + "-" + s2p + "] Allocated: " + s3a + "[" + s4a + "-" + s5a + "]" + " - MaxPlanned: " + s3m + "[" + s4m + "-" + s5m + "]" + " - Planned: " + s3p + "[" + s4p + "-" + s5p + "] Computed Net Char: [" + s7l + "-" + s7j + "-" + s7p + "] Applied Net Char: [" + s8l + "-" + s8j + "-" + s8p + "]"
+	str := s1 + ": " + "Current: " + s6 + " - Configured: [" + s2t + "-" + s2l + "-" + s2j + "-" + s2p + "-" + s2d + "] Allocated: " + s3a + "[" + s4a + "-" + s5a + "]" + " - MaxPlanned: " + s3m + "[" + s4m + "-" + s5m + "]" + " - Planned: " + s3p + "[" + s4p + "-" + s5p + "] Computed Net Char: [" + s7l + "-" + s7j + "-" + s7p + "] Applied Net Char: [" + s8l + "-" + s8j + "-" + s8p + "-" + s8d + "]"
 	str += printPath(flow.Path)
 	return str
 }

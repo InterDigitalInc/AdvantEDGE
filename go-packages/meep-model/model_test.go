@@ -32,8 +32,12 @@ const modelName string = "test-model"
 const moduleName string = "test-module"
 const moduleNamespace string = "test-ns"
 const testScenario string = `{"_id":"demo1","_rev":"5-905df5009b54170401d47031711afff7","name":"demo1","deployment":{"interDomainLatency":50,"interDomainLatencyVariation":5,"interDomainThroughput":1000,"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","interZoneLatency":6,"interZoneLatencyVariation":2,"interZoneThroughput":1000000,"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]}}]}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","interZoneLatency":15,"interZoneLatencyVariation":3,"interZoneThroughput":1000,"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1}]},{"id":"zone1","name":"zone1","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":1000,"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash"}]},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]}}]}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","terminalLinkLatency":10,"terminalLinkLatencyVariation":2,"terminalLinkThroughput":50}]},{"id":"zone2","name":"zone2","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":20}]}]}]}}`
+
 const testScenario_v1_0_0 string = `{"version":"1.0.0","name":"demo1","deployment":{"interDomainLatency":50,"interDomainLatencyVariation":5,"interDomainThroughput":1000,"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","interZoneLatency":6,"interZoneLatencyVariation":2,"interZoneThroughput":1000000,"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]}}]}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","interZoneLatency":15,"interZoneLatencyVariation":3,"interZoneThroughput":1000,"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","interFogLatency":2,"interFogLatencyVariation":1,"interFogThroughput":1000000,"interEdgeLatency":3,"interEdgeLatencyVariation":1,"interEdgeThroughput":1000000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000000,"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1}]},{"id":"zone1","name":"zone1","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":1000,"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash"}]},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]}}]}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","terminalLinkLatency":10,"terminalLinkLatencyVariation":2,"terminalLinkThroughput":50}]},{"id":"zone2","name":"zone2","type":"ZONE","interFogLatency":10,"interFogLatencyVariation":2,"interFogThroughput":1000,"interEdgeLatency":12,"interEdgeLatencyVariation":2,"interEdgeThroughput":1000,"edgeFogLatency":5,"edgeFogLatencyVariation":1,"edgeFogThroughput":1000,"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":20}]}]}]}}`
+
 const testScenario_v1_3_0 string = `{"version":"1.3.0","name":"demo1","deployment":{"interDomainLatency":50,"interDomainLatencyVariation":5,"interDomainThroughput":1000,"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","interZoneLatency":6,"interZoneLatencyVariation":2,"interZoneThroughput":1000000,"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughput":1000000},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]}}]}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","interZoneLatency":15,"interZoneLatencyVariation":3,"interZoneThroughput":1000,"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1,"throughput":1000000},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughput":1000},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":1000,"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash"}]},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]}}]}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","terminalLinkLatency":10,"terminalLinkLatencyVariation":2,"terminalLinkThroughput":50}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1,"throughput":1000},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":50000,"terminalLinkPacketLoss":1,"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]}}]}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","terminalLinkLatency":1,"terminalLinkLatencyVariation":1,"terminalLinkThroughput":20}]}]}]}}`
+
+const testScenario_v1_5_0 string = `{"version":"1.5.0","name":"demo1","deployment":{"netChar":{"latency":50,"latencyVariation":5,"latencyDistribution":"Normal","throughputDl":1000,"throughputUl":1000},"domains":[{"id":"PUBLIC","name":"PUBLIC","type":"PUBLIC","netChar":{"latency":6,"latencyVariation":2,"throughputDl":1000000,"throughputUl":1000000},"zones":[{"id":"PUBLIC-COMMON","name":"PUBLIC-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1},"networkLocations":[{"id":"PUBLIC-COMMON-DEFAULT","name":"PUBLIC-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"cloud1","name":"cloud1","type":"DC","processes":[{"id":"cloud1-iperf","name":"cloud1-iperf","type":"CLOUD-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"cloud1-iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"cloud1-svc","name":"cloud1-svc","type":"CLOUD-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"cloud1-svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]}]}]},{"id":"operator1","name":"operator1","type":"OPERATOR","netChar":{"latency":15,"latencyVariation":3,"throughputDl":1000,"throughputUl":1000},"zones":[{"id":"operator1-COMMON","name":"operator1-COMMON","type":"COMMON","netChar":{"latency":5,"latencyVariation":1},"networkLocations":[{"id":"operator1-COMMON-DEFAULT","name":"operator1-COMMON-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1}}]},{"id":"zone1","name":"zone1","type":"ZONE","netChar":{"latency":5,"latencyVariation":1},"networkLocations":[{"id":"zone1-DEFAULT","name":"zone1-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone1-edge1","name":"zone1-edge1","type":"EDGE","processes":[{"id":"zone1-edge1-iperf","name":"zone1-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-edge1-svc","name":"zone1-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa1","name":"zone1-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":1000,"throughputUl":1000},"physicalLocations":[{"id":"zone1-fog1","name":"zone1-fog1","type":"FOG","processes":[{"id":"zone1-fog1-iperf","name":"zone1-fog1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone1-fog1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone1-fog1-svc","name":"zone1-fog1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone1-fog1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}},{"id":"ue1","name":"ue1","type":"UE","processes":[{"id":"ue1-iperf","name":"ue1-iperf","type":"UE-APP","image":"gophernet/iperf-client","commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;","commandExe":"/bin/bash","netChar":{}}],"netChar":{}},{"id":"ue2-ext","name":"ue2-ext","type":"UE","isExternal":true,"processes":[{"id":"ue2-svc","name":"ue2-svc","type":"UE-APP","isExternal":true,"externalConfig":{"ingressServiceMap":[{"name":"svc","port":80,"externalPort":31111,"protocol":"TCP"},{"name":"iperf","port":80,"externalPort":31222,"protocol":"UDP"},{"name":"cloud1-svc","port":80,"externalPort":31112,"protocol":"TCP"},{"name":"cloud1-iperf","port":80,"externalPort":31223,"protocol":"UDP"}]},"netChar":{}}],"netChar":{}}]},{"id":"zone1-poa2","name":"zone1-poa2","type":"POA","netChar":{"latency":10,"latencyVariation":2,"throughputDl":50,"throughputUl":50}}]},{"id":"zone2","name":"zone2","type":"ZONE","netChar":{"latency":5,"latencyVariation":1},"networkLocations":[{"id":"zone2-DEFAULT","name":"zone2-DEFAULT","type":"DEFAULT","netChar":{"latency":1,"latencyVariation":1,"throughputDl":50000,"throughputUl":50000,"packetLoss":1},"physicalLocations":[{"id":"zone2-edge1","name":"zone2-edge1","type":"EDGE","processes":[{"id":"zone2-edge1-iperf","name":"zone2-edge1-iperf","type":"EDGE-APP","image":"gophernet/iperf-server","commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;","commandExe":"/bin/bash","serviceConfig":{"name":"zone2-edge1-iperf","meSvcName":"iperf","ports":[{"protocol":"UDP","port":80}]},"netChar":{}},{"id":"zone2-edge1-svc","name":"zone2-edge1-svc","type":"EDGE-APP","image":"meep-docker-registry:30001/demo-server","environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80","serviceConfig":{"name":"zone2-edge1-svc","meSvcName":"svc","ports":[{"protocol":"TCP","port":80}]},"netChar":{}}],"netChar":{}}]},{"id":"zone2-poa1","name":"zone2-poa1","type":"POA","netChar":{"latency":1,"latencyVariation":1,"throughputDl":20,"throughputUl":20}}]}]}]}}`
 
 func TestNewModel(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -315,24 +319,34 @@ func TestUpdateNetChar(t *testing.T) {
 	var nc dataModel.EventNetworkCharacteristicsUpdate
 	nc.ElementName = "demo1"
 	nc.ElementType = "SCENARIO"
-	nc.Latency = 1
-	nc.LatencyVariation = 2
-	nc.Throughput = 3
-	nc.PacketLoss = 4
+	var netChar dataModel.NetworkCharacteristics
+	netChar.Latency = 1
+	netChar.LatencyVariation = 2
+	netChar.LatencyDistribution = "Normal"
+	netChar.ThroughputDl = 3
+	netChar.ThroughputUl = 5
+	netChar.PacketLoss = 4
+	nc.NetChar = &netChar
 	err = m.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
-	if m.scenario.Deployment.InterDomainLatency != 1 {
+	if m.scenario.Deployment.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if m.scenario.Deployment.InterDomainLatencyVariation != 2 {
+	if m.scenario.Deployment.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if m.scenario.Deployment.InterDomainThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if m.scenario.Deployment.NetChar.LatencyDistribution != "Normal" {
+		t.Fatalf("Update " + nc.ElementType + " distribution failed")
 	}
-	if m.scenario.Deployment.InterDomainPacketLoss != 4 {
+	if m.scenario.Deployment.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
+	}
+	if m.scenario.Deployment.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if m.scenario.Deployment.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -344,16 +358,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n := m.nodeMap.FindByName(nc.ElementName)
 	d := n.object.(*dataModel.Domain)
-	if d.InterZoneLatency != 1 {
+	if d.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if d.InterZoneLatencyVariation != 2 {
+	if d.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if d.InterZoneThroughput != 3 {
+	if d.NetChar.ThroughputDl != 3 {
 		t.Fatalf("Update " + nc.ElementType + " throughput failed")
 	}
-	if d.InterZonePacketLoss != 4 {
+	if d.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	}
+	if d.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -371,8 +388,11 @@ func TestUpdateNetChar(t *testing.T) {
 	if z.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if z.NetChar.Throughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if z.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
+	}
+	if z.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
 	}
 	if z.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
@@ -386,16 +406,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	nl := n.object.(*dataModel.NetworkLocation)
-	if nl.TerminalLinkLatency != 1 {
+	if nl.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if nl.TerminalLinkLatencyVariation != 2 {
+	if nl.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if nl.TerminalLinkThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if nl.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if nl.TerminalLinkPacketLoss != 4 {
+	if nl.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if nl.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -407,16 +430,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	pl := n.object.(*dataModel.PhysicalLocation)
-	if pl.LinkLatency != 1 {
+	if pl.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if pl.LinkLatencyVariation != 2 {
+	if pl.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if pl.LinkThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if pl.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if pl.LinkPacketLoss != 4 {
+	if pl.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if pl.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -428,16 +454,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	pl = n.object.(*dataModel.PhysicalLocation)
-	if pl.LinkLatency != 1 {
+	if pl.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if pl.LinkLatencyVariation != 2 {
+	if pl.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if pl.LinkThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if pl.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if pl.LinkPacketLoss != 4 {
+	if pl.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if pl.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -449,16 +478,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	pl = n.object.(*dataModel.PhysicalLocation)
-	if pl.LinkLatency != 1 {
+	if pl.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if pl.LinkLatencyVariation != 2 {
+	if pl.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if pl.LinkThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if pl.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if pl.LinkPacketLoss != 4 {
+	if pl.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if pl.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -470,16 +502,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	pl = n.object.(*dataModel.PhysicalLocation)
-	if pl.LinkLatency != 1 {
+	if pl.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if pl.LinkLatencyVariation != 2 {
+	if pl.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if pl.LinkThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if pl.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if pl.LinkPacketLoss != 4 {
+	if pl.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if pl.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -491,16 +526,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	proc := n.object.(*dataModel.Process)
-	if proc.AppLatency != 1 {
+	if proc.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if proc.AppLatencyVariation != 2 {
+	if proc.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if proc.AppThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if proc.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if proc.AppPacketLoss != 4 {
+	if proc.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if proc.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -512,16 +550,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	proc = n.object.(*dataModel.Process)
-	if proc.AppLatency != 1 {
+	if proc.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if proc.AppLatencyVariation != 2 {
+	if proc.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if proc.AppThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if proc.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if proc.AppPacketLoss != 4 {
+	if proc.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if proc.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -533,16 +574,19 @@ func TestUpdateNetChar(t *testing.T) {
 	}
 	n = m.nodeMap.FindByName(nc.ElementName)
 	proc = n.object.(*dataModel.Process)
-	if proc.AppLatency != 1 {
+	if proc.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if proc.AppLatencyVariation != 2 {
+	if proc.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if proc.AppThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if proc.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
 	}
-	if proc.AppPacketLoss != 4 {
+	if proc.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if proc.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -642,25 +686,35 @@ func TestListenModel(t *testing.T) {
 	var nc dataModel.EventNetworkCharacteristicsUpdate
 	nc.ElementName = "demo1"
 	nc.ElementType = "SCENARIO"
-	nc.Latency = 1
-	nc.LatencyVariation = 2
-	nc.Throughput = 3
-	nc.PacketLoss = 4
+	var netChar dataModel.NetworkCharacteristics
+	netChar.Latency = 1
+	netChar.LatencyVariation = 2
+	netChar.LatencyDistribution = "Normal"
+	netChar.ThroughputDl = 3
+	netChar.ThroughputUl = 5
+	netChar.PacketLoss = 4
+	nc.NetChar = &netChar
 	err = mPub.UpdateNetChar(&nc)
 	if err != nil {
 		t.Fatalf("Update " + nc.ElementType + " failed")
 	}
 	mLis.UpdateScenario()
-	if mLis.scenario.Deployment.InterDomainLatency != 1 {
+	if mLis.scenario.Deployment.NetChar.Latency != 1 {
 		t.Fatalf("Update " + nc.ElementType + " latency failed")
 	}
-	if mLis.scenario.Deployment.InterDomainLatencyVariation != 2 {
+	if mLis.scenario.Deployment.NetChar.LatencyVariation != 2 {
 		t.Fatalf("Update " + nc.ElementType + " jitter failed")
 	}
-	if mLis.scenario.Deployment.InterDomainThroughput != 3 {
-		t.Fatalf("Update " + nc.ElementType + " throughput failed")
+	if mLis.scenario.Deployment.NetChar.LatencyDistribution != "Normal" {
+		t.Fatalf("Update " + nc.ElementType + " distribution failed")
 	}
-	if mLis.scenario.Deployment.InterDomainPacketLoss != 4 {
+	if mLis.scenario.Deployment.NetChar.ThroughputDl != 3 {
+		t.Fatalf("Update " + nc.ElementType + " throughputDl failed")
+	}
+	if mLis.scenario.Deployment.NetChar.ThroughputUl != 5 {
+		t.Fatalf("Update " + nc.ElementType + " throughputUl failed")
+	}
+	if mLis.scenario.Deployment.NetChar.PacketLoss != 4 {
 		t.Fatalf("Update " + nc.ElementType + " packet loss failed")
 	}
 
@@ -1112,35 +1166,60 @@ func TestValidateScenario(t *testing.T) {
 	if validJsonScenario != nil || status != ValidatorStatusError || err == nil {
 		t.Fatalf("validJsonScenario should not be compatible")
 	}
+	/*
+		// Compatible Scenarios
+		fmt.Println("Validate scenario: scenarioVer[none] < validatorVer[1.3.0]")
+		ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
+		validJsonScenario, status, err = ValidateScenario([]byte(testScenario))
+		if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
+			t.Fatalf("validJsonScenario should not be nil")
+		}
+		if string(validJsonScenario) != testScenario_v1_3_0 {
+			log.Info("SIMON valid ",string(validJsonScenario))
+			log.Info("SIMON valid2 ", testScenario_v1_3_0)
+			t.Fatalf("validJsonScenario != testScenario_v1_3_0")
+		}
 
-	// Compatible Scenarios
-	fmt.Println("Validate scenario: scenarioVer[none] < validatorVer[1.3.0]")
-	ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario))
-	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
-		t.Fatalf("validJsonScenario should not be nil")
-	}
-	if string(validJsonScenario) != testScenario_v1_3_0 {
-		t.Fatalf("validJsonScenario != testScenario_v1_3_0")
-	}
+		fmt.Println("Validate scenario: scenarioVer[1.0.0] < validatorVer[1.3.0]")
+		ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
+		validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0))
+		if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
+			t.Fatalf("validJsonScenario should not be nil")
+		}
+		if string(validJsonScenario) != testScenario_v1_3_0 {
+			t.Fatalf("validJsonScenario != testScenario_v1_3_0")
+		}
 
-	fmt.Println("Validate scenario: scenarioVer[1.0.0] < validatorVer[1.3.0]")
-	ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
-	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_0_0))
-	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
-		t.Fatalf("validJsonScenario should not be nil")
-	}
-	if string(validJsonScenario) != testScenario_v1_3_0 {
-		t.Fatalf("validJsonScenario != testScenario_v1_3_0")
-	}
-
-	fmt.Println("Validate scenario: scenarioVer[1.3.0] == validatorVer[1.3.0]")
-	ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
+		fmt.Println("Validate scenario: scenarioVer[1.3.0] == validatorVer[1.3.0]")
+		ValidatorVersion = semver.Version{Major: 1, Minor: 3, Patch: 0}
+		validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0))
+		if validJsonScenario == nil || status != ValidatorStatusValid || err != nil {
+			t.Fatalf("validJsonScenario should not be nil")
+		}
+		if string(validJsonScenario) != testScenario_v1_3_0 {
+			t.Fatalf("validJsonScenario != testScenario_v1_3_0")
+		}
+	*/
+	fmt.Println("Validate scenario: scenarioVer[1.3.0] < validatorVer[1.5.0]")
+	ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 0}
 	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_3_0))
+	if validJsonScenario == nil || status != ValidatorStatusUpdated || err != nil {
+		t.Fatalf("validJsonScenario should not be nil")
+	}
+	if string(validJsonScenario) != testScenario_v1_5_0 {
+		log.Info("SIMON valid ", string(validJsonScenario))
+		log.Info("SIMON valid2 ", testScenario_v1_5_0)
+		t.Fatalf("validJsonScenario != testScenario_v1_5_0")
+	}
+
+	fmt.Println("Validate scenario: scenarioVer[1.5.0] == validatorVer[1.5.0]")
+	ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 0}
+	validJsonScenario, status, err = ValidateScenario([]byte(testScenario_v1_5_0))
 	if validJsonScenario == nil || status != ValidatorStatusValid || err != nil {
 		t.Fatalf("validJsonScenario should not be nil")
 	}
-	if string(validJsonScenario) != testScenario_v1_3_0 {
-		t.Fatalf("validJsonScenario != testScenario_v1_3_0")
+	if string(validJsonScenario) != testScenario_v1_5_0 {
+		t.Fatalf("validJsonScenario != testScenario_v1_5_0")
 	}
+
 }

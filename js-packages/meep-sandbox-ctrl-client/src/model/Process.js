@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ExternalConfig', 'model/GpuConfig', 'model/ServiceConfig'], factory);
+    define(['ApiClient', 'model/ExternalConfig', 'model/GpuConfig', 'model/NetworkCharacteristics', 'model/ServiceConfig'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./ExternalConfig'), require('./GpuConfig'), require('./ServiceConfig'));
+    module.exports = factory(require('../ApiClient'), require('./ExternalConfig'), require('./GpuConfig'), require('./NetworkCharacteristics'), require('./ServiceConfig'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Process = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ExternalConfig, root.AdvantEdgeSandboxControllerRestApi.GpuConfig, root.AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+    root.AdvantEdgeSandboxControllerRestApi.Process = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ExternalConfig, root.AdvantEdgeSandboxControllerRestApi.GpuConfig, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.ServiceConfig);
   }
-}(this, function(ApiClient, ExternalConfig, GpuConfig, ServiceConfig) {
+}(this, function(ApiClient, ExternalConfig, GpuConfig, NetworkCharacteristics, ServiceConfig) {
   'use strict';
 
   /**
@@ -104,6 +104,8 @@
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
+      if (data.hasOwnProperty('netChar'))
+        obj.netChar = NetworkCharacteristics.constructFromObject(data['netChar']);
       if (data.hasOwnProperty('appLatency'))
         obj.appLatency = ApiClient.convertToType(data['appLatency'], 'Number');
       if (data.hasOwnProperty('appLatencyVariation'))
@@ -218,25 +220,30 @@
   exports.prototype.userMeta = undefined;
 
   /**
-   * Latency in ms caused by the application
+   * @member {module:model/NetworkCharacteristics} netChar
+   */
+  exports.prototype.netChar = undefined;
+
+  /**
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latency
    * @member {Number} appLatency
    */
   exports.prototype.appLatency = undefined;
 
   /**
-   * Latency variation in ms caused by the application
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
    * @member {Number} appLatencyVariation
    */
   exports.prototype.appLatencyVariation = undefined;
 
   /**
-   * The limit of the traffic supported by the application
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
    * @member {Number} appThroughput
    */
   exports.prototype.appThroughput = undefined;
 
   /**
-   * Packet lost (in terms of percentage) caused by the application
+   * **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
    * @member {Number} appPacketLoss
    */
   exports.prototype.appPacketLoss = undefined;

@@ -62,6 +62,8 @@ const fieldLbSvcIp string = "lb-svc-ip"
 const fieldLbSvcPort string = "lb-svc-port"
 
 const COMMON_CORRELATION = 50
+const DEFAULT_DISTRIBUTION = "normal"
+
 const THROUGHPUT_UNIT = 1000000 //convert from Mbps to bps
 
 const (
@@ -98,6 +100,7 @@ type FilterInfo struct {
 	Latency            int
 	LatencyVariation   int
 	LatencyCorrelation int
+	Distribution       string
 	PacketLoss         int
 	DataRate           int
 }
@@ -588,7 +591,7 @@ func updateDbState(transactionId int) {
 	_ = tce.netCharStore.rc.SetEntry(keyName, dbState)
 }
 
-func netCharUpdate(dstName string, srcName string, rate float64, latency float64, latencyVariation float64, packetLoss float64) {
+func netCharUpdate(dstName string, srcName string, rate float64, latency float64, latencyVariation float64, distribution string, packetLoss float64) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -609,6 +612,7 @@ func netCharUpdate(dstName string, srcName string, rate float64, latency float64
 	filterInfo.LatencyVariation = int(latencyVariation)
 	filterInfo.PacketLoss = int(100 * packetLoss)
 	filterInfo.DataRate = int(THROUGHPUT_UNIT * rate)
+	filterInfo.Distribution = strings.ToLower(distribution)
 	_ = setShapingRule(filterInfo)
 }
 
@@ -657,6 +661,7 @@ func setFilterInfoRules() {
 				filterInfo.Latency = 0
 				filterInfo.LatencyVariation = 0
 				filterInfo.LatencyCorrelation = COMMON_CORRELATION
+				filterInfo.Distribution = DEFAULT_DISTRIBUTION
 				filterInfo.PacketLoss = 0
 				filterInfo.DataRate = 0
 
@@ -699,6 +704,7 @@ func setShapingRule(filterInfo *FilterInfo) error {
 	m_shape["delay"] = strconv.FormatInt(int64(filterInfo.Latency), 10)
 	m_shape["delayVariation"] = strconv.FormatInt(int64(filterInfo.LatencyVariation), 10)
 	m_shape["delayCorrelation"] = strconv.FormatInt(int64(filterInfo.LatencyCorrelation), 10)
+	m_shape["distribution"] = filterInfo.Distribution
 	m_shape["packetLoss"] = strconv.FormatInt(int64(filterInfo.PacketLoss), 10)
 	m_shape["dataRate"] = strconv.FormatInt(int64(filterInfo.DataRate), 10)
 	m_shape["ifb_uniqueId"] = uniqueId

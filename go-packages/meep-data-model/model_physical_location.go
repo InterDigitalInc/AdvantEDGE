@@ -38,14 +38,15 @@ type PhysicalLocation struct {
 	// Key/Value Pair Map (string, string)
 	Meta map[string]string `json:"meta,omitempty"`
 	// Key/Value Pair Map (string, string)
-	UserMeta  map[string]string `json:"userMeta,omitempty"`
-	Processes []Process         `json:"processes,omitempty"`
-	// Latency in ms between the physical location and the network (wired interface, air interface)
+	UserMeta  map[string]string       `json:"userMeta,omitempty"`
+	Processes []Process               `json:"processes,omitempty"`
+	NetChar   *NetworkCharacteristics `json:"netChar,omitempty"`
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latency
 	LinkLatency int32 `json:"linkLatency,omitempty"`
-	// Latency variation in ms between the physical location and the network (wired interface, air interface)
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation
 	LinkLatencyVariation int32 `json:"linkLatencyVariation,omitempty"`
-	// The limit of the traffic supported between the physical location and the network (wired interface, air interface)
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl
 	LinkThroughput int32 `json:"linkThroughput,omitempty"`
-	// Packet lost (in terms of percentage) between the physical location and the network (wired interface, air interface)
+	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	LinkPacketLoss float64 `json:"linkPacketLoss,omitempty"`
 }

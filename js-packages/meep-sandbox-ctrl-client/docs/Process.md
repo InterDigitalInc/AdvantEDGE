@@ -20,10 +20,11 @@ Name | Type | Description | Notes
 **userChartGroup** | **String** | Chart supplemental information related to the group (service) | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
-**appLatency** | **Number** | Latency in ms caused by the application | [optional] 
-**appLatencyVariation** | **Number** | Latency variation in ms caused by the application | [optional] 
-**appThroughput** | **Number** | The limit of the traffic supported by the application | [optional] 
-**appPacketLoss** | **Number** | Packet lost (in terms of percentage) caused by the application | [optional] 
+**netChar** | [**NetworkCharacteristics**](NetworkCharacteristics.md) |  | [optional] 
+**appLatency** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar latency | [optional] 
+**appLatencyVariation** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] 
+**appThroughput** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] 
+**appPacketLoss** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss | [optional] 
 **placementId** | **String** | Identifier used for process placement in AdvantEDGE cluster | [optional] 
 
 
