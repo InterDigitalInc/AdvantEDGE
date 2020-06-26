@@ -324,7 +324,7 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 	// Find the element
 	if ncType == NetCharScenario {
 		if m.scenario.Deployment.NetChar == nil {
-                	m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
+			m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
 		}
 		m.scenario.Deployment.NetChar = nc.NetChar
 		updated = true
@@ -336,9 +336,9 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		}
 		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
 			domain := n.object.(*dataModel.Domain)
-                        if domain.NetChar == nil {
-                                domain.NetChar = new(dataModel.NetworkCharacteristics)
-                        }
+			if domain.NetChar == nil {
+				domain.NetChar = new(dataModel.NetworkCharacteristics)
+			}
 			domain.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharZone {
@@ -350,23 +350,23 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 			updated = true
 		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
 			nl := n.object.(*dataModel.NetworkLocation)
-                        if nl.NetChar == nil {
-                                nl.NetChar = new(dataModel.NetworkCharacteristics)
-                        }
+			if nl.NetChar == nil {
+				nl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
 			nl.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
 			pl := n.object.(*dataModel.PhysicalLocation)
-                        if pl.NetChar == nil {
-                                pl.NetChar = new(dataModel.NetworkCharacteristics)
-                        }
+			if pl.NetChar == nil {
+				pl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
 			pl.NetChar = nc.NetChar
 			updated = true
 		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
 			proc := n.object.(*dataModel.Process)
-                        if proc.NetChar == nil {
-                        	proc.NetChar = new(dataModel.NetworkCharacteristics)
-                        }
+			if proc.NetChar == nil {
+				proc.NetChar = new(dataModel.NetworkCharacteristics)
+			}
 			proc.NetChar = nc.NetChar
 			updated = true
 		} else {

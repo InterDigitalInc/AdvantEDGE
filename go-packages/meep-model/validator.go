@@ -386,12 +386,13 @@ func validatePL(pl *dataModel.PhysicalLocation) error {
 	if pl.Type_ != NodeTypeUE {
 		return errors.New("Unsupported PL Type: " + pl.Type_)
 	}
-	if pl.NetChar.ThroughputDl == 0 {
-		pl.NetChar.ThroughputDl = 1000
+	if pl.NetChar != nil {
+		if pl.NetChar.ThroughputDl == 0 {
+			pl.NetChar.ThroughputDl = 1000
+		}
+		if pl.NetChar.ThroughputUl == 0 {
+			pl.NetChar.ThroughputUl = 1000
+		}
 	}
-	if pl.NetChar.ThroughputUl == 0 {
-		pl.NetChar.ThroughputUl = 1000
-	}
-
 	return nil
 }

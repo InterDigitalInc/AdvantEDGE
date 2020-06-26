@@ -55,21 +55,21 @@ type NetCharAlgo interface {
 
 // NetChar
 type NetChar struct {
-	Latency    float64
-	Jitter     float64
-	PacketLoss float64
-	Throughput float64
+	Latency      float64
+	Jitter       float64
+	PacketLoss   float64
+	Throughput   float64
 	Distribution string
 }
 
 // NetChar
 type ElemNetChar struct {
-        Latency    float64
-        Jitter     float64
-        Distribution string
-        PacketLoss float64
-        ThroughputUl float64
-        ThroughputDl float64
+	Latency      float64
+	Jitter       float64
+	Distribution string
+	PacketLoss   float64
+	ThroughputUl float64
+	ThroughputDl float64
 }
 
 // FlowNetChar
@@ -286,7 +286,7 @@ func (ncm *NetCharManager) updateNetChars() {
 	if len(updatedNetCharList) != 0 {
 		for _, flowNetChar := range updatedNetCharList {
 			if ncm.netCharUpdateCb != nil {
-				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.Distribution,/*flowNetChar.MyNetChar.Distribution,*/ flowNetChar.MyNetChar.PacketLoss)
+				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.Distribution /*flowNetChar.MyNetChar.Distribution,*/, flowNetChar.MyNetChar.PacketLoss)
 			}
 		}
 		if ncm.updateCompleteCb != nil {
