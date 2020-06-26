@@ -23,13 +23,16 @@ spec:
     spec:
       serviceAccountName: {{ .Values.serviceAccount }}
       volumes:
-        - name: data
         {{- if .Values.persistence.enabled }}
+        - name: data
           persistentVolumeClaim:
             claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "meep-virt-engine.fullname" . }}{{- end }}
-        {{- else }}
-          emptyDir: {}
         {{- end -}}
+        {{- if .Values.user.values.enabled}}
+          - name: user-values-storage
+            persistentVolumeClaim:
+              claimName: meep-virt-engine-user-values-pvc
+        {{- end}}
         {{- if .Values.codecov.enabled}}
         - name: codecov-storage
           persistentVolumeClaim:
@@ -54,6 +57,10 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data/
+            {{- if .Values.user.values.enabled}}
+              - name: user-values-storage
+                mountPath: {{ .Values.user.values.mountpath }}
+            {{- end}}
             {{- if .Values.codecov.enabled}}
             - name: codecov-storage
               mountPath: /codecov

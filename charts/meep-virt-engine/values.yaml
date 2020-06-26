@@ -47,6 +47,13 @@ persistence:
   # storageClass: '-'
   storageClass: 'fullname'
 
+user:
+  values:
+    enabled: true
+    location: "<WORKDIR>/user/values"
+    mountpath: "/user-values"
+
+
 codecov:
   enabled: false
 
