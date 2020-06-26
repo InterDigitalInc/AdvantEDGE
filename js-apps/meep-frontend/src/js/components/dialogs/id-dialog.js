@@ -28,7 +28,7 @@ import {
 const IDDialog = props => {
   return (
     <Dialog
-      style={{zIndex: 1000}}
+      style={{zIndex: 10000}}
       open={props.open}
       onClose={() => {
         props.onClose();

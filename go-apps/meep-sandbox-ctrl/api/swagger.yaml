@@ -1061,7 +1061,7 @@ definitions:
         - "EDGE"
         - "FOG"
         - "UE"
-        - "DISTANT-CLOUD"
+        - "DC"
         - "UE-APP"
         - "EDGE-APP"
         - "CLOUD-APP"
