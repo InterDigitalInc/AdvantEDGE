@@ -338,8 +338,14 @@ class IDCMap extends Component {
 
     if (existingMarker === undefined) {
       // Create path, if any
-      // var p = ue.path ? L.GeoJSON.geometryToLayer(ue.path) : null;
-      var p = pathLatLngs ? L.polyline(pathLatLngs) : null;
+      var p = !pathLatLngs ? null : L.polyline(pathLatLngs, {
+        meep: {
+          path: {
+            id: ue.assetName
+          }
+        },
+        pmIgnore: (this.props.type === TYPE_CFG) ? false : true
+      });
 
       // Create new UE marker
       var m = L.marker(latlng, {
@@ -377,7 +383,14 @@ class IDCMap extends Component {
         if (existingMarker.options.meep.ue.path) {
           existingMarker.options.meep.ue.path.setLatLngs(pathLatLngs);
         } else {
-          var path = L.polyline(pathLatLngs);
+          var path = L.polyline(pathLatLngs, {
+            meep: {
+              path: {
+                id: ue.assetName
+              }
+            },
+            pmIgnore: (this.props.type === TYPE_CFG) ? false : true
+          });
           existingMarker.options.meep.ue.path = path;
           path.addTo(this.uePathOverlay);
         }
