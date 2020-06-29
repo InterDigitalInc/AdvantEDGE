@@ -33,53 +33,26 @@ const (
 	ValidatorStatusError   = "SCENARIO-ERROR"
 )
 
-var DefaultVersion = semver.Version{Major: 1, Minor: 0, Patch: 0}
+// Current validator version
 var ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 0}
 
-// Default latencies per physical location type
-const DEFAULT_LATENCY_INTER_DOMAIN = 50
-const DEFAULT_LATENCY_JITTER_INTER_DOMAIN = 10
-const DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN = "Normal"
-const DEFAULT_THROUGHPUT_DL_INTER_DOMAIN = 1000
-const DEFAULT_THROUGHPUT_UL_INTER_DOMAIN = 1000
-const DEFAULT_PACKET_LOSS_INTER_DOMAIN = 0
-const DEFAULT_LATENCY_INTER_ZONE = 6
-const DEFAULT_LATENCY_JITTER_INTER_ZONE = 2
-const DEFAULT_THROUGHPUT_DL_INTER_ZONE = 1000
-const DEFAULT_THROUGHPUT_UL_INTER_ZONE = 1000
-const DEFAULT_PACKET_LOSS_INTER_ZONE = 0
-const DEFAULT_LATENCY_INTRA_ZONE = 5
-const DEFAULT_LATENCY_JITTER_INTRA_ZONE = 1
-const DEFAULT_THROUGHPUT_DL_INTRA_ZONE = 1000
-const DEFAULT_THROUGHPUT_UL_INTRA_ZONE = 1000
-const DEFAULT_PACKET_LOSS_INTRA_ZONE = 0
-const DEFAULT_LATENCY_TERMINAL_LINK = 1
-const DEFAULT_LATENCY_JITTER_TERMINAL_LINK = 1
-const DEFAULT_THROUGHPUT_DL_TERMINAL_LINK = 1000
-const DEFAULT_THROUGHPUT_UL_TERMINAL_LINK = 1000
-const DEFAULT_PACKET_LOSS_TERMINAL_LINK = 0
-const DEFAULT_LATENCY_LINK = 0
-const DEFAULT_LATENCY_JITTER_LINK = 0
-const DEFAULT_THROUGHPUT_DL_LINK = 1000
-const DEFAULT_THROUGHPUT_UL_LINK = 1000
-const DEFAULT_PACKET_LOSS_LINK = 0
-const DEFAULT_LATENCY_APP = 0
-const DEFAULT_LATENCY_JITTER_APP = 0
-const DEFAULT_THROUGHPUT_DL_APP = 1000
-const DEFAULT_THROUGHPUT_UL_APP = 1000
-const DEFAULT_PACKET_LOSS_APP = 0
-const DEFAULT_LATENCY_DC = 0
+// Versions requiring scenario update
+var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
+var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
+var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
+
+// Default latency distribution
+const DEFAULT_LATENCY_DISTRIBUTION = "Normal"
 
 // setNetChar - Creates a new netchar object if non-existent and migrate values from deprecated fields
-func createNetChar(latency int32, latencyVariation int32, distribution string, throughputDl int32, throughputUl int32, packetLoss float64) *dataModel.NetworkCharacteristics {
-
+func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl int32, loss float64) *dataModel.NetworkCharacteristics {
 	nc := new(dataModel.NetworkCharacteristics)
-	nc.Latency = latency
-	nc.LatencyVariation = latencyVariation
-	nc.LatencyDistribution = distribution
-	nc.PacketLoss = packetLoss
-	nc.ThroughputDl = throughputDl
-	nc.ThroughputUl = throughputUl
+	nc.Latency = lat
+	nc.LatencyVariation = latVar
+	nc.LatencyDistribution = dist
+	nc.PacketLoss = loss
+	nc.ThroughputDl = tputDl
+	nc.ThroughputUl = tputUl
 	return nc
 }
 
@@ -95,276 +68,45 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 		return nil, ValidatorStatusError, err
 	}
 	// Retrieve scenario version
+	// If no version found, assume current validator version
 	if scenario.Version == "" {
-		scenarioVersion = DefaultVersion
+		scenarioVersion = ValidatorVersion
 	} else {
 		scenarioVersion, err = semver.Make(scenario.Version)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, ValidatorStatusError, err
 		}
-	}
-	// Verify that scenario is compatible
-	if scenarioVersion.Major != ValidatorVersion.Major || scenarioVersion.GT(ValidatorVersion) {
-		err = errors.New("Scenario version " + scenario.Version + " incompatible with validator version " + ValidatorVersion.String())
-		return nil, ValidatorStatusError, err
-	}
 
-	// Upgrade scenario if necessary
-	if scenarioVersion.EQ(ValidatorVersion) {
-		return jsonScenario, ValidatorStatusValid, nil
-	} else {
-		// Set updated version
-		previousVersion := scenario.Version
-		scenario.Version = ValidatorVersion.String()
+		// Verify that scenario is compatible
+		if scenarioVersion.Major != ValidatorVersion.Major ||
+			scenarioVersion.GT(ValidatorVersion) ||
+			scenarioVersion.LT(Version130) {
+			err = errors.New("Scenario version " + scenario.Version + " incompatible with validator version " + ValidatorVersion.String())
+			return nil, ValidatorStatusError, err
+		}
 
-		//NetChar validator variables
-		var latency int32
-		var latencyVariation int32
-		var latencyDistribution string
-		var throughputDl int32
-		var throughputUl int32
-		var packetLoss float64
-
-		// Migrate netchar information
-		if scenario.Deployment != nil {
-			deploy := scenario.Deployment
-			latency = deploy.InterDomainLatency
-			latencyVariation = deploy.InterDomainLatencyVariation
-			latencyDistribution = DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN
-			throughputDl = deploy.InterDomainThroughput
-			throughputUl = deploy.InterDomainThroughput
-			packetLoss = deploy.InterDomainPacketLoss
-
-			nc := deploy.NetChar
-			if nc != nil {
-				//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-				if nc.Latency != DEFAULT_LATENCY_INTER_DOMAIN {
-					latency = nc.Latency
-				}
-				if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_INTER_DOMAIN {
-					latencyVariation = nc.LatencyVariation
-				}
-				if nc.LatencyDistribution != DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN {
-					latencyDistribution = nc.LatencyDistribution
-				}
-				if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_INTER_DOMAIN {
-					throughputDl = nc.ThroughputDl
-				}
-				if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_INTER_DOMAIN {
-					throughputUl = nc.ThroughputUl
-				}
-				if nc.PacketLoss != DEFAULT_PACKET_LOSS_INTER_DOMAIN {
-					packetLoss = nc.PacketLoss
-				}
-			}
-			deploy.NetChar = createNetChar(latency, latencyVariation, latencyDistribution, throughputDl, throughputUl, packetLoss)
-
-			// Reset deprecated values to omit them
-			deploy.InterDomainLatency = 0
-			deploy.InterDomainLatencyVariation = 0
-			deploy.InterDomainPacketLoss = 0
-			deploy.InterDomainThroughput = 0
-
-			for iDomain := range scenario.Deployment.Domains {
-				domain := &scenario.Deployment.Domains[iDomain]
-				latency = domain.InterZoneLatency
-				latencyVariation = domain.InterZoneLatencyVariation
-				throughputDl = domain.InterZoneThroughput
-				throughputUl = domain.InterZoneThroughput
-				packetLoss = domain.InterZonePacketLoss
-				nc := domain.NetChar
-				if nc != nil {
-					//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-					if nc.Latency != DEFAULT_LATENCY_INTER_ZONE {
-						latency = nc.Latency
-					}
-					if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_INTER_ZONE {
-						latencyVariation = nc.LatencyVariation
-					}
-					if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_INTER_ZONE {
-						throughputDl = nc.ThroughputDl
-					}
-					if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_INTER_ZONE {
-						throughputUl = nc.ThroughputUl
-					}
-					if nc.PacketLoss != DEFAULT_PACKET_LOSS_INTER_ZONE {
-						packetLoss = nc.PacketLoss
-					}
-				}
-				domain.NetChar = createNetChar(latency, latencyVariation, "", throughputDl, throughputUl, packetLoss)
-
-				// Reset deprecated values to omit them
-				domain.InterZoneLatency = 0
-				domain.InterZoneLatencyVariation = 0
-				domain.InterZonePacketLoss = 0
-				domain.InterZoneThroughput = 0
-
-				for iZone := range domain.Zones {
-					zone := &domain.Zones[iZone]
-					latency = zone.EdgeFogLatency
-					latencyVariation = zone.EdgeFogLatencyVariation
-					throughputDl = zone.EdgeFogThroughput
-					throughputUl = zone.EdgeFogThroughput
-					packetLoss = zone.EdgeFogPacketLoss
-					if zone.NetChar != nil {
-						nc := zone.NetChar
-						//migration from 1.3
-						if previousVersion == "1.3" {
-							latency = zone.EdgeFogLatency
-							latencyVariation = zone.EdgeFogLatencyVariation
-							throughputDl = zone.EdgeFogThroughput
-							throughputUl = zone.EdgeFogThroughput
-							packetLoss = zone.EdgeFogPacketLoss
-						} else {
-							latency = nc.Latency
-							latencyVariation = nc.LatencyVariation
-							throughputDl = nc.Throughput
-							throughputUl = nc.Throughput
-							packetLoss = nc.PacketLoss
-						}
-						//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-						if nc.Latency != DEFAULT_LATENCY_INTER_ZONE {
-							latency = nc.Latency
-						}
-						if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_INTER_ZONE {
-							latencyVariation = nc.LatencyVariation
-						}
-						if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_INTER_ZONE {
-							throughputDl = nc.ThroughputDl
-						}
-						if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_INTER_ZONE {
-							throughputUl = nc.ThroughputUl
-						}
-						if nc.PacketLoss != DEFAULT_PACKET_LOSS_INTER_ZONE {
-							packetLoss = nc.PacketLoss
-						}
-					}
-					zone.NetChar = createNetChar(latency, latencyVariation, "", throughputDl, throughputUl, packetLoss)
-					// Reset deprecated values to omit them from v1.4
-					zone.NetChar.Throughput = 0
-					// Reset deprecated values to omit them from v1.3
-					zone.InterEdgeLatency = 0
-					zone.InterEdgeLatencyVariation = 0
-					zone.InterEdgePacketLoss = 0
-					zone.InterEdgeThroughput = 0
-					zone.InterFogLatency = 0
-					zone.InterFogLatencyVariation = 0
-					zone.InterFogPacketLoss = 0
-					zone.InterFogThroughput = 0
-					zone.EdgeFogLatency = 0
-					zone.EdgeFogLatencyVariation = 0
-					zone.EdgeFogPacketLoss = 0
-					zone.EdgeFogThroughput = 0
-					for iNl := range zone.NetworkLocations {
-						nl := &zone.NetworkLocations[iNl]
-						latency = nl.TerminalLinkLatency
-						latencyVariation = nl.TerminalLinkLatencyVariation
-						throughputDl = nl.TerminalLinkThroughput
-						throughputUl = nl.TerminalLinkThroughput
-						packetLoss = nl.TerminalLinkPacketLoss
-						nc := nl.NetChar
-						if nc != nil {
-							//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-							if nc.Latency != DEFAULT_LATENCY_TERMINAL_LINK {
-								latency = nc.Latency
-							}
-							if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_TERMINAL_LINK {
-								latencyVariation = nc.LatencyVariation
-							}
-							if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_TERMINAL_LINK {
-								throughputDl = nc.ThroughputDl
-							}
-							if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_TERMINAL_LINK {
-								throughputUl = nc.ThroughputUl
-							}
-							if nc.PacketLoss != DEFAULT_PACKET_LOSS_TERMINAL_LINK {
-								packetLoss = nc.PacketLoss
-							}
-						}
-						nl.NetChar = createNetChar(latency, latencyVariation, "", throughputDl, throughputUl, packetLoss)
-
-						// Reset deprecated values to omit them
-						nl.TerminalLinkLatency = 0
-						nl.TerminalLinkLatencyVariation = 0
-						nl.TerminalLinkPacketLoss = 0
-						nl.TerminalLinkThroughput = 0
-
-						// Physical Locations
-						for iPl := range nl.PhysicalLocations {
-							pl := &nl.PhysicalLocations[iPl]
-							latency = pl.LinkLatency
-							latencyVariation = pl.LinkLatencyVariation
-							throughputDl = pl.LinkThroughput
-							throughputUl = pl.LinkThroughput
-							packetLoss = pl.LinkPacketLoss
-							nc := pl.NetChar
-							if nc != nil {
-								//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-								if nc.Latency != DEFAULT_LATENCY_LINK {
-									latency = nc.Latency
-								}
-								if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_LINK {
-									latencyVariation = nc.LatencyVariation
-								}
-								if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_LINK {
-									throughputDl = nc.ThroughputDl
-								}
-								if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_LINK {
-									throughputUl = nc.ThroughputUl
-								}
-								if nc.PacketLoss != DEFAULT_PACKET_LOSS_LINK {
-									packetLoss = nc.PacketLoss
-								}
-							}
-							pl.NetChar = createNetChar(latency, latencyVariation, "", throughputDl, throughputUl, packetLoss)
-
-							// Reset deprecated values to omit them
-							pl.LinkLatency = 0
-							pl.LinkLatencyVariation = 0
-							pl.LinkPacketLoss = 0
-							pl.LinkThroughput = 0
-
-							for iProc := range pl.Processes {
-								proc := &pl.Processes[iProc]
-								latency = proc.AppLatency
-								latencyVariation = proc.AppLatencyVariation
-								throughputDl = proc.AppThroughput
-								throughputUl = proc.AppThroughput
-								packetLoss = proc.AppPacketLoss
-								nc := proc.NetChar
-								if nc != nil {
-									//netchar got already created, if values are default, replace them with what was in the scenario, otherwise, leave them as is
-									if nc.Latency != DEFAULT_LATENCY_APP {
-										latency = nc.Latency
-									}
-									if nc.LatencyVariation != DEFAULT_LATENCY_JITTER_APP {
-										latencyVariation = nc.LatencyVariation
-									}
-									if nc.ThroughputDl != DEFAULT_THROUGHPUT_DL_APP {
-										throughputDl = nc.ThroughputDl
-									}
-									if nc.ThroughputUl != DEFAULT_THROUGHPUT_UL_APP {
-										throughputUl = nc.ThroughputUl
-									}
-									if nc.PacketLoss != DEFAULT_PACKET_LOSS_APP {
-										packetLoss = nc.PacketLoss
-									}
-								}
-								proc.NetChar = createNetChar(latency, latencyVariation, "", throughputDl, throughputUl, packetLoss)
-
-								// Reset deprecated values to omit them
-								proc.AppLatency = 0
-								proc.AppLatencyVariation = 0
-								proc.AppPacketLoss = 0
-								proc.AppThroughput = 0
-							}
-						}
-					}
-				}
-			}
+		// Skip validation if already current version
+		if scenarioVersion.EQ(ValidatorVersion) {
+			return jsonScenario, ValidatorStatusValid, nil
 		}
 	}
+
+	// Run upgrade functions starting from oldest applicable patch to newest
+
+	// UPGRADE TO 1.4.0
+	if scenarioVersion.LT(Version140) {
+		upgradeScenarioTo140(scenario)
+		scenarioVersion = Version140
+	}
+	// UPGRADE TO 1.5.0
+	if scenarioVersion.LT(Version150) {
+		upgradeScenarioTo150(scenario)
+		scenarioVersion = Version150
+	}
+
+	// Set current scenario version
+	scenario.Version = ValidatorVersion.String()
 
 	// Marshal updated scenario
 	validJsonScenario, err = json.Marshal(scenario)
@@ -372,6 +114,168 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 		return nil, ValidatorStatusError, err
 	}
 	return validJsonScenario, ValidatorStatusUpdated, err
+}
+
+func upgradeScenarioTo140(scenario *dataModel.Scenario) {
+	// Set updated version
+	scenario.Version = Version140.String()
+
+	if scenario.Deployment != nil {
+		for iDomain := range scenario.Deployment.Domains {
+			domain := &scenario.Deployment.Domains[iDomain]
+			for iZone := range domain.Zones {
+				zone := &domain.Zones[iZone]
+
+				// Create new Network Characteristic field and migrate values from EdgeFog
+				if zone.NetChar == nil {
+					zone.NetChar = new(dataModel.NetworkCharacteristics)
+					zone.NetChar.Latency = zone.EdgeFogLatency
+					zone.NetChar.LatencyVariation = zone.EdgeFogLatencyVariation
+					zone.NetChar.PacketLoss = zone.EdgeFogPacketLoss
+					zone.NetChar.Throughput = zone.EdgeFogThroughput
+				}
+
+				// Reset deprecated values to omit them
+				zone.InterEdgeLatency = 0
+				zone.InterEdgeLatencyVariation = 0
+				zone.InterEdgePacketLoss = 0
+				zone.InterEdgeThroughput = 0
+				zone.InterFogLatency = 0
+				zone.InterFogLatencyVariation = 0
+				zone.InterFogPacketLoss = 0
+				zone.InterFogThroughput = 0
+				zone.EdgeFogLatency = 0
+				zone.EdgeFogLatencyVariation = 0
+				zone.EdgeFogPacketLoss = 0
+				zone.EdgeFogThroughput = 0
+			}
+		}
+	}
+}
+
+func upgradeScenarioTo150(scenario *dataModel.Scenario) {
+	// Set updated version
+	scenario.Version = Version150.String()
+
+	// Migrate netchar information
+	if scenario.Deployment != nil {
+		deploy := scenario.Deployment
+
+		// Create new Network Characteristic field and migrate values, if necessary
+		if deploy.NetChar == nil {
+			deploy.NetChar = createNetChar(
+				deploy.InterDomainLatency,
+				deploy.InterDomainLatencyVariation,
+				DEFAULT_LATENCY_DISTRIBUTION,
+				deploy.InterDomainThroughput,
+				deploy.InterDomainThroughput,
+				deploy.InterDomainPacketLoss)
+		}
+
+		// Reset deprecated values to omit them
+		deploy.InterDomainLatency = 0
+		deploy.InterDomainLatencyVariation = 0
+		deploy.InterDomainPacketLoss = 0
+		deploy.InterDomainThroughput = 0
+
+		for iDomain := range scenario.Deployment.Domains {
+			domain := &scenario.Deployment.Domains[iDomain]
+
+			// Create new Network Characteristic field and migrate values, if necessary
+			if domain.NetChar == nil {
+				domain.NetChar = createNetChar(
+					domain.InterZoneLatency,
+					domain.InterZoneLatencyVariation,
+					"",
+					domain.InterZoneThroughput,
+					domain.InterZoneThroughput,
+					domain.InterZonePacketLoss)
+			}
+
+			// Reset deprecated values to omit them
+			domain.InterZoneLatency = 0
+			domain.InterZoneLatencyVariation = 0
+			domain.InterZonePacketLoss = 0
+			domain.InterZoneThroughput = 0
+
+			for iZone := range domain.Zones {
+				zone := &domain.Zones[iZone]
+
+				// Migrate throughput values, if necessary
+				if zone.NetChar.ThroughputDl == 0 {
+					zone.NetChar.ThroughputDl = zone.NetChar.Throughput
+					zone.NetChar.ThroughputUl = zone.NetChar.Throughput
+				}
+
+				// Reset deprecated values to omit
+				zone.NetChar.Throughput = 0
+
+				for iNl := range zone.NetworkLocations {
+					nl := &zone.NetworkLocations[iNl]
+
+					// Create new Network Characteristic field and migrate values, if necessary
+					if nl.NetChar == nil {
+						nl.NetChar = createNetChar(
+							nl.TerminalLinkLatency,
+							nl.TerminalLinkLatencyVariation,
+							"",
+							nl.TerminalLinkThroughput,
+							nl.TerminalLinkThroughput,
+							nl.TerminalLinkPacketLoss)
+					}
+
+					// Reset deprecated values to omit them
+					nl.TerminalLinkLatency = 0
+					nl.TerminalLinkLatencyVariation = 0
+					nl.TerminalLinkPacketLoss = 0
+					nl.TerminalLinkThroughput = 0
+
+					// Physical Locations
+					for iPl := range nl.PhysicalLocations {
+						pl := &nl.PhysicalLocations[iPl]
+
+						// Create new Network Characteristic field and migrate values, if necessary
+						if pl.NetChar == nil {
+							pl.NetChar = createNetChar(
+								pl.LinkLatency,
+								pl.LinkLatencyVariation,
+								"",
+								pl.LinkThroughput,
+								pl.LinkThroughput,
+								pl.LinkPacketLoss)
+						}
+
+						// Reset deprecated values to omit them
+						pl.LinkLatency = 0
+						pl.LinkLatencyVariation = 0
+						pl.LinkPacketLoss = 0
+						pl.LinkThroughput = 0
+
+						for iProc := range pl.Processes {
+							proc := &pl.Processes[iProc]
+
+							// Create new Network Characteristic field and migrate values, if necessary
+							if proc.NetChar == nil {
+								proc.NetChar = createNetChar(
+									proc.AppLatency,
+									proc.AppLatencyVariation,
+									"",
+									proc.AppThroughput,
+									proc.AppThroughput,
+									proc.AppPacketLoss)
+							}
+
+							// Reset deprecated values to omit them
+							proc.AppLatency = 0
+							proc.AppLatencyVariation = 0
+							proc.AppPacketLoss = 0
+							proc.AppThroughput = 0
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 // Validate the provided PL

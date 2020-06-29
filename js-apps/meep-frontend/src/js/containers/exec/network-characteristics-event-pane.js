@@ -60,9 +60,6 @@ import {
   PREFIX_LINK,
   PREFIX_APP,
 
-  // Layout type
-  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
-
   DOMAIN_TYPE_STR,
   DOMAIN_CELL_TYPE_STR,
   POA_TYPE_STR,
@@ -415,7 +412,6 @@ class NetworkCharacteristicsEventPane extends Component {
         </Grid>
 
         {elements.length ? <NCGroup
-          layout={MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT}
           onUpdate={(name, val, err) => {
             this.onUpdateElement(name, val, err);
           }}

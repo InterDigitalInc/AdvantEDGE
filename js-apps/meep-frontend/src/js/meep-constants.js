@@ -15,7 +15,7 @@
  */
 
 export const HOST_PATH = location.origin;
-//export const HOST_PATH = 'http://10.3.16.150';
+// export const HOST_PATH = 'http://10.3.16.105';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -277,11 +277,6 @@ export const PREFIX_INTRA_ZONE = 'Intra-Zone';
 export const PREFIX_TERM_LINK = 'Terminal Link';
 export const PREFIX_LINK = 'Link';
 export const PREFIX_APP = 'Application';
-
-// Types of layout for components
-export const MEEP_COMPONENT_TABLE_LAYOUT = 'MEEP_COMPONENT_TABLE_LAYOUT';
-export const MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT =
-  'MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT';
 
 export const id = label => {
   return '#' + label;
