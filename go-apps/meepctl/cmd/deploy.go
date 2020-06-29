@@ -173,12 +173,6 @@ func deployCore(cobraCmd *cobra.Command) {
 	userValueDir := deployData.workdir + "/user/values"
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
-		userValues := false
-		userValueFile := userValueDir + "/" + app + ".yaml"
-		if _, err := os.Stat(userValueFile); err == nil {
-			// path/to/file exists
-			userValues = true
-		}
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
@@ -200,15 +194,6 @@ func deployCore(cobraCmd *cobra.Command) {
 			// deployment level flag - not all apps use it
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.location="+deployData.workdir+"/user/swagger")
-		}
-		if userValues {
-			// user provided overriding values
-			// Note: according to https://helm.sh/docs/chart_template_guide/values_files/
-			//       the order of precedence is: (lowest) default values.yaml
-			//                                            then user value file
-			//                                            then individual --set params (highest)
-			//       Therefore, the --set flags inserted by meepctl may interfere with user overrides
-			coreFlags = utils.HelmFlags(coreFlags, "-f", userValueFile)
 		}
 		if altServer {
 			// deployment level flag - not all apps use it
