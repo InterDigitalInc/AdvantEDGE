@@ -170,7 +170,6 @@ func deployCore(cobraCmd *cobra.Command) {
 	// Code coverage storage
 	deployCodeCovStorage(cobraCmd)
 
-	userValueDir := deployData.workdir + "/user/values"
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
