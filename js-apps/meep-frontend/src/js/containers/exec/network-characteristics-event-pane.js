@@ -60,11 +60,14 @@ import {
   PREFIX_LINK,
   PREFIX_APP,
 
-  // Layout type
-  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
-
   DOMAIN_TYPE_STR,
-  DOMAIN_CELL_TYPE_STR
+  DOMAIN_CELL_TYPE_STR,
+  POA_TYPE_STR,
+  POA_CELL_TYPE_STR,
+  DC_TYPE_STR,
+  UE_APP_TYPE_STR,
+  EDGE_APP_TYPE_STR,
+  CLOUD_APP_TYPE_STR
 } from '../../meep-constants';
 
 import {
@@ -149,12 +152,29 @@ class NetworkCharacteristicsEventPane extends Component {
 
     var neType = '';
     switch(this.state.currentElementType) {
-    case 'DOMAIN':
-    case 'OPERATOR GENERIC':
-      neType = 'OPERATOR';
+    case ELEMENT_TYPE_OPERATOR_GENERIC:
+      neType = DOMAIN_TYPE_STR;
       break;
-    case 'POA GENERIC':
-      neType = 'POA';
+    case ELEMENT_TYPE_OPERATOR_CELL:
+      neType = DOMAIN_CELL_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_GENERIC:
+      neType = POA_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_CELL:
+      neType = POA_CELL_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_DC:
+      neType = DC_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_UE_APP:
+      neType = UE_APP_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_EDGE_APP:
+      neType = EDGE_APP_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_CLOUD_APP:
+      neType = CLOUD_APP_TYPE_STR;
       break;
     default:
       neType = this.state.currentElementType;
@@ -186,15 +206,13 @@ class NetworkCharacteristicsEventPane extends Component {
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR' || type === 'OPERATOR GENERIC') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN';
-        }
-        if (elemType === 'ZONE') {
+        if (type === ELEMENT_TYPE_OPERATOR_GENERIC) {
+          return elemType === ELEMENT_TYPE_OPERATOR;
+        } else if (type === ELEMENT_TYPE_POA_GENERIC) {
+          return elemType === ELEMENT_TYPE_POA;
+        } else if (elemType === ELEMENT_TYPE_ZONE) {
           return type.startsWith(elemType);
-        }
-        if (type === 'POA GENERIC') {
-          return elemType === 'POA';
-        }
+        } 
         return type === elemType;
       })
       .value();
@@ -329,7 +347,6 @@ class NetworkCharacteristicsEventPane extends Component {
 
   render() {
     var element = this.props.element;
-    var type = getElemFieldVal(element, FIELD_TYPE);
     var nbErrors = _.reduce(
       element,
       (result, value) => {
@@ -340,18 +357,16 @@ class NetworkCharacteristicsEventPane extends Component {
 
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
+        var type = this.state.currentElementType;
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === DOMAIN_TYPE_STR || type === DOMAIN_CELL_TYPE_STR) {
-          return elemType === 'DOMAIN' || elemType === DOMAIN_TYPE_STR || elemType === DOMAIN_CELL_TYPE_STR;
-        }
-        if (elemType === 'ZONE') {
-          return this.state.currentElementType.startsWith(elemType);
-        }
-        if (type === 'POA') {
-          return elemType === 'POA';
-        }
-
-        return this.state.currentElementType === elemType;
+        if (type === ELEMENT_TYPE_OPERATOR_GENERIC) {
+          return elemType === ELEMENT_TYPE_OPERATOR;
+        } else if (type === ELEMENT_TYPE_POA_GENERIC) {
+          return elemType === ELEMENT_TYPE_POA;
+        } else if (elemType === ELEMENT_TYPE_ZONE) {
+          return type.startsWith(elemType);
+        } 
+        return type === elemType;
       })
       .map(e => {
         return getElemFieldVal(e, FIELD_NAME);
@@ -396,15 +411,14 @@ class NetworkCharacteristicsEventPane extends Component {
           <GridCell span="4"></GridCell>
         </Grid>
 
-        <NCGroup
-          layout={MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT}
+        {elements.length ? <NCGroup
           onUpdate={(name, val, err) => {
             this.onUpdateElement(name, val, err);
           }}
           parent={this}
           element={element}
           prefix={this.currentPrefix()}
-        />
+        /> : null}
 
         <CancelApplyPair
           cancelText="Close"
@@ -414,7 +428,7 @@ class NetworkCharacteristicsEventPane extends Component {
           }}
           onApply={e => this.triggerEvent(e)}
           saveDisabled={
-            !element.elementType || !this.props.element.name || nbErrors
+            !elements.length || !element.elementType || !this.props.element.name || nbErrors
           }
         />
       </div>

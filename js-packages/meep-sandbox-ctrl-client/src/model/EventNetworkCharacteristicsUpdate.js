@@ -159,10 +159,10 @@
     UE: "UE",
 
     /**
-     * value: "DISTANT-CLOUD"
+     * value: "DC"
      * @const
      */
-    DISTANT_CLOUD: "DISTANT-CLOUD",
+    DC: "DC",
 
     /**
      * value: "UE-APP"

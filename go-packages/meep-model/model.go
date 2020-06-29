@@ -36,28 +36,19 @@ var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
 var redisTable = 0
 
 const (
-	NodeTypePoa     = "POA"
-	NodeTypePoaCell = "POA-CELLULAR"
-	NodeTypeUE      = "UE"
-	NodeTypeEdge    = "EDGE"
-	NodeTypeFog     = "FOG"
-	NodeTypeCloud   = "DC"
-)
-
-const (
-	NetCharScenario     = "SCENARIO"
-	NetCharOperator     = "OPERATOR"
-	NetCharOperatorCell = "OPERATOR CELLULAR"
-	NetCharZone         = "ZONE"
-	NetCharPoa          = "POA"
-	NetCharPoaCell      = "POA CELLULAR"
-	NetCharDC           = "DISTANT CLOUD"
-	NetCharEdge         = "EDGE"
-	NetCharFog          = "FOG"
-	NetCharUE           = "UE"
-	NetCharCloudApp     = "CLOUD APPLICATION"
-	NetCharEdgeApp      = "EDGE APPLICATION"
-	NetCharUEApp        = "UE APPLICATION"
+	NodeTypeScenario     = "SCENARIO"
+	NodeTypeOperator     = "OPERATOR"
+	NodeTypeOperatorCell = "OPERATOR-CELLULAR"
+	NodeTypeZone         = "ZONE"
+	NodeTypePoa          = "POA"
+	NodeTypePoaCell      = "POA-CELLULAR"
+	NodeTypeUE           = "UE"
+	NodeTypeFog          = "FOG"
+	NodeTypeEdge         = "EDGE"
+	NodeTypeCloud        = "DC"
+	NodeTypeUEApp        = "UE-APP"
+	NodeTypeEdgeApp      = "EDGE-APP"
+	NodeTypeCloudApp     = "CLOUD-APP"
 )
 
 const (
@@ -322,7 +313,7 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 	ncType := strings.ToUpper(nc.ElementType)
 
 	// Find the element
-	if ncType == NetCharScenario {
+	if ncType == NodeTypeScenario {
 		if m.scenario.Deployment.NetChar == nil {
 			m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
 		}
@@ -334,35 +325,35 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NetCharOperator || ncType == NetCharOperatorCell {
+		if ncType == NodeTypeOperator || ncType == NodeTypeOperatorCell {
 			domain := n.object.(*dataModel.Domain)
 			if domain.NetChar == nil {
 				domain.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			domain.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharZone {
+		} else if ncType == NodeTypeZone {
 			zone := n.object.(*dataModel.Zone)
 			if zone.NetChar == nil {
 				zone.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			zone.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharPoa || ncType == NetCharPoaCell {
+		} else if ncType == NodeTypePoa || ncType == NodeTypePoaCell {
 			nl := n.object.(*dataModel.NetworkLocation)
 			if nl.NetChar == nil {
 				nl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			nl.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
+		} else if ncType == NodeTypeCloud || ncType == NodeTypeEdge || ncType == NodeTypeFog || ncType == NodeTypeUE {
 			pl := n.object.(*dataModel.PhysicalLocation)
 			if pl.NetChar == nil {
 				pl.NetChar = new(dataModel.NetworkCharacteristics)
 			}
 			pl.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
+		} else if ncType == NodeTypeCloudApp || ncType == NodeTypeEdgeApp || ncType == NodeTypeUEApp {
 			proc := n.object.(*dataModel.Process)
 			if proc.NetChar == nil {
 				proc.NetChar = new(dataModel.NetworkCharacteristics)
@@ -371,19 +362,19 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 			updated = true
 		} else {
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
-				NetCharScenario + ", " +
-				NetCharOperator + ", " +
-				NetCharOperatorCell + ", " +
-				NetCharZone + ", " +
-				NetCharPoa + ", " +
-				NetCharPoaCell + ", " +
-				NetCharDC + ", " +
-				NetCharEdge + ", " +
-				NetCharFog + ", " +
-				NetCharUE + ", " +
-				NetCharCloudApp + ", " +
-				NetCharEdgeApp + ", " +
-				NetCharUEApp)
+				NodeTypeScenario + ", " +
+				NodeTypeOperator + ", " +
+				NodeTypeOperatorCell + ", " +
+				NodeTypeZone + ", " +
+				NodeTypePoa + ", " +
+				NodeTypePoaCell + ", " +
+				NodeTypeCloud + ", " +
+				NodeTypeEdge + ", " +
+				NodeTypeFog + ", " +
+				NodeTypeUE + ", " +
+				NodeTypeCloudApp + ", " +
+				NodeTypeEdgeApp + ", " +
+				NodeTypeUEApp)
 		}
 	}
 	if updated {

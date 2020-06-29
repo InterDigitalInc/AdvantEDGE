@@ -145,7 +145,6 @@ import {
   CFG_BTN_CLONE_ELEM,
 
   // Layout type
-  MEEP_COMPONENT_TABLE_LAYOUT,
   GEO_EOP_MODE_LOOP,
   GEO_EOP_MODE_REVERSE
 } from '../../meep-constants';
@@ -601,7 +600,6 @@ const NCGroups = ({ prefixes, onUpdate, element }) => {
         element={element}
         prefix={p}
         key={p}
-        layout={MEEP_COMPONENT_TABLE_LAYOUT}
       />
     );
   });
@@ -828,6 +826,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             fieldName={FIELD_GEO_LOCATION}
             cydata={CFG_ELEM_GEO_LOCATION}
           />
+        </Grid>
+        <Grid>
           <CfgTextFieldCell
             span={12}
             icon='location_on'
@@ -839,6 +839,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             fieldName={FIELD_GEO_PATH}
             cydata={CFG_ELEM_GEO_PATH}
           />
+        </Grid>
+        <Grid>
           <GridCell span={6} style={{ paddingTop: 16 }}>
             <IDSelect
               label='End-of-Path Mode'

@@ -70,11 +70,7 @@ import {
   PREFIX_INTRA_ZONE,
   PREFIX_TERM_LINK,
   PREFIX_LINK,
-  PREFIX_APP,
-
-  // NC Group Layouts
-  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT,
-  MEEP_COMPONENT_TABLE_LAYOUT
+  PREFIX_APP
 } from '../../meep-constants';
 
 const MIN_LATENCY_VALUE = 0;
@@ -174,71 +170,27 @@ const validateThroughput = val => {
   return null;
 };
 
-const TableLayout = props => {
+const NCLayout = props => {
   return (
-    <div>
-      <Grid style={{ marginBottom: 10 }}>
+    <>
+      <Grid>
         <GridCell span="4">{props.latencyComponent}</GridCell>
-
         <GridCell span="4">{props.latencyVariationComponent}</GridCell>
-
         <GridCell span="4">{props.packetLossComponent}</GridCell>
       </Grid>
 
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.latencyDistributionComponent}</GridCell>
-      </Grid>
+      {props.latencyDistributionComponent === null ? null :
+        <Grid style={{ marginTop: 10 }}>
+          <GridCell span="12">{props.latencyDistributionComponent}</GridCell>
+        </Grid>
+      }
 
-      <Grid style={{ marginBottom: 10 }}>
+      <Grid>
         <GridCell span="6">{props.throughputDlComponent}</GridCell>
-
         <GridCell span="6">{props.throughputUlComponent}</GridCell>
       </Grid>
-
-    </div>
+    </>
   );
-};
-
-const SingleColumnLayout = props => {
-  return (
-    <div>
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.latencyComponent}</GridCell>
-      </Grid>
-
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.latencyVariationComponent}</GridCell>
-      </Grid>
-
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.latencyDistributionComponent}</GridCell>
-      </Grid>
-
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.packetLossComponent}</GridCell>
-      </Grid>
-
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.throughputDlComponent}</GridCell>
-      </Grid>
-
-      <Grid style={{ marginBottom: 10 }}>
-        <GridCell span="12">{props.throughputUlComponent}</GridCell>
-      </Grid>
-
-    </div>
-  );
-};
-
-const NCLayout = props => {
-  switch (props.layout) {
-  case MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT:
-    return <SingleColumnLayout {...props} />;
-  case MEEP_COMPONENT_TABLE_LAYOUT:
-    return <TableLayout {...props} />;
-  default:
-    return <TableLayout {...props} />;
-  }
 };
 
 const NCGroup = ({ prefix, onUpdate, element }) => {
@@ -312,7 +264,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={'Latency (ms)'}
         onChange={e => handleEvent(e, latencyFieldName, validateLatency)}
         value={getElemFieldVal(element, latencyFieldName)}
@@ -329,7 +281,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={'Jitter (ms)'}
         onChange={e =>
           handleEvent(e, latencyVarFieldName, validateLatencyVariation)
@@ -348,7 +300,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     <>
       <Select
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label="Latency Distribution"
         value={getElemFieldVal(element, latencyDistFieldName)}
         options={['Normal', 'Pareto', 'ParetoNormal', 'Uniform']}
@@ -361,12 +313,11 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     </>
   );
 
-
   const packetLossComponent = (
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={'Packet Loss (%)'}
         onChange={e => handleEvent(e, packetLossFieldName, validatePacketLoss)}
         value={getElemFieldVal(element, packetLossFieldName)}
@@ -383,7 +334,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={'DL Throughput (Mbps)'}
         onChange={e => handleEvent(e, throughputDlFieldName, validateThroughput)}
         value={getElemFieldVal(element, throughputDlFieldName)}
@@ -400,7 +351,7 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={'UL Throughput (Mbps)'}
         onChange={e => handleEvent(e, throughputUlFieldName, validateThroughput)}
         value={getElemFieldVal(element, throughputUlFieldName)}
@@ -413,28 +364,16 @@ const NCGroup = ({ prefix, onUpdate, element }) => {
     </>
   );
 
-  if (prefix === PREFIX_INT_DOM) {
-    return (
-      <NCLayout
-        latencyComponent={latencyComponent}
-        latencyVariationComponent={latencyVariationComponent}
-        latencyDistributionComponent={latencyDistributionComponent}
-        packetLossComponent={packetLossComponent}
-        throughputDlComponent={throughputDlComponent}
-        throughputUlComponent={throughputUlComponent}
-      ></NCLayout>
-    );
-  } else {
-    return (
-      <NCLayout
-        latencyComponent={latencyComponent}
-        latencyVariationComponent={latencyVariationComponent}
-        packetLossComponent={packetLossComponent}
-        throughputDlComponent={throughputDlComponent}
-        throughputUlComponent={throughputUlComponent}
-      ></NCLayout>
-    );
-  }
+  return (
+    <NCLayout
+      latencyComponent={latencyComponent}
+      latencyVariationComponent={latencyVariationComponent}
+      latencyDistributionComponent={(prefix === PREFIX_INT_DOM) ? latencyDistributionComponent : null}
+      packetLossComponent={packetLossComponent}
+      throughputDlComponent={throughputDlComponent}
+      throughputUlComponent={throughputUlComponent}
+    />
+  );
 };
 
 export default NCGroup;

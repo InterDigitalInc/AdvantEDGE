@@ -17,8 +17,8 @@ deployment:
             netChar:
                 latency: 6
                 latencyVariation: 2
-                throughputDl: 1000000
-                throughputUl: 1000000
+                throughputDl: 1000
+                throughputUl: 1000
                 latencyDistribution: null
                 throughput: null
                 packetLoss: null
@@ -30,10 +30,10 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
                         latencyDistribution: null
                         throughput: null
-                        throughputDl: null
-                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
@@ -43,19 +43,19 @@ deployment:
                             netChar:
                                 latency: 1
                                 latencyVariation: 1
-                                throughputDl: 50000
-                                throughputUl: 50000
-                                packetLoss: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
                                 latencyDistribution: null
                                 throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: cloud1
+                                    id: 1cda8009-92c8-4a3d-adc9-0fbc72b0b490
                                     name: cloud1
                                     type: DC
                                     processes:
                                         -
-                                            id: cloud1-iperf
+                                            id: d3faf837-477f-496f-b435-66b3d6e9d0f5
                                             name: cloud1-iperf
                                             type: CLOUD-APP
                                             image: 'meep-docker-registry:30001/iperf-server'
@@ -69,7 +69,14 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -86,11 +93,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                         -
-                                            id: cloud1-svc
+                                            id: f73f055d-b0df-43b6-b9d2-e437ebb8404d
                                             name: cloud1-svc
                                             type: CLOUD-APP
                                             image: 'meep-docker-registry:30001/demo-server'
-                                            environment: 'MGM_GROUP_NAME=cloud1-svc, MGM_APP_ID=cloud1-svc, MGM_APP_PORT=80'
+                                            environment: 'MGM_GROUP_NAME=cloud1-svc,MGM_APP_ID=cloud1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: cloud1-svc
                                                 ports:
@@ -99,7 +106,14 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -116,7 +130,14 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
@@ -156,7 +177,7 @@ deployment:
             userMeta: null
             cellularDomainConfig: null
         -
-            id: operator1
+            id: 9b18f0ae-4982-4e46-8fce-a7ff6516479d
             name: operator1
             type: OPERATOR
             netChar:
@@ -175,10 +196,10 @@ deployment:
                     netChar:
                         latency: 5
                         latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
                         latencyDistribution: null
                         throughput: null
-                        throughputDl: null
-                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
@@ -188,11 +209,11 @@ deployment:
                             netChar:
                                 latency: 1
                                 latencyVariation: 1
-                                throughputDl: 50000
-                                throughputUl: 50000
-                                packetLoss: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
                                 latencyDistribution: null
                                 throughput: null
+                                packetLoss: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
@@ -217,16 +238,16 @@ deployment:
                     meta: null
                     userMeta: null
                 -
-                    id: zone1
+                    id: c75256d8-e4cd-4abf-bf6d-b4b3a1385b06
                     name: zone1
                     type: ZONE
                     netChar:
                         latency: 5
                         latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
                         latencyDistribution: null
                         throughput: null
-                        throughputDl: null
-                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
@@ -236,19 +257,19 @@ deployment:
                             netChar:
                                 latency: 1
                                 latencyVariation: 1
-                                throughputDl: 50000
-                                throughputUl: 50000
-                                packetLoss: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
                                 latencyDistribution: null
                                 throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone1-edge1
+                                    id: e8bd434f-1ef2-4d32-b185-98f0bcc1e090
                                     name: zone1-edge1
                                     type: EDGE
                                     processes:
                                         -
-                                            id: zone1-edge1-iperf
+                                            id: fdff97b7-f342-4eb5-9a84-57ab4e19f0b5
                                             name: zone1-edge1-iperf
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/iperf-server'
@@ -262,7 +283,14 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -279,11 +307,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                         -
-                                            id: zone1-edge1-svc
+                                            id: 87cf69af-6b3e-449c-8cc0-4fecd6d324c6
                                             name: zone1-edge1-svc
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/demo-server'
-                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80'
+                                            environment: 'MGM_GROUP_NAME=svc,MGM_APP_ID=zone1-edge1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone1-edge1-svc
                                                 meSvcName: svc
@@ -292,7 +320,14 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -309,7 +344,14 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
@@ -328,7 +370,7 @@ deployment:
                             cellularPoaConfig: null
                             geoData: null
                         -
-                            id: zone1-poa1
+                            id: 6b477dd3-eb67-49f9-b1d2-2bfae9376a33
                             name: zone1-poa1
                             type: POA
                             netChar:
@@ -341,12 +383,12 @@ deployment:
                                 packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone1-fog1
+                                    id: 7e992adf-c946-4527-b8e0-f3000215b234
                                     name: zone1-fog1
                                     type: FOG
                                     processes:
                                         -
-                                            id: zone1-fog1-iperf
+                                            id: 80f1b9b0-ec43-460a-9948-c59972198f14
                                             name: zone1-fog1-iperf
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/iperf-server'
@@ -360,7 +402,14 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -377,11 +426,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                         -
-                                            id: zone1-fog1-svc
+                                            id: 69a71c83-6411-472a-ac18-80f42c9353b2
                                             name: zone1-fog1-svc
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/demo-server'
-                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80'
+                                            environment: 'MGM_GROUP_NAME=svc,MGM_APP_ID=zone1-fog1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone1-fog1-svc
                                                 meSvcName: svc
@@ -390,7 +439,14 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -407,7 +463,14 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
@@ -418,18 +481,25 @@ deployment:
                                     linkThroughput: null
                                     linkPacketLoss: null
                                 -
-                                    id: ue1
+                                    id: a95c7d87-1086-419b-9525-cf74807492e4
                                     name: ue1
                                     type: UE
                                     processes:
                                         -
-                                            id: ue1-iperf
+                                            id: b0ace81a-f113-4c3a-8414-956165cba4a5
                                             name: ue1-iperf
                                             type: UE-APP
                                             image: 'meep-docker-registry:30001/iperf-client'
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             serviceConfig: null
@@ -446,7 +516,14 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
@@ -457,13 +534,12 @@ deployment:
                                     linkThroughput: null
                                     linkPacketLoss: null
                                 -
-                                    id: ue2-ext
+                                    id: a4bff832-de45-4cbb-a54c-17b6b26735ef
                                     name: ue2-ext
                                     type: UE
-                                    isExternal: true
                                     processes:
                                         -
-                                            id: ue2-svc
+                                            id: b13e0551-e6f2-44bd-b720-6e47380bbf4f
                                             name: ue2-svc
                                             type: UE-APP
                                             isExternal: true
@@ -490,7 +566,14 @@ deployment:
                                                         externalPort: 31223
                                                         protocol: UDP
                                                 egressServiceMap: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             image: null
                                             environment: null
                                             commandArguments: null
@@ -508,7 +591,15 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
                                     meta: null
@@ -526,7 +617,7 @@ deployment:
                             cellularPoaConfig: null
                             geoData: null
                         -
-                            id: zone1-poa2
+                            id: 956fd663-ef11-4992-8845-499a12ea969e
                             name: zone1-poa2
                             type: POA
                             netChar:
@@ -561,16 +652,16 @@ deployment:
                     meta: null
                     userMeta: null
                 -
-                    id: zone2
+                    id: 953c8dbb-d4d7-433a-8eb6-8ec5755fbd91
                     name: zone2
                     type: ZONE
                     netChar:
                         latency: 5
                         latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
                         latencyDistribution: null
                         throughput: null
-                        throughputDl: null
-                        throughputUl: null
                         packetLoss: null
                     networkLocations:
                         -
@@ -580,19 +671,19 @@ deployment:
                             netChar:
                                 latency: 1
                                 latencyVariation: 1
-                                throughputDl: 50000
-                                throughputUl: 50000
-                                packetLoss: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
                                 latencyDistribution: null
                                 throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone2-edge1
+                                    id: d4626b7c-fa9b-47e4-b0bd-8bbf792c4606
                                     name: zone2-edge1
                                     type: EDGE
                                     processes:
                                         -
-                                            id: zone2-edge1-iperf
+                                            id: 2e9b5291-51d1-4bf7-b464-fb902e3122cc
                                             name: zone2-edge1-iperf
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/iperf-server'
@@ -606,7 +697,14 @@ deployment:
                                                         protocol: UDP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
@@ -623,11 +721,11 @@ deployment:
                                             appPacketLoss: null
                                             placementId: null
                                         -
-                                            id: zone2-edge1-svc
+                                            id: 04e920e1-7c6b-4bce-8eb0-205356b69de9
                                             name: zone2-edge1-svc
                                             type: EDGE-APP
                                             image: 'meep-docker-registry:30001/demo-server'
-                                            environment: 'MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80'
+                                            environment: 'MGM_GROUP_NAME=svc,MGM_APP_ID=zone2-edge1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: zone2-edge1-svc
                                                 meSvcName: svc
@@ -636,7 +734,14 @@ deployment:
                                                         protocol: TCP
                                                         port: 80
                                                         externalPort: null
-                                            netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
@@ -653,7 +758,14 @@ deployment:
                                             appThroughput: null
                                             appPacketLoss: null
                                             placementId: null
-                                    netChar: {latency: null, latencyVariation: null, latencyDistribution: null, throughput: null, throughputDl: null, throughputUl: null, packetLoss: null}
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
@@ -672,7 +784,7 @@ deployment:
                             cellularPoaConfig: null
                             geoData: null
                         -
-                            id: zone2-poa1
+                            id: d4f98d78-253e-470a-af75-02c885c69a0e
                             name: zone2-poa1
                             type: POA
                             netChar:
