@@ -1,0 +1,19 @@
+---
+
+- name: Create Kubernetes addon directory
+  file:
+    path: "{{ network_dir }}"
+    state: directory
+
+- name: "Copy Weave YAML files"
+  copy:
+    src: "weave.yml"
+    dest: "{{ network_dir }}/"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "Create Weave network daemonset"
+  command: kubectl apply --kubeconfig={{ kubeadmin_config }} -f {{ network_dir }}/
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true

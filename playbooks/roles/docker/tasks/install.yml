@@ -1,0 +1,75 @@
+---
+
+- name: Install aptitude using apt
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
+
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
+    - python3-pip
+    - virtualenv
+    - python3-setuptools
+
+- name: Add Docker APT GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker APT repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: Install docker engine
+  apt:
+    update_cache: yes
+    name: "docker-ce={{ docker_version }}*"
+    state: present
+
+# - name: Hold docker version
+#   dpkg_selections:
+#     name: docker-ce
+#     selection: hold
+
+- name: Verify docker group is present
+  group:
+    name: docker
+    state: present
+
+- name: Add user to docker group
+  user:
+    name: '{{ ansible_user }}'
+    append: yes
+    groups: docker
+
+- name: Set dockerd config
+  copy:
+    src: "daemon.json"
+    dest: /etc/docker/
+    owner: root
+    group: root
+    mode: 0644
+
+- name: dockerd service
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Enable and check Docker service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  register: started_docker

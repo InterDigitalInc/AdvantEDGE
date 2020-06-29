@@ -1,0 +1,39 @@
+---
+
+- name: Assert OS is Ubuntu 18.04
+  assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_major_version == '18'
+      - ansible_distribution_version == '18.04'
+    quiet: yes
+
+- name: Gather package facts
+  package_facts:
+    manager: apt
+
+- name: Get currently installed kubeadm version
+  set_fact:
+    installed_k8s_version: "{{ ansible_facts.packages['kubeadm'][0].version }}"
+  when:
+    - "'kubeadm' in ansible_facts.packages"
+
+- name: Assert currently installed Kubernetes version is supported
+  assert:
+    that:
+      - installed_k8s_version is match("1.15.*")
+    quiet: yes
+  when:
+    - installed_k8s_version is defined
+
+- name: Disable swap
+  include_tasks:
+    file: swap.yml
+  when:
+    - installed_k8s_version is undefined
+
+- name: Install Kubernetes
+  include_tasks:
+    file: install.yml
+  when:
+    - installed_k8s_version is undefined

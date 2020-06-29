@@ -1,0 +1,31 @@
+---
+
+- hosts: cluster
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Reset kubeadm
+      shell: "kubeadm reset --force"
+      ignore_errors: True
+
+    - name: Unhold kubernetes versions
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: purge
+      with_items:
+        - kubelet
+        - kubeadm
+        - kubectl
+        - kubernetes-cni
+
+    - name: Uninstall kubernetes packages
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        state: absent
+        purge: yes
+      with_items:
+        - kubectl
+        - kubelet
+        - kubeadm
+        - kubernetes-cni

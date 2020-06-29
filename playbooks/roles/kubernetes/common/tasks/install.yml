@@ -1,0 +1,75 @@
+---
+
+- name: Install aptitude using apt
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
+
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - curl
+
+- name: Add Kubernetes APT GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes APT repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+    filename: 'kubernetes'
+
+- name: Install kubernetes packages
+  apt:
+    name: "{{ item.name }}={{ item.version }}*"
+    update_cache: yes
+    force: yes
+    state: present
+  with_items:
+    - { name: kubectl, version: "{{ kube_version }}" }
+    - { name: kubelet, version: "{{ kube_version }}" }
+    - { name: kubeadm, version: "{{ kube_version }}" }
+    - { name: kubernetes-cni, version: "{{ cni_version }}" }
+
+- name: Hold kubernetes versions
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni
+
+- name: kubelet service
+  file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+
+- name: Reload kubelet
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  register: started_kubelet
+
+- name: Kubectl auto-complete
+  lineinfile:
+    path: "/home/{{ ansible_user }}/.bashrc"
+    line: source <(kubectl completion bash)
+    create: yes
+
+- name: Add docker-registry to known hosts
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^.*meep-docker-registry'
+    line: "{{ master_ip }} meep-docker-registry"

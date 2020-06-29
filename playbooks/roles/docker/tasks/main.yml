@@ -1,0 +1,33 @@
+---
+
+- name: Assert OS is Ubuntu 18.04
+  assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_major_version == '18'
+      - ansible_distribution_version == '18.04'
+    quiet: yes
+
+- name: Gather package facts
+  package_facts:
+    manager: apt
+
+- name: Get currently installed Docker version
+  set_fact:
+    installed_docker_version: "{{ ansible_facts.packages['docker-ce'][0].version }}"
+  when:
+    - "'docker-ce' in ansible_facts.packages"
+
+- name: Assert currently installed Docker version is supported
+  assert:
+    that:
+      - installed_docker_version is match("5:19.03*")
+    quiet: yes
+  when:
+    - installed_docker_version is defined
+
+- name: Install Docker
+  include_tasks:
+    file: install.yml
+  when:
+    - installed_docker_version is undefined
