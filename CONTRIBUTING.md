@@ -56,8 +56,8 @@ The following sub-sections cover these aspects.
 #### Contributor License Agreement
 In order for us to accept content contributions, a Contributor License Agreement (CLA) is required.
 
-- _[CLA for individual contributor (NEEDED FROM LEGAL)](#contributor-license-agreement)_
-- _[CLA for corporate contributors](Interdigital-Corporate-Contributor-License-Agreement.pdf)_
+- _[CLA for individual contributor](https://github.com/InterDigitalInc/AdvantEDGE/docs/cla/interdigital-individual-cla-v1.pdf)_
+- _[CLA for corporate contributors](https://github.com/InterDigitalInc/AdvantEDGE/docs/cla/interdigital-corporate-cla-v1.pdf)_
 
 Fill-in the requested information and send it to AdvantEDGE@InterDigital.com using subject `CLA`
 
