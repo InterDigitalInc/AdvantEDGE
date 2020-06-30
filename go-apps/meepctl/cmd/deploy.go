@@ -240,6 +240,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-couchdb":
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
 	case "meep-open-map-tiles":
+		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
@@ -368,6 +369,12 @@ func deploySetGrafanaValues(chart string, cobraCmd *cobra.Command) {
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 	str := "s/<CLUSTERIP>/" + nodeIp + "/g"
 	cmd = exec.Command("sed", "-i", str, tmpdir+"/grafana-values.yaml")
+	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
+}
+
+func deploySetOmtConfig(chart string, cobraCmd *cobra.Command) {
+	configOmt := chart + "/config.json"
+	cmd := exec.Command("cp", configOmt, deployData.workdir+"/omt/config.json")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 
