@@ -1,0 +1,25 @@
+---
+
+- name: Create new token
+  shell: kubeadm token create
+  register: kubeadm_token_output
+
+- name: Save token in kubeadm_token variable
+  set_fact:
+    kubeadm_token: "{{ kubeadm_token_output.stdout }}"
+
+- name: Get Kubernetes CA hash
+  shell: |
+    openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | \
+    openssl rsa -pubin -outform der 2>/dev/null | \
+    openssl dgst -sha256 -hex | sed 's/^.* //'
+  register: kubeadm_hash_output
+
+- name: Save Kubernetes CA hash in kubeadm_hash variable
+  set_fact:
+    kubeadm_hash: "{{ kubeadm_hash_output.stdout }}"
+
+# - debug:
+#     msg:
+#     - "kubeadm_token: {{ kubeadm_token }}"
+#     - "kubeadm_hash: {{ kubeadm_hash }}"

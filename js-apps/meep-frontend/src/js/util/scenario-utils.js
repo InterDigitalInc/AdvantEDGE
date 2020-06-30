@@ -467,27 +467,33 @@ export function updateElementInScenario(scenario, element) {
 
   // Find element in scenario
   if (scenario.name === name) {
-    if (scenario.deployment.netChar) {
-      scenario.deployment.netChar.latency = getElemFieldVal(element, FIELD_INT_DOM_LATENCY);
-      scenario.deployment.netChar.latencyVariation = getElemFieldVal(element, FIELD_INT_DOM_LATENCY_VAR);
-      scenario.deployment.netChar.latencyDistribution = getElemFieldVal(element, FIELD_INT_DOM_LATENCY_DIST);
-      scenario.deployment.netChar.throughputDl = getElemFieldVal(element, FIELD_INT_DOM_THROUGHPUT_DL);
-      scenario.deployment.netChar.throughputUl = getElemFieldVal(element, FIELD_INT_DOM_THROUGHPUT_UL);
-      scenario.deployment.netChar.packetLoss = getElemFieldVal(element, FIELD_INT_DOM_PKT_LOSS);
+
+    if (!scenario.deployment.netChar) {
+      scenario.deployment.netChar = {};
     }
+    scenario.deployment.netChar.latency = getElemFieldVal(element, FIELD_INT_DOM_LATENCY);
+    scenario.deployment.netChar.latencyVariation = getElemFieldVal(element, FIELD_INT_DOM_LATENCY_VAR);
+    scenario.deployment.netChar.latencyDistribution = getElemFieldVal(element, FIELD_INT_DOM_LATENCY_DIST);
+    scenario.deployment.netChar.throughputDl = getElemFieldVal(element, FIELD_INT_DOM_THROUGHPUT_DL);
+    scenario.deployment.netChar.throughputUl = getElemFieldVal(element, FIELD_INT_DOM_THROUGHPUT_UL);
+    scenario.deployment.netChar.packetLoss = getElemFieldVal(element, FIELD_INT_DOM_PKT_LOSS);
+
     return;
   }
 
   for (var i in scenario.deployment.domains) {
     var domain = scenario.deployment.domains[i];
     if (domain.id === id) {
-      if (domain.netChar) {
-        domain.netChar.latency = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY);
-        domain.netChar.latencyVariation = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR);
-        domain.netChar.throughputDl = getElemFieldVal(element, FIELD_INT_ZONE_THROUGHPUT_DL);
-        domain.netChar.throughputUl = getElemFieldVal(element, FIELD_INT_ZONE_THROUGHPUT_UL);
-        domain.netChar.packetLoss = getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS);
+
+      if (!domain.netChar) {
+        domain.netChar = {};
       }
+      domain.netChar.latency = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY);
+      domain.netChar.latencyVariation = getElemFieldVal(element, FIELD_INT_ZONE_LATENCY_VAR);
+      domain.netChar.throughputDl = getElemFieldVal(element, FIELD_INT_ZONE_THROUGHPUT_DL);
+      domain.netChar.throughputUl = getElemFieldVal(element, FIELD_INT_ZONE_THROUGHPUT_UL);
+      domain.netChar.packetLoss = getElemFieldVal(element, FIELD_INT_ZONE_PKT_LOSS);
+
       if (domain.type === DOMAIN_CELL_TYPE_STR) {
         var cellularDomainConfig = {
           mcc: getElemFieldVal(element, FIELD_MCC),
@@ -522,13 +528,15 @@ export function updateElementInScenario(scenario, element) {
     for (var j in domain.zones) {
       var zone = domain.zones[j];
       if (zone.id === id) {
-        if (zone.netChar) {
-          zone.netChar.latency = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY);
-          zone.netChar.latencyVariation = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY_VAR);
-          zone.netChar.throughputDl = getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_DL);
-          zone.netChar.throughputUl = getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_UL);
-          zone.netChar.packetLoss = getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS);
+
+        if (!zone.netChar) {
+          zone.netChar = {};
         }
+        zone.netChar.latency = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY);
+        zone.netChar.latencyVariation = getElemFieldVal(element, FIELD_INTRA_ZONE_LATENCY_VAR);
+        zone.netChar.throughputDl = getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_DL);
+        zone.netChar.throughputUl = getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_UL);
+        zone.netChar.packetLoss = getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS);
 
         //if zone name changed, other elements created based on that name must also be updated (default ones)
         for (var j2 in zone.networkLocations) {
@@ -547,13 +555,16 @@ export function updateElementInScenario(scenario, element) {
       for (var k in zone.networkLocations) {
         var nl = zone.networkLocations[k];
         if (nl.id === id) {
-          if (nl.netChar) {
-            nl.netChar.latency = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY);
-            nl.netChar.latencyVariation = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR);
-            nl.netChar.throughputDl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL);
-            nl.netChar.throughputUl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL);
-            nl.netChar.packetLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
+
+          if (!nl.netChar) {
+            nl.netChar = {};
           }
+          nl.netChar.latency = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY);
+          nl.netChar.latencyVariation = getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR);
+          nl.netChar.throughputDl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL);
+          nl.netChar.throughputUl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL);
+          nl.netChar.packetLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
+
           if (nl.type === POA_CELL_TYPE_STR) {
             var cellularPoaConfig = {
               cellId: getElemFieldVal(element, FIELD_CELL_ID)
@@ -569,7 +580,8 @@ export function updateElementInScenario(scenario, element) {
             type: 'Point',
             coordinates: JSON.parse(nlLocation)
           };
-          nl.geoData.radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+          var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+          nl.geoData.radius = (radius === '') ? null : radius;
 
           nl.label = name;
           nl.name = name;
@@ -579,13 +591,15 @@ export function updateElementInScenario(scenario, element) {
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
           if (pl.id === id) {
-            if (pl.netChar) {
-              pl.netChar.latency = getElemFieldVal(element, FIELD_LINK_LATENCY);
-              pl.netChar.latencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
-              pl.netChar.throughputDl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_DL);
-              pl.netChar.throughputUl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_UL);
-              pl.netChar.packetLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
+
+            if (!pl.netChar) {
+              pl.netChar = {};
             }
+            pl.netChar.latency = getElemFieldVal(element, FIELD_LINK_LATENCY);
+            pl.netChar.latencyVariation = getElemFieldVal(element, FIELD_LINK_LATENCY_VAR);
+            pl.netChar.throughputDl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_DL);
+            pl.netChar.throughputUl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_UL);
+            pl.netChar.packetLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
 
             if (!pl.geoData) {
               pl.geoData = {};
@@ -1049,6 +1063,7 @@ export function createDefaultDomain() {
 
 export function createPoa(uniqueId, name, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
   var nl = {
     id: uniqueId,
     name: name,
@@ -1065,7 +1080,7 @@ export function createPoa(uniqueId, name, element) {
         type: 'Point',
         coordinates: JSON.parse(location)
       },
-      radius: getElemFieldVal(element, FIELD_GEO_RADIUS)
+      radius: (radius === '') ? null : radius
     },
     physicalLocations: []
   };
@@ -1075,6 +1090,7 @@ export function createPoa(uniqueId, name, element) {
 
 export function createPoaCell(uniqueId, name, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
   var nl = {
     id: uniqueId,
     name: name,
@@ -1095,7 +1111,7 @@ export function createPoaCell(uniqueId, name, element) {
         type: 'Point',
         coordinates: JSON.parse(location)
       },
-      radius: getElemFieldVal(element, FIELD_GEO_RADIUS)
+      radius: (radius === '') ? null : radius
     }
   };
 

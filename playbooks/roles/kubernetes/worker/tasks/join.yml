@@ -1,0 +1,31 @@
+---
+
+- name: Reset Kubernetes component
+  shell: "kubeadm reset --force"
+  register: reset_cluster
+
+- name: Join to Kubernetes cluster
+  when: reset_cluster is succeeded
+  shell: |
+    kubeadm join {{ master_ip }}:6443 \
+    --token {{ hostvars[groups['master'][0]]['kubeadm_token'] }} \
+    --discovery-token-ca-cert-hash sha256:{{ hostvars[groups['master'][0]]['kubeadm_hash'] }}
+  register: join_cluster
+  notify:
+    - Recreate kube-dns
+
+- name: Add K8s CA to list of trusted CAs
+  copy:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /usr/local/share/ca-certificates/kubernetes-ca.crt
+
+- name: Update certificate index
+  shell: /usr/sbin/update-ca-certificates
+
+- name: Restart Docker service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  register: started_docker
