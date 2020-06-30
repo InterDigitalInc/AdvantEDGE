@@ -1,0 +1,12 @@
+---
+- name: Assert OS is Ubuntu 18.04
+  assert:
+    that:
+      - ansible_distribution == 'Ubuntu'
+      - ansible_distribution_major_version == '18'
+      - ansible_distribution_version == '18.04'
+    quiet: yes
+
+- name: Install Go
+  include_tasks:
+    file: install.yml

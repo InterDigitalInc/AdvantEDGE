@@ -215,6 +215,11 @@ class IDCMap extends Component {
     var zoom = (cfg && cfg.zoom) ? cfg.zoom : DEFAULT_MAP_ZOOM;
     var baselayerName = (cfg && cfg.baselayerName) ? cfg.baselayerName : DEFAULT_MAP_STYLE;
  
+    // Map bounds
+    const corner1 = L.latLng(-90, -180);
+    const corner2 = L.latLng(90, 180);
+    const bounds = L.latLngBounds(corner1, corner2);
+    
     // Create Map instance
     var domNode = ReactDOM.findDOMNode(this);
     this.map = L.map(domNode, {
@@ -222,7 +227,9 @@ class IDCMap extends Component {
       zoom: zoom,
       minZoom: 2,
       maxZoom: 20,
-      drawControl: true
+      drawControl: true,
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0
     });
     this.map.attributionControl.addAttribution('<a href="https://www.maptiler.com/copyright/?_ga=2.45788834.742970109.1593090041-1523068243.1593090041" target="_blank">© MapTiler</a>');
     this.map.attributionControl.addAttribution('<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>');

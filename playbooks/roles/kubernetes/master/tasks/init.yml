@@ -33,3 +33,19 @@
     daemon_reload: yes
     state: started
     enabled: yes
+
+- name: Add K8s CA to list of trusted CAs
+  copy:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /usr/local/share/ca-certificates/kubernetes-ca.crt
+
+- name: Update certificate index
+  shell: /usr/sbin/update-ca-certificates
+
+- name: Restart Docker service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  register: started_docker
