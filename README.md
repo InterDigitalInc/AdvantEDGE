@@ -1,8 +1,9 @@
-![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/images/AdvantEDGE-logo_Blue-01.png)
+![AdvantEDGE-logo](https://github.com/InterDigitalInc/AdvantEDGE/wiki/images/AdvantEDGE-logo_Blue-01.png)
 
 ------
+AdvantEDGE is a Mobile Edge Emulation Platform (MEEP) that runs on Docker & Kubernetes.<br><br>
 
-AdvantEDGE provides an emulation environment, enabling experimentation with Edge Computing Technologies, Applications, and Services.  The platform facilitates users to explore edge / fog deployment models and their impact to applications and services in short and agile iterations.
+AdvantEDGE provides an emulation environment, enabling experimentation with Edge Computing Technologies, Applications, and Services.  The platform facilitates exploring edge / fog deployment models and their impact on applications and services in short and agile iterations.
 
 ## Motivation
 
@@ -26,14 +27,14 @@ To get started using AdvantEDGE, the following steps are needed:
 Step-by-step details are available in the [Wiki](https://github.com/InterDigitalInc/AdvantEDGE/wiki#getting-started)
 
 ## How to Contribute
+**NEW!** <br>
+Starting June 2020 with v1.5 release, we can start accepting contributions to the project.
 
-We welcome feedback and improvement suggestions.  Please open a Git issue in the repo to report bugs or request enhancements.
+If you like this project and would like to participate in its evolution, you can find information on contributing [here](https://github.com/InterDigitalInc/AdvantEDGE/CONTRIBUTING.md)
 
-At this time, we are not ready to accept pull requests.  However, we plan to do so in the future.
+We still welcome feedback and improvement suggestions via Git issue in the repo for bugs or request enhancements.
 
-In the meantime, if you have interest in becoming an AdvantEDGE contributor, we would like to hear from you.  
-
-We can be reached at <AdvantEDGE@InterDigital.com>
+Hope to hear from you...
 
 ## Licensing
 

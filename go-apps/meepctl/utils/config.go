@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.4.4"
+const configVersion = "1.5.0"
 
 const defaultNotSet = "not set"
 
@@ -357,11 +357,13 @@ func ConfigIsIpv4(host string) bool {
 //  operation == "" returns the whole group
 func GetTargets(group string, operation string) []string {
 	targets := []string{}
-	for target := range RepoCfg.GetStringMapString(group) {
-		if RepoCfg.GetBool(group+"."+target+"."+operation) || operation == "" {
-			targets = append(targets, target)
+	if RepoCfg != nil {
+		for target := range RepoCfg.GetStringMapString(group) {
+			if RepoCfg.GetBool(group+"."+target+"."+operation) || operation == "" {
+				targets = append(targets, target)
+			}
 		}
+		sort.Strings(targets)
 	}
-	sort.Strings(targets)
 	return targets
 }
