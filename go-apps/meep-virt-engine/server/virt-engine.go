@@ -20,7 +20,6 @@ import (
 	"errors"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -30,7 +29,8 @@ import (
 )
 
 const redisAddr string = "meep-redis-master:6379"
-const retryTimerDuration = 10000
+
+// const retryTimerDuration = 10000
 
 const moduleName string = "meep-virt-engine"
 const moduleNamespace string = "default"
@@ -191,23 +191,26 @@ func terminateScenario(sandboxName string) {
 	scenarioName := ve.activeScenarioNames[sandboxName]
 
 	// Process right away and start a ticker to retry until everything is deleted
-	_, _ = deleteReleases(sandboxName, scenarioName)
-	ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+	_, chartsToDelete := deleteReleases(sandboxName, scenarioName)
+	log.Info("Number of charts to be deleted: ", chartsToDelete)
+	ve.activeScenarioNames[sandboxName] = ""
 
-	go func() {
-		for range ticker.C {
-			err, chartsToDelete := deleteReleases(sandboxName, scenarioName)
-			if err == nil && chartsToDelete == 0 {
-				// Remove model & cached scenario
-				ve.activeScenarioNames[sandboxName] = ""
-				ticker.Stop()
-				return
-			} else {
-				// Stay in the deletion process until everything is cleared
-				log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
-			}
-		}
-	}()
+	// ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+	// go func() {
+	// 	for range ticker.C {
+	// 		err, chartsToDelete := deleteReleases(sandboxName, scenarioName)
+	// 		if err == nil && chartsToDelete == 0 {
+	// 			// Remove model & cached scenario
+	// 			ve.activeScenarioNames[sandboxName] = ""
+	// 			ticker.Stop()
+	// 			return
+	// 		} else {
+	// 			// Stay in the deletion process until everything is cleared
+	// 			log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+	// 		}
+	// 	}
+	// }()
 }
 
 func createSandbox(sandboxName string) {
@@ -237,24 +240,28 @@ func createSandbox(sandboxName string) {
 
 func destroySandbox(sandboxName string) {
 	// Process right away and start a ticker to retry until everything is deleted
-	_, _ = deleteReleases(sandboxName, "")
-	ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+	_, chartsToDelete := deleteReleases(sandboxName, "")
+	log.Info("Number of charts to be deleted: ", chartsToDelete)
+	ve.activeScenarioNames[sandboxName] = ""
+	ve.activeModels[sandboxName] = nil
 
-	go func() {
-		for range ticker.C {
-			err, chartsToDelete := deleteReleases(sandboxName, "")
-			if err == nil && chartsToDelete == 0 {
-				// Remove modle & cached scenario
-				ve.activeScenarioNames[sandboxName] = ""
-				ve.activeModels[sandboxName] = nil
-				ticker.Stop()
-				return
-			} else {
-				// Stay in the deletion process until everything is cleared
-				log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
-			}
-		}
-	}()
+	// ticker := time.NewTicker(retryTimerDuration * time.Millisecond)
+
+	// go func() {
+	// 	for range ticker.C {
+	// 		err, chartsToDelete := deleteReleases(sandboxName, "")
+	// 		if err == nil && chartsToDelete == 0 {
+	// 			// Remove modle & cached scenario
+	// 			ve.activeScenarioNames[sandboxName] = ""
+	// 			ve.activeModels[sandboxName] = nil
+	// 			ticker.Stop()
+	// 			return
+	// 		} else {
+	// 			// Stay in the deletion process until everything is cleared
+	// 			log.Info("Number of charts remaining to be deleted: ", chartsToDelete)
+	// 		}
+	// 	}
+	// }()
 }
 
 func deleteReleases(sandboxName string, scenarioName string) (error, int) {
