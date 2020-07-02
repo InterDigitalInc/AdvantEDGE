@@ -6,7 +6,6 @@ metadata:
   {{- else }}
   name: {{ .Values.service.name }}
   {{- end }}
-  namespace: default
 spec:
   type: ClusterIP
   selector:

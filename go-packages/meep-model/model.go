@@ -23,80 +23,90 @@ import (
 	"strings"
 	"sync"
 
-	ceModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-model"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	"github.com/RyanCarrier/dijkstra"
 )
 
-// const activeScenarioEvents = "activeScenarioEvents"
-const ActiveScenarioEvents = "ctrl-engine-active"
+const activeKey = "active"
 
-// const activeScenarioKey = "activeScenarioKey"
-const activeScenarioKey = "ctrl-engine:active"
+var DbAddress = "meep-redis-master.default.svc.cluster.local:6379"
+var redisTable = 0
 
-// Event types (basic)
 const (
-	EventActivate  = "ACTIVATE"
-	EventTerminate = "TERMINATE"
-	EventUpdate    = "UPDATE"
+	NodeTypeScenario     = "SCENARIO"
+	NodeTypeOperator     = "OPERATOR"
+	NodeTypeOperatorCell = "OPERATOR-CELLULAR"
+	NodeTypeZone         = "ZONE"
+	NodeTypePoa          = "POA"
+	NodeTypePoaCell      = "POA-CELLULAR"
+	NodeTypeUE           = "UE"
+	NodeTypeFog          = "FOG"
+	NodeTypeEdge         = "EDGE"
+	NodeTypeCloud        = "DC"
+	NodeTypeUEApp        = "UE-APP"
+	NodeTypeEdgeApp      = "EDGE-APP"
+	NodeTypeCloudApp     = "CLOUD-APP"
 )
 
 const (
-	NetCharScenario = "SCENARIO"
-	NetCharOperator = "OPERATOR"
-	NetCharZone     = "ZONE"
-	NetCharPoa      = "POA"
-	NetCharDC       = "DISTANT CLOUD"
-	NetCharEdge     = "EDGE"
-	NetCharFog      = "FOG"
-	NetCharUE       = "UE"
-	NetCharCloudApp = "CLOUD APPLICATION"
-	NetCharEdgeApp  = "EDGE APPLICATION"
-	NetCharUEApp    = "UE APPLICATION"
+	ScenarioAdd    = "ADD"
+	ScenarioRemove = "REMOVE"
+	ScenarioModify = "MODIFY"
 )
+
+// ModelCfg - Model Configuration
+type ModelCfg struct {
+	Name      string
+	Namespace string
+	Module    string
+	DbAddr    string
+	UpdateCb  func()
+}
 
 // Model - Implements a Meep Model
 type Model struct {
-	name          string
-	module        string
-	Active        bool
-	subscribed    bool
-	ActiveChannel string
-	activeKey     string
-	listener      func(string, string)
-	rc            *redis.Connector
-	scenario      *ceModel.Scenario
-	svcMap        []ceModel.NodeServiceMaps
-	nodeMap       *NodeMap
-	networkGraph  *NetworkGraph
-	lock          sync.RWMutex
+	name         string
+	namespace    string
+	module       string
+	Active       bool
+	subscribed   bool
+	activeKey    string
+	updateCb     func()
+	rc           *redis.Connector
+	scenario     *dataModel.Scenario
+	svcMap       []dataModel.NodeServiceMaps
+	nodeMap      *NodeMap
+	networkGraph *NetworkGraph
+	lock         sync.RWMutex
 }
 
-var DbAddress = "meep-redis-master:6379"
-var redisTable = 0
-
 // NewModel - Create a model object
-func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
-	if name == "" {
+func NewModel(cfg ModelCfg) (m *Model, err error) {
+	if cfg.Name == "" {
 		err = errors.New("Missing name")
 		log.Error(err)
 		return nil, err
 	}
-	if module == "" {
+	if cfg.Module == "" {
 		err = errors.New("Missing module")
 		log.Error(err)
 		return nil, err
 	}
 
 	m = new(Model)
-	m.name = name
-	m.module = module
+	m.name = cfg.Name
+	m.namespace = cfg.Namespace
+	m.module = cfg.Module
+	m.updateCb = cfg.UpdateCb
 	m.Active = false
 	m.subscribed = false
-	m.ActiveChannel = ActiveScenarioEvents
-	m.activeKey = activeScenarioKey
-	m.scenario = new(ceModel.Scenario)
+	m.activeKey = dkm.GetKeyRoot(m.namespace) + activeKey
+	m.scenario = new(dataModel.Scenario)
+
+	// Process scenario
 	err = m.parseNodes()
 	if err != nil {
 		log.Error("Failed to parse nodes for new model: ", m.name)
@@ -105,21 +115,22 @@ func NewModel(dbAddr string, module string, name string) (m *Model, err error) {
 	}
 
 	// Connect to Redis DB
-	m.rc, err = redis.NewConnector(dbAddr, redisTable)
+	m.rc, err = redis.NewConnector(cfg.DbAddr, redisTable)
 	if err != nil {
 		log.Error("Model ", m.name, " failed connection to Redis:")
 		log.Error(err)
 		return nil, err
 	}
+
 	log.Debug("[", m.module, "] Model created ", m.name)
 	return m, nil
 }
 
 // JSONMarshallScenarioList - Convert ScenarioList to JSON string
 func JSONMarshallScenarioList(scenarioList [][]byte) (slStr string, err error) {
-	var sl ceModel.ScenarioList
+	var sl dataModel.ScenarioList
 	for _, s := range scenarioList {
-		var scenario ceModel.Scenario
+		var scenario dataModel.Scenario
 		err = json.Unmarshal(s, &scenario)
 		if err != nil {
 			return "", err
@@ -137,7 +148,7 @@ func JSONMarshallScenarioList(scenarioList [][]byte) (slStr string, err error) {
 
 // JSONMarshallScenario - Convert ScenarioList to JSON string
 func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
-	var s ceModel.Scenario
+	var s dataModel.Scenario
 	err = json.Unmarshal(scenario, &s)
 	if err != nil {
 		return "", err
@@ -153,7 +164,7 @@ func JSONMarshallScenario(scenario []byte) (sStr string, err error) {
 
 // JSONMarshallReplayFileList - Convert ReplayFileList to JSON string
 func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err error) {
-	var rl ceModel.ReplayFileList
+	var rl dataModel.ReplayFileList
 	rl.ReplayFiles = replayFileNameList
 	json, err := json.Marshal(rl)
 	if err != nil {
@@ -165,7 +176,7 @@ func JSONMarshallReplayFileList(replayFileNameList []string) (rlStr string, err 
 
 // JSONMarshallReplay - Convert Replay to JSON string
 func JSONMarshallReplay(replay []byte) (rStr string, err error) {
-	var r ceModel.Replay
+	var r dataModel.Replay
 	err = json.Unmarshal(replay, &r)
 	if err != nil {
 		return "", err
@@ -184,7 +195,7 @@ func (m *Model) SetScenario(j []byte) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	scenario := new(ceModel.Scenario)
+	scenario := new(dataModel.Scenario)
 	err = json.Unmarshal(j, scenario)
 	if err != nil {
 		log.Error(err.Error())
@@ -231,12 +242,7 @@ func (m *Model) Activate() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventActivate)
-	err = m.rc.Publish(m.ActiveChannel, EventActivate)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
+
 	m.Active = true
 	return nil
 }
@@ -252,46 +258,7 @@ func (m *Model) Deactivate() (err error) {
 			log.Error("Failed to delete entry: ", err.Error())
 			return err
 		}
-		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventTerminate)
-		err = m.rc.Publish(m.ActiveChannel, EventTerminate)
-		if err != nil {
-			log.Error("Failed to publish: ", err.Error())
-			return err
-		}
 		m.Active = false
-	}
-	return nil
-}
-
-//Listen - Listen to scenario update events
-func (m *Model) Listen(handler func(string, string)) (err error) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	if handler == nil {
-		return errors.New("Nil event handler")
-	}
-	if !m.subscribed {
-		// Subscribe to Pub-Sub events for MEEP Controller
-		err = m.rc.Subscribe(m.ActiveChannel)
-		if err != nil {
-			log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-			return err
-		}
-		log.Info("Subscribed to active scenario events (Redis)")
-		m.subscribed = true
-
-		m.listener = handler
-
-		// Listen for events
-		go func() {
-			_ = m.rc.Listen(m.internalListener)
-		}()
-
-		// Generate first event to initialize
-		go func() {
-			m.internalListener(m.ActiveChannel, "")
-		}()
 	}
 	return nil
 }
@@ -327,7 +294,7 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 }
 
 // GetServiceMaps - Extracts the model service maps
-func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
+func (m *Model) GetServiceMaps() *[]dataModel.NodeServiceMaps {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
@@ -335,7 +302,7 @@ func (m *Model) GetServiceMaps() *[]ceModel.NodeServiceMaps {
 }
 
 //UpdateNetChar - Update network characteristics for a node
-func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (err error) {
+func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (err error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -346,11 +313,11 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 	ncType := strings.ToUpper(nc.ElementType)
 
 	// Find the element
-	if ncType == NetCharScenario {
-		m.scenario.Deployment.InterDomainLatency = nc.Latency
-		m.scenario.Deployment.InterDomainLatencyVariation = nc.LatencyVariation
-		m.scenario.Deployment.InterDomainThroughput = nc.Throughput
-		m.scenario.Deployment.InterDomainPacketLoss = nc.PacketLoss
+	if ncType == NodeTypeScenario {
+		if m.scenario.Deployment.NetChar == nil {
+			m.scenario.Deployment.NetChar = new(dataModel.NetworkCharacteristics)
+		}
+		m.scenario.Deployment.NetChar = nc.NetChar
 		updated = true
 	} else {
 		n := m.nodeMap.FindByName(ncName)
@@ -358,63 +325,198 @@ func (m *Model) UpdateNetChar(nc *ceModel.EventNetworkCharacteristicsUpdate) (er
 		if n == nil {
 			return errors.New("Did not find " + ncName + " in scenario " + m.name)
 		}
-		if ncType == NetCharOperator {
-			domain := n.object.(*ceModel.Domain)
-			domain.InterZoneLatency = nc.Latency
-			domain.InterZoneLatencyVariation = nc.LatencyVariation
-			domain.InterZoneThroughput = nc.Throughput
-			domain.InterZonePacketLoss = nc.PacketLoss
-			updated = true
-		} else if ncType == NetCharZone {
-			zone := n.object.(*ceModel.Zone)
-			if zone.NetChar == nil {
-				zone.NetChar = new(ceModel.NetworkCharacteristics)
+		if ncType == NodeTypeOperator || ncType == NodeTypeOperatorCell {
+			domain := n.object.(*dataModel.Domain)
+			if domain.NetChar == nil {
+				domain.NetChar = new(dataModel.NetworkCharacteristics)
 			}
-			zone.NetChar.Latency = nc.Latency
-			zone.NetChar.LatencyVariation = nc.LatencyVariation
-			zone.NetChar.Throughput = nc.Throughput
-			zone.NetChar.PacketLoss = nc.PacketLoss
+			domain.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharPoa {
-			nl := n.object.(*ceModel.NetworkLocation)
-			nl.TerminalLinkLatency = nc.Latency
-			nl.TerminalLinkLatencyVariation = nc.LatencyVariation
-			nl.TerminalLinkThroughput = nc.Throughput
-			nl.TerminalLinkPacketLoss = nc.PacketLoss
+		} else if ncType == NodeTypeZone {
+			zone := n.object.(*dataModel.Zone)
+			if zone.NetChar == nil {
+				zone.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			zone.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharDC || ncType == NetCharEdge || ncType == NetCharFog || ncType == NetCharUE {
-			pl := n.object.(*ceModel.PhysicalLocation)
-			pl.LinkLatency = nc.Latency
-			pl.LinkLatencyVariation = nc.LatencyVariation
-			pl.LinkThroughput = nc.Throughput
-			pl.LinkPacketLoss = nc.PacketLoss
+		} else if ncType == NodeTypePoa || ncType == NodeTypePoaCell {
+			nl := n.object.(*dataModel.NetworkLocation)
+			if nl.NetChar == nil {
+				nl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			nl.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NetCharCloudApp || ncType == NetCharEdgeApp || ncType == NetCharUEApp {
-			proc := n.object.(*ceModel.Process)
-			proc.AppLatency = nc.Latency
-			proc.AppLatencyVariation = nc.LatencyVariation
-			proc.AppThroughput = nc.Throughput
-			proc.AppPacketLoss = nc.PacketLoss
+		} else if ncType == NodeTypeCloud || ncType == NodeTypeEdge || ncType == NodeTypeFog || ncType == NodeTypeUE {
+			pl := n.object.(*dataModel.PhysicalLocation)
+			if pl.NetChar == nil {
+				pl.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			pl.NetChar = nc.NetChar
+			updated = true
+		} else if ncType == NodeTypeCloudApp || ncType == NodeTypeEdgeApp || ncType == NodeTypeUEApp {
+			proc := n.object.(*dataModel.Process)
+			if proc.NetChar == nil {
+				proc.NetChar = new(dataModel.NetworkCharacteristics)
+			}
+			proc.NetChar = nc.NetChar
 			updated = true
 		} else {
 			err = errors.New("Unsupported type " + ncType + ". Supported types: " +
-				NetCharScenario + ", " +
-				NetCharOperator + ", " +
-				NetCharZone + ", " +
-				NetCharPoa + ", " +
-				NetCharDC + ", " +
-				NetCharEdge + ", " +
-				NetCharFog + ", " +
-				NetCharUE + ", " +
-				NetCharCloudApp + ", " +
-				NetCharEdgeApp + ", " +
-				NetCharUEApp)
+				NodeTypeScenario + ", " +
+				NodeTypeOperator + ", " +
+				NodeTypeOperatorCell + ", " +
+				NodeTypeZone + ", " +
+				NodeTypePoa + ", " +
+				NodeTypePoaCell + ", " +
+				NodeTypeCloud + ", " +
+				NodeTypeEdge + ", " +
+				NodeTypeFog + ", " +
+				NodeTypeUE + ", " +
+				NodeTypeCloudApp + ", " +
+				NodeTypeEdgeApp + ", " +
+				NodeTypeUEApp)
 		}
 	}
 	if updated {
 		err = m.refresh()
 	}
 	return err
+}
+
+// AddScenarioNode - Add scenario node
+func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if node == nil {
+		err = errors.New("node == nil")
+		return
+	}
+
+	// Find parent
+	parentNode := m.nodeMap.FindByName(node.Parent)
+	if parentNode == nil {
+		err = errors.New("Parent element " + node.Parent + " not found in scenario " + m.name)
+		return
+	}
+
+	// Add element based on type
+	if node.Type_ == NodeTypeUE {
+
+		// Get parent Network Location node & context information
+		if parentNode.nodeType != NodeTypePoa && parentNode.nodeType != NodeTypePoaCell {
+			err = errors.New("Invalid parent type: " + parentNode.nodeType)
+			return
+		}
+		nl := parentNode.object.(*dataModel.NetworkLocation)
+
+		// Validate Physical Location
+		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+			err = errors.New("Missing Physical Location")
+			return
+		}
+		pl := node.NodeDataUnion.PhysicalLocation
+		err = validatePL(pl)
+		if err != nil {
+			return
+		}
+
+		// Make sure node Name is unique
+		n := m.nodeMap.FindByName(pl.Name)
+		if n != nil {
+			err = errors.New("Element " + pl.Name + " already exists in scenario " + m.name)
+			return
+		}
+
+		// Remove any configured processes
+		pl.Processes = make([]dataModel.Process, 0)
+
+		// Add PL to parent NL
+		nl.PhysicalLocations = append(nl.PhysicalLocations, *pl)
+
+		// Refresh node map
+		err = m.parseNodes()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	} else {
+		err = errors.New("Node type " + node.Type_ + " not supported")
+		return
+	}
+
+	// Update scenario
+	err = m.refresh()
+	return
+}
+
+// RemoveScenarioNode - Remove scenario node
+func (m *Model) RemoveScenarioNode(node *dataModel.ScenarioNode) (err error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if node == nil {
+		err = errors.New("node == nil")
+		return
+	}
+
+	// Remove element based on type
+	if node.Type_ == NodeTypeUE {
+
+		// Get node name from request physical location
+		if node.NodeDataUnion == nil || node.NodeDataUnion.PhysicalLocation == nil {
+			err = errors.New("Missing Physical Location")
+			return
+		}
+		reqPL := node.NodeDataUnion.PhysicalLocation
+		nodeName := reqPL.Name
+
+		// Find node in scenario
+		n := m.nodeMap.FindByName(nodeName)
+		if n == nil {
+			err = errors.New("Element " + nodeName + " not found in scenario " + m.name)
+			return
+		}
+
+		// Currently support only PL with no processes
+		pl := n.object.(*dataModel.PhysicalLocation)
+		if pl == nil || len(pl.Processes) != 0 {
+			err = errors.New("Cannot remove PL with child processes")
+			return
+		}
+
+		// Get parent NL
+		nl := n.parent.(*dataModel.NetworkLocation)
+		if nl == nil {
+			err = errors.New("Parent node not found in scenario " + m.name)
+			return
+		}
+
+		// Get index of PL to remove
+		var index int
+		for i, pl := range nl.PhysicalLocations {
+			if pl.Name == n.name {
+				index = i
+				break
+			}
+		}
+
+		// Overwrite & truncate to remove PL from list
+		nl.PhysicalLocations[index] = nl.PhysicalLocations[len(nl.PhysicalLocations)-1]
+		nl.PhysicalLocations = nl.PhysicalLocations[:len(nl.PhysicalLocations)-1]
+
+		// Refresh node map
+		err = m.parseNodes()
+		if err != nil {
+			log.Error(err.Error())
+		}
+	} else {
+		err = errors.New("Node type " + node.Type_ + " not supported")
+		return
+	}
+
+	// Update scenario
+	err = m.refresh()
+	return
 }
 
 //GetScenarioName - Get the scenario name
@@ -497,6 +599,19 @@ func (m *Model) GetNodeType(name string) (typ string) {
 	return typ
 }
 
+// GetNodeParent - Get a parent node by its child name
+func (m *Model) GetNodeParent(name string) (parent interface{}) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	parent = ""
+	n := m.nodeMap.nameMap[name]
+	if n != nil {
+		parent = n.parent
+	}
+	return parent
+}
+
 // GetNodeContext - Get a node context
 // 		Returned value is of type interface{}
 //    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic
@@ -533,7 +648,7 @@ func (m *Model) parseNodes() (err error) {
 			deployment := m.scenario.Deployment
 			ctx := NewNodeContext(m.scenario.Name, "", "", "", "")
 			m.nodeMap.AddNode(NewNode(m.scenario.Name, "DEPLOYMENT", deployment, &deployment.Domains, m.scenario, ctx))
-			m.svcMap = make([]ceModel.NodeServiceMaps, 0)
+			m.svcMap = make([]dataModel.NodeServiceMaps, 0)
 
 			// Domains
 			for iDomain := range m.scenario.Deployment.Domains {
@@ -572,7 +687,7 @@ func (m *Model) parseNodes() (err error) {
 
 								// Update service map for external processes
 								if proc.IsExternal {
-									var nodeServiceMaps ceModel.NodeServiceMaps
+									var nodeServiceMaps dataModel.NodeServiceMaps
 									nodeServiceMaps.Node = proc.Name
 									nodeServiceMaps.IngressServiceMap = append(nodeServiceMaps.IngressServiceMap, proc.ExternalConfig.IngressServiceMap...)
 									nodeServiceMaps.EgressServiceMap = append(nodeServiceMaps.EgressServiceMap, proc.ExternalConfig.EgressServiceMap...)
@@ -600,26 +715,25 @@ func (m *Model) refresh() (err error) {
 			log.Error(err.Error())
 			return err
 		}
-		log.Debug("TX-MSG [", m.ActiveChannel, "] ", EventUpdate)
-		err = m.rc.Publish(m.ActiveChannel, EventUpdate)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+
+		// Invoke Active Scenario Update callback
+		if m.updateCb != nil {
+			m.updateCb()
 		}
 	}
 	return nil
 }
 
 func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocName string, err error) {
-	var pl *ceModel.PhysicalLocation
-	var oldNL *ceModel.NetworkLocation
-	var newNL *ceModel.NetworkLocation
+	var pl *dataModel.PhysicalLocation
+	var oldNL *dataModel.NetworkLocation
+	var newNL *dataModel.NetworkLocation
 
 	// Node is a UE
-	pl = node.object.(*ceModel.PhysicalLocation)
+	pl = node.object.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ pl: %+v\n", pl)
 
-	oldNL = node.parent.(*ceModel.NetworkLocation)
+	oldNL = node.parent.(*dataModel.NetworkLocation)
 	// fmt.Printf("+++ oldNL: %+v\n", oldNL)
 	if oldNL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
@@ -630,7 +744,7 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 	if newNLNode == nil {
 		return "", "", errors.New("MoveNode: " + destName + " not found")
 	}
-	newNL = newNLNode.object.(*ceModel.NetworkLocation)
+	newNL = newNLNode.object.(*dataModel.NetworkLocation)
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
@@ -665,12 +779,12 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 }
 
 func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLocName string, err error) {
-	var proc *ceModel.Process
-	var oldPL *ceModel.PhysicalLocation
-	var newPL *ceModel.PhysicalLocation
+	var proc *dataModel.Process
+	var oldPL *dataModel.PhysicalLocation
+	var newPL *dataModel.PhysicalLocation
 
 	// Node is a process
-	proc = node.object.(*ceModel.Process)
+	proc = node.object.(*dataModel.Process)
 	// fmt.Printf("+++ process: %+v\n", proc)
 	//process part of a mobility group can't be moved
 	if proc.ServiceConfig != nil {
@@ -679,7 +793,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 		}
 	}
 
-	oldPL = node.parent.(*ceModel.PhysicalLocation)
+	oldPL = node.parent.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ oldPL: %+v\n", oldPL)
 	if oldPL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
@@ -690,7 +804,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	if newPLNode == nil {
 		return "", "", errors.New("MoveNode: " + destName + " not found")
 	}
-	newPL = newPLNode.object.(*ceModel.PhysicalLocation)
+	newPL = newPLNode.object.(*dataModel.PhysicalLocation)
 	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
@@ -718,7 +832,7 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	return oldPL.Name, newPL.Name, nil
 }
 
-func (m *Model) internalListener(channel string, payload string) {
+func (m *Model) UpdateScenario() {
 	// An update was received - Update the object state and call the external Handler
 	// Retrieve active scenario from DB
 	j, err := m.rc.JSONGetEntry(m.activeKey, ".")
@@ -726,14 +840,11 @@ func (m *Model) internalListener(channel string, payload string) {
 	if err != nil {
 		log.Debug("Scenario was deleted")
 		// Scenario was deleted
-		m.scenario = new(ceModel.Scenario)
+		m.scenario = new(dataModel.Scenario)
 		_ = m.parseNodes()
 	} else {
 		_ = m.SetScenario([]byte(j))
 	}
-
-	// external listener
-	m.listener(channel, payload)
 }
 
 func isDefaultZone(typ string) bool {

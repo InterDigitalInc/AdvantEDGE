@@ -35,8 +35,12 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   //ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -56,8 +60,14 @@ import {
   PREFIX_LINK,
   PREFIX_APP,
 
-  // Layout type
-  MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT
+  DOMAIN_TYPE_STR,
+  DOMAIN_CELL_TYPE_STR,
+  POA_TYPE_STR,
+  POA_CELL_TYPE_STR,
+  DC_TYPE_STR,
+  UE_APP_TYPE_STR,
+  EDGE_APP_TYPE_STR,
+  CLOUD_APP_TYPE_STR
 } from '../../meep-constants';
 
 import {
@@ -66,27 +76,34 @@ import {
   FIELD_TYPE,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
-  FIELD_INT_DOM_THROUGPUT,
+  FIELD_INT_DOM_LATENCY_DIST,
+  FIELD_INT_DOM_THROUGHPUT_DL,
+  FIELD_INT_DOM_THROUGHPUT_UL,
   FIELD_INT_DOM_PKT_LOSS,
   FIELD_INT_ZONE_LATENCY,
   FIELD_INT_ZONE_LATENCY_VAR,
-  FIELD_INT_ZONE_THROUGPUT,
+  FIELD_INT_ZONE_THROUGHPUT_DL,
+  FIELD_INT_ZONE_THROUGHPUT_UL,
   FIELD_INT_ZONE_PKT_LOSS,
   FIELD_INTRA_ZONE_LATENCY,
   FIELD_INTRA_ZONE_LATENCY_VAR,
-  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_THROUGHPUT_DL,
+  FIELD_INTRA_ZONE_THROUGHPUT_UL,
   FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
-  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_THROUGHPUT_DL,
+  FIELD_TERM_LINK_THROUGHPUT_UL,
   FIELD_TERM_LINK_PKT_LOSS,
   FIELD_LINK_LATENCY,
   FIELD_LINK_LATENCY_VAR,
-  FIELD_LINK_THROUGPUT,
+  FIELD_LINK_THROUGHPUT_DL,
+  FIELD_LINK_THROUGHPUT_UL,
   FIELD_LINK_PKT_LOSS,
   FIELD_APP_LATENCY,
   FIELD_APP_LATENCY_VAR,
-  FIELD_APP_THROUGPUT,
+  FIELD_APP_THROUGHPUT_DL,
+  FIELD_APP_THROUGHPUT_UL,
   FIELD_APP_PKT_LOSS,
   getElemFieldVal,
   setElemFieldVal,
@@ -95,9 +112,11 @@ import {
 
 const ncApplicableTypes = [
   ELEMENT_TYPE_SCENARIO,
-  ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
-  ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
@@ -131,21 +150,48 @@ class NetworkCharacteristicsEventPane extends Component {
       return;
     }
 
-    var neType =
-      this.state.currentElementType === 'DOMAIN'
-        ? 'OPERATOR'
-        : this.state.currentElementType;
+    var neType = '';
+    switch(this.state.currentElementType) {
+    case ELEMENT_TYPE_OPERATOR_GENERIC:
+      neType = DOMAIN_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_OPERATOR_CELL:
+      neType = DOMAIN_CELL_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_GENERIC:
+      neType = POA_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_CELL:
+      neType = POA_CELL_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_DC:
+      neType = DC_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_UE_APP:
+      neType = UE_APP_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_EDGE_APP:
+      neType = EDGE_APP_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_CLOUD_APP:
+      neType = CLOUD_APP_TYPE_STR;
+      break;
+    default:
+      neType = this.state.currentElementType;
+    }
+
     var ncEvent = {
       name: 'name',
       type: this.props.currentEvent,
       eventNetworkCharacteristicsUpdate: {
         elementName: getElemFieldVal(element, FIELD_NAME),
-        elementType: neType
+        elementType: neType,
+        netChar: {}
       }
     };
 
     // Retrieve and set net characteristics from element
-    this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate, element);
+    this.setNetCharFromElem(ncEvent.eventNetworkCharacteristicsUpdate.netChar, element);
 
     // trigger event with this.props.api
     this.props.api.sendEvent(this.props.currentEvent, ncEvent, error => {
@@ -160,12 +206,13 @@ class NetworkCharacteristicsEventPane extends Component {
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN';
-        }
-        if (elemType === 'ZONE') {
+        if (type === ELEMENT_TYPE_OPERATOR_GENERIC) {
+          return elemType === ELEMENT_TYPE_OPERATOR;
+        } else if (type === ELEMENT_TYPE_POA_GENERIC) {
+          return elemType === ELEMENT_TYPE_POA;
+        } else if (elemType === ELEMENT_TYPE_ZONE) {
           return type.startsWith(elemType);
-        }
+        } 
         return type === elemType;
       })
       .value();
@@ -178,10 +225,14 @@ class NetworkCharacteristicsEventPane extends Component {
     case ELEMENT_TYPE_SCENARIO:
       return PREFIX_INT_DOM;
     case ELEMENT_TYPE_OPERATOR:
+    case ELEMENT_TYPE_OPERATOR_GENERIC:
+    case ELEMENT_TYPE_OPERATOR_CELL:
       return PREFIX_INT_ZONE;
     case ELEMENT_TYPE_ZONE:
       return PREFIX_INTRA_ZONE;
     case ELEMENT_TYPE_POA:
+    case ELEMENT_TYPE_POA_GENERIC:
+    case ELEMENT_TYPE_POA_CELL:
       return PREFIX_TERM_LINK;
     case ELEMENT_TYPE_EDGE:
       return PREFIX_LINK;
@@ -206,43 +257,52 @@ class NetworkCharacteristicsEventPane extends Component {
     // Retrieve field names
     var latencyFieldName = null;
     var latencyVarFieldName = null;
-    var throughputFieldName = null;
+    var latencyDistFieldName = null;
+    var throughputDlFieldName = null;
+    var throughputUlFieldName = null;
     var packetLossFieldName = null;
     switch (this.currentPrefix()) {
     case PREFIX_INT_DOM:
       latencyFieldName = FIELD_INT_DOM_LATENCY;
       latencyVarFieldName = FIELD_INT_DOM_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_DOM_THROUGPUT;
+      latencyDistFieldName = FIELD_INT_DOM_LATENCY_DIST;
+      throughputDlFieldName = FIELD_INT_DOM_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INT_DOM_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INT_DOM_PKT_LOSS;
       break;
     case PREFIX_INT_ZONE:
       latencyFieldName = FIELD_INT_ZONE_LATENCY;
       latencyVarFieldName = FIELD_INT_ZONE_LATENCY_VAR;
-      throughputFieldName = FIELD_INT_ZONE_THROUGPUT;
+      throughputDlFieldName = FIELD_INT_ZONE_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INT_ZONE_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INT_ZONE_PKT_LOSS;
       break;
     case PREFIX_INTRA_ZONE:
       latencyFieldName = FIELD_INTRA_ZONE_LATENCY;
       latencyVarFieldName = FIELD_INTRA_ZONE_LATENCY_VAR;
-      throughputFieldName = FIELD_INTRA_ZONE_THROUGPUT;
+      throughputDlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_INTRA_ZONE_THROUGHPUT_UL;
       packetLossFieldName = FIELD_INTRA_ZONE_PKT_LOSS;
       break;
     case PREFIX_TERM_LINK:
       latencyFieldName = FIELD_TERM_LINK_LATENCY;
       latencyVarFieldName = FIELD_TERM_LINK_LATENCY_VAR;
-      throughputFieldName = FIELD_TERM_LINK_THROUGPUT;
+      throughputDlFieldName = FIELD_TERM_LINK_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_TERM_LINK_THROUGHPUT_UL;
       packetLossFieldName = FIELD_TERM_LINK_PKT_LOSS;
       break;
     case PREFIX_LINK:
       latencyFieldName = FIELD_LINK_LATENCY;
       latencyVarFieldName = FIELD_LINK_LATENCY_VAR;
-      throughputFieldName = FIELD_LINK_THROUGPUT;
+      throughputDlFieldName = FIELD_LINK_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_LINK_THROUGHPUT_UL;
       packetLossFieldName = FIELD_LINK_PKT_LOSS;
       break;
     case PREFIX_APP:
       latencyFieldName = FIELD_APP_LATENCY;
       latencyVarFieldName = FIELD_APP_LATENCY_VAR;
-      throughputFieldName = FIELD_APP_THROUGPUT;
+      throughputDlFieldName = FIELD_APP_THROUGHPUT_DL;
+      throughputUlFieldName = FIELD_APP_THROUGHPUT_UL;
       packetLossFieldName = FIELD_APP_PKT_LOSS;
       break;
     default:
@@ -252,7 +312,11 @@ class NetworkCharacteristicsEventPane extends Component {
     // Update net characteristics
     netChar.latency = getElemFieldVal(element, latencyFieldName);
     netChar.latencyVariation = getElemFieldVal(element, latencyVarFieldName);
-    netChar.throughput = getElemFieldVal(element, throughputFieldName);
+    if (latencyDistFieldName) {
+      netChar.latencyDistribution = getElemFieldVal(element, latencyDistFieldName);
+    }
+    netChar.throughputDl = getElemFieldVal(element, throughputDlFieldName);
+    netChar.throughputUl = getElemFieldVal(element, throughputUlFieldName);
     netChar.packetLoss = getElemFieldVal(element, packetLossFieldName);
   }
 
@@ -283,7 +347,6 @@ class NetworkCharacteristicsEventPane extends Component {
 
   render() {
     var element = this.props.element;
-    var type = getElemFieldVal(element, FIELD_TYPE);
     var nbErrors = _.reduce(
       element,
       (result, value) => {
@@ -294,14 +357,16 @@ class NetworkCharacteristicsEventPane extends Component {
 
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
+        var type = this.state.currentElementType;
         var elemType = getElemFieldVal(e, FIELD_TYPE);
-        if (type === 'DOMAIN' || type === 'OPERATOR') {
-          return elemType === 'OPERATOR' || elemType === 'DOMAIN';
-        }
-        if (elemType === 'ZONE') {
-          return this.state.currentElementType.startsWith(elemType);
-        }
-        return this.state.currentElementType === elemType;
+        if (type === ELEMENT_TYPE_OPERATOR_GENERIC) {
+          return elemType === ELEMENT_TYPE_OPERATOR;
+        } else if (type === ELEMENT_TYPE_POA_GENERIC) {
+          return elemType === ELEMENT_TYPE_POA;
+        } else if (elemType === ELEMENT_TYPE_ZONE) {
+          return type.startsWith(elemType);
+        } 
+        return type === elemType;
       })
       .map(e => {
         return getElemFieldVal(e, FIELD_NAME);
@@ -346,15 +411,14 @@ class NetworkCharacteristicsEventPane extends Component {
           <GridCell span="4"></GridCell>
         </Grid>
 
-        <NCGroup
-          layout={MEEP_COMPONENT_SINGLE_COLUMN_LAYOUT}
+        {elements.length ? <NCGroup
           onUpdate={(name, val, err) => {
             this.onUpdateElement(name, val, err);
           }}
           parent={this}
           element={element}
           prefix={this.currentPrefix()}
-        />
+        /> : null}
 
         <CancelApplyPair
           cancelText="Close"
@@ -364,7 +428,7 @@ class NetworkCharacteristicsEventPane extends Component {
           }}
           onApply={e => this.triggerEvent(e)}
           saveDisabled={
-            !element.elementType || !this.props.element.name || nbErrors
+            !elements.length || !element.elementType || !this.props.element.name || nbErrors
           }
         />
       </div>

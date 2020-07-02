@@ -1,0 +1,51 @@
+---
+
+- name: Reset Kubernetes component
+  shell: "kubeadm reset --force"
+  register: reset_cluster
+
+- name: Init Kubernetes cluster
+  when: reset_cluster is succeeded
+  shell: kubeadm init --apiserver-advertise-address {{ master_ip }}
+  register: init_cluster
+
+- name: Create Kubernetes config directory
+  file:
+    path: ".kube/"
+    state: directory
+
+- name: Copy admin.conf to Home directory
+  when: init_cluster is succeeded
+  copy:
+    src: "{{ kubeadmin_config }}"
+    dest: ".kube/config"
+    owner: "{{ ansible_user | default(ansible_user_id) }}"
+    group: "{{ ansible_user | default(ansible_user_id) }}"
+    mode: 0755
+    remote_src: true
+
+- name: "Enable scheduling on master node"
+  command: kubectl taint --kubeconfig={{ kubeadmin_config }} nodes --all node-role.kubernetes.io/master-
+
+- name: Enable and check kubelet service
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+- name: Add K8s CA to list of trusted CAs
+  copy:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /usr/local/share/ca-certificates/kubernetes-ca.crt
+
+- name: Update certificate index
+  shell: /usr/sbin/update-ca-certificates
+
+- name: Restart Docker service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+  register: started_docker

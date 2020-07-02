@@ -26,11 +26,19 @@ import {
   execChangeVis,
   execVisFilteredData
 } from '../state/exec';
-import { cfgChangeTable, cfgChangeVis, cfgElemEdit } from '../state/cfg';
-
-import { TYPE_CFG, TYPE_EXEC } from '../meep-constants';
-
-import { FIELD_NAME, getElemFieldVal } from '../util/elem-utils';
+import {
+  cfgChangeTable,
+  cfgChangeVis,
+  cfgElemEdit
+} from '../state/cfg';
+import {
+  TYPE_CFG,
+  TYPE_EXEC
+} from '../meep-constants';
+import {
+  FIELD_NAME,
+  getElemFieldVal
+} from '../util/elem-utils';
 
 function createBoxGroup(groups, name, bgColor) {
   groups[name] = {
@@ -267,11 +275,8 @@ class IDCVis extends Component {
 
         // Open first selected element in element configuration pane
         if (this.props.type === TYPE_CFG) {
-          this.props.onEditElement(
-            table.selected.length
-              ? this.getElementById(table.entries, table.selected[0])
-              : null
-          );
+          this.props.onEditElement(table.selected.length ?
+            this.getElementById(table.entries, table.selected[0]) : null);
         }
       });
     }
@@ -437,12 +442,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    changeExecTable: table => {
-      dispatch(execChangeTable(table));
-    },
-    changeCfgTable: table => {
-      dispatch(cfgChangeTable(table));
-    },
+    changeExecTable: table => dispatch(execChangeTable(table)),
+    changeCfgTable: table => dispatch(cfgChangeTable(table)),
     changeExecVis: vis => dispatch(execChangeVis(vis)),
     changeCfgVis: vis => dispatch(cfgChangeVis(vis)),
     changeCfgElement: element => dispatch(cfgElemEdit(element))

@@ -16,14 +16,17 @@
 
 // Import CSS
 import 'material-design-icons/iconfont/material-icons.css';
+import 'leaflet/dist/leaflet.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'vis/dist/vis.min.css';
 import '../css/meep-controller.scss';
 
 // Import module dependencies
-import 'material-design-icons';
+// import 'material-design-icons';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, compose, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import meepReducer from './state/meep-reducer';
@@ -48,14 +51,15 @@ var loadedState = loadState();
 // };
 
 // Create state store
+/* eslint-disable no-underscore-dangle */
+// https://github.com/zalmoxisus/redux-devtools-extension#usage
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const meepStore = createStore(
   meepReducer,
   loadedState ? loadedState : undefined,
-  applyMiddleware(
-    thunk,
-    execDisplayedScenarioMiddleware
-  )
+  composeEnhancers(applyMiddleware(thunk,execDisplayedScenarioMiddleware))
 );
+/* eslint-enable */
 window.meepStore = meepStore;
 
 meepStore.subscribe(() => {

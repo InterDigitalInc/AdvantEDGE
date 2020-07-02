@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Mobility Group Service REST API
  *
- * Mobility Group Service allows to form groups formed multiple edge application instances and share user states automatically withing the group <p>**Micro-service**<br>[meep-mg-manager](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-mg-manager) <p>**Type & Usage**<br>Edge Service used by edge applications to share user state between the  Mobility Group members <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Mobility Group Service allows to form groups formed multiple edge application instances and share user states automatically withing the group <p>**Micro-service**<br>[meep-mg-manager](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-mg-manager) <p>**Type & Usage**<br>Edge Service used by edge applications to share user state between the  Mobility Group members <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -75,7 +75,7 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	cfg := &Configuration{
-		BasePath:      "http://localhost/v1",
+		BasePath:      "https://localhost/mgm/v1",
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "Swagger-Codegen/1.0.0/go",
 	}

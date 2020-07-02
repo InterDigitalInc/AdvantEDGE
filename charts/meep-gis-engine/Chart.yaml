@@ -1,0 +1,5 @@
+apiVersion: v1
+appVersion: "1.0.0"
+description: MEEP GIS Engine Helm chart for Kubernetes
+name: meep-gis-engine
+version: 1.0.0

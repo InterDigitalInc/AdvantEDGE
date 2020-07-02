@@ -81,9 +81,10 @@ podManagementPolicy: Parallel
 ## to a second Service that governs how clients connect to the CouchDB cluster.
 service:
   enabled: true
-  type: NodePort
+  type: ClusterIP
+  #type: NodePort
   externalPort: 5984
-  nodePort: 30984
+  #nodePort: 30984
 
 ## An Ingress resource can provide name-based virtual hosting and TLS
 ## termination among other things for CouchDB deployments which are accessed

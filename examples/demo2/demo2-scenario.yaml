@@ -1,50 +1,64 @@
+version: 1.5.0
 name: demo2
 deployment:
-    interDomainLatency: 50
-    interDomainLatencyVariation: 5
-    interDomainThroughput: 1000
+    netChar:
+        latency: 50
+        latencyVariation: 5
+        latencyDistribution: Normal
+        throughputDl: 1000
+        throughputUl: 1000
+        throughput: null
+        packetLoss: null
     domains:
         -
             id: PUBLIC
             name: PUBLIC
             type: PUBLIC
-            interZoneLatency: 6
-            interZoneLatencyVariation: 2
-            interZoneThroughput: 1000000
+            netChar:
+                latency: 6
+                latencyVariation: 2
+                throughputDl: 1000
+                throughputUl: 1000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
             zones:
                 -
                     id: PUBLIC-COMMON
                     name: PUBLIC-COMMON
                     type: COMMON
-                    interFogLatency: 2
-                    interFogLatencyVariation: 1
-                    interFogThroughput: 1000000
-                    interEdgeLatency: 3
-                    interEdgeLatencyVariation: 1
-                    interEdgeThroughput: 1000000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
                     networkLocations:
                         -
                             id: PUBLIC-COMMON-DEFAULT
                             name: PUBLIC-COMMON-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: cloud1
+                                    id: 1cda8009-92c8-4a3d-adc9-0fbc72b0b490
                                     name: cloud1
                                     type: DC
                                     processes:
                                         -
-                                            id: cloud1-iperf
+                                            id: d3faf837-477f-496f-b435-66b3d6e9d0f5
                                             name: cloud1-iperf
                                             type: CLOUD-APP
-                                            image: meep-docker-registry:30001/iperf-server
+                                            image: 'meep-docker-registry:30001/iperf-server'
                                             commandArguments: '-c, export; iperf -s -p $IPERF_SERVICE_PORT'
                                             commandExe: /bin/bash
                                             serviceConfig:
@@ -55,18 +69,34 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
-                                            id: cloud1-svc
+                                            id: f73f055d-b0df-43b6-b9d2-e437ebb8404d
                                             name: cloud1-svc
                                             type: CLOUD-APP
-                                            image: meep-docker-registry:30001/demo-server
+                                            image: 'meep-docker-registry:30001/demo-server'
                                             environment: 'MGM_GROUP_NAME=cloud1-svc,MGM_APP_ID=cloud1-svc,MGM_APP_PORT=80'
                                             serviceConfig:
                                                 name: cloud1-svc
@@ -76,199 +106,412 @@ deployment:
                                                         port: 80
                                                         externalPort: null
                                                 meSvcName: null
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             commandArguments: null
                                             commandExe: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
             interZonePacketLoss: null
+            meta: null
+            userMeta: null
+            cellularDomainConfig: null
         -
-            id: operator1
+            id: 9b18f0ae-4982-4e46-8fce-a7ff6516479d
             name: operator1
             type: OPERATOR
-            interZoneLatency: 15
-            interZoneLatencyVariation: 3
-            interZoneThroughput: 1000
+            netChar:
+                latency: 15
+                latencyVariation: 3
+                throughputDl: 1000
+                throughputUl: 1000
+                latencyDistribution: null
+                throughput: null
+                packetLoss: null
             zones:
                 -
                     id: operator1-COMMON
                     name: operator1-COMMON
                     type: COMMON
-                    interFogLatency: 2
-                    interFogLatencyVariation: 1
-                    interFogThroughput: 1000000
-                    interEdgeLatency: 3
-                    interEdgeLatencyVariation: 1
-                    interEdgeThroughput: 1000000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
                     networkLocations:
                         -
                             id: operator1-COMMON-DEFAULT
                             name: operator1-COMMON-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
                 -
-                    id: zone1
+                    id: c75256d8-e4cd-4abf-bf6d-b4b3a1385b06
                     name: zone1
                     type: ZONE
-                    interFogLatency: 10
-                    interFogLatencyVariation: 2
-                    interFogThroughput: 1000
-                    interEdgeLatency: 12
-                    interEdgeLatencyVariation: 2
-                    interEdgeThroughput: 1000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
                     networkLocations:
                         -
                             id: zone1-DEFAULT
                             name: zone1-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone1-edge1
+                                    id: e8bd434f-1ef2-4d32-b185-98f0bcc1e090
                                     name: zone1-edge1
                                     type: EDGE
                                     processes:
                                         -
-                                            id: zone1-edge1-iperf
+                                            id: fdff97b7-f342-4eb5-9a84-57ab4e19f0b5
                                             name: zone1-edge1-iperf
                                             type: EDGE-APP
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-e1-iperf-values.yaml
+                                            userChartLocation: demo2/charts/iperf
+                                            userChartAlternateValues: demo2/values/z1-e1-iperf-values.yaml
                                             userChartGroup: 'zone1-edge1-iperf:iperf:80:UDP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
-                                            userChartAlternateValues: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
-                                            id: zone1-edge1-svc
+                                            id: 87cf69af-6b3e-449c-8cc0-4fecd6d324c6
                                             name: zone1-edge1-svc
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone1-edge1-svc
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-e1-svc-values.yaml
+                                            userChartLocation: demo2/charts/svc
+                                            userChartAlternateValues: demo2/values/z1-e1-svc-values.yaml
                                             userChartGroup: 'zone1-edge1-svc:svc:80:TCP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                         -
-                            id: zone1-poa1
+                            id: 6b477dd3-eb67-49f9-b1d2-2bfae9376a33
                             name: zone1-poa1
                             type: POA
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 1000
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone1-fog1
+                                    id: 7e992adf-c946-4527-b8e0-f3000215b234
                                     name: zone1-fog1
                                     type: FOG
                                     processes:
                                         -
-                                            id: zone1-fog1-iperf
+                                            id: 80f1b9b0-ec43-460a-9948-c59972198f14
                                             name: zone1-fog1-iperf
                                             type: EDGE-APP
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-f1-iperf-values.yaml
+                                            userChartLocation: demo2/charts/iperf
+                                            userChartAlternateValues: demo2/values/z1-f1-iperf-values.yaml
                                             userChartGroup: 'zone1-fog1-iperf:iperf:80:UDP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
-                                            userChartAlternateValues: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
-                                            id: zone1-fog1-svc
+                                            id: 69a71c83-6411-472a-ac18-80f42c9353b2
                                             name: zone1-fog1-svc
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone1-fog1-svc
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z1-f1-svc-values.yaml
+                                            userChartLocation: demo2/charts/svc
+                                            userChartAlternateValues: demo2/values/z1-f1-svc-values.yaml
                                             userChartGroup: 'zone1-fog1-svc:svc:80:TCP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
                                 -
-                                    id: ue1
+                                    id: a95c7d87-1086-419b-9525-cf74807492e4
                                     name: ue1
                                     type: UE
                                     processes:
                                         -
-                                            id: ue1-iperf
+                                            id: b0ace81a-f113-4c3a-8414-956165cba4a5
                                             name: ue1-iperf
                                             type: UE-APP
-                                            image: meep-docker-registry:30001/iperf-client
+                                            image: 'meep-docker-registry:30001/iperf-client'
                                             commandArguments: '-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;'
                                             commandExe: /bin/bash
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             environment: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
                                 -
-                                    id: ue2-ext
+                                    id: a4bff832-de45-4cbb-a54c-17b6b26735ef
                                     name: ue2-ext
                                     type: UE
-                                    isExternal: true
                                     processes:
                                         -
-                                            id: ue2-svc
+                                            id: b13e0551-e6f2-44bd-b720-6e47380bbf4f
                                             name: ue2-svc
                                             type: UE-APP
                                             isExternal: true
@@ -279,126 +522,273 @@ deployment:
                                                         port: 80
                                                         externalPort: 31111
                                                         protocol: TCP
-                                                        ip: null
                                                     -
                                                         name: iperf
                                                         port: 80
                                                         externalPort: 31222
                                                         protocol: UDP
-                                                        ip: null
                                                     -
                                                         name: cloud1-svc
                                                         port: 80
                                                         externalPort: 31112
                                                         protocol: TCP
-                                                        ip: null
                                                     -
                                                         name: cloud1-iperf
                                                         port: 80
                                                         externalPort: 31223
                                                         protocol: UDP
-                                                        ip: null
                                                 egressServiceMap: null
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
                                             userChartGroup: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                         -
-                            id: zone1-poa2
+                            id: 956fd663-ef11-4992-8845-499a12ea969e
                             name: zone1-poa2
                             type: POA
-                            terminalLinkLatency: 10
-                            terminalLinkLatencyVariation: 2
-                            terminalLinkThroughput: 50
+                            netChar:
+                                latency: 10
+                                latencyVariation: 2
+                                throughputDl: 50
+                                throughputUl: 50
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
                 -
-                    id: zone2
+                    id: 953c8dbb-d4d7-433a-8eb6-8ec5755fbd91
                     name: zone2
                     type: ZONE
-                    interFogLatency: 10
-                    interFogLatencyVariation: 2
-                    interFogThroughput: 1000
-                    interEdgeLatency: 12
-                    interEdgeLatencyVariation: 2
-                    interEdgeThroughput: 1000
-                    edgeFogLatency: 5
-                    edgeFogLatencyVariation: 1
-                    edgeFogThroughput: 1000
+                    netChar:
+                        latency: 5
+                        latencyVariation: 1
+                        throughputDl: 1000
+                        throughputUl: 1000
+                        latencyDistribution: null
+                        throughput: null
+                        packetLoss: null
                     networkLocations:
                         -
                             id: zone2-DEFAULT
                             name: zone2-DEFAULT
                             type: DEFAULT
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 50000
-                            terminalLinkPacketLoss: 1
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 1000
+                                throughputUl: 1000
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
                             physicalLocations:
                                 -
-                                    id: zone2-edge1
+                                    id: d4626b7c-fa9b-47e4-b0bd-8bbf792c4606
                                     name: zone2-edge1
                                     type: EDGE
                                     processes:
                                         -
-                                            id: zone2-edge1-iperf
+                                            id: 2e9b5291-51d1-4bf7-b464-fb902e3122cc
                                             name: zone2-edge1-iperf
                                             type: EDGE-APP
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/iperf
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z2-e1-iperf-values.yaml
+                                            userChartLocation: demo2/charts/iperf
+                                            userChartAlternateValues: demo2/values/z2-e1-iperf-values.yaml
                                             userChartGroup: 'zone2-edge1-iperf:iperf:80:UDP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
                                             serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
-                                            userChartAlternateValues: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
                                         -
-                                            id: zone2-edge1-svc
+                                            id: 04e920e1-7c6b-4bce-8eb0-205356b69de9
                                             name: zone2-edge1-svc
                                             type: EDGE-APP
-                                            serviceConfig:
-                                                name: zone2-edge1-svc
-                                                ports:
-                                                    - {protocol: null, port: null, externalPort: null}
-                                                meSvcName: null
-                                            userChartLocation: ~/AdvantEDGE/examples/demo2/charts/svc
-                                            userChartAlternateValues: ~/AdvantEDGE/examples/demo2/values/z2-e1-svc-values.yaml
+                                            userChartLocation: demo2/charts/svc
+                                            userChartAlternateValues: demo2/values/z2-e1-svc-values.yaml
                                             userChartGroup: 'zone2-edge1-svc:svc:80:TCP'
+                                            netChar:
+                                                throughputDl: 1000
+                                                throughputUl: 1000
+                                                latency: null
+                                                latencyVariation: null
+                                                latencyDistribution: null
+                                                throughput: null
+                                                packetLoss: null
                                             isExternal: null
                                             image: null
                                             environment: null
                                             commandArguments: null
                                             commandExe: null
+                                            serviceConfig: null
+                                            gpuConfig: null
                                             externalConfig: null
                                             status: null
+                                            meta: null
+                                            userMeta: null
+                                            appLatency: null
+                                            appLatencyVariation: null
+                                            appThroughput: null
+                                            appPacketLoss: null
+                                            placementId: null
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
                                     isExternal: null
+                                    geoData: null
                                     networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
+                            terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                         -
-                            id: zone2-poa1
+                            id: d4f98d78-253e-470a-af75-02c885c69a0e
                             name: zone2-poa1
                             type: POA
-                            terminalLinkLatency: 1
-                            terminalLinkLatencyVariation: 1
-                            terminalLinkThroughput: 20
+                            netChar:
+                                latency: 1
+                                latencyVariation: 1
+                                throughputDl: 20
+                                throughputUl: 20
+                                latencyDistribution: null
+                                throughput: null
+                                packetLoss: null
+                            terminalLinkLatency: null
+                            terminalLinkLatencyVariation: null
+                            terminalLinkThroughput: null
                             terminalLinkPacketLoss: null
+                            meta: null
+                            userMeta: null
+                            cellularPoaConfig: null
+                            geoData: null
                             physicalLocations: null
+                    interFogLatency: null
+                    interFogLatencyVariation: null
+                    interFogThroughput: null
                     interFogPacketLoss: null
+                    interEdgeLatency: null
+                    interEdgeLatencyVariation: null
+                    interEdgeThroughput: null
                     interEdgePacketLoss: null
+                    edgeFogLatency: null
+                    edgeFogLatencyVariation: null
+                    edgeFogThroughput: null
                     edgeFogPacketLoss: null
+                    meta: null
+                    userMeta: null
+            interZoneLatency: null
+            interZoneLatencyVariation: null
+            interZoneThroughput: null
             interZonePacketLoss: null
+            meta: null
+            userMeta: null
+            cellularDomainConfig: null
+    interDomainLatency: null
+    interDomainLatencyVariation: null
+    interDomainThroughput: null
     interDomainPacketLoss: null
+    meta: null
+    userMeta: null
+id: null
+description: null
 config: null

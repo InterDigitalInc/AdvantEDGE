@@ -56,9 +56,9 @@ var replayRmCmd = &cobra.Command{
 }
 
 func init() {
-	replayCmd.AddCommand(replayRmCmd)
-
+	setSandboxFlag(replayRmCmd)
 	replayRmCmd.Flags().BoolP("all", "a", false, "Removes all replay files")
+	replayCmd.AddCommand(replayRmCmd)
 }
 
 func replayDelete(cobraCmd *cobra.Command, filename string) {
@@ -66,7 +66,7 @@ func replayDelete(cobraCmd *cobra.Command, filename string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 	all, _ := cobraCmd.Flags().GetBool("all")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

@@ -1,0 +1,42 @@
+
+---
+- name: "Install helm with option --classic"
+  snap:
+    name: helm
+    classic: yes
+    channel: "{{ helm_version }}"
+    state: present
+
+- name: "Install tiller"
+  shell: "helm init --kubeconfig .kube/config"
+  tags: helm
+
+- name: "Configure tiller"
+  shell: "kubectl create serviceaccount tiller --namespace kube-system --kubeconfig .kube/config"
+  tags: helm
+  ignore_errors: yes
+
+- name: "Copy yaml file"
+  copy:
+    src: "tiller-crb.yaml"
+    dest: "tiller-crb.yaml"
+    mode: 0644
+  tags: helm
+
+- name: "Create tiller cluster role binding"
+  shell: "kubectl create -f tiller-crb.yaml --kubeconfig .kube/config"
+  tags: helm
+  ignore_errors: yes
+
+- name: "Re-initialize tiller with crb"
+  shell: "helm init --service-account tiller --upgrade --kubeconfig .kube/config"
+  tags: helm
+
+- name: "Enable incubator charts"
+  shell: "helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/ --kubeconfig .kube/config"
+  tags: helm
+
+- name: "Repo Update"
+  shell: "helm repo update --kubeconfig .kube/config"
+  tags: helm
+

@@ -113,7 +113,7 @@ api.handleIperfInfo(iperfInfo, callback);
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://127.0.0.1:8086/v1*
+All URIs are relative to *https://localhost/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

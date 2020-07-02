@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Mobility Group Application Notification REST API
  *
- * This API enables the Mobility Group Service to post state transfer events to edge applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's Edge Applications participating in a Mobility Group must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>This API is not exposed by default on the AdvantEDGE platform
+ * This API enables the Mobility Group Service to post state transfer events to edge applications <p>**Micro-service**<br>None <p>**Type & Usage**<br>User's Edge Applications participating in a Mobility Group must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -75,7 +75,7 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	cfg := &Configuration{
-		BasePath:      "http://localhost/v1",
+		BasePath:      "https://localhostmgm-notif/v1",
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "Swagger-Codegen/1.0.0/go",
 	}

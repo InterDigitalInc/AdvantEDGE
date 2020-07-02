@@ -37,6 +37,7 @@ class IDDeployScenarioDialog extends Component {
       // TODO: consider showing an alert
       return;
     }
+
     this.props.api.activateScenario(
       this.state.selectedScenario,
       null,
@@ -70,5 +71,3 @@ class IDDeployScenarioDialog extends Component {
 }
 
 export default IDDeployScenarioDialog;
-
-//

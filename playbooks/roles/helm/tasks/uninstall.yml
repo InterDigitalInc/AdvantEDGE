@@ -1,0 +1,6 @@
+---
+- name: "Remove helm"
+  snap:
+    name: helm
+    state: absent
+

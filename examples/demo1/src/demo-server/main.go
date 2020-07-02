@@ -78,7 +78,7 @@ func main() {
 
 func registerLocServ(ue string) {
 	locServCfg := locServClient.NewConfiguration()
-	locServCfg.BasePath = "http://meep-loc-serv/etsi-013/location/v1"
+	locServCfg.BasePath = "http://meep-loc-serv/location/v1"
 
 	locServ := locServClient.NewAPIClient(locServCfg)
 	log.Printf("Created Location Service client before")

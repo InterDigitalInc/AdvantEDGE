@@ -21,6 +21,27 @@ import {
   EXEC_CHANGE_DISPLAYED_SCENARIO
 } from '../state/exec';
 
+import {
+  DOMAIN_TYPE_STR,
+  DOMAIN_CELL_TYPE_STR,
+  PUBLIC_DOMAIN_TYPE_STR,
+  ZONE_TYPE_STR,
+  COMMON_ZONE_TYPE_STR,
+  // NL_TYPE_STR,
+  POA_TYPE_STR,
+  // POA_CELL_TYPE_STR,
+  DEFAULT_NL_TYPE_STR,
+  UE_TYPE_STR,
+  FOG_TYPE_STR,
+  EDGE_TYPE_STR,
+  // CN_TYPE_STR,
+  DC_TYPE_STR,
+  // MEC_SVC_TYPE_STR,
+  UE_APP_TYPE_STR,
+  EDGE_APP_TYPE_STR,
+  CLOUD_APP_TYPE_STR
+} from '../meep-constants';
+
 const computeDisplayedScenario = scenario => {
   // TODO: replaced with real computed scenario
   let root = scenario.deployment;
@@ -55,31 +76,33 @@ const getImageForType = type => {
   switch (type) {
   case undefined:
     return 'cloud-black.svg';
-  case 'DEFAULT':
+  case DEFAULT_NL_TYPE_STR:
     return 'tower-02-idcc.svg';
-  case 'ZONE':
+  case ZONE_TYPE_STR:
     return 'tower-02-idcc.svg';
-  case 'EDGE':
+  case EDGE_TYPE_STR:
     return 'edge-idcc.svg';
-  case 'PUBLIC':
+  case PUBLIC_DOMAIN_TYPE_STR:
     return 'cloud-outline-black.svg';
-  case 'OPERATOR':
+  case DOMAIN_TYPE_STR:
     return 'fog-idcc.svg';
-  case 'COMMON':
+  case DOMAIN_CELL_TYPE_STR:
+    return 'fog-idcc.svg';
+  case COMMON_ZONE_TYPE_STR:
     return 'tower-02-idcc.svg';
-  case 'UE-APP':
+  case UE_APP_TYPE_STR:
     return 'drone-blue.svg';
-  case 'UE':
+  case UE_TYPE_STR:
     return 'phone.svg';
-  case 'EDGE-APP':
+  case EDGE_APP_TYPE_STR:
     return 'drone-black.svg';
-  case 'CLOUD-APP':
+  case CLOUD_APP_TYPE_STR:
     return 'drone-blue.svg';
-  case 'POA':
+  case POA_TYPE_STR:
     return 'switch-blue.svg';
-  case 'FOG':
+  case FOG_TYPE_STR:
     return 'fog-idcc.svg';
-  case 'DC':
+  case DC_TYPE_STR:
     return 'cloud-outline-black.svg';
   default:
     return 'Gear-01-idcc.svg';

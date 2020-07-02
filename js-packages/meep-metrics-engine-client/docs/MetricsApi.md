@@ -1,19 +1,21 @@
 # AdvantEdgeMetricsServiceRestApi.MetricsApi
 
-All URIs are relative to *http://localhost/v1*
+All URIs are relative to *https://localhost/metrics/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**metricsGet**](MetricsApi.md#metricsGet) | **GET** /metrics | 
+[**postEventQuery**](MetricsApi.md#postEventQuery) | **POST** /metrics/query/event | 
+[**postHttpQuery**](MetricsApi.md#postHttpQuery) | **POST** /metrics/query/http | 
+[**postNetworkQuery**](MetricsApi.md#postNetworkQuery) | **POST** /metrics/query/network | 
 
 
-<a name="metricsGet"></a>
-# **metricsGet**
-> LogResponseList metricsGet(opts)
+<a name="postEventQuery"></a>
+# **postEventQuery**
+> EventMetricList postEventQuery(params)
 
 
 
-Used to get a list of all metrics for a specific message type, destination pd and source pod combination
+Returns Event metrics according to specificed parameters
 
 ### Example
 ```javascript
@@ -21,13 +23,8 @@ var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_
 
 var apiInstance = new AdvantEdgeMetricsServiceRestApi.MetricsApi();
 
-var opts = { 
-  'dest': "dest_example", // String | Pod where the log message is taken from
-  'dataType': "dataType_example", // String | Log Message Type
-  'src': "src_example", // String | Pod that originated the metrics logged in the message
-  'starTime': "starTime_example", // String | Starting timestamp of time range
-  'stopTime': "stopTime_example" // String | Ending timestamp of time range
-};
+var params = new AdvantEdgeMetricsServiceRestApi.EventQueryParams(); // EventQueryParams | Query parameters
+
 
 var callback = function(error, data, response) {
   if (error) {
@@ -36,22 +33,110 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.metricsGet(opts, callback);
+apiInstance.postEventQuery(params, callback);
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **dest** | **String**| Pod where the log message is taken from | [optional] 
- **dataType** | **String**| Log Message Type | [optional] 
- **src** | **String**| Pod that originated the metrics logged in the message | [optional] 
- **starTime** | **String**| Starting timestamp of time range | [optional] 
- **stopTime** | **String**| Ending timestamp of time range | [optional] 
+ **params** | [**EventQueryParams**](EventQueryParams.md)| Query parameters | 
 
 ### Return type
 
-[**LogResponseList**](LogResponseList.md)
+[**EventMetricList**](EventMetricList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="postHttpQuery"></a>
+# **postHttpQuery**
+> HttpMetricList postHttpQuery(params)
+
+
+
+Returns Http metrics according to specificed parameters
+
+### Example
+```javascript
+var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_api');
+
+var apiInstance = new AdvantEdgeMetricsServiceRestApi.MetricsApi();
+
+var params = new AdvantEdgeMetricsServiceRestApi.HttpQueryParams(); // HttpQueryParams | Query parameters
+
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.postHttpQuery(params, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **params** | [**HttpQueryParams**](HttpQueryParams.md)| Query parameters | 
+
+### Return type
+
+[**HttpMetricList**](HttpMetricList.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="postNetworkQuery"></a>
+# **postNetworkQuery**
+> NetworkMetricList postNetworkQuery(params)
+
+
+
+Returns Network metrics according to specificed parameters
+
+### Example
+```javascript
+var AdvantEdgeMetricsServiceRestApi = require('advant_edge_metrics_service_rest_api');
+
+var apiInstance = new AdvantEdgeMetricsServiceRestApi.MetricsApi();
+
+var params = new AdvantEdgeMetricsServiceRestApi.NetworkQueryParams(); // NetworkQueryParams | Query parameters
+
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+apiInstance.postNetworkQuery(params, callback);
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **params** | [**NetworkQueryParams**](NetworkQueryParams.md)| Query parameters | 
+
+### Return type
+
+[**NetworkMetricList**](NetworkMetricList.md)
 
 ### Authorization
 

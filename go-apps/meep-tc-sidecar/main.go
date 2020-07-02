@@ -22,12 +22,16 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 
 	ipt "github.com/coreos/go-iptables/iptables"
@@ -35,15 +39,16 @@ import (
 	k8s_exec "k8s.io/utils/exec"
 )
 
-const moduleTcEngine string = "tc-engine"
+const moduleName string = "meep-tc-sidecar"
+
+const tcEngineKey string = "tc-engine:"
+const metricsKey string = "metrics:"
+
 const typeNet string = "net"
 const typeLb string = "lb"
 const typeMeSvc string = "ME-SVC"
 const typeIngressSvc string = "INGRESS-SVC"
 const typeEgressSvc string = "EGRESS-SVC"
-
-const channelTcNet string = moduleTcEngine + "-" + typeNet
-const channelTcLb string = moduleTcEngine + "-" + typeLb
 
 const meepPrefix string = "MEEP-"
 const svcPrefix string = "SVC-"
@@ -96,14 +101,16 @@ var opts = struct {
 
 // NetChar
 type NetChar struct {
-	Latency    string
-	Jitter     string
-	PacketLoss string
-	Throughput string
+	Latency      string
+	Jitter       string
+	PacketLoss   string
+	Throughput   string
+	Distribution string
 }
 
 var pinger *Pinger
 var PodName string
+var sandboxName string
 var ipTbl *ipt.IPTables
 
 var letters = []rune(capLetters)
@@ -117,47 +124,74 @@ var measurementsRunning = false
 var flushRequired = false
 var firstTimePass = true
 
-const redisAddr = "meep-redis-master:6379"
-const influxDBAddr = "http://meep-influxdb:8086"
+const redisAddr = "meep-redis-master.default.svc.cluster.local:6379"
+const influxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 
+var mqLocal *mq.MsgQueue
+var handlerId int
 var rc *redis.Connector
 var metricStore *ms.MetricStore
+var baseKey string
+var metricsBaseKey string
 
 const DEFAULT_SIDECAR_DB = 0
 
 var nbAppliedOperations = 0
 
-// Run - MEEP Sidecar execution
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	//log.MeepJSONLogInit("meep-tc-sidecar")
+	log.MeepTextLogInit("meep-tc-sidecar")
+}
+
 func main() {
-	// Initialize MEEP Sidecar
-	err := initMeepSidecar()
-	if err != nil {
-		log.Error("Failed to initialize MEEP Sidecar")
-		return
+	log.Info(os.Args)
+	log.Info("Starting TC Sidecar")
+
+	// Start signal handler
+	run := true
+	go func() {
+		sigchan := make(chan os.Signal, 10)
+		signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigchan
+		log.Info("Program killed !")
+		// do last actions and wait for all write operations to end
+		run = false
+	}()
+
+	// Initialize & Start TC Engine
+	go func() {
+		err := initMeepSidecar()
+		if err != nil {
+			log.Error("Failed to initialize TC Sidecar")
+			run = false
+			return
+		}
+
+		err = runMeepSidecar()
+		if err != nil {
+			log.Error("Failed to start TC Sidecar")
+			run = false
+			return
+		}
+	}()
+
+	// Main loop
+	count := 0
+	for {
+		if !run {
+			log.Info("Ran for ", count, " seconds")
+			break
+		}
+		time.Sleep(time.Second)
+		count++
 	}
-	log.Info("Successfully initialized MEEP Sidecar")
-
-	// Refresh TC rules to match DB state
-	refreshNetCharRules()
-
-	// Refresh LB IPtables rules to match DB state
-	refreshLbRules()
-
-	// Listen for subscribed events. Provide event handler method.
-	_ = rc.Listen(eventHandler)
 }
 
 // initMeepSidecar - MEEP Sidecar initialization
-func initMeepSidecar() error {
-	var err error
-
-	// Log as JSON instead of the default ASCII formatter.
-	log.MeepTextLogInit("meep-tc-sidecar")
-
+func initMeepSidecar() (err error) {
 	// Seed random using current time
 	rand.Seed(time.Now().UnixNano())
-
-	// Initialize global variables
 
 	// Retrieve Environment variables
 	PodName = strings.TrimSpace(os.Getenv("MEEP_POD_NAME"))
@@ -167,12 +201,28 @@ func initMeepSidecar() error {
 	}
 	log.Info("MEEP_POD_NAME: ", PodName)
 
+	sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
+	if sandboxName == "" {
+		err = errors.New("MEEP_SANDBOX_NAME env variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
+
 	scenarioName := strings.TrimSpace(os.Getenv("MEEP_SCENARIO_NAME"))
 	if scenarioName == "" {
 		log.Error("MEEP_SCENARIO_NAME not set. Exiting.")
 		return errors.New("MEEP_SCENARIO_NAME not set")
 	}
 	log.Info("MEEP_SCENARIO_NAME: ", scenarioName)
+
+	// Create message queue
+	mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(sandboxName), moduleName, sandboxName, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return err
+	}
+	log.Info("Message Queue created")
 
 	// Create IPtables client
 	ipTbl, err = ipt.New()
@@ -181,6 +231,12 @@ func initMeepSidecar() error {
 		return err
 	}
 	log.Info("Successfully created new IPTables client")
+
+	// Set base store key
+	baseKey = dkm.GetKeyRoot(sandboxName) + tcEngineKey
+
+	// Set metrics base store key
+	metricsBaseKey = dkm.GetKeyRoot(sandboxName) + metricsKey
 
 	// Connect to Redis DB
 	rc, err = redis.NewConnector(redisAddr, DEFAULT_SIDECAR_DB)
@@ -191,21 +247,11 @@ func initMeepSidecar() error {
 	log.Info("Connected to redis DB")
 
 	// Connect to Metric Store
-	metricStore, err = ms.NewMetricStore(scenarioName, influxDBAddr, redisAddr)
+	metricStore, err = ms.NewMetricStore(scenarioName, sandboxName, influxDBAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Redis: ", err)
 		return err
 	}
-
-	// Subscribe to Pub-Sub events for MEEP TC & LB
-	// NOTE: Current implementation is RedisDB Pub-Sub
-	err = rc.Subscribe(channelTcNet, channelTcLb)
-	if err != nil {
-		log.Error("Failed to subscribe to Pub/Sub events. Error: ", err)
-		return err
-	}
-
-	log.Info("Successfully subscribed to Pub/Sub events")
 
 	semLatencyMap.Lock()
 	latestLatencyResultsMap = make(map[string]int32)
@@ -214,30 +260,37 @@ func initMeepSidecar() error {
 	return nil
 }
 
-func eventHandler(channel string, payload string) {
-	// Handle Message according to Rx Channel
-	switch channel {
-
-	// MEEP TC Network Characteristic Channel
-	case channelTcNet:
-		log.Debug("Event received on channel: ", channelTcNet, " payload: ", payload)
-		processNetCharMsg(payload)
-	// MEEP TC LB Channel
-	case channelTcLb:
-		log.Debug("Event received on channel: ", channelTcLb, " payload: ", payload)
-		processLbMsg(payload)
-	default:
-		log.Warn("Unsupported channel", " payload: ", payload)
-	}
-}
-
-func processNetCharMsg(payload string) {
+// runMeepSidecar - Start TC Sidecar
+func runMeepSidecar() (err error) {
+	// Refresh TC rules to match DB state
 	refreshNetCharRules()
+
+	// Refresh LB IPtables rules to match DB state
+	refreshLbRules()
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqLocal.RegisterHandler(handler)
+	if err != nil {
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func processLbMsg(payload string) {
-	// NOTE: Payload contains no information yet. For now reevaluate LB rules on every received event.
-	refreshLbRules()
+// Message Queue handler
+func msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgTcLbRulesUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		refreshLbRules()
+	case mq.MsgTcNetRulesUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		refreshNetCharRules()
+	default:
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
+	}
 }
 
 func refreshNetCharRules() {
@@ -344,7 +397,7 @@ func refreshLbRules() {
 
 	// Apply pod-specific LB rules stored in DB
 	flushRequired = false
-	keyName := moduleTcEngine + ":" + typeLb + ":" + PodName + ":*"
+	keyName := baseKey + typeLb + ":" + PodName + ":*"
 	err = rc.ForEachEntry(keyName, refreshLbRulesHandler, &chainMap)
 	if err != nil {
 		log.Error("Failed to search and process pod-specific MEEP LB rules. Error: ", err)
@@ -611,12 +664,10 @@ func workRxTxPackets() {
 			tputStats[u.remoteName] = u.processRxTx(qdiscResults["ifb"+u.ifbNumber])
 		}
 
-		key := moduleMetrics + ":" + PodName + ":throughput"
-
+		key := metricsBaseKey + PodName + ":throughput"
 		if rc.EntryExists(key) {
 			_ = rc.SetEntry(key, tputStats)
 		}
-
 		semOptsDests.Unlock()
 
 		time.Sleep(opts.trafficInterval)
@@ -670,7 +721,7 @@ func workLogRxTxData() {
 
 func createPing() ([]podShortElement, error) {
 	var podsToPing []podShortElement
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
 	err := rc.ForEachEntry(keyName, createPingHandler, &podsToPing)
 	if err != nil {
 		return nil, err
@@ -691,7 +742,7 @@ func createPingHandler(key string, fields map[string]string, userData interface{
 }
 
 func createIfbs() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape*"
+	keyName := baseKey + typeNet + ":" + PodName + ":shape*"
 	err := rc.ForEachEntry(keyName, createIfbsHandler, nil)
 	if err != nil {
 		return err
@@ -714,7 +765,7 @@ func createIfbsHandler(key string, fields map[string]string, userData interface{
 }
 
 func createFilters() error {
-	keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter*"
+	keyName := baseKey + typeNet + ":" + PodName + ":filter*"
 	err := rc.ForEachEntry(keyName, createFiltersHandler, nil)
 	if err != nil {
 		return err
@@ -750,7 +801,7 @@ func createFiltersHandler(key string, fields map[string]string, userData interfa
 
 func deleteUnusedFilters() {
 	for index, filterNumber := range filters {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":filter:" + filterNumber
+		keyName := baseKey + typeNet + ":" + PodName + ":filter:" + filterNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("filter removed: ", filterNumber)
 			// Remove old filter
@@ -762,7 +813,7 @@ func deleteUnusedFilters() {
 
 func deleteUnusedIfbs() {
 	for index, ifbNumber := range ifbs {
-		keyName := moduleTcEngine + ":" + typeNet + ":" + PodName + ":shape:" + ifbNumber
+		keyName := baseKey + typeNet + ":" + PodName + ":shape:" + ifbNumber
 		if !rc.EntryExists(keyName) {
 			log.Debug("ifb removed: ", ifbNumber)
 			// Remove associated Ifb
@@ -830,6 +881,8 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	delay := shape["delay"]
 	delayVariation := shape["delayVariation"]
 	delayCorrelation := shape["delayCorrelation"]
+	distribution := shape["distribution"]
+
 	loss := shape["packetLoss"]
 	var lossInteger string
 	var lossFraction string
@@ -849,9 +902,17 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 	dataRate := shape["dataRate"]
 
 	//tc qdisc change dev $ifb$ifbnumber handle 1:0 root netem delay $delay$ms loss $loss$prcent
-	normalDistributionStr := ""
+	distributionStr := ""
 	if delayVariation != "0" {
-		normalDistributionStr = "distribution normal"
+		if distribution != "" {
+			//special case for uniform, which is not specifying a distribution (respecting netem description of a uniform distribution)
+			if distribution != "uniform" {
+				distributionStr = "distribution " + distribution
+			}
+		} else {
+			distributionStr = "distribution normal"
+			distribution = "normal"
+		}
 	}
 
 	nc := netcharMap[ifbNumber]
@@ -860,8 +921,8 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 		netcharMap[ifbNumber] = nc
 	}
 	//only apply if an update is needed
-	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate {
-		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + normalDistributionStr + " loss " + lossInteger + "." + lossFraction + "%"
+	if nc.Latency != delay || nc.Jitter != delayVariation || nc.PacketLoss != loss || nc.Throughput != dataRate || (delayVariation != "0" && nc.Distribution != distribution) {
+		str := "tc qdisc change dev ifb" + ifbNumber + " handle 1:0 root netem delay " + delay + "ms " + delayVariation + "ms " + delayCorrelation + "% " + distributionStr + " loss " + lossInteger + "." + lossFraction + "%"
 		if dataRate != "" && dataRate != "0" {
 			str = str + " rate " + dataRate + "bit"
 		}
@@ -871,11 +932,13 @@ func cmdSetIfb(shape map[string]string) (bool, error) {
 			return false, err
 		}
 
+		log.Info("Tc log update: ", str)
 		//store the new values
 		nc.Latency = delay
 		nc.Jitter = delayVariation
 		nc.PacketLoss = loss
 		nc.Throughput = dataRate
+		nc.Distribution = distribution
 		return true, nil
 	}
 

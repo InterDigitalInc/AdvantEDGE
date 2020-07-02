@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "meep-platform-ctrl.fullname" . }}
+  labels:
+    app: {{ template "meep-platform-ctrl.name" . }}
+    chart: {{ template "meep-platform-ctrl.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "meep-platform-ctrl.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "meep-platform-ctrl.name" . }}
+        release: {{ .Release.Name }}
+        meepOrigin: {{ .Values.meepOrigin }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount }}
+      volumes:
+      {{- if .Values.codecov.enabled}}
+        - name: codecov-storage
+          persistentVolumeClaim:
+            claimName: meep-platform-ctrl-codecov-pvc
+      {{- end}}
+      {{- if .Values.user.frontend.enabled}}
+        - name: user-frontend-storage
+          persistentVolumeClaim:
+            claimName: meep-platform-ctrl-user-frontend-pvc
+      {{- end}}
+      {{- if .Values.user.swagger.enabled}}
+        - name: user-swagger-storage
+          persistentVolumeClaim:
+            claimName: meep-platform-ctrl-user-swagger-pvc
+      {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.codecov.enabled}}
+          command: [ "/meep-platform-ctrl" ]
+          args: [ "-test.coverprofile=/codecov/codecov-meep-platform-ctrl.out", "__DEVEL--code-cov" ]
+          {{- end}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+              protocol: {{ .Values.deployment.protocol }}
+            {{- if .Values.altService.enabled}}
+            - containerPort: {{ .Values.deployment.altPort }}
+              protocol: {{ .Values.deployment.protocol }}
+            {{- end}}
+          env:
+            {{- if .Values.user.frontend.enabled}}
+            - name: USER_FRONTEND
+              value: {{ .Values.user.frontend.mountpath }}
+            {{- end }}
+            {{- if .Values.user.swagger.enabled}}
+            - name: USER_SWAGGER
+              value: {{ .Values.user.swagger.mountpath }}
+            {{- end }}
+            {{- if .Values.altService.enabled}}
+            - name: ALT_SERVICE_PORT
+              value: "{{ .Values.deployment.altPort }}"
+            {{- end}}
+          volumeMounts:
+          {{- if .Values.codecov.enabled}}
+            - name: codecov-storage
+              mountPath: /codecov
+          {{- end}}
+          {{- if .Values.user.frontend.enabled}}
+            - name: user-frontend-storage
+              mountPath: {{ .Values.user.frontend.mountpath }}
+          {{- end}}
+          {{- if .Values.user.swagger.enabled}}
+            - name: user-swagger-storage
+              mountPath: {{ .Values.user.swagger.mountpath }}
+          {{- end}}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -29,127 +30,169 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// buildCmd represents the build command
-var lintCmd = &cobra.Command{
-	Use:   "lint <targets>",
-	Short: "Lint core components & packages",
-	Long: `AdvantEDGE is composed of a collection of micro-services.
-
-Lint command verifies code format & syntax.
-Multiple targets can be specified (e.g. meepctl lint <target1> <target2>...)
-
-Valid targets:`,
-	Example: `  # Lint all components
-  meepctl lint all
-  # Lint meep-ctrl-engine component only
-  meepctl lint meep-ctrl-engine`,
-	Args: cobra.OnlyValidArgs,
-	ValidArgs: []string{
-		"all",
-		"meep-frontend",
-		"meep-ctrl-engine",
-		"meep-webhook",
-		"meep-mg-manager",
-		"meep-mon-engine",
-		"meep-loc-serv",
-		"meep-metrics-engine",
-		"meep-tc-engine",
-		"meep-tc-sidecar",
-		"meep-virt-engine",
-		"meep-couch",
-		"meep-ctrl-engine-client",
-		"meep-ctrl-engine-model",
-		"meep-loc-serv-client",
-		"meep-loc-serv-notification-client",
-		"meep-logger",
-		"meep-metric-store",
-		"meep-metrics-engine-notification-client",
-		"meep-mg-app-client",
-		"meep-mg-manager-client",
-		"meep-mg-manager-model",
-		"meep-model",
-		"meep-net-char-mgr",
-		"meep-redis",
-		"meep-replay-manager",
-		"meep-watchdog",
-	},
-
-	Run: func(cmd *cobra.Command, args []string) {
-		if !utils.ConfigValidate("") {
-			fmt.Println("Fix configuration issues")
-			return
-		}
-
-		targets := args
-		if len(targets) == 0 {
-			fmt.Println("Need to specify at least one target from ", cmd.ValidArgs)
-			os.Exit(0)
-		}
-
-		v, _ := cmd.Flags().GetBool("verbose")
-		t, _ := cmd.Flags().GetBool("time")
-
-		if v {
-			fmt.Println("Lint called")
-			fmt.Println("[arg]  targets:", targets)
-			fmt.Println("[flag] verbose:", v)
-			fmt.Println("[flag] time:", t)
-		}
-
-		start := time.Now()
-		for _, target := range targets {
-			if target == "all" {
-				lintAll(cmd)
-			} else {
-				lint(target, cmd)
-			}
-		}
-		elapsed := time.Since(start)
-		if t {
-			fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
-		}
-	},
+type LintData struct {
+	gitdir        string
+	coreGoApps    []string
+	coreJsApps    []string
+	sandboxGoApps []string
+	goPackages    []string
+	jsPackages    []string
 }
 
+const lintDesc = `AdvantEDGE is composed of a collection of micro-services.
+
+Lint command verifies code format & syntax.
+Multiple targets can be specified (e.g. meepctl lint <target1> <target2>...)`
+
+const lintExample = `  # Lint all components
+  meepctl lint all
+  # Lint meep-platform-ctrl component only
+  meepctl lint meep-platform-ctrl`
+
+// lintCmd represents the lint command
+var lintCmd = &cobra.Command{
+	Use:       "lint <targets>",
+	Short:     "Lint core components & packages",
+	Long:      lintDesc,
+	Example:   lintExample,
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: nil,
+	Run:       lintRun,
+}
+
+var lintData LintData
+
 func init() {
-	var argsStr string
+	// Get targets from repo config file
+	lintData.coreGoApps = utils.GetTargets("repo.core.go-apps", "lint")
+	lintData.coreJsApps = utils.GetTargets("repo.core.js-apps", "lint")
+	lintData.sandboxGoApps = utils.GetTargets("repo.sandbox.go-apps", "lint")
+	lintData.goPackages = utils.GetTargets("repo.packages.go-packages", "lint")
+	lintData.jsPackages = utils.GetTargets("repo.packages.js-packages", "lint")
+
+	// Create the list of valid arguments
+	baseArgs := []string{"all"}
+	configArgs := append(lintData.coreGoApps, lintData.coreJsApps...)
+	configArgs = append(configArgs, lintData.sandboxGoApps...)
+	configArgs = append(configArgs, lintData.goPackages...)
+	configArgs = append(configArgs, lintData.jsPackages...)
+	sort.Strings(configArgs)
+	lintCmd.ValidArgs = append(baseArgs, configArgs...)
+
+	// Add list of arguments to Example usage
+	lintCmd.Example += "\n\nValid Targets:"
 	for _, arg := range lintCmd.ValidArgs {
-		argsStr += "\n  * " + arg
+		lintCmd.Example += "\n  * " + arg
 	}
-	lintCmd.Long += argsStr
+
+	// Add command
 	rootCmd.AddCommand(lintCmd)
 }
 
-func lintAll(cobraCmd *cobra.Command) {
-	for _, target := range cobraCmd.ValidArgs {
+func lintRun(cmd *cobra.Command, args []string) {
+	if !utils.ConfigValidate("") {
+		fmt.Println("Fix configuration issues")
+		return
+	}
+
+	targets := args
+	if len(targets) == 0 {
+		fmt.Println("Error: Need to specify at least one target")
+		_ = cmd.Usage()
+		os.Exit(0)
+	}
+
+	v, _ := cmd.Flags().GetBool("verbose")
+	t, _ := cmd.Flags().GetBool("time")
+
+	if v {
+		fmt.Println("Lint called")
+		fmt.Println("[arg]  targets:", targets)
+		fmt.Println("[flag] verbose:", v)
+		fmt.Println("[flag] time:", t)
+	}
+
+	start := time.Now()
+
+	// Get config
+	lintData.gitdir = strings.TrimSuffix(viper.GetString("meep.gitdir"), "/")
+
+	// Lint code
+	for _, target := range targets {
 		if target == "all" {
-			continue
+			lintAll(cmd)
+		} else {
+			lint(target, cmd)
 		}
-		lint(target, cobraCmd)
+	}
+	elapsed := time.Since(start)
+	if t {
+		fmt.Println("Took ", elapsed.Round(time.Millisecond).String())
+	}
+}
+
+func lintAll(cobraCmd *cobra.Command) {
+	for _, target := range lintData.coreGoApps {
+		lintGo(target, "repo.core.go-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range lintData.coreJsApps {
+		lintJs(target, "repo.core.js-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range lintData.sandboxGoApps {
+		lintGo(target, "repo.sandbox.go-apps.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range lintData.goPackages {
+		lintGo(target, "repo.packages.go-packages.", cobraCmd)
+		fmt.Println("")
+	}
+	for _, target := range lintData.jsPackages {
+		lintJs(target, "repo.packages.js-packages.", cobraCmd)
 		fmt.Println("")
 	}
 }
 
 func lint(targetName string, cobraCmd *cobra.Command) {
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	if len(target) == 0 {
-		fmt.Println("Invalid target:", targetName)
-		return
+	for _, target := range lintData.coreGoApps {
+		if target == targetName {
+			lintGo(targetName, "repo.core.go-apps.", cobraCmd)
+			return
+		}
 	}
-
-	if strings.HasPrefix(target["src"], "go-") {
-		lintGo(targetName, cobraCmd)
-	} else if strings.HasPrefix(target["src"], "js-") {
-		lintJs(targetName, cobraCmd)
+	for _, target := range lintData.coreJsApps {
+		if target == targetName {
+			lintJs(targetName, "repo.core.js-apps.", cobraCmd)
+			return
+		}
 	}
+	for _, target := range lintData.sandboxGoApps {
+		if target == targetName {
+			lintGo(targetName, "repo.sandbox.go-apps.", cobraCmd)
+			return
+		}
+	}
+	for _, target := range lintData.goPackages {
+		if target == targetName {
+			lintGo(targetName, "repo.packages.go-packages.", cobraCmd)
+			return
+		}
+	}
+	for _, target := range lintData.jsPackages {
+		if target == targetName {
+			lintJs(targetName, "repo.packages.js-packages.", cobraCmd)
+			return
+		}
+	}
+	fmt.Println("Error: Unsupported target: ", targetName)
 }
 
-func lintGo(targetName string, cobraCmd *cobra.Command) {
+func lintGo(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	gitDir := viper.GetString("meep.gitdir")
-	srcDir := gitDir + "/" + target["src"]
-	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
+	srcDir := lintData.gitdir + "/" + target["src"]
+	lintEnabled := utils.RepoCfg.GetBool(repo + targetName + ".lint")
 	if !lintEnabled {
 		fmt.Println("   + skipping")
 		return
@@ -168,12 +211,11 @@ func lintGo(targetName string, cobraCmd *cobra.Command) {
 	}
 }
 
-func lintJs(targetName string, cobraCmd *cobra.Command) {
+func lintJs(targetName string, repo string, cobraCmd *cobra.Command) {
 	fmt.Println("--", targetName, "--")
-	target := utils.RepoCfg.GetStringMapString("repo.core." + targetName)
-	gitDir := viper.GetString("meep.gitdir")
-	srcDir := gitDir + "/" + target["src"]
-	lintEnabled := utils.RepoCfg.GetBool("repo.core." + targetName + ".lint")
+	target := utils.RepoCfg.GetStringMapString(repo + targetName)
+	srcDir := lintData.gitdir + "/" + target["src"]
+	lintEnabled := utils.RepoCfg.GetBool(repo + targetName + ".lint")
 	if !lintEnabled {
 		fmt.Println("   + skipping")
 		return

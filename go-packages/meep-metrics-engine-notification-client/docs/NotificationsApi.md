@@ -1,6 +1,6 @@
 # \NotificationsApi
 
-All URIs are relative to *http://172.0.0.1:8081/metrics/v2*
+All URIs are relative to *https://localhost/metrics-notif/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

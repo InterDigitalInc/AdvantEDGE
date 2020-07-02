@@ -29,24 +29,32 @@ import (
 	"syscall"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
-var model *mod.Model
+const moduleName = "meep-webhook"
+const moduleNamespace = "default"
+
+var mqGlobal *mq.MsgQueue
+var handlerId int
+var activeScenarioNames map[string]string
 
 func main() {
+	var err error
 	var parameters WhSvrParameters
 
 	// Initialize logging
 	log.MeepJSONLogInit("meep-webhook")
 
-	// Listen for model updates
-	var err error
-	model, err = mod.NewModel(mod.DbAddress, "meep-webhook", "activeScenario")
+	activeScenarioNames = make(map[string]string)
+
+	// Create message queue
+	mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, "")
 	if err != nil {
-		log.Error("Failed to create model: ", err.Error())
+		log.Error("Failed to create Message Queue with error: ", err.Error())
 		return
 	}
+	log.Info("Message Queue created")
 
 	// get command line parameters
 	flag.IntVar(&parameters.port, "port", 443, "Webhook server port.")
@@ -81,10 +89,11 @@ func main() {
 	mux.HandleFunc("/mutate", whsvr.serve)
 	whsvr.server.Handler = mux
 
-	// Start active model listener
-	err = model.Listen(eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: msgHandler, UserData: nil}
+	handlerId, err = mqGlobal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Unable to listen to model updates: ", err.Error())
+		log.Error("Failed to listen for scenario updates: ", err.Error())
 		return
 	}
 

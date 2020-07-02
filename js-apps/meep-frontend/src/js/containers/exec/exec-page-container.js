@@ -19,16 +19,21 @@ import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
+import IDSelect from '../../components/helper-components/id-select';
 import DashboardContainer from './dashboard-container';
 import EventContainer from './event-container';
+import ExecPageSandboxButtons from './exec-page-sandbox-buttons';
 import ExecPageScenarioButtons from './exec-page-scenario-buttons';
 
 import HeadlineBar from '../../components/headline-bar';
 import EventCreationPane from './event-creation-pane';
+import EventAutomationPane from './event-automation-pane';
 import EventReplayPane from './event-replay-pane';
 
 import ExecTable from './exec-table';
 
+import IDNewSandboxDialog from '../../components/dialogs/id-new-sandbox-dialog';
+import IDDeleteSandboxDialog from '../../components/dialogs/id-delete-sandbox-dialog';
 import IDDeployScenarioDialog from '../../components/dialogs/id-deploy-scenario-dialog';
 import IDTerminateScenarioDialog from '../../components/dialogs/id-terminate-scenario-dialog';
 import IDSaveScenarioDialog from '../../components/dialogs/id-save-scenario-dialog';
@@ -40,6 +45,7 @@ import { execChangeScenarioList, execVisFilteredData } from '../../state/exec';
 import {
   uiChangeCurrentDialog,
   uiExecChangeEventCreationMode,
+  uiExecChangeEventAutomationMode,
   uiExecChangeEventReplayMode,
   uiExecChangeDashCfgMode,
   uiExecChangeEventCfgMode,
@@ -59,12 +65,15 @@ import {
   // States
   EXEC_STATE_IDLE,
   PAGE_EXECUTE,
+  IDC_DIALOG_NEW_SANDBOX,
+  IDC_DIALOG_DELETE_SANDBOX,
   IDC_DIALOG_DEPLOY_SCENARIO,
   IDC_DIALOG_TERMINATE_SCENARIO,
   IDC_DIALOG_SAVE_SCENARIO,
   IDC_DIALOG_SAVE_REPLAY,
   MOBILITY_EVENT,
-  NETWORK_CHARACTERISTICS_EVENT
+  NETWORK_CHARACTERISTICS_EVENT,
+  EXEC_SELECT_SANDBOX
 } from '../../meep-constants';
 
 class ExecPageContainer extends Component {
@@ -153,6 +162,16 @@ class ExecPageContainer extends Component {
     this.props.changeReplayFilesList(replayFiles);
   }
 
+  // Create new sandbox
+  createSandbox(name) {
+    this.props.createSandbox(name);
+  }
+
+  // Destroy active sandbox
+  deleteSandbox() {
+    this.props.deleteSandbox();
+  }
+
   saveScenario(scenarioName) {
     const scenario = this.props.scenario;
 
@@ -187,10 +206,9 @@ class ExecPageContainer extends Component {
         // TODO consider showing an alert
         // console.log(error);
       }
+      // Refresh file list
+      this.updateReplayFileList();
     });
-
-    // Refresh file list
-    this.updateReplayFileList();
   }
 
   // CLOSE DIALOG
@@ -205,6 +223,16 @@ class ExecPageContainer extends Component {
       this.getScenarioListDeployCb(error, data, response);
     });
     this.props.changeCurrentDialog(IDC_DIALOG_DEPLOY_SCENARIO);
+  }
+
+  // NEW SANDBOX
+  onNewSandbox() {
+    this.props.changeCurrentDialog(IDC_DIALOG_NEW_SANDBOX);
+  }
+
+  // DELETE SANDBOX
+  onDeleteSandbox() {
+    this.props.changeCurrentDialog(IDC_DIALOG_DELETE_SANDBOX);
   }
 
   // SAVE SCENARIO
@@ -230,6 +258,11 @@ class ExecPageContainer extends Component {
   // CLOSE CREATE EVENT PANE
   onQuitEventCreationMode() {
     this.props.changeEventCreationMode(false);
+  }
+
+  // CLOSE EVENT AUTOMATION PANE
+  onQuitEventAutomationMode() {
+    this.props.changeEventAutomationMode(false);
   }
 
   // CLOSE REPLAY EVENT PANE
@@ -274,6 +307,24 @@ class ExecPageContainer extends Component {
   renderDialogs() {
     return (
       <>
+        <IDNewSandboxDialog
+          title="Create New Sandbox"
+          open={this.props.currentDialog === IDC_DIALOG_NEW_SANDBOX}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          createSandbox={name => this.createSandbox(name)}
+        />
+        
+        <IDDeleteSandboxDialog
+          title="Delete Sandbox"
+          open={this.props.currentDialog === IDC_DIALOG_DELETE_SANDBOX}
+          onClose={() => {
+            this.closeDialog();
+          }}
+          deleteSandbox={() => this.deleteSandbox()}
+        />
+
         <IDDeployScenarioDialog
           title="Open Scenario"
           open={this.props.currentDialog === IDC_DIALOG_DEPLOY_SCENARIO}
@@ -293,7 +344,6 @@ class ExecPageContainer extends Component {
           onClose={() => {
             this.closeDialog();
           }}
-          api={this.props.api}
           saveScenario={name => this.saveScenario(name)}
           scenarioNameRequired={true}
         />
@@ -325,18 +375,23 @@ class ExecPageContainer extends Component {
     );
   }
 
+
   render() {
     if (this.props.page !== PAGE_EXECUTE) {
       return null;
     }
 
-    const scenarioName =
-      this.props.page === PAGE_EXECUTE
-        ? this.props.execScenarioName
-        : this.props.cfgScenarioName;
+    const sandboxes = (this.props.sandboxes) ? this.props.sandboxes : [];
+    sandboxes.sort();
+    const sandbox = sandboxes.includes(this.props.sandbox) ? this.props.sandbox : '';
 
-    const spanLeft = (this.props.eventCreationMode || this.props.eventReplayMode) ? 9 : 12;
-    const spanRight = (this.props.eventCreationMode || this.props.eventReplayMode) ? 3 : 0;
+    const scenarioName = (this.props.page === PAGE_EXECUTE) ?
+      (this.props.exec.state.scenario !== EXEC_STATE_IDLE) ? this.props.execScenarioName : 'None' :
+      this.props.cfgScenarioName;
+
+    const eventPaneOpen = this.props.eventCreationMode || this.props.eventAutomationMode || this.props.eventReplayMode;
+    const spanLeft = eventPaneOpen ? 9 : 12;
+    const spanRight = eventPaneOpen ? 3 : 0;
     return (
       <div style={{ width: '100%' }}>
         {this.renderDialogs()}
@@ -350,20 +405,40 @@ class ExecPageContainer extends Component {
                 style={styles.headline}
               >
                 <GridInner>
-                  <GridCell align={'middle'} span={4}>
-                    <HeadlineBar
-                      titleLabel="Deployed Scenario"
-                      scenarioName={scenarioName}
+                  <IDSelect
+                    label="Sandbox"
+                    span={2}
+                    options={sandboxes}
+                    onChange={(e) => this.props.setSandbox(e.target.value)}
+                    value={sandbox}
+                    disabled={false}
+                    cydata={EXEC_SELECT_SANDBOX}
+                  />
+                  <GridCell align={'middle'} span={2}>
+                    <ExecPageSandboxButtons
+                      sandbox={sandbox}
+                      onNewSandbox={() => this.onNewSandbox()}
+                      onDeleteSandbox={() => this.onDeleteSandbox()}
                     />
                   </GridCell>
-                  <GridCell align={'middle'} span={8}>
+                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                    <GridInner style={{ height: '100%', borderLeft: '2px solid #e4e4e4'}}>
+                      <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
+                        <HeadlineBar
+                          titleLabel="Scenario"
+                          scenarioName={scenarioName}
+                        />
+                      </GridCell>
+                    </GridInner>
+                  </GridCell>
+                  <GridCell align={'middle'} span={5}>
                     <GridInner align={'right'}>
                       <GridCell align={'middle'} span={12}>
                         <ExecPageScenarioButtons
+                          sandbox={sandbox}
                           onDeploy={() => this.onDeployScenario()}
                           onSaveScenario={() => this.onSaveScenario()}
                           onTerminate={() => this.onTerminateScenario()}
-                          onRefresh={this.props.refreshScenario}
                           onOpenDashCfg={() => this.onOpenDashCfg()}
                           onOpenEventCfg={() => this.onOpenEventCfg()}
                         />
@@ -391,6 +466,7 @@ class ExecPageContainer extends Component {
                   />
 
                   <DashboardContainer
+                    sandbox={this.props.sandbox}
                     scenarioName={this.props.execScenarioName}
                     onShowAppsChanged={show => this.showApps(show)}
                     showApps={this.props.showApps}
@@ -401,7 +477,7 @@ class ExecPageContainer extends Component {
               </GridCell>
               <GridCell
                 span={spanRight}
-                hidden={!this.props.eventCreationMode && !this.props.eventReplayMode}
+                hidden={!eventPaneOpen}
                 style={styles.inner}
               >
                 <Elevation className="component-style" z={2}>
@@ -414,7 +490,7 @@ class ExecPageContainer extends Component {
                 <Elevation className="component-style" z={2}>
                   <EventCreationPane
                     eventTypes={[MOBILITY_EVENT, NETWORK_CHARACTERISTICS_EVENT]}
-                    api={this.props.api}
+                    api={this.props.eventsApi}
                     hide={!this.props.eventCreationMode}
                     onSuccess={() => {
                       this.props.refreshScenario();
@@ -422,11 +498,21 @@ class ExecPageContainer extends Component {
                     onClose={() => this.onQuitEventCreationMode()}
                   />
                 </Elevation>
+                <Elevation className="component-style" z={2}>
+                  <EventAutomationPane
+                    api={this.props.automationApi}
+                    hide={!this.props.eventAutomationMode}
+                    onClose={() => this.onQuitEventAutomationMode()}
+                  />
+                </Elevation>
               </GridCell>
             </Grid>
           </>
         )}
-        <ExecTable />
+        
+        {sandbox && 
+          <ExecTable />
+        }
       </div>
     );
   }
@@ -437,6 +523,7 @@ const styles = {
     marginBottom: 10
   },
   headline: {
+    height: 'calc(100% - 20px)',
     padding: 10
   },
   page: {
@@ -456,6 +543,7 @@ const mapStateToProps = state => {
     scenario: state.exec.scenario,
     scenarios: state.exec.apiResults.scenarios,
     eventCreationMode: state.ui.eventCreationMode,
+    eventAutomationMode: state.ui.eventAutomationMode,
     eventReplayMode: state.ui.eventReplayMode,
     dashCfgMode: state.ui.dashCfgMode,
     eventCfgMode: state.ui.eventCfgMode,
@@ -474,6 +562,7 @@ const mapDispatchToProps = dispatch => {
     changeScenarioName: name => dispatch(execChangeScenarioName(name)),
     changeState: s => dispatch(execChangeScenarioState(s)),
     changeEventCreationMode: val => dispatch(uiExecChangeEventCreationMode(val)), // (true or false)
+    changeEventAutomationMode: mode => dispatch(uiExecChangeEventAutomationMode(mode)),
     changeEventReplayMode: val => dispatch(uiExecChangeEventReplayMode(val)), // (true or false)
     changeDashCfgMode: val => dispatch(uiExecChangeDashCfgMode(val)), // (true or false)
     changeEventCfgMode: val => dispatch(uiExecChangeEventCfgMode(val)), // (true or false)

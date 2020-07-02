@@ -25,6 +25,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
+const defaultCouchAddr = "http://meep-couchdb-svc-couchdb.default.svc.cluster.local:5984/"
+
 var client *Client
 
 // Client - Implements a couchDB client
@@ -47,7 +49,11 @@ func NewConnector(addr string, dbName string) (rc *Connector, err error) {
 	if client == nil {
 		log.Debug("Establish new couchDB client connection")
 		c := new(Client)
-		c.addr = addr
+		if addr == "" {
+			c.addr = defaultCouchAddr
+		} else {
+			c.addr = addr
+		}
 		c.dbClient, err = kivik.New(context.TODO(), "couch", addr)
 		if err != nil {
 			return nil, err

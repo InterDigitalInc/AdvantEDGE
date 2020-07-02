@@ -19,13 +19,20 @@ import {
   PAGE_CONFIGURE,
   VIEW_NAME_NONE,
   NET_TOPOLOGY_VIEW,
-  MOBILITY_EVENT
+  MOBILITY_EVENT,
+  CFG_VIEW_NETWORK
 } from '../../meep-constants';
 
 const initialState = {
   page: PAGE_CONFIGURE,
   mainDrawerOpen: true,
+  cfgView: CFG_VIEW_NETWORK,
+  mapCfg: {},
   eventCreationMode: false,
+  eventAutomationMode: false,
+  automationMovementMode: false,
+  automationMobilityMode: false,
+  automationPoasInRangeMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   devMode: false,
@@ -43,7 +50,10 @@ const initialState = {
   eventReplayLoop: false,
   replayFiles: [],
   replayFileSelected: '',
-  replayFileDesc: ''
+  replayFileDesc: '',
+  sandbox: '',
+  sandboxes: [],
+  sandboxCfg: {}
 };
 
 // Change the current page
@@ -63,6 +73,46 @@ export function uiToggleMainDrawer() {
   };
 }
 
+const UI_CFG_CHANGE_VIEW = 'UI_CFG_CHANGE_VIEW';
+export function uiCfgChangeView(view) {
+  return {
+    type: UI_CFG_CHANGE_VIEW,
+    payload: view
+  };
+}
+
+const UI_CFG_CHANGE_MAP_CFG = 'UI_CFG_CHANGE_MAP_CFG';
+export function uiCfgChangeMapCfg(cfg) {
+  return {
+    type: UI_CFG_CHANGE_MAP_CFG,
+    payload: cfg
+  };
+}
+
+const UI_EXEC_CHANGE_SANDBOX = 'UI_EXEC_CHANGE_SANDBOX';
+export function uiExecChangeSandbox(name) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX,
+    payload: name
+  };
+}
+
+const UI_EXEC_CHANGE_SANDBOX_LIST = 'UI_EXEC_CHANGE_SANDBOX_LIST';
+export function uiExecChangeSandboxList(list) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX_LIST,
+    payload: list
+  };
+}
+
+const UI_EXEC_CHANGE_SANDBOX_CFG = 'UI_EXEC_CHANGE_SANDBOX_CFG';
+export function uiExecChangeSandboxCfg(cfg) {
+  return {
+    type: UI_EXEC_CHANGE_SANDBOX_CFG,
+    payload: cfg
+  };
+}
+
 const UI_EXEC_CHANGE_CURRENT_EVENT = 'UI_EXEC_CHANGE_CURRENT_EVENT';
 export function uiExecChangeCurrentEvent(event) {
   return {
@@ -78,6 +128,38 @@ export function uiExecChangeEventCreationMode(val) {
     payload: val
   };
 }
+
+const UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE = 'UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE';
+export function uiExecChangeEventAutomationMode(val) {
+  return {
+    type: UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE,
+    payload: val
+  };
+}
+
+const UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE = 'UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE';
+export const uiExecChangeAutomationMovementMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE = 'UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE';
+export const uiExecChangeAutomationMobilityMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE = 'UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE';
+export const uiExecChangeAutomationPoasInRangeMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE,
+    payload: val
+  };
+};
 
 const UI_EXEC_CHANGE_EVENT_REPLAY_MODE = 'UI_EXEC_CHANGE_EVENT_REPLAY_MODE';
 export function uiExecChangeEventReplayMode(val) {
@@ -213,6 +295,16 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { page: action.payload });
   case TOGGLE_MAIN_DRAWER:
     return updateObject(state, { mainDrawerOpen: !state.mainDrawerOpen });
+  case UI_CFG_CHANGE_VIEW:
+    return updateObject(state, { cfgView: action.payload });
+  case UI_CFG_CHANGE_MAP_CFG:
+    return updateObject(state, { mapCfg: action.payload });
+  case UI_EXEC_CHANGE_SANDBOX:
+    return updateObject(state, { sandbox: action.payload });
+  case UI_EXEC_CHANGE_SANDBOX_LIST:
+    return updateObject(state, { sandboxes: action.payload });
+  case UI_EXEC_CHANGE_SANDBOX_CFG:
+    return updateObject(state, { sandboxCfg: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
   case UI_CHANGE_DEV_MODE:
@@ -221,6 +313,14 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { currentDialog: action.payload });
   case UI_EXEC_CHANGE_EVENT_CREATION_MODE:
     return updateObject(state, { eventCreationMode: action.payload });
+  case UI_EXEC_CHANGE_EVENT_AUTOMATION_MODE:
+    return updateObject(state, { eventAutomationMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_MOVEMENT_MODE:
+    return updateObject(state, { automationMovementMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_MOBILITY_MODE:
+    return updateObject(state, { automationMobilityMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE:
+    return updateObject(state, { automationPoasInRangeMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_REPLAY_MODE:
     return updateObject(state, { eventReplayMode: action.payload });
   case UI_EXEC_CHANGE_DASH_CFG_MODE:

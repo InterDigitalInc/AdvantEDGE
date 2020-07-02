@@ -25,86 +25,89 @@ import (
 )
 
 const wdRedisAddr string = "localhost:30380"
-const wdName string = "watchdog-tester"
+const wdName string = "watchdog"
+const wdNamespace string = "watchdog-ns"
+const wdPeerName string = "peer"
+const wdPeerNamespace string = "peer-ns"
 
 func TestWatchdogSuccess(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	fmt.Println("Create watchdog")
-	wd, err := NewWatchdog(wdRedisAddr, wdName)
+	wd, err := NewWatchdog(wdName, wdNamespace, wdPeerName, wdPeerNamespace, wdRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create watchdog")
+		t.Fatalf("Unable to create watchdog")
 	}
 
 	fmt.Println("Create pingee")
-	pingee, err := NewPingee(wdRedisAddr, wdName)
+	pingee, err := NewPinger(wdPeerName, wdPeerNamespace, wdRedisAddr)
 	if err != nil {
-		t.Errorf("Unable to create pingee")
+		t.Fatalf("Unable to create pingee")
 	}
 
 	fmt.Println("Pingee start")
 	err = pingee.Start()
 	if err != nil {
-		t.Errorf("Unable to listen (pingee)")
+		t.Fatalf("Unable to listen (pingee)")
 	}
-	time.Sleep(250 * time.Millisecond)
+	// time.Sleep(250 * time.Millisecond)
 
 	tstart := time.Now()
 	fmt.Println("Watchdog start")
 	err = wd.Start(250*time.Millisecond, time.Second)
 	if err != nil {
-		t.Errorf("Unable to start watchdog")
+		t.Fatalf("Unable to start watchdog")
 	}
 
 	alive := wd.IsAlive()
 	fmt.Println("Check liveness - alive=", alive, " time=", time.Since(tstart))
 	if !alive {
-		t.Errorf("Failed liveness test #1")
+		t.Fatalf("Failed liveness test #1")
 	}
 	fmt.Println("Wait 250ms")
 	time.Sleep(250 * time.Millisecond)
 	alive = wd.IsAlive()
 	fmt.Println("Check liveness - alive=", alive, " time=", time.Since(tstart))
 	if !alive {
-		t.Errorf("Failed liveness test #2")
+		t.Fatalf("Failed liveness test #2")
 	}
 	fmt.Println("Wait 1 sec")
 	time.Sleep(time.Second)
 	alive = wd.IsAlive()
 	fmt.Println("Check liveness - alive=", alive, " time=", time.Since(tstart))
 	if !alive {
-		t.Errorf("Failed liveness test #3")
+		t.Fatalf("Failed liveness test #3")
 	}
 	fmt.Println("Pignee stop")
 	err = pingee.Stop()
 	if err != nil {
-		t.Errorf("Unable to stop pingee")
+		t.Fatalf("Unable to stop pingee")
 	}
 	fmt.Println("Wait 1.25sec (cause a timeout)")
 	time.Sleep(1250 * time.Millisecond)
 	alive = wd.IsAlive()
 	fmt.Println("Check liveness - alive=", alive, " time=", time.Since(tstart))
 	if alive {
-		t.Errorf("Failed liveness test #5")
+		t.Fatalf("Failed liveness test #5")
 	}
 	fmt.Println("Pingee start")
 	err = pingee.Start()
 	if err != nil {
-		t.Errorf("Unable to start pingee")
+		t.Fatalf("Unable to start pingee")
 	}
-	fmt.Println("Wait 250ms")
-	time.Sleep(250 * time.Millisecond)
+	fmt.Println("Wait 1 sec")
+	time.Sleep(time.Second)
 	alive = wd.IsAlive()
 	fmt.Println("Check liveness - alive=", alive, " time=", time.Since(tstart))
 	if !alive {
-		t.Errorf("Failed liveness test #6")
+		t.Fatalf("Failed liveness test #6")
 	}
 
 	fmt.Println("Stop watchdog & pingee")
 	err = pingee.Stop()
 	if err != nil {
-		t.Errorf("Unable to stop pingee")
+		t.Fatalf("Unable to stop pingee")
 	}
 	wd.Stop()
 	fmt.Println("Test Complete")

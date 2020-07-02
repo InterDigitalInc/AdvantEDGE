@@ -22,8 +22,10 @@ import (
 	"sync"
 	"time"
 
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 )
 
@@ -31,10 +33,9 @@ const netCharControlDb = 0
 const defaultTickerPeriod int = 500
 const NetCharControls string = "net-char-controls"
 const NetCharControlChannel string = NetCharControls
-const moduleName string = "meep-net-char"
 
 // Callback function types
-type NetCharUpdateCb func(string, string, float64, float64, float64, float64)
+type NetCharUpdateCb func(string, string, float64, float64, float64, string, float64)
 type UpdateCompleteCb func()
 
 // NetChar Interface
@@ -54,10 +55,21 @@ type NetCharAlgo interface {
 
 // NetChar
 type NetChar struct {
-	Latency    float64
-	Jitter     float64
-	PacketLoss float64
-	Throughput float64
+	Latency      float64
+	Jitter       float64
+	PacketLoss   float64
+	Throughput   float64
+	Distribution string
+}
+
+// NetChar
+type ElemNetChar struct {
+	Latency      float64
+	Jitter       float64
+	Distribution string
+	PacketLoss   float64
+	ThroughputUl float64
+	ThroughputDl float64
 }
 
 // FlowNetChar
@@ -77,19 +89,23 @@ type NetCharConfig struct {
 // NetCharManager Object
 type NetCharManager struct {
 	name             string
+	namespace        string
+	baseKey          string
 	isStarted        bool
 	ticker           *time.Ticker
 	rc               *redis.Connector
 	mutex            sync.Mutex
 	config           NetCharConfig
+	mqLocal          *mq.MsgQueue
 	activeModel      *mod.Model
 	netCharUpdateCb  NetCharUpdateCb
 	updateCompleteCb UpdateCompleteCb
 	algo             NetCharAlgo
+	handlerId        int
 }
 
 // NewNetChar - Create, Initialize and connect
-func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
+func NewNetChar(name string, namespace string, redisAddr string) (*NetCharManager, error) {
 	// Create new instance & set default config
 	var err error
 	var ncm NetCharManager
@@ -99,18 +115,35 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 		return nil, err
 	}
 	ncm.name = name
+	ncm.namespace = namespace
+	ncm.baseKey = dkm.GetKeyRoot(namespace)
 	ncm.isStarted = false
 	ncm.config.RecalculationPeriod = defaultTickerPeriod
 
+	// Create message queue
+	ncm.mqLocal, err = mq.NewMsgQueue(mq.GetLocalName(namespace), name, namespace, redisAddr)
+	if err != nil {
+		log.Error("Failed to create Message Queue with error: ", err)
+		return nil, err
+	}
+	log.Info("Message Queue created")
+
 	// Create new NetCharAlgo
-	ncm.algo, err = NewSegmentAlgorithm(redisAddr)
+	ncm.algo, err = NewSegmentAlgorithm(ncm.name, ncm.namespace, redisAddr)
 	if err != nil {
 		log.Error("Failed to create NetCharAlgo with error: ", err)
 		return nil, err
 	}
 
 	// Create new Model
-	ncm.activeModel, err = mod.NewModel(redisAddr, moduleName, "activeScenario")
+	modelCfg := mod.ModelCfg{
+		Name:      "activeScenario",
+		Namespace: ncm.namespace,
+		Module:    name,
+		UpdateCb:  nil,
+		DbAddr:    redisAddr,
+	}
+	ncm.activeModel, err = mod.NewModel(modelCfg)
 	if err != nil {
 		log.Error("Failed to create model: ", err.Error())
 		return nil, err
@@ -124,10 +157,11 @@ func NewNetChar(name string, redisAddr string) (*NetCharManager, error) {
 	}
 	log.Info("Connected to Control Listener redis DB")
 
-	// Listen for Model updates
-	err = ncm.activeModel.Listen(ncm.eventHandler)
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: ncm.msgHandler, UserData: nil}
+	ncm.handlerId, err = ncm.mqLocal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Failed to listen for model updates: ", err.Error())
+		log.Error("Failed to listen for sandbox updates: ", err.Error())
 		return nil, err
 	}
 
@@ -192,6 +226,23 @@ func (ncm *NetCharManager) IsRunning() bool {
 	return ncm.isStarted
 }
 
+// Message Queue handler
+func (ncm *NetCharManager) msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgScenarioActivate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		ncm.processActiveScenarioUpdate()
+	case mq.MsgScenarioUpdate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		ncm.processActiveScenarioUpdate()
+	case mq.MsgScenarioTerminate:
+		log.Debug("RX MSG: ", mq.PrintMsg(msg))
+		ncm.processActiveScenarioUpdate()
+	default:
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
+	}
+}
+
 // eventHandler - Events received and processed by the registered channels
 func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	// Handle Message according to Rx Channel
@@ -199,9 +250,6 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 	case NetCharControlChannel:
 		log.Debug("Event received on channel: ", channel, " payload: ", payload)
 		ncm.updateControls()
-	case mod.ActiveScenarioEvents:
-		log.Debug("Event received on channel: ", channel, " payload: ", payload)
-		ncm.processActiveScenarioUpdate()
 	default:
 		log.Warn("Unsupported channel")
 	}
@@ -209,7 +257,12 @@ func (ncm *NetCharManager) eventHandler(channel string, payload string) {
 
 // processActiveScenarioUpdate
 func (ncm *NetCharManager) processActiveScenarioUpdate() {
+	// Sync with active scenario store
+	ncm.activeModel.UpdateScenario()
+
 	ncm.mutex.Lock()
+	defer ncm.mutex.Unlock()
+
 	if ncm.isStarted {
 		// Process updated scenario using algorithm
 		err := ncm.algo.ProcessScenario(ncm.activeModel)
@@ -222,7 +275,6 @@ func (ncm *NetCharManager) processActiveScenarioUpdate() {
 		// Recalculate network characteristics
 		ncm.updateNetChars()
 	}
-	ncm.mutex.Unlock()
 }
 
 // updateNetChars
@@ -234,7 +286,7 @@ func (ncm *NetCharManager) updateNetChars() {
 	if len(updatedNetCharList) != 0 {
 		for _, flowNetChar := range updatedNetCharList {
 			if ncm.netCharUpdateCb != nil {
-				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.PacketLoss)
+				ncm.netCharUpdateCb(flowNetChar.DstElemName, flowNetChar.SrcElemName, flowNetChar.MyNetChar.Throughput, flowNetChar.MyNetChar.Latency, flowNetChar.MyNetChar.Jitter, flowNetChar.MyNetChar.Distribution /*flowNetChar.MyNetChar.Distribution,*/, flowNetChar.MyNetChar.PacketLoss)
 			}
 		}
 		if ncm.updateCompleteCb != nil {
@@ -247,7 +299,7 @@ func (ncm *NetCharManager) updateNetChars() {
 func (ncm *NetCharManager) updateControls() {
 	ncm.mutex.Lock()
 	var controls = make(map[string]interface{})
-	keyName := NetCharControls
+	keyName := ncm.baseKey + NetCharControls
 	err := ncm.rc.ForEachEntry(keyName, ncm.getControlsEntryHandler, controls)
 	if err != nil {
 		log.Error("Failed to get entries: ", err)

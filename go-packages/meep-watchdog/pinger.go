@@ -22,57 +22,58 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 )
 
 // Pinger - Implements a Redis Pinger
 type Pinger struct {
-	name        string
-	isStarted   bool
-	pingChannel string
-	pongChannel string
-	// pingMsg     string
-	pongMsg string
-	rc      *redis.Connector
+	name      string
+	namespace string
+	isStarted bool
+	pongMsg   string
+	mqGlobal  *mq.MsgQueue
+	handlerId int
 }
 
 // NewPinger - Create, Initialize and connect  a pinger
-func NewPinger(dbAddr string, name string) (p *Pinger, err error) {
+func NewPinger(name string, namespace string, dbAddr string) (p *Pinger, err error) {
 	if name == "" {
 		err = errors.New("Missing pinger name")
+		log.Error(err)
+		return nil, err
+	}
+	if namespace == "" {
+		err = errors.New("Missing pinger namespace")
 		log.Error(err)
 		return nil, err
 	}
 
 	p = new(Pinger)
 	p.name = name
+	p.namespace = namespace
 	p.isStarted = false
-	p.pingChannel = p.name + ":ping"
-	p.pongChannel = p.name + ":pong"
 
-	// Connect to Redis DB
-	p.rc, err = redis.NewConnector(dbAddr, 0)
+	// Create message queue
+	p.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), p.name, p.namespace, dbAddr)
 	if err != nil {
-		log.Error("Pinger ", p.name, " failedconnection to Redis:")
-		log.Error(err)
+		log.Error("Failed to create Message Queue with error: ", err)
 		return nil, err
 	}
-	log.Debug("Pinger created ", p.name)
+
+	log.Debug("Pinger created: ", p.name)
 	return p, nil
 }
 
-// Start - Subscribe and Listen to pong channel
+// Start - Subscribe and Listen for pong responses
 func (p *Pinger) Start() (err error) {
-	err = p.rc.Subscribe(p.pongChannel)
+
+	// Register Message Queue handler
+	handler := mq.MsgHandler{Handler: p.msgHandler, UserData: nil}
+	p.handlerId, err = p.mqGlobal.RegisterHandler(handler)
 	if err != nil {
-		log.Error("Pinger ", p.name, " failed to subscribe to ", p.pongChannel)
-		log.Error(err)
+		log.Error("Failed to register message handler: ", err.Error())
 		return err
 	}
-	// Listen for subscribed pings. Provide event handler method.
-	go func() {
-		_ = p.rc.Listen(p.pongHandler)
-	}()
 
 	p.isStarted = true
 	return nil
@@ -82,32 +83,53 @@ func (p *Pinger) Start() (err error) {
 func (p *Pinger) Stop() (err error) {
 	if p.isStarted {
 		p.isStarted = false
-		p.rc.StopListen()
-		_ = p.rc.Unsubscribe(p.pongChannel)
-		log.Debug("Pigner stopped ", p.name)
+		p.mqGlobal.UnregisterHandler(p.handlerId)
+		log.Debug("Pinger stopped: ", p.name)
 	}
 	return nil
 }
 
-func (p *Pinger) pongHandler(channel string, payload string) {
-	p.pongMsg = strings.TrimPrefix(payload, pongPrefix)
+// Message Queue handler
+func (p *Pinger) msgHandler(msg *mq.Msg, userData interface{}) {
+	switch msg.Message {
+	case mq.MsgPing:
+		log.Trace("RX MSG: ", mq.PrintMsg(msg))
+		pingMsg := strings.TrimPrefix(msg.Payload["data"], pingPrefix)
+
+		// Pong
+		pongMsg := p.mqGlobal.CreateMsg(mq.MsgPong, msg.SrcName, msg.SrcNamespace)
+		pongMsg.Payload["data"] = pongPrefix + pingMsg
+		log.Trace("TX MSG: ", mq.PrintMsg(msg))
+		err := p.mqGlobal.SendMsg(pongMsg)
+		if err != nil {
+			log.Error("Failed to send message. Error: ", err.Error())
+		}
+	case mq.MsgPong:
+		log.Trace("RX MSG: ", mq.PrintMsg(msg))
+		p.pongMsg = strings.TrimPrefix(msg.Payload["data"], pongPrefix)
+	default:
+		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
+	}
 }
 
 // Ping - Ping a channel
-func (p *Pinger) Ping(txStr string) (alive bool) {
+func (p *Pinger) Ping(name string, namespace string, txStr string) (alive bool) {
 	alive = false
 
 	if !p.isStarted {
-		log.Debug("Pinger ", p.name, " cannot cannot ping when stopped")
+		log.Debug("Pinger ", p.name, " cannot ping when stopped")
 		return false
 	}
 	// Ping
-	err := p.rc.Publish(p.pingChannel, pingPrefix+txStr)
+	msg := p.mqGlobal.CreateMsg(mq.MsgPing, name, namespace)
+	msg.Payload["data"] = pingPrefix + txStr
+	log.Trace("TX MSG: ", mq.PrintMsg(msg))
+	err := p.mqGlobal.SendMsg(msg)
 	if err != nil {
-		log.Error("Pinger ", p.name, " failed to publish to ", p.pingChannel)
-		log.Error(err)
+		log.Error("Failed to send message. Error: ", err.Error())
 		return alive
 	}
+
 	// Wait for pong
 	rxStr := ""
 	p.pongMsg = ""

@@ -26,7 +26,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
-	ce "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-ctrl-engine-client"
+	sandbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 )
 
 // replayImportCmd represents the replay import command
@@ -48,12 +48,13 @@ var replayImportCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayImportCmd)
 	replayCmd.AddCommand(replayImportCmd)
 }
 
 func replayAdd(cobraCmd *cobra.Command, yamlFilename string, replayFilename string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return
@@ -78,7 +79,7 @@ func replayAdd(cobraCmd *cobra.Command, yamlFilename string, replayFilename stri
 		return
 	}
 
-	var replay ce.Replay
+	var replay sandbox.Replay
 	err = json.Unmarshal(yamltojson, &replay)
 	if err != nil {
 		printError("Error decoding JSON: ", err, verbose)

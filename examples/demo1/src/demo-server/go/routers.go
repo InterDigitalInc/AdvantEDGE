@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,7 @@ type Routes []Route
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
-		var handler http.Handler
-		handler = route.HandlerFunc
+		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 
 		router.

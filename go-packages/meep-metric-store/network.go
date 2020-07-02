@@ -19,7 +19,6 @@ package metricstore
 import (
 	"encoding/json"
 	"errors"
-	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
@@ -33,7 +32,6 @@ const NetMetULThroughput = "ul"
 const NetMetDLThroughput = "dl"
 const NetMetULPktLoss = "ulos"
 const NetMetDLPktLoss = "dlos"
-const NetMetKey = "key"
 
 type NetworkMetric struct {
 	Src    string
@@ -51,7 +49,12 @@ func (ms *MetricStore) SetCachedNetworkMetric(metric NetworkMetric) (err error) 
 
 	// Set ingress stats
 	tagStr := metric.Src + ":" + metric.Dst
-	fields := map[string]interface{}{NetMetULThroughput: metric.UlTput, NetMetULPktLoss: metric.UlLoss}
+	fields := map[string]interface{}{
+		NetMetSrc:          metric.Src,
+		NetMetDst:          metric.Dst,
+		NetMetULThroughput: metric.UlTput,
+		NetMetULPktLoss:    metric.UlLoss,
+	}
 	err = ms.SetRedisMetric(NetMetName, tagStr, fields)
 	if err != nil {
 		log.Error("Failed to set ingress stats with error: ", err.Error())
@@ -60,7 +63,13 @@ func (ms *MetricStore) SetCachedNetworkMetric(metric NetworkMetric) (err error) 
 
 	// Set egress stats
 	tagStr = metric.Dst + ":" + metric.Src
-	fields = map[string]interface{}{NetMetLatency: metric.Lat, NetMetDLThroughput: metric.UlTput, NetMetDLPktLoss: metric.UlLoss}
+	fields = map[string]interface{}{
+		NetMetSrc:          metric.Dst,
+		NetMetDst:          metric.Src,
+		NetMetLatency:      metric.Lat,
+		NetMetDLThroughput: metric.UlTput,
+		NetMetDLPktLoss:    metric.UlLoss,
+	}
 	err = ms.SetRedisMetric(NetMetName, tagStr, fields)
 	if err != nil {
 		log.Error("Failed to set ingress stats with error: ", err.Error())
@@ -80,9 +89,8 @@ func (ms *MetricStore) GetCachedNetworkMetric(src string, dst string) (metric Ne
 
 	// Get current Network metric
 	tagStr := src + ":" + dst
-	fields := []string{NetMetLatency, NetMetULThroughput, NetMetDLThroughput, NetMetULPktLoss, NetMetDLPktLoss}
 	var valuesArray []map[string]interface{}
-	valuesArray, err = ms.GetRedisMetric(NetMetName, tagStr, fields)
+	valuesArray, err = ms.GetRedisMetric(NetMetName, tagStr)
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
@@ -150,6 +158,16 @@ func (ms *MetricStore) formatCachedNetworkMetric(values map[string]interface{}) 
 	var val interface{}
 
 	// Process field values
+	if val, ok = values[NetMetSrc]; !ok {
+		val = ""
+	}
+	metric.Src = val.(string)
+
+	if val, ok = values[NetMetDst]; !ok {
+		val = ""
+	}
+	metric.Dst = val.(string)
+
 	if val, ok = values[NetMetLatency]; !ok {
 		val = ""
 	}
@@ -175,14 +193,6 @@ func (ms *MetricStore) formatCachedNetworkMetric(values map[string]interface{}) 
 	}
 	metric.DlLoss = StrToFloat64(val.(string))
 
-	// Retrieve Src & Dst from key
-	if key, ok := values[NetMetKey]; ok {
-		subKey := strings.Split(key.(string), ":")
-		metric.Src = subKey[2]
-		metric.Dst = subKey[3]
-	} else {
-		return metric, errors.New("")
-	}
 	return metric, nil
 }
 
@@ -190,8 +200,7 @@ func (ms *MetricStore) takeNetworkMetricSnapshot() {
 	// start = time.Now()
 
 	// Get all cached network metrics
-	fields := []string{NetMetLatency, NetMetULThroughput, NetMetDLThroughput, NetMetULPktLoss, NetMetDLPktLoss}
-	valuesArray, err := ms.GetRedisMetric(NetMetName, "*", fields)
+	valuesArray, err := ms.GetRedisMetric(NetMetName, "*")
 	if err != nil {
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return

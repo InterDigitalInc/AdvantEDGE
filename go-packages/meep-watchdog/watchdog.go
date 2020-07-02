@@ -25,18 +25,21 @@ import (
 
 // Watchdog - Implements a Redis Watchdog
 type Watchdog struct {
-	name        string
-	isAlive     bool
-	isStarted   bool
-	pinger      *Pinger
-	pingRate    time.Duration
-	pongTimeout time.Duration
-	pongTime    time.Time
-	ticker      *time.Ticker
+	name          string
+	namespace     string
+	peerName      string
+	peerNamespace string
+	isAlive       bool
+	isStarted     bool
+	pinger        *Pinger
+	pingRate      time.Duration
+	pongTimeout   time.Duration
+	pongTime      time.Time
+	ticker        *time.Ticker
 }
 
 // NewWatchdog - Create, Initialize and connect  a watchdog
-func NewWatchdog(dbAddr string, name string) (w *Watchdog, err error) {
+func NewWatchdog(name string, namespace string, peerName string, peerNamespace string, dbAddr string) (w *Watchdog, err error) {
 	if name == "" {
 		err = errors.New("Missing watchdog name")
 		log.Error(err)
@@ -45,9 +48,12 @@ func NewWatchdog(dbAddr string, name string) (w *Watchdog, err error) {
 
 	w = new(Watchdog)
 	w.name = name
+	w.namespace = namespace
+	w.peerName = peerName
+	w.peerNamespace = peerNamespace
 	w.isStarted = false
 
-	w.pinger, err = NewPinger(dbAddr, name)
+	w.pinger, err = NewPinger(w.name, namespace, dbAddr)
 	if err != nil {
 		log.Error("Error creating watchdog: ", err)
 		return nil, err
@@ -80,7 +86,7 @@ func (w *Watchdog) Start(rate time.Duration, timeout time.Duration) (err error) 
 func (w *Watchdog) watchdogTask() {
 	log.Debug("Watchdog task started: ", w.name)
 	for range w.ticker.C {
-		isAlive := w.pinger.Ping(time.Now().String())
+		isAlive := w.pinger.Ping(w.peerName, w.peerNamespace, time.Now().String())
 		if isAlive {
 			w.pongTime = time.Now()
 		}

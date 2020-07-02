@@ -1,0 +1,37 @@
+
+---
+
+- name: Download Go binaries
+  get_url:
+    url: "https://dl.google.com/go/go{{go_version}}.linux-amd64.tar.gz"
+    dest: "/tmp/go{{go_version}}.linux-amd64.tar.gz"
+
+- name: Install Go
+  unarchive:
+    remote_src: yes
+    src: "/tmp/go{{go_version}}.linux-amd64.tar.gz"
+    dest: /usr/local
+
+- name: Create Go working directory
+  become: false
+  file:
+    path: "~/gocode/bin/"
+    state: directory
+
+- name: Update profile gopath
+  become: false
+  lineinfile:
+    dest: ~/.profile
+    state: present
+    line: 'export GOPATH=$HOME/gocode'
+
+- name: Update profile path
+  become: false
+  lineinfile:
+    dest: ~/.profile
+    state: present
+    line: 'export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin'
+
+# - name: Install golangci-lint
+#   become: false
+#   shell: "cd ~; GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@{{golangci_lint_version}}"

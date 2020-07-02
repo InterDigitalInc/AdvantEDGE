@@ -1,6 +1,6 @@
 # MeepDemoAppApi.EdgeAppInfoApi
 
-All URIs are relative to *http://127.0.0.1:8086/v1*
+All URIs are relative to *https://localhost/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

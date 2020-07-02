@@ -27,32 +27,32 @@ describe('MEEP Settings', function() {
   beforeEach(() => {
     var meepUrl = Cypress.env('meep_url');
     if (meepUrl == null) {
-      meepUrl = 'http://127.0.0.1:30000';
+      meepUrl = 'http://127.0.0.1';
     }
 
     cy.viewport(1920, 1080);
     cy.visit(meepUrl);
   });
 
-  it('Execution Settings', function() {
-    let refreshInterval = '10000';
+  // it('Execution Settings', function() {
+  //   let refreshInterval = '10000';
 
-    // Go to monitoring page
-    cy.log('Go to settings page');
-    click(meep.MEEP_TAB_SET);
+  //   // Go to monitoring page
+  //   cy.log('Go to settings page');
+  //   click(meep.MEEP_TAB_SET);
 
-    // Enable refresh interval
-    check(meep.SET_EXEC_REFRESH_CHECKBOX, true);
-    verifyEnabled(meep.SET_EXEC_REFRESH_INT, true);
-    type(meep.SET_EXEC_REFRESH_INT, refreshInterval);
-    verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'be.checked');
-    // verify(meep.SET_EXEC_REFRESH_INT, 'contain', refreshInterval)
+  //   // Enable refresh interval
+  //   check(meep.SET_EXEC_REFRESH_CHECKBOX, true);
+  //   verifyEnabled(meep.SET_EXEC_REFRESH_INT, true);
+  //   type(meep.SET_EXEC_REFRESH_INT, refreshInterval);
+  //   verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'be.checked');
+  //   // verify(meep.SET_EXEC_REFRESH_INT, 'contain', refreshInterval)
 
-    // Disable refresh interval
-    check(meep.SET_EXEC_REFRESH_CHECKBOX, false);
-    verifyEnabled(meep.SET_EXEC_REFRESH_INT, false);
-    verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'not.be.checked');
-  });
+  //   // Disable refresh interval
+  //   check(meep.SET_EXEC_REFRESH_CHECKBOX, false);
+  //   verifyEnabled(meep.SET_EXEC_REFRESH_INT, false);
+  //   verify(meep.SET_EXEC_REFRESH_CHECKBOX, 'not.be.checked');
+  // });
 
   it('Development Settings', function() {
     // Go to monitoring page

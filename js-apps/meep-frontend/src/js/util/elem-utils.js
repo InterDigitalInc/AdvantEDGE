@@ -18,27 +18,34 @@ import {
   // Network Characteristics default values
   DEFAULT_LATENCY_INTER_DOMAIN,
   DEFAULT_LATENCY_JITTER_INTER_DOMAIN,
-  DEFAULT_THROUGHPUT_INTER_DOMAIN,
+  DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN,
+  DEFAULT_THROUGHPUT_DL_INTER_DOMAIN,
+  DEFAULT_THROUGHPUT_UL_INTER_DOMAIN,
   DEFAULT_PACKET_LOSS_INTER_DOMAIN,
   DEFAULT_LATENCY_INTER_ZONE,
   DEFAULT_LATENCY_JITTER_INTER_ZONE,
-  DEFAULT_THROUGHPUT_INTER_ZONE,
+  DEFAULT_THROUGHPUT_DL_INTER_ZONE,
+  DEFAULT_THROUGHPUT_UL_INTER_ZONE,
   DEFAULT_PACKET_LOSS_INTER_ZONE,
   DEFAULT_LATENCY_INTRA_ZONE,
   DEFAULT_LATENCY_JITTER_INTRA_ZONE,
-  DEFAULT_THROUGHPUT_INTRA_ZONE,
+  DEFAULT_THROUGHPUT_DL_INTRA_ZONE,
+  DEFAULT_THROUGHPUT_UL_INTRA_ZONE,
   DEFAULT_PACKET_LOSS_INTRA_ZONE,
   DEFAULT_LATENCY_TERMINAL_LINK,
   DEFAULT_LATENCY_JITTER_TERMINAL_LINK,
-  DEFAULT_THROUGHPUT_TERMINAL_LINK,
+  DEFAULT_THROUGHPUT_DL_TERMINAL_LINK,
+  DEFAULT_THROUGHPUT_UL_TERMINAL_LINK,
   DEFAULT_PACKET_LOSS_TERMINAL_LINK,
   DEFAULT_LATENCY_LINK,
   DEFAULT_LATENCY_JITTER_LINK,
-  DEFAULT_THROUGHPUT_LINK,
+  DEFAULT_THROUGHPUT_DL_LINK,
+  DEFAULT_THROUGHPUT_UL_LINK,
   DEFAULT_PACKET_LOSS_LINK,
   DEFAULT_LATENCY_APP,
   DEFAULT_LATENCY_JITTER_APP,
-  DEFAULT_THROUGHPUT_APP,
+  DEFAULT_THROUGHPUT_DL_APP,
+  DEFAULT_THROUGHPUT_UL_APP,
   DEFAULT_PACKET_LOSS_APP
 } from '../meep-constants';
 
@@ -60,49 +67,69 @@ export const FIELD_CMD = 'cmd';
 export const FIELD_CMD_ARGS = 'cmdArgs';
 export const FIELD_EXT_PORT = 'externalPort';
 export const FIELD_IS_EXTERNAL = 'isExternal';
+export const FIELD_MCC = 'mcc';
+export const FIELD_MNC = 'mnc';
+export const FIELD_DEFAULT_CELL_ID = 'defaultCellId';
+export const FIELD_CELL_ID = 'cellId';
+export const FIELD_GEO_LOCATION = 'location';
+export const FIELD_GEO_RADIUS = 'radius';
+export const FIELD_GEO_PATH = 'path';
+export const FIELD_GEO_EOP_MODE = 'eopMode';
+export const FIELD_GEO_VELOCITY = 'velocity';
 export const FIELD_CHART_ENABLED = 'userChartEnabled';
 export const FIELD_CHART_LOC = 'userChartLocation';
 export const FIELD_CHART_VAL = 'userChartAlternateValues';
 export const FIELD_CHART_GROUP = 'userChartGroup';
 export const FIELD_INT_DOM_LATENCY = 'interDomainLatency';
 export const FIELD_INT_DOM_LATENCY_VAR = 'interDomainLatencyVariation';
-export const FIELD_INT_DOM_THROUGPUT = 'interDomainThroughput';
+export const FIELD_INT_DOM_LATENCY_DIST = 'interDomainLatencyDistribution';
+export const FIELD_INT_DOM_THROUGHPUT_DL = 'interDomainThroughputDl';
+export const FIELD_INT_DOM_THROUGHPUT_UL = 'interDomainThroughputUl';
 export const FIELD_INT_DOM_PKT_LOSS = 'interDomainPacketLoss';
 export const FIELD_INT_ZONE_LATENCY = 'interZoneLatency';
 export const FIELD_INT_ZONE_LATENCY_VAR = 'interZoneLatencyVariation';
-export const FIELD_INT_ZONE_THROUGPUT = 'interZoneThroughput';
+export const FIELD_INT_ZONE_THROUGHPUT_DL = 'interZoneThroughputDl';
+export const FIELD_INT_ZONE_THROUGHPUT_UL = 'interZoneThroughputUl';
 export const FIELD_INT_ZONE_PKT_LOSS = 'interZonePacketLoss';
 export const FIELD_INTRA_ZONE_LATENCY = 'intraZoneLatency';
 export const FIELD_INTRA_ZONE_LATENCY_VAR = 'intraZoneLatencyVariation';
-export const FIELD_INTRA_ZONE_THROUGPUT = 'intraZoneThroughput';
+export const FIELD_INTRA_ZONE_THROUGHPUT_DL = 'intraZoneThroughputDl';
+export const FIELD_INTRA_ZONE_THROUGHPUT_UL = 'intraZoneThroughputUl';
 export const FIELD_INTRA_ZONE_PKT_LOSS = 'intraZonePacketLoss';
 export const FIELD_TERM_LINK_LATENCY = 'terminalLinkLatency';
 export const FIELD_TERM_LINK_LATENCY_VAR = 'terminalLinkLatencyVariation';
-export const FIELD_TERM_LINK_THROUGPUT = 'terminalLinkThroughput';
+export const FIELD_TERM_LINK_THROUGHPUT_DL = 'terminalLinkThroughputDl';
+export const FIELD_TERM_LINK_THROUGHPUT_UL = 'terminalLinkThroughputUl';
 export const FIELD_TERM_LINK_PKT_LOSS = 'terminalLinkPacketLoss';
 export const FIELD_LINK_LATENCY = 'linkLatency';
 export const FIELD_LINK_LATENCY_VAR = 'linkLatencyVariation';
-export const FIELD_LINK_THROUGPUT = 'linkThroughput';
+export const FIELD_LINK_THROUGHPUT_DL = 'linkThroughputDl';
+export const FIELD_LINK_THROUGHPUT_UL = 'linkThroughputUl';
 export const FIELD_LINK_PKT_LOSS = 'linkPacketLoss';
 export const FIELD_APP_LATENCY = 'appLatency';
 export const FIELD_APP_LATENCY_VAR = 'appLatencyVariation';
-export const FIELD_APP_THROUGPUT = 'appThroughput';
+export const FIELD_APP_THROUGHPUT_DL = 'appThroughput_Dl';
+export const FIELD_APP_THROUGHPUT_UL = 'appThroughput_Ul';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
 
 export const getElemFieldVal = (elem, field) => {
-  return elem[field] ? elem[field].val : null;
+  return (elem && elem[field]) ? elem[field].val : null;
 };
 
 export const setElemFieldVal = (elem, field, val) => {
-  elem[field] = { val: val, err: null };
+  if (elem) {
+    elem[field] = { val: val, err: null };
+  }
 };
 
 export const getElemFieldErr = (elem, field) => {
-  return elem[field] ? elem[field].err : null;
+  return (elem && elem[field]) ? elem[field].err : null;
 };
 
 export const setElemFieldErr = (elem, field, err) => {
-  elem[field].err = err;
+  if (elem) {
+    elem[field].err = err;
+  }
 };
 
 export const createElem = name => {
@@ -124,73 +151,49 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CMD_ARGS, '');
   setElemFieldVal(elem, FIELD_EXT_PORT, '');
   setElemFieldVal(elem, FIELD_IS_EXTERNAL, false);
+  setElemFieldVal(elem, FIELD_MNC, '');
+  setElemFieldVal(elem, FIELD_MCC, '');
+  setElemFieldVal(elem, FIELD_DEFAULT_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_GEO_LOCATION, '');
+  setElemFieldVal(elem, FIELD_GEO_RADIUS, '');
+  setElemFieldVal(elem, FIELD_GEO_PATH, '');
+  setElemFieldVal(elem, FIELD_GEO_EOP_MODE, '');
+  setElemFieldVal(elem, FIELD_GEO_VELOCITY, '');
   setElemFieldVal(elem, FIELD_CHART_ENABLED, false);
   setElemFieldVal(elem, FIELD_CHART_LOC, '');
   setElemFieldVal(elem, FIELD_CHART_VAL, '');
   setElemFieldVal(elem, FIELD_CHART_GROUP, '');
   setElemFieldVal(elem, FIELD_INT_DOM_LATENCY, DEFAULT_LATENCY_INTER_DOMAIN);
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTER_DOMAIN
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_THROUGPUT,
-    DEFAULT_THROUGHPUT_INTER_DOMAIN
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_DOM_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_INTER_DOMAIN
-  );
+  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_LATENCY_DIST, DEFAULT_LATENCY_DISTRIBUTION_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_INTER_DOMAIN);
+  setElemFieldVal(elem, FIELD_INT_DOM_PKT_LOSS, DEFAULT_PACKET_LOSS_INTER_DOMAIN);
   setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY, DEFAULT_LATENCY_INTER_ZONE);
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTER_ZONE
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_THROUGPUT,
-    DEFAULT_THROUGHPUT_INTER_ZONE
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_INT_ZONE_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_INTER_ZONE
-  );
+  setElemFieldVal(elem, FIELD_INT_ZONE_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTER_ZONE);
+  setElemFieldVal(elem, FIELD_INT_ZONE_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_INTER_ZONE);
+  setElemFieldVal(elem, FIELD_INT_ZONE_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_INTER_ZONE);
+  setElemFieldVal(elem, FIELD_INT_ZONE_PKT_LOSS, DEFAULT_PACKET_LOSS_INTER_ZONE);
   setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY, DEFAULT_LATENCY_INTRA_ZONE);
-  setElemFieldVal(
-    elem,
-    FIELD_INTRA_ZONE_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_INTRA_ZONE
-  );
-  setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGPUT, DEFAULT_THROUGHPUT_INTRA_ZONE);
+  setElemFieldVal(elem, FIELD_INTRA_ZONE_LATENCY_VAR, DEFAULT_LATENCY_JITTER_INTRA_ZONE);
+  setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_INTRA_ZONE);
+  setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_INTRA_ZONE);
   setElemFieldVal(elem, FIELD_INTRA_ZONE_PKT_LOSS, DEFAULT_PACKET_LOSS_INTRA_ZONE);
   setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY, DEFAULT_LATENCY_TERMINAL_LINK);
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_LATENCY_VAR,
-    DEFAULT_LATENCY_JITTER_TERMINAL_LINK
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_THROUGPUT,
-    DEFAULT_THROUGHPUT_TERMINAL_LINK
-  );
-  setElemFieldVal(
-    elem,
-    FIELD_TERM_LINK_PKT_LOSS,
-    DEFAULT_PACKET_LOSS_TERMINAL_LINK
-  );
+  setElemFieldVal(elem, FIELD_TERM_LINK_LATENCY_VAR, DEFAULT_LATENCY_JITTER_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_TERMINAL_LINK);
+  setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, DEFAULT_PACKET_LOSS_TERMINAL_LINK);
   setElemFieldVal(elem, FIELD_LINK_LATENCY, DEFAULT_LATENCY_LINK);
   setElemFieldVal(elem, FIELD_LINK_LATENCY_VAR, DEFAULT_LATENCY_JITTER_LINK);
-  setElemFieldVal(elem, FIELD_LINK_THROUGPUT, DEFAULT_THROUGHPUT_LINK);
+  setElemFieldVal(elem, FIELD_LINK_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_LINK);
+  setElemFieldVal(elem, FIELD_LINK_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_LINK);
   setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, DEFAULT_PACKET_LOSS_LINK);
   setElemFieldVal(elem, FIELD_APP_LATENCY, DEFAULT_LATENCY_APP);
   setElemFieldVal(elem, FIELD_APP_LATENCY_VAR, DEFAULT_LATENCY_JITTER_APP);
-  setElemFieldVal(elem, FIELD_APP_THROUGPUT, DEFAULT_THROUGHPUT_APP);
+  setElemFieldVal(elem, FIELD_APP_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_APP);
+  setElemFieldVal(elem, FIELD_APP_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_APP);
   setElemFieldVal(elem, FIELD_APP_PKT_LOSS, DEFAULT_PACKET_LOSS_APP);
 
   return elem;
@@ -213,4 +216,3 @@ export const createUniqueName = (entries, namePrefix) => {
   }
   return suggestedName;
 };
-

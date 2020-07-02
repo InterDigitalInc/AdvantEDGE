@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -61,9 +61,9 @@
     /**
      * The base URL against which to resolve every API call's (relative) path.
      * @type {String}
-     * @default http://localhost/v1
+     * @default https://localhost/metrics/v2
      */
-    this.basePath = 'http://localhost/v1'.replace(/\/+$/, '');
+    this.basePath = 'https://localhost/metrics/v2'.replace(/\/+$/, '');
 
     /**
      * The authentication methods to be included for all API calls.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/LogResponseList'], factory);
+    define(['ApiClient', 'model/EventMetricList', 'model/EventQueryParams', 'model/HttpMetricList', 'model/HttpQueryParams', 'model/NetworkMetricList', 'model/NetworkQueryParams'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('../model/LogResponseList'));
+    module.exports = factory(require('../ApiClient'), require('../model/EventMetricList'), require('../model/EventQueryParams'), require('../model/HttpMetricList'), require('../model/HttpQueryParams'), require('../model/NetworkMetricList'), require('../model/NetworkQueryParams'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeMetricsServiceRestApi) {
       root.AdvantEdgeMetricsServiceRestApi = {};
     }
-    root.AdvantEdgeMetricsServiceRestApi.MetricsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.LogResponseList);
+    root.AdvantEdgeMetricsServiceRestApi.MetricsApi = factory(root.AdvantEdgeMetricsServiceRestApi.ApiClient, root.AdvantEdgeMetricsServiceRestApi.EventMetricList, root.AdvantEdgeMetricsServiceRestApi.EventQueryParams, root.AdvantEdgeMetricsServiceRestApi.HttpMetricList, root.AdvantEdgeMetricsServiceRestApi.HttpQueryParams, root.AdvantEdgeMetricsServiceRestApi.NetworkMetricList, root.AdvantEdgeMetricsServiceRestApi.NetworkQueryParams);
   }
-}(this, function(ApiClient, LogResponseList) {
+}(this, function(ApiClient, EventMetricList, EventQueryParams, HttpMetricList, HttpQueryParams, NetworkMetricList, NetworkQueryParams) {
   'use strict';
 
   /**
@@ -63,37 +63,31 @@
 
 
     /**
-     * Callback function to receive the result of the metricsGet operation.
-     * @callback module:api/MetricsApi~metricsGetCallback
+     * Callback function to receive the result of the postEventQuery operation.
+     * @callback module:api/MetricsApi~postEventQueryCallback
      * @param {String} error Error message, if any.
-     * @param {module:model/LogResponseList} data The data returned by the service call.
+     * @param {module:model/EventMetricList} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Used to get a list of all metrics for a specific message type, destination pd and source pod combination
-     * @param {Object} opts Optional parameters
-     * @param {String} opts.dest Pod where the log message is taken from
-     * @param {String} opts.dataType Log Message Type
-     * @param {String} opts.src Pod that originated the metrics logged in the message
-     * @param {String} opts.starTime Starting timestamp of time range
-     * @param {String} opts.stopTime Ending timestamp of time range
-     * @param {module:api/MetricsApi~metricsGetCallback} callback The callback function, accepting three arguments: error, data, response
-     * data is of type: {@link module:model/LogResponseList}
+     * Returns Event metrics according to specificed parameters
+     * @param {module:model/EventQueryParams} params Query parameters
+     * @param {module:api/MetricsApi~postEventQueryCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/EventMetricList}
      */
-    this.metricsGet = function(opts, callback) {
-      opts = opts || {};
-      var postBody = null;
+    this.postEventQuery = function(params, callback) {
+      var postBody = params;
+
+      // verify the required parameter 'params' is set
+      if (params === undefined || params === null) {
+        throw new Error("Missing the required parameter 'params' when calling postEventQuery");
+      }
 
 
       var pathParams = {
       };
       var queryParams = {
-        'dest': opts['dest'],
-        'dataType': opts['dataType'],
-        'src': opts['src'],
-        'starTime': opts['starTime'],
-        'stopTime': opts['stopTime'],
       };
       var collectionQueryParams = {
       };
@@ -105,10 +99,102 @@
       var authNames = [];
       var contentTypes = ['application/json'];
       var accepts = ['application/json'];
-      var returnType = LogResponseList;
+      var returnType = EventMetricList;
 
       return this.apiClient.callApi(
-        '/metrics', 'GET',
+        '/metrics/query/event', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the postHttpQuery operation.
+     * @callback module:api/MetricsApi~postHttpQueryCallback
+     * @param {String} error Error message, if any.
+     * @param {module:model/HttpMetricList} data The data returned by the service call.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Returns Http metrics according to specificed parameters
+     * @param {module:model/HttpQueryParams} params Query parameters
+     * @param {module:api/MetricsApi~postHttpQueryCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/HttpMetricList}
+     */
+    this.postHttpQuery = function(params, callback) {
+      var postBody = params;
+
+      // verify the required parameter 'params' is set
+      if (params === undefined || params === null) {
+        throw new Error("Missing the required parameter 'params' when calling postHttpQuery");
+      }
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = HttpMetricList;
+
+      return this.apiClient.callApi(
+        '/metrics/query/http', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the postNetworkQuery operation.
+     * @callback module:api/MetricsApi~postNetworkQueryCallback
+     * @param {String} error Error message, if any.
+     * @param {module:model/NetworkMetricList} data The data returned by the service call.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Returns Network metrics according to specificed parameters
+     * @param {module:model/NetworkQueryParams} params Query parameters
+     * @param {module:api/MetricsApi~postNetworkQueryCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/NetworkMetricList}
+     */
+    this.postNetworkQuery = function(params, callback) {
+      var postBody = params;
+
+      // verify the required parameter 'params' is set
+      if (params === undefined || params === null) {
+        throw new Error("Missing the required parameter 'params' when calling postNetworkQuery");
+      }
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = NetworkMetricList;
+
+      return this.apiClient.callApi(
+        '/metrics/query/network', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

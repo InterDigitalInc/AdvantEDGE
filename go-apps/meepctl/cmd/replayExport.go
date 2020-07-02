@@ -45,12 +45,13 @@ var replayExportCmd = &cobra.Command{
 }
 
 func init() {
+	setSandboxFlag(replayExportCmd)
 	replayCmd.AddCommand(replayExportCmd)
 }
 
 func replayExport(cobraCmd *cobra.Command, replayFilename string, yamlFilename string) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

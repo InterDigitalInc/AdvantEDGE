@@ -20,6 +20,7 @@ image:
     # - name: docker
 service:
   name: registry
+  # type: ClusterIP
   type: NodePort
   # clusterIP:
   port: 5000
@@ -28,11 +29,12 @@ service:
   # foo.io/bar: "true"
 ingress:
   enabled: false
-  path: /
+  path: /registry(/|$)(.*)
   # Used to create an Ingress record.
   hosts:
-    - chart-example.local
+    - ''
   annotations:
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   labels: {}
@@ -53,11 +55,11 @@ resources: {}
   #  cpu: 100m
   #  memory: 128Mi
 persistence:
-  enabled: true
   accessMode: 'ReadWriteOnce'
   reclaimPolicy: Retain
+  enabled: true
   size: 10Gi
-  location: "<WORKDIR>/docker-registry"
+  location: ''
   ## If defined, storageClassName: <storageClass>
   ## If set to "-", storageClassName: "", which disables dynamic provisioning
   ## If set to "fullname", storageClassName: <template fullname>
@@ -65,14 +67,15 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  # storageClass: "-"
-  storageClass: "fullname"
+  # storageClass: '-'
+  storageClass: 'fullname'
 
 # set the type of filesystem to use: filesystem, s3
 storage: filesystem
 
 # Set this to name of secret for tls certs
-tlsSecretName: meep-docker-registry-certs
+# tlsSecretName: registry.docker.example.com
+tlsSecretName: meep-docker-registry
 secrets:
   haSharedSecret: ""
   htpasswd: ""
@@ -112,6 +115,7 @@ configData:
     cache:
       blobdescriptor: inmemory
   http:
+    # prefix: '/registry/'
     addr: :5000
     headers:
       X-Content-Type-Options: [nosniff]
@@ -128,9 +132,11 @@ securityContext:
 
 priorityClassName: ""
 
-nodeSelector: {}
+podDisruptionBudget: {}
+  # maxUnavailable: 1
+  # minAvailable: 2
 
-tolerations: []
+nodeSelector: {}
 
 affinity:
   nodeAffinity:
@@ -139,3 +145,21 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
+
+tolerations: []
+
+extraVolumeMounts: []
+## Additional volumeMounts to the registry container.
+#  - mountPath: /secret-data
+#    name: cloudfront-pem-secret
+#    readOnly: true
+
+extraVolumes: []
+## Additional volumes to the pod.
+#  - name: cloudfront-pem-secret
+#    secret:
+#      secretName: cloudfront-credentials
+#      items:
+#        - key: cloudfront.pem
+#          path: cloudfront.pem
+#          mode: 511

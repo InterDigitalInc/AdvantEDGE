@@ -45,13 +45,23 @@ func main() {
 		run = false
 	}()
 
-	err := server.VirtEngineInit()
+	// Initialize Virt Engine
+	err := server.Init()
 	if err != nil {
 		log.Error("Failed to initialize Virt. Engine")
 		run = false
 		return
 	}
 
+	// Start Virt Engine Event Handler thread
+	err = server.Run()
+	if err != nil {
+		log.Error("Failed to start Virt. Engine")
+		run = false
+		return
+	}
+
+	// Wait for process to exit
 	count := 0
 	for {
 		if !run {

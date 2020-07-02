@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: default
 serviceAccount: meep-mon-engine
 
 deployment:
@@ -17,16 +16,48 @@ affinity:
       - matchExpressions:
         - key: node-role.kubernetes.io/master
           operator: Exists
-          
+
 image:
   repository: meep-mon-engine
   tag: latest
   pullPolicy: Always
+  env:
+    # Provide comma-separated list of expected pods to be monitored
+    MEEP_DEPENDENCY_PODS: ""
+    MEEP_CORE_PODS: ""
+    MEEP_SANDBOX_PODS: ""
 
 service:
-  type: NodePort
-  targetPort: 80
-  nodePort: 30004
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  # Used to create an Ingress record.
+  hosts:
+    - name: ''
+      paths:
+        - /mon-engine
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   rewrite ^(/api)$ $1/ redirect;
+
+altIngress:
+  enabled: false
+  # Used to create an Ingress record.
+  hosts:
+    - name: ''
+      paths:
+        - /mon-engine
+  annotations:
+    kubernetes.io/ingress.class: alt-nginx
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   rewrite ^(/api)$ $1/ redirect;
 
 codecov:
   enabled: false

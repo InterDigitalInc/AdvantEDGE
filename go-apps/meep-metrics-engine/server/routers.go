@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Metrics Service REST API
  *
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -28,6 +28,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 
 	"github.com/gorilla/mux"
 
@@ -48,6 +50,7 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
+		handler = httpLog.LogRx(handler, "")
 
 		router.
 			Methods(route.Method).
@@ -71,81 +74,96 @@ func Init() (err error) {
 	return nil
 }
 
+func Run() (err error) {
+	err = v2.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 var routes = Routes{
 	Route{
 		"IndexV2",
 		"GET",
-		"/v2/",
+		"/metrics/v2/",
 		IndexV2,
 	},
 
 	Route{
 		"PostEventQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/query/event",
+		"/metrics/v2/metrics/query/event",
 		v2.PostEventQuery,
+	},
+
+	Route{
+		"PostHttpQuery",
+		strings.ToUpper("Post"),
+		"/metrics/v2/metrics/query/http",
+		v2.PostHttpQuery,
 	},
 
 	Route{
 		"PostNetworkQuery",
 		strings.ToUpper("Post"),
-		"/v2/metrics/query/network",
+		"/metrics/v2/metrics/query/network",
 		v2.PostNetworkQuery,
 	},
 
 	Route{
 		"CreateEventSubscription",
 		strings.ToUpper("Post"),
-		"/v2/metrics/subscriptions/event",
+		"/metrics/v2/metrics/subscriptions/event",
 		v2.CreateEventSubscription,
 	},
 
 	Route{
 		"CreateNetworkSubscription",
 		strings.ToUpper("Post"),
-		"/v2/metrics/subscriptions/network",
+		"/metrics/v2/metrics/subscriptions/network",
 		v2.CreateNetworkSubscription,
 	},
 
 	Route{
 		"DeleteEventSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.DeleteEventSubscriptionById,
 	},
 
 	Route{
 		"DeleteNetworkSubscriptionById",
 		strings.ToUpper("Delete"),
-		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.DeleteNetworkSubscriptionById,
 	},
 
 	Route{
 		"GetEventSubscription",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/event",
+		"/metrics/v2/metrics/subscriptions/event",
 		v2.GetEventSubscription,
 	},
 
 	Route{
 		"GetEventSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/event/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.GetEventSubscriptionById,
 	},
 
 	Route{
 		"GetNetworkSubscription",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/network",
+		"/metrics/v2/metrics/subscriptions/network",
 		v2.GetNetworkSubscription,
 	},
 
 	Route{
 		"GetNetworkSubscriptionById",
 		strings.ToUpper("Get"),
-		"/v2/metrics/subscriptions/network/{subscriptionId}",
+		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.GetNetworkSubscriptionById,
 	},
 }

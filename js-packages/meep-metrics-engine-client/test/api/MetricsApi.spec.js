@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  * AdvantEDGE Metrics Service REST API
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -50,54 +50,181 @@
 
   describe('(package)', function() {
     describe('MetricsApi', function() {
-      describe('metricsGet', function() {
-        it('should call metricsGet successfully', function(done) {
-          // TODO: uncomment, update parameter values for metricsGet call and complete the assertions
+      describe('postEventQuery', function() {
+        it('should call postEventQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postEventQuery call and complete the assertions
           /*
-          var opts = {};
-          opts.dest = "dest_example";
-          opts.dataType = "dataType_example";
-          opts.src = "src_example";
-          opts.starTime = "starTime_example";
-          opts.stopTime = "stopTime_example";
+          var params = new AdvantEdgeMetricsServiceRestApi.EventQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.fields = ["event"]"event";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
 
-          instance.metricsGet(opts, function(error, data, response) {
+          instance.postEventQuery(params, function(error, data, response) {
             if (error) {
               done(error);
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.LogResponseList);
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetricList);
+            expect(data.name).to.be.a('string');
+            expect(data.name).to.be("event metrics");
             {
-              let dataCtr = data.logResponse;
+              let dataCtr = data.columns;
               expect(dataCtr).to.be.an(Array);
               expect(dataCtr).to.not.be.empty();
               for (let p in dataCtr) {
                 let data = dataCtr[p];
-                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.LogResponse);
-                expect(data.dest).to.be.a('string');
-                expect(data.dest).to.be("node1");
-                expect(data.dataType).to.be.a('string');
-                expect(data.dataType).to.be("node1");
-                expect(data.src).to.be.a('string');
-                expect(data.src).to.be("node1");
-                expect(data.timestamp).to.be.a('string');
-                expect(data.timestamp).to.be("2019-07-09T13:47:03.279Z");
-                expect(data.data).to.be.a(AdvantEdgeMetricsServiceRestApi.LogResponseData);
-                      expect(data.data.rx).to.be.a('number');
-                  expect(data.data.rx).to.be(128);
-                  expect(data.data.rxBytes).to.be.a('number');
-                  expect(data.data.rxBytes).to.be(6892);
-                  expect(data.data.throughput).to.be.a('number');
-                  expect(data.data.throughput).to.be(17.01234);
-                  expect(data.data.packetLoss).to.be.a('string');
-                  expect(data.data.packetLoss).to.be("50.000");
-                  expect(data.data.latency).to.be.a('number');
-                  expect(data.data.latency).to.be(63);
-                  expect(data.data.newPoa).to.be.a('string');
-                  expect(data.data.newPoa).to.be("poa1");
-                  expect(data.data.oldPoa).to.be.a('string');
-                  expect(data.data.oldPoa).to.be("poa1");
+                expect(data).to.be.a('string');
+                expect(data).to.be("");
+              }
+            }
+            {
+              let dataCtr = data.values;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.EventMetric);
+                expect(data.time).to.be.a('string');
+                expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                expect(data.event).to.be.a('string');
+                expect(data.event).to.be("JSON-formatted mobility event ue1 to poa3");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('postHttpQuery', function() {
+        it('should call postHttpQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postHttpQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.HttpQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.fields = ["id"]"id";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+
+          instance.postHttpQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.HttpMetricList);
+            expect(data.name).to.be.a('string');
+            expect(data.name).to.be("http metrics");
+            {
+              let dataCtr = data.columns;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a('string');
+                expect(data).to.be("");
+              }
+            }
+            {
+              let dataCtr = data.values;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.HttpMetric);
+                expect(data.time).to.be.a('string');
+                expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                expect(data.id).to.be.a('number');
+                expect(data.id).to.be(5);
+                expect(data.endpoint).to.be.a('string');
+                expect(data.endpoint).to.be("/location/v1/subscription/userTracking");
+                expect(data.url).to.be.a('string');
+                expect(data.url).to.be("/location/v1/subscription/userTracking?validQueryParam");
+                expect(data.method).to.be.a('string');
+                expect(data.method).to.be("GET");
+                expect(data.respCode).to.be.a('string');
+                expect(data.respCode).to.be("200");
+                expect(data.respBody).to.be.a('string');
+                expect(data.respBody).to.be("{}");
+                expect(data.body).to.be.a('string');
+                expect(data.body).to.be("{}");
+                expect(data.procTime).to.be.a('string');
+                expect(data.procTime).to.be("345");
+                expect(data.loggerName).to.be.a('string');
+                expect(data.loggerName).to.be("loc-serv");
+                expect(data.direction).to.be.a('string');
+                expect(data.direction).to.be("Request");
+              }
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('postNetworkQuery', function() {
+        it('should call postNetworkQuery successfully', function(done) {
+          // TODO: uncomment, update parameter values for postNetworkQuery call and complete the assertions
+          /*
+          var params = new AdvantEdgeMetricsServiceRestApi.NetworkQueryParams();
+          params.tags = [new AdvantEdgeMetricsServiceRestApi.Tag()];
+          params.tags[0].name = "src";
+          params.tags[0].value = "ue1-iperf";
+          params.fields = ["lat"]"lat";
+          params.scope = new AdvantEdgeMetricsServiceRestApi.Scope();
+          params.scope.limit = 60;
+          params.scope.duration = "10s";
+
+          instance.postNetworkQuery(params, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetricList);
+            expect(data.name).to.be.a('string');
+            expect(data.name).to.be("network metrics");
+            {
+              let dataCtr = data.columns;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a('string');
+                expect(data).to.be("");
+              }
+            }
+            {
+              let dataCtr = data.values;
+              expect(dataCtr).to.be.an(Array);
+              expect(dataCtr).to.not.be.empty();
+              for (let p in dataCtr) {
+                let data = dataCtr[p];
+                expect(data).to.be.a(AdvantEdgeMetricsServiceRestApi.NetworkMetric);
+                expect(data.time).to.be.a('string');
+                expect(data.time).to.be("2019-11-24T12:45:00-5:00");
+                expect(data.lat).to.be.a('number');
+                expect(data.lat).to.be(5);
+                expect(data.ul).to.be.a('number');
+                expect(data.ul).to.be(90.1);
+                expect(data.dl).to.be.a('number');
+                expect(data.dl).to.be(100.0);
+                expect(data.ulos).to.be.a('number');
+                expect(data.ulos).to.be(0.001);
+                expect(data.dlos).to.be.a('number');
+                expect(data.dlos).to.be(0.003);
               }
             }
 

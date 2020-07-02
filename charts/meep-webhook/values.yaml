@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace: default
 serviceAccount: meep-webhook
 configMap: meep-webhook
 initializerConfig: meep-webhook
@@ -15,9 +14,8 @@ deployment:
   dependency: meep-redis-master
 
 service:
-  type: NodePort
-  targetPort: 443
-  nodePort: 30006
+  type: ClusterIP
+  port: 443
 
 image:
   repository: meep-webhook

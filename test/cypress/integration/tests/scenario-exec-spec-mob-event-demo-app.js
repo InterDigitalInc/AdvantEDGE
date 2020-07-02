@@ -20,38 +20,28 @@ import * as meep from '../../../../js-apps/meep-frontend/src/js/meep-constants';
 // Import element utils
 import {
   // Field Names
-  FIELD_TYPE,
   FIELD_PARENT,
   FIELD_NAME,
-  FIELD_IMAGE,
-  FIELD_PORT,
-  FIELD_PROTOCOL,
-  FIELD_GROUP,
-  FIELD_SVC_MAP,
-  FIELD_ENV_VAR,
-  FIELD_CMD,
-  FIELD_CMD_ARGS,
-  FIELD_EXT_PORT,
-  FIELD_IS_EXTERNAL,
-  FIELD_CHART_ENABLED,
-  FIELD_CHART_LOC,
-  FIELD_CHART_VAL,
-  FIELD_CHART_GROUP,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
-  FIELD_INT_DOM_THROUGPUT,
+  FIELD_INT_DOM_LATENCY_DIST,
+  FIELD_INT_DOM_THROUGHPUT_DL,
+  FIELD_INT_DOM_THROUGHPUT_UL,
   FIELD_INT_DOM_PKT_LOSS,
   FIELD_INT_ZONE_LATENCY,
   FIELD_INT_ZONE_LATENCY_VAR,
-  FIELD_INT_ZONE_THROUGPUT,
+  FIELD_INT_ZONE_THROUGHPUT_DL,
+  FIELD_INT_ZONE_THROUGHPUT_UL,
   FIELD_INT_ZONE_PKT_LOSS,
   FIELD_INTRA_ZONE_LATENCY,
   FIELD_INTRA_ZONE_LATENCY_VAR,
-  FIELD_INTRA_ZONE_THROUGPUT,
+  FIELD_INTRA_ZONE_THROUGHPUT_DL,
+  FIELD_INTRA_ZONE_THROUGHPUT_UL,
   FIELD_INTRA_ZONE_PKT_LOSS,
   FIELD_TERM_LINK_LATENCY,
   FIELD_TERM_LINK_LATENCY_VAR,
-  FIELD_TERM_LINK_THROUGPUT,
+  FIELD_TERM_LINK_THROUGHPUT_DL,
+  FIELD_TERM_LINK_THROUGHPUT_UL,
   FIELD_TERM_LINK_PKT_LOSS,
 
   getElemFieldVal,
@@ -65,6 +55,8 @@ describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
+  let sandbox = 'sbox-test';
+  let scenario = 'demo1'
 
   // ------------------------------
   //            TESTS
@@ -77,10 +69,10 @@ describe('Scenario Execution', function () {
 
   // Demo1 scenario testing for mobility event on the demo app output
   it('Deploy DEMO1 scenario - mobility event #1', function () {
+    openDefaultMeepUrl();
 
-    let scenario = 'demo1';
-
-    openDefaultMeepUrl("");
+    // Create Sandbox
+    createSandbox(sandbox);
 
     // Deploy demo scenario
     deployScenario(scenario);
@@ -90,143 +82,137 @@ describe('Scenario Execution', function () {
     //testMobility event was split so that each mobility event can be tested independantly
     cy.log('Create 1st Mobility event');
     createMobilityEvent('ue1', 'zone1-poa2');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Already deployed scenario
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone1-poa2');
-
   });
 
   // Demo1 scenario testing  mobility event #2
   it('DEMO1 scenario - mobility event #2', function () {
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 2nd Mobility event');
     createMobilityEvent('ue1', 'zone2-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone2-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #3
   it('DEMO1 scenario - mobility event #3', function () {
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 3rd Mobility event');
     createMobilityEvent('ue1', 'zone1-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue1', 'zone1-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #4
   it('DEMO1 scenario - mobility event #4', function () {
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 4th Mobility event');
     createMobilityEvent('ue2-ext', 'zone1-poa2');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa2');
-
   });
 
   // Demo1 scenario testing  mobility event #5
   it('DEMO1 scenario - mobility event #5', function () {
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 5th Mobility event');
     createMobilityEvent('ue2-ext', 'zone2-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone2-poa1');
-
   });
 
   // Demo1 scenario testing  mobility event #6
   it('DEMO1 scenario - mobility event #6', function () {
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     cy.log('Create 6th Mobility event');
     createMobilityEvent('ue2-ext', 'zone1-poa1');
-
   });
 
   it('DEMO1 scenario - validate mobility event in demo-app frontend', function () {
-
     cy.wait(2000);
-    openDefaultMeepUrl("31111");
+    openDemoUrl();
 
     // Test events
     validateDemoAppFrontEndUpdateOnMobilityEvent('ue2-ext', 'zone1-poa1');
-
   });
 
   // Demo1 scenario terminate
   it('DEMO1 scenario - terminate', function () {
-
-    let scenario = 'demo1';
-
-    openDefaultMeepUrl("");
+    openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Test events
     // Terminate demo scenario
     terminateScenario(scenario);
 
+    // Destroy Sandbox
+    destroySandbox(sandbox);
   });
 
   // ------------------------------
@@ -234,13 +220,10 @@ describe('Scenario Execution', function () {
   // ------------------------------
 
   // Opens the default meepUrl page
-  function openDefaultMeepUrl(port) {
+  function openDefaultMeepUrl() {
     var meepUrl = Cypress.env('meep_url');
     if (meepUrl == null) {
-      meepUrl = 'http://127.0.0.1:30000';
-    }
-    if (port != "") {
-      meepUrl = meepUrl.replace("30000", port);
+      meepUrl = 'http://127.0.0.1';
     }
 
     cy.viewport(1920, 1080);
@@ -248,15 +231,69 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
   }
 
+  // Opens the demo frontend page
+  function openDemoUrl() {
+    var demoUrl = Cypress.env('demo_url');
+    if (demoUrl == null) {
+      demoUrl = 'http://127.0.0.1:31111';
+    }
+
+    cy.viewport(1920, 1080);
+    cy.visit(demoUrl);
+    cy.wait(1000);
+  }
+
+  // Create sandbox with provided name
+  function createSandbox(name) {
+    // Go to execution page
+    cy.log('Go to execution page');
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, false);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+
+    // Create sandbox
+    cy.log('Create sandbox: ' + name);
+    click(meep.EXEC_BTN_NEW_SANDBOX);
+    type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
+    click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
+    cy.wait(10000);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+  }
+
+  // Destroy sandbox with provided name
+  function destroySandbox(name) {
+    cy.log('Destroy Sandbox: ' + name);
+    select(meep.EXEC_SELECT_SANDBOX, name);
+    cy.wait(1000);
+    click(meep.EXEC_BTN_DELETE_SANDBOX);
+    click(meep.MEEP_DLG_DELETE_SANDBOX, 'Ok');
+    cy.wait(10000);
+    verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
+    verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, false);
+    verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
+    verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT, false);
+    verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
+  }
+
   // Deploy scenario with provided name
   function deployScenario(name) {
     // Go to execution page
     cy.log('Go to execution page');
     click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
 
     // Deploy scenario
@@ -265,11 +302,10 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, name);
     click(meep.MEEP_DLG_DEPLOY_SCENARIO, 'Ok');
-    cy.wait(1000);
+    cy.wait(10000);
     verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, true);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', name);
   }
 
@@ -278,10 +314,9 @@ describe('Scenario Execution', function () {
     cy.log('Terminate Scenario: ' + name);
     click(meep.EXEC_BTN_TERMINATE);
     click(meep.MEEP_DLG_TERMINATE_SCENARIO, 'Ok');
-    cy.wait(1000);
+    cy.wait(10000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true, 120000);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, false);
-    verifyEnabled(meep.EXEC_BTN_REFRESH, false);
     verifyEnabled(meep.EXEC_BTN_EVENT, false);
     verify(meep.MEEP_LBL_SCENARIO_NAME, 'contain', defaultScenario);
   }
@@ -301,13 +336,13 @@ describe('Scenario Execution', function () {
   // Create Network Characteristic events
   function testNetCharEvent(scenario) {
     cy.log('Create & Validate Network Characteristic event');
-    createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000);
-    createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000);
-    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000);
-    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000);
-    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000);
-    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000);
-    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000);
+    createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000, 'Pareto');
+    createNetCharEvent('DOMAIN', 'operator1', 10, 3, 2, 90000, '');
+    createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000, '');
+    createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000, '');
+    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000, '');
+    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000, '');
+    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000, '');
   }
 
   // Create a Mobility event
@@ -326,7 +361,7 @@ describe('Scenario Execution', function () {
   }
 
   // Create a Network Characteristic event
-  function createNetCharEvent(elemType, name, l, lv, pl, tp) {
+  function createNetCharEvent(elemType, name, l, lv, pl, tp, dist) {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
@@ -338,12 +373,16 @@ describe('Scenario Execution', function () {
     type(meep.CFG_ELEM_LATENCY, l);
     type(meep.CFG_ELEM_LATENCY_VAR, lv);
     type(meep.CFG_ELEM_PKT_LOSS, pl);
-    type(meep.CFG_ELEM_THROUGHPUT, tp);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, tp);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, tp-1);
+    if (dist != '') {
+      select(meep.CFG_ELEM_LATENCY_DIST, dist);
+    }
     click(meep.MEEP_BTN_APPLY);
 
     // Validate event
     cy.wait(1000);
-    validateNetCharEvent(elemType, name, l, lv, pl, tp);
+    validateNetCharEvent(elemType, name, l, lv, pl, tp, tp-1, dist);
   }
 
   // Retrieve Element entry from Application table
@@ -368,7 +407,7 @@ describe('Scenario Execution', function () {
   }
 
   // Validate that network characteristics were correctly applied
-  function validateNetCharEvent(elemType, name, l, lv, pl, tp) {
+  function validateNetCharEvent(elemType, name, l, lv, pl, tpDl, tpUl, dist) {
     cy.window().then((win) => {
       var entry = getEntry(win.meepStore.getState().exec.table.entries, name);
       assert.isNotNull(entry);
@@ -377,26 +416,31 @@ describe('Scenario Execution', function () {
         case 'SCENARIO':
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_VAR), lv);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_LATENCY_DIST), dist);
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_UL), tpUl);
           break;
         case 'DOMAIN':
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_THROUGHPUT_UL), tpUl);
           break;
         case 'ZONE':
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), tpUl);
           break;
         case 'POA':
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);
-          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGPUT), tp);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), tpDl);
+          assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), tpUl);
           break;
         default:
           assert.isOk(false, 'Unsupported element type');

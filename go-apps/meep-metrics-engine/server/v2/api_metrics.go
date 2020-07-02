@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the \"License\");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  *
  * AdvantEDGE Metrics Service REST API
  *
- * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address:30000/api_ <p>**Default Port**<br>`30005`
+ * Metrics Service provides metrics about the active scenario <p>**Micro-service**<br>[meep-metrics-engine](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-metrics-engine) <p>**Type & Usage**<br>Platform Service used by control/monitoring software and possibly by edge applications that require metrics <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -30,6 +30,10 @@ import (
 
 func PostEventQuery(w http.ResponseWriter, r *http.Request) {
 	mePostEventQuery(w, r)
+}
+
+func PostHttpQuery(w http.ResponseWriter, r *http.Request) {
+	mePostHttpQuery(w, r)
 }
 
 func PostNetworkQuery(w http.ResponseWriter, r *http.Request) {

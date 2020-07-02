@@ -1,0 +1,22 @@
+{
+  "name": "advant_edge_monitoring_engine_rest_api",
+  "version": "1.0.0",
+  "description": "This_API_provides_AdvantEDGE_microservice__scenario_deployment_status_information_collected_in_the_Monitoring_Engine__pMicro_servicebr_meep_mon_engine_httpsgithub_comInterDigitalIncAdvantEDGEtreemastergo_appsmeep_mon_engine_pType__UsagebrPlatform_interface_to_retrieve_AdvantEDGE_microservice__scenario_deployment_status_information_pDetailsbrAPI_details_available_at__your_AdvantEDGE_ip_addressapi_",
+  "license": "Apache 2.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "superagent": "3.7.0",
+    "querystring": "0.2.0"
+  },
+  "devDependencies": {
+    "mocha": "~2.3.4",
+    "sinon": "1.17.3",
+    "expect.js": "~0.3.1"
+  }
+}

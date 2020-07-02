@@ -3,13 +3,18 @@ module github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine
 go 1.12
 
 require (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.4
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
@@ -30,6 +35,9 @@ require (
 )
 
 replace (
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr => ../../go-packages/meep-data-key-mgr
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger => ../../go-packages/meep-logger
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store => ../../go-packages/meep-sandbox-store
 )

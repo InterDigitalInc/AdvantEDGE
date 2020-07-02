@@ -1,0 +1,906 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: MEEP Model
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0'
+definitions:
+  ActivationInfo:
+    type: object
+    properties:
+      replayFileName:
+        type: string
+        description: Replay-file name to execute at deployment time
+    description: Activation information
+    example: {}
+  CellularPoaConfig:
+    type: object
+    properties:
+      cellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
+    description: Cellular POA configuration information
+  CellularDomainConfig:
+    type: object
+    properties:
+      mnc:
+        type: string
+        description: Mobile Network Code part of PLMN identity as defined in ETSI TS 136 413
+      mcc:
+        type: string
+        description: Mobile Country Code part of PLMN identity as defined in ETSI TS 136 413
+      defaultCellId:
+        type: string
+        description: The E-UTRAN Cell Identity as defined in ETSI TS 136 413 if no cellId is defined for the cell or if not applicable
+    description: Cellular domain configuration information
+    example: {}
+  GeoData:
+    description: Geographic data
+    type: object
+    properties:
+      location:
+        $ref: '#/definitions/Point'
+      radius:
+        description: Optional - Radius (in meters) around the location
+        type: number
+      path:
+        $ref: '#/definitions/LineString'
+      eopMode:
+        description: >-
+          End-of-Path mode:
+          <li>LOOP: When path endpoint is reached, start over from the beginning
+          <li>REVERSE: When path endpoint is reached, return on the reverse path
+        type: string
+        enum:
+          - LOOP
+          - REVERSE
+      velocity:
+        description: Speed of movement along path in m/s
+        type: number
+  Point:
+    description: A single position in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be Point
+        type: string
+        enum:
+          - Point
+      coordinates:
+        description: For a Point, coordinates MUST be an array of two decimal numbers; longitude and latitude precisely in that order
+        type: array
+        items:
+          type: number
+  LineString:
+    description: An array of two or more positions in coordinate space (GeoJSON); a position is an array of two numbers
+    type: object
+    externalDocs:
+      url: 'https://tools.ietf.org/html/rfc7946'
+    required:
+      - type
+    properties:
+      type:
+        description: Must be LineString
+        type: string
+        enum:
+          - LineString
+      coordinates:
+        description: For a LineString, coordinates is an array of two or more positions; a position is an array of two decimal numbers (longitude and latitude precisely in that order)
+        type: array
+        items:
+          type: array
+          items:
+            type: number
+  NodeServiceMaps:
+    type: object
+    properties:
+      node:
+        type: string
+        description: Unique external node identifier
+      ingressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/IngressService'
+      egressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/EgressService'
+    description: Node-specific mapping of exposed internal & external services
+    example: {}
+  Deployment:
+    type: object
+    properties:
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      interDomainLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
+      interDomainLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation'
+      interDomainThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl'
+      interDomainPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      domains:
+        type: array
+        items:
+          $ref: '#/definitions/Domain'
+    description: Network deployment object
+    example: {}
+  Domain:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique domain ID
+      name:
+        type: string
+        description: Domain name
+      type:
+        type: string
+        description: Domain type
+        enum:
+          - OPERATOR
+          - OPERATOR-CELLULAR
+          - PUBLIC
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      interZoneLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
+      interZoneLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation'
+      interZoneThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl'
+      interZonePacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      cellularDomainConfig:
+        $ref: '#/definitions/CellularDomainConfig'
+      zones:
+        type: array
+        items:
+          $ref: '#/definitions/Zone'
+    description: Operator domain object
+    example: {}
+  EgressService:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Service name
+      meSvcName:
+        type: string
+        description: 'Multi-Edge service name, if any'
+      ip:
+        type: string
+        description: External node IP address
+      port:
+        type: integer
+        description: Service port number
+      protocol:
+        type: string
+        description: Service protocol (TCP or UDP)
+    description: External service exposed internally via specific port
+  Event:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Event name
+      type:
+        type: string
+        description: Event type
+        enum:
+          - MOBILITY
+          - NETWORK-CHARACTERISTICS-UPDATE
+          - POAS-IN-RANGE
+          - SCENARIO-UPDATE
+      eventMobility:
+        $ref: '#/definitions/EventMobility'
+      eventNetworkCharacteristicsUpdate:
+        $ref: '#/definitions/EventNetworkCharacteristicsUpdate'
+      eventPoasInRange:
+        $ref: '#/definitions/EventPoasInRange'
+      eventScenarioUpdate:
+        $ref: '#/definitions/EventScenarioUpdate'
+    description: Event object
+    example:
+      name: name
+      type: MOBILITY
+      eventMobility:
+        elementName: ue1
+        dest: poa2
+  EventList:
+    type: object
+    properties:
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/Event'
+    description: Event list object
+    example: {}
+  EventMobility:
+    type: object
+    properties:
+      elementName:
+        type: string
+        description: Name of the network element to be updated
+      dest:
+        type: string
+        description: Destination element identifier
+    description: Mobility Event object
+    example:
+      elementName: ue1
+      dest: poa2
+  EventPoasInRange:
+    type: object
+    properties:
+      ue:
+        type: string
+        description: UE identifier
+      poasInRange:
+        type: array
+        items:
+          type: string
+          description: POAs visible to UE
+    description: POAs In Range Event object
+    example:
+      ue: ue
+      poasInRange:
+        - poa1
+        - poa2
+  EventNetworkCharacteristicsUpdate:
+    type: object
+    properties:
+      elementName:
+        type: string
+        description: Name of the network element to be updated
+      elementType:
+        type: string
+        description: Type of the network element to be updated
+        enum:
+          - SCENARIO
+          - OPERATOR
+          - OPERATOR-CELLULAR
+          - ZONE
+          - POA
+          - POA-CELLULAR
+          - EDGE
+          - FOG
+          - UE
+          - DC
+          - UE-APP
+          - EDGE-APP
+          - CLOUD-APP
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+    description: Network Characteristics update Event object
+    example: {}
+  EventScenarioUpdate:
+    type: object
+    description: >-
+      Scenario Update Event object.<br>
+      Specifies a scenario update action to perform on the provided node.
+
+      <p>Supported Actions:
+      <li>ADD - Add node to scenario. Only the provided node is added; child nodes in node data are ignored.
+      <li>REMOVE - Remove node from scenario. Only node name is required in node data for this action; parent is ignored.
+      <li>MODIFY - Modifies scenario node.
+
+      <p>NOTE: Current backend implementation supports only a limited subset of scenario update event functionality (add/remove UE only).
+    properties:
+      action:
+        type: string
+        description: Action to perform on provided scenario node
+        enum:
+          - ADD
+          - REMOVE
+          - MODIFY
+      node:
+        $ref: '#/definitions/ScenarioNode'
+    example: {}
+  ExternalConfig:
+    type: object
+    properties:
+      ingressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/IngressService'
+      egressServiceMap:
+        type: array
+        items:
+          $ref: '#/definitions/EgressService'
+    description: |-
+      External Process configuration.
+      NOTE: Only valid if 'isExternal' is set.
+    example: {}
+  GpuConfig:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Requested GPU type
+      count:
+        type: integer
+        description: Number of GPUs requested
+    description: GPU configuration object
+  IngressService:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Service name (unique or multi-edge)
+      port:
+        type: integer
+        description: Internal service port number
+      externalPort:
+        type: integer
+        description: Externally-exposed unique service port in range (30000 - 32767)
+      protocol:
+        type: string
+        description: Service protocol (TCP or UDP)
+    description: Internal service exposed externally via specific port
+  NetworkCharacteristics:
+    type: object
+    properties:
+      latency:
+        type: integer
+        description: Latency in ms
+      latencyVariation:
+        type: integer
+        description: Latency variation in ms
+      latencyDistribution:
+        type: string
+        description: Latency distribution. Can only be set in the Scenario Deployment network characteristics, ignored otherwise. Latency distribution is set for the whole network and applied to every end-to-end traffic flows. Default value is 'Normal' distribution. 
+        enum:
+          - Normal
+          - Pareto
+          - Paretonormal
+          - Uniform
+      throughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by throughputUl and throughputDl'
+      throughputDl:
+        type: integer
+        description: Downlink throughput limit in Mbps
+      throughputUl:
+        type: integer
+        description: Uplink throughput limit in Mbps
+      packetLoss:
+        type: number
+        format: double
+        description: Packet loss percentage
+    description: Network characteristics object
+    example: {}
+  NetworkLocation:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique network location ID
+      name:
+        type: string
+        description: Network location name
+      type:
+        type: string
+        description: Network location type
+        enum:
+          - POA
+          - POA-CELLULAR
+          - DEFAULT
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      terminalLinkLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
+      terminalLinkLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation'
+      terminalLinkThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl'
+      terminalLinkPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      cellularPoaConfig:
+        $ref: '#/definitions/CellularPoaConfig'
+      geoData:
+        $ref: '#/definitions/GeoData'
+      physicalLocations:
+        type: array
+        items:
+          $ref: '#/definitions/PhysicalLocation'
+    description: Logical network location object
+    example: {}
+  NodeDataUnion:
+    type: object
+    description: |-
+      Union of node data objects
+      NOTE: Only one of the following objects must be filled
+    properties:
+      # deployment:
+      #   $ref: '#/definitions/Deployment'
+      # domain:
+      #   $ref: '#/definitions/Domain'
+      # zone:
+      #   $ref: '#/definitions/Zone'
+      # networkLocation:
+      #   $ref: '#/definitions/NetworkLocation'
+      physicalLocation:
+        $ref: '#/definitions/PhysicalLocation'
+      # process:
+      #   $ref: '#/definitions/Process'
+    example: {}
+  PhysicalLocation:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique physical location ID
+      name:
+        type: string
+        description: Physical location name
+      type:
+        type: string
+        description: Physical location type
+        enum:
+          - UE
+          - FOG
+          - EDGE
+          - CN
+          - DC
+      isExternal:
+        type: boolean
+        description: |-
+          true: Physical location is external to MEEP
+          false: Physical location is internal to MEEP
+      geoData:
+        $ref: '#/definitions/GeoData'
+      networkLocationsInRange:
+        type: array
+        items:
+          type: string
+          description: Names of network locations within range of physical location
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      processes:
+        type: array
+        items:
+          $ref: '#/definitions/Process'
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      linkLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
+      linkLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation'
+      linkThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl'
+      linkPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
+    description: Physical location object
+    example: {}
+  Process:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique process ID
+      name:
+        type: string
+        description: Process name
+      type:
+        type: string
+        description: Process type
+        enum:
+          - UE-APP
+          - EDGE-APP
+          - MEC-SVC
+          - CLOUD-APP
+      isExternal:
+        type: boolean
+        description: |-
+          true: process is external to MEEP
+          false: process is internal to MEEP
+      image:
+        type: string
+        description: Docker image to deploy inside MEEP
+      environment:
+        type: string
+        description: >-
+          Environment variables using the format
+          NAME="value",NAME="value",NAME="value"
+      commandArguments:
+        type: string
+        description: Arguments to command executable
+      commandExe:
+        type: string
+        description: Executable to invoke at container start up
+      serviceConfig:
+        $ref: '#/definitions/ServiceConfig'
+      gpuConfig:
+        $ref: '#/definitions/GpuConfig'
+      externalConfig:
+        $ref: '#/definitions/ExternalConfig'
+      status:
+        type: string
+        description: Process status
+      userChartLocation:
+        type: string
+        description: Chart location for the deployment of the chart provided by the user
+      userChartAlternateValues:
+        type: string
+        description: >-
+          Chart values.yaml file location for the deployment of the chart
+          provided by the user
+      userChartGroup:
+        type: string
+        description: Chart supplemental information related to the group (service)
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      appLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latency'
+      appLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation'
+      appThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl'
+      appPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
+      placementId:
+        type: string
+        description: Identifier used for process placement in AdvantEDGE cluster
+    description: Application or service object
+    example: {}
+  Release:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Release name
+      state:
+        type: string
+        description: Current release state
+    example:
+      name: name
+      state: state
+  Replay:
+    type: object
+    properties:
+      description:
+        type: string
+        description: User description of the content of the replay file.
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/ReplayEvent'
+    description: ReplayEvents from the Replay-file
+    example: {}
+  ReplayEvent:
+    type: object
+    properties:
+      index:
+        type: integer
+        description: Event index
+        readOnly: true
+      time:
+        type: integer
+        description: Relative time (ms) an event happened since the begining of a replay sequence
+      event:
+        $ref: '#/definitions/Event'
+    description: Replay event object
+    example: {}
+  ReplayFileList:
+    type: object
+    properties:
+      replay-files:
+        type: array
+        items:
+          type: string
+    description: Replay-file list
+    example: {}
+  ReplayInfo:
+    type: object
+    properties:
+      scenarioName:
+        type: string
+        description: Scenario name
+      description:
+        type: string
+        description: User description of the replay file
+    description: Scenario information
+    example: {}
+  ReplayStatus:
+    type: object
+    properties:
+      replayFileRunning:
+        type: string
+        description: Name of the replay file currently running
+        readOnly: true
+      index:
+        type: integer
+        description: Index of the last ran event
+        readOnly: true
+      maxIndex:
+        type: integer
+        description: Number of events in the replay file
+        readOnly: true
+      loopMode:
+        type: boolean
+        description: Loop mode enables
+        readOnly: true
+      timeRemaining:
+        type: integer
+        description: Total time remaining for the replay file after last event
+      timeToNextEvent:
+        type: integer
+        description: Time remaining until the next event for the replay file after last event
+    description: Replay status object
+    example: {}
+  Sandbox:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Sandbox name
+    description: Sandbox object
+    example: {}
+  SandboxConfig:
+    type: object
+    properties:
+      scenarioName:
+        type: string
+        description: Name of scenario to activate in sandbox
+    description: Sandbox configuration object
+    example: {}
+  SandboxList:
+    type: object
+    properties:
+      sandboxes:
+        type: array
+        items:
+          $ref: '#/definitions/Sandbox'
+    description: Sandbox list
+    example: {}
+  Scenario:
+    type: object
+    properties:
+      version:
+        type: string
+        description: Scenario version
+      id:
+        type: string
+        description: Unique scenario ID
+      name:
+        type: string
+        description: Unique scenario name
+      description:
+        type: string
+        description: User description of the scenario.
+      config:
+        $ref: '#/definitions/ScenarioConfig'
+      deployment:
+        $ref: '#/definitions/Deployment'
+    description: Scenario object
+    example: {}
+  ScenarioConfig:
+    type: object
+    properties:
+      visualization:
+        type: string
+        description: Visualization configuration
+      other:
+        type: string
+        description: Other scenario configuration
+    description: Scenario configuration
+    example:
+      visualization: visualization
+      other: other
+  ScenarioList:
+    type: object
+    properties:
+      scenarios:
+        type: array
+        items:
+          $ref: '#/definitions/Scenario'
+    description: Scenario list
+    example: {}
+  ScenarioNode:
+    type: object
+    description: Scenario node object
+    properties:
+      type:
+        type: string
+        description: Node type
+        enum:
+          - UE
+      nodeDataUnion:
+        $ref: '#/definitions/NodeDataUnion'
+      parent:
+        type: string
+        description: Parent node name
+      children:
+        type: array
+        description: List of child node names
+        items:
+          type: string
+    example: {}
+  ServiceConfig:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Unique service name
+      meSvcName:
+        type: string
+        description: 'Multi-Edge service name, if any'
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/ServicePort'
+    description: Service object
+    example: {}
+  ServicePort:
+    type: object
+    properties:
+      protocol:
+        type: string
+        description: Protocol that the application is using (TCP or UDP)
+      port:
+        type: integer
+        description: Port number that the service is listening on
+      externalPort:
+        type: integer
+        description: >
+          External port number on which to expose the application (30000 -
+          32767)  <li>Only one application allowed per external port
+          <li>Scenario builder must configure to prevent conflicts
+    description: Service port object
+    example: {}
+  Settings:
+    type: object
+    description: 'MEEP settings - Key/Value Pair Map (string, string)'
+    additionalProperties:
+      type: string
+  Zone:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique zone ID
+      name:
+        type: string
+        description: Zone name
+      type:
+        type: string
+        description: Zone type
+        enum:
+          - ZONE
+          - COMMON
+      netChar:
+        $ref: '#/definitions/NetworkCharacteristics'
+      interFogLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interFogLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interFogThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interFogPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interEdgeLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interEdgeLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interEdgeThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      interEdgePacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.3.0, no longer supported'
+      edgeFogLatency:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latency'
+      edgeFogLatencyVariation:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar latencyVariation'
+      edgeFogThroughput:
+        type: integer
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar throughput'
+      edgeFogPacketLoss:
+        type: number
+        format: double
+        description: '**DEPRECATED** As of release 1.3.0, replaced by netChar packetLoss'
+      meta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      userMeta:
+        type: object
+        description: 'Key/Value Pair Map (string, string)'
+        additionalProperties:
+          type: string
+      networkLocations:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkLocation'
+    description: Logical zone (MEC network) object
+    example: {}

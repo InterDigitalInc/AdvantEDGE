@@ -27,6 +27,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const defaultRedisAddr = "meep-redis-master.default.svc.cluster.local:6379"
 const dbMaxRetryCount = 2
 
 // Connector - Implements a Redis connector
@@ -61,7 +62,7 @@ func NewConnector(addr string, table int) (rc *Connector, err error) {
 
 func (rc *Connector) connectDB(addr string, table int) error {
 	if addr == "" {
-		rc.addr = "meep-redis-master:6379"
+		rc.addr = defaultRedisAddr
 	} else {
 		rc.addr = addr
 	}
@@ -95,7 +96,7 @@ func (rc *Connector) DBFlush(module string) error {
 
 	// Find all module keys
 	// Process in chunks of 50 matching entries to optimize processing speed & memory
-	keyMatchStr := module + ":*"
+	keyMatchStr := module + "*"
 	for {
 		var keys []string
 		keys, cursor, err = rc.client.Scan(cursor, keyMatchStr, 50).Result()
@@ -128,7 +129,19 @@ func (rc *Connector) EntryExists(key string) bool {
 	return value != 0
 }
 
-// // DBForEachEntry - Search for matching keys and run handler for each entry
+// GetEntry - Retrieve key values
+func (rc *Connector) GetEntry(key string) (map[string]string, error) {
+
+	// Get key values
+	fields, err := rc.client.HGetAll(key).Result()
+	if err != nil {
+		log.Error("Failed to retrieve entry fields with err: ", err.Error())
+		return nil, err
+	}
+	return fields, nil
+}
+
+// ForEachEntry - Search for matching keys and run handler for each entry
 func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, map[string]string, interface{}) error, userData interface{}) error {
 	var cursor uint64
 	var err error
@@ -166,7 +179,7 @@ func (rc *Connector) ForEachEntry(keyMatchStr string, entryHandler func(string, 
 	return nil
 }
 
-func (rc *Connector) ForEachJSONEntry(keyMatchStr string, param1 string, param2 string, entryHandler func(string, string, string, string, interface{}) error, userData interface{}) error {
+func (rc *Connector) ForEachJSONEntry(keyMatchStr string, entryHandler func(string, string, interface{}) error, userData interface{}) error {
 	var cursor uint64
 	var err error
 
@@ -187,7 +200,7 @@ func (rc *Connector) ForEachJSONEntry(keyMatchStr string, param1 string, param2 
 				}
 
 				// Invoke handler to process entry
-				err = entryHandler(keys[i], jsonInfo, param1, param2, userData)
+				err = entryHandler(keys[i], jsonInfo, userData)
 				if err != nil {
 					return err
 				}
@@ -239,21 +252,6 @@ func (rc *Connector) JSONGetEntry(key string, path string) (string, error) {
 		return "", err
 	}
 	return json, nil
-}
-
-// JSONGetList -
-func (rc *Connector) JSONGetList(elem1 string, elem2 string, elementPath string, entryHandler func(string, string, string, string, interface{}) error, dataList interface{}) error {
-	if !rc.connected {
-		return errors.New("Redis Connector is disconnected (JSONGetList)")
-	}
-
-	keyName := elementPath + "*"
-	err := rc.ForEachJSONEntry(keyName, elem1, elem2, entryHandler, dataList)
-	if err != nil {
-		log.Error("keyName: ", keyName, ": ", err.Error())
-		return err
-	}
-	return nil
 }
 
 // JSONSetEntry - update existing entry from DB or create a new one if it doesnt't exist

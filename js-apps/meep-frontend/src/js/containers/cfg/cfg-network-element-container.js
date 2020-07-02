@@ -20,12 +20,13 @@ import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell, GridInner } from '@rmwc/grid';
 import { Button } from '@rmwc/button';
-import { TextField, TextFieldHelperText } from '@rmwc/textfield';
+import { TextField, TextFieldIcon, TextFieldHelperText } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
 
 import { updateObject } from '../../util/object-util';
 import { createUniqueName } from '../../util/elem-utils';
+import L from 'leaflet';
 
 import IDSelect from '../../components/helper-components/id-select';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
@@ -48,6 +49,15 @@ import {
   FIELD_CMD_ARGS,
   FIELD_EXT_PORT,
   FIELD_IS_EXTERNAL,
+  FIELD_MCC,
+  FIELD_MNC,
+  FIELD_DEFAULT_CELL_ID,
+  FIELD_CELL_ID,
+  FIELD_GEO_LOCATION,
+  FIELD_GEO_RADIUS,
+  FIELD_GEO_PATH,
+  FIELD_GEO_EOP_MODE,
+  FIELD_GEO_VELOCITY,
   FIELD_CHART_ENABLED,
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
@@ -72,8 +82,12 @@ import {
   // Network element types
   ELEMENT_TYPE_SCENARIO,
   ELEMENT_TYPE_OPERATOR,
+  ELEMENT_TYPE_OPERATOR_GENERIC,
+  ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
+  ELEMENT_TYPE_POA_GENERIC,
+  ELEMENT_TYPE_POA_CELL,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -111,6 +125,15 @@ import {
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_EXTERNAL_CHECK,
+  CFG_ELEM_MNC,
+  CFG_ELEM_MCC,
+  CFG_ELEM_DEFAULT_CELL_ID,
+  CFG_ELEM_CELL_ID,
+  CFG_ELEM_GEO_LOCATION,
+  CFG_ELEM_GEO_RADIUS,
+  CFG_ELEM_GEO_PATH,
+  CFG_ELEM_GEO_EOP_MODE,
+  CFG_ELEM_GEO_VELOCITY,
   CFG_ELEM_CHART_CHECK,
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
@@ -122,7 +145,8 @@ import {
   CFG_BTN_CLONE_ELEM,
 
   // Layout type
-  MEEP_COMPONENT_TABLE_LAYOUT
+  GEO_EOP_MODE_LOOP,
+  GEO_EOP_MODE_REVERSE
 } from '../../meep-constants';
 
 // ELEMENT VALIDATION
@@ -133,6 +157,7 @@ const SERVICE_NODE_PORT_MIN = 30000;
 const SERVICE_NODE_PORT_MAX = 32767;
 const GPU_COUNT_MIN = 1;
 const GPU_COUNT_MAX = 4;
+const EOP_MODES = [GEO_EOP_MODE_LOOP, GEO_EOP_MODE_REVERSE];
 
 const validateName = val => {
   if (val) {
@@ -203,6 +228,14 @@ const validateInt = val => {
   return val.indexOf('.') === -1 ? null : 'Must be an integer';
 };
 
+const validatePositiveInt = val => {
+  const intError = validateInt(val);
+  if (intError) {
+    return intError;
+  }
+  return val >= 0 ? null : 'Must be a positive integer';
+};
+
 const validatePath = val => {
   /*eslint-disable */
   if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
@@ -242,6 +275,51 @@ const validateGpuCount = count => {
   const p = Number(count);
   if (p !== '' && (p < GPU_COUNT_MIN || p > GPU_COUNT_MAX)) {
     return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
+  }
+  return null;
+};
+
+const validateCellularMccMnc = val => {
+  if (val) {
+    if (val.length > 3) {
+      return 'Maximum 3 numeric characters';
+    } else if (!val.match(/^(([0-9][0-9]*)?[0-9])+$/)) {
+      return 'Numeric characters only';
+    }
+  }
+  return null;
+};
+
+const validateCellularCellId = val => {
+  if (val) {
+    if (val.length > 7) {
+      return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
+  }
+  return null;
+};
+
+const validateLocation = val => {
+  if (val) {
+    try {
+      L.GeoJSON.coordsToLatLng(JSON.parse(val));
+    } catch(e) {
+      return '[longitude,latitude]';
+    }
+  }
+  return null;
+};
+
+const validateGeoPath = val => {
+  if (val) {
+    // TODO -- Validate location format
+    try {
+      L.GeoJSON.coordsToLatLngs(JSON.parse(val),0);
+    } catch(e) {
+      return '[[longitude,latitude],...]';
+    }
   }
   return null;
 };
@@ -375,8 +453,15 @@ const CfgTextField = props => {
     <>
       <TextField
         outlined
-        style={{ width: '100%' }}
+        style={{ width: '100%', marginBottom: 0 }}
         label={props.label}
+        withLeadingIcon={!props.icon ? null : 
+          <TextFieldIcon
+            tabIndex="0"
+            icon={props.icon}
+            onClick={props.onIconClick}
+          />
+        }
         type={props.type}
         onChange={event => {
           var err = props.validate ? props.validate(event.target.value) : null;
@@ -515,7 +600,6 @@ const NCGroups = ({ prefixes, onUpdate, element }) => {
         element={element}
         prefix={p}
         key={p}
-        layout={MEEP_COMPONENT_TABLE_LAYOUT}
       />
     );
   });
@@ -576,10 +660,11 @@ const UserChartFields = ({ element, onUpdate }) => {
 };
 
 // Display element-specific form fields
-const TypeRelatedFormFields = ({ onUpdate, element }) => {
+const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
+  var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
 
   switch (type) {
   case ELEMENT_TYPE_SCENARIO:
@@ -592,11 +677,52 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
     );
   case ELEMENT_TYPE_OPERATOR:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INT_ZONE]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_ZONE]}
+        />
+      </>
+    );
+  case ELEMENT_TYPE_OPERATOR_CELL:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INT_ZONE]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MCC"
+            fieldName={FIELD_MCC}
+            cydata={CFG_ELEM_MCC}
+          />
+          <CfgTextFieldCell
+            span={3}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularMccMnc}
+            label="MNC"
+            fieldName={FIELD_MNC}
+            cydata={CFG_ELEM_MNC}
+          />
+          <CfgTextFieldCell
+            span={6}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateCellularCellId}
+            label="Default cell Id"
+            fieldName={FIELD_DEFAULT_CELL_ID}
+            cydata={CFG_ELEM_DEFAULT_CELL_ID}
+          />
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_ZONE:
     return (
@@ -608,22 +734,161 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
     );
   case ELEMENT_TYPE_POA:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_TERM_LINK]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validatePositiveInt}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+      </>
+    );
+  case ELEMENT_TYPE_POA_CELL:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validateNumber}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateCellularCellId}
+          label="Cell Id"
+          fieldName={FIELD_CELL_ID}
+          cydata={CFG_ELEM_CELL_ID}
+        />
+      </>
     );
   case ELEMENT_TYPE_UE:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+        </Grid>
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            icon='location_on'
+            onIconClick={onEditPath}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateGeoPath}
+            label='Path Coordinates'
+            fieldName={FIELD_GEO_PATH}
+            cydata={CFG_ELEM_GEO_PATH}
+          />
+        </Grid>
+        <Grid>
+          <GridCell span={6} style={{ paddingTop: 16 }}>
+            <IDSelect
+              label='End-of-Path Mode'
+              span={12}
+              options={EOP_MODES}
+              onChange={elem => onUpdate(FIELD_GEO_EOP_MODE, elem.target.value, null)}
+              value={eopMode}
+              disabled={false}
+              cydata={CFG_ELEM_GEO_EOP_MODE}
+            />
+          </GridCell>
+          <CfgTextFieldCell
+            span={6}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateNumber}
+            isNumber={true}
+            label='Velocity (m/s)'
+            fieldName={FIELD_GEO_VELOCITY}
+            cydata={CFG_ELEM_GEO_VELOCITY}
+          />
+        </Grid>
+      </>
+    );
   case ELEMENT_TYPE_DC:
   case ELEMENT_TYPE_EDGE:
   case ELEMENT_TYPE_FOG:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_LINK]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_UE_APP:
     return (
@@ -870,7 +1135,7 @@ const TypeRelatedFormFields = ({ onUpdate, element }) => {
 const elementTypes = [
   {
     label: 'Logical Domain',
-    options: [ELEMENT_TYPE_OPERATOR]
+    options: [ELEMENT_TYPE_OPERATOR_GENERIC, ELEMENT_TYPE_OPERATOR_CELL]
   },
   {
     label: 'Logical Zone',
@@ -878,14 +1143,15 @@ const elementTypes = [
   },
   {
     label: 'Network Location',
-    options: [ELEMENT_TYPE_DC, ELEMENT_TYPE_POA]
+    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_CELL]
   },
   {
     label: 'Physical Location',
     options: [
       ELEMENT_TYPE_UE,
       ELEMENT_TYPE_FOG,
-      ELEMENT_TYPE_EDGE
+      ELEMENT_TYPE_EDGE,
+      ELEMENT_TYPE_DC
       // ELEMENT_TYPE_CN
     ]
   },
@@ -903,12 +1169,14 @@ const elementTypes = [
 var parentTypes = {};
 parentTypes[ELEMENT_TYPE_SCENARIO] = null;
 parentTypes[ELEMENT_TYPE_OPERATOR] = [ELEMENT_TYPE_SCENARIO];
+parentTypes[ELEMENT_TYPE_OPERATOR_CELL] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_EDGE] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR];
+parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR, ELEMENT_TYPE_OPERATOR_CELL];
 parentTypes[ELEMENT_TYPE_POA] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_CELL] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_CN] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA];
-parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA];
+parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
+parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
 parentTypes[ELEMENT_TYPE_MECSVC] = [
@@ -993,6 +1261,12 @@ const getSuggestedName = ( type, elements ) => {
   case ELEMENT_TYPE_DC:
     suggestedPrefix = 'cloud';
     break;
+  case ELEMENT_TYPE_POA_CELL:
+    suggestedPrefix = 'poa-cell';
+    break;
+  case ELEMENT_TYPE_OPERATOR_CELL:
+    suggestedPrefix = 'operator-cell';
+    break;
   default:
     suggestedPrefix = type.toLowerCase();
   }
@@ -1000,10 +1274,42 @@ const getSuggestedName = ( type, elements ) => {
   return createUniqueName(elements, suggestedPrefix);
 };
 
+const getElementTypeOverride = (type) => {
+  var typeOverride = '';
+  switch(type) {
+  case ELEMENT_TYPE_POA:
+    typeOverride = ELEMENT_TYPE_POA_GENERIC;
+    break;
+  case ELEMENT_TYPE_OPERATOR:
+    typeOverride = ELEMENT_TYPE_OPERATOR_GENERIC;
+    break;
+  default:
+    typeOverride = type;
+  }
+  return typeOverride;
+};
+
+const getElementTypeOverrideBack = (typeOverride) => {
+  var type = '';
+  switch(typeOverride) {
+  case ELEMENT_TYPE_POA_GENERIC:
+    type = ELEMENT_TYPE_POA;
+    break;
+  case ELEMENT_TYPE_OPERATOR_GENERIC:
+    type = ELEMENT_TYPE_OPERATOR;
+    break;
+  default:
+    type = typeOverride;
+  }
+  return type;
+};
+
 const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisabled, nameDisabled }) => {
   var type = getElemFieldVal(element, FIELD_TYPE) || '';
   var parent = getElemFieldVal(element, FIELD_PARENT) || '';
   var parentElements = element.parentElements || [parent];
+
+  var typeOverride = getElementTypeOverride(type);
 
   return (
     <>
@@ -1014,7 +1320,7 @@ const HeaderGroup = ({ element, onTypeChange, onUpdate, typeDisabled, parentDisa
             span={6}
             options={elementTypes}
             onChange={elem => onTypeChange(elem.target.value)}
-            value={type}
+            value={typeOverride}
             disabled={typeDisabled}
             cydata={CFG_ELEM_TYPE}
           />
@@ -1089,15 +1395,27 @@ export class CfgNetworkElementContainer extends Component {
   onElementTypeChange(elementType) {
     var elem = updateObject({}, this.props.configuredElement);
 
-    setElemFieldVal(elem, FIELD_TYPE, elementType);
+    //override the frontend terminology
+    var elementTypeOverride = getElementTypeOverrideBack(elementType);
+    setElemFieldVal(elem, FIELD_TYPE, elementTypeOverride);
     setElemFieldVal(elem, FIELD_PARENT, null);
 
-    elem.parentElements = this.elementsOfType(getParentTypes(elementType));
+    elem.parentElements = this.elementsOfType(getParentTypes(elementTypeOverride));
 
     if (this.props.configMode !== CFG_ELEM_MODE_CLONE) {
-      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementType, this.props.tableData));
+      setElemFieldVal(elem, FIELD_NAME, getSuggestedName(elementTypeOverride, this.props.tableData));
     }
     this.props.cfgElemUpdate(elem);
+  }
+
+  onEditLocation() {
+    var elem = updateObject({}, this.props.configuredElement);
+    this.props.onEditLocation(elem);
+  }
+
+  onEditPath() {
+    var elem = updateObject({}, this.props.configuredElement);
+    this.props.onEditPath(elem);
   }
 
   render() {
@@ -1146,9 +1464,9 @@ export class CfgNetworkElementContainer extends Component {
 
             <TypeRelatedFormFields
               element={element}
-              onUpdate={(name, val, err) => {
-                this.onUpdateElement(name, val, err);
-              }}
+              onUpdate={(name, val, err) => this.onUpdateElement(name, val, err)}
+              onEditLocation={() => this.onEditLocation()}
+              onEditPath={() => this.onEditPath()}
             />
 
             <div
@@ -1179,10 +1497,10 @@ const styles = {
     height: '100%'
   },
   block: {
-    marginBottom: 10
+    marginBottom: 0
   },
   field: {
-    marginBottom: 10
+    marginBottom: 0
   },
   button: {
     color: 'white'

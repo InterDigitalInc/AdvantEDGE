@@ -17,12 +17,16 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
+	"github.com/gorilla/handlers"
 )
 
 func init() {
@@ -32,7 +36,7 @@ func init() {
 
 func main() {
 	log.Info(os.Args)
-	log.Info("Starting Monitoring Engine")
+	log.Info("Starting Monitoring Engine Service")
 
 	run := true
 	go func() {
@@ -45,21 +49,27 @@ func main() {
 	}()
 
 	go func() {
-		// Initialize Mon Engine
-		err := Init()
+		// Initialize Monitoring Engine
+		err := server.Init()
 		if err != nil {
-			log.Error("Failed to initialize Mon Engine")
+			log.Error("Failed to initialize Monitoring Engine")
 			run = false
 			return
 		}
 
-		// Run Mon Engine
-		err = Run()
+		// Start Monitoring Engine Event Handler thread
+		err = server.Run()
 		if err != nil {
-			log.Error("Failed to run Mon Engine")
+			log.Error("Failed to start Monitoring Engine")
 			run = false
 			return
 		}
+
+		// Start Monitoring Engine REST API Server
+		router := server.NewRouter()
+		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
+		header := handlers.AllowedHeaders([]string{"content-type"})
+		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))
 		run = false
 	}()
 
@@ -67,6 +77,7 @@ func main() {
 	for {
 		if !run {
 			log.Info("Ran for ", count, " seconds")
+			server.Stop()
 			break
 		}
 		time.Sleep(time.Second)

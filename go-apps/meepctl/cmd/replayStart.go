@@ -45,16 +45,16 @@ var replayStartCmd = &cobra.Command{
 }
 
 func init() {
-	replayCmd.AddCommand(replayStartCmd)
-
+	setSandboxFlag(replayStartCmd)
 	replayStartCmd.Flags().BoolP("loop", "l", false, "Enables replay files to loop indefinitely")
+	replayCmd.AddCommand(replayStartCmd)
 }
 
 func replayPlay(cobraCmd *cobra.Command, filename string) {
 	loop, _ := cobraCmd.Flags().GetBool("loop")
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
-	client, err := createClient(getBasePath())
+	client, err := createClient(getBasePath(cobraCmd))
 	if err != nil {
 		printError("Error creating client: ", err, verbose)
 		return

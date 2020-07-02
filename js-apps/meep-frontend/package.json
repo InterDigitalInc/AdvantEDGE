@@ -38,6 +38,7 @@
     "webpack-serve": "^0.3.1"
   },
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "2.5.0",
     "@material-ui/core": "^1.5.1",
     "@material-ui/icons": "^1.1.1",
     "axios": "^0.18.0",
@@ -45,8 +46,12 @@
     "d3": "^5.9.7",
     "d3-force": "^2.0.1",
     "d3-hierarchy": "^1.1.8",
+    "deep-equal": "2.0.3",
     "jquery": "3.3.1",
+    "leaflet": "1.6.0",
     "lodash": "^4.17.11",
+    "mapbox-gl": "1.10.1",
+    "mapbox-gl-leaflet": "0.0.12",
     "material-components-web": "0.38.1",
     "material-design-icons": "3.0.1",
     "prop-types": "15.6.2",
@@ -58,6 +63,7 @@
     "react-redux": "^5.1.1",
     "react-split-pane": "^0.1.87",
     "react-tooltip": "^3.10.0",
+    "react-virtualized": "^9.21.2",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",

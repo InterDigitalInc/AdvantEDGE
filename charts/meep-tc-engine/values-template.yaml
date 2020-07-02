@@ -1,0 +1,35 @@
+# Default values for meep-tc-engine.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceAccount: meep-tc-engine
+
+deployment:
+  replicas: 1
+  port: 80
+  protocol: TCP
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          
+image:
+  repository: meep-docker-registry:30001/meep-tc-engine
+  tag: latest
+  pullPolicy: Always
+  env:
+    MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    
+service:
+  name: meep-tc-engine
+  type: ClusterIP
+  port: 80
+
+codecov:
+  enabled: false
+  
+meepOrigin: core
