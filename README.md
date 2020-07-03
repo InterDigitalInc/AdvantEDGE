@@ -30,7 +30,7 @@ Step-by-step details are available in the [Wiki](https://github.com/InterDigital
 **NEW!** <br>
 Starting June 2020 with v1.5 release, we can start accepting contributions to the project.
 
-If you like this project and would like to participate in its evolution, you can find information on contributing [here](https://github.com/InterDigitalInc/AdvantEDGE/CONTRIBUTING.md)
+If you like this project and would like to participate in its evolution, you can find information on contributing [here](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/CONTRIBUTING.md)
 
 We still welcome feedback and improvement suggestions via Git issue in the repo for bugs or request enhancements.
 
