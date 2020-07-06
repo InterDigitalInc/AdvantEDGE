@@ -47,6 +47,8 @@ type VirtEngine struct {
 	activeScenarioNames map[string]string
 	hostUrl             string
 	altServer           string
+	userSwagger         string
+	userSwaggerDir      string
 	handlerId           int
 	sboxPods            map[string]string
 }
@@ -93,6 +95,24 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("MEEP_ALT_SERVER: ", ve.altServer)
+
+	// Retrieve User Swagger from environment variable
+	ve.userSwagger = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER"))
+	if ve.userSwagger == "" {
+		err = errors.New("MEEP_USER_SWAGGER variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_USER_SWAGGER: ", ve.userSwagger)
+
+	// Retrieve User Swagger Dir from environment variable
+	ve.userSwaggerDir = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER_DIR"))
+	if ve.userSwaggerDir == "" {
+		err = errors.New("MEEP_USER_SWAGGER_DIR variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)

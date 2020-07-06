@@ -26,6 +26,8 @@ image:
     MEEP_SANDBOX_PODS: ""
     MEEP_HOST_URL: "http://www.example.com"
     MEEP_ALT_SERVER: "false"
+    MEEP_USER_SWAGGER: "false"
+    MEEP_USER_SWAGGER_DIR: "/path/to/user/swagger"
 
 service:
   type: ClusterIP

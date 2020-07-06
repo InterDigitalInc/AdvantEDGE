@@ -1,6 +1,6 @@
 {{- if .Values.altIngress.enabled -}}
 {{- $serviceName := include "meep-sandbox-ctrl.fullname" . -}}
-{{- $servicePort := .Values.service.port -}}
+{{- $servicePort := .Values.altService.port -}}
 {{- $path := .Values.altIngress.path -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -26,7 +26,7 @@ spec:
           {{- range $path := .paths }}
           - path: {{ $path }}
             backend:
-              serviceName: {{ $serviceName }}
+              serviceName: {{ $serviceName }}-alt
               servicePort: {{ $servicePort }}
           {{- end -}}
       {{- if .name }}

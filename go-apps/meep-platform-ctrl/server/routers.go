@@ -37,14 +37,13 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-}
 
+}
 type Routes []Route
 
 func NewRouter(feDir string, swDir string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
-	// subrouter := router.PathPrefix("/platform-ctrl/").Subrouter()
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
 

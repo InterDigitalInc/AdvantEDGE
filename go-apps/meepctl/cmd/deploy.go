@@ -286,6 +286,9 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_ALT_SERVER=\""+strconv.FormatBool(altServer)+"\"")
+		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER_DIR=\""+deployData.workdir+"/user/sandbox-swagger"+"\"")
 	case "meep-webhook":
 		cert, key, cabundle := deployCreateWebhookCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "sidecar.image.repository="+deployData.registry+"/meep-tc-sidecar")

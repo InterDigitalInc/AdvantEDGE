@@ -113,10 +113,12 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
-	SandboxName string
-	Namespace   string
-	HostUrl     string
-	AltServer   string
+	SandboxName     string
+	Namespace       string
+	HostUrl         string
+	AltServer       string
+	UserSwagger     string
+	UserSwaggerDir  string
 }
 
 // Service map
@@ -507,6 +509,8 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.Namespace = sandboxName
 	sandboxTemplate.HostUrl = ve.hostUrl
 	sandboxTemplate.AltServer = ve.altServer
+	sandboxTemplate.UserSwagger = ve.userSwagger
+	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {

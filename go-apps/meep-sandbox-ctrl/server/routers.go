@@ -41,12 +41,11 @@ type Route struct {
 
 type Routes []Route
 
-func NewRouter() *mux.Router {
+func NewRouter(swDir string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
 	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
-		// handler = httpLog.LogRx(handler, "")
+		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
 
 		router.
 			Methods(route.Method).
@@ -56,7 +55,9 @@ func NewRouter() *mux.Router {
 	}
 
 	// Path prefix router order is important
-	router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir("./swagger"))))
+	if swDir != "" {
+		router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir(swDir))))
+	}
 
 	return router
 }

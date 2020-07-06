@@ -8,6 +8,8 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
+  altPort: 8080
+
 
 affinity:
   nodeAffinity:
@@ -28,6 +30,12 @@ image:
 service:
   type: ClusterIP
   port: 80
+
+# secondary server
+altService:
+  enabled: {{ .AltServer }}
+  type: ClusterIP
+  port: 8080
 
 ingress:
   enabled: true
@@ -76,6 +84,12 @@ altIngress:
     #   hosts:
     #     - chart-example.local
 
+user:
+  swagger:
+    enabled: {{ .UserSwagger }}
+    location: {{ .UserSwaggerDir }}
+    mountpath: "/user-swagger"
+    servepath: "/user-swagger-sandbox"
 codecov:
   enabled: false
 
