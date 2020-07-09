@@ -64,8 +64,8 @@ const (
 // POA Types
 const (
 	PoaTypeGeneric = "POA"
-	PoaTypeCell4g  = "POA-CELL"
-	PoaTypeCell5g  = "POA-CELL-5G"
+	PoaTypeCell4g  = "POA-CELLULAR"
+	PoaTypeCell5g  = "POA-CELLULAR-5G"
 	PoaTypeWifi    = "POA-WIFI"
 )
 
@@ -1249,7 +1249,8 @@ func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*Po
 		}
 
 		// Look for closest POA in range with a more localized RAT
-		for poa, poaInfo := range poaInfoMap {
+		for _, poa := range poaInRange {
+			poaInfo := poaInfoMap[poa]
 			if selectedPoa == "" || (comparePoaTypes(poaInfo.SubType, currentPoaType) > 0 &&
 				poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
 				selectedPoa = poa

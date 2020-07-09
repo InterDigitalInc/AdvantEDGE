@@ -60,32 +60,32 @@ func TestHttpMetricsGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Get http metrics")
-	_, err = ms.GetHttpMetric("logger3", "RX", "", 0)
-	if err == nil {
+	hml, err := ms.GetHttpMetric("logger3", "RX", "", 0)
+	if err != nil || len(hml) != 0 {
 		t.Fatalf("No metrics should be found for logger3")
 	}
-	h, err := ms.GetHttpMetric("logger1", "RX", "", 0)
-	if err != nil || len(h) != 1 {
+	hml, err = ms.GetHttpMetric("logger1", "RX", "", 0)
+	if err != nil || len(hml) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateHttpMetric(h[0], "logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101") {
+	if !validateHttpMetric(hml[0], "logger1", "RX", 1, "url1", "endpoint1", "method1", "body1", "respBody1", "201", "101") {
 		t.Fatalf("Invalid http metric")
 	}
 
-	h, err = ms.GetHttpMetric("logger1", "TX", "", 0)
-	if err != nil || len(h) != 2 {
+	hml, err = ms.GetHttpMetric("logger1", "TX", "", 0)
+	if err != nil || len(hml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
-	h, err = ms.GetHttpMetric("logger1", "", "", 0)
-	if err != nil || len(h) != 3 {
+	hml, err = ms.GetHttpMetric("logger1", "", "", 0)
+	if err != nil || len(hml) != 3 {
 		t.Fatalf("Failed to get metric")
 	}
-	h, err = ms.GetHttpMetric("", "RX", "", 0)
-	if err != nil || len(h) != 2 {
+	hml, err = ms.GetHttpMetric("", "RX", "", 0)
+	if err != nil || len(hml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
-	h, err = ms.GetHttpMetric("logger1,logger2", "RX", "", 0)
-	if err != nil || len(h) != 2 {
+	hml, err = ms.GetHttpMetric("logger1,logger2", "RX", "", 0)
+	if err != nil || len(hml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
 

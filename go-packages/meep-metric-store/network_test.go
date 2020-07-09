@@ -116,7 +116,7 @@ func TestNetworkMetricGetSet(t *testing.T) {
 
 	fmt.Println("Get empty metric")
 	nml, err := ms.GetNetworkMetric("node1", "node2", "", 1)
-	if err == nil || len(nml) != 0 {
+	if err != nil || len(nml) != 0 {
 		t.Fatalf("Net metric should not exist")
 	}
 
@@ -139,8 +139,8 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Get network metrics (node1 -> node2)")
-	_, err = ms.GetNetworkMetric("node1", "node2", "1ms", 0)
-	if err == nil {
+	nml, err = ms.GetNetworkMetric("node1", "node2", "1ms", 0)
+	if err != nil || len(nml) != 0 {
 		t.Fatalf("No metrics should be found in the last 1 ms")
 	}
 	nml, err = ms.GetNetworkMetric("node1", "node2", "", 0)
@@ -155,8 +155,8 @@ func TestNetworkMetricGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Get network metrics (node2 -> node1)")
-	_, err = ms.GetNetworkMetric("node2", "node1", "1ms", 0)
-	if err == nil {
+	nml, err = ms.GetNetworkMetric("node2", "node1", "1ms", 0)
+	if err != nil || len(nml) != 0 {
 		t.Fatalf("No metrics should be found in the last 1 ms")
 	}
 	nml, err = ms.GetNetworkMetric("node2", "node1", "", 0)
@@ -215,11 +215,11 @@ func TestNetworkMetricSnapshot(t *testing.T) {
 
 	fmt.Println("Get empty metric")
 	nml, err := ms.GetNetworkMetric("node1-0", "node2-0", "", 0)
-	if err == nil || len(nml) != 0 {
+	if err != nil || len(nml) != 0 {
 		t.Fatalf("Net metric should not exist")
 	}
 	nml, err = ms.GetNetworkMetric("node2-0", "node1-0", "", 0)
-	if err == nil || len(nml) != 0 {
+	if err != nil || len(nml) != 0 {
 		t.Fatalf("Net metric should not exist")
 	}
 

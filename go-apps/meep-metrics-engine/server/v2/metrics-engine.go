@@ -306,7 +306,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 
@@ -386,7 +386,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 
@@ -511,7 +511,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 
