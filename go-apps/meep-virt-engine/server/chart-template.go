@@ -113,12 +113,12 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
-	SandboxName     string
-	Namespace       string
-	HostUrl         string
-	AltServer       string
-	UserSwagger     string
-	UserSwaggerDir  string
+	SandboxName    string
+	Namespace      string
+	HostUrl        string
+	AltServer      string
+	UserSwagger    string
+	UserSwaggerDir string
 }
 
 // Service map
