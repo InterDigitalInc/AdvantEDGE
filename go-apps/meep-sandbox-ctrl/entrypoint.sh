@@ -15,6 +15,7 @@ done
 # Copy user-swagger & adapt basepath to sandbox
 if [[ ! -z "${USER_SWAGGER}" ]]; then
     cp -r ${USER_SWAGGER} ${USER_SWAGGER_SANDBOX}
+    shopt -s nullglob
     for file in ${USER_SWAGGER_SANDBOX}/*-api.yaml; do
         echo "Prepending [${MEEP_SANDBOX_NAME}] to basepath in: $file"
         sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $file;
