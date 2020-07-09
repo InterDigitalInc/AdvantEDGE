@@ -307,20 +307,15 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	}
 
 	// Process response
-	if len(response.Results) <= 0 || len(response.Results[0].Series) <= 0 {
-		err = errors.New("Query returned no results")
-		log.Error("Query failed with error: ", err.Error())
-		return values, err
-	}
-
-	// Read results
-	row := response.Results[0].Series[0]
-	for _, qValues := range row.Values {
-		rValues := make(map[string]interface{})
-		for index, qVal := range qValues {
-			rValues[row.Columns[index]] = qVal
+	if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
+		row := response.Results[0].Series[0]
+		for _, qValues := range row.Values {
+			rValues := make(map[string]interface{})
+			for index, qVal := range qValues {
+				rValues[row.Columns[index]] = qVal
+			}
+			values = append(values, rValues)
 		}
-		values = append(values, rValues)
 	}
 
 	return values, nil

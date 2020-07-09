@@ -217,8 +217,13 @@ func processScenarioActivate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
-	// Retrieve & process Assets in active scenario
-	assetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	// Retrieve & process POA and Compute Assets in active scenario
+	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	addAssets(assetList)
+
+	// Retrieve & process UE assets in active scenario
+	// NOTE: Required to make sure initial UE selection takes all POAs into account
+	assetList = ge.activeModel.GetNodeNames(mod.NodeTypeUE)
 	addAssets(assetList)
 }
 

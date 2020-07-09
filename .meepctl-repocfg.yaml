@@ -29,7 +29,8 @@ repo:
     user:
       # user supplied frontend UI located @ .meep/user/frontend
       frontend: false
-      # user supplied swagger UI located @ .meep/user/swagger
+      # user supplied platform swagger UI located @ .meep/user/swagger
+      # user supplied sandbox swagger UI located @ .meep/user/sandbox-swagger
       swagger: false
 
   #------------------------------
