@@ -12,7 +12,9 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog v0.0.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3
-	github.com/rs/xid v1.2.1 // indirect
+	github.com/gorilla/securecookie v1.1.1
+	github.com/gorilla/sessions v1.2.0
+	github.com/rs/xid v1.2.1
 )
 
 replace (

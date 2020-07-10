@@ -18,11 +18,58 @@ basePath: "/platform-ctrl/v1"
 tags:
 - name: "Scenario Configuration"
 - name: "Sandbox Control"
+- name: "User Authentication"
 consumes:
 - "application/json"
 produces:
 - "application/json"
 paths:
+  /login:
+    post:
+      tags:
+      - "User Authentication"
+      summary: "Start a session"
+      description: "Start a session after authenticating user"
+      operationId: "loginUser"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "formData"
+        description: "User Name"
+        required: false
+        type: "string"
+        x-exportParamName: "Username"
+        x-optionalDataType: "String"
+      - name: "password"
+        in: "formData"
+        description: "User Password"
+        required: false
+        type: "string"
+        x-exportParamName: "Password"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
+  /logout:
+    get:
+      tags:
+      - "User Authentication"
+      summary: "Terminate a session"
+      description: "Terminate a session"
+      operationId: "logoutUser"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
   /scenarios:
     get:
       tags:

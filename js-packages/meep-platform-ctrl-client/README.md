@@ -129,6 +129,8 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenario**](docs/ScenarioConfigurationApi.md#getScenario) | **GET** /scenarios/{name} | Get a specific scenario
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenarioList**](docs/ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Get all scenarios
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginUser**](docs/UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**logoutUser**](docs/UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
 
 
 ## Documentation for Models
