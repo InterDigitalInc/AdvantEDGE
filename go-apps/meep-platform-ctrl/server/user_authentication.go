@@ -27,7 +27,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	//"os"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	"github.com/gorilla/securecookie"
