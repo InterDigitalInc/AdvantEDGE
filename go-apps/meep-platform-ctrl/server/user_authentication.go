@@ -100,14 +100,10 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	session, err := CookieStore.Get(r, "authCookie")
 	if err != nil {
 		log.Info(err.Error())
-		// Patch until encryption keys are persisted
-		// Try to renew the cookie
-		if session != nil {
-			session, err = CookieStore.New(r, "authCookie")
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-		} else {
+		// Cookie decryption may fail on microservice restart due to
+		// mismatch with newly created cookie store encryption keys (no persistence).
+		// In this case use the newly generated session, if successfully created.
+		if session == nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
