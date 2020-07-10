@@ -30,7 +30,7 @@ Name | Type | Description | Notes
 
 * `UE` (value: `"UE"`)
 
-* `DC` (value: `"DC"`)
+* `DISTANT_CLOUD` (value: `"DISTANT-CLOUD"`)
 
 * `UE_APP` (value: `"UE-APP"`)
 

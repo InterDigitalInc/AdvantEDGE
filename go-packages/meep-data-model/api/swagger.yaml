@@ -301,7 +301,7 @@ definitions:
           - EDGE
           - FOG
           - UE
-          - DC
+          - DISTANT-CLOUD
           - UE-APP
           - EDGE-APP
           - CLOUD-APP

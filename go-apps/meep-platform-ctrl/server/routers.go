@@ -159,4 +159,18 @@ var routes = Routes{
 		"/platform-ctrl/v1/scenarios/{name}",
 		SetScenario,
 	},
+
+	Route{
+		"LoginUser",
+		strings.ToUpper("Post"),
+		"/platform-ctrl/v1/login",
+		LoginUser,
+	},
+
+	Route{
+		"LogoutUser",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/logout",
+		LogoutUser,
+	},
 }
