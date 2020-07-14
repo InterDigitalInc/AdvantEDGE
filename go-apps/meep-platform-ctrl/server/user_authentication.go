@@ -25,223 +25,46 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
-	"github.com/rs/xid"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions-manager"
 )
-
-// User holds a users account information
-type User struct {
-	Username  string
-	Password  string
-	SessionId string
-	Active    bool
-}
-
-var user1 = User{"u1", "1234", "NA", false}
-var user2 = User{"u2", "2345", "NA", false}
-var user3 = User{"u3", "3456", "NA", false}
-
-// Map of configured users - Key=Username
-var ConfiguredUsers map[string]*User
-
-// Map of connected users - key=SessionId
-var ConnectedUsers map[string]*User
-
-// store will hold all session data
-var CookieStore *sessions.CookieStore
 
 func init() {
 	log.Info("Initializing User Auth.")
 
-	//CookieStore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-	//CookieStore = sessions.NewCookieStore([]byte("veryprivatekey"))
-
-	// The code below is problematic because keys are lost when the app is restarted
-	// This causes existing cookies on the client side to become undecipherable and causes user to have to login
-	// A strategy to persist these keys should be imagined
-	authKeyOne := securecookie.GenerateRandomKey(64)
-	encryptionKeyOne := securecookie.GenerateRandomKey(32)
-	CookieStore = sessions.NewCookieStore(
-		authKeyOne,
-		encryptionKeyOne,
-	)
-
-	CookieStore.Options = &sessions.Options{
-		MaxAge:   60 * 15,
-		HttpOnly: true,
-	}
-	// uncomment when ready to test with HTTPS
-	//Secure: true
-	// Not sure SameSite is supported by Gorilla Sessions
-	//SameSite --
-
-	// add preconfigured users
-	ConfiguredUsers = make(map[string]*User)
-	ConfiguredUsers[user1.Username] = &user1
-	ConfiguredUsers[user2.Username] = &user2
-	ConfiguredUsers[user3.Username] = &user3
-
-	// no active sessions
-	ConnectedUsers = make(map[string]*User)
-
-	//PrintUsers()
+	_ = sm.Init("")
 
 }
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
-	//PrintConnectedUsers()
-	// Get session cookie
-	session, err := CookieStore.Get(r, "authCookie")
-	if err != nil {
-		log.Info(err.Error())
-		// Cookie decryption may fail on microservice restart due to
-		// mismatch with newly created cookie store encryption keys (no persistence).
-		// In this case use the newly generated session, if successfully created.
-		if session == nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-	//PrintSession(session)
 
 	// Get form data
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	// Authenticate user
-	// Does user exist?
-	user, ok := ConfiguredUsers[username]
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	// Does user have an existing session
-	if user.Active {
-		DeactivateUser(user)
-	}
-	// Does password match?
-	if user.Password != password {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	// user exists & password match - Let's get it done
-	user.Active = true
-	user.SessionId = xid.New().String()
-	ConnectedUsers[user.SessionId] = user
-	session.Values["SessionId"] = user.SessionId
-	err = session.Save(r, w)
+	err := sm.AuthenticateNewUser(username, password, w, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error("There was an error during authentication of user ", username)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	//PrintSession(session)
-	//PrintConnectedUsers()
 }
 
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
 	//PrintConnectedUsers()
 	// Get session cookie
-	session, err := CookieStore.Get(r, "authCookie")
+	err := sm.AuthenticateUserDeletion(w, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-	//PrintSession(session)
-
-	sid, _ := session.Values["SessionId"].(string)
-	user, ok := ConnectedUsers[sid]
-	if !ok {
-		http.Error(w, "Invalid session id", http.StatusUnauthorized)
-		return
-
-	}
-
-	DeactivateUser(user)
-	// Invalidate session
-	session.Values["SessionId"] = ""
-	session.Options.MaxAge = -1
-	err = session.Save(r, w)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		log.Error("There was an error during authentication of user")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	//PrintSession(session)
-	//PrintConnectedUsers()
-}
-
-func IsActiveSession(r *http.Request) bool {
-
-	log.Info("----- IS ACTIVE -----")
-	// Get session cookie
-	session, err := CookieStore.Get(r, "authCookie")
-	if err != nil {
-		log.Info("Invalid session")
-		return false
-	}
-	//PrintSession(session)
-
-	sid, _ := session.Values["SessionId"].(string)
-	user, ok := ConnectedUsers[sid]
-	if !ok {
-		log.Info("Invalid sid")
-		return false
-	}
-
-	if user.Active {
-		log.Info("OK")
-		return true
-	}
-	//PrintUser("Invalid", user)
-	return false
-}
-
-func DeactivateUser(user *User) {
-	log.Info("Deactivate")
-	// DB management
-	_, ok := ConnectedUsers[user.SessionId]
-	if ok {
-		delete(ConnectedUsers, user.SessionId)
-	}
-	user.Active = false
-	user.SessionId = "NA"
-}
-
-func PrintSession(session *sessions.Session) {
-	//str,_ := json.Marshal(session.Values)
-	str, ok := session.Values["SessionId"].(string)
-	if !ok {
-		str = "nil"
-	}
-	log.Info("Session: " + str)
-}
-
-func PrintUser(msg string, user *User) {
-	str, _ := json.Marshal(*user)
-	log.Info(msg + " " + string(str))
-}
-
-func PrintUsers() {
-	str, _ := json.Marshal(ConfiguredUsers)
-	log.Info("ConfiguredUsers:" + string(str))
-	str, _ = json.Marshal(ConnectedUsers)
-	log.Info("ConnectedUsers:" + string(str))
-}
-
-func PrintConnectedUsers() {
-	str, _ := json.Marshal(ConnectedUsers)
-	log.Info("ConnectedUsers:" + string(str))
 }

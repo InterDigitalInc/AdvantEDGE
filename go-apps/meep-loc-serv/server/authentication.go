@@ -26,23 +26,26 @@ package server
 
 import (
 	"net/http"
-	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions-manager"
 )
 
-func Logger(inner http.Handler, name string) http.Handler {
+func init() {
+	_ = sm.Init("")
+}
+
+func Authentication(inner http.Handler, authenticationNeeded bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("SIMON logger")
-		start := time.Now()
-
-		inner.ServeHTTP(w, r)
-
-		log.Debug(
-			r.Method, " ",
-			r.RequestURI, " ",
-			name, " ",
-			time.Since(start),
-		)
+		log.Info("SIMON authCookie")
+		if authenticationNeeded {
+			if sm.IsActiveSession(r) {
+				inner.ServeHTTP(w, r)
+			} else {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			}
+		} else {
+			inner.ServeHTTP(w, r)
+		}
 	})
 }

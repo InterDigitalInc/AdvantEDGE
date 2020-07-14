@@ -35,10 +35,11 @@ import (
 )
 
 type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
+	Name               string
+	Method             string
+	Pattern            string
+	HandlerFunc        http.HandlerFunc
+	NeedAuthentication bool
 }
 
 type Routes []Route
@@ -49,6 +50,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		handler = httpLog.LogRx(handler, "")
+		handler = Authentication(handler, route.NeedAuthentication)
 
 		router.
 			Methods(route.Method).
@@ -70,6 +72,7 @@ var routes = Routes{
 		"GET",
 		"/location/v1/",
 		Index,
+		false,
 	},
 
 	Route{
@@ -77,6 +80,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubDelById,
+		false,
 	},
 
 	Route{
@@ -84,6 +88,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/userTracking",
 		UserTrackingSubGet,
+		false,
 	},
 
 	Route{
@@ -91,6 +96,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubGetById,
+		false,
 	},
 
 	Route{
@@ -98,6 +104,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/location/v1/subscriptions/userTracking",
 		UserTrackingSubPost,
+		false,
 	},
 
 	Route{
@@ -105,6 +112,7 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/location/v1/subscriptions/userTracking/{subscriptionId}",
 		UserTrackingSubPutById,
+		false,
 	},
 
 	Route{
@@ -112,6 +120,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubDelById,
+		false,
 	},
 
 	Route{
@@ -119,6 +128,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubGet,
+		false,
 	},
 
 	Route{
@@ -126,6 +136,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubGetById,
+		false,
 	},
 
 	Route{
@@ -133,6 +144,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/location/v1/subscriptions/zonalTraffic",
 		ZonalTrafficSubPost,
+		false,
 	},
 
 	Route{
@@ -140,6 +152,7 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
 		ZonalTrafficSubPutById,
+		false,
 	},
 
 	Route{
@@ -147,6 +160,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusDelById,
+		false,
 	},
 
 	Route{
@@ -154,6 +168,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/zonalStatus",
 		ZoneStatusGet,
+		false,
 	},
 
 	Route{
@@ -161,6 +176,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusGetById,
+		false,
 	},
 
 	Route{
@@ -168,6 +184,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/location/v1/subscriptions/zonalStatus",
 		ZoneStatusPost,
+		false,
 	},
 
 	Route{
@@ -175,6 +192,7 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
 		ZoneStatusPutById,
+		false,
 	},
 
 	Route{
@@ -182,6 +200,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/users",
 		UsersGet,
+		false,
 	},
 
 	Route{
@@ -189,6 +208,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/users/{userId}",
 		UsersGetById,
+		true,
 	},
 
 	Route{
@@ -196,6 +216,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/zones/{zoneId}/accessPoints",
 		ZonesByIdGetAps,
+		false,
 	},
 
 	Route{
@@ -203,6 +224,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
 		ZonesByIdGetApsById,
+		false,
 	},
 
 	Route{
@@ -210,6 +232,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/zones",
 		ZonesGet,
+		false,
 	},
 
 	Route{
@@ -217,5 +240,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/location/v1/zones/{zoneId}",
 		ZonesGetById,
+		false,
 	},
 }
