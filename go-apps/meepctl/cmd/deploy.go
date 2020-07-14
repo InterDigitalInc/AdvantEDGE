@@ -250,9 +250,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		deployCreateRegistryCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
 	case "meep-grafana":
-		deploySetGrafanaValues(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/grafana/")
-		flags = utils.HelmFlags(flags, "--values", deployData.workdir+"/tmp/grafana-values.yaml")
 		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
 	case "meep-influxdb":
@@ -358,20 +356,6 @@ func deployCreateRegistryCerts(chart string, cobraCmd *cobra.Command) {
 func deployCreateIngressCerts(chart string, cobraCmd *cobra.Command) {
 	certdir := deployData.workdir + "/certs"
 	cmd := exec.Command("sh", "-c", chart+"/create-self-signed-cert.sh --certdir "+certdir)
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-}
-
-func deploySetGrafanaValues(chart string, cobraCmd *cobra.Command) {
-	nodeIp := viper.GetString("node.ip")
-	valuesGrafana := chart + "/values.yaml"
-	tmpdir := deployData.workdir + "/tmp"
-
-	cmd := exec.Command("mkdir", "-p", tmpdir)
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	cmd = exec.Command("cp", valuesGrafana, tmpdir+"/grafana-values.yaml")
-	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-	str := "s/<CLUSTERIP>/" + nodeIp + "/g"
-	cmd = exec.Command("sed", "-i", str, tmpdir+"/grafana-values.yaml")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
 }
 

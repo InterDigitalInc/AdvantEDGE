@@ -50,7 +50,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/api$ /{{ .SandboxName }}/api/ permanent;
+      rewrite ^/{{ .SandboxName }}/api$ $scheme://$http_host/{{ .SandboxName }}/api/ permanent;
       rewrite ^/{{ .SandboxName }}/api(/|$)(.*)$ /api/$2 break;
       rewrite ^/{{ .SandboxName }}/sandbox-ctrl(/|$)(.*)$ /sandbox-ctrl/$2 break;
   labels: {}
@@ -74,7 +74,7 @@ altIngress:
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/api$ /{{ .SandboxName }}/api/ permanent;
+      rewrite ^/{{ .SandboxName }}/api$ $scheme://$http_host/{{ .SandboxName }}/api/ permanent;
       rewrite ^/{{ .SandboxName }}/api(/|$)(.*)$ /api/$2 break;
       rewrite ^/{{ .SandboxName }}/sandbox-ctrl(/|$)(.*)$ /sandbox-ctrl/$2 break;
   labels: {}
