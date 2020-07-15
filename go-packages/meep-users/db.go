@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+
+        _ "github.com/lib/pq"
 )
 
 // DB Config
@@ -55,7 +57,6 @@ type User struct {
 // Connector - Implements a Postgis SQL DB connector
 type Connector struct {
 	name      string
-	namespace string
 	dbName    string
 	db        *sql.DB
 	connected bool
@@ -72,7 +73,6 @@ func NewConnector(name, user, pwd, host, port string) (pc *Connector, err error)
 	// Create new connector
 	pc = new(Connector)
 	pc.name = name
-	pc.namespace = "default"
 
 	// Connect to Postgis DB
 	for retry := 0; retry <= DbMaxRetryCount; retry++ {
@@ -166,9 +166,9 @@ func (pc *Connector) CreateTables() (err error) {
 	_, err = pc.db.Exec(`CREATE TABLE ` + UsersTable + ` (
 		id 							SERIAL 						PRIMARY KEY,
 		username  			varchar(36)				NOT NULL UNIQUE,
-		password				varchar(36)				NOT NULL,
-		role						varchar(36)				NOT NULL DEFAULT 'user'
-		sboxname				varchar(36)				NOT NULL DEFAULT ''
+		password				varchar(100)				NOT NULL,
+		role						varchar(36)				NOT NULL DEFAULT 'user',
+		sboxname				varchar(11)				NOT NULL DEFAULT ''
 	)`)
 	if err != nil {
 		log.Error(err.Error())
@@ -236,7 +236,7 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 	if password != "" {
 		query := `UPDATE ` + UsersTable + `
 			SET password = crypt('`+password+`', gen_salt('bf'))
-			WHERE name = ($1)`
+			WHERE username = ($1)`
 		_, err = pc.db.Exec(query, username)
 		if err != nil {
 			log.Error(err.Error())
@@ -251,7 +251,7 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 		}
 		query := `UPDATE ` + UsersTable + `
 			SET role = $2
-			WHERE name = ($1)`
+			WHERE username = ($1)`
 		_, err = pc.db.Exec(query, username, role)
 		if err != nil {
 			log.Error(err.Error())
@@ -262,7 +262,7 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 	if sboxname != "" {
 		query := `UPDATE ` + UsersTable + `
 			SET sboxname = $2
-			WHERE name = ($1)`
+			WHERE username = ($1)`
 		_, err = pc.db.Exec(query, username, sboxname)
 		if err != nil {
 			log.Error(err.Error())
@@ -286,7 +286,7 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 	rows, err = pc.db.Query(`
 		SELECT id, username, password, role, sboxname
 		FROM `+UsersTable+`
-		WHERE name = ($1)`, username)
+		WHERE username = ($1)`, username)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
@@ -359,7 +359,7 @@ func (pc *Connector) DeleteUser(username string) (err error) {
 		return err
 	}
 
-	_, err = pc.db.Exec(`DELETE FROM `+UsersTable+` WHERE name = ($1)`, username)
+	_, err = pc.db.Exec(`DELETE FROM `+UsersTable+` WHERE username = ($1)`, username)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -389,7 +389,7 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error){
 	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
-		WHERE name = ($1)`, username)
+		WHERE username = ($1)`, username)
 	if err != nil {
 		log.Error(err.Error())
 		return false, err
@@ -423,8 +423,8 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
-		WHERE name = ($1)
-		AND password = crypt('($2)', password)` , username, password)
+		WHERE username = ($1)
+		AND password = crypt('`+password+`', password)` , username)
 	if err != nil {
 		log.Error(err.Error())
 		return false, err

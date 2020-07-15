@@ -25,7 +25,6 @@ import (
 
 const (
 	pcName      = "pc"
-	pcNamespace = "postgis-ns"
 	pcDBUser    = "postgres"
 	pcDBPwd     = "pwd"
 	pcDBHost    = "localhost"
@@ -46,7 +45,7 @@ const (
 	role2				= "user"
 	role3				= "super"
 
-	sboxname0		= ""
+	sboxname0		= "123456789012345" // more than 11 chars
 	sboxname1		= "sbox-1"
 	sboxname2		= "sbox-2"
 	sboxname3		= "sbox-3"
@@ -175,7 +174,7 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("Failed to authenticate user")
 	}
 	valid,err = pc.AuthenticateUser(username1, password2)
-	if err == nil || valid {
+	if err != nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
@@ -202,7 +201,7 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("Failed to authenticate user")
 	}
         valid,err = pc.AuthenticateUser(username2, password1)
-        if err == nil || valid {
+        if err != nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
@@ -229,7 +228,7 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("Failed to authenticate user")
 	}
         valid,err = pc.AuthenticateUser(username3, password2)
-        if err == nil || valid {
+        if err != nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
@@ -268,7 +267,7 @@ func TestPostgisCreateUser(t *testing.T) {
 		t.Fatalf("Failed to authenticate user")
 	}
  	valid,err = pc.AuthenticateUser(username1,password1)
-    	if err == nil || valid {
+    	if err != nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
