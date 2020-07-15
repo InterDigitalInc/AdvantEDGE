@@ -22,9 +22,6 @@ import (
 	"strings"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-
-	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
 
 // DB Config
@@ -91,8 +88,8 @@ func NewConnector(name, user, pwd, host, port string) (pc *Connector, err error)
 	defer pc.db.Close()
 
 	// Create DB if it does not exist
-	// Use format: '<namespace>_<name>' & replace dashes with underscores
-	pc.dbName = strings.ToLower(strings.Replace(namespace+"_"+name, "-", "_", -1))
+	// Use format: '<name>' & replace dashes with underscores
+	pc.dbName = strings.ToLower(strings.Replace(name, "-", "_", -1))
 
 	// Ignore DB creation error in case it already exists.
 	// Failure will occur at DB connection if DB was not successfully created.
@@ -277,7 +274,7 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 }
 
 // GetUser - Get user information
-func (pc *Connector) GetUser(name string) (user *User, err error) {
+func (pc *Connector) GetUser(username string) (user *User, err error) {
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
@@ -312,7 +309,7 @@ func (pc *Connector) GetUser(name string) (user *User, err error) {
 
 	// Return error if not found
 	if user == nil {
-		err = errors.New("user not found: " + name)
+		err = errors.New("user not found: " + username)
 		return nil, err
 	}
 	return user, nil
@@ -355,7 +352,7 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 }
 
 // DeleteUser - Delete user entry
-func (pc *Connector) DeleteUser(name string) (err error) {
+func (pc *Connector) DeleteUser(username string) (err error) {
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
@@ -382,14 +379,14 @@ func (pc *Connector) DeleteUsers() (err error) {
 }
 
 //IsValidUser - does if user exists
-func (pc *Connector) IsValidUser(username string) (bool, err error){
+func (pc *Connector) IsValidUser(username string) (valid bool, err error){
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
 		return false, err
 	}
 
-	rows, err = pc.db.Query(`
+	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
 		WHERE name = ($1)`, username)
@@ -410,20 +407,20 @@ func (pc *Connector) IsValidUser(username string) (bool, err error){
 			//User exists
 			return true, nil
 		}
+	}
 	// User does not exist & no error
 	return false, nil
 }
-}
 
 //AuthenticateUser - returns true or false if credentials are OK
-func (pc *Connector) AuthenticateUser(username string, password string) (bool, err error){
+func (pc *Connector) AuthenticateUser(username string, password string) (authenticated bool, err error){
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
 		return false, err
 	}
 
-	rows, err = pc.db.Query(`
+	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
 		WHERE name = ($1)

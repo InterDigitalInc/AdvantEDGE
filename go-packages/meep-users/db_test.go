@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package postgisdb
+package usersdb
 
 import (
 	"fmt"
-	"sort"
 	"testing"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -45,7 +44,7 @@ const (
 	role0				= "invalid-role"
 	role1				= "user"
 	role2				= "user"
-	role2				= "super"
+	role3				= "super"
 
 	sboxname0		= ""
 	sboxname1		= "sbox-1"
@@ -79,7 +78,7 @@ func TestConnector(t *testing.T) {
 
 	// Valid Connector
 	fmt.Println("Create valid Postgis Connector")
-	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
+	pc, err = NewConnector(pcName, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
 	if err != nil || pc == nil {
 		t.Fatalf("Failed to create postgis Connector")
 	}
@@ -167,13 +166,16 @@ func TestPostgisCreateUser(t *testing.T) {
 	if user.password == password1 {
 		t.Fatalf("Password not encrypted")
 	}
-	if !IsValidUser(username1){
+	valid,err := pc.IsValidUser(username1)
+	if err != nil || !valid {
 		t.Fatalf("Failed to validate user")
 	}
-	if !AuthenticateUser(username1, password1) {
+	valid,err = pc.AuthenticateUser(username1, password1)
+	if err != nil || !valid {
 		t.Fatalf("Failed to authenticate user")
 	}
-	if AuthenticateUser(username1, password2) {
+	valid,err = pc.AuthenticateUser(username1, password2)
+	if err == nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
@@ -181,7 +183,7 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create asset")
 	}
-	user, err := pc.GetUser(username2)
+	user, err = pc.GetUser(username2)
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
@@ -191,13 +193,16 @@ func TestPostgisCreateUser(t *testing.T) {
 	if user.password == password2 {
 		t.Fatalf("Password not encrypted")
 	}
-	if !IsValidUser(username2){
+	valid,err = pc.IsValidUser(username2)
+	if err != nil || !valid {
 		t.Fatalf("Failed to validate user")
 	}
-	if !AuthenticateUser(username2, password2) {
+        valid,err = pc.AuthenticateUser(username2, password2)
+        if err != nil || !valid {
 		t.Fatalf("Failed to authenticate user")
 	}
-	if AuthenticateUser(username2, password1) {
+        valid,err = pc.AuthenticateUser(username2, password1)
+        if err == nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
@@ -205,7 +210,7 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create asset")
 	}
-	user, err := pc.GetUser(username3)
+	user, err = pc.GetUser(username3)
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
@@ -215,19 +220,22 @@ func TestPostgisCreateUser(t *testing.T) {
 	if user.password == password3 {
 		t.Fatalf("Password not encrypted")
 	}
-	if !IsValidUser(username3){
+	valid,err = pc.IsValidUser(username3)
+	if err != nil || !valid {
 		t.Fatalf("Failed to validate user")
 	}
-	if !AuthenticateUser(username3, password3) {
+        valid,err = pc.AuthenticateUser(username3, password3)
+        if err != nil || !valid {
 		t.Fatalf("Failed to authenticate user")
 	}
-	if AuthenticateUser(username3, password1) {
+        valid,err = pc.AuthenticateUser(username3, password2)
+        if err == nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
 	// Verify all additions worked
 	userMap, err = pc.GetUsers()
-	if err != nil || len(usersMap) != 3 {
+	if err != nil || len(userMap) != 3 {
 		t.Fatalf("Error getting all users")
 	}
 
@@ -244,7 +252,7 @@ func TestPostgisCreateUser(t *testing.T) {
 
 	// Update & validate update
 	fmt.Println("Add user & validate update")
-	err = UpdateUser(username1,password3,role3,sboxname3)
+	err = pc.UpdateUser(username1,password3,role3,sboxname3)
 	if err != nil {
 		t.Fatalf("Failed to update asset")
 	}
@@ -255,10 +263,12 @@ func TestPostgisCreateUser(t *testing.T) {
 	if user.username != username1 || user.role != role3 || user.sboxname != sboxname3 {
 		t.Fatalf("Wrong user data")
 	}
-	if !AuthenticateUser(username1, password3) {
+	valid,err = pc.AuthenticateUser(username1,password3)
+	if err != nil || !valid {
 		t.Fatalf("Failed to authenticate user")
 	}
-	if AuthenticateUser(username1, password1) {
+ 	valid,err = pc.AuthenticateUser(username1,password1)
+    	if err == nil || valid {
 		t.Fatalf("Wrong user authentication")
 	}
 
