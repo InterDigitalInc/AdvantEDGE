@@ -28,14 +28,42 @@ import (
 	"net/http"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions-manager"
+	sessions "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
+type User struct {
+	Username  string
+	Password  string
+	SessionId string
+	Active    bool
+}
+
+var user1 = User{"u1", "1234", "NA", false}
+var user2 = User{"u2", "2345", "NA", false}
+var user3 = User{"u3", "3456", "NA", false}
+
+// Map of configured users - Key=Username
+var ConfiguredUsers map[string]*User
+
 func init() {
-	log.Info("Initializing User Auth.")
+	// add preconfigured users
+	ConfiguredUsers = make(map[string]*User)
+	ConfiguredUsers[user1.Username] = &user1
+	ConfiguredUsers[user2.Username] = &user2
+	ConfiguredUsers[user3.Username] = &user3
+}
 
-	_ = sm.Init("")
-
+func authenticateUser(username string, password string) bool {
+	// Verify user name
+	user, ok := ConfiguredUsers[username]
+	if !ok {
+		return false
+	}
+	// Verify password
+	if user.Password != password {
+		return false
+	}
+	return true
 }
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
@@ -45,10 +73,25 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	err := sm.AuthenticateNewUser(username, password, w, r)
-	if err != nil {
-		log.Error("There was an error during authentication of user ", username)
+	// Validate user credentials
+	if !authenticateUser(username, password) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
+	}
+
+	// Create new session if none found
+	_, err := pfmCtrl.sessionStore.GetSession(r)
+	if err != nil {
+		var sessionInfo sessions.SessionInfo
+		sessionInfo.Username = username
+
+		err = pfmCtrl.sessionStore.CreateSession(&sessionInfo, w, r)
+		if err != nil {
+			log.Error("Failed to create session with err: ", err.Error())
+			return
+		}
+	} else {
+		log.Info("Already logged in...")
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -57,11 +100,11 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
-	//PrintConnectedUsers()
-	// Get session cookie
-	err := sm.AuthenticateUserDeletion(w, r)
+
+	// Delete session
+	err := pfmCtrl.sessionStore.DeleteSession(w, r)
 	if err != nil {
-		log.Error("There was an error during authentication of user")
+		log.Error("Failed to delete session with err: ", err.Error())
 		return
 	}
 

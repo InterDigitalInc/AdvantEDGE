@@ -33,6 +33,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sessions "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -43,6 +44,7 @@ type Scenario struct {
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	sandboxStore  *ss.SandboxStore
+	sessionStore  *sessions.SessionStore
 	veWatchdog    *wd.Watchdog
 	mqGlobal      *mq.MsgQueue
 }
@@ -124,6 +126,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Session Store
+	pfmCtrl.sessionStore, err = sessions.NewSessionStore(redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Store")
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
