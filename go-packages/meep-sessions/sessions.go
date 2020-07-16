@@ -24,29 +24,36 @@ import (
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	redistore "github.com/boj/redistore"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	"github.com/rs/xid"
+
+	"github.com/gorilla/sessions"
 )
 
 const sessionCookie = "authCookie"
 const sessionsKey = "sessions:"
-
-var redisDBAddr string = "meep-redis-master.default.svc.cluster.local:6379"
+const redisTable = 0
 
 const (
-	ValUsername = "username"
+	ValSessionID = "sid"
+	ValUsername  = "user"
+	ValSandbox   = "sbox"
 )
 
-type SessionInfo struct {
+type Session struct {
+	ID       string
 	Username string
+	Sandbox  string
 }
 
 type SessionStore struct {
-	store *redistore.RediStore
+	rc      *redis.Connector
+	cs      *sessions.CookieStore
+	baseKey string
 }
 
-// NewSessionStore - Creates and initialize a Session Store instance
-func NewSessionStore(redisAddr string) (ss *SessionStore, err error) {
-
+// NewSessionStore - Create and initialize a Session Store instance
+func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	// Retrieve Sandbox name from environment variable
 	authKey := strings.TrimSpace(os.Getenv("MEEP_AUTH_KEY"))
 	if authKey == "" {
@@ -57,56 +64,125 @@ func NewSessionStore(redisAddr string) (ss *SessionStore, err error) {
 	}
 
 	// Create new Session Store instance
+	log.Info("Creating new Session Store")
 	ss = new(SessionStore)
 
-	ss.store, err = redistore.NewRediStore(5, "tcp", redisDBAddr, "", []byte(authKey))
+	// Connect to Redis DB
+	ss.rc, err = redis.NewConnector(addr, redisTable)
 	if err != nil {
-		log.Error("Failed connection to Session Store Redis DB. Error: ", err)
+		log.Error("Failed connection to Session Store redis DB. Error: ", err)
 		return nil, err
 	}
-	ss.store.SetKeyPrefix(dkm.GetKeyRootGlobal() + sessionsKey)
 	log.Info("Connected to Session Store Redis DB")
+
+	// Create Cookie store
+	ss.cs = sessions.NewCookieStore([]byte(authKey))
+	ss.cs.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   60 * 15,
+		HttpOnly: true,
+	}
+	log.Info("Created Cookie Store")
+
+	// Get base store key
+	ss.baseKey = dkm.GetKeyRootGlobal() + sessionsKey
 
 	log.Info("Created Session Store")
 	return ss, nil
 }
 
-func (ss *SessionStore) GetSession(r *http.Request) (sessionInfo *SessionInfo, err error) {
-	// Get session
-	session, err := ss.store.Get(r, sessionCookie)
+// Get - Retrieve session by ID
+func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
+	// Get session cookie
+	sessionCookie, err := ss.cs.Get(r, sessionCookie)
 	if err != nil {
 		return nil, err
 	}
-	if session.IsNew {
+	if sessionCookie.IsNew {
 		err = errors.New("Session not found")
 		return nil, err
 	}
 
-	// Fill session Information
-	sessionInfo = new(SessionInfo)
-	sessionInfo.Username = session.Values[ValUsername].(string)
-	return sessionInfo, nil
+	// Get session from DB
+	sessionId := sessionCookie.Values[ValSessionID].(string)
+	session, err := ss.rc.GetEntry(ss.baseKey + sessionId)
+	if err != nil {
+		log.Error("Failed to set entry: ", err)
+		return nil, err
+	}
+
+	s = new(Session)
+	s.ID = sessionId
+	s.Username = session[ValUsername]
+	s.Sandbox = session[ValSandbox]
+	return s, nil
 }
 
-func (ss *SessionStore) CreateSession(sessionInfo *SessionInfo, w http.ResponseWriter, r *http.Request) error {
-	// Get session
-	session, err := ss.store.Get(r, sessionCookie)
+// GetByName - Retrieve session by name
+func (ss *SessionStore) GetByName(username string) (s *Session, err error) {
+	// Get existing session, if any
+	s = new(Session)
+	s.Username = username
+	err = ss.rc.ForEachEntry(ss.baseKey+"*", getUserEntryHandler, s)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.ID == "" {
+		err = errors.New("Session not found")
+		return nil, err
+	}
+	return s, nil
+}
+
+func getUserEntryHandler(key string, fields map[string]string, userData interface{}) error {
+	session := userData.(*Session)
+
+	// Check if session already found
+	if session.ID != "" {
+		return nil
+	}
+
+	// look for matching username
+	if fields[ValUsername] == session.Username {
+		session.ID = fields[ValSessionID]
+		session.Sandbox = fields[ValSandbox]
+	}
+	return nil
+}
+
+// Set - Create session
+func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) error {
+	// Get session cookie
+	sessionCookie, err := ss.cs.Get(r, sessionCookie)
+	if err != nil {
+		log.Error(err.Error())
+		// If error was due to new cookie store keys and new session
+		// is successfully created, then proceed with login
+		if sessionCookie == nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+	}
+
+	// Update existing session or create new one if not found
+	sessionId := s.ID
+	if s.ID == "" {
+		sessionId = xid.New().String()
+	}
+	fields := make(map[string]interface{})
+	fields[ValSessionID] = sessionId
+	fields[ValUsername] = s.Username
+	fields[ValSandbox] = s.Sandbox
+	err = ss.rc.SetEntry(ss.baseKey+sessionId, fields)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
 
-	// Make sure it is a new session
-	if !session.IsNew {
-		http.Error(w, "Session already exists", http.StatusInternalServerError)
-		return err
-	}
-
-	// Fill session information
-	session.Values[ValUsername] = sessionInfo.Username
-
-	// Store session
-	err = session.Save(r, w)
+	// Update session cookie
+	sessionCookie.Values[ValSessionID] = sessionId
+	err = sessionCookie.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
@@ -114,22 +190,33 @@ func (ss *SessionStore) CreateSession(sessionInfo *SessionInfo, w http.ResponseW
 	return nil
 }
 
-func (ss *SessionStore) DeleteSession(w http.ResponseWriter, r *http.Request) error {
-	// Retrieve session
-	session, err := ss.store.Get(r, sessionCookie)
+// Del - Remove session by ID
+func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
+	// Get session cookie
+	sessionCookie, err := ss.cs.Get(r, sessionCookie)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	if sessionCookie.IsNew {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return err
 	}
 
-	// If found, delete session by setting Max Age to -1
-	if !session.IsNew {
-		session.Options.MaxAge = -1
-		err = session.Save(r, w)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
-		}
+	// Get session from cookie & remove from DB
+	sessionId := sessionCookie.Values[ValSessionID].(string)
+	err = ss.rc.DelEntry(ss.baseKey + sessionId)
+	if err != nil {
+		log.Error("Failed to delete entry for ", sessionId, " with err: ", err.Error())
+	}
+
+	// Delete session cookie
+	sessionCookie.Values[ValSessionID] = ""
+	sessionCookie.Options.MaxAge = -1
+	err = sessionCookie.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
 	}
 	return nil
 }

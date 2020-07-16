@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/Sandbox'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('../model/Sandbox'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.UserAuthenticationApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient);
+    root.AdvantEdgePlatformControllerRestApi.UserAuthenticationApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Sandbox);
   }
-}(this, function(ApiClient) {
+}(this, function(ApiClient, Sandbox) {
   'use strict';
 
   /**
@@ -66,7 +66,7 @@
      * Callback function to receive the result of the loginUser operation.
      * @callback module:api/UserAuthenticationApi~loginUserCallback
      * @param {String} error Error message, if any.
-     * @param data This operation does not return a value.
+     * @param {module:model/Sandbox} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
      */
 
@@ -77,6 +77,7 @@
      * @param {String} opts.username User Name
      * @param {String} opts.password User Password
      * @param {module:api/UserAuthenticationApi~loginUserCallback} callback The callback function, accepting three arguments: error, data, response
+     * data is of type: {@link module:model/Sandbox}
      */
     this.loginUser = function(opts, callback) {
       opts = opts || {};
@@ -99,7 +100,7 @@
       var authNames = [];
       var contentTypes = ['application/x-www-form-urlencoded'];
       var accepts = ['application/json'];
-      var returnType = null;
+      var returnType = Sandbox;
 
       return this.apiClient.callApi(
         '/login', 'POST',

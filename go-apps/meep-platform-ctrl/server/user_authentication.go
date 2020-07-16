@@ -25,10 +25,14 @@
 package server
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 
+	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	sessions "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type User struct {
@@ -68,6 +72,7 @@ func authenticateUser(username string, password string) bool {
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
+	var sandboxName string
 
 	// Get form data
 	username := r.FormValue("username")
@@ -79,30 +84,77 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create new session if none found
-	_, err := pfmCtrl.sessionStore.GetSession(r)
+	// Get existing session by user name, if any
+	session, err := pfmCtrl.sessionStore.GetByName(username)
 	if err != nil {
-		var sessionInfo sessions.SessionInfo
-		sessionInfo.Username = username
-
-		err = pfmCtrl.sessionStore.CreateSession(&sessionInfo, w, r)
-		if err != nil {
-			log.Error("Failed to create session with err: ", err.Error())
+		// Get unique sandbox name
+		sandboxName = getUniqueSandboxName()
+		if sandboxName == "" {
+			err = errors.New("Failed to generate a unique sandbox name")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Create sandbox in DB
+		var sandboxConfig dataModel.SandboxConfig
+		err = createSandbox(sandboxName, &sandboxConfig)
+		if err != nil {
+			log.Error("Failed to create sandbox with error: ", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Create new session
+		session = new(ss.Session)
+		session.ID = ""
+		session.Username = username
+		session.Sandbox = sandboxName
 	} else {
-		log.Info("Already logged in...")
+		sandboxName = session.Sandbox
 	}
 
+	// Set session
+	err = pfmCtrl.sessionStore.Set(session, w, r)
+	if err != nil {
+		log.Error("Failed to set session with err: ", err.Error())
+		// Remove newly created sandbox on failure
+		if session.ID == "" {
+			deleteSandbox(sandboxName)
+		}
+		return
+	}
+
+	// Prepare response
+	var sandbox dataModel.Sandbox
+	sandbox.Name = sandboxName
+
+	// Format response
+	jsonResponse, err := json.Marshal(sandbox)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, string(jsonResponse))
 }
 
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
 
+	// Get existing session
+	session, err := pfmCtrl.sessionStore.Get(r)
+	if err == nil {
+		// Delete sandbox
+		deleteSandbox(session.Sandbox)
+	}
+
 	// Delete session
-	err := pfmCtrl.sessionStore.DeleteSession(w, r)
+	err = pfmCtrl.sessionStore.Del(w, r)
 	if err != nil {
 		log.Error("Failed to delete session with err: ", err.Error())
 		return

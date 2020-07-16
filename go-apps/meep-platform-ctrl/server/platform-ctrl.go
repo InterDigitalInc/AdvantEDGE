@@ -32,8 +32,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	sessions "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -43,8 +43,8 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
-	sandboxStore  *ss.SandboxStore
-	sessionStore  *sessions.SessionStore
+	sandboxStore  *sbs.SandboxStore
+	sessionStore  *ss.SessionStore
 	veWatchdog    *wd.Watchdog
 	mqGlobal      *mq.MsgQueue
 }
@@ -120,7 +120,7 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	pfmCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
+	pfmCtrl.sandboxStore, err = sbs.NewSandboxStore(redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
@@ -128,7 +128,7 @@ func Init() (err error) {
 	log.Info("Connected to Sandbox Store")
 
 	// Connect to Session Store
-	pfmCtrl.sessionStore, err = sessions.NewSessionStore(redisDBAddr)
+	pfmCtrl.sessionStore, err = ss.NewSessionStore(redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Session Store: ", err.Error())
 		return err
@@ -370,18 +370,8 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get unique sandbox name
-	var sandboxName string
-	uniqueNameFound := false
-	retryCount := 3
-	for i := 0; i < retryCount; i++ {
-		// sandboxName = "sbox-" + xid.New().String()
-		sandboxName = "sbox-" + randSeq(6)
-		if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
-			uniqueNameFound = true
-			break
-		}
-	}
-	if !uniqueNameFound {
+	sandboxName := getUniqueSandboxName()
+	if sandboxName == "" {
 		err = errors.New("Failed to generate a unique sandbox name")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -594,7 +584,7 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
 
 	// Create sandbox in DB
-	sbox := new(ss.Sandbox)
+	sbox := new(sbs.Sandbox)
 	sbox.Name = sandboxName
 	sbox.ScenarioName = sandboxConfig.ScenarioName
 	err = pfmCtrl.sandboxStore.Set(sbox)
@@ -618,6 +608,9 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 }
 
 func deleteSandbox(sandboxName string) {
+	if sandboxName == "" {
+		return
+	}
 
 	// Remove sandbox from store
 	pfmCtrl.sandboxStore.Del(sandboxName)
@@ -630,6 +623,19 @@ func deleteSandbox(sandboxName string) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+}
+
+func getUniqueSandboxName() (name string) {
+	retryCount := 3
+	for i := 0; i < retryCount; i++ {
+		// sandboxName = "sbox-" + xid.New().String()
+		randName := "sbx" + randSeq(7)
+		if sbox, _ := pfmCtrl.sandboxStore.Get(randName); sbox == nil {
+			name = randName
+			break
+		}
+	}
+	return name
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
