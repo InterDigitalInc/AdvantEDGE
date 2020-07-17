@@ -32,7 +32,9 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -42,7 +44,9 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
-	sandboxStore  *ss.SandboxStore
+	sandboxStore  *sbs.SandboxStore
+	sessionStore  *ss.SessionStore
+	userStore     *users.Connector
 	veWatchdog    *wd.Watchdog
 	mqGlobal      *mq.MsgQueue
 }
@@ -52,6 +56,8 @@ const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const moduleVirtEngineName = "meep-virt-engine"
 const moduleVirtEngineNamespace = "default"
+const postgisUser = "postgres"
+const postgisPwd = "pwd"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -118,12 +124,29 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	pfmCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
+	pfmCtrl.sandboxStore, err = sbs.NewSandboxStore(redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Session Store
+	pfmCtrl.sessionStore, err = ss.NewSessionStore(redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Store")
+
+	// Connect to User Store
+	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed connection to User Store: ", err.Error())
+		return err
+	}
+	_ = pfmCtrl.userStore.CreateTables()
+	log.Info("Connected to User Store")
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
@@ -360,18 +383,8 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get unique sandbox name
-	var sandboxName string
-	uniqueNameFound := false
-	retryCount := 3
-	for i := 0; i < retryCount; i++ {
-		// sandboxName = "sbox-" + xid.New().String()
-		sandboxName = "sbox-" + randSeq(6)
-		if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
-			uniqueNameFound = true
-			break
-		}
-	}
-	if !uniqueNameFound {
+	sandboxName := getUniqueSandboxName()
+	if sandboxName == "" {
 		err = errors.New("Failed to generate a unique sandbox name")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -584,7 +597,7 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
 
 	// Create sandbox in DB
-	sbox := new(ss.Sandbox)
+	sbox := new(sbs.Sandbox)
 	sbox.Name = sandboxName
 	sbox.ScenarioName = sandboxConfig.ScenarioName
 	err = pfmCtrl.sandboxStore.Set(sbox)
@@ -608,6 +621,9 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 }
 
 func deleteSandbox(sandboxName string) {
+	if sandboxName == "" {
+		return
+	}
 
 	// Remove sandbox from store
 	pfmCtrl.sandboxStore.Del(sandboxName)
@@ -620,6 +636,19 @@ func deleteSandbox(sandboxName string) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+}
+
+func getUniqueSandboxName() (name string) {
+	retryCount := 3
+	for i := 0; i < retryCount; i++ {
+		// sandboxName = "sbox-" + xid.New().String()
+		randName := "sbx" + randSeq(7)
+		if sbox, _ := pfmCtrl.sandboxStore.Get(randName); sbox == nil {
+			name = randName
+			break
+		}
+	}
+	return name
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")

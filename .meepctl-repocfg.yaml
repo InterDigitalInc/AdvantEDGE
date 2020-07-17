@@ -669,6 +669,11 @@ repo:
         src: go-packages/meep-sandbox-store
         # supports linting
         lint: true
+      meep-sessions:
+        # location of source code
+        src: go-packages/meep-sessions
+        # supports linting
+        lint: true
       meep-watchdog:
         # location of source code
         src: go-packages/meep-watchdog

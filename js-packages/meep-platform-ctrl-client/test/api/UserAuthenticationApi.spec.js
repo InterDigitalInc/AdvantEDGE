@@ -52,7 +52,7 @@
     describe('UserAuthenticationApi', function() {
       describe('loginUser', function() {
         it('should call loginUser successfully', function(done) {
-          // TODO: uncomment, update parameter values for loginUser call
+          // TODO: uncomment, update parameter values for loginUser call and complete the assertions
           /*
           var opts = {};
           opts.username = "username_example";
@@ -63,6 +63,10 @@
               done(error);
               return;
             }
+            // TODO: update response assertions
+            expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Sandbox);
+            expect(data.name).to.be.a('string');
+            expect(data.name).to.be("");
 
             done();
           });

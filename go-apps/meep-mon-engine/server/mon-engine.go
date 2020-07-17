@@ -27,7 +27,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/fields"
@@ -83,7 +84,8 @@ var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
 var handlerId int
-var sandboxStore *ss.SandboxStore
+var sandboxStore *sbs.SandboxStore
+var sessionStore *ss.SessionStore
 
 var depPodsList []string
 var corePodsList []string
@@ -156,12 +158,20 @@ func Init() (err error) {
 	_ = rc.DBFlush(baseKey)
 
 	// Connect to Sandbox Store
-	sandboxStore, err = ss.NewSandboxStore(redisAddr)
+	sandboxStore, err = sbs.NewSandboxStore(redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Session Store
+	sessionStore, err = ss.NewSessionStore(redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Store: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Store")
 
 	return nil
 }
