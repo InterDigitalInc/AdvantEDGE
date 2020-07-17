@@ -108,7 +108,7 @@ func main() {
 		priAccessMap := map[string]string{}
 		if altServ != "" {
 			priAccessMap = map[string]string{
-				"Index":              ss.AccessGrant,
+				"Index":              ss.AccessBlock,
 				"CreateSandbox":      ss.AccessBlock,
 				"DeleteSandbox":      ss.AccessBlock,
 				"DeleteSandboxList":  ss.AccessBlock,
@@ -117,7 +117,7 @@ func main() {
 				"CreateScenario":     ss.AccessBlock,
 				"DeleteScenario":     ss.AccessBlock,
 				"DeleteScenarioList": ss.AccessBlock,
-				"GetScenario":        ss.AccessBlock,
+				"GetScenario":        ss.AccessVerify,
 				"GetScenarioList":    ss.AccessVerify,
 				"SetScenario":        ss.AccessBlock,
 				"LoginUser":          ss.AccessGrant,
