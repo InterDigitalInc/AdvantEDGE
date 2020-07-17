@@ -85,7 +85,7 @@ func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	ss.cs = sessions.NewCookieStore([]byte(authKey))
 	ss.cs.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   60 * 15,
+		MaxAge:   60 * 120,
 		HttpOnly: true,
 	}
 	log.Info("Created Cookie Store")
