@@ -30,6 +30,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -37,14 +39,27 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
+	AccessType  string
 }
 type Routes []Route
 
-func NewRouter(feDir string, swDir string) *mux.Router {
+func NewRouter(feDir string, swDir string, accessMap map[string]string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
+
+		// Authorization
+		accessType, found := accessMap[route.Name]
+		if !found {
+			accessType = route.AccessType
+		}
+
+		if accessType == ss.AccessBlock {
+			handler = pfmCtrl.sessionStore.AccessBlocker(handler)
+		} else if accessType == ss.AccessVerify {
+			handler = pfmCtrl.sessionStore.AccessVerifier(handler)
+		}
 
 		router.
 			Methods(route.Method).
@@ -74,6 +89,7 @@ var routes = Routes{
 		"GET",
 		"/platform-ctrl/v1/",
 		Index,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -81,6 +97,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/sandboxes",
 		CreateSandbox,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -88,6 +105,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		CreateSandboxWithName,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -95,6 +113,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		DeleteSandbox,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -102,6 +121,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/sandboxes",
 		DeleteSandboxList,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -109,6 +129,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		GetSandbox,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -116,6 +137,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/sandboxes",
 		GetSandboxList,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -123,6 +145,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		CreateScenario,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -130,6 +153,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		DeleteScenario,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -137,6 +161,7 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/scenarios",
 		DeleteScenarioList,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -144,6 +169,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		GetScenario,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -151,6 +177,7 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/scenarios",
 		GetScenarioList,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -158,6 +185,7 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		SetScenario,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -165,6 +193,7 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/login",
 		LoginUser,
+		ss.AccessGrant,
 	},
 
 	Route{
@@ -172,5 +201,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/logout",
 		LogoutUser,
+		ss.AccessGrant,
 	},
 }

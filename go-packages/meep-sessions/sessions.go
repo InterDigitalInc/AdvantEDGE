@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sessions
+package sessionstore
 
 import (
 	"errors"
@@ -38,6 +38,12 @@ const (
 	ValSessionID = "sid"
 	ValUsername  = "user"
 	ValSandbox   = "sbox"
+)
+
+const (
+	AccessBlock  = "block"
+	AccessVerify = "verify"
+	AccessGrant  = "grant"
 )
 
 type Session struct {
@@ -107,7 +113,10 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	sessionId := sessionCookie.Values[ValSessionID].(string)
 	session, err := ss.rc.GetEntry(ss.baseKey + sessionId)
 	if err != nil {
-		log.Error("Failed to set entry: ", err)
+		return nil, err
+	}
+	if len(session) == 0 {
+		err = errors.New("Session not found")
 		return nil, err
 	}
 
@@ -219,4 +228,25 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	return nil
+}
+
+// AccessVerifier - Access verification handler
+func (ss *SessionStore) AccessVerifier(inner http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify session exists & user permissions
+		_, err := ss.Get(r)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		inner.ServeHTTP(w, r)
+	})
+}
+
+// AccessBlocker - Access blocking handler
+func (ss *SessionStore) AccessBlocker(inner http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	})
 }
