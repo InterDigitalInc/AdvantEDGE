@@ -71,17 +71,17 @@ func main() {
 		// Start Metric Engine Service REST API Server
 		accessMap := map[string]string{
 			"IndexV2":                       ss.AccessBlock,
-			"PostEventQuery":                ss.AccessVerify,
+			"PostEventQuery":                ss.AccessBlock,
 			"PostHttpQuery":                 ss.AccessVerify,
-			"PostNetworkQuery":              ss.AccessVerify,
-			"CreateEventSubscription":       ss.AccessVerify,
-			"CreateNetworkSubscription":     ss.AccessVerify,
-			"DeleteEventSubscriptionById":   ss.AccessVerify,
-			"DeleteNetworkSubscriptionById": ss.AccessVerify,
-			"GetEventSubscription":          ss.AccessVerify,
-			"GetEventSubscriptionById":      ss.AccessVerify,
-			"GetNetworkSubscription":        ss.AccessVerify,
-			"GetNetworkSubscriptionById":    ss.AccessVerify,
+			"PostNetworkQuery":              ss.AccessBlock,
+			"CreateEventSubscription":       ss.AccessBlock,
+			"CreateNetworkSubscription":     ss.AccessBlock,
+			"DeleteEventSubscriptionById":   ss.AccessBlock,
+			"DeleteNetworkSubscriptionById": ss.AccessBlock,
+			"GetEventSubscription":          ss.AccessBlock,
+			"GetEventSubscriptionById":      ss.AccessBlock,
+			"GetNetworkSubscription":        ss.AccessBlock,
+			"GetNetworkSubscriptionById":    ss.AccessBlock,
 		}
 		router := server.NewRouter(accessMap)
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
