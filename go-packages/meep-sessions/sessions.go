@@ -233,12 +233,14 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 // AccessVerifier - Access verification handler
 func (ss *SessionStore) AccessVerifier(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Verify session exists & user permissions
+		// Verify session exists
 		_, err := ss.Get(r)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
+		// TODO - Verify user permissions
 
 		inner.ServeHTTP(w, r)
 	})

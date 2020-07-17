@@ -33,7 +33,6 @@ import (
 
 func Logger(inner http.Handler, name string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("SIMON logger")
 		start := time.Now()
 
 		inner.ServeHTTP(w, r)

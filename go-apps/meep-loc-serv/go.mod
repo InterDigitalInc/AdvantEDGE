@@ -13,7 +13,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions-manager v0.0.0
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.3
 	golang.org/x/sys v0.0.0-20190412213103-97732733099d // indirect
@@ -31,5 +30,4 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis => ../../go-packages/meep-postgis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions-manager => ../../go-packages/meep-sessions-manager
 )
