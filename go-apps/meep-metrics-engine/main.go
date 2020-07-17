@@ -23,9 +23,9 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server"
+	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/handlers"
 )
@@ -69,7 +69,21 @@ func main() {
 		}
 
 		// Start Metric Engine Service REST API Server
-		router := server.NewRouter()
+		accessMap := map[string]string{
+			"IndexV2":                       ss.AccessBlock,
+			"PostEventQuery":                ss.AccessVerify,
+			"PostHttpQuery":                 ss.AccessVerify,
+			"PostNetworkQuery":              ss.AccessVerify,
+			"CreateEventSubscription":       ss.AccessVerify,
+			"CreateNetworkSubscription":     ss.AccessVerify,
+			"DeleteEventSubscriptionById":   ss.AccessVerify,
+			"DeleteNetworkSubscriptionById": ss.AccessVerify,
+			"GetEventSubscription":          ss.AccessVerify,
+			"GetEventSubscriptionById":      ss.AccessVerify,
+			"GetNetworkSubscription":        ss.AccessVerify,
+			"GetNetworkSubscriptionById":    ss.AccessVerify,
+		}
+		router := server.NewRouter(accessMap)
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))

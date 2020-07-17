@@ -112,7 +112,7 @@ func main() {
 				"LoopReplay":                       ss.AccessBlock,
 				"PlayReplayFile":                   ss.AccessBlock,
 				"StopReplayFile":                   ss.AccessBlock,
-				"SendEvent":                        ss.AccessVerify,
+				"SendEvent":                        ss.AccessGrant,
 			}
 		}
 		router := server.NewRouter(priSw, priAccessMap)
