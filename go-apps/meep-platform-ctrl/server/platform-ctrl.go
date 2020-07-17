@@ -34,6 +34,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
@@ -45,6 +46,7 @@ type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	sandboxStore  *sbs.SandboxStore
 	sessionStore  *ss.SessionStore
+	userStore     *users.Connector
 	veWatchdog    *wd.Watchdog
 	mqGlobal      *mq.MsgQueue
 }
@@ -54,6 +56,8 @@ const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const moduleVirtEngineName = "meep-virt-engine"
 const moduleVirtEngineNamespace = "default"
+const postgisUser = "postgres"
+const postgisPwd = "pwd"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -134,6 +138,15 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Session Store")
+
+	// Connect to User Store
+	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed connection to User Store: ", err.Error())
+		return err
+	}
+	_ = pfmCtrl.userStore.CreateTables()
+	log.Info("Connected to User Store")
 
 	// Setup for virt-engine monitoring
 	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
