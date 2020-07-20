@@ -28,10 +28,12 @@ import (
 	"github.com/gorilla/mux"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
@@ -44,6 +46,7 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
+	rc            *redis.Connector
 	sandboxStore  *sbs.SandboxStore
 	sessionStore  *ss.SessionStore
 	userStore     *users.Connector
@@ -52,6 +55,7 @@ type PlatformCtrl struct {
 }
 
 const scenarioDBName = "scenarios"
+const redisTable = 0
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const moduleVirtEngineName = "meep-virt-engine"
@@ -87,6 +91,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Connect to Redis DB
+	pfmCtrl.rc, err = redis.NewConnector(redisDBAddr, redisTable)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
 
 	// Connect to Scenario Store
 	pfmCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
@@ -595,6 +607,9 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 
 // Create new sandbox in store and publish updagte
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
+
+	// Flush sandbox data
+	_ = pfmCtrl.rc.DBFlush(dkm.GetKeyRoot(sandboxName))
 
 	// Create sandbox in DB
 	sbox := new(sbs.Sandbox)

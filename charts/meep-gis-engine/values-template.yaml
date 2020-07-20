@@ -15,6 +15,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SESSION_KEY: "my-secret-key"
 
 service:
   name: meep-gis-engine

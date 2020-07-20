@@ -47,11 +47,11 @@ const (
 )
 
 type User struct {
-	id       string
-	username string
-	password string
-	role     string
-	sboxname string
+	Id       string
+	Username string
+	Password string
+	Role     string
+	Sboxname string
 }
 
 // Connector - Implements a Postgis SQL DB connector
@@ -60,7 +60,6 @@ type Connector struct {
 	dbName    string
 	db        *sql.DB
 	connected bool
-	updateCb  func(string, string)
 }
 
 // NewConnector - Creates and initializes a Postgis connector
@@ -296,7 +295,7 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 	// Scan result
 	for rows.Next() {
 		user = new(User)
-		err = rows.Scan(&user.id, &user.username, &user.password, &user.role, &user.sboxname)
+		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -334,14 +333,14 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id, &user.username, &user.password, &user.role, &user.sboxname)
+		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return userMap, err
 		}
 
 		// Add to map
-		userMap[user.username] = user
+		userMap[user.Username] = user
 	}
 	err = rows.Err()
 	if err != nil {
@@ -399,7 +398,7 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error) {
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id)
+		err = rows.Scan(&user.Id)
 		if err != nil {
 			log.Error(err.Error())
 			return false, err
@@ -434,7 +433,7 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id)
+		err = rows.Scan(&user.Id)
 		if err != nil {
 			log.Error(err.Error())
 			return false, err

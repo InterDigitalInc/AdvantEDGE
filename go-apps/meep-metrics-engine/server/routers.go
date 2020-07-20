@@ -32,7 +32,6 @@ import (
 	"github.com/gorilla/mux"
 
 	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
-	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
@@ -51,7 +50,7 @@ func NewRouter(accessMap map[string]string) *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-		handler = httpLog.LogRx(handler, "")
+		// handler = httpLog.LogRx(handler, "")
 
 		// Authorization
 		accessType, found := accessMap[route.Name]

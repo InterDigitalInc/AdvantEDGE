@@ -61,12 +61,13 @@ type SessionStore struct {
 // NewSessionStore - Create and initialize a Session Store instance
 func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	// Retrieve Sandbox name from environment variable
-	authKey := strings.TrimSpace(os.Getenv("MEEP_AUTH_KEY"))
-	if authKey == "" {
+	sessionKey := strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
+	if sessionKey == "" {
 		// err = errors.New("variable env variable not set")
 		// log.Error(err.Error())
 		// return err
-		authKey = "my-secret-key"
+		log.Info("No session key provided. Using default key.")
+		sessionKey = "my-secret-key"
 	}
 
 	// Create new Session Store instance
@@ -82,10 +83,10 @@ func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	log.Info("Connected to Session Store Redis DB")
 
 	// Create Cookie store
-	ss.cs = sessions.NewCookieStore([]byte(authKey))
+	ss.cs = sessions.NewCookieStore([]byte(sessionKey))
 	ss.cs.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   60 * 120,
+		MaxAge:   60 * 60 * 24 * 90, // 90 days
 		HttpOnly: true,
 	}
 	log.Info("Created Cookie Store")

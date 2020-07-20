@@ -158,10 +158,10 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
-	if user.username != username1 || user.role != role1 || user.sboxname != sboxname1 {
+	if user.Username != username1 || user.Role != role1 || user.Sboxname != sboxname1 {
 		t.Fatalf("Wrong user data")
 	}
-	if user.password == password1 {
+	if user.Password == password1 {
 		t.Fatalf("Password not encrypted")
 	}
 	valid, err := pc.IsValidUser(username1)
@@ -185,10 +185,10 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
-	if user.username != username2 || user.role != role2 || user.sboxname != sboxname2 {
+	if user.Username != username2 || user.Role != role2 || user.Sboxname != sboxname2 {
 		t.Fatalf("Wrong user data")
 	}
-	if user.password == password2 {
+	if user.Password == password2 {
 		t.Fatalf("Password not encrypted")
 	}
 	valid, err = pc.IsValidUser(username2)
@@ -212,10 +212,10 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
-	if user.username != username3 || user.role != role3 || user.sboxname != sboxname3 {
+	if user.Username != username3 || user.Role != role3 || user.Sboxname != sboxname3 {
 		t.Fatalf("Wrong user data")
 	}
-	if user.password == password3 {
+	if user.Password == password3 {
 		t.Fatalf("Password not encrypted")
 	}
 	valid, err = pc.IsValidUser(username3)
@@ -258,7 +258,7 @@ func TestPostgisCreateUser(t *testing.T) {
 	if err != nil || user == nil {
 		t.Fatalf("Failed to get user")
 	}
-	if user.username != username1 || user.role != role3 || user.sboxname != sboxname3 {
+	if user.Username != username1 || user.Role != role3 || user.Sboxname != sboxname3 {
 		t.Fatalf("Wrong user data")
 	}
 	valid, err = pc.AuthenticateUser(username1, password3)
