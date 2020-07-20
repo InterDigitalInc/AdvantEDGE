@@ -38,7 +38,6 @@ const (
 	ValSessionID = "sid"
 	ValUsername  = "user"
 	ValSandbox   = "sbox"
-	ValTimestamp
 )
 
 const (
