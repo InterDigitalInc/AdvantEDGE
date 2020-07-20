@@ -26,6 +26,7 @@ image:
     MEEP_DEPENDENCY_PODS: ""
     MEEP_CORE_PODS: ""
     MEEP_SANDBOX_PODS: ""
+    MEEP_SESSION_KEY: "my-secret-key"
 
 service:
   type: ClusterIP

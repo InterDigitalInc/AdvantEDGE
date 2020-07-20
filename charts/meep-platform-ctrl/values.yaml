@@ -22,6 +22,8 @@ image:
   repository: meep-platform-ctrl
   tag: latest
   pullPolicy: Always
+  env:
+    MEEP_SESSION_KEY: "my-secret-key"
 
 service:
   type: ClusterIP

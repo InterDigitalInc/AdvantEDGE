@@ -26,6 +26,7 @@ image:
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
     MEEP_HOST_URL: {{ .HostUrl }}
+    MEEP_SESSION_KEY: "my-secret-key"
 
 service:
   type: ClusterIP

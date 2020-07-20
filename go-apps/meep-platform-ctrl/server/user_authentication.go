@@ -53,13 +53,21 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	// Get existing session by user name, if any
 	session, err := pfmCtrl.sessionStore.GetByName(username)
 	if err != nil {
-		// Get unique sandbox name
-		sandboxName = getUniqueSandboxName()
+		// Get requested sandbox name from user profile, if any
+		user, err := pfmCtrl.userStore.GetUser(username)
+		if err == nil {
+			sandboxName = user.Sboxname
+		}
+
+		// Get a new unique sanbox name if not configured in user profile
 		if sandboxName == "" {
-			err = errors.New("Failed to generate a unique sandbox name")
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			sandboxName = getUniqueSandboxName()
+			if sandboxName == "" {
+				err = errors.New("Failed to generate a unique sandbox name")
+				log.Error(err.Error())
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		// Create sandbox in DB

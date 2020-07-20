@@ -54,6 +54,10 @@ spec:
               protocol: {{ .Values.deployment.protocol }}
             {{- end}}
           env:
+            {{- range $key, $value := .Values.image.env }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
             {{- if .Values.user.frontend.enabled}}
             - name: USER_FRONTEND
               value: {{ .Values.user.frontend.mountpath }}
