@@ -80,6 +80,7 @@ Class | Method | HTTP request | Description
  - [CellChangeSubscriptionPost1](docs/CellChangeSubscriptionPost1.md)
  - [CellUserInfo](docs/CellUserInfo.md)
  - [Ecgi](docs/Ecgi.md)
+ - [ErabInfo](docs/ErabInfo.md)
  - [ErabQosParameters](docs/ErabQosParameters.md)
  - [ErabQosParametersQci](docs/ErabQosParametersQci.md)
  - [EventType](docs/EventType.md)

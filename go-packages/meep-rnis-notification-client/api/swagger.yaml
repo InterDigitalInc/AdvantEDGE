@@ -28,7 +28,7 @@ paths:
       tags:
       - "notifications"
       summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
-        \ notification to inform about teh cell change of a UE subscription"
+        \ notification to inform about the cell change of a UE subscription"
       description: "Cell change subscription notification"
       operationId: "postCellChangeNotification"
       parameters:
@@ -44,6 +44,56 @@ paths:
         required: true
         schema:
           $ref: "#/definitions/CellChangeNotification"
+        x-exportParamName: "Notification"
+      responses:
+        204:
+          description: "No Content"
+  /notifications/rab_est/{subscriptionId}:
+    post:
+      tags:
+      - "notifications"
+      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
+        \ notification to inform about the rab establishment of a UE subscription"
+      description: "Rab establishment subscription notification"
+      operationId: "postRabEstNotification"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Identity of a notification subscription"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      - in: "body"
+        name: "Notification"
+        description: "Rab establishment Notification"
+        required: true
+        schema:
+          $ref: "#/definitions/RabEstNotification"
+        x-exportParamName: "Notification"
+      responses:
+        204:
+          description: "No Content"
+  /notifications/rab_rel/{subscriptionId}:
+    post:
+      tags:
+      - "notifications"
+      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
+        \ notification to inform about the rab release of a UE subscription"
+      description: "Rab release subscription notification"
+      operationId: "postRabRelNotification"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Identity of a notification subscription"
+        required: true
+        type: "string"
+        x-exportParamName: "SubscriptionId"
+      - in: "body"
+        name: "Notification"
+        description: "Rab release Notification"
+        required: true
+        schema:
+          $ref: "#/definitions/RabRelNotification"
         x-exportParamName: "Notification"
       responses:
         204:
@@ -119,6 +169,38 @@ definitions:
         mnc: "01"
         mcc: "001"
       cellId: "0x800000A"
+  ErabQosParameters:
+    type: "object"
+    required:
+    - "qci"
+    properties:
+      qci:
+        type: "integer"
+        format: "int32"
+        example: 7
+        description: "QoS Class Identifier as defined in TS 23.401"
+      qos_information:
+        $ref: "#/definitions/QosInformation"
+    example:
+      qos_information:
+        erabGbrDl: 10
+        erabGbrUl: 10
+        erabMbrUl: 10
+        erabMbrDl: 10
+      qci: 7
+  ErabReleaseInfo:
+    type: "object"
+    required:
+    - "erabId"
+    properties:
+      erabId:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "The element that uniquely identifies a S1 bearer for a specific\
+          \ UE, as defined in ETSI TS 136 413"
+    example:
+      erabId: 10
   HoStatus:
     type: "string"
     description: "Description of the subscribed to event"
@@ -162,6 +244,43 @@ definitions:
     example:
       mnc: "01"
       mcc: "001"
+  QosInformation:
+    type: "object"
+    required:
+    - "erabGbrDl"
+    - "erabGbrUl"
+    - "erabMbrDl"
+    - "erabMbrUl"
+    properties:
+      erabMbrDl:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "This IE indicates the maximum downlink E-RAB Bit Rate as defined\
+          \ in TS 23.401 for this bearer."
+      erabMbrUl:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "This IE indicates the maximum uplink E-RAB Bit Rate as defined\
+          \ in TS 23.401 for this bearer."
+      erabGbrDl:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "This IE indicates the guaranteed  downlink E-RAB Bit Rate as\
+          \ defined in TS 23.401 for this bearer."
+      erabGbrUl:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "This IE indicates the guaranteed  uplink E-RAB Bit Rate as defined\
+          \ in TS 23.401 for this bearer."
+    example:
+      erabGbrDl: 10
+      erabGbrUl: 10
+      erabMbrUl: 10
+      erabMbrDl: 10
   TempUeId:
     type: "object"
     required:
@@ -267,6 +386,79 @@ definitions:
       tempUeId:
         mtmsi: "1234"
         mmec: "0"
+  RabEstNotification:
+    type: "object"
+    required:
+    - "ecgi"
+    - "erabId"
+    properties:
+      timestamp:
+        $ref: "#/definitions/TimeStamp"
+      associateId:
+        $ref: "#/definitions/AssociateId"
+      ecgi:
+        $ref: "#/definitions/Ecgi"
+      erabId:
+        type: "integer"
+        format: "int32"
+        example: 10
+        description: "The element that uniquely identifies a S1 bearer for a specific\
+          \ UE, as defined in ETSI TS 136 413"
+      erabQosParameters:
+        $ref: "#/definitions/ErabQosParameters"
+      tempUeId:
+        $ref: "#/definitions/TempUeId"
+    example:
+      associateId:
+        type: "UE_IPV4_ADDRESS"
+        value: "192.168.10.1"
+      erabId: 10
+      erabQosParameters:
+        qos_information:
+          erabGbrDl: 10
+          erabGbrUl: 10
+          erabMbrUl: 10
+          erabMbrDl: 10
+        qci: 7
+      timestamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+      ecgi:
+        plmn:
+          mnc: "01"
+          mcc: "001"
+        cellId: "0x800000A"
+      tempUeId:
+        mtmsi: "1234"
+        mmec: "0"
+  RabRelNotification:
+    type: "object"
+    required:
+    - "ecgi"
+    - "erabReleaseInfo"
+    properties:
+      timestamp:
+        $ref: "#/definitions/TimeStamp"
+      associateId:
+        $ref: "#/definitions/AssociateId"
+      ecgi:
+        $ref: "#/definitions/Ecgi"
+      erabReleaseInfo:
+        $ref: "#/definitions/ErabReleaseInfo"
+    example:
+      erabReleaseInfo:
+        erabId: 10
+      associateId:
+        type: "UE_IPV4_ADDRESS"
+        value: "192.168.10.1"
+      timestamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+      ecgi:
+        plmn:
+          mnc: "01"
+          mcc: "001"
+        cellId: "0x800000A"
 parameters:
   Path.SubscriptionId:
     name: "subscriptionId"

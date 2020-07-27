@@ -24,8 +24,10 @@
 package server
 
 // Information on UEs in the specific cell.
-type UeInfo struct {
-	AssociateId []AssociateId `json:"associateId,omitempty"`
+type ErabInfo struct {
 
-	ErabInfo []ErabInfo `json:"erabInfo"`
+	// Attribute that uniquely identifies a Radio Access bearer for specific UE as defined in ETSI TS 136 413
+	ErabId int32 `json:"erabId"`
+
+	ErabQosParameters *ErabQosParameters `json:"erabQosParameters,omitempty"`
 }

@@ -96,23 +96,23 @@ func PlmnInfoGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func RabEstSubscriptionSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabEstSubscriptionsGET(w, r)
 }
 
 func RabEstSubscriptionSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabEstSubscriptionsPOST(w, r)
 }
 
 func RabEstSubscriptionSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabEstSubscriptionsPUT(w, r)
 }
 
 func RabEstSubscriptionsSubscrIdDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabEstSubscriptionsDELETE(w, r)
 }
 
 func RabInfoGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabInfoGET(w, r)
 }
 
 func RabModSubscriptionSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -132,19 +132,19 @@ func RabModSubscriptionsSubscrIdDELETE(w http.ResponseWriter, r *http.Request) {
 }
 
 func RabRelSubscriptionSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabRelSubscriptionsGET(w, r)
 }
 
 func RabRelSubscriptionSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabRelSubscriptionsPOST(w, r)
 }
 
 func RabRelSubscriptionSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabRelSubscriptionsPUT(w, r)
 }
 
 func RabRelSubscriptionsSubscrIdDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	rabRelSubscriptionsDELETE(w, r)
 }
 
 func S1BearerInfoGET(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +184,7 @@ func SubscriptionLinkListSubscriptionsMrGET(w http.ResponseWriter, r *http.Reque
 }
 
 func SubscriptionLinkListSubscriptionsReGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	subscriptionLinkListSubscriptionsReGET(w, r)
 }
 
 func SubscriptionLinkListSubscriptionsRmGET(w http.ResponseWriter, r *http.Request) {
@@ -192,7 +192,7 @@ func SubscriptionLinkListSubscriptionsRmGET(w http.ResponseWriter, r *http.Reque
 }
 
 func SubscriptionLinkListSubscriptionsRrGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	subscriptionLinkListSubscriptionsRrGET(w, r)
 }
 
 func SubscriptionLinkListSubscriptionsS1GET(w http.ResponseWriter, r *http.Request) {

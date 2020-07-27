@@ -530,10 +530,10 @@ func TestNotImplemented(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	//rab_info
-	_, err = sendRequest(http.MethodGet, "/queries/rab_info", nil, nil, nil, http.StatusNotImplemented, RabInfoGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
+	//_, err = sendRequest(http.MethodGet, "/queries/rab_info", nil, nil, nil, http.StatusNotImplemented, RabInfoGET)
+	//if err != nil {
+	//	t.Fatalf("Failed to get expected response")
+	//}
 
 	//subscriptions s1_bearer
 	_, err = sendRequest(http.MethodGet, "/subscriptions/s1_bearer", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsS1GET)
@@ -602,6 +602,7 @@ func TestNotImplemented(t *testing.T) {
 	}
 
 	//subscriptions rab est
+	/*
 	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsReGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -622,7 +623,7 @@ func TestNotImplemented(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	*/
 	//subscriptions rab mod
 	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_mod", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsRmGET)
 	if err != nil {
@@ -646,6 +647,7 @@ func TestNotImplemented(t *testing.T) {
 	}
 
 	//subscriptions rab rel
+	/*
 	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsRrGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -666,6 +668,7 @@ func TestNotImplemented(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+	*/
 
 	//subscriptions ca reconf
 	_, err = sendRequest(http.MethodGet, "/subscriptions/ca_reconf", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsCrGET)
@@ -1314,13 +1317,13 @@ func TestSbi(t *testing.T) {
 	 ******************************/
 	var expectedUeEcgiStr [2]string
 	var expectedUeEcgi [2]Ecgi
-	expectedUeEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, []string{"2345678"}}
-	expectedUeEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
+	expectedUeEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, "2345678"}
+	expectedUeEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, "1234567"}
 
 	var expectedAppEcgiStr [2]string
 	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
-	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
+	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, "1234567"}
+	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, "1234567"}
 
 	j, err := json.Marshal(expectedUeEcgi[INITIAL])
 	if err != nil {
@@ -1447,7 +1450,7 @@ func TestPlmnInfoGet(t *testing.T) {
 		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
-		if respBody.PlmnInfo[0].Ecgi.CellId[0] != expectedCellId[INITIAL] {
+		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -1468,7 +1471,7 @@ func TestPlmnInfoGet(t *testing.T) {
 		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[UPDATED] {
 			t.Fatalf("Failed to get expected response")
 		}
-		if respBody.PlmnInfo[0].Ecgi.CellId[0] != expectedCellId[UPDATED] {
+		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[UPDATED] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {

@@ -188,7 +188,7 @@ func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
 
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
-	zonalSubscriptionMap[subsId] = ""
+	zoneStatusSubscriptionMap[subsId] = nil
 }
 
 func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAPThreshold int32, opStatus []OperationStatus, subsIdStr string) {

@@ -27,5 +27,5 @@ package client
 type Ecgi struct {
 	Plmn *Plmn `json:"plmn"`
 	// The E-UTRAN Cell Identity as a bit string (size (28)), as defined in 3GPP TS 36.413
-	CellId []string `json:"cellId"`
+	CellId string `json:"cellId"`
 }
