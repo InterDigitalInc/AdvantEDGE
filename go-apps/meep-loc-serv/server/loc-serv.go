@@ -349,11 +349,6 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 
 func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
-	//if a zone is null, means going in/out of the 3gpp network, so no notification
-	if newZoneId == "" || oldZoneId == "" {
-		return
-	}
-
 	//check all that applies
 	for subsId, value := range userSubscriptionMap {
 		if value == userId {
@@ -373,7 +368,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			zonal.CallbackData = subscription.ClientCorrelator
 
 			if newZoneId != oldZoneId {
-				if userSubscriptionEnteringMap[subsId] != "" {
+				if userSubscriptionEnteringMap[subsId] != "" && newZoneId != "" {
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
 					event := new(clientNotifOMA.UserEventType)
@@ -382,14 +377,16 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 					sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
 					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
 				}
-				if userSubscriptionLeavingMap[subsId] != "" {
-					zonal.ZoneId = oldZoneId
-					zonal.CurrentAccessPointId = oldApId
-					event := new(clientNotifOMA.UserEventType)
-					*event = clientNotifOMA.LEAVING_UserEventType
-					zonal.UserEventType = event
-					sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
-					log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
+				if oldZoneId != "" {
+					if userSubscriptionLeavingMap[subsId] != "" {
+						zonal.ZoneId = oldZoneId
+						zonal.CurrentAccessPointId = oldApId
+						event := new(clientNotifOMA.UserEventType)
+						*event = clientNotifOMA.LEAVING_UserEventType
+						zonal.UserEventType = event
+						sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
+					}
 				}
 			} else {
 				if newApId != oldApId {
@@ -456,11 +453,6 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
-
-	//if a zone is null, means going in/out of the 3gpp network, so no notification
-	if newZoneId == "" || oldZoneId == "" {
-		return
-	}
 
 	//check all that applies
 	for subsId, value := range zonalSubscriptionMap {
