@@ -228,7 +228,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabId int
 
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
 		assocId := new(AssociateId)
-		assocId.Type_ = "UE_IPv4_ADDRESS"
+		assocId.Type_ = "UE_IPV4_ADDRESS"
 		assocId.Value = name
 
 		//log to model for all apps on that UE
@@ -312,7 +312,7 @@ func checkForExpiredSubscriptions() {
 					notif.Timestamp = &timeStamp
 					notif.ExpiryDeadline = &expiryTimeStamp
 
-					go sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
+					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
 					_ = delSubscription(baseKey+cellChangeSubscriptionType, subsIdStr)
 				}
 			}
@@ -410,6 +410,11 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 
 func checkCcNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, hoStatus string, newCellId string, oldCellId string) {
 
+	//no cell change if no cellIds present (cell change within 3gpp elements only)
+	if newCellId == "" || oldCellId == "" {
+		return
+	}
+
 	//check all that applies
 	for subsId, sub := range ccSubscriptionMap {
 
@@ -497,6 +502,10 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = []string{oldCellId}
 
+				var notifAssociateId clientNotif.AssociateId
+				notifAssociateId.Type_ = assocId.Type_
+				notifAssociateId.Value = assocId.Value
+
 				seconds := time.Now().Unix()
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
@@ -506,8 +515,9 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.HoStatus = &notifHoStatus
 				notif.SrcEcgi = &oldEcgi
 				notif.TrgEcgi = []clientNotif.Ecgi{newEcgi}
+				notif.AssociateId = &notifAssociateId
 
-				go sendCcNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendCcNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -515,6 +525,11 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 }
 
 func checkReNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
+
+	//only applies if coming from a non 3gpp element
+	if oldCellId != "" || newCellId == "" {
+		return
+	}
 
 	//check all that applies
 	for subsId, sub := range reSubscriptionMap {
@@ -534,7 +549,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (oldPlmn == nil || oldCellId == "")) {
+			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc)))) {
 				match = true
 			} else {
 				match = false
@@ -585,6 +600,10 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				var erabQos clientNotif.ErabQosParameters
 				erabQos.Qci = defaultSupportedQci
 
+				var notifAssociateId clientNotif.AssociateId
+				notifAssociateId.Type_ = assocId.Type_
+				notifAssociateId.Value = assocId.Value
+
 				seconds := time.Now().Unix()
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
@@ -593,8 +612,9 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.ErabId = erabId
 				notif.Ecgi = &newEcgi
 				notif.ErabQosParameters = &erabQos
+				notif.AssociateId = &notifAssociateId
 
-				go sendReNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendReNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -602,6 +622,11 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 }
 
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
+
+        //only applies if going to a non 3gpp element
+        if newCellId != "" || oldCellId == "" {
+                return
+        }
 
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
@@ -669,6 +694,10 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = []string{oldCellId}
 
+				var notifAssociateId clientNotif.AssociateId
+				notifAssociateId.Type_ = assocId.Type_
+				notifAssociateId.Value = assocId.Value
+
 				seconds := time.Now().Unix()
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
@@ -678,8 +707,9 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.Timestamp = &timeStamp
 				notif.Ecgi = &oldEcgi
 				notif.ErabReleaseInfo = &erabRelInfo
+				notif.AssociateId = &notifAssociateId
 
-				go sendRrNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendRrNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -1382,7 +1412,6 @@ func rabInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	cellIdStr := q.Get("cell_id")
 	cellIds := strings.Split(cellIdStr, ",")
-	log.Info("SIMON cellIds", cellIds)
 
 	rabInfoData.queryCellIds = cellIds
 
@@ -1451,10 +1480,12 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 
 	partOfFilter := true
 	for _, cellId := range data.queryCellIds {
-		partOfFilter = false
-		if cellId == ueData.Ecgi.CellId {
-			partOfFilter = true
-			break
+		if cellId != "" {
+			partOfFilter = false
+			if cellId == ueData.Ecgi.CellId {
+				partOfFilter = true
+				break
+			}
 		}
 	}
 	if !partOfFilter {
@@ -1464,7 +1495,7 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 	var ueInfo UeInfo
 
 	assocId := new(AssociateId)
-	assocId.Type_ = "UE_IPv4_ADDRESS"
+	assocId.Type_ = "UE_IPV4_ADDRESS"
 	subKeys := strings.Split(key, ":")
 	assocId.Value = subKeys[len(subKeys)-1]
 

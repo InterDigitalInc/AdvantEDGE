@@ -263,8 +263,18 @@ func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 		err = errors.New("Error casting context for: " + name)
 		return
 	}
-	zone = nodeCtx.Parents[mod.Zone]
-	netLoc = nodeCtx.Parents[mod.NetLoc]
+	if sbi.activeModel.GetNodeType(name) == mod.NodeTypeUE {
+		if sbi.activeModel.GetNodeType(nodeCtx.Parents[mod.NetLoc]) == mod.NodeTypePoaCell { 
+			zone = nodeCtx.Parents[mod.Zone]
+			netLoc = nodeCtx.Parents[mod.NetLoc]
+		} else {
+			zone = ""
+			netLoc = ""
+		}
+	} else {
+		zone = nodeCtx.Parents[mod.Zone]
+                netLoc = nodeCtx.Parents[mod.NetLoc]
+	}
 	return zone, netLoc, nil
 }
 
