@@ -2203,7 +2203,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	expectedSrcCellId := []string{"2345678"}
 	expectedSrcEcgi := rnisNotif.Ecgi{Plmn: &expectedSrcPlmnInNotif, CellId: expectedSrcCellId}
 	expectedDstPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
-	expectedDstCellId := []string{""}
+	expectedDstCellId := []string{"3456789"}
 	expectedDstEcgi := rnisNotif.Ecgi{Plmn: &expectedDstPlmnInNotif, CellId: expectedDstCellId}
 	movingUeAddr := "ue1" //based on the scenario change
 	expectedAssocId := AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}
@@ -2243,6 +2243,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
+	//moving out os the 3gpp network...so no notification should be sent
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
@@ -2262,8 +2263,32 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
+	//transform the src and target ecgi in string for comparison purpose
+	jsonResult, err := json.Marshal(notification.SrcEcgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationSrcEcgiNullStr := string(jsonResult)
+	if notificationSrcEcgiNullStr != "null" {
+		t.Fatalf("Failed to get null notification")
+	}
+
+	updateScenario("mobility2")
+	time.Sleep(100 * time.Millisecond)
+	updateScenario("mobility3")
+
+	httpLog, err = metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
+	if err != nil || len(httpLog) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
 	//transform the assocId in string for comparison purpose
-	jsonResult, err := json.Marshal(notification.AssociateId)
+	jsonResult, err = json.Marshal(notification.AssociateId)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -2304,6 +2329,8 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	if (notificationSrcEcgiStr != expectedSrcEcgiStr) || (notificationTargetEcgiStr != expectedTargetEcgiStr) || (notificationAssocIdStr != expectedAssocIdStr) {
 		t.Fatalf("Failed to get expected response")
 	}
+
+	updateScenario("mobility1")
 
 	//cleanup allocated subscription
 	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
@@ -2904,6 +2931,21 @@ func updateScenario(testUpdate string) {
 		// mobility event of ue1 to zone2-poa1
 		elemName := "ue1"
 		destName := "zone1-poa-cell1"
+
+		_, _, err := m.MoveNode(elemName, destName)
+		if err != nil {
+			log.Error("Error sending mobility event")
+		}
+
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message: ", err)
+		}
+	case "mobility3":
+		// mobility event of ue1 to zone1-poa-cell2
+		elemName := "ue1"
+		destName := "zone1-poa-cell2"
 
 		_, _, err := m.MoveNode(elemName, destName)
 		if err != nil {

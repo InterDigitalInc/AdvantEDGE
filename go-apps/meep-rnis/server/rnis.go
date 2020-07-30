@@ -549,7 +549,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc)))) {
+			if match && ((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) {
 				match = true
 			} else {
 				match = false
@@ -623,10 +623,10 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
-        //only applies if going to a non 3gpp element
-        if newCellId != "" || oldCellId == "" {
-                return
-        }
+	//only applies if going to a non 3gpp element
+	if newCellId != "" || oldCellId == "" {
+		return
+	}
 
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
