@@ -282,19 +282,10 @@ class IDCVis extends Component {
     }
   }
 
-  getElementByName(entries, name) {
-    for (var i = 0; i < entries.length; i++) {
-      if (getElemFieldVal(entries[i], FIELD_NAME) === name) {
-        return entries[i];
-      }
-    }
-    return null;
-  }
-
   getElementById(entries, id) {
-    for (var i = 0; i < entries.length; i++) {
-      if (entries[i].id === id) {
-        return entries[i];
+    for (var entry of Object.values(entries)) {
+      if (entry.id === id) {
+        return entry;
       }
     }
     return null;

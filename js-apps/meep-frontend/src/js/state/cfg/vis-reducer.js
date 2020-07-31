@@ -17,31 +17,6 @@
 import { updateObject } from '../../util/object-util';
 import { TYPE_CFG } from '../../meep-constants';
 
-// CHANGE_VIS
-const CFG_CHANGE_VIS = 'CFG_CHANGE_VIS';
-function cfgChangeVis(vis) {
-  return {
-    type: CFG_CHANGE_VIS,
-    payload: vis
-  };
-}
-
-// CHANGE_VIS
-const CFG_CHANGE_VIS_DATA = 'CFG_CHANGE_VIS_DATA';
-function cfgChangeVisData(data) {
-  return {
-    type: CFG_CHANGE_VIS_DATA,
-    payload: data
-  };
-}
-
-export {
-  // Action creators
-  cfgChangeVis,
-  cfgChangeVisData,
-  CFG_CHANGE_VIS
-};
-
 const initialState = {
   type: TYPE_CFG,
   network: {},
@@ -52,6 +27,24 @@ const initialState = {
   },
   showConfig: false
 };
+
+// CHANGE_VIS
+const CFG_CHANGE_VIS = 'CFG_CHANGE_VIS';
+export function cfgChangeVis(vis) {
+  return {
+    type: CFG_CHANGE_VIS,
+    payload: vis
+  };
+}
+
+// CHANGE_VIS
+const CFG_CHANGE_VIS_DATA = 'CFG_CHANGE_VIS_DATA';
+export function cfgChangeVisData(data) {
+  return {
+    type: CFG_CHANGE_VIS_DATA,
+    payload: data
+  };
+}
 
 export function cfgVisReducer(state = initialState, action) {
   switch (action.type) {

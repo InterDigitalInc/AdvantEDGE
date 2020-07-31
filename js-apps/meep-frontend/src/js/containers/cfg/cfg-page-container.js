@@ -196,15 +196,6 @@ class CfgPageContainer extends Component {
     }
   }
 
-  findIndexByKeyValue(_array, key, value) {
-    for (var i = 0; i < _array.length; i++) {
-      if (getElemFieldVal(_array[i], key) === value) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   findOtherThanSelfIndexByKeyValue(_array, key, value, exceptionId) {
     for (var i = 0; i < _array.length; i++) {
       if (getElemFieldVal(_array[i], key) === value) {
@@ -248,7 +239,7 @@ class CfgPageContainer extends Component {
       return false;
     }
 
-    if (this.findOtherThanSelfIndexByKeyValue(data, FIELD_NAME, name, element.id) !== -1) {
+    if (data[name] && (data[name].id !== element.id)) {
       this.props.cfgElemSetErrMsg('Element name already exists');
       return false;
     }
@@ -259,13 +250,7 @@ class CfgPageContainer extends Component {
     }
 
     // Make sure parent exists
-    if (
-      this.findIndexByKeyValue(
-        data,
-        FIELD_NAME,
-        getElemFieldVal(element, FIELD_PARENT)
-      ) === -1
-    ) {
+    if (!data[getElemFieldVal(element, FIELD_PARENT)]) {
       this.props.cfgElemSetErrMsg('Parent does not exist');
       return false;
     }
@@ -287,10 +272,10 @@ class CfgPageContainer extends Component {
       const elemsWithSameExtPort = pipe(
         filter(hasDifferentName(element)),
         filter(hasExtPortsInCommon(element))
-      )(data);
+      )(Object.values(data));
 
       if (elemsWithSameExtPort.length) {
-        const elemNames = elemsWithSameExtPort.map(e => e.id);
+        const elemNames = elemsWithSameExtPort.map(e => getElemFieldVal(e, FIELD_NAME));
         this.props.cfgElemSetErrMsg(
           `External port already used in ${elemNames}`
         );

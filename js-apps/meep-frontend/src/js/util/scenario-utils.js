@@ -264,10 +264,10 @@ export function parseScenario(scenario) {
   // Update table
   var table = {};
   table.data = { edges: edges, nodes: nodes };
-  table.entries = _.map(table.data.nodes, node => {
-    var elemFromScenario = getElementFromScenario(scenario, node.id);
-    return updateObject(node, elemFromScenario);
-  });
+  table.entries = _.reduce(table.data.nodes, (nodeMap, node) => {
+    nodeMap[node.name] = updateObject(node, getElementFromScenario(scenario, node.id));
+    return nodeMap;
+  }, {});
 
   // Update visualization data
   var visData = {};

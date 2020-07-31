@@ -201,17 +201,14 @@ export const createElem = name => {
 
 export const createUniqueName = (entries, namePrefix) => {
   var increment = 1;
-  var found = true;
+  var isUniqueName = false;
   var suggestedName = namePrefix + String(increment);
-  while(found) {
-    found = false;
-    for (var i = 0; i < entries.length; i++) {
-      if (getElemFieldVal(entries[i], FIELD_NAME) === suggestedName) {
-        found=true;
-        increment++;
-        suggestedName = namePrefix + String(increment);
-        break;
-      }
+  while (!isUniqueName) {
+    if (!entries[suggestedName]) {
+      isUniqueName = true;
+    } else {
+      increment++;
+      suggestedName = namePrefix + String(increment);
     }
   }
   return suggestedName;
