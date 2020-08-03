@@ -201,12 +201,15 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabId int
 
 	if jsonUeData != "" {
 		ueDataObj := convertJsonToUeData(jsonUeData)
-
-		oldPlmn = ueDataObj.Ecgi.Plmn
-		oldPlmnMnc = ueDataObj.Ecgi.Plmn.Mnc
-		oldPlmnMcc = ueDataObj.Ecgi.Plmn.Mcc
-		oldCellId = ueDataObj.Ecgi.CellId
-		oldErabId = ueDataObj.ErabId
+		if ueDataObj != nil {
+			if ueDataObj.Ecgi != nil {
+				oldPlmn = ueDataObj.Ecgi.Plmn
+				oldPlmnMnc = ueDataObj.Ecgi.Plmn.Mnc
+				oldPlmnMcc = ueDataObj.Ecgi.Plmn.Mcc
+				oldCellId = ueDataObj.Ecgi.CellId
+				oldErabId = ueDataObj.ErabId
+			}
+		}
 	}
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
