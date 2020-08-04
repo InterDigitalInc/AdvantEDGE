@@ -17,6 +17,7 @@
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 import axios from 'axios';
 import { updateObject, deepCopy } from '../util/object-util';
 
@@ -103,6 +104,8 @@ meepGisEngineRestApiClient.ApiClient.instance.basePath = basepathGisEngine.repla
 class MeepContainer extends Component {
   constructor(props) {
     super(props);
+    autoBind(this);
+
     this.state = {};
     this.platformRefreshIntervalTimer = null;
     this.execPageRefreshIntervalTimer = null;
@@ -270,7 +273,10 @@ class MeepContainer extends Component {
 
     // Update list of sandboxes, if any
     var orderedSandboxList = _.map(data.sandboxes, 'name');
-    this.props.changeSandboxList(orderedSandboxList);
+    if ((orderedSandboxList.length !== this.props.sandboxes.length) ||
+      orderedSandboxList.every((value, index) => value !== this.props.sandboxes[index])) {
+      this.props.changeSandboxList(orderedSandboxList);
+    }
   }
 
   refreshSandboxList() {
@@ -290,7 +296,7 @@ class MeepContainer extends Component {
   }
 
   checkReplayStatus() {
-    if (this.props.exec.state.scenario === EXEC_STATE_IDLE) {
+    if (this.props.execScenarioState === EXEC_STATE_IDLE) {
       return;
     }
 
@@ -319,12 +325,12 @@ class MeepContainer extends Component {
     }
 
     // Store & Process deployed scenario
-    this.setScenario(TYPE_EXEC, data);
+    this.execSetScenario(data);
 
     // TODO set a timer of 2 seconds
     this.props.execChangeScenarioState(EXEC_STATE_DEPLOYED);
     setTimeout(() => {
-      if (this.props.exec.state.scenario === EXEC_STATE_DEPLOYED) {
+      if (this.props.execScenarioState === EXEC_STATE_DEPLOYED) {
         this.props.execChangeOkToTerminate(true);
       }
     }, 2000);
@@ -348,6 +354,8 @@ class MeepContainer extends Component {
     var parsedScenario = parseScenario(page.scenario);
     var updatedMapData = updateObject({}, parsedScenario.mapData);
     var updatedVisData = updateObject(page.vis.data, parsedScenario.visData);
+    // updatedVisData.nodes._data.sort();
+    // updatedVisData.edges._data.sort();
     var updatedTable = updateObject(page.table, parsedScenario.table);
 
     // Dispatch state updates
@@ -387,20 +395,57 @@ class MeepContainer extends Component {
   }
 
   // Create, store & process new scenario
-  createScenario(pageType, name) {
+  cfgCreateScenario(name) {
     var scenario = createNewScenario(name);
-    this.updateScenario(pageType, scenario, true);
+    this.updateScenario(TYPE_CFG, scenario, true);
+  }
+  // Set & process scenario
+  cfgSetScenario(scenario) {
+    this.updateScenario(TYPE_CFG, scenario, true);
+  }
+  // Delete & process scenario
+  cfgDeleteScenario() {
+    var scenario = createNewScenario(NO_SCENARIO_NAME);
+    this.updateScenario(TYPE_CFG, scenario, true);
+  }
+  // Add new element to scenario
+  cfgNewScenarioElem(element, scenarioUpdate) {
+    var scenario = this.props.cfg.scenario;
+    var updatedScenario = updateObject({}, scenario);
+    addElementToScenario(updatedScenario, element);
+    if (scenarioUpdate) {
+      this.changeScenario(TYPE_CFG, updatedScenario);
+    }
+  }
+  // Update element in scenario
+  cfgUpdateScenarioElem(element) {
+    var scenario = this.props.cfg.scenario;
+    var updatedScenario = updateObject({}, scenario);
+    updateElementInScenario(updatedScenario, element);
+    this.changeScenario(TYPE_CFG, updatedScenario);
+  }
+  // Delete element in scenario (also deletes child elements)
+  cfgDeleteScenarioElem(element) {
+    var scenario = this.props.cfg.scenario;
+    var updatedScenario = updateObject({}, scenario);
+    removeElementFromScenario(updatedScenario, element);
+    this.changeScenario(TYPE_CFG, updatedScenario);
+  }
+  // Clone element in scenario
+  cfgCloneScenarioElem(element) {
+    var updatedScenario = updateObject({}, this.props.cfg.scenario);
+    cloneElementInScenario(updatedScenario, element, this.props.cfg.table);
+    this.changeScenario(TYPE_CFG, updatedScenario);
   }
 
   // Set & process scenario
-  setScenario(pageType, scenario) {
-    this.updateScenario(pageType, scenario, true);
+  execSetScenario(scenario) {
+    this.updateScenario(TYPE_EXEC, scenario, true);
   }
-
   // Delete & process scenario
-  deleteScenario(pageType) {
+  execDeleteScenario() {
     var scenario = createNewScenario(NO_SCENARIO_NAME);
-    this.updateScenario(pageType, scenario, true);
+    this.updateScenario(TYPE_EXEC, scenario, true);
   }
 
   // Refresh Active scenario
@@ -544,67 +589,19 @@ class MeepContainer extends Component {
     });
   }
 
-  // Add new element to scenario
-  newScenarioElem(pageType, element, scenarioUpdate) {
-    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
-    var updatedScenario = updateObject({}, scenario);
-    addElementToScenario(updatedScenario, element);
-    if (scenarioUpdate) {
-      this.changeScenario(pageType, updatedScenario);
-    }
-  }
-
-  // Update element in scenario
-  updateScenarioElem(pageType, element) {
-    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
-    var updatedScenario = updateObject({}, scenario);
-    updateElementInScenario(updatedScenario, element);
-    this.changeScenario(pageType, updatedScenario);
-  }
-
-  // Delete element in scenario (also deletes child elements)
-  deleteScenarioElem(pageType, element) {
-    var scenario = pageType === TYPE_CFG ? this.props.cfg.scenario : this.props.exec.scenario;
-    var updatedScenario = updateObject({}, scenario);
-    removeElementFromScenario(updatedScenario, element);
-    this.changeScenario(pageType, updatedScenario);
-  }
-
-  // Clone element in scenario
-  cloneScenarioElem(element) {
-    var updatedScenario = updateObject({}, this.props.cfg.scenario);
-    cloneElementInScenario(updatedScenario, element, this.props.cfg.table);
-    this.changeScenario(TYPE_CFG, updatedScenario);
-  }
-
   renderPage() {
     switch (this.props.page) {
     case PAGE_CONFIGURE:
       return (
         <CfgPageContainer
-          style={{ width: '100%' }}
           api={this.meepScenarioConfigurationApi}
-          createScenario={name => {
-            this.createScenario(TYPE_CFG, name);
-          }}
-          setScenario={scenario => {
-            this.setScenario(TYPE_CFG, scenario);
-          }}
-          deleteScenario={() => {
-            this.deleteScenario(TYPE_CFG);
-          }}
-          newScenarioElem={(elem, update) => {
-            this.newScenarioElem(TYPE_CFG, elem, update);
-          }}
-          cloneScenarioElem={elem => {
-            this.cloneScenarioElem(elem);
-          }}
-          updateScenarioElem={elem => {
-            this.updateScenarioElem(TYPE_CFG, elem);
-          }}
-          deleteScenarioElem={elem => {
-            this.deleteScenarioElem(TYPE_CFG, elem);
-          }}
+          createScenario={this.cfgCreateScenario}
+          setScenario={this.cfgSetScenario}
+          deleteScenario={this.cfgDeleteScenario}
+          newScenarioElem={this.cfgNewScenarioElem}
+          cloneScenarioElem={this.cfgCloneScenarioElem}
+          updateScenarioElem={this.cfgUpdateScenarioElem}
+          deleteScenarioElem={this.cfgDeleteScenarioElem}
         />
       );
 
@@ -612,7 +609,6 @@ class MeepContainer extends Component {
       return (
           <>
             <ExecPageContainer
-              style={{ width: '100%' }}
               api={this.meepActiveScenarioApi}
               eventsApi={this.meepEventsApi}
               automationApi={this.meepEventAutomationApi}
@@ -621,21 +617,11 @@ class MeepContainer extends Component {
               sandboxApi={this.meepSandboxControlApi}
               sandbox={this.props.sandbox}
               sandboxes={this.props.sandboxes}
-              createSandbox={(name) => {
-                this.createSandbox(name);
-              }}
-              setSandbox={(name) => {
-                this.setSandbox(name);
-              }}
-              deleteSandbox={() => {
-                this.deleteSandbox();
-              }}
-              refreshScenario={() => {
-                this.refreshScenario();
-              }}
-              deleteScenario={() => {
-                this.deleteScenario(TYPE_EXEC);
-              }}
+              createSandbox={this.createSandbox}
+              setSandbox={this.setSandbox}
+              deleteSandbox={this.deleteSandbox}
+              refreshScenario={this.refreshScenario}
+              deleteScenario={this.execDeleteScenario}
             />
           </>
       );
@@ -665,7 +651,7 @@ class MeepContainer extends Component {
         <div style={{ display: 'table-row' }}>
           <MeepTopBar
             title=""
-            toggleMainDrawer={() => this.props.toggleMainDrawer()}
+            toggleMainDrawer={this.props.toggleMainDrawer}
             corePodsRunning={this.props.corePodsRunning}
             corePodsErrors={this.props.corePodsErrors}
           />
@@ -691,6 +677,7 @@ const mapStateToProps = state => {
     cfg: state.cfg,
     cfgVis: state.cfg.vis,
     exec: state.exec,
+    execScenarioState: state.exec.state.scenario,
     execVis: state.exec.vis,
     page: state.ui.page,
     sandbox: state.ui.sandbox,

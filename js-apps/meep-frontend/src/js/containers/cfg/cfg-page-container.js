@@ -80,6 +80,7 @@ import {
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
+import { style } from 'd3';
 
 const firstElementIfPresent = val =>
   Array.isArray(val) ? (val.length ? val[0] : null) : val;
@@ -584,7 +585,7 @@ class CfgPageContainer extends Component {
       <div style={styles.page}>
         {this.renderDialogs()}
 
-        <div style={{ width: '100%' }}>
+        <div style={styles.fullwidth}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
               <Elevation
@@ -602,7 +603,7 @@ class CfgPageContainer extends Component {
                     disabled={false}
                     cydata={CFG_VIEW_TYPE}
                   />
-                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                  <GridCell align={'middle'} style={styles.fullheight} span={3}>
                     <GridInner style={{ marginLeft: 10, height: '100%', borderLeft: '2px solid #e4e4e4'}}>
                       <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
                         <HeadlineBar
@@ -701,6 +702,12 @@ class CfgPageContainer extends Component {
 }
 
 const styles = {
+  fullwidth: {
+    width: '100%'
+  },
+  fullheight: {
+    height: '100%'
+  },
   headlineGrid: {
     marginBottom: 10
   },

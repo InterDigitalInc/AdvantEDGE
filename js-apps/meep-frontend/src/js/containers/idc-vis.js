@@ -35,10 +35,6 @@ import {
   TYPE_CFG,
   TYPE_EXEC
 } from '../meep-constants';
-import {
-  FIELD_NAME,
-  getElemFieldVal
-} from '../util/elem-utils';
 
 function createBoxGroup(groups, name, bgColor) {
   groups[name] = {

@@ -101,35 +101,35 @@ class IDCMap extends Component {
     }
   }
 
-  shouldComponentUpdate(nextProps) {
-    // Map size update
-    let width = this.thisRef.current.offsetWidth;
-    let height = this.thisRef.current.offsetHeight;
-    if ((width && this.width !== width) || (height && this.height !== height)) {
-      this.width = width;
-      this.height = height;
-      // console.log('Map view resized to: ' + width + 'x' + height);
-      this.map.invalidateSize();
-      return true;
-    }
+  // shouldComponentUpdate(nextProps) {
+  //   // Map size update
+  //   let width = this.thisRef.current.offsetWidth;
+  //   let height = this.thisRef.current.offsetHeight;
+  //   if ((width && this.width !== width) || (height && this.height !== height)) {
+  //     this.width = width;
+  //     this.height = height;
+  //     // console.log('Map view resized to: ' + width + 'x' + height);
+  //     this.map.invalidateSize();
+  //     return true;
+  //   }
 
-    // Target element change
-    if (nextProps.configuredElement !== this.props.configuredElement) {
-      return true;
-    }
+  //   // Target element change
+  //   if (nextProps.configuredElement !== this.props.configuredElement) {
+  //     return true;
+  //   }
 
-    // Sandbox changed
-    if (nextProps.sandbox !== this.props.sandbox) {
-      return true;
-    }
+  //   // Sandbox changed
+  //   if (nextProps.sandbox !== this.props.sandbox) {
+  //     return true;
+  //   }
 
-    // Map changed
-    if (!deepEqual(this.getMap(nextProps), this.getMap(this.props))) {
-      return true;
-    }
+  //   // Map changed
+  //   if (!deepEqual(this.getMap(nextProps), this.getMap(this.props))) {
+  //     return true;
+  //   }
 
-    return false;
-  }
+  //   return false;
+  // }
 
   getMap(props) {
     return (this.props.type === TYPE_CFG) ? props.cfgPageMap : props.execPageMap;
@@ -199,12 +199,8 @@ class IDCMap extends Component {
   }
 
   getElementByName(entries, name) {
-    for (var i = 0; i < entries.length; i++) {
-      if (getElemFieldVal(entries[i], FIELD_NAME) === name) {
-        return entries[i];
-      }
-    }
-    return null;
+    var element = entries[name];
+    return element ? element : null;
   }
 
   createMap() {

@@ -337,12 +337,8 @@ class NetworkCharacteristicsEventPane extends Component {
 
   getElementByName(name) {
     var elements = this.props.networkElements;
-    for (var i = 0; i < elements.length; i++) {
-      if (getElemFieldVal(elements[i], FIELD_NAME) === name) {
-        return elements[i];
-      }
-    }
-    return null;
+    var element = elements[name];
+    return element ? element : null;
   }
 
   render() {
