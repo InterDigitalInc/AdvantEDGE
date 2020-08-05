@@ -360,9 +360,10 @@ class MeepContainer extends Component {
 
     // Dispatch state updates
     if (pageType === TYPE_CFG) {
-      this.props.cfgChangeMap(updatedMapData);
       this.props.cfgChangeVisData(updatedVisData);
       this.props.cfgChangeTable(updatedTable);
+      // Update map after table to make sure latest entries are available
+      this.props.cfgChangeMap(updatedMapData);
 
       const vis = this.props.cfgVis;
       if (vis && vis.network && vis.network.setData) {
