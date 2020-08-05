@@ -80,7 +80,6 @@ import {
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
-import { style } from 'd3';
 
 const firstElementIfPresent = val =>
   Array.isArray(val) ? (val.length ? val[0] : null) : val;

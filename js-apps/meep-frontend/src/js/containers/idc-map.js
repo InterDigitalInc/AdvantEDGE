@@ -74,7 +74,7 @@ const TYPE_UE = 'UE';
 const TYPE_POA = 'POA';
 const TYPE_COMPUTE = 'COMPUTE';
 
-const UE_ICON = 'ion-iphone';
+// const UE_ICON = 'ion-iphone';
 const UE_COLOR_DEFAULT = '#00ccff';
 const UE_PATH_COLOR = '#008fb3';
 const UE_OPACITY = 1.0;
@@ -83,14 +83,14 @@ const UE_PATH_OPACITY = 0.5;
 const UE_PATH_OPACITY_BACKGROUND = 0.3;
 
 // POA icons: 'ion-connection-bars', 'ion-wifi'
-const POA_ICON = 'ion-connection-bars';
+// const POA_ICON = 'ion-connection-bars';
 const POA_COLOR_DEFAULT = 'purple';
 const POA_OPACITY = 1.0;
 const POA_OPACITY_BACKGROUND = 0.35;
 const POA_RANGE_OPACITY = 0.05;
 const POA_RANGE_OPACITY_BACKGROUND = 0.05;
 
-const COMPUTE_ICON = 'ion-android-cloud';
+// const COMPUTE_ICON = 'ion-android-cloud';
 const COMPUTE_COLOR_DEFAULT = 'green';
 const COMPUTE_OPACITY = 1.0;
 const COMPUTE_OPACITY_BACKGROUND = 0.35;

@@ -578,7 +578,7 @@ class MeepContainer extends Component {
     this.setBasepath(null);
 
     // Delete the active scenario
-    this.deleteScenario(TYPE_EXEC);
+    this.execDeleteScenario(TYPE_EXEC);
     this.props.execChangeScenarioState(EXEC_STATE_IDLE);
     this.props.execChangeOkToTerminate(false);
   }
