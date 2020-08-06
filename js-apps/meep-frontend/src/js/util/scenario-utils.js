@@ -82,6 +82,8 @@ import {
   FIELD_APP_THROUGHPUT_DL,
   FIELD_APP_THROUGHPUT_UL,
   FIELD_APP_PKT_LOSS,
+  FIELD_META_DISPLAY_MAP_COLOR,
+  FIELD_META_DISPLAY_MAP_ICON,
   createElem,
   getElemFieldVal,
   setElemFieldVal,
@@ -162,6 +164,11 @@ import {
   TYPE_PHY_LOC,
   TYPE_PROCESS
 } from '../meep-constants';
+
+import {
+  META_DISPLAY_MAP_COLOR,
+  META_DISPLAY_MAP_ICON
+} from './meta-keys';
 
 // Import images used in JS
 import * as poaImage from '../../img/tower-02-idcc.svg';
@@ -1277,6 +1284,9 @@ export function getElementFromScenario(scenario, elementId) {
           setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGHPUT_UL, zone.netChar.throughputUl || DEFAULT_THROUGHPUT_UL_INTRA_ZONE);
           setElemFieldVal(elem, FIELD_INTRA_ZONE_PKT_LOSS, zone.netChar.packetLoss || 0);
         }
+        if (zone.meta) {
+          setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_COLOR, zone.meta[META_DISPLAY_MAP_COLOR]);
+        }
         return elem;
       }
 
@@ -1313,6 +1323,9 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_GEO_LOCATION, JSON.stringify(nl.geoData.location.coordinates) || '');
             }
             setElemFieldVal(elem, FIELD_GEO_RADIUS, nl.geoData.radius || '');
+          }
+          if (nl.meta) {
+            setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, nl.meta[META_DISPLAY_MAP_ICON]);
           }
           return elem;
         }
@@ -1362,7 +1375,9 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_GEO_EOP_MODE, pl.geoData.eopMode || '');
               setElemFieldVal(elem, FIELD_GEO_VELOCITY, pl.geoData.velocity || '');
             }
-
+            if (pl.meta) {
+              setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, pl.meta[META_DISPLAY_MAP_ICON]);
+            }
             return elem;
           }
 

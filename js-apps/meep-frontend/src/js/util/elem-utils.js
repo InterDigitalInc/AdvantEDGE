@@ -111,6 +111,9 @@ export const FIELD_APP_LATENCY_VAR = 'appLatencyVariation';
 export const FIELD_APP_THROUGHPUT_DL = 'appThroughput_Dl';
 export const FIELD_APP_THROUGHPUT_UL = 'appThroughput_Ul';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
+export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
+export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
+
 
 export const getElemFieldVal = (elem, field) => {
   return (elem && elem[field]) ? elem[field].val : null;
@@ -195,6 +198,8 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_APP_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_APP);
   setElemFieldVal(elem, FIELD_APP_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_APP);
   setElemFieldVal(elem, FIELD_APP_PKT_LOSS, DEFAULT_PACKET_LOSS_APP);
+  setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_COLOR, '');
+  setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, '');
 
   return elem;
 };
