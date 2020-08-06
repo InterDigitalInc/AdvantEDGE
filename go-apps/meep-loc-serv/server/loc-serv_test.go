@@ -82,7 +82,7 @@ const testScenario string = `
 			{
 				"id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
 				"name": "operator-cell1",
-				"type": "OPERATOR-CELL",
+				"type": "OPERATOR-CELLULAR",
 				"interZoneLatency": 6,
 				"interZoneLatencyVariation": 2,
 				"interZoneThroughput": 1000,

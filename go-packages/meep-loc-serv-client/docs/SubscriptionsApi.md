@@ -25,7 +25,7 @@ Method | HTTP request | Description
 > UserTrackingSubDelById(ctx, subscriptionId)
 
 
-This operation is used for retrieving an individual subscription to user tracking change notification.
+This operation is used for cancelling a subscription and stopping corresponding notifications.
 
 ### Required Parameters
 
@@ -214,7 +214,7 @@ No authorization required
 > ResponseZonalTrafficSubscription ZonalTrafficSubGetById(ctx, subscriptionId)
 
 
-This operation is used for updating an individual subscription to zonal traffic change notification.
+This operation is used for retrieving an individual subscription to zonal traffic change notification.
 
 ### Required Parameters
 
@@ -327,7 +327,7 @@ No authorization required
 > ResponseZoneStatusNotificationSubscriptionList ZoneStatusGet(ctx, )
 
 
-This operation is used for creating a new subscription to zone status change notification.
+This operation is used for retrieving all active subscriptions to zone status change notifications.
 
 ### Required Parameters
 This endpoint does not need any parameter.

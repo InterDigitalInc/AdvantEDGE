@@ -25,6 +25,6 @@ package client
 
 // Information on UEs in the specific cell.
 type UeInfo struct {
-	AssociateId []AssociateId       `json:"associateId,omitempty"`
-	ErabInfo    []ErabQosParameters `json:"erabInfo"`
+	AssociateId []AssociateId `json:"associateId,omitempty"`
+	ErabInfo    []ErabInfo    `json:"erabInfo"`
 }

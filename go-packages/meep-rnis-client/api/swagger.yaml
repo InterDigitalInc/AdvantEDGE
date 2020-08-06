@@ -3067,13 +3067,10 @@ definitions:
       plmn:
         $ref: "#/definitions/Plmn"
       cellId:
-        type: "array"
+        type: "string"
         example: "0x800000A"
         description: "The E-UTRAN Cell Identity as a bit string (size (28)), as defined\
           \ in 3GPP TS 36.413"
-        items:
-          type: "string"
-          format: "binary"
     description: "E-UTRAN CelI Global Identifier as defined in 3GPP TS 36.413"
   Plmn:
     type: "object"
@@ -3105,7 +3102,19 @@ definitions:
       erabInfo:
         type: "array"
         items:
-          $ref: "#/definitions/ErabQosParameters"
+          $ref: "#/definitions/ErabInfo"
+    description: "Information on UEs in the specific cell."
+  ErabInfo:
+    type: "object"
+    required:
+    - "erabId"
+    properties:
+      erabId:
+        type: "integer"
+        description: "Attribute that uniquely identifies a Radio Access bearer for\
+          \ specific UE as defined in ETSI TS 136 413"
+      erabQosParameters:
+        $ref: "#/definitions/ErabQosParameters"
     description: "Information on UEs in the specific cell."
   AssociateId:
     type: "object"
