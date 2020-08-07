@@ -33,7 +33,17 @@ paths:
       operationId: "getActiveScenario"
       produces:
       - "application/json"
-      parameters: []
+      parameters:
+      - name: "minimize"
+        in: "query"
+        description: "Return a minimized active scenario (default: false)"
+        required: false
+        type: "string"
+        enum:
+        - "true"
+        - "false"
+        x-exportParamName: "Minimize"
+        x-optionalDataType: "String"
       responses:
         200:
           description: "OK"

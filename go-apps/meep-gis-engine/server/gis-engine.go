@@ -807,6 +807,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	assetType := query.Get("assetType")
 	subType := query.Get("subType")
+	excludePath := query.Get("excludePath")
 	assetTypeStr := "*"
 	if assetType != "" {
 		assetTypeStr = assetType
@@ -815,7 +816,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	if subType != "" {
 		subTypeStr = subType
 	}
-	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "]")
+	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
 
 	var assetList GeoDataAssetList
 
@@ -837,7 +838,13 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			asset.AssetName = ue.Name
 			asset.AssetType = AssetTypeUe
 			asset.SubType = mod.NodeTypeUE
-			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+
+			// Exclude path if necessary
+			if excludePath == "true" {
+				err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+			} else {
+				err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+			}
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -923,6 +930,10 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	assetName := vars["assetName"]
 	log.Debug("Get GeoData for asset: ", assetName)
 
+	// Retrieve query parameters
+	query := r.URL.Query()
+	excludePath := query.Get("excludePath")
+
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
 		err := errors.New("No active scenario")
@@ -957,7 +968,12 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+		// Exclude path if necessary
+		if excludePath == "true" {
+			err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+		} else {
+			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+		}
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)

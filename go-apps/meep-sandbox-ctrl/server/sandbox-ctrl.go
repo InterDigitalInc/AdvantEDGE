@@ -389,7 +389,17 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scenario, err := sbxCtrl.activeModel.GetScenario()
+	// Retrieve query parameters
+	query := r.URL.Query()
+	minimize := query.Get("minimize")
+
+	var scenario []byte
+	var err error
+	if minimize == "true" {
+		scenario, err = sbxCtrl.activeModel.GetScenarioMinimized()
+	} else {
+		scenario, err = sbxCtrl.activeModel.GetScenario()
+	}
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

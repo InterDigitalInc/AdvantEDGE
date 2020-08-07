@@ -451,7 +451,7 @@ class MeepContainer extends Component {
 
   // Refresh Active scenario
   refreshScenario() {
-    this.meepActiveScenarioApi.getActiveScenario((error, data) =>
+    this.meepActiveScenarioApi.getActiveScenario(null, (error, data) =>
       this.getActiveScenarioCb(error, data)
     );
   }

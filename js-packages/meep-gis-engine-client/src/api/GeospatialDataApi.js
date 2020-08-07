@@ -123,6 +123,7 @@
      * @param {Object} opts Optional parameters
      * @param {module:model/String} opts.assetType Filter by asset type
      * @param {module:model/String} opts.subType Filter by asset sub type
+     * @param {module:model/String} opts.excludePath Exclude UE paths in response (default: false)
      * @param {module:api/GeospatialDataApi~getAssetDataCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/GeoDataAssetList}
      */
@@ -136,6 +137,7 @@
       var queryParams = {
         'assetType': opts['assetType'],
         'subType': opts['subType'],
+        'excludePath': opts['excludePath'],
       };
       var collectionQueryParams = {
       };
@@ -168,10 +170,13 @@
      * Get geospatial data
      * Get geospatial data for the given asset
      * @param {String} assetName Name of geospatial asset
+     * @param {Object} opts Optional parameters
+     * @param {module:model/String} opts.excludePath Exclude UE paths in response (default: false)
      * @param {module:api/GeospatialDataApi~getGeoDataByNameCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/GeoDataAsset}
      */
-    this.getGeoDataByName = function(assetName, callback) {
+    this.getGeoDataByName = function(assetName, opts, callback) {
+      opts = opts || {};
       var postBody = null;
 
       // verify the required parameter 'assetName' is set
@@ -184,6 +189,7 @@
         'assetName': assetName
       };
       var queryParams = {
+        'excludePath': opts['excludePath'],
       };
       var collectionQueryParams = {
       };
