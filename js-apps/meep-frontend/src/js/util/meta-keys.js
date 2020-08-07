@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019  InterDigital Communications, Inc
+ * Copyright (c) 2020  InterDigital Communications, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-import { CFG_STATE_IDLE } from '../../meep-constants';
+const META_DISPLAY = 'display';
 
-const initialState = CFG_STATE_IDLE;
-
-// CHANGE_STATE
-const CFG_CHANGE_STATE = 'CFG_CHANGE_STATE';
-export function cfgChangeState(state) {
-  return {
-    type: CFG_CHANGE_STATE,
-    payload: state
-  };
-}
-
-export function stateReducer(state = initialState, action) {
-  switch (action.type) {
-  case CFG_CHANGE_STATE:
-    return action.payload;
-  default:
-    return state;
-  }
-}
+// Map Display Settings
+const META_DISPLAY_MAP = META_DISPLAY + '.map';
+export const META_DISPLAY_MAP_COLOR = META_DISPLAY_MAP + '.color';
+export const META_DISPLAY_MAP_ICON = META_DISPLAY_MAP + '.icon';

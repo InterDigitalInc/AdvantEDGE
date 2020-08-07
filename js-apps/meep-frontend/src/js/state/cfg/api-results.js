@@ -16,19 +16,17 @@
 
 import { updateObject } from '../../util/object-util';
 
+const initialState = {
+  scenarios: []
+};
+
 const CFG_CHANGE_SCENARIO_LIST = 'CFG_CHANGE_SCENARIO_LIST';
-function cfgChangeScenarioList(scenarios) {
+export function cfgChangeScenarioList(scenarios) {
   return {
     type: CFG_CHANGE_SCENARIO_LIST,
     payload: scenarios
   };
 }
-
-export { CFG_CHANGE_SCENARIO_LIST, cfgChangeScenarioList };
-
-const initialState = {
-  scenarios: []
-};
 
 export function cfgApiResultsReducer(state = initialState, action) {
   switch (action.type) {

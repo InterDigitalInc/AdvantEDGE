@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { Component } from 'react';
 import { Grid, GridCell } from '@rmwc/grid';
 
 import {
@@ -25,57 +25,67 @@ import {
   DialogButton
 } from '@rmwc/dialog';
 
-const IDDialog = props => {
-  return (
-    <Dialog
-      style={{zIndex: 10000}}
-      open={props.open}
-      onClose={() => {
-        props.onClose();
-      }}
-      data-cy={props.cydata}
-    >
-      <DialogTitle style={styles.title}>
-        <Grid>
-          <GridCell span={12}>{props.title}</GridCell>
-        </Grid>
-      </DialogTitle>
+class IDDialog extends Component {
+  constructor(props) {
+    super(props);
 
-      <DialogContent style={styles.content}>
-        <Grid>
-          <GridCell span={12}>{props.children}</GridCell>
-        </Grid>
-      </DialogContent>
+    this.state = {
+      sandboxName: '',
+      err: null
+      
+    };
+  }
 
-      <DialogActions style={styles.actions}>
-        <Grid>
-          <GridCell span={8}></GridCell>
-          <GridCell span={2}>
-            <DialogButton
-              style={styles.button}
-              action="close"
-              onClick={props.onClose}
-            >
-              Cancel
-            </DialogButton>
-          </GridCell>
+  render() {
+    return (
+      <Dialog
+        style={{zIndex: 10000}}
+        open={this.props.open}
+        onClose={this.props.onClose}
+        data-cy={this.props.cydata}
+      >
+        <DialogTitle style={styles.title}>
+          <Grid>
+            <GridCell span={12}>{this.props.title}</GridCell>
+          </Grid>
+        </DialogTitle>
 
-          <GridCell span={2}>
-            <DialogButton
-              style={styles.button}
-              action="accept"
-              isDefaultAction
-              onClick={() => props.onSubmit()}
-              disabled={props.okDisabled}
-            >
-              Ok
-            </DialogButton>
-          </GridCell>
-        </Grid>
-      </DialogActions>
-    </Dialog>
-  );
-};
+        <DialogContent style={styles.content}>
+          <Grid>
+            <GridCell span={12}>{this.props.children}</GridCell>
+          </Grid>
+        </DialogContent>
+
+        <DialogActions style={styles.actions}>
+          <Grid>
+            <GridCell span={8}></GridCell>
+            <GridCell span={2}>
+              <DialogButton
+                style={styles.button}
+                action="close"
+                onClick={this.props.onClose}
+              >
+                Cancel
+              </DialogButton>
+            </GridCell>
+
+            <GridCell span={2}>
+              <DialogButton
+                style={styles.button}
+                action="accept"
+                isDefaultAction
+                onClick={this.props.onSubmit}
+                disabled={this.props.okDisabled}
+              >
+                Ok
+              </DialogButton>
+            </GridCell>
+          </Grid>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+}
 
 const styles = {
   title: {

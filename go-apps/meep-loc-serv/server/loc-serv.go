@@ -298,8 +298,11 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 
 	//check all that applies
 	for subsId, zoneStatus := range zoneStatusSubscriptionMap {
-		if zoneStatus.ZoneId == zoneId {
+		if zoneStatus == nil {
+			continue
+		}
 
+		if zoneStatus.ZoneId == zoneId {
 			nbUsersInZone := 0
 			nbUsersInAP := -1
 			zoneWarning := false

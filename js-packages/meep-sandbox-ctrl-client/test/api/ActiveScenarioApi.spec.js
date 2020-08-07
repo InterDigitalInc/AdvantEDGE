@@ -142,10 +142,12 @@
       });
       describe('getActiveScenario', function() {
         it('should call getActiveScenario successfully', function(done) {
-          // TODO: uncomment getActiveScenario call and complete the assertions
+          // TODO: uncomment, update parameter values for getActiveScenario call and complete the assertions
           /*
+          var opts = {};
+          opts.minimize = "minimize_example";
 
-          instance.getActiveScenario(function(error, data, response) {
+          instance.getActiveScenario(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;

@@ -222,9 +222,32 @@ func (m *Model) SetScenario(j []byte) (err error) {
 func (m *Model) GetScenario() (j []byte, err error) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
+	return json.Marshal(m.scenario)
+}
 
+// GetScenarioMinimized - Get Minimized Scenario JSON string
+func (m *Model) GetScenarioMinimized() (j []byte, err error) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	// Marshal scenario
 	j, err = json.Marshal(m.scenario)
-	return j, err
+	if err != nil {
+		return j, err
+	}
+
+	// Unmarshal scenario in new variable to update
+	var scenario dataModel.Scenario
+	err = json.Unmarshal(j, &scenario)
+	if err != nil {
+		return nil, err
+	}
+	err = minimizeScenario(&scenario)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(scenario)
 }
 
 // Activate - Make scenario the active scenario

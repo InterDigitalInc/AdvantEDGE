@@ -152,7 +152,6 @@ class ExecTable extends Component {
     const classes = this.classes;
     const table = this.props.table;
     const data = this.props.podsWithServiceMaps;
-    // const data = this.props.table.entries;
     const order = table.order;
     const orderBy = table.orderBy;
     const rowsPerPage = table.rowsPerPage;

@@ -83,9 +83,7 @@ const MeepTopBar = props => {
               className='idcc-toolbar-menu mdc-top-app-bar__navigation-icon'
               src={logo}
               alt=''
-              onClick={() => {
-                props.toggleMainDrawer();
-              }}
+              onClick={props.toggleMainDrawer}
             />
             <img id='AdvantEdgeLogo' height={50} src={advantEdge} alt='' />
             <ToolbarTitle>

@@ -37,7 +37,6 @@ import (
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
-	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
 )
 
 type Scenario struct {
@@ -50,7 +49,6 @@ type PlatformCtrl struct {
 	sandboxStore  *sbs.SandboxStore
 	sessionStore  *ss.SessionStore
 	userStore     *users.Connector
-	veWatchdog    *wd.Watchdog
 	mqGlobal      *mq.MsgQueue
 }
 
@@ -58,8 +56,6 @@ const scenarioDBName = "scenarios"
 const redisTable = 0
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
-const moduleVirtEngineName = "meep-virt-engine"
-const moduleVirtEngineNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
 
@@ -160,25 +156,11 @@ func Init() (err error) {
 	_ = pfmCtrl.userStore.CreateTables()
 	log.Info("Connected to User Store")
 
-	// Setup for virt-engine monitoring
-	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
-	if err != nil {
-		log.Error("Failed to initialize virt-engine wd. Error: ", err)
-		return err
-	}
-
 	return nil
 }
 
 // Run Starts the Platform Controller
 func Run() (err error) {
-
-	// Start Virt Engine wd
-	err = pfmCtrl.veWatchdog.Start(time.Second, 3*time.Second)
-	if err != nil {
-		log.Error("Failed to start virt-engine wd. Error: ", err)
-		return err
-	}
 
 	return nil
 }
