@@ -552,7 +552,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && ((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) {
+			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (oldPlmn == nil || oldCellId == "")) {
 				match = true
 			} else {
 				match = false
@@ -649,7 +649,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (newPlmn == nil || newCellId == "")) {
+			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (newPlmn == nil || newCellId == "")) {
 				match = true
 			} else {
 				match = false
@@ -692,8 +692,8 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				var oldEcgi clientNotif.Ecgi
 
 				var notifOldPlmn clientNotif.Plmn
-				notifOldPlmn.Mnc = newPlmn.Mnc
-				notifOldPlmn.Mcc = newPlmn.Mcc
+				notifOldPlmn.Mnc = oldPlmn.Mnc
+				notifOldPlmn.Mcc = oldPlmn.Mcc
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = []string{oldCellId}
 
