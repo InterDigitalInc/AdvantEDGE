@@ -104,7 +104,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      }
@@ -185,7 +185,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      }
@@ -351,13 +351,13 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null
                      },
                      {
                         "id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
                         "name": "zone1-poa-cell1",
-                        "type": "POA-CELLULAR",
+                        "type": "POA-4G",
                         "netChar": {
                            "latency": 1,
                            "latencyVariation": 1,
@@ -367,7 +367,7 @@ const testScenario string = `
                            "throughput": null,
                            "packetLoss": null
                         },
-                        "cellularPoaConfig": {
+                        "poa4GConfig": {
                            "cellId": "2345678"
                         },
                         "physicalLocations": [
@@ -552,7 +552,7 @@ const testScenario string = `
                      {
                         "id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
                         "name": "zone1-poa-cell2",
-                        "type": "POA-CELLULAR",
+                        "type": "POA-4G",
                         "netChar": {
                            "latency": 1,
                            "latencyVariation": 1,
@@ -562,7 +562,7 @@ const testScenario string = `
                            "throughput": null,
                            "packetLoss": null
                         },
-                        "cellularPoaConfig": {
+                        "poa4GConfig": {
                            "cellId": "3456789"
                         },
                         "terminalLinkLatency": null,
@@ -736,7 +736,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null
                      },
                      {
@@ -758,7 +758,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      }
@@ -833,7 +833,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      }
@@ -886,7 +886,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      },
@@ -909,7 +909,7 @@ const testScenario string = `
                         "terminalLinkPacketLoss": null,
                         "meta": null,
                         "userMeta": null,
-                        "cellularPoaConfig": null,
+                        "poa4GConfig": null,
                         "geoData": null,
                         "physicalLocations": null
                      }

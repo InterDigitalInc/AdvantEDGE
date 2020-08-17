@@ -46,6 +46,9 @@ type NetworkLocation struct {
 	// Key/Value Pair Map (string, string)
 	UserMeta          map[string]string  `json:"userMeta,omitempty"`
 	CellularPoaConfig *CellularPoaConfig `json:"cellularPoaConfig,omitempty"`
+	Poa4GConfig       *Poa4GConfig       `json:"poa4GConfig,omitempty"`
+	Poa5GConfig       *Poa5GConfig       `json:"poa5GConfig,omitempty"`
+	PoaWifiConfig     *PoaWifiConfig     `json:"poaWifiConfig,omitempty"`
 	GeoData           *GeoData           `json:"geoData,omitempty"`
 	PhysicalLocations []PhysicalLocation `json:"physicalLocations,omitempty"`
 }

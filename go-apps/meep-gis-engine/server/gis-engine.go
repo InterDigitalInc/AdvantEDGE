@@ -228,7 +228,7 @@ func processScenarioActivate() {
 	ge.activeModel.UpdateScenario()
 
 	// Retrieve & process POA and Compute Assets in active scenario
-	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	addAssets(assetList)
 
 	// Retrieve & process UE assets in active scenario
@@ -242,7 +242,7 @@ func processScenarioUpdate() {
 	ge.activeModel.UpdateScenario()
 
 	// Get latest asset list
-	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	newAssets := make(map[string]bool)
 	var assetsToAdd []string
 	var assetsToRemove []string
@@ -525,7 +525,7 @@ func isUe(nodeType string) bool {
 }
 
 func isPoa(nodeType string) bool {
-	return nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell
+	return nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoa4G || nodeType == mod.NodeTypePoa5G || nodeType == mod.NodeTypePoaWifi
 }
 
 func isCompute(nodeType string) bool {

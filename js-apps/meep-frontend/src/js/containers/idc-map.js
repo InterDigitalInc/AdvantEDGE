@@ -43,7 +43,9 @@ import {
   HOST_PATH,
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_POA,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_FOG,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_DC
@@ -863,7 +865,9 @@ class IDCMap extends Component {
         break;
 
       case ELEMENT_TYPE_POA:
-      case ELEMENT_TYPE_POA_CELL:
+      case ELEMENT_TYPE_POA_4G:
+      case ELEMENT_TYPE_POA_5G:
+      case ELEMENT_TYPE_POA_WIFI:
         for (let i = 0; i < map.poaList.length; i++) {
           if (map.poaList[i].assetName === name) {
             geoDataAsset = map.poaList[i];

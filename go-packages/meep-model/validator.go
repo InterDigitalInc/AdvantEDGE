@@ -34,12 +34,13 @@ const (
 )
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 0}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 0}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
 var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
 var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
+var Version160 = semver.Version{Major: 1, Minor: 6, Patch: 0}
 
 // Default latency distribution
 const DEFAULT_LATENCY_DISTRIBUTION = "Normal"
@@ -103,6 +104,11 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 	if scenarioVersion.LT(Version150) {
 		upgradeScenarioTo150(scenario)
 		scenarioVersion = Version150
+	}
+	// UPGRADE TO 1.6.0
+	if scenarioVersion.LT(Version160) {
+		upgradeScenarioTo160(scenario)
+		scenarioVersion = Version160
 	}
 
 	// Set current scenario version
@@ -270,6 +276,36 @@ func upgradeScenarioTo150(scenario *dataModel.Scenario) {
 							proc.AppLatencyVariation = 0
 							proc.AppPacketLoss = 0
 							proc.AppThroughput = 0
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func upgradeScenarioTo160(scenario *dataModel.Scenario) {
+	//changes in 160 vs 150
+	//rename POA-CELLULAR to POA-4G
+
+	// Set updated version
+	scenario.Version = Version160.String()
+
+	// Migrate netchar information
+	if scenario.Deployment != nil {
+		for iDomain := range scenario.Deployment.Domains {
+			domain := &scenario.Deployment.Domains[iDomain]
+			for iZone := range domain.Zones {
+				zone := &domain.Zones[iZone]
+				for iNl := range zone.NetworkLocations {
+					nl := &zone.NetworkLocations[iNl]
+					if nl.Type_ == NodeTypePoaCellularDeprecated /*"POA-CELLULAR"*/ {
+						nl.Type_ = NodeTypePoa4G
+						if nl.CellularPoaConfig != nil {
+							if nl.Poa4GConfig == nil {
+								nl.Poa4GConfig = new(dataModel.Poa4GConfig)
+							}
+							nl.Poa4GConfig.CellId = nl.CellularPoaConfig.CellId
 						}
 					}
 				}

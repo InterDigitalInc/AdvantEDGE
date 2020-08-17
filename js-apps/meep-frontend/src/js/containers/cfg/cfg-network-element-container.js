@@ -51,8 +51,10 @@ import {
   FIELD_IS_EXTERNAL,
   FIELD_MCC,
   FIELD_MNC,
+  FIELD_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_RADIUS,
   FIELD_GEO_PATH,
@@ -87,7 +89,9 @@ import {
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_POA_GENERIC,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -127,8 +131,10 @@ import {
   CFG_ELEM_EXTERNAL_CHECK,
   CFG_ELEM_MNC,
   CFG_ELEM_MCC,
+  CFG_ELEM_MAC_ID,
   CFG_ELEM_DEFAULT_CELL_ID,
   CFG_ELEM_CELL_ID,
+  CFG_ELEM_NR_CELL_ID,
   CFG_ELEM_GEO_LOCATION,
   CFG_ELEM_GEO_RADIUS,
   CFG_ELEM_GEO_PATH,
@@ -294,6 +300,28 @@ const validateCellularCellId = val => {
   if (val) {
     if (val.length > 7) {
       return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
+  }
+  return null;
+};
+
+const validateCellularNrCellId = val => {
+  if (val) {
+    if (val.length > 7) {
+      return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
+  }
+  return null;
+};
+
+const validateMacAddress = val => {
+  if (val) {
+    if (val.length > 12) {
+      return 'Maximum 12 characters';
     } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
       return 'Alphanumeric hex characters only';
     }
@@ -765,7 +793,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
         </Grid>
       </>
     );
-  case ELEMENT_TYPE_POA_CELL:
+  case ELEMENT_TYPE_POA_4G:
     return (
       <>
         <NCGroups
@@ -803,6 +831,88 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           label="Cell Id"
           fieldName={FIELD_CELL_ID}
           cydata={CFG_ELEM_CELL_ID}
+        />
+      </>
+    );
+  case ELEMENT_TYPE_POA_5G:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validateNumber}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateCellularNrCellId}
+          label="Cell Id"
+          fieldName={FIELD_NR_CELL_ID}
+          cydata={CFG_ELEM_NR_CELL_ID}
+        />
+      </>
+    );
+  case ELEMENT_TYPE_POA_WIFI:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validateNumber}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateMacAddress}
+          label="Mac Address"
+          fieldName={FIELD_MAC_ID}
+          cydata={CFG_ELEM_MAC_ID}
         />
       </>
     );
@@ -1143,7 +1253,7 @@ const elementTypes = [
   },
   {
     label: 'Network Location',
-    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_CELL]
+    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI]
   },
   {
     label: 'Physical Location',
@@ -1173,10 +1283,12 @@ parentTypes[ELEMENT_TYPE_OPERATOR_CELL] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_EDGE] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR, ELEMENT_TYPE_OPERATOR_CELL];
 parentTypes[ELEMENT_TYPE_POA] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_POA_CELL] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_4G] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_5G] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_WIFI] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_CN] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
-parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
+parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI];
+parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
 parentTypes[ELEMENT_TYPE_MECSVC] = [ELEMENT_TYPE_FOG, ELEMENT_TYPE_EDGE, ELEMENT_TYPE_CN];
@@ -1257,8 +1369,14 @@ const getSuggestedName = ( type, elements ) => {
   case ELEMENT_TYPE_DC:
     suggestedPrefix = 'cloud';
     break;
-  case ELEMENT_TYPE_POA_CELL:
-    suggestedPrefix = 'poa-cell';
+  case ELEMENT_TYPE_POA_4G:
+    suggestedPrefix = 'poa-4g';
+    break;
+  case ELEMENT_TYPE_POA_5G:
+    suggestedPrefix = 'poa-5g';
+    break;
+  case ELEMENT_TYPE_POA_WIFI:
+    suggestedPrefix = 'poa-wifi';
     break;
   case ELEMENT_TYPE_OPERATOR_CELL:
     suggestedPrefix = 'operator-cell';

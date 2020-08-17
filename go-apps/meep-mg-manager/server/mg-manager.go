@@ -304,7 +304,7 @@ func processScenario(model *mod.Model) error {
 	log.Debug("processScenario")
 
 	// Populate net location list
-	mgm.netLocList = model.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoaCell)
+	mgm.netLocList = model.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
 	mgm.netLocList = append(mgm.netLocList, model.GetNodeNames("DEFAULT")...)
 
 	// Get list of processes

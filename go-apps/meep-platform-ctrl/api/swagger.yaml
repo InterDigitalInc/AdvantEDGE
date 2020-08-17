@@ -616,7 +616,9 @@ definitions:
         description: "Network location type"
         enum:
         - "POA"
-        - "POA-CELLULAR"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
         - "DEFAULT"
       netChar:
         $ref: "#/definitions/NetworkCharacteristics"
@@ -646,6 +648,12 @@ definitions:
           type: "string"
       cellularPoaConfig:
         $ref: "#/definitions/CellularPoaConfig"
+      poa4GConfig:
+        $ref: "#/definitions/Poa4GConfig"
+      poa5GConfig:
+        $ref: "#/definitions/Poa5GConfig"
+      poaWifiConfig:
+        $ref: "#/definitions/PoaWifiConfig"
       geoData:
         $ref: "#/definitions/GeoData"
       physicalLocations:
@@ -661,7 +669,30 @@ definitions:
         type: "string"
         description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
           \ the ID of the eNB serving the cell"
-    description: "Cellular POA configuration information"
+    description: "**DEPRECATED** As of release 1.6.0, renamed to poa4GConfig"
+  Poa4GConfig:
+    type: "object"
+    properties:
+      cellId:
+        type: "string"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
+          \ the ID of the eNB serving the cell"
+    description: "Cellular 4G POA configuration information"
+  Poa5GConfig:
+    type: "object"
+    properties:
+      cellId:
+        type: "string"
+        description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
+          \ the ID of the NR serving the cell"
+    description: "Cellular 5G POA configuration information"
+  PoaWifiConfig:
+    type: "object"
+    properties:
+      macId:
+        type: "string"
+        description: "TBD"
+    description: "WIFI POA configuration information"
   GeoData:
     type: "object"
     properties:

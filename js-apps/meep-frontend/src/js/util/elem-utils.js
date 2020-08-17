@@ -71,6 +71,8 @@ export const FIELD_MCC = 'mcc';
 export const FIELD_MNC = 'mnc';
 export const FIELD_DEFAULT_CELL_ID = 'defaultCellId';
 export const FIELD_CELL_ID = 'cellId';
+export const FIELD_NR_CELL_ID = 'cellId';
+export const FIELD_MAC_ID = 'macId';
 export const FIELD_GEO_LOCATION = 'location';
 export const FIELD_GEO_RADIUS = 'radius';
 export const FIELD_GEO_PATH = 'path';
@@ -158,6 +160,8 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_MCC, '');
   setElemFieldVal(elem, FIELD_DEFAULT_CELL_ID, '');
   setElemFieldVal(elem, FIELD_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_NR_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_MAC_ID, '');
   setElemFieldVal(elem, FIELD_GEO_LOCATION, '');
   setElemFieldVal(elem, FIELD_GEO_RADIUS, '');
   setElemFieldVal(elem, FIELD_GEO_PATH, '');
