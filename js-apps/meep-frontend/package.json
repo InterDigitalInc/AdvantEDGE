@@ -58,6 +58,7 @@
     "prop-types": "15.6.2",
     "react": "^16.8.6",
     "react-autobind": "^1.0.6",
+    "react-color": "^2.18.1",
     "react-d3-axis": "^0.1.2",
     "react-d3-graph": "^2.0.2",
     "react-dom": "^16.8.6",
