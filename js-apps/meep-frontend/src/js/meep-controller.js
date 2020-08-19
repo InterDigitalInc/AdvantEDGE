@@ -22,6 +22,8 @@ import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'vis/dist/vis.min.css';
 import '../css/meep-controller.scss';
 
+import '../img/ID-Icon-01-idcc-blue.svg';
+
 // Import module dependencies
 // import 'material-design-icons';
 import React from 'react';
