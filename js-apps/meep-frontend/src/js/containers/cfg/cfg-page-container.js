@@ -76,7 +76,8 @@ import {
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  getElemFieldVal
+  getElemFieldVal,
+  resetElem
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -122,6 +123,7 @@ class CfgPageContainer extends Component {
   onEditElement(element) {
     if (element !== null) {
       if (!this.props.configuredElement || (element.id !== this.props.configuredElement.id)) {
+        resetElem(element);
         this.props.cfgElemEdit(element);
       }
     } else {

@@ -135,8 +135,18 @@ export const setElemFieldErr = (elem, field, err) => {
   }
 };
 
+export const resetElem = (elem) => {
+  if (elem) {
+    elem.editColor = false;
+  }
+};
+
 export const createElem = name => {
   var elem = {};
+  // State
+  resetElem(elem);
+
+  // Fields
   setElemFieldVal(elem, FIELD_TYPE, '');
   setElemFieldVal(elem, FIELD_PARENT, '');
   setElemFieldVal(elem, FIELD_NAME, name);

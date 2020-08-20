@@ -554,6 +554,11 @@ export function updateElementInScenario(scenario, element) {
           }
         }
 
+        if (!zone.meta) {
+          zone.meta = {};
+        }
+        zone.meta[META_DISPLAY_MAP_COLOR] = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
+
         zone.label = name;
         zone.name = name;
         return;
@@ -1193,8 +1198,10 @@ export function createZone(uniqueId, name, element) {
       throughputUl: getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_UL),
       packetLoss: getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS)
     },
-    networkLocations: [createDefaultNL(name)]
+    networkLocations: [createDefaultNL(name)],
+    meta: {}
   };
+  zone.meta[META_DISPLAY_MAP_COLOR] = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
   return zone;
 }
 

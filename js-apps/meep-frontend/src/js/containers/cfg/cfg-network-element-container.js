@@ -23,6 +23,8 @@ import { Button } from '@rmwc/button';
 import { TextField, TextFieldIcon, TextFieldHelperText } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
+import { Icon } from '@rmwc/icon';
+import { ChromePicker } from 'react-color';
 
 import { updateObject } from '../../util/object-util';
 import { createUniqueName } from '../../util/elem-utils';
@@ -62,6 +64,7 @@ import {
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
+  FIELD_META_DISPLAY_MAP_COLOR,
   getElemFieldVal,
   setElemFieldVal,
   getElemFieldErr,
@@ -350,6 +353,16 @@ const validateProtocol = protocol => {
     if (protocol !== '' && protocol !== 'TCP' && protocol !== 'UDP') {
       return 'Must be TCP or UDP';
     }
+  }
+  return null;
+};
+
+const validateColor = val => {
+  if (val === '') {
+    return null;
+  }
+  if (!val.match(/^#[0-9A-Fa-f]{6}$/)) {
+    return 'Invalid hex format';
   }
   return null;
 };
@@ -659,12 +672,32 @@ const UserChartFields = ({ element, onUpdate }) => {
   );
 };
 
+const ColorIcon = (color) => {
+  return (
+    <Icon
+      icon={
+        <div
+          style={{
+            background: color,
+            width: '24px',
+            height: '24px',
+            border: '1px solid',
+            borderRadius: '5px',
+            borderColor: '#4d4d4d'
+          }}
+        />
+      }
+    />
+  );
+};
+
 // Display element-specific form fields
 const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
+  var color = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
 
   switch (type) {
   case ELEMENT_TYPE_SCENARIO:
@@ -726,11 +759,38 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
     );
   case ELEMENT_TYPE_ZONE:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INTRA_ZONE]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INTRA_ZONE]}
+        />
+        <Grid style={{position: 'relative'}}>
+          <CfgTextFieldCell
+            span={6}
+            icon={ColorIcon(color)}
+            onIconClick={() => {
+              var colorErr = getElemFieldErr(element, FIELD_META_DISPLAY_MAP_COLOR);
+              element.editColor = !element.editColor;
+              onUpdate(FIELD_META_DISPLAY_MAP_COLOR, color, colorErr);
+            }}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateColor}
+            label="Zone Color"
+            fieldName={FIELD_META_DISPLAY_MAP_COLOR}
+          />
+          { !element.editColor ? null :
+            <div style={ styles.popover }>
+              <ChromePicker
+                color={color}
+                disableAlpha={true}
+                onChange={(color) => {onUpdate(FIELD_META_DISPLAY_MAP_COLOR, color.hex.toUpperCase(), null);}}
+              />
+            </div>
+          }
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_POA:
     return (
@@ -1503,6 +1563,11 @@ const styles = {
   },
   select: {
     width: '100%'
+  },
+  popover: {
+    position: 'absolute',
+    top: '80px',
+    zIndex: '2'
   }
 };
 
