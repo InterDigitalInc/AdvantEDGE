@@ -8,6 +8,7 @@ deployment:
   replicas: 1
   port: 80
   protocol: TCP
+  dependency: kube-dns
 
 image:
   repository: meep-docker-registry:30001/meep-rnis
