@@ -66,7 +66,7 @@ const (
 	PoaTypeGeneric = "POA"
 	PoaTypeCell4g  = "POA-4G"
 	PoaTypeCell5g  = "POA-5G"
-	PoaTypeWifi    = "POA-WLAN"
+	PoaTypeWifi    = "POA-WIFI"
 )
 
 type Ue struct {

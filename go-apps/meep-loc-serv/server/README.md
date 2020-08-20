@@ -13,11 +13,7 @@ To see how to make this your own, look here:
 [README](https://github.com/swagger-api/swagger-codegen/blob/master/README.md)
 
 - API version: 1.1.1
-<<<<<<< HEAD
-- Build date: 2020-08-07T09:19:36.498-04:00
-=======
 - Build date: 2020-08-17T09:50:46.396-04:00
->>>>>>> 767f428... new poa_wifi and poa_5G, renaming cellpoa to poa_4G
 
 
 ### Running the server

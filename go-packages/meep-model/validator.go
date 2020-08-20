@@ -33,14 +33,19 @@ const (
 	ValidatorStatusError   = "SCENARIO-ERROR"
 )
 
+// Deprecated model element values
+const (
+	NodeTypePoaCellularDeprecated = "POA-CELLULAR"
+)
+
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 0}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 1}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
 var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
 var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
-var Version160 = semver.Version{Major: 1, Minor: 6, Patch: 0}
+var Version151 = semver.Version{Major: 1, Minor: 5, Patch: 1}
 
 // Default latency distribution
 const DEFAULT_LATENCY_DISTRIBUTION = "Normal"
@@ -105,10 +110,10 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 		upgradeScenarioTo150(scenario)
 		scenarioVersion = Version150
 	}
-	// UPGRADE TO 1.6.0
-	if scenarioVersion.LT(Version160) {
-		upgradeScenarioTo160(scenario)
-		scenarioVersion = Version160
+	// UPGRADE TO 1.5.1
+	if scenarioVersion.LT(Version151) {
+		upgradeScenarioTo151(scenario)
+		scenarioVersion = Version151
 	}
 
 	// Set current scenario version
@@ -284,12 +289,12 @@ func upgradeScenarioTo150(scenario *dataModel.Scenario) {
 	}
 }
 
-func upgradeScenarioTo160(scenario *dataModel.Scenario) {
-	//changes in 160 vs 150
+func upgradeScenarioTo151(scenario *dataModel.Scenario) {
+	//changes in 160 (151 for now) vs 150
 	//rename POA-CELLULAR to POA-4G
 
 	// Set updated version
-	scenario.Version = Version160.String()
+	scenario.Version = Version151.String()
 
 	// Migrate netchar information
 	if scenario.Deployment != nil {
