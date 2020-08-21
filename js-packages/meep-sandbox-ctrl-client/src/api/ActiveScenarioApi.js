@@ -172,20 +172,16 @@
     /**
      * Get the deployed scenario
      * Get the scenario currently deployed on the platform
-     * @param {Object} opts Optional parameters
-     * @param {module:model/String} opts.minimize Return a minimized active scenario (default: false)
      * @param {module:api/ActiveScenarioApi~getActiveScenarioCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Scenario}
      */
-    this.getActiveScenario = function(opts, callback) {
-      opts = opts || {};
+    this.getActiveScenario = function(callback) {
       var postBody = null;
 
 
       var pathParams = {
       };
       var queryParams = {
-        'minimize': opts['minimize'],
       };
       var collectionQueryParams = {
       };

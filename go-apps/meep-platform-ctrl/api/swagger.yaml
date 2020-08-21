@@ -669,7 +669,7 @@ definitions:
         type: "string"
         description: "The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including\
           \ the ID of the eNB serving the cell"
-    description: "**DEPRECATED** As of release 1.6.0, renamed to poa4GConfig"
+    description: "**DEPRECATED** As of release 1.5.1, renamed to poa4GConfig"
   Poa4GConfig:
     type: "object"
     properties:

@@ -72,8 +72,7 @@ var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
 
 var opts = { 
   'assetType': "assetType_example", // String | Filter by asset type
-  'subType': "subType_example", // String | Filter by asset sub type
-  'excludePath': "excludePath_example" // String | Exclude UE paths in response (default: false)
+  'subType': "subType_example" // String | Filter by asset sub type
 };
 
 var callback = function(error, data, response) {
@@ -92,7 +91,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetType** | **String**| Filter by asset type | [optional] 
  **subType** | **String**| Filter by asset sub type | [optional] 
- **excludePath** | **String**| Exclude UE paths in response (default: false) | [optional] 
 
 ### Return type
 
@@ -109,7 +107,7 @@ No authorization required
 
 <a name="getGeoDataByName"></a>
 # **getGeoDataByName**
-> GeoDataAsset getGeoDataByName(assetName, opts)
+> GeoDataAsset getGeoDataByName(assetName)
 
 Get geospatial data
 
@@ -123,9 +121,6 @@ var apiInstance = new AdvantEdgeGisEngineRestApi.GeospatialDataApi();
 
 var assetName = "assetName_example"; // String | Name of geospatial asset
 
-var opts = { 
-  'excludePath': "excludePath_example" // String | Exclude UE paths in response (default: false)
-};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -134,7 +129,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getGeoDataByName(assetName, opts, callback);
+apiInstance.getGeoDataByName(assetName, callback);
 ```
 
 ### Parameters
@@ -142,7 +137,6 @@ apiInstance.getGeoDataByName(assetName, opts, callback);
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **assetName** | **String**| Name of geospatial asset | 
- **excludePath** | **String**| Exclude UE paths in response (default: false) | [optional] 
 
 ### Return type
 

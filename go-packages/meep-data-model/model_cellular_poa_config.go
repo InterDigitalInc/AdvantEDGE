@@ -23,7 +23,7 @@
 
 package model
 
-// **DEPRECATED** As of release 1.6.0, renamed to poa4GConfig
+// **DEPRECATED** As of release 1.5.1, renamed to poa4GConfig
 type CellularPoaConfig struct {
 	// The E-UTRAN Cell Identity as defined in ETSI TS 136 413 including the ID of the eNB serving the cell
 	CellId string `json:"cellId,omitempty"`

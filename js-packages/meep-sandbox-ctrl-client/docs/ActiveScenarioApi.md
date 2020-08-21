@@ -113,7 +113,7 @@ No authorization required
 
 <a name="getActiveScenario"></a>
 # **getActiveScenario**
-> Scenario getActiveScenario(opts)
+> Scenario getActiveScenario()
 
 Get the deployed scenario
 
@@ -125,10 +125,6 @@ var AdvantEdgeSandboxControllerRestApi = require('advant_edge_sandbox_controller
 
 var apiInstance = new AdvantEdgeSandboxControllerRestApi.ActiveScenarioApi();
 
-var opts = { 
-  'minimize': "minimize_example" // String | Return a minimized active scenario (default: false)
-};
-
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -136,14 +132,11 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-apiInstance.getActiveScenario(opts, callback);
+apiInstance.getActiveScenario(callback);
 ```
 
 ### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **minimize** | **String**| Return a minimized active scenario (default: false) | [optional] 
+This endpoint does not need any parameter.
 
 ### Return type
 

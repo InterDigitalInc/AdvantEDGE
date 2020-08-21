@@ -238,17 +238,10 @@ func (a *ActiveScenarioApiService) GetActiveNodeServiceMaps(ctx context.Context,
 ActiveScenarioApiService Get the deployed scenario
 Get the scenario currently deployed on the platform
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param optional nil or *GetActiveScenarioOpts - Optional Parameters:
-     * @param "Minimize" (optional.String) -  Return a minimized active scenario (default: false)
 
 @return Scenario
 */
-
-type GetActiveScenarioOpts struct {
-	Minimize optional.String
-}
-
-func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context, localVarOptionals *GetActiveScenarioOpts) (Scenario, *http.Response, error) {
+func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context) (Scenario, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -264,9 +257,6 @@ func (a *ActiveScenarioApiService) GetActiveScenario(ctx context.Context, localV
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	if localVarOptionals != nil && localVarOptionals.Minimize.IsSet() {
-		localVarQueryParams.Add("minimize", parameterToString(localVarOptionals.Minimize.Value(), ""))
-	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{"application/json"}
 

@@ -140,16 +140,6 @@ paths:
         - "CLOUD"
         x-exportParamName: "SubType"
         x-optionalDataType: "String"
-      - name: "excludePath"
-        in: "query"
-        description: "Exclude UE paths in response (default: false)"
-        required: false
-        type: "string"
-        enum:
-        - "true"
-        - "false"
-        x-exportParamName: "ExcludePath"
-        x-optionalDataType: "String"
       responses:
         200:
           description: "OK"
@@ -173,16 +163,6 @@ paths:
         required: true
         type: "string"
         x-exportParamName: "AssetName"
-      - name: "excludePath"
-        in: "query"
-        description: "Exclude UE paths in response (default: false)"
-        required: false
-        type: "string"
-        enum:
-        - "true"
-        - "false"
-        x-exportParamName: "ExcludePath"
-        x-optionalDataType: "String"
       responses:
         200:
           description: "OK"
