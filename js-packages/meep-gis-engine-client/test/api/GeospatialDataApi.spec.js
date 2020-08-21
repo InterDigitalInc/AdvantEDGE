@@ -76,6 +76,7 @@
           var opts = {};
           opts.assetType = "assetType_example";
           opts.subType = "subType_example";
+          opts.excludePath = "excludePath_example";
 
           instance.getAssetData(opts, function(error, data, response) {
             if (error) {
@@ -144,8 +145,10 @@
           // TODO: uncomment, update parameter values for getGeoDataByName call and complete the assertions
           /*
           var assetName = "assetName_example";
+          var opts = {};
+          opts.excludePath = "excludePath_example";
 
-          instance.getGeoDataByName(assetName, function(error, data, response) {
+          instance.getGeoDataByName(assetName, opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
