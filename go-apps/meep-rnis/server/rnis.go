@@ -103,12 +103,16 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	// Retrieve Host URL from environment variable
-	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
-	if err != nil {
-		hostUrl = new(url.URL)
+	// hostUrl is the url of the node serving the resourceURL
+	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
+	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
+	if err != nil || hostUrl == nil || hostUrl.String() == "" {
+		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
+		if err != nil {
+			hostUrl = new(url.URL)
+		}
 	}
-	log.Info("MEEP_HOST_URL: ", hostUrl)
+	log.Info("resource URL: ", hostUrl)
 
 	// Set base path
 	basePath = "/" + sandboxName + rnisBasePath
