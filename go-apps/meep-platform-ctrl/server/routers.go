@@ -30,8 +30,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -39,28 +37,15 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	AccessType  string
 }
 type Routes []Route
 
-func NewRouter(feDir string, swDir string, accessMap map[string]string) *mux.Router {
+func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-
-		// Authorization
-		accessType, found := accessMap[route.Name]
-		if !found {
-			accessType = route.AccessType
-		}
-
-		if accessType == ss.AccessBlock {
-			handler = pfmCtrl.sessionStore.AccessBlocker(handler)
-		} else if accessType == ss.AccessVerify {
-			handler = pfmCtrl.sessionStore.AccessVerifier(handler)
-		}
-
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -69,11 +54,38 @@ func NewRouter(feDir string, swDir string, accessMap map[string]string) *mux.Rou
 	}
 
 	// Path prefix router order is important
-	if swDir != "" {
-		router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir(swDir))))
+	if altSw != "" {
+		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/api/").
+			Name("AltSw").
+			Handler(handler)
 	}
-	if feDir != "" {
-		router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir(feDir))))
+	if altFe != "" {
+		var handler http.Handler = http.StripPrefix("/alt/", http.FileServer(http.Dir(altFe)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/").
+			Name("AltFe").
+			Handler(handler)
+	}
+
+	if priSw != "" {
+		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/api/").
+			Name("PriSw").
+			Handler(handler)
+	}
+	if priFe != "" {
+		var handler http.Handler = http.StripPrefix("/", http.FileServer(http.Dir(priFe)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/").
+			Name("PriFe").
+			Handler(handler)
 	}
 
 	return router
@@ -89,7 +101,6 @@ var routes = Routes{
 		"GET",
 		"/platform-ctrl/v1/",
 		Index,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -97,7 +108,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/sandboxes",
 		CreateSandbox,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -105,7 +115,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		CreateSandboxWithName,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -113,7 +122,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		DeleteSandbox,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -121,7 +129,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/sandboxes",
 		DeleteSandboxList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -129,7 +136,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/sandboxes/{name}",
 		GetSandbox,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -137,7 +143,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/sandboxes",
 		GetSandboxList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -145,7 +150,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		CreateScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -153,7 +157,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		DeleteScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -161,7 +164,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/platform-ctrl/v1/scenarios",
 		DeleteScenarioList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -169,7 +171,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		GetScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -177,7 +178,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/scenarios",
 		GetScenarioList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -185,7 +185,6 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		SetScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -193,7 +192,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/login",
 		LoginUser,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -201,6 +199,5 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/platform-ctrl/v1/logout",
 		LogoutUser,
-		ss.AccessGrant,
 	},
 }

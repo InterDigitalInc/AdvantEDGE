@@ -30,8 +30,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -39,29 +37,16 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	AccessType  string
 }
 
 type Routes []Route
 
-func NewRouter(swDir string, accessMap map[string]string) *mux.Router {
+func NewRouter(priSw string, altSw string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-
-		// Authorization
-		accessType, found := accessMap[route.Name]
-		if !found {
-			accessType = route.AccessType
-		}
-
-		if accessType == ss.AccessBlock {
-			handler = sbxCtrl.sessionStore.AccessBlocker(handler)
-		} else if accessType == ss.AccessVerify {
-			handler = sbxCtrl.sessionStore.AccessVerifier(handler)
-		}
-
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -70,8 +55,21 @@ func NewRouter(swDir string, accessMap map[string]string) *mux.Router {
 	}
 
 	// Path prefix router order is important
-	if swDir != "" {
-		router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir(swDir))))
+	if altSw != "" {
+		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/api/").
+			Name("AltSw").
+			Handler(handler)
+	}
+	if priSw != "" {
+		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/api/").
+			Name("PriSw").
+			Handler(handler)
 	}
 
 	return router
@@ -87,7 +85,6 @@ var routes = Routes{
 		"GET",
 		"/sandbox-ctrl/v1/",
 		Index,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -95,7 +92,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/active/{name}",
 		ActivateScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -103,7 +99,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/sandbox-ctrl/v1/active/serviceMaps",
 		GetActiveNodeServiceMaps,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -111,7 +106,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/sandbox-ctrl/v1/active",
 		GetActiveScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -119,7 +113,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/sandbox-ctrl/v1/active",
 		TerminateScenario,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -127,7 +120,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}",
 		CreateReplayFile,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -135,7 +127,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}/generate",
 		CreateReplayFileFromScenarioExec,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -143,7 +134,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/sandbox-ctrl/v1/replay/{name}",
 		DeleteReplayFile,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -151,7 +141,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/sandbox-ctrl/v1/replay",
 		DeleteReplayFileList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -159,7 +148,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/sandbox-ctrl/v1/replay/{name}",
 		GetReplayFile,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -167,7 +155,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/sandbox-ctrl/v1/replay",
 		GetReplayFileList,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -175,7 +162,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/sandbox-ctrl/v1/replaystatus",
 		GetReplayStatus,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -183,7 +169,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}/loop",
 		LoopReplay,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -191,7 +176,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}/play",
 		PlayReplayFile,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -199,7 +183,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/replay/{name}/stop",
 		StopReplayFile,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -207,6 +190,5 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/sandbox-ctrl/v1/events/{type}",
 		SendEvent,
-		ss.AccessGrant,
 	},
 }

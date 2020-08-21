@@ -16,4 +16,5 @@ FROM debian:9.6-slim
 COPY ./meep-platform-ctrl /meep-platform-ctrl
 COPY ./frontend /frontend
 COPY ./swagger /swagger
+COPY ./permissions.yaml /permissions.yaml
 ENTRYPOINT ["/meep-platform-ctrl"]

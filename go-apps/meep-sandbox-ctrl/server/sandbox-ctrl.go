@@ -37,8 +37,8 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
-	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Scenario struct {
@@ -55,8 +55,8 @@ type SandboxCtrl struct {
 	activeModel   *mod.Model
 	metricStore   *ms.MetricStore
 	replayMgr     *replay.ReplayMgr
-	sandboxStore  *sbs.SandboxStore
-	sessionStore  *ss.SessionStore
+	sandboxStore  *ss.SandboxStore
+	sessionMgr    *sm.SessionMgr
 }
 
 const scenarioDBName = "scenarios"
@@ -160,20 +160,20 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	sbxCtrl.sandboxStore, err = sbs.NewSandboxStore(redisDBAddr)
+	sbxCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Connect to Session Store
-	sbxCtrl.sessionStore, err = ss.NewSessionStore(redisDBAddr)
+	// Connect to Session Manager
+	sbxCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, redisDBAddr, redisDBAddr)
 	if err != nil {
-		log.Error("Failed connection to Session Store: ", err.Error())
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Session Store")
+	log.Info("Connected to Session Manager")
 
 	return nil
 }
