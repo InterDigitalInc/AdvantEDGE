@@ -42,6 +42,8 @@ import {
   FIELD_MNC,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
+  FIELD_MAC_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_RADIUS,
   FIELD_GEO_PATH,
@@ -96,7 +98,9 @@ import {
   ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -144,7 +148,9 @@ import {
   ZONE_TYPE_STR,
   COMMON_ZONE_TYPE_STR,
   POA_TYPE_STR,
-  POA_CELL_TYPE_STR,
+  POA_4G_TYPE_STR,
+  POA_5G_TYPE_STR,
+  POA_WIFI_TYPE_STR,
   DEFAULT_NL_TYPE_STR,
   UE_TYPE_STR,
   FOG_TYPE_STR,
@@ -372,8 +378,14 @@ export function addElementToScenario(scenario, element) {
   case ELEMENT_TYPE_ZONE:
     scenarioElement = createZone(uniqueId, name, element);
     break;
-  case ELEMENT_TYPE_POA_CELL:
-    scenarioElement = createPoaCell(uniqueId, name, element);
+  case ELEMENT_TYPE_POA_4G:
+    scenarioElement = createPoa4G(uniqueId, name, element);
+    break;
+  case ELEMENT_TYPE_POA_5G:
+    scenarioElement = createPoa5G(uniqueId, name, element);
+    break;
+  case ELEMENT_TYPE_POA_WIFI:
+    scenarioElement = createPoaWIFI(uniqueId, name, element);
     break;
   case ELEMENT_TYPE_POA:
     scenarioElement = createPoa(uniqueId, name, element);
@@ -577,11 +589,23 @@ export function updateElementInScenario(scenario, element) {
           nl.netChar.throughputUl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL);
           nl.netChar.packetLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
 
-          if (nl.type === POA_CELL_TYPE_STR) {
-            var cellularPoaConfig = {
+          if (nl.type === POA_4G_TYPE_STR) {
+            var poa4GConfig = {
               cellId: getElemFieldVal(element, FIELD_CELL_ID)
             };
-            nl.cellularPoaConfig = cellularPoaConfig;
+            nl.poa4GConfig = poa4GConfig;
+          }
+          if (nl.type === POA_5G_TYPE_STR) {
+            var poa5GConfig = {
+              cellId: getElemFieldVal(element, FIELD_NR_CELL_ID)
+            };
+            nl.poa5GConfig = poa5GConfig;
+          }
+          if (nl.type === POA_WIFI_TYPE_STR) {
+            var poaWifiConfig = {
+              macId: getElemFieldVal(element, FIELD_MAC_ID)
+            };
+            nl.poaWifiConfig = poaWifiConfig;
           }
 
           if (!nl.geoData) {
@@ -1100,13 +1124,13 @@ export function createPoa(uniqueId, name, element) {
   return nl;
 }
 
-export function createPoaCell(uniqueId, name, element) {
+export function createPoa4G(uniqueId, name, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
   var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
   var nl = {
     id: uniqueId,
     name: name,
-    type: POA_CELL_TYPE_STR,
+    type: POA_4G_TYPE_STR,
     netChar: {
       latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
       latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
@@ -1115,8 +1139,68 @@ export function createPoaCell(uniqueId, name, element) {
       packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
     },
     physicalLocations: [],
-    cellularPoaConfig: {
+    poa4GConfig: {
       cellId: getElemFieldVal(element, FIELD_CELL_ID)
+    },
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: (radius === '') ? null : radius
+    }
+  };
+
+  return nl;
+}
+
+export function createPoa5G(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+  var nl = {
+    id: uniqueId,
+    name: name,
+    type: POA_5G_TYPE_STR,
+    netChar: {
+      latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+      latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+      throughputDl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL),
+      throughputUl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL),
+      packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
+    },
+    physicalLocations: [],
+    poa5GConfig: {
+      cellId: getElemFieldVal(element, FIELD_NR_CELL_ID)
+    },
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: (radius === '') ? null : radius
+    }
+  };
+
+  return nl;
+}
+
+export function createPoaWIFI(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+  var nl = {
+    id: uniqueId,
+    name: name,
+    type: POA_WIFI_TYPE_STR,
+    netChar: {
+      latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+      latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+      throughputDl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL),
+      throughputUl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL),
+      packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
+    },
+    physicalLocations: [],
+    poaWifiConfig: {
+      macId: getElemFieldVal(element, FIELD_MAC_ID)
     },
     geoData: !location ? null : {
       location: {
@@ -1304,8 +1388,14 @@ export function getElementFromScenario(scenario, elementId) {
           case POA_TYPE_STR:
             setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
             break;
-          case POA_CELL_TYPE_STR:
-            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_CELL);
+          case POA_4G_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_4G);
+            break;
+          case POA_5G_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_5G);
+            break;
+          case POA_WIFI_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_WIFI);
             break;
           default:
             break;
@@ -1321,10 +1411,17 @@ export function getElementFromScenario(scenario, elementId) {
             setElemFieldVal(elem, FIELD_TERM_LINK_THROUGHPUT_UL, nl.netChar.throughputUl || 0);
             setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, nl.netChar.packetLoss || 0);
           }
-          //only valid for POA_CELL
-          if (nl.cellularPoaConfig) {
-            setElemFieldVal(elem, FIELD_CELL_ID, nl.cellularPoaConfig.cellId || '');
+          //only valid for specific POAs
+          if (nl.poa4GConfig) {
+            setElemFieldVal(elem, FIELD_CELL_ID, nl.poa4GConfig.cellId || '');
           }
+          if (nl.poa5GConfig) {
+            setElemFieldVal(elem, FIELD_NR_CELL_ID, nl.poa5GConfig.cellId || '');
+          }
+          if (nl.poaWifiConfig) {
+            setElemFieldVal(elem, FIELD_MAC_ID, nl.poaWifiConfig.macId || '');
+          }
+
           if (nl.geoData) {
             if (nl.geoData.location) {
               setElemFieldVal(elem, FIELD_GEO_LOCATION, JSON.stringify(nl.geoData.location.coordinates) || '');

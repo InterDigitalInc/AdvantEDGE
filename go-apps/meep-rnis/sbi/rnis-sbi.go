@@ -179,9 +179,9 @@ func processActiveScenarioUpdate() {
 						mnc = domain.CellularDomainConfig.Mnc
 						mcc = domain.CellularDomainConfig.Mcc
 					}
-					if poa.CellularPoaConfig != nil {
-						if poa.CellularPoaConfig.CellId != "" {
-							cellId = poa.CellularPoaConfig.CellId
+					if poa.Poa4GConfig != nil {
+						if poa.Poa4GConfig.CellId != "" {
+							cellId = poa.Poa4GConfig.CellId
 						} else {
 							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
@@ -231,9 +231,9 @@ func processActiveScenarioUpdate() {
 							mnc = domain.CellularDomainConfig.Mnc
 							mcc = domain.CellularDomainConfig.Mcc
 						}
-						if nl.CellularPoaConfig != nil {
-							if nl.CellularPoaConfig.CellId != "" {
-								cellId = nl.CellularPoaConfig.CellId
+						if nl.Poa4GConfig != nil {
+							if nl.Poa4GConfig.CellId != "" {
+								cellId = nl.Poa4GConfig.CellId
 							} else {
 								cellId = domain.CellularDomainConfig.DefaultCellId
 							}

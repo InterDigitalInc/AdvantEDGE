@@ -132,7 +132,9 @@ paths:
         enum:
         - "UE"
         - "POA"
-        - "POA-CELLULAR"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
         - "EDGE"
         - "FOG"
         - "CLOUD"
@@ -301,7 +303,9 @@ definitions:
           enum:
           - "UE"
           - "POA"
-          - "POA-CELLULAR"
+          - "POA-4G"
+          - "POA-5G"
+          - "POA-WIFI"
           - "EDGE"
           - "FOG"
           - "CLOUD"

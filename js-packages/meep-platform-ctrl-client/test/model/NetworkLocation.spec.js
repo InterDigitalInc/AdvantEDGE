@@ -121,6 +121,24 @@
         // expect(instance.cellularPoaConfig).to.be(expectedValueLiteral);
       });
 
+      it('should have the property poa4GConfig (base name: "poa4GConfig")', function() {
+        // TODO: update the code to test the property poa4GConfig
+        expect(instance).to.have.property('poa4GConfig');
+        // expect(instance.poa4GConfig).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property poa5GConfig (base name: "poa5GConfig")', function() {
+        // TODO: update the code to test the property poa5GConfig
+        expect(instance).to.have.property('poa5GConfig');
+        // expect(instance.poa5GConfig).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property poaWifiConfig (base name: "poaWifiConfig")', function() {
+        // TODO: update the code to test the property poaWifiConfig
+        expect(instance).to.have.property('poaWifiConfig');
+        // expect(instance.poaWifiConfig).to.be(expectedValueLiteral);
+      });
+
       it('should have the property geoData (base name: "geoData")', function() {
         // TODO: update the code to test the property geoData
         expect(instance).to.have.property('geoData');

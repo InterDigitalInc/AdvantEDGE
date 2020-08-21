@@ -43,7 +43,9 @@ import {
   HOST_PATH,
   ELEMENT_TYPE_UE,
   ELEMENT_TYPE_POA,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_FOG,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_DC
@@ -53,6 +55,8 @@ import {
   FIELD_TYPE,
   FIELD_PARENT,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
+  FIELD_MAC_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_PATH,
   FIELD_GEO_RADIUS,
@@ -476,8 +480,11 @@ class IDCMap extends Component {
     var innerHTML = '';
     if (!metaIcon) {
       var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
-      if (poaType === ELEMENT_TYPE_POA_CELL) {
+      if (poaType === ELEMENT_TYPE_POA_4G) {
         innerHTML = '4G';
+      }
+      if (poaType === ELEMENT_TYPE_POA_5G) {
+        innerHTML = '5G';
       }
     }
     iconTextDiv.innerHTML = innerHTML;
@@ -550,8 +557,19 @@ class IDCMap extends Component {
     var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
     msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
     msg += 'poa: ' + poa + '<br>';
-    if (poaType === ELEMENT_TYPE_POA_CELL) {
+    
+    switch (poaType) {
+    case ELEMENT_TYPE_POA_4G: 
       msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_CELL_ID) + '<br>';
+      break;
+    case ELEMENT_TYPE_POA_5G:
+      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_NR_CELL_ID) + '<br>';
+      break;
+    case ELEMENT_TYPE_POA_WIFI:
+      msg += 'mac: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_MAC_ID) + '<br>';
+      break;
+    default: 
+      break;
     }
     msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
     msg += 'location: ' + this.getLocationStr(latlng);
@@ -564,8 +582,18 @@ class IDCMap extends Component {
     var poaType = getElemFieldVal(this.getTable().entries[marker.options.meep.poa.id], FIELD_TYPE);
     var msg = '<b>id: ' + marker.options.meep.poa.id + '</b><br>';
     msg += 'radius: ' + marker.options.meep.poa.range.options.radius + ' m<br>';
-    if (poaType === ELEMENT_TYPE_POA_CELL) {
+    switch (poaType) {
+    case ELEMENT_TYPE_POA_4G:
       msg += 'cell: ' + getElemFieldVal(this.getTable().entries[marker.options.meep.poa.id], FIELD_CELL_ID) + '<br>';
+      break;
+    case ELEMENT_TYPE_POA_5G:
+      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[marker.options.meep.poa.id], FIELD_NR_CELL_ID) + '<br>';
+      break;
+    case ELEMENT_TYPE_POA_WIFI:
+      msg += 'mac: ' + getElemFieldVal(this.getTable().entries[marker.options.meep.poa.id], FIELD_MAC_ID) + '<br>';
+      break;
+    default:
+      break;
     }
     msg += 'zone: ' + this.getPoaZone(marker.options.meep.poa.id) + '<br>';
     msg += 'location: ' + this.getLocationStr(latlng);
@@ -863,7 +891,9 @@ class IDCMap extends Component {
         break;
 
       case ELEMENT_TYPE_POA:
-      case ELEMENT_TYPE_POA_CELL:
+      case ELEMENT_TYPE_POA_4G:
+      case ELEMENT_TYPE_POA_5G:
+      case ELEMENT_TYPE_POA_WIFI:
         for (let i = 0; i < map.poaList.length; i++) {
           if (map.poaList[i].assetName === name) {
             geoDataAsset = map.poaList[i];

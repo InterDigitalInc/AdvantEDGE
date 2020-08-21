@@ -312,38 +312,38 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 				if nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
 					zoneWarning = true
 				}
-			}
-			if nbUsersInAPStr != "" {
-				nbUsersInAP, _ = strconv.Atoi(nbUsersInAPStr)
-				if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
-					apWarning = true
-				}
-			}
-
-			if zoneWarning || apWarning {
-				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
-				if jsonInfo == "" {
-					return
+				if nbUsersInAPStr != "" {
+					nbUsersInAP, _ = strconv.Atoi(nbUsersInAPStr)
+					if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
+						apWarning = true
+					}
 				}
 
-				subscription := convertJsonToZoneStatusSubscription(jsonInfo)
+				if zoneWarning || apWarning {
+					subsIdStr := strconv.Itoa(subsId)
+					jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
+					if jsonInfo == "" {
+						return
+					}
 
-				var zoneStatusNotif clientNotifOMA.ZoneStatusNotification
-				zoneStatusNotif.ZoneId = zoneId
-				if apWarning {
-					zoneStatusNotif.AccessPointId = apId
-					zoneStatusNotif.NumberOfUsersInAP = (int32)(nbUsersInAP)
-				}
-				if zoneWarning {
-					zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
-				}
-				zoneStatusNotif.Timestamp = time.Now()
-				sendStatusNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zoneStatusNotif)
-				if apWarning {
-					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
-				} else {
-					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInZoneStr + " users in total")
+					subscription := convertJsonToZoneStatusSubscription(jsonInfo)
+
+					var zoneStatusNotif clientNotifOMA.ZoneStatusNotification
+					zoneStatusNotif.ZoneId = zoneId
+					if apWarning {
+						zoneStatusNotif.AccessPointId = apId
+						zoneStatusNotif.NumberOfUsersInAP = (int32)(nbUsersInAP)
+					}
+					if zoneWarning {
+						zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
+					}
+					zoneStatusNotif.Timestamp = time.Now()
+					sendStatusNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zoneStatusNotif)
+					if apWarning {
+						log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
+					} else {
+						log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInZoneStr + " users in total")
+					}
 				}
 			}
 		}

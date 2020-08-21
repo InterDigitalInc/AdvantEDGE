@@ -1,4 +1,4 @@
-version: 1.5.0
+version: 1.5.1
 name: demo2
 deployment:
     netChar:
@@ -153,7 +153,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                     interFogLatency: null
                     interFogLatencyVariation: null
@@ -220,7 +220,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null
@@ -353,7 +353,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                         -
                             id: 6b477dd3-eb67-49f9-b1d2-2bfae9376a33
@@ -586,7 +586,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                         -
                             id: 956fd663-ef11-4992-8845-499a12ea969e
@@ -606,7 +606,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null
@@ -739,7 +739,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                         -
                             id: d4f98d78-253e-470a-af75-02c885c69a0e
@@ -759,7 +759,7 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
-                            cellularPoaConfig: null
+                            poa4GConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null

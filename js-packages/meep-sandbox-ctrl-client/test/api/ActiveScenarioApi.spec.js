@@ -405,6 +405,15 @@
                           expect(data.cellularPoaConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CellularPoaConfig);
                                 expect(data.cellularPoaConfig.cellId).to.be.a('string');
                             expect(data.cellularPoaConfig.cellId).to.be("");
+                          expect(data.poa4GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa4GConfig);
+                                expect(data.poa4GConfig.cellId).to.be.a('string');
+                            expect(data.poa4GConfig.cellId).to.be("");
+                          expect(data.poa5GConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.Poa5GConfig);
+                                expect(data.poa5GConfig.cellId).to.be.a('string');
+                            expect(data.poa5GConfig.cellId).to.be("");
+                          expect(data.poaWifiConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.PoaWifiConfig);
+                                expect(data.poaWifiConfig.macId).to.be.a('string');
+                            expect(data.poaWifiConfig.macId).to.be("");
                           expect(data.geoData).to.be.a(AdvantEdgeSandboxControllerRestApi.GeoData);
                                 expect(data.geoData.location).to.be.a(AdvantEdgeSandboxControllerRestApi.Point);
                                   expect(data.geoData.location.type).to.be.a('string');

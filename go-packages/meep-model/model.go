@@ -41,7 +41,9 @@ const (
 	NodeTypeOperatorCell = "OPERATOR-CELLULAR"
 	NodeTypeZone         = "ZONE"
 	NodeTypePoa          = "POA"
-	NodeTypePoaCell      = "POA-CELLULAR"
+	NodeTypePoa4G        = "POA-4G"
+	NodeTypePoa5G        = "POA-5G"
+	NodeTypePoaWifi      = "POA-WIFI"
 	NodeTypeUE           = "UE"
 	NodeTypeFog          = "FOG"
 	NodeTypeEdge         = "EDGE"
@@ -362,7 +364,7 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 			}
 			zone.NetChar = nc.NetChar
 			updated = true
-		} else if ncType == NodeTypePoa || ncType == NodeTypePoaCell {
+		} else if m.isValidPoaNodeType(ncType) {
 			nl := n.object.(*dataModel.NetworkLocation)
 			if nl.NetChar == nil {
 				nl.NetChar = new(dataModel.NetworkCharacteristics)
@@ -390,7 +392,9 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 				NodeTypeOperatorCell + ", " +
 				NodeTypeZone + ", " +
 				NodeTypePoa + ", " +
-				NodeTypePoaCell + ", " +
+				NodeTypePoa4G + ", " +
+				NodeTypePoa5G + ", " +
+				NodeTypePoaWifi + ", " +
 				NodeTypeCloud + ", " +
 				NodeTypeEdge + ", " +
 				NodeTypeFog + ", " +
@@ -404,6 +408,15 @@ func (m *Model) UpdateNetChar(nc *dataModel.EventNetworkCharacteristicsUpdate) (
 		err = m.refresh()
 	}
 	return err
+}
+
+func (m *Model) isValidPoaNodeType(nodeType string) bool {
+
+	switch nodeType {
+	case NodeTypePoa, NodeTypePoa4G, NodeTypePoa5G, NodeTypePoaWifi:
+		return true
+	}
+	return false
 }
 
 // AddScenarioNode - Add scenario node
@@ -427,7 +440,7 @@ func (m *Model) AddScenarioNode(node *dataModel.ScenarioNode) (err error) {
 	if node.Type_ == NodeTypeUE {
 
 		// Get parent Network Location node & context information
-		if parentNode.nodeType != NodeTypePoa && parentNode.nodeType != NodeTypePoaCell {
+		if !m.isValidPoaNodeType(parentNode.nodeType) {
 			err = errors.New("Invalid parent type: " + parentNode.nodeType)
 			return
 		}
