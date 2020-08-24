@@ -59,7 +59,7 @@ const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
-const permissionsRoot = "permissions"
+const permissionsRoot = "services"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -173,8 +173,8 @@ func Run() (err error) {
 func setPermissions() {
 
 	// Flush old permissions
-	pt := pfmCtrl.sessionMgr.GetPermissionTable()
-	pt.Flush()
+	ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	ps.Flush()
 
 	// Read & apply API permissions from file
 	permissionsFile := "/permissions.yaml"
@@ -184,26 +184,34 @@ func setPermissions() {
 	if err != nil {
 		log.Warn("Failed to read permissions from file")
 		log.Warn("Granting full API access for all roles by default")
-		pt.SetDefaultPermission(sm.PermissionGranted)
+		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
 		return
 	}
 
-	// Permission modules
-	for module := range permissions.GetStringMap(permissionsRoot) {
+	// Loop through services
+	for service := range permissions.GetStringMap(permissionsRoot) {
 		// Default permissions
-		if module == "default" {
-			permission := permissions.GetString(permissionsRoot + ".default")
-			if permission != "" {
-				pt.SetDefaultPermission(permission)
+		if service == "default" {
+			permissionsRoute := permissionsRoot + ".default"
+			permission := new(sm.Permission)
+			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+			permission.RolePermissions = make(map[string]string)
+			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+				permission.RolePermissions[role] = access
 			}
+			_ = ps.SetDefaultPermission(permission)
 		} else {
-			// Module route names
-			permissionsModule := permissionsRoot + "." + module
-			for name := range permissions.GetStringMap(permissionsModule) {
-				// Role-based permissions
-				for role, permission := range permissions.GetStringMapString(permissionsModule + "." + name) {
-					_ = pt.Set(module, name, role, permission)
+			// Service route names
+			permissionsService := permissionsRoot + "." + service
+			for name := range permissions.GetStringMap(permissionsService) {
+				permissionsRoute := permissionsService + "." + name
+				permission := new(sm.Permission)
+				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+				permission.RolePermissions = make(map[string]string)
+				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+					permission.RolePermissions[role] = access
 				}
+				_ = ps.Set(service, name, permission)
 			}
 		}
 	}

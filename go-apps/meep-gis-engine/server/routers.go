@@ -30,8 +30,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -39,29 +37,16 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	AccessType  string
 }
 
 type Routes []Route
 
-func NewRouter(accessMap map[string]string) *mux.Router {
+func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-
-		// Authorization
-		accessType, found := accessMap[route.Name]
-		if !found {
-			accessType = route.AccessType
-		}
-
-		if accessType == ss.AccessBlock {
-			handler = ge.sessionStore.AccessBlocker(handler)
-		} else if accessType == ss.AccessVerify {
-			handler = ge.sessionStore.AccessVerifier(handler)
-		}
-
+		handler = ge.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -82,7 +67,6 @@ var routes = Routes{
 		"GET",
 		"/gis/v1/",
 		Index,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -90,7 +74,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/gis/v1/automation",
 		GetAutomationState,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -98,7 +81,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/gis/v1/automation/{type}",
 		GetAutomationStateByName,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -106,7 +88,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/gis/v1/automation/{type}",
 		SetAutomationStateByName,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -114,7 +95,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/gis/v1/geodata/{assetName}",
 		DeleteGeoDataByName,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -122,7 +102,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/gis/v1/geodata",
 		GetAssetData,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -130,7 +109,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/gis/v1/geodata/{assetName}",
 		GetGeoDataByName,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -138,6 +116,5 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/gis/v1/geodata/{assetName}",
 		UpdateGeoDataByName,
-		ss.AccessGrant,
 	},
 }

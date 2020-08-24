@@ -28,7 +28,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/fields"
@@ -85,7 +85,7 @@ var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
 var handlerId int
 var sandboxStore *sbs.SandboxStore
-var sessionStore *ss.SessionStore
+var sessionMgr *sm.SessionMgr
 
 var depPodsList []string
 var corePodsList []string
@@ -165,13 +165,13 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Connect to Session Store
-	sessionStore, err = ss.NewSessionStore(redisAddr)
+	// Connect to Session Manager
+	sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
 	if err != nil {
-		log.Error("Failed connection to Session Store: ", err.Error())
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Session Store")
+	log.Info("Connected to Session Manager")
 
 	return nil
 }

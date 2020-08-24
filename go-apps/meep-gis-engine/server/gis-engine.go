@@ -34,7 +34,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	"github.com/gorilla/mux"
 )
 
@@ -74,7 +74,7 @@ type GisEngine struct {
 	handlerId      int
 	sboxCtrlClient *sbox.APIClient
 	activeModel    *mod.Model
-	sessionStore   *ss.SessionStore
+	sessionMgr     *sm.SessionMgr
 	pc             *postgis.Connector
 	assets         map[string]Asset
 	uePoaInfo      map[string]PoaInfo
@@ -137,13 +137,13 @@ func Init() (err error) {
 		return err
 	}
 
-	// Connect to Session Store
-	ge.sessionStore, err = ss.NewSessionStore(redisAddr)
+	// Connect to Session Manager
+	ge.sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
 	if err != nil {
-		log.Error("Failed connection to Session Store: ", err.Error())
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Session Store")
+	log.Info("Connected to Session Manager")
 
 	// Connect to Postgis DB
 	ge.pc, err = postgis.NewConnector(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")

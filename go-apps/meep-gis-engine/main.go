@@ -25,7 +25,6 @@ import (
 
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-gis-engine/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/handlers"
 )
@@ -67,17 +66,7 @@ func main() {
 		}
 
 		// Start GIS Engine REST API Server
-		accessMap := map[string]string{
-			"Index":                    ss.AccessBlock,
-			"GetAutomationState":       ss.AccessVerify,
-			"GetAutomationStateByName": ss.AccessVerify,
-			"SetAutomationStateByName": ss.AccessVerify,
-			"DeleteGeoDataByName":      ss.AccessBlock,
-			"GetAssetData":             ss.AccessVerify,
-			"GetGeoDataByName":         ss.AccessVerify,
-			"UpdateGeoDataByName":      ss.AccessBlock,
-		}
-		router := server.NewRouter(accessMap)
+		router := server.NewRouter()
 		methods := handlers.AllowedMethods([]string{"DELETE", "GET", "POST"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))

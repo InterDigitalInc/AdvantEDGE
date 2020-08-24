@@ -25,18 +25,18 @@ import (
 )
 
 type SessionMgr struct {
-	module string
-	ss     *SessionStore
-	pt     *PermissionTable
+	service string
+	ss      *SessionStore
+	ps      *PermissionStore
 }
 
 // NewSessionStore - Create and initialize a Session Store instance
-func NewSessionMgr(module string, ssAddr string, ptAddr string) (sm *SessionMgr, err error) {
+func NewSessionMgr(service string, ssAddr string, psAddr string) (sm *SessionMgr, err error) {
 
 	// Create new Session Manager instance
 	log.Info("Creating new Session Manager")
 	sm = new(SessionMgr)
-	sm.module = module
+	sm.service = service
 
 	// Create new Session Store instance
 	sm.ss, err = NewSessionStore(ssAddr)
@@ -45,7 +45,7 @@ func NewSessionMgr(module string, ssAddr string, ptAddr string) (sm *SessionMgr,
 	}
 
 	// Create new Permissions Table instance
-	sm.pt, err = NewPermissionTable(ptAddr)
+	sm.ps, err = NewPermissionStore(psAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -60,28 +60,57 @@ func (sm *SessionMgr) GetSessionStore() *SessionStore {
 }
 
 // GetPermissionTable - Retrieve permission table instance
-func (sm *SessionMgr) GetPermissionTable() *PermissionTable {
-	return sm.pt
+func (sm *SessionMgr) GetPermissionStore() *PermissionStore {
+	return sm.ps
 }
 
 // Authorizer - Authorization handler for API access
 func (sm *SessionMgr) Authorizer(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// Retrieve user role from session, if any
-		role := RoleDefault
-		session, err := sm.ss.Get(r)
-		if err == nil && session != nil {
-			role = session.Role
+		// Get route access permissions
+		permission, err := sm.ps.Get(sm.service, strings.ToLower(mux.CurrentRoute(r).GetName()))
+		if err != nil || permission == nil {
+			permission, err = sm.ps.GetDefaultPermission()
+			if err != nil || permission == nil {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 		}
 
-		// Verify user permissions
-		permission := sm.pt.Get(sm.module, strings.ToLower(mux.CurrentRoute(r).GetName()), role)
-		if permission == PermissionDenied {
+		// Handle according to permission mode
+		switch permission.Mode {
+		case ModeBlock:
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		case ModeAllow:
+			inner.ServeHTTP(w, r)
+			return
+		case ModeVerify:
+			// Retrieve user role from session, if any
+			session, err := sm.ss.Get(r)
+			if err != nil || session == nil {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			role := session.Role
+			if role == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// Verify role permissions
+			access := permission.RolePermissions[role]
+			if access != AccessGranted {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			inner.ServeHTTP(w, r)
+			return
+		default:
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-
-		inner.ServeHTTP(w, r)
 	})
 }

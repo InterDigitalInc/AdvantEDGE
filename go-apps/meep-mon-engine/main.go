@@ -25,7 +25,6 @@ import (
 
 	server "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-mon-engine/server"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/handlers"
 )
@@ -67,11 +66,7 @@ func main() {
 		}
 
 		// Start Monitoring Engine REST API Server
-		accessMap := map[string]string{
-			"Index":     ss.AccessBlock,
-			"GetStates": ss.AccessVerify,
-		}
-		router := server.NewRouter(accessMap)
+		router := server.NewRouter()
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))

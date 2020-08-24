@@ -32,7 +32,6 @@ import (
 	"github.com/gorilla/mux"
 
 	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -40,30 +39,17 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	AccessType  string
 }
 
 type Routes []Route
 
-func NewRouter(accessMap map[string]string) *mux.Router {
+func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
 		// handler = httpLog.LogRx(handler, "")
-
-		// Authorization
-		accessType, found := accessMap[route.Name]
-		if !found {
-			accessType = route.AccessType
-		}
-
-		if accessType == ss.AccessBlock {
-			handler = v2.SessionStore.AccessBlocker(handler)
-		} else if accessType == ss.AccessVerify {
-			handler = v2.SessionStore.AccessVerifier(handler)
-		}
-
+		handler = v2.SessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -100,7 +86,6 @@ var routes = Routes{
 		"GET",
 		"/metrics/v2/",
 		IndexV2,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -108,7 +93,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/query/event",
 		v2.PostEventQuery,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -116,7 +100,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/query/http",
 		v2.PostHttpQuery,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -124,7 +107,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/query/network",
 		v2.PostNetworkQuery,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -132,7 +114,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/subscriptions/event",
 		v2.CreateEventSubscription,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -140,7 +121,6 @@ var routes = Routes{
 		strings.ToUpper("Post"),
 		"/metrics/v2/metrics/subscriptions/network",
 		v2.CreateNetworkSubscription,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -148,7 +128,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.DeleteEventSubscriptionById,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -156,7 +135,6 @@ var routes = Routes{
 		strings.ToUpper("Delete"),
 		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.DeleteNetworkSubscriptionById,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -164,7 +142,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/metrics/v2/metrics/subscriptions/event",
 		v2.GetEventSubscription,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -172,7 +149,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/metrics/v2/metrics/subscriptions/event/{subscriptionId}",
 		v2.GetEventSubscriptionById,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -180,7 +156,6 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/metrics/v2/metrics/subscriptions/network",
 		v2.GetNetworkSubscription,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -188,6 +163,5 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/metrics/v2/metrics/subscriptions/network/{subscriptionId}",
 		v2.GetNetworkSubscriptionById,
-		ss.AccessGrant,
 	},
 }

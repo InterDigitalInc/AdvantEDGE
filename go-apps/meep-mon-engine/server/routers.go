@@ -30,8 +30,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Route struct {
@@ -39,29 +37,16 @@ type Route struct {
 	Method      string
 	Pattern     string
 	HandlerFunc http.HandlerFunc
-	AccessType  string
 }
 
 type Routes []Route
 
-func NewRouter(accessMap map[string]string) *mux.Router {
+func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-
-		// Authorization
-		accessType, found := accessMap[route.Name]
-		if !found {
-			accessType = route.AccessType
-		}
-
-		if accessType == ss.AccessBlock {
-			handler = sessionStore.AccessBlocker(handler)
-		} else if accessType == ss.AccessVerify {
-			handler = sessionStore.AccessVerifier(handler)
-		}
-
+		handler = sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -82,7 +67,6 @@ var routes = Routes{
 		"GET",
 		"/mon-engine/v1/",
 		Index,
-		ss.AccessGrant,
 	},
 
 	Route{
@@ -90,6 +74,5 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/mon-engine/v1/states",
 		GetStates,
-		ss.AccessGrant,
 	},
 }
