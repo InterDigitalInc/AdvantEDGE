@@ -175,7 +175,6 @@ func deployCore(cobraCmd *cobra.Command) {
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
-		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 		flags := deployRunScriptsAndGetFlags(app, chart, cobraCmd)
 
 		// Set core flags
@@ -194,11 +193,6 @@ func deployCore(cobraCmd *cobra.Command) {
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "user.swagger.location="+deployData.workdir+"/user/swagger")
 		}
-		if altServer {
-			// deployment level flag - not all apps use it
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "altService.enabled=true")
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "altIngress.enabled=true")
-		}
 
 		k8sDeploy(app, chart, coreFlags, cobraCmd)
 	}
@@ -206,13 +200,7 @@ func deployCore(cobraCmd *cobra.Command) {
 
 // Deploy dependencies
 func deployDep(cobraCmd *cobra.Command) {
-	altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 	for _, app := range deployData.depApps {
-		// exception
-		if app == "meep-alt-ingress" && !altServer {
-			continue
-		}
-
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.dep."+app+".chart")
 		flags := deployRunScriptsAndGetFlags(app, chart, cobraCmd)
 		k8sDeploy(app, chart, flags, cobraCmd)
@@ -242,8 +230,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-open-map-tiles":
 		deploySetOmtConfig(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
-		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
-		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
 	case "meep-postgis":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
 	case "meep-docker-registry":
@@ -251,8 +237,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
 	case "meep-grafana":
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/grafana/")
-		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
-		flags = utils.HelmFlags(flags, "--set", "altIngress.enabled="+strconv.FormatBool(altServer))
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
 	case "meep-ingress":
@@ -268,9 +252,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
-	case "meep-alt-ingress":
-		values := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.dep."+targetName+".values")
-		flags = utils.HelmFlags(flags, "--values", values)
 	case "meep-mon-engine":
 		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
@@ -282,8 +263,6 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
-		altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_ALT_SERVER=\""+strconv.FormatBool(altServer)+"\"")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER_DIR=\""+deployData.workdir+"/user/sandbox-swagger"+"\"")
