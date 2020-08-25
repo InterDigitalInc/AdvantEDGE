@@ -117,6 +117,8 @@ repo:
           swagger: bin/meep-platform-swagger-ui
           # location of AdvantEDGE frontend
           frontend: bin/meep-frontend
+          # location of REST API permissions file
+          'permissions.yaml': config/permissions.yaml
       meep-virt-engine:
         # location of source code
         src: go-apps/meep-virt-engine
