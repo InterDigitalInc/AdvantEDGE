@@ -23,6 +23,8 @@ import { updateObject } from '../../util/object-util';
 import MobilityEventPane from './mobility-event-pane';
 import NetworkCharacteristicsEventPane from './network-characteristics-event-pane';
 
+import CancelApplyPair from '@/js/components/helper-components/cancel-apply-pair';
+
 import { uiExecChangeCurrentEvent } from '../../state/ui';
 
 import {
@@ -56,6 +58,7 @@ const EventTypeSelect = props => {
           options={props.eventTypes}
           onChange={props.onChange}
           data-cy={EXEC_EVT_TYPE}
+          value={props.value}
         />
       </GridCell>
     </Grid>
@@ -97,7 +100,7 @@ const EventCreationFields = props => {
       />
     );
   default:
-    return <div>NO EVENT</div>;
+    return <div></div>;
   }
 };
 
@@ -105,6 +108,12 @@ class EventCreationPane extends Component {
   constructor(props) {
     super(props);
     this.state = {};
+  }
+
+  onEventPaneClose(e) {
+    e.preventDefault();
+    this.props.changeEvent('');
+    this.props.onClose(e)
   }
 
   updateElement(values) {
@@ -128,6 +137,7 @@ class EventCreationPane extends Component {
           onChange={event => {
             this.props.changeEvent(event.target.value);
           }}
+          value={this.props.currentEvent}
         />
         <EventCreationFields
           element={this.props.selectedScenarioElement}
@@ -137,7 +147,8 @@ class EventCreationPane extends Component {
             this.updateElement(element);
           }}
           onSuccess={this.props.onSuccess}
-          onClose={this.props.onClose}
+          // onClose={this.props.onClose}
+          onClose={e => this.onEventPaneClose(e)}
           UEs={this.props.UEs}
           POAs={this.props.POAs}
           EDGEs={this.props.EDGEs}
@@ -149,6 +160,15 @@ class EventCreationPane extends Component {
           table={this.props.table}
           networkElements={this.props.networkElements}
         />
+
+        <div hidden={this.props.currentEvent !== ''}>
+          <CancelApplyPair
+            cancelText="Close"
+            applyText="Submit"
+            onCancel={e => this.onEventPaneClose(e)}
+            saveDisabled={true}
+          />
+        </div>
       </div>
     );
   }

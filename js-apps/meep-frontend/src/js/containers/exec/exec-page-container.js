@@ -82,7 +82,7 @@ class ExecPageContainer extends Component {
   }
 
   componentDidMount() {
-    this.props.changeCurrentEvent(MOBILITY_EVENT);
+    // this.props.changeCurrentEvent(MOBILITY_EVENT);
   }
 
   /**
