@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**loginUser**](UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
 [**logoutUser**](UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
+[**refreshUser**](UserAuthenticationApi.md#refreshUser) | **GET** /login | Get new session cookie
 
 
 <a name="loginUser"></a>
@@ -79,6 +80,46 @@ var callback = function(error, data, response) {
   }
 };
 apiInstance.logoutUser(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="refreshUser"></a>
+# **refreshUser**
+> refreshUser()
+
+Get new session cookie
+
+Keep-alive endpoint used to renew session cookie and reset session timeout timer
+
+### Example
+```javascript
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
+
+var apiInstance = new AdvantEdgePlatformControllerRestApi.UserAuthenticationApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.refreshUser(callback);
 ```
 
 ### Parameters

@@ -93,6 +93,24 @@
           done();
         });
       });
+      describe('refreshUser', function() {
+        it('should call refreshUser successfully', function(done) {
+          // TODO: uncomment refreshUser call
+          /*
+
+          instance.refreshUser(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
     });
   });
 

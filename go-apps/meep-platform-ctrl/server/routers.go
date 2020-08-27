@@ -200,4 +200,11 @@ var routes = Routes{
 		"/platform-ctrl/v1/logout",
 		LogoutUser,
 	},
+
+	Route{
+		"RefreshUser",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/login",
+		RefreshUser,
+	},
 }

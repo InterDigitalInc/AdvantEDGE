@@ -131,6 +131,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
 *AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginUser**](docs/UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
 *AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**logoutUser**](docs/UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**refreshUser**](docs/UserAuthenticationApi.md#refreshUser) | **GET** /login | Get new session cookie
 
 
 ## Documentation for Models

@@ -88,7 +88,7 @@ func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	ss.cs = sessions.NewCookieStore([]byte(sessionKey))
 	ss.cs.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   60 * 60 * 24 * 90, // 90 days
+		MaxAge:   60 * 20, // 20 minutes
 		HttpOnly: true,
 	}
 	log.Info("Created Cookie Store")
@@ -228,6 +228,29 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 	// Delete session cookie
 	sessionCookie.Values[ValSessionID] = ""
 	sessionCookie.Options.MaxAge = -1
+	err = sessionCookie.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	return nil
+}
+
+// Refresh - Remove session by ID
+func (ss *SessionStore) Refresh(w http.ResponseWriter, r *http.Request) error {
+
+	// Get existing session, if any
+	session, err := ss.Get(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return err
+	}
+
+	// Update session timestamp
+	log.Info(session.ID)
+
+	// Refresh session cookie
+	sessionCookie, _ := ss.cs.Get(r, sessionCookie)
 	err = sessionCookie.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
