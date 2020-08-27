@@ -41,8 +41,8 @@ class MobilityEventPane extends Component {
 
     this.state = {};
   }
-
-  shouldComponentUpdate(nextProps, nextState) {
+  // shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     /**
      * element={props.element}
         eventTypes={props.eventTypes}
@@ -81,7 +81,7 @@ class MobilityEventPane extends Component {
     e.preventDefault();
     this.props.changeEventTarget('');
     this.props.changeEventDestination('');
-    this.props.onClose(e)
+    this.props.onClose(e);
   }
 
   triggerEvent(e) {
@@ -109,7 +109,7 @@ class MobilityEventPane extends Component {
     //let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
     //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
     // var target = this.state.eventTarget;
-    var target = this.props.mobilityEventTarget
+    var target = this.props.mobilityEventTarget;
     var found = this.props.UEs.find(function(element) {
       return element.label === target;
     });
@@ -232,6 +232,6 @@ const ConnectedMobilityEventPane = connect(
   mapDispatchToProps
 )(MobilityEventPane);
 
-export default ConnectedMobilityEventPane
+export default ConnectedMobilityEventPane;
 
 // export default MobilityEventPane;

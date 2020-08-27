@@ -113,7 +113,7 @@ class EventCreationPane extends Component {
   onEventPaneClose(e) {
     e.preventDefault();
     this.props.changeEvent('');
-    this.props.onClose(e)
+    this.props.onClose(e);
   }
 
   updateElement(values) {

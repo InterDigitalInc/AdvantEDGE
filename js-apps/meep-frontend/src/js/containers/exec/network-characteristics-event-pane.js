@@ -137,7 +137,7 @@ class NetworkCharacteristicsEventPane extends Component {
     super(props);
 
     this.state = {
-      dialogOpen: false,
+      dialogOpen: false
       // currentElementType: ''
     };
   }
@@ -145,7 +145,7 @@ class NetworkCharacteristicsEventPane extends Component {
   onNetworkCharacPaneClose(e) {
     e.preventDefault();
     setElemFieldVal(this.props.element, FIELD_TYPE, '');
-    this.props.onClose(e)
+    this.props.onClose(e);
   }
 
   triggerEvent(e) {
