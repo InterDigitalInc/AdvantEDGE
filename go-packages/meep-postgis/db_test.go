@@ -68,7 +68,7 @@ const (
 
 	poa1Id     = "poa1-id"
 	poa1Name   = "poa1"
-	poa1Type   = "POA-CELLULAR"
+	poa1Type   = "POA-4G"
 	poa1Loc    = "{\"type\":\"Point\",\"coordinates\":[7.418494,43.733449]}"
 	poa1Radius = 160.0
 
@@ -80,7 +80,7 @@ const (
 
 	poa3Id     = "poa3-id"
 	poa3Name   = "poa3"
-	poa3Type   = "POA-CELLULAR"
+	poa3Type   = "POA-4G"
 	poa3Loc    = "{\"type\":\"Point\",\"coordinates\":[7.422239,43.732972]}"
 	poa3Radius = 220.0
 

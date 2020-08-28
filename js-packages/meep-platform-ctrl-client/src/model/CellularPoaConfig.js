@@ -53,7 +53,7 @@
 
   /**
    * Constructs a new <code>CellularPoaConfig</code>.
-   * Cellular POA configuration information
+   * **DEPRECATED** As of release 1.5.1, renamed to poa4GConfig
    * @alias module:model/CellularPoaConfig
    * @class
    */

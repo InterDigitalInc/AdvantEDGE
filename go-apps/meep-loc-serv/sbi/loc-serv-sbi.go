@@ -207,7 +207,7 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Update POA Cellular info
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaCell)
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G)
 	for _, name := range poaNameList {
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
@@ -347,7 +347,7 @@ func updateAllAccessPointPosition() {
 	poaMap, _ := sbi.pc.GetAllPoa()
 
 	// Update info
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaCell)
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G)
 	for _, name := range poaNameList {
 		// Get network location
 		zone, netLoc, err := getNetworkLocation(name)

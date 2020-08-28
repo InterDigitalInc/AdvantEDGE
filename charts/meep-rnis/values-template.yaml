@@ -43,26 +43,6 @@ ingress:
     #   hosts:
     #     - chart-example.local
 
-altIngress:
-  enabled: {{ .AltServer }}
-  # Used to create an Ingress record.
-  hosts:
-    - name: ''
-      paths:
-        - /{{ .SandboxName }}/rni
-  annotations:
-    kubernetes.io/ingress.class: alt-nginx
-    # kubernetes.io/tls-acme: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/rni(/|$)(.*)$ /rni/$2 break;
-  labels: {}
-  tls:
-    # Secrets must be manually created in the namespace.
-    # - secretName: chart-example-tls
-    #   hosts:
-    #     - chart-example.local
-
 codecov:
   enabled: false
 

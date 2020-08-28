@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/CellularPoaConfig', 'model/GeoData', 'model/NetworkCharacteristics', 'model/PhysicalLocation'], factory);
+    define(['ApiClient', 'model/CellularPoaConfig', 'model/GeoData', 'model/NetworkCharacteristics', 'model/PhysicalLocation', 'model/Poa4GConfig', 'model/Poa5GConfig', 'model/PoaWifiConfig'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./GeoData'), require('./NetworkCharacteristics'), require('./PhysicalLocation'));
+    module.exports = factory(require('../ApiClient'), require('./CellularPoaConfig'), require('./GeoData'), require('./NetworkCharacteristics'), require('./PhysicalLocation'), require('./Poa4GConfig'), require('./Poa5GConfig'), require('./PoaWifiConfig'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgePlatformControllerRestApi) {
       root.AdvantEdgePlatformControllerRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation);
+    root.AdvantEdgePlatformControllerRestApi.NetworkLocation = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.CellularPoaConfig, root.AdvantEdgePlatformControllerRestApi.GeoData, root.AdvantEdgePlatformControllerRestApi.NetworkCharacteristics, root.AdvantEdgePlatformControllerRestApi.PhysicalLocation, root.AdvantEdgePlatformControllerRestApi.Poa4GConfig, root.AdvantEdgePlatformControllerRestApi.Poa5GConfig, root.AdvantEdgePlatformControllerRestApi.PoaWifiConfig);
   }
-}(this, function(ApiClient, CellularPoaConfig, GeoData, NetworkCharacteristics, PhysicalLocation) {
+}(this, function(ApiClient, CellularPoaConfig, GeoData, NetworkCharacteristics, PhysicalLocation, Poa4GConfig, Poa5GConfig, PoaWifiConfig) {
   'use strict';
 
   /**
@@ -92,6 +92,12 @@
         obj.userMeta = ApiClient.convertToType(data['userMeta'], {'String': 'String'});
       if (data.hasOwnProperty('cellularPoaConfig'))
         obj.cellularPoaConfig = CellularPoaConfig.constructFromObject(data['cellularPoaConfig']);
+      if (data.hasOwnProperty('poa4GConfig'))
+        obj.poa4GConfig = Poa4GConfig.constructFromObject(data['poa4GConfig']);
+      if (data.hasOwnProperty('poa5GConfig'))
+        obj.poa5GConfig = Poa5GConfig.constructFromObject(data['poa5GConfig']);
+      if (data.hasOwnProperty('poaWifiConfig'))
+        obj.poaWifiConfig = PoaWifiConfig.constructFromObject(data['poaWifiConfig']);
       if (data.hasOwnProperty('geoData'))
         obj.geoData = GeoData.constructFromObject(data['geoData']);
       if (data.hasOwnProperty('physicalLocations'))
@@ -165,6 +171,21 @@
   exports.prototype.cellularPoaConfig = undefined;
 
   /**
+   * @member {module:model/Poa4GConfig} poa4GConfig
+   */
+  exports.prototype.poa4GConfig = undefined;
+
+  /**
+   * @member {module:model/Poa5GConfig} poa5GConfig
+   */
+  exports.prototype.poa5GConfig = undefined;
+
+  /**
+   * @member {module:model/PoaWifiConfig} poaWifiConfig
+   */
+  exports.prototype.poaWifiConfig = undefined;
+
+  /**
    * @member {module:model/GeoData} geoData
    */
   exports.prototype.geoData = undefined;
@@ -188,10 +209,22 @@
     POA: "POA",
 
     /**
-     * value: "POA-CELLULAR"
+     * value: "POA-4G"
      * @const
      */
-    POA_CELLULAR: "POA-CELLULAR",
+    pOA4G: "POA-4G",
+
+    /**
+     * value: "POA-5G"
+     * @const
+     */
+    pOA5G: "POA-5G",
+
+    /**
+     * value: "POA-WIFI"
+     * @const
+     */
+    POA_WIFI: "POA-WIFI",
 
     /**
      * value: "DEFAULT"

@@ -46,7 +46,6 @@ type VirtEngine struct {
 	activeModels        map[string]*mod.Model
 	activeScenarioNames map[string]string
 	hostUrl             string
-	altServer           string
 	userSwagger         string
 	userSwaggerDir      string
 	handlerId           int
@@ -86,15 +85,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("MEEP_HOST_URL: ", ve.hostUrl)
-
-	// Retrieve Alt Server from environment variable
-	ve.altServer = strings.TrimSpace(os.Getenv("MEEP_ALT_SERVER"))
-	if ve.altServer == "" {
-		err = errors.New("MEEP_ALT_SERVER variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_ALT_SERVER: ", ve.altServer)
 
 	// Retrieve User Swagger from environment variable
 	ve.userSwagger = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER"))

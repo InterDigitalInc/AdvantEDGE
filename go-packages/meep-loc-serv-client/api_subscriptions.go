@@ -42,7 +42,7 @@ type SubscriptionsApiService service
 
 /*
 SubscriptionsApiService
-This operation is used for retrieving an individual subscription to user tracking change notification.
+This operation is used for cancelling a subscription and stopping corresponding notifications.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param subscriptionId Subscription ID
 
@@ -625,7 +625,7 @@ func (a *SubscriptionsApiService) ZonalTrafficSubGet(ctx context.Context) (Respo
 
 /*
 SubscriptionsApiService
-This operation is used for updating an individual subscription to zonal traffic change notification.
+This operation is used for retrieving an individual subscription to zonal traffic change notification.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param subscriptionId Subscription ID
 
@@ -965,7 +965,7 @@ func (a *SubscriptionsApiService) ZoneStatusDelById(ctx context.Context, subscri
 
 /*
 SubscriptionsApiService
-This operation is used for creating a new subscription to zone status change notification.
+This operation is used for retrieving all active subscriptions to zone status change notifications.
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 
 @return ResponseZoneStatusNotificationSubscriptionList

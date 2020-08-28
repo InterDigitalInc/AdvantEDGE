@@ -135,10 +135,22 @@
     POA: "POA",
 
     /**
-     * value: "POA-CELLULAR"
+     * value: "POA-4G"
      * @const
      */
-    POA_CELLULAR: "POA-CELLULAR",
+    pOA4G: "POA-4G",
+
+    /**
+     * value: "POA-5G"
+     * @const
+     */
+    pOA5G: "POA-5G",
+
+    /**
+     * value: "POA-WIFI"
+     * @const
+     */
+    POA_WIFI: "POA-WIFI",
 
     /**
      * value: "EDGE"

@@ -49,11 +49,11 @@ spec:
           ports:
             - containerPort: {{ .Values.deployment.port }}
               protocol: {{ .Values.deployment.protocol }}
-            {{- if .Values.altService.enabled}}
-            - containerPort: {{ .Values.deployment.altPort }}
-              protocol: {{ .Values.deployment.protocol }}
-            {{- end}}
           env:
+            {{- range $key, $value := .Values.image.env }}
+            - name: {{ $key }}
+              value: {{ $value }}
+            {{- end }}
             {{- if .Values.user.frontend.enabled}}
             - name: USER_FRONTEND
               value: {{ .Values.user.frontend.mountpath }}
@@ -62,10 +62,6 @@ spec:
             - name: USER_SWAGGER
               value: {{ .Values.user.swagger.mountpath }}
             {{- end }}
-            {{- if .Values.altService.enabled}}
-            - name: ALT_SERVICE_PORT
-              value: "{{ .Values.deployment.altPort }}"
-            {{- end}}
           volumeMounts:
           {{- if .Values.codecov.enabled}}
             - name: codecov-storage

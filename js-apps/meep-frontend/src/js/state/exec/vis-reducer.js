@@ -31,9 +31,21 @@ import {
   FIELD_TYPE
 } from '../../util/elem-utils';
 
+const initialState = {
+  type: TYPE_EXEC,
+  network: {},
+  options: {},
+  data: {
+    nodes: [],
+    edges: []
+  },
+  showConfig: false,
+  showApps: false
+};
+
 // CHANGE_VIS
 const EXEC_CHANGE_VIS = 'EXEC_CHANGE_VIS';
-function execChangeVis(vis) {
+export function execChangeVis(vis) {
   return {
     type: EXEC_CHANGE_VIS,
     payload: vis
@@ -42,25 +54,17 @@ function execChangeVis(vis) {
 
 // CHANGE_VIS
 const EXEC_CHANGE_VIS_DATA = 'EXEC_CHANGE_VIS_DATA';
-function execChangeVisData(data) {
+export function execChangeVisData(data) {
   return {
     type: EXEC_CHANGE_VIS_DATA,
     payload: data
   };
 }
 
-export {
-  // Action creators
-  execChangeVis,
-  execChangeVisData,
-  EXEC_CHANGE_VIS,
-  EXEC_CHANGE_VIS_DATA
-};
-
 const dataSelector = state => state.exec.vis.data;
 const tableSelector = state => state.exec.table;
 const showAppsSelector = state => state.ui.execShowApps;
-const execVisFilteredData = createSelector(
+export const execVisFilteredData = createSelector(
   [dataSelector, tableSelector, showAppsSelector],
   (data, table, showApps) => {
     var appTypes = [
@@ -98,20 +102,6 @@ const execVisFilteredData = createSelector(
     return { nodes: newNodes, edges: newEdges };
   }
 );
-
-export { execVisFilteredData };
-
-const initialState = {
-  type: TYPE_EXEC,
-  network: {},
-  options: {},
-  data: {
-    nodes: [],
-    edges: []
-  },
-  showConfig: false,
-  showApps: false
-};
 
 export function execVisReducer(state = initialState, action) {
   switch (action.type) {

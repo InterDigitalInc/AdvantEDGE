@@ -82,7 +82,7 @@ const testScenario string = `
 			{
 				"id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
 				"name": "operator-cell1",
-				"type": "OPERATOR-CELL",
+				"type": "OPERATOR-CELLULAR",
 				"interZoneLatency": 6,
 				"interZoneLatencyVariation": 2,
 				"interZoneThroughput": 1000,
@@ -211,7 +211,7 @@ const testScenario string = `
 							{
 								"id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
 								"name": "zone1-poa-cell1",
-								"type": "POA-CELLULAR",
+								"type": "POA-4G",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,
@@ -364,20 +364,20 @@ const testScenario string = `
 										"label": "ue2-ext"
 									}
 								],
-								"cellularPoaConfig": {
+								"poa4GConfig": {
 									"cellId": "2345678"
 								}
 							},
 							{
 								"id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
 								"name": "zone1-poa-cell2",
-								"type": "POA-CELLULAR",
+								"type": "POA-4G",
 								"terminalLinkLatency": 1,
 								"terminalLinkLatencyVariation": 1,
 								"terminalLinkThroughput": 1000,
 								"terminalLinkPacketLoss": 0,
 								"physicalLocations": [],
-								"cellularPoaConfig": {
+								"poa4GConfig": {
 									"cellId": "3456789"
 								}
 							}

@@ -26,14 +26,18 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/roymx/viper"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 )
 
 type Scenario struct {
@@ -42,16 +46,20 @@ type Scenario struct {
 
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
+	rc            *redis.Connector
+	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
-	veWatchdog    *wd.Watchdog
+	userStore     *users.Connector
 	mqGlobal      *mq.MsgQueue
 }
 
 const scenarioDBName = "scenarios"
+const redisTable = 0
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
-const moduleVirtEngineName = "meep-virt-engine"
-const moduleVirtEngineNamespace = "default"
+const postgisUser = "postgres"
+const postgisPwd = "pwd"
+const permissionsRoot = "services"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -81,6 +89,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Connect to Redis DB
+	pfmCtrl.rc, err = redis.NewConnector(redisDBAddr, redisTable)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
 
 	// Connect to Scenario Store
 	pfmCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
@@ -125,12 +141,25 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Setup for virt-engine monitoring
-	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
+	// Connect to Session Manager
+	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, redisDBAddr, redisDBAddr)
 	if err != nil {
-		log.Error("Failed to initialize virt-engine wd. Error: ", err)
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
+	log.Info("Connected to Session Manager")
+
+	// Connect to User Store
+	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed connection to User Store: ", err.Error())
+		return err
+	}
+	_ = pfmCtrl.userStore.CreateTables()
+	log.Info("Connected to User Store")
+
+	// Set endpoint authorization permissions
+	setPermissions()
 
 	return nil
 }
@@ -138,14 +167,54 @@ func Init() (err error) {
 // Run Starts the Platform Controller
 func Run() (err error) {
 
-	// Start Virt Engine wd
-	err = pfmCtrl.veWatchdog.Start(time.Second, 3*time.Second)
+	return nil
+}
+
+func setPermissions() {
+
+	// Flush old permissions
+	ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	ps.Flush()
+
+	// Read & apply API permissions from file
+	permissionsFile := "/permissions.yaml"
+	permissions := viper.New()
+	permissions.SetConfigFile(permissionsFile)
+	err := permissions.ReadInConfig()
 	if err != nil {
-		log.Error("Failed to start virt-engine wd. Error: ", err)
-		return err
+		log.Warn("Failed to read permissions from file")
+		log.Warn("Granting full API access for all roles by default")
+		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
+		return
 	}
 
-	return nil
+	// Loop through services
+	for service := range permissions.GetStringMap(permissionsRoot) {
+		// Default permissions
+		if service == "default" {
+			permissionsRoute := permissionsRoot + ".default"
+			permission := new(sm.Permission)
+			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+			permission.RolePermissions = make(map[string]string)
+			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+				permission.RolePermissions[role] = access
+			}
+			_ = ps.SetDefaultPermission(permission)
+		} else {
+			// Service route names
+			permissionsService := permissionsRoot + "." + service
+			for name := range permissions.GetStringMap(permissionsService) {
+				permissionsRoute := permissionsService + "." + name
+				permission := new(sm.Permission)
+				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+				permission.RolePermissions = make(map[string]string)
+				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+					permission.RolePermissions[role] = access
+				}
+				_ = ps.Set(service, name, permission)
+			}
+		}
+	}
 }
 
 // Create a new scenario in the scenario store
@@ -360,18 +429,8 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get unique sandbox name
-	var sandboxName string
-	uniqueNameFound := false
-	retryCount := 3
-	for i := 0; i < retryCount; i++ {
-		// sandboxName = "sbox-" + xid.New().String()
-		sandboxName = "sbox-" + randSeq(6)
-		if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
-			uniqueNameFound = true
-			break
-		}
-	}
-	if !uniqueNameFound {
+	sandboxName := getUniqueSandboxName()
+	if sandboxName == "" {
 		err = errors.New("Failed to generate a unique sandbox name")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -583,6 +642,9 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 // Create new sandbox in store and publish updagte
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
 
+	// Flush sandbox data
+	_ = pfmCtrl.rc.DBFlush(dkm.GetKeyRoot(sandboxName))
+
 	// Create sandbox in DB
 	sbox := new(ss.Sandbox)
 	sbox.Name = sandboxName
@@ -608,6 +670,9 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 }
 
 func deleteSandbox(sandboxName string) {
+	if sandboxName == "" {
+		return
+	}
 
 	// Remove sandbox from store
 	pfmCtrl.sandboxStore.Del(sandboxName)
@@ -620,6 +685,19 @@ func deleteSandbox(sandboxName string) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+}
+
+func getUniqueSandboxName() (name string) {
+	retryCount := 3
+	for i := 0; i < retryCount; i++ {
+		// sandboxName = "sbox-" + xid.New().String()
+		randName := "sbx" + randSeq(7)
+		if sbox, _ := pfmCtrl.sandboxStore.Get(randName); sbox == nil {
+			name = randName
+			break
+		}
+	}
+	return name
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")

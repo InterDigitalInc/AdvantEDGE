@@ -40,12 +40,12 @@ type Route struct {
 }
 type Routes []Route
 
-func NewRouter(feDir string, swDir string) *mux.Router {
+func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -54,11 +54,38 @@ func NewRouter(feDir string, swDir string) *mux.Router {
 	}
 
 	// Path prefix router order is important
-	if swDir != "" {
-		router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir(swDir))))
+	if altSw != "" {
+		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/api/").
+			Name("AltSw").
+			Handler(handler)
 	}
-	if feDir != "" {
-		router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir(feDir))))
+	if altFe != "" {
+		var handler http.Handler = http.StripPrefix("/alt/", http.FileServer(http.Dir(altFe)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/").
+			Name("AltFe").
+			Handler(handler)
+	}
+
+	if priSw != "" {
+		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/api/").
+			Name("PriSw").
+			Handler(handler)
+	}
+	if priFe != "" {
+		var handler http.Handler = http.StripPrefix("/", http.FileServer(http.Dir(priFe)))
+		handler = pfmCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/").
+			Name("PriFe").
+			Handler(handler)
 	}
 
 	return router

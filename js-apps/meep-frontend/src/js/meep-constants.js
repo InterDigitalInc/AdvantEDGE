@@ -15,7 +15,6 @@
  */
 
 export const HOST_PATH = location.origin;
-//export const HOST_PATH = 'http://10.3.16.150';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -120,8 +119,10 @@ export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
 export const CFG_ELEM_MNC = 'cfg-elem-mnc';
 export const CFG_ELEM_MCC = 'cfg-elem-mcc';
+export const CFG_ELEM_MAC_ID = 'cfg-elem-mac-id';
 export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
 export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
+export const CFG_ELEM_NR_CELL_ID = 'cfg-elem-nr-cell-id';
 export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
 export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
 export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
@@ -178,7 +179,9 @@ export const ZONE_TYPE_STR = 'ZONE';
 export const COMMON_ZONE_TYPE_STR = 'COMMON';
 export const NL_TYPE_STR = 'POA';
 export const POA_TYPE_STR = 'POA';
-export const POA_CELL_TYPE_STR = 'POA-CELLULAR';
+export const POA_4G_TYPE_STR = 'POA-4G';
+export const POA_5G_TYPE_STR = 'POA-5G';
+export const POA_WIFI_TYPE_STR = 'POA-WIFI';
 export const DEFAULT_NL_TYPE_STR = 'DEFAULT';
 export const UE_TYPE_STR = 'UE';
 export const FOG_TYPE_STR = 'FOG';
@@ -197,7 +200,9 @@ export const ELEMENT_TYPE_OPERATOR_CELL = 'OPERATOR CELLULAR';
 export const ELEMENT_TYPE_ZONE = 'ZONE';
 export const ELEMENT_TYPE_POA = 'POA';
 export const ELEMENT_TYPE_POA_GENERIC = 'POA GENERIC';
-export const ELEMENT_TYPE_POA_CELL = 'POA CELLULAR';
+export const ELEMENT_TYPE_POA_4G = 'POA CELLULAR 4G';
+export const ELEMENT_TYPE_POA_5G = 'POA CELLULAR 5G';
+export const ELEMENT_TYPE_POA_WIFI = 'POA WIFI';
 export const ELEMENT_TYPE_DC = 'DISTANT CLOUD';
 export const ELEMENT_TYPE_CN = 'CORE NETWORK';
 export const ELEMENT_TYPE_EDGE = 'EDGE';

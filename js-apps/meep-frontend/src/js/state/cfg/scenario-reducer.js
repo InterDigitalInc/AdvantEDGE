@@ -20,9 +20,11 @@ import {
   NO_SCENARIO_NAME
 } from '../../meep-constants';
 
+const initialState = createNewScenario(NO_SCENARIO_NAME);
+
 // CHANGE_SCENARIO
 const CFG_CHANGE_SCENARIO = 'CFG_CHANGE_SCENARIO';
-function cfgChangeScenario(scenario) {
+export function cfgChangeScenario(scenario) {
   return {
     type: CFG_CHANGE_SCENARIO,
     payload: scenario
@@ -31,16 +33,12 @@ function cfgChangeScenario(scenario) {
 
 // CHANGE_SCENARIO_NAME
 const CFG_CHANGE_SCENARIO_NAME = 'CFG_CHANGE_SCENARIO_NAME';
-function cfgChangeScenarioName(name) {
+export function cfgChangeScenarioName(name) {
   return {
     type: CFG_CHANGE_SCENARIO_NAME,
     payload: name
   };
 }
-
-export { cfgChangeScenario, cfgChangeScenarioName };
-
-const initialState = createNewScenario(NO_SCENARIO_NAME);
 
 export function scenarioReducer(state = initialState, action) {
   switch (action.type) {

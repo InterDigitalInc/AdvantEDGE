@@ -21,8 +21,10 @@ All URIs are relative to *https://localhost/rni/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*NotificationsApi* | [**PostCellChangeNotification**](docs/NotificationsApi.md#postcellchangenotification) | **Post** /notifications/cell_change/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about teh cell change of a UE subscription
+*NotificationsApi* | [**PostCellChangeNotification**](docs/NotificationsApi.md#postcellchangenotification) | **Post** /notifications/cell_change/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the cell change of a UE subscription
 *NotificationsApi* | [**PostExpiryNotification**](docs/NotificationsApi.md#postexpirynotification) | **Post** /notifications/expiry/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a notification with regards to expiry of an existing subscription
+*NotificationsApi* | [**PostRabEstNotification**](docs/NotificationsApi.md#postrabestnotification) | **Post** /notifications/rab_est/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab establishment of a UE subscription
+*NotificationsApi* | [**PostRabRelNotification**](docs/NotificationsApi.md#postrabrelnotification) | **Post** /notifications/rab_rel/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab release of a UE subscription
 
 
 ## Documentation For Models
@@ -30,10 +32,15 @@ Class | Method | HTTP request | Description
  - [AssociateId](docs/AssociateId.md)
  - [CellChangeNotification](docs/CellChangeNotification.md)
  - [Ecgi](docs/Ecgi.md)
+ - [ErabQosParameters](docs/ErabQosParameters.md)
+ - [ErabReleaseInfo](docs/ErabReleaseInfo.md)
  - [ExpiryNotification](docs/ExpiryNotification.md)
  - [HoStatus](docs/HoStatus.md)
  - [Link](docs/Link.md)
  - [Plmn](docs/Plmn.md)
+ - [QosInformation](docs/QosInformation.md)
+ - [RabEstNotification](docs/RabEstNotification.md)
+ - [RabRelNotification](docs/RabRelNotification.md)
  - [TempUeId](docs/TempUeId.md)
  - [TimeStamp](docs/TimeStamp.md)
 

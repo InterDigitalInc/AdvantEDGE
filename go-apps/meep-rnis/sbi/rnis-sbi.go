@@ -34,7 +34,7 @@ type SbiCfg struct {
 	RedisAddr      string
 	PostgisHost    string
 	PostgisPort    string
-	UeEcgiInfoCb   func(string, string, string, string)
+	UeDataCb       func(string, string, string, string, int32)
 	AppEcgiInfoCb  func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -46,7 +46,7 @@ type RnisSbi struct {
 	handlerId            int
 	activeModel          *mod.Model
 	pc                   *postgis.Connector
-	updateUeEcgiInfoCB   func(string, string, string, string)
+	updateUeDataCB       func(string, string, string, string, int32)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -63,7 +63,7 @@ func Init(cfg SbiCfg) (err error) {
 	}
 	sbi = new(RnisSbi)
 	sbi.sandboxName = cfg.SandboxName
-	sbi.updateUeEcgiInfoCB = cfg.UeEcgiInfoCb
+	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
@@ -166,7 +166,6 @@ func processActiveScenarioUpdate() {
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
-
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
 			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
@@ -180,18 +179,14 @@ func processActiveScenarioUpdate() {
 						mnc = domain.CellularDomainConfig.Mnc
 						mcc = domain.CellularDomainConfig.Mcc
 					}
-					if poa.CellularPoaConfig != nil {
-						if poa.CellularPoaConfig.CellId != "" {
-							cellId = poa.CellularPoaConfig.CellId
+					if poa.Poa4GConfig != nil {
+						if poa.Poa4GConfig.CellId != "" {
+							cellId = poa.Poa4GConfig.CellId
 						} else {
 							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
-					} else {
-						if domain.CellularDomainConfig != nil {
-							cellId = domain.CellularDomainConfig.DefaultCellId
-						}
 					}
-					sbi.updateUeEcgiInfoCB(name, mnc, mcc, cellId)
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, -1)
 				}
 			}
 		}
@@ -207,7 +202,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeEcgiInfoCB(oldUe, "", "", "")
+			sbi.updateUeDataCB(oldUe, "", "", "", -1)
 			log.Info("Ue removed : ", oldUe)
 		}
 	}
@@ -236,9 +231,9 @@ func processActiveScenarioUpdate() {
 							mnc = domain.CellularDomainConfig.Mnc
 							mcc = domain.CellularDomainConfig.Mcc
 						}
-						if nl.CellularPoaConfig != nil {
-							if nl.CellularPoaConfig.CellId != "" {
-								cellId = nl.CellularPoaConfig.CellId
+						if nl.Poa4GConfig != nil {
+							if nl.Poa4GConfig.CellId != "" {
+								cellId = nl.Poa4GConfig.CellId
 							} else {
 								cellId = domain.CellularDomainConfig.DefaultCellId
 							}

@@ -14,6 +14,9 @@ Name | Type | Description | Notes
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **cellularPoaConfig** | [**CellularPoaConfig**](CellularPoaConfig.md) |  | [optional] 
+**poa4GConfig** | [**Poa4GConfig**](Poa4GConfig.md) |  | [optional] 
+**poa5GConfig** | [**Poa5GConfig**](Poa5GConfig.md) |  | [optional] 
+**poaWifiConfig** | [**PoaWifiConfig**](PoaWifiConfig.md) |  | [optional] 
 **geoData** | [**GeoData**](GeoData.md) |  | [optional] 
 **physicalLocations** | [**[PhysicalLocation]**](PhysicalLocation.md) |  | [optional] 
 
@@ -24,7 +27,11 @@ Name | Type | Description | Notes
 
 * `POA` (value: `"POA"`)
 
-* `POA_CELLULAR` (value: `"POA-CELLULAR"`)
+* `pOA4G` (value: `"POA-4G"`)
+
+* `pOA5G` (value: `"POA-5G"`)
+
+* `POA_WIFI` (value: `"POA-WIFI"`)
 
 * `DEFAULT` (value: `"DEFAULT"`)
 

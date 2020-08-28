@@ -8,7 +8,7 @@
     "test:verbose": "jest --verbose true",
     "test:coverage": "jest --verbose true --coverage --colors",
     "build": "webpack",
-    "build:dev": "webpack-serve --port 8091 --host 10.3.16.105"
+    "build:dev": "webpack-dev-server --https true --port 8092 --host 10.3.16.105 --env.MEEP_HOST=10.3.16.105:8081"
   },
   "author": "",
   "license": "ISC",
@@ -35,7 +35,7 @@
     "style-loader": "^0.20.3",
     "webpack": "^4.4.1",
     "webpack-cli": "^3.2.3",
-    "webpack-serve": "^0.3.1"
+    "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.5.0",
@@ -47,6 +47,7 @@
     "d3-force": "^2.0.1",
     "d3-hierarchy": "^1.1.8",
     "deep-equal": "2.0.3",
+    "ionicons": "^2.0.1",
     "jquery": "3.3.1",
     "leaflet": "1.6.0",
     "lodash": "^4.17.11",
@@ -56,6 +57,8 @@
     "material-design-icons": "3.0.1",
     "prop-types": "15.6.2",
     "react": "^16.8.6",
+    "react-autobind": "^1.0.6",
+    "react-color": "^2.18.1",
     "react-d3-axis": "^0.1.2",
     "react-d3-graph": "^2.0.2",
     "react-dom": "^16.8.6",
@@ -68,6 +71,7 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "rmwc": "^4.0.1",
+    "tinycolor2": "^1.4.1",
     "vis": "4.21.0",
     "warning": "^4.0.1",
     "yamljs": "0.3.0"

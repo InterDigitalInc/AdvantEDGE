@@ -105,6 +105,14 @@ module.exports = env => {
       new webpack.DefinePlugin({
         __VERSION__: JSON.stringify(env.VERSION ? env.VERSION : 'v0.0.0')
       })
-    ]
+    ],
+    devServer: {
+      proxy: {
+        '/': {
+          target: 'https://' + (env ? env.MEEP_HOST : ''),
+          secure: false
+        }
+      }
+    }
   };
 };

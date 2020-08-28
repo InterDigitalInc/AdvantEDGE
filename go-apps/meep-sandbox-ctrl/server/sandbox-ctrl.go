@@ -38,6 +38,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	replay "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-replay-manager"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Scenario struct {
@@ -55,6 +56,7 @@ type SandboxCtrl struct {
 	metricStore   *ms.MetricStore
 	replayMgr     *replay.ReplayMgr
 	sandboxStore  *ss.SandboxStore
+	sessionMgr    *sm.SessionMgr
 }
 
 const scenarioDBName = "scenarios"
@@ -164,6 +166,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Session Manager
+	sbxCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, redisDBAddr, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	return nil
 }
@@ -379,7 +389,17 @@ func ceGetActiveScenario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scenario, err := sbxCtrl.activeModel.GetScenario()
+	// Retrieve query parameters
+	query := r.URL.Query()
+	minimize := query.Get("minimize")
+
+	var scenario []byte
+	var err error
+	if minimize == "true" {
+		scenario, err = sbxCtrl.activeModel.GetScenarioMinimized()
+	} else {
+		scenario, err = sbxCtrl.activeModel.GetScenario()
+	}
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

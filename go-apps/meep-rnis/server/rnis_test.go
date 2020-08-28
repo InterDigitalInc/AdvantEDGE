@@ -44,470 +44,911 @@ const UPDATED = 1
 //json format using spacing to facilitate reading
 const testScenario string = `
 {
-	"version": "1.4.0",
-	"name": "test-scenario",
-	"deployment": {
-		"interDomainLatency": 50,
-		"interDomainLatencyVariation": 5,
-		"interDomainThroughput": 1000,
-		"domains": [
-			{
-				"id": "PUBLIC",
-				"name": "PUBLIC",
-				"type": "PUBLIC",
-				"interZoneLatency": 6,
-				"interZoneLatencyVariation": 2,
-				"interZoneThroughput": 1000000,
-				"zones": [
-					{
-						"id": "PUBLIC-COMMON",
-						"name": "PUBLIC-COMMON",
-						"type": "COMMON",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000000
-						},
-						"networkLocations": [
-							{
-								"id": "PUBLIC-COMMON-DEFAULT",
-								"name": "PUBLIC-COMMON-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 50000,
-								"terminalLinkPacketLoss": 1,
-								"physicalLocations": []
-							}
-						]
-					}
-				]
-			},
-			{
-				"id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
-				"name": "operator-cell1",
-				"type": "OPERATOR-CELL",
-				"interZoneLatency": 6,
-				"interZoneLatencyVariation": 2,
-				"interZoneThroughput": 1000,
-				"interZonePacketLoss": 0,
-				"zones": [
-					{
-						"id": "operator-cell1-COMMON",
-						"name": "operator-cell1-COMMON",
-						"type": "COMMON",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "operator-cell1-COMMON-DEFAULT",
-								"name": "operator-cell1-COMMON-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": []
-							}
-						]
-					},
-					{
-						"id": "0836975f-a7ea-41ec-b0e0-aff43178194d",
-						"name": "zone1",
-						"type": "ZONE",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "zone1-DEFAULT",
-								"name": "zone1-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
-										"name": "zone1-edge1",
-										"type": "EDGE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "fcf1269c-a061-448e-aa80-6dd9c2d4c548",
-												"name": "zone1-edge1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone1-edge1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "35697e68-c627-4b8d-9cd7-ad8b8e226aee",
-												"name": "zone1-edge1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone1-edge1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone1-edge1"
-									}
-								]
-							},
-							{
-								"id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
-								"name": "zone1-poa-cell1",
-								"type": "POA-CELLULAR",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "32a2ced4-a262-49a8-8503-8489a94386a2",
-										"name": "ue1",
-										"type": "UE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
-												"name": "ue1-iperf",
-												"type": "UE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-client",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": null,
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "ue1"
-									},
-									{
-										"id": "b1851da5-c9e1-4bd8-ad23-5925c82ee127",
-										"name": "zone1-fog1",
-										"type": "FOG",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
-												"name": "zone1-fog1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone1-fog1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "53b5806b-e213-4c5a-a181-f1c31c24287b",
-												"name": "zone1-fog1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone1-fog1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone1-fog1"
-									},
-									{
-										"id": "9fe500e3-2cf8-46e6-acdd-07a445edef6c",
-										"name": "ue2-ext",
-										"type": "UE",
-										"isExternal": true,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "4bed3902-c769-4c94-bcf8-95aee67d1e03",
-												"name": "ue2-svc",
-												"type": "UE-APP",
-												"isExternal": true,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": null,
-												"environment": null,
-												"commandArguments": null,
-												"commandExe": null,
-												"serviceConfig": null,
-												"gpuConfig": null,
-												"externalConfig": {
-													"ingressServiceMap": [],
-													"egressServiceMap": []
-												},
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "ue2-ext"
-									}
-								],
-								"cellularPoaConfig": {
-									"cellId": "2345678"
-								}
-							},
-							{
-								"id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
-								"name": "zone1-poa-cell2",
-								"type": "POA-CELLULAR",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [],
-								"cellularPoaConfig": {
-									"cellId": "3456789"
-								}
-							}
-						],
-						"label": "zone1"
-					},
-					{
-						"id": "d1f06b00-4454-4d35-94a5-b573888e7ea9",
-						"name": "zone2",
-						"type": "ZONE",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "zone2-DEFAULT",
-								"name": "zone2-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "fb130d18-fd81-43e0-900c-c584e7190302",
-										"name": "zone2-edge1",
-										"type": "EDGE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
-												"name": "zone2-edge1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone2-edge1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "53fa28f0-80e2-414c-8841-86db9bd37d51",
-												"name": "zone2-edge1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone2-edge1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone2-edge1"
-									}
-								]
-							},
-							{
-								"id": "c44b8937-58af-44b2-acdb-e4d1c4a1510b",
-								"name": "zone2-poa1",
-								"type": "POA",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 20,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [],
-								"label": "zone2-poa1"
-							}
-						],
-						"label": "zone2"
-					}
-				],
-				"cellularDomainConfig": {
-					"mcc": "123",
-					"mnc": "456",
-					"defaultCellId": "1234567"
-				}
-			}
-		]
-	}
+   "version": "1.5.0",
+   "name": "test-scenario",
+   "deployment": {
+      "netChar": {
+         "latency": 50,
+         "latencyVariation": 5,
+         "throughputDl": 1000,
+         "throughputUl": 1000,
+         "latencyDistribution": null,
+         "throughput": null,
+         "packetLoss": null
+      },
+      "domains": [
+         {
+            "id": "PUBLIC",
+            "name": "PUBLIC",
+            "type": "PUBLIC",
+            "netChar": {
+               "latency": 6,
+               "latencyVariation": 2,
+               "throughputDl": 1000000,
+               "throughputUl": 1000000,
+               "latencyDistribution": null,
+               "throughput": null,
+               "packetLoss": null
+            },
+            "zones": [
+               {
+                  "id": "PUBLIC-COMMON",
+                  "name": "PUBLIC-COMMON",
+                  "type": "COMMON",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughput": 1000000,
+                     "latencyDistribution": null,
+                     "throughputDl": null,
+                     "throughputUl": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "PUBLIC-COMMON-DEFAULT",
+                        "name": "PUBLIC-COMMON-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 50000,
+                           "throughputUl": 50000,
+                           "packetLoss": 1,
+                           "latencyDistribution": null,
+                           "throughput": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               }
+            ],
+            "interZoneLatency": null,
+            "interZoneLatencyVariation": null,
+            "interZoneThroughput": null,
+            "interZonePacketLoss": null,
+            "meta": null,
+            "userMeta": null,
+            "cellularDomainConfig": null
+         },
+         {
+            "id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
+            "name": "operator-cell1",
+            "type": "OPERATOR-CELLULAR",
+            "netChar": {
+               "latency": 6,
+               "latencyVariation": 2,
+               "throughputDl": 1000,
+               "throughputUl": 1000,
+               "latencyDistribution": null,
+               "throughput": null,
+               "packetLoss": null
+            },
+            "cellularDomainConfig": {
+               "mnc": "456",
+               "mcc": "123",
+               "defaultCellId": "1234567"
+            },
+            "zones": [
+               {
+                  "id": "operator-cell1-COMMON",
+                  "name": "operator-cell1-COMMON",
+                  "type": "COMMON",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughput": 1000,
+                     "latencyDistribution": null,
+                     "throughputDl": null,
+                     "throughputUl": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "operator-cell1-COMMON-DEFAULT",
+                        "name": "operator-cell1-COMMON-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               },
+               {
+                  "id": "0836975f-a7ea-41ec-b0e0-aff43178194d",
+                  "name": "zone1",
+                  "type": "ZONE",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughput": 1000,
+                     "latencyDistribution": null,
+                     "throughputDl": null,
+                     "throughputUl": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "zone1-DEFAULT",
+                        "name": "zone1-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "physicalLocations": [
+                           {
+                              "id": "97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
+                              "name": "zone1-edge1",
+                              "type": "EDGE",
+                              "processes": [
+                                 {
+                                    "id": "fcf1269c-a061-448e-aa80-6dd9c2d4c548",
+                                    "name": "zone1-edge1-iperf",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/iperf-server",
+                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT",
+                                    "commandExe": "/bin/bash",
+                                    "serviceConfig": {
+                                       "name": "zone1-edge1-iperf",
+                                       "meSvcName": "iperf",
+                                       "ports": [
+                                          {
+                                             "protocol": "UDP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "environment": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 },
+                                 {
+                                    "id": "35697e68-c627-4b8d-9cd7-ad8b8e226aee",
+                                    "name": "zone1-edge1-svc",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/demo-server",
+                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
+                                    "serviceConfig": {
+                                       "name": "zone1-edge1-svc",
+                                       "meSvcName": "svc",
+                                       "ports": [
+                                          {
+                                             "protocol": "TCP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "commandArguments": null,
+                                    "commandExe": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 }
+                              ],
+                              "netChar": {
+                                 "throughputDl": 1000,
+                                 "throughputUl": 1000,
+                                 "latency": null,
+                                 "latencyVariation": null,
+                                 "latencyDistribution": null,
+                                 "throughput": null,
+                                 "packetLoss": null
+                              },
+                              "isExternal": null,
+                              "geoData": null,
+                              "networkLocationsInRange": null,
+                              "meta": null,
+                              "userMeta": null,
+                              "linkLatency": null,
+                              "linkLatencyVariation": null,
+                              "linkThroughput": null,
+                              "linkPacketLoss": null
+                           }
+                        ],
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null
+                     },
+                     {
+                        "id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
+                        "name": "zone1-poa-cell1",
+                        "type": "POA-4G",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "poa4GConfig": {
+                           "cellId": "2345678"
+                        },
+                        "physicalLocations": [
+                           {
+                              "id": "32a2ced4-a262-49a8-8503-8489a94386a2",
+                              "name": "ue1",
+                              "type": "UE",
+                              "processes": [
+                                 {
+                                    "id": "9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
+                                    "name": "ue1-iperf",
+                                    "type": "UE-APP",
+                                    "image": "meep-docker-registry:30001/iperf-client",
+                                    "commandArguments": "-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;",
+                                    "commandExe": "/bin/bash",
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "environment": null,
+                                    "serviceConfig": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 }
+                              ],
+                              "netChar": {
+                                 "throughputDl": 1000,
+                                 "throughputUl": 1000,
+                                 "latency": null,
+                                 "latencyVariation": null,
+                                 "latencyDistribution": null,
+                                 "throughput": null,
+                                 "packetLoss": null
+                              },
+                              "isExternal": null,
+                              "geoData": null,
+                              "networkLocationsInRange": null,
+                              "meta": null,
+                              "userMeta": null,
+                              "linkLatency": null,
+                              "linkLatencyVariation": null,
+                              "linkThroughput": null,
+                              "linkPacketLoss": null
+                           },
+                           {
+                              "id": "b1851da5-c9e1-4bd8-ad23-5925c82ee127",
+                              "name": "zone1-fog1",
+                              "type": "FOG",
+                              "processes": [
+                                 {
+                                    "id": "c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
+                                    "name": "zone1-fog1-iperf",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/iperf-server",
+                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                    "commandExe": "/bin/bash",
+                                    "serviceConfig": {
+                                       "name": "zone1-fog1-iperf",
+                                       "meSvcName": "iperf",
+                                       "ports": [
+                                          {
+                                             "protocol": "UDP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "environment": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 },
+                                 {
+                                    "id": "53b5806b-e213-4c5a-a181-f1c31c24287b",
+                                    "name": "zone1-fog1-svc",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/demo-server",
+                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
+                                    "serviceConfig": {
+                                       "name": "zone1-fog1-svc",
+                                       "meSvcName": "svc",
+                                       "ports": [
+                                          {
+                                             "protocol": "TCP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "commandArguments": null,
+                                    "commandExe": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 }
+                              ],
+                              "netChar": {
+                                 "throughputDl": 1000,
+                                 "throughputUl": 1000,
+                                 "latency": null,
+                                 "latencyVariation": null,
+                                 "latencyDistribution": null,
+                                 "throughput": null,
+                                 "packetLoss": null
+                              },
+                              "isExternal": null,
+                              "geoData": null,
+                              "networkLocationsInRange": null,
+                              "meta": null,
+                              "userMeta": null,
+                              "linkLatency": null,
+                              "linkLatencyVariation": null,
+                              "linkThroughput": null,
+                              "linkPacketLoss": null
+                           }
+                        ],
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "geoData": null
+                     },
+                     {
+                        "id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
+                        "name": "zone1-poa-cell2",
+                        "type": "POA-4G",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "poa4GConfig": {
+                           "cellId": "3456789"
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               },
+               {
+                  "id": "d1f06b00-4454-4d35-94a5-b573888e7ea9",
+                  "name": "zone2",
+                  "type": "ZONE",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughput": 1000,
+                     "latencyDistribution": null,
+                     "throughputDl": null,
+                     "throughputUl": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "zone2-DEFAULT",
+                        "name": "zone2-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "physicalLocations": [
+                           {
+                              "id": "fb130d18-fd81-43e0-900c-c584e7190302",
+                              "name": "zone2-edge1",
+                              "type": "EDGE",
+                              "processes": [
+                                 {
+                                    "id": "5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
+                                    "name": "zone2-edge1-iperf",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/iperf-server",
+                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                    "commandExe": "/bin/bash",
+                                    "serviceConfig": {
+                                       "name": "zone2-edge1-iperf",
+                                       "meSvcName": "iperf",
+                                       "ports": [
+                                          {
+                                             "protocol": "UDP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "environment": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 },
+                                 {
+                                    "id": "53fa28f0-80e2-414c-8841-86db9bd37d51",
+                                    "name": "zone2-edge1-svc",
+                                    "type": "EDGE-APP",
+                                    "image": "meep-docker-registry:30001/demo-server",
+                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
+                                    "serviceConfig": {
+                                       "name": "zone2-edge1-svc",
+                                       "meSvcName": "svc",
+                                       "ports": [
+                                          {
+                                             "protocol": "TCP",
+                                             "port": 80,
+                                             "externalPort": null
+                                          }
+                                       ]
+                                    },
+                                    "netChar": {
+                                       "throughputDl": 1000,
+                                       "throughputUl": 1000,
+                                       "latency": null,
+                                       "latencyVariation": null,
+                                       "latencyDistribution": null,
+                                       "throughput": null,
+                                       "packetLoss": null
+                                    },
+                                    "isExternal": null,
+                                    "commandArguments": null,
+                                    "commandExe": null,
+                                    "gpuConfig": null,
+                                    "externalConfig": null,
+                                    "status": null,
+                                    "userChartLocation": null,
+                                    "userChartAlternateValues": null,
+                                    "userChartGroup": null,
+                                    "meta": null,
+                                    "userMeta": null,
+                                    "appLatency": null,
+                                    "appLatencyVariation": null,
+                                    "appThroughput": null,
+                                    "appPacketLoss": null,
+                                    "placementId": null
+                                 }
+                              ],
+                              "netChar": {
+                                 "throughputDl": 1000,
+                                 "throughputUl": 1000,
+                                 "latency": null,
+                                 "latencyVariation": null,
+                                 "latencyDistribution": null,
+                                 "throughput": null,
+                                 "packetLoss": null
+                              },
+                              "isExternal": null,
+                              "geoData": null,
+                              "networkLocationsInRange": null,
+                              "meta": null,
+                              "userMeta": null,
+                              "linkLatency": null,
+                              "linkLatencyVariation": null,
+                              "linkThroughput": null,
+                              "linkPacketLoss": null
+                           }
+                        ],
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null
+                     },
+                     {
+                        "id": "c44b8937-58af-44b2-acdb-e4d1c4a1510b",
+                        "name": "zone2-poa1",
+                        "type": "POA",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 20,
+                           "throughputUl": 20,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               }
+            ],
+            "interZoneLatency": null,
+            "interZoneLatencyVariation": null,
+            "interZoneThroughput": null,
+            "interZonePacketLoss": null,
+            "meta": null,
+            "userMeta": null
+         },
+         {
+            "id": "e29138fb-cf03-4372-8335-fd2665b77a11",
+            "name": "operator1",
+            "type": "OPERATOR",
+            "netChar": {
+               "latency": 6,
+               "latencyVariation": 2,
+               "throughputDl": 1000,
+               "throughputUl": 1000,
+               "latencyDistribution": null,
+               "throughput": null,
+               "packetLoss": null
+            },
+            "zones": [
+               {
+                  "id": "operator1-COMMON",
+                  "name": "operator1-COMMON",
+                  "type": "COMMON",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughputDl": 1000,
+                     "throughputUl": 1000,
+                     "latencyDistribution": null,
+                     "throughput": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "operator1-COMMON-DEFAULT",
+                        "name": "operator1-COMMON-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               },
+               {
+                  "id": "7d8bee73-6d5c-4c5a-a3a0-49ebe3cd2c71",
+                  "name": "zone3",
+                  "type": "ZONE",
+                  "netChar": {
+                     "latency": 5,
+                     "latencyVariation": 1,
+                     "throughputDl": 1000,
+                     "throughputUl": 1000,
+                     "latencyDistribution": null,
+                     "throughput": null,
+                     "packetLoss": null
+                  },
+                  "networkLocations": [
+                     {
+                        "id": "zone3-DEFAULT",
+                        "name": "zone3-DEFAULT",
+                        "type": "DEFAULT",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     },
+                     {
+                        "id": "ecc2a41b-7381-4108-a037-52862c520733",
+                        "name": "poa1",
+                        "type": "POA",
+                        "netChar": {
+                           "latency": 1,
+                           "latencyVariation": 1,
+                           "throughputDl": 1000,
+                           "throughputUl": 1000,
+                           "latencyDistribution": null,
+                           "throughput": null,
+                           "packetLoss": null
+                        },
+                        "terminalLinkLatency": null,
+                        "terminalLinkLatencyVariation": null,
+                        "terminalLinkThroughput": null,
+                        "terminalLinkPacketLoss": null,
+                        "meta": null,
+                        "userMeta": null,
+                        "poa4GConfig": null,
+                        "geoData": null,
+                        "physicalLocations": null
+                     }
+                  ],
+                  "interFogLatency": null,
+                  "interFogLatencyVariation": null,
+                  "interFogThroughput": null,
+                  "interFogPacketLoss": null,
+                  "interEdgeLatency": null,
+                  "interEdgeLatencyVariation": null,
+                  "interEdgeThroughput": null,
+                  "interEdgePacketLoss": null,
+                  "edgeFogLatency": null,
+                  "edgeFogLatencyVariation": null,
+                  "edgeFogThroughput": null,
+                  "edgeFogPacketLoss": null,
+                  "meta": null,
+                  "userMeta": null
+               }
+            ],
+            "interZoneLatency": null,
+            "interZoneLatencyVariation": null,
+            "interZoneThroughput": null,
+            "interZonePacketLoss": null,
+            "meta": null,
+            "userMeta": null,
+            "cellularDomainConfig": null
+         }
+      ],
+      "interDomainLatency": null,
+      "interDomainLatencyVariation": null,
+      "interDomainThroughput": null,
+      "interDomainPacketLoss": null,
+      "meta": null,
+      "userMeta": null
+   },
+   "id": null,
+   "description": null,
+   "config": null
 }
 `
 
@@ -530,10 +971,10 @@ func TestNotImplemented(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	//rab_info
-	_, err = sendRequest(http.MethodGet, "/queries/rab_info", nil, nil, nil, http.StatusNotImplemented, RabInfoGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
+	//_, err = sendRequest(http.MethodGet, "/queries/rab_info", nil, nil, nil, http.StatusNotImplemented, RabInfoGET)
+	//if err != nil {
+	//	t.Fatalf("Failed to get expected response")
+	//}
 
 	//subscriptions s1_bearer
 	_, err = sendRequest(http.MethodGet, "/subscriptions/s1_bearer", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsS1GET)
@@ -601,28 +1042,6 @@ func TestNotImplemented(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	//subscriptions rab est
-	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsReGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, RabEstSubscriptionSubscriptionsGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, RabEstSubscriptionSubscriptionsPOST)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodPut, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, RabEstSubscriptionSubscriptionsPUT)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodDelete, "/subscriptions/rab_est", nil, nil, nil, http.StatusNotImplemented, RabEstSubscriptionsSubscrIdDELETE)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
 	//subscriptions rab mod
 	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_mod", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsRmGET)
 	if err != nil {
@@ -641,28 +1060,6 @@ func TestNotImplemented(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	_, err = sendRequest(http.MethodDelete, "/subscriptions/rab_mod", nil, nil, nil, http.StatusNotImplemented, RabModSubscriptionsSubscrIdDELETE)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	//subscriptions rab rel
-	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, SubscriptionLinkListSubscriptionsRrGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, RabRelSubscriptionSubscriptionsGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, RabRelSubscriptionSubscriptionsPOST)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodPut, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, RabRelSubscriptionSubscriptionsPUT)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-	_, err = sendRequest(http.MethodDelete, "/subscriptions/rab_rel", nil, nil, nil, http.StatusNotImplemented, RabRelSubscriptionsSubscrIdDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -696,7 +1093,6 @@ func TestSuccessSubscriptionCellChange(t *testing.T) {
 	log.MeepTextLogInit(t.Name())
 
 	initializeVars()
-
 	err := Init()
 	if err != nil {
 		t.Fatalf("Error initializing test basic procedure")
@@ -705,25 +1101,18 @@ func TestSuccessSubscriptionCellChange(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error running test basic procedure")
 	}
-
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
-
 	//post
 	expectedGetResp := testSubscriptionCellChangePost(t)
-
 	//get
 	testSubscriptionCellChangeGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
-
 	//put
 	expectedGetResp = testSubscriptionCellChangePut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
-
 	//get
 	testSubscriptionCellChangeGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
-
 	//delete
 	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
-
 	terminateScenario()
 }
 
@@ -757,6 +1146,122 @@ func TestFailSubscriptionCellChange(t *testing.T) {
 	terminateScenario()
 }
 
+func TestSuccessSubscriptionRabEst(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+	//post
+	expectedGetResp := testSubscriptionRabEstPost(t)
+	//get
+	testSubscriptionRabEstGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//put
+	expectedGetResp = testSubscriptionRabEstPut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	//get
+	testSubscriptionRabEstGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//delete
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	terminateScenario()
+}
+
+func TestFailSubscriptionRabEst(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testSubscriptionRabEstGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+
+	//put
+	_ = testSubscriptionRabEstPut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+
+	//delete
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable))
+
+	terminateScenario()
+}
+
+func TestSuccessSubscriptionRabRel(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+	//post
+	expectedGetResp := testSubscriptionRabRelPost(t)
+	//get
+	testSubscriptionRabRelGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//put
+	expectedGetResp = testSubscriptionRabRelPut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
+	//get
+	testSubscriptionRabRelGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	//delete
+	testSubscriptionRabRelDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	terminateScenario()
+}
+
+func TestFailSubscriptionRabRel(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	//get
+	testSubscriptionRabRelGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+
+	//put
+	_ = testSubscriptionRabRelPut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
+
+	//delete
+	testSubscriptionRabRelDelete(t, strconv.Itoa(nextSubscriptionIdAvailable))
+
+	terminateScenario()
+}
+
 func TestSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -778,16 +1283,30 @@ func TestSubscriptionsListGet(t *testing.T) {
 	//post
 	_ = testSubscriptionCellChangePost(t)
 	_ = testSubscriptionCellChangePost(t)
+	_ = testSubscriptionRabEstPost(t)
+	_ = testSubscriptionRabEstPost(t)
+	_ = testSubscriptionRabRelPost(t)
+	_ = testSubscriptionRabRelPost(t)
 
 	//get list cc
 	testSubscriptionListCellChangeGet(t)
+
+	//get list re
+	testSubscriptionListRabEstGet(t)
+
+	//get list rr
+	testSubscriptionListRabRelGet(t)
 
 	//get list
 	testSubscriptionListGet(t)
 
 	//delete
-	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
-	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2))
+	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-6))
+	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-5))
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-4))
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-3))
+	testSubscriptionRabRelDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2))
+	testSubscriptionRabRelDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
 
 	terminateScenario()
 }
@@ -796,7 +1315,7 @@ func testSubscriptionListGet(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedSubscriptionNb := 2
+	expectedSubscriptionNb := 6
 
 	/******************************
 	 * request vars section
@@ -814,7 +1333,7 @@ func testSubscriptionListGet(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/cell_change", nil, nil, nil, http.StatusOK, SubscriptionLinkListSubscriptionsGET)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions", nil, nil, nil, http.StatusOK, SubscriptionLinkListSubscriptionsGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -881,8 +1400,8 @@ func testSubscriptionListCellChangeGet(t *testing.T) {
 func testSubscriptionCellChangePost(t *testing.T) string {
 
 	/******************************
-	         * expected response section
-		 ******************************/
+	 * expected response section
+	 ******************************/
 	hostatus := COMPLETED
 	expectedFilter := FilterCriteriaAssocHo{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "1.1.1.1"}, &Plmn{"111", "222"}, []string{"1234567"}, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
@@ -1079,6 +1598,494 @@ func testSubscriptionCellChangeDelete(t *testing.T, subscriptionId string) {
 	}
 }
 
+func testSubscriptionListRabEstGet(t *testing.T) {
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedSubscriptionNb := 2
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, nil, nil, http.StatusOK, SubscriptionLinkListSubscriptionsReGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineResponse2003
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	nb := 0
+	for _, sub := range respBody.SubscriptionLinkList.Subscription {
+		if *sub.SubscriptionType == RAB_ESTABLISHMENT {
+			nb++
+		} else {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+	if nb != expectedSubscriptionNb {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testSubscriptionRabEstPost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedFilter := FilterCriteriaAssocQci{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "1.1.1.1"}, nil, nil, 80}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/rab_est/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedExpiry := TimeStamp{1988599770, 0}
+	expectedResponse := InlineResponse2014{&RabEstSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	//filter is not exactly the same in response and request
+	filterCriteria := expectedFilter
+	filterCriteria.Qci = 80
+	rabEstSubscriptionPost1 := RabEstSubscriptionPost1{&RabEstSubscriptionPost{expectedCallBackRef, &filterCriteria, &expectedExpiry}}
+
+	body, err := json.Marshal(rabEstSubscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/rab_est", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabEstSubscriptionSubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineResponse201
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if rr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedFilter := FilterCriteriaAssocQci{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "2.2.2.2"}, &Plmn{"111", "222"}, []string{"1234567"}, 80}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/rab_est/" + subscriptionId}
+	expectedExpiry := TimeStamp{1988599770, 0}
+	expectedResponse := InlineResponse2007{&RabEstSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+	rabEstSubscription1 := RabEstSubscription1{&RabEstSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	body, err := json.Marshal(rabEstSubscription1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/rab_est", bytes.NewBuffer(body), vars, nil, http.StatusOK, RabEstSubscriptionSubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineResponse2007
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions/rab_est", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, RabEstSubscriptionSubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testSubscriptionRabEstGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, vars, nil, http.StatusNotFound, RabEstSubscriptionSubscriptionsGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/rab_est", nil, vars, nil, http.StatusOK, RabEstSubscriptionSubscriptionsGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineResponse2007
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testSubscriptionRabEstDelete(t *testing.T, subscriptionId string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/rab_est", nil, vars, nil, http.StatusNoContent, RabEstSubscriptionsSubscrIdDELETE)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testSubscriptionListRabRelGet(t *testing.T) {
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedSubscriptionNb := 2
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, nil, nil, http.StatusOK, SubscriptionLinkListSubscriptionsRrGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineResponse2003
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	nb := 0
+	for _, sub := range respBody.SubscriptionLinkList.Subscription {
+		if *sub.SubscriptionType == RAB_RELEASE {
+			nb++
+		} else {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+	if nb != expectedSubscriptionNb {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
+func testSubscriptionRabRelPost(t *testing.T) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedFilter := FilterCriteriaAssocQci{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "1.1.1.1"}, &Plmn{"111", "222"}, []string{"1234567"}, 80}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/rab_rel/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	expectedExpiry := TimeStamp{1988599770, 0}
+	expectedResponse := InlineResponse2016{&RabRelSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	//filter is not exactly the same in response and request
+	filterCriteria := expectedFilter
+	filterCriteria.Qci = 80
+	rabRelSubscriptionPost1 := RabRelSubscriptionPost1{&RabRelSubscriptionPost{expectedCallBackRef, &filterCriteria, &expectedExpiry}}
+
+	body, err := json.Marshal(rabRelSubscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/rab_rel", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabRelSubscriptionSubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineResponse201
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	if rr != string(expectedResponseStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+	return string(expectedResponseStr)
+}
+
+func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSuccess bool) string {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	expectedFilter := FilterCriteriaAssocQci{"myApp", &AssociateId{"UE_IPV4_ADDRESS", "2.2.2.2"}, &Plmn{"111", "222"}, []string{"1234567"}, 80}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLink := Link{"/" + testScenarioName + "/rni/v1/subscriptions/rab_est/" + subscriptionId}
+	expectedExpiry := TimeStamp{1988599770, 0}
+	expectedResponse := InlineResponse2009{&RabRelSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	expectedResponseStr, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+	rabRelSubscription1 := RabRelSubscription1{&RabRelSubscription{expectedCallBackRef, &expectedLink, &expectedFilter, &expectedExpiry}}
+
+	body, err := json.Marshal(rabRelSubscription1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	if expectSuccess {
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/rab_rel", bytes.NewBuffer(body), vars, nil, http.StatusOK, RabRelSubscriptionSubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineResponse2009
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != string(expectedResponseStr) {
+			t.Fatalf("Failed to get expected response")
+		}
+		return string(expectedResponseStr)
+	} else {
+		_, err = sendRequest(http.MethodPost, "/subscriptions/rab_rel", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, RabRelSubscriptionSubscriptionsPUT)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		return ""
+	}
+}
+
+func testSubscriptionRabRelGet(t *testing.T, subscriptionId string, expectedResponse string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	//passed as a parameter since a POST had to be sent first
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+	var err error
+	if expectedResponse == "" {
+		_, err = sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, vars, nil, http.StatusNotFound, RabRelSubscriptionSubscriptionsGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/rab_rel", nil, vars, nil, http.StatusOK, RabRelSubscriptionSubscriptionsGET)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+
+		var respBody InlineResponse2009
+		err = json.Unmarshal([]byte(rr), &respBody)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+		if rr != expectedResponse {
+			t.Fatalf("Failed to get expected response")
+		}
+	}
+}
+
+func testSubscriptionRabRelDelete(t *testing.T, subscriptionId string) {
+
+	/******************************
+	 * expected response section
+	 ******************************/
+
+	/******************************
+	 * request vars section
+	 ******************************/
+	vars := make(map[string]string)
+	vars["subscriptionId"] = subscriptionId
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/rab_rel", nil, vars, nil, http.StatusNoContent, RabRelSubscriptionsSubscrIdDELETE)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+}
+
 func TestExpiryNotification(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
@@ -1168,7 +2175,7 @@ func TestExpiryNotification(t *testing.T) {
 
 }
 
-func TestSubscriptionNotification(t *testing.T) {
+func TestSubscriptionCellChangeNotification(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -1196,10 +2203,12 @@ func TestSubscriptionNotification(t *testing.T) {
 	expectedSrcCellId := []string{"2345678"}
 	expectedSrcEcgi := rnisNotif.Ecgi{Plmn: &expectedSrcPlmnInNotif, CellId: expectedSrcCellId}
 	expectedDstPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
-	expectedDstCellId := []string{"1234567"}
+	expectedDstCellId := []string{"3456789"}
 	expectedDstEcgi := rnisNotif.Ecgi{Plmn: &expectedDstPlmnInNotif, CellId: expectedDstCellId}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedFilter := FilterCriteriaAssocHo{"", &AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}, &expectedSrcPlmn, expectedSrcCellId, &hostatus}
+	expectedAssocId := AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}
+	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "UE_IPV4_ADDRESS", Value: movingUeAddr}
+	expectedFilter := FilterCriteriaAssocHo{"", &expectedAssocId, &expectedSrcPlmn, expectedSrcCellId, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
 	expectedExpiry := TimeStamp{1988599770, 0}
 
@@ -1234,6 +2243,7 @@ func TestSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
+	//moving out os the 3gpp network...so no notification should be sent
 	updateScenario("mobility1")
 
 	fmt.Println("Create valid Metric Store")
@@ -1258,6 +2268,37 @@ func TestSubscriptionNotification(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	notificationSrcEcgiNullStr := string(jsonResult)
+	if notificationSrcEcgiNullStr != "null" {
+		t.Fatalf("Failed to get null notification")
+	}
+
+	updateScenario("mobility2")
+	time.Sleep(100 * time.Millisecond)
+	updateScenario("mobility3")
+
+	httpLog, err = metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
+	if err != nil || len(httpLog) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//transform the assocId in string for comparison purpose
+	jsonResult, err = json.Marshal(notification.AssociateId)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationAssocIdStr := string(jsonResult)
+
+	//transform the src and target ecgi in string for comparison purpose
+	jsonResult, err = json.Marshal(notification.SrcEcgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	notificationSrcEcgiStr := string(jsonResult)
 
 	jsonResult, err = json.Marshal(notification.TrgEcgi[0])
@@ -1265,6 +2306,12 @@ func TestSubscriptionNotification(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	notificationTargetEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedAssocIdInNotif)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedAssocIdStr := string(jsonResult)
 
 	jsonResult, err = json.Marshal(expectedSrcEcgi)
 	if err != nil {
@@ -1278,13 +2325,289 @@ func TestSubscriptionNotification(t *testing.T) {
 	}
 	expectedTargetEcgiStr := string(jsonResult)
 
-	//only check for src and target ecgi, other values are dynamic such as the timestamp
-	if (notificationSrcEcgiStr != expectedSrcEcgiStr) || (notificationTargetEcgiStr != expectedTargetEcgiStr) {
+	//only check for src, target ecgi and assocId, other values are dynamic such as the timestamp
+	if (notificationSrcEcgiStr != expectedSrcEcgiStr) || (notificationTargetEcgiStr != expectedTargetEcgiStr) || (notificationAssocIdStr != expectedAssocIdStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	updateScenario("mobility1")
+
+	//cleanup allocated subscription
+	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+	terminateScenario()
+
+}
+
+func TestSubscriptionRabEstNotification(t *testing.T) {
+
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	qci := int32(80)
+	expectedPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
+	expectedCellId := []string{"2345678"}
+	expectedEcgi := rnisNotif.Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
+	expectedErabId := 2
+	expectedErabQosParameters := rnisNotif.ErabQosParameters{Qci: qci}
+	movingUeAddr := "ue1" //based on the scenario change
+	expectedAssocId := AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}
+	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "UE_IPV4_ADDRESS", Value: movingUeAddr}
+	expectedFilter := FilterCriteriaAssocQci{"", &expectedAssocId, nil, nil, qci}
+	expectedCallBackRef := "myCallbakRef"
+	expectedExpiry := TimeStamp{1988599770, 0}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	rabEstSubscriptionPost1 := RabEstSubscriptionPost1{&RabEstSubscriptionPost{expectedCallBackRef, &expectedFilter, &expectedExpiry}}
+
+	body, err := json.Marshal(rabEstSubscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_est", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabEstSubscriptionSubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	updateScenario("mobility1")
+	time.Sleep(100 * time.Millisecond)
+	updateScenario("mobility2")
+
+	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	if err != nil {
+		t.Fatalf("Failed to create a store")
+	}
+
+	httpLog, err := metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
+	if err != nil || len(httpLog) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	var notification rnisNotif.RabEstNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//transform the assocId in string for comparison purpose
+	jsonResult, err := json.Marshal(notification.AssociateId)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationAssocIdStr := string(jsonResult)
+
+	//transform the ecgi in string for comparison purpose
+	jsonResult, err = json.Marshal(notification.Ecgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(notification.ErabQosParameters)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationErabQosParametersStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedAssocIdInNotif)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedAssocIdStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedEcgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedErabQosParameters)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedErabQosParametersStr := string(jsonResult)
+
+	//only check for ecgi, erabId, erabQosParameters and assocId, other values are dynamic such as the timestamp
+	if (notificationEcgiStr != expectedEcgiStr) ||
+		(notificationErabQosParametersStr != expectedErabQosParametersStr) ||
+		(notification.ErabId != int32(expectedErabId)) ||
+		(notificationAssocIdStr != expectedAssocIdStr) {
 		t.Fatalf("Failed to get expected response")
 	}
 
 	//cleanup allocated subscription
-	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+	terminateScenario()
+
+}
+
+func TestSubscriptionRabRelNotification(t *testing.T) {
+
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	qci := int32(80)
+	expectedPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
+	expectedCellId := []string{"2345678"}
+	expectedEcgi := rnisNotif.Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
+	expectedErabReleaseInfo := rnisNotif.ErabReleaseInfo{ErabId: 1}
+	movingUeAddr := "ue1" //based on the scenario change
+	expectedAssocId := AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}
+	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "UE_IPV4_ADDRESS", Value: movingUeAddr}
+	expectedFilter := FilterCriteriaAssocQci{"", &expectedAssocId, nil, nil, qci}
+	expectedCallBackRef := "myCallbakRef"
+	expectedExpiry := TimeStamp{1988599770, 0}
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	rabRelSubscriptionPost1 := RabRelSubscriptionPost1{&RabRelSubscriptionPost{expectedCallBackRef, &expectedFilter, &expectedExpiry}}
+
+	body, err := json.Marshal(rabRelSubscriptionPost1)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_rel", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabRelSubscriptionSubscriptionsPOST)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	updateScenario("mobility1")
+
+	metricStore, err := ms.NewMetricStore(currentStoreName, sandboxName, influxTestAddr, redisTestAddr)
+	if err != nil {
+		t.Fatalf("Failed to create a store")
+	}
+
+	httpLog, err := metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
+	if err != nil || len(httpLog) != 1 {
+		t.Fatalf("Failed to get metric")
+	}
+
+	var notification rnisNotif.RabRelNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//transform the assocId in string for comparison purpose
+	jsonResult, err := json.Marshal(notification.AssociateId)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationAssocIdStr := string(jsonResult)
+
+	//transform the ecgi in string for comparison purpose
+	jsonResult, err = json.Marshal(notification.Ecgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(notification.ErabReleaseInfo)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	notificationErabReleaseInfoStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedAssocIdInNotif)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedAssocIdStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedEcgi)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedEcgiStr := string(jsonResult)
+
+	jsonResult, err = json.Marshal(expectedErabReleaseInfo)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedErabReleaseInfoStr := string(jsonResult)
+
+	//only check for ecgi, erabReleaseInfo and assocId, other values are dynamic such as the timestamp
+	if (notificationEcgiStr != expectedEcgiStr) ||
+		(notificationErabReleaseInfoStr != expectedErabReleaseInfoStr) ||
+		(notificationAssocIdStr != expectedAssocIdStr) {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	//cleanup allocated subscription
+	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
 
 	/******************************
 	 * back to initial state section
@@ -1312,27 +2635,27 @@ func TestSbi(t *testing.T) {
 	/******************************
 	 * expected values section
 	 ******************************/
-	var expectedUeEcgiStr [2]string
-	var expectedUeEcgi [2]Ecgi
-	expectedUeEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, []string{"2345678"}}
-	expectedUeEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
+	var expectedUeDataStr [2]string
+	var expectedUeData [2]UeData
+	expectedUeData[INITIAL] = UeData{1, &Ecgi{&Plmn{"123", "456"}, "2345678"}}
+	expectedUeData[UPDATED] = UeData{-1, &Ecgi{&Plmn{"123", "456"}, ""}}
 
 	var expectedAppEcgiStr [2]string
 	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
-	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, []string{"1234567"}}
+	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, "1234567"}
+	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, "1234567"}
 
-	j, err := json.Marshal(expectedUeEcgi[INITIAL])
+	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedUeEcgiStr[INITIAL] = string(j)
+	expectedUeDataStr[INITIAL] = string(j)
 
-	j, err = json.Marshal(expectedUeEcgi[UPDATED])
+	j, err = json.Marshal(expectedUeData[UPDATED])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedUeEcgiStr[UPDATED] = string(j)
+	expectedUeDataStr[UPDATED] = string(j)
 
 	j, err = json.Marshal(expectedAppEcgi[INITIAL])
 	if err != nil {
@@ -1358,7 +2681,7 @@ func TestSbi(t *testing.T) {
 	appName := "zone1-edge1-iperf"
 
 	jsonEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeEcgiStr[INITIAL] {
+	if string(jsonEcgiInfo) != expectedUeDataStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -1370,7 +2693,7 @@ func TestSbi(t *testing.T) {
 	updateScenario("mobility1")
 
 	jsonEcgiInfo, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonEcgiInfo) != expectedUeEcgiStr[UPDATED] {
+	if string(jsonEcgiInfo) != expectedUeDataStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -1447,7 +2770,7 @@ func TestPlmnInfoGet(t *testing.T) {
 		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
-		if respBody.PlmnInfo[0].Ecgi.CellId[0] != expectedCellId[INITIAL] {
+		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -1468,7 +2791,98 @@ func TestPlmnInfoGet(t *testing.T) {
 		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[UPDATED] {
 			t.Fatalf("Failed to get expected response")
 		}
-		if respBody.PlmnInfo[0].Ecgi.CellId[0] != expectedCellId[UPDATED] {
+		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[UPDATED] {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	/******************************
+	 * back to initial state section
+	 ******************************/
+
+	terminateScenario()
+
+}
+
+func TestRabInfoGet(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initializeVars()
+
+	err := Init()
+	if err != nil {
+		t.Fatalf("Error initializing test basic procedure")
+	}
+	err = Run()
+	if err != nil {
+		t.Fatalf("Error running test basic procedure")
+	}
+
+	fmt.Println("Set a scenario")
+	initialiseScenario(testScenario)
+
+	/******************************
+	 * expected response section
+	 ******************************/
+	qci := int32(80)
+	expectedPlmn := Plmn{Mcc: "123", Mnc: "456"}
+	expectedCellId := "2345678"
+	expectedEcgi := Ecgi{Plmn: &expectedPlmn, CellId: expectedCellId}
+	expectedErabQosParameters := ErabQosParameters{Qci: qci}
+	expectedErabInfo := []ErabInfo{ErabInfo{ErabId: 1, ErabQosParameters: &expectedErabQosParameters}}
+	movingUeAddr := "ue1" //based on the scenario change
+	expectedAssocId := []AssociateId{AssociateId{"UE_IPV4_ADDRESS", movingUeAddr}}
+	expectedUeInfo := []UeInfo{UeInfo{AssociateId: expectedAssocId, ErabInfo: expectedErabInfo}}
+	expectedCellUserInfo := CellUserInfo{Ecgi: &expectedEcgi, UeInfo: expectedUeInfo}
+
+	j, err := json.Marshal(expectedCellUserInfo)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expectedCellUserInfoStr := string(j)
+
+	/******************************
+	 * request vars section
+	 ******************************/
+
+	/******************************
+	 * request body section
+	 ******************************/
+
+	/******************************
+	 * request queries section
+	 ******************************/
+
+	queries := make(map[string]string)
+	queries["cell_id"] = expectedCellId
+
+	/******************************
+	 * request execution section
+	 ******************************/
+
+	rr, err := sendRequest(http.MethodGet, "/queries/rab_info", nil, nil, queries, http.StatusOK, RabInfoGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	var respBody InlineResponse200
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+
+	if respBody.RabInfo != nil {
+
+		j, err = json.Marshal(respBody.RabInfo.CellUserInfo[0])
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		cellUserInfoStr := string(j)
+
+		if cellUserInfoStr != expectedCellUserInfoStr {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -1502,6 +2916,36 @@ func updateScenario(testUpdate string) {
 		// mobility event of ue1 to zone2-poa1
 		elemName := "ue1"
 		destName := "zone2-poa1"
+
+		_, _, err := m.MoveNode(elemName, destName)
+		if err != nil {
+			log.Error("Error sending mobility event")
+		}
+
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message: ", err)
+		}
+	case "mobility2":
+		// mobility event of ue1 to zone2-poa1
+		elemName := "ue1"
+		destName := "zone1-poa-cell1"
+
+		_, _, err := m.MoveNode(elemName, destName)
+		if err != nil {
+			log.Error("Error sending mobility event")
+		}
+
+		msg := mqLocal.CreateMsg(mq.MsgScenarioUpdate, mq.TargetAll, testScenarioName)
+		err = mqLocal.SendMsg(msg)
+		if err != nil {
+			log.Error("Failed to send message: ", err)
+		}
+	case "mobility3":
+		// mobility event of ue1 to zone1-poa-cell2
+		elemName := "ue1"
+		destName := "zone1-poa-cell2"
 
 		_, _, err := m.MoveNode(elemName, destName)
 		if err != nil {

@@ -23,7 +23,7 @@ import (
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 
-        _ "github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 // DB Config
@@ -38,20 +38,20 @@ const (
 
 // DB Table Names
 const (
-	UsersTable      = "users"
+	UsersTable = "users"
 )
 
 const (
-	RoleUser				= "user"
-	RoleSuper				= "super"
+	RoleUser  = "user"
+	RoleSuper = "super"
 )
 
 type User struct {
-	id   					string
-	username   		string
-	password			string
-	role					string
-	sboxname			string
+	Id       string
+	Username string
+	Password string
+	Role     string
+	Sboxname string
 }
 
 // Connector - Implements a Postgis SQL DB connector
@@ -60,7 +60,6 @@ type Connector struct {
 	dbName    string
 	db        *sql.DB
 	connected bool
-	updateCb  func(string, string)
 }
 
 // NewConnector - Creates and initializes a Postgis connector
@@ -163,12 +162,12 @@ func (pc *Connector) CreateTables() (err error) {
 	}
 
 	// users Table
-	_, err = pc.db.Exec(`CREATE TABLE ` + UsersTable + ` (
-		id 							SERIAL 						PRIMARY KEY,
-		username  			varchar(36)				NOT NULL UNIQUE,
-		password				varchar(100)				NOT NULL,
-		role						varchar(36)				NOT NULL DEFAULT 'user',
-		sboxname				varchar(11)				NOT NULL DEFAULT ''
+	_, err = pc.db.Exec(`CREATE TABLE IF NOT EXISTS ` + UsersTable + ` (
+		id			SERIAL			PRIMARY KEY,
+		username	varchar(36)		NOT NULL UNIQUE,
+		password	varchar(100)	NOT NULL,
+		role		varchar(36)		NOT NULL DEFAULT 'user',
+		sboxname	varchar(11)		NOT NULL DEFAULT ''
 	)`)
 	if err != nil {
 		log.Error(err.Error())
@@ -216,7 +215,7 @@ func (pc *Connector) CreateUser(username string, password string, role string, s
 
 	// Create entry
 	query := `INSERT INTO ` + UsersTable + ` (username, password, role, sboxname)
-		VALUES ($1, crypt('`+password+`', gen_salt('bf')), $2, $3)`
+		VALUES ($1, crypt('` + password + `', gen_salt('bf')), $2, $3)`
 	_, err = pc.db.Exec(query, username, role, sboxname)
 	if err != nil {
 		log.Error(err.Error())
@@ -235,7 +234,7 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 
 	if password != "" {
 		query := `UPDATE ` + UsersTable + `
-			SET password = crypt('`+password+`', gen_salt('bf'))
+			SET password = crypt('` + password + `', gen_salt('bf'))
 			WHERE username = ($1)`
 		_, err = pc.db.Exec(query, username)
 		if err != nil {
@@ -296,7 +295,7 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 	// Scan result
 	for rows.Next() {
 		user = new(User)
-		err = rows.Scan(&user.id, &user.username, &user.password, &user.role, &user.sboxname)
+		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -334,14 +333,14 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id, &user.username, &user.password, &user.role, &user.sboxname)
+		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return userMap, err
 		}
 
 		// Add to map
-		userMap[user.username] = user
+		userMap[user.Username] = user
 	}
 	err = rows.Err()
 	if err != nil {
@@ -379,7 +378,7 @@ func (pc *Connector) DeleteUsers() (err error) {
 }
 
 //IsValidUser - does if user exists
-func (pc *Connector) IsValidUser(username string) (valid bool, err error){
+func (pc *Connector) IsValidUser(username string) (valid bool, err error) {
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
@@ -399,7 +398,7 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error){
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id)
+		err = rows.Scan(&user.Id)
 		if err != nil {
 			log.Error(err.Error())
 			return false, err
@@ -413,7 +412,7 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error){
 }
 
 //AuthenticateUser - returns true or false if credentials are OK
-func (pc *Connector) AuthenticateUser(username string, password string) (authenticated bool, err error){
+func (pc *Connector) AuthenticateUser(username string, password string) (authenticated bool, err error) {
 	// Validate input
 	if username == "" {
 		err = errors.New("Missing username")
@@ -424,7 +423,7 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 		SELECT id
 		FROM `+UsersTable+`
 		WHERE username = ($1)
-		AND password = crypt('`+password+`', password)` , username)
+		AND password = crypt('`+password+`', password)`, username)
 	if err != nil {
 		log.Error(err.Error())
 		return false, err
@@ -434,7 +433,7 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.id)
+		err = rows.Scan(&user.Id)
 		if err != nil {
 			log.Error(err.Error())
 			return false, err
@@ -448,7 +447,7 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 }
 
 // isValidRole - does role exist
-func isValidRole(role string) (error) {
+func isValidRole(role string) error {
 	switch role {
 	case RoleUser, RoleSuper:
 		return nil

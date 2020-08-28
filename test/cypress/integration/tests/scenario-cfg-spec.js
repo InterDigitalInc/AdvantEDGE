@@ -73,8 +73,10 @@ import {
   FIELD_APP_PKT_LOSS,
   FIELD_MNC,
   FIELD_MCC,
+  FIELD_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
 
   getElemFieldVal,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
@@ -177,7 +179,9 @@ describe('Scenario Configuration', function () {
     let edgeName = 'edge1';
     let edgeAppName = 'edge1-app1';
     let poaName = 'poa1';
-    let poaCellName = 'poa-cell1';
+    let poa4GName = 'poa-4g1';
+    let poa5GName = 'poa-5g1';
+    let poaWifiName = 'poa-wifi1';
     let fogName = 'fog1';
     let fogAppName = 'fog1-app1';
     let ueName = 'ue1';
@@ -237,10 +241,20 @@ describe('Scenario Configuration', function () {
     addPoa(poaName, zoneName);
     validatePoa(poaName, zoneName);
 
-    // POA Cell
-    cy.log('Add new poa cell and verify default & configured settings: ' + poaCellName);
-    addPoaCell(poaCellName, zoneName);
-    validatePoaCell(poaCellName, zoneName);
+    // POA 4G
+    cy.log('Add new poa 4G and verify default & configured settings: ' + poa4GName);
+    addPoa4G(poa4GName, zoneName);
+    validatePoa4G(poa4GName, zoneName);
+
+    // POA 5G
+    cy.log('Add new poa 5G and verify default & configured settings: ' + poa5GName);
+    addPoa5G(poa5GName, zoneName);
+    validatePoa5G(poa5GName, zoneName);
+
+    // POA WIFI
+    cy.log('Add new poa wifi and verify default & configured settings: ' + poaWifiName);
+    addPoaWifi(poaWifiName, zoneName);
+    validatePoaWifi(poaWifiName, zoneName);
 
     // Fog
     cy.log('Add new fog and verify default & configured settings: ' + fogName);
@@ -300,7 +314,9 @@ describe('Scenario Configuration', function () {
     validateEdge(edgeName, zoneName);
     validateEdgeApp(edgeAppName, edgeName);
     validatePoa(poaName, zoneName);
-    validatePoaCell(poaCellName, zoneName);
+    validatePoa4G(poa4GName, zoneName);
+    validatePoa5G(poa5GName, zoneName);
+    validatePoaWifi(poaWifiName, zoneName);
     validateFog(fogName, poaName);
     validateFogApp(fogAppName, fogName);
     validateUe(ueName, poaName);
@@ -318,11 +334,7 @@ describe('Scenario Configuration', function () {
   // Retrieve Element entry from Application table
   function getEntry(entries, name) {
     if (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
-          return entries[i];
-        }
-      }
+      return entries[name] ? entries[name] : null;
     }
     return null;
   }
@@ -646,7 +658,7 @@ describe('Scenario Configuration', function () {
   }
 
   // ==============================
-  // POA-CELL
+  // POA-4G
   // ==============================
 
   let termLinkLatency2 = '2';
@@ -655,9 +667,9 @@ describe('Scenario Configuration', function () {
   let termLinkThroughput2 = '5';
   let cellId = '1234567';
 
-  function addPoaCell(name, parent) {
+  function addPoa4G(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
-    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_CELL);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_4G);
     verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
@@ -677,11 +689,11 @@ describe('Scenario Configuration', function () {
     verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
-  function validatePoaCell(name, parent) {
+  function validatePoa4G(name, parent) {
     cy.window().then((win) => {
       var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
       assert.isNotNull(entry);
-      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_CELL);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_4G);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar2);
@@ -689,6 +701,100 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput2-1);
       assert.equal(getElemFieldVal(entry, FIELD_CELL_ID), cellId);
+    });
+  }
+
+  // ==============================
+  // POA-5G
+  // ==============================
+
+  let termLinkLatency3 = '2';
+  let termLinkLatencyVar3 = '3';
+  let termLinkPktLoss3 = '4';
+  let termLinkThroughput3 = '5';
+  let nrCellId = '3456789';
+
+  function addPoa5G(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_5G);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency3);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar3);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss3);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput3);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput3-1);
+    type(meep.CFG_ELEM_NR_CELL_ID, nrCellId);
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validatePoa5G(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_5G);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput3-1);
+      assert.equal(getElemFieldVal(entry, FIELD_NR_CELL_ID), nrCellId);
+    });
+  }
+
+  // ==============================
+  // POA-WIFI
+  // ==============================
+
+  let termLinkLatency4 = '2';
+  let termLinkLatencyVar4 = '3';
+  let termLinkPktLoss4 = '4';
+  let termLinkThroughput4 = '5';
+  let macId = '112233445566';
+
+  function addPoaWifi(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_WIFI);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency4);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar4);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss4);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput4);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput4-1);
+    type(meep.CFG_ELEM_MAC_ID, macId);
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validatePoaWifi(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_WIFI);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput4-1);
+      assert.equal(getElemFieldVal(entry, FIELD_MAC_ID), macId);
     });
   }
 

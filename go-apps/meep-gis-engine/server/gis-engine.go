@@ -34,6 +34,7 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	"github.com/gorilla/mux"
 )
 
@@ -73,6 +74,7 @@ type GisEngine struct {
 	handlerId      int
 	sboxCtrlClient *sbox.APIClient
 	activeModel    *mod.Model
+	sessionMgr     *sm.SessionMgr
 	pc             *postgis.Connector
 	assets         map[string]Asset
 	uePoaInfo      map[string]PoaInfo
@@ -134,6 +136,14 @@ func Init() (err error) {
 		log.Error("Failed to create model: ", err.Error())
 		return err
 	}
+
+	// Connect to Session Manager
+	ge.sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	// Connect to Postgis DB
 	ge.pc, err = postgis.NewConnector(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
@@ -218,7 +228,7 @@ func processScenarioActivate() {
 	ge.activeModel.UpdateScenario()
 
 	// Retrieve & process POA and Compute Assets in active scenario
-	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	addAssets(assetList)
 
 	// Retrieve & process UE assets in active scenario
@@ -232,7 +242,7 @@ func processScenarioUpdate() {
 	ge.activeModel.UpdateScenario()
 
 	// Get latest asset list
-	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoaCell, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
 	newAssets := make(map[string]bool)
 	var assetsToAdd []string
 	var assetsToRemove []string
@@ -515,7 +525,7 @@ func isUe(nodeType string) bool {
 }
 
 func isPoa(nodeType string) bool {
-	return nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoaCell
+	return nodeType == mod.NodeTypePoa || nodeType == mod.NodeTypePoa4G || nodeType == mod.NodeTypePoa5G || nodeType == mod.NodeTypePoaWifi
 }
 
 func isCompute(nodeType string) bool {
@@ -797,6 +807,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	assetType := query.Get("assetType")
 	subType := query.Get("subType")
+	excludePath := query.Get("excludePath")
 	assetTypeStr := "*"
 	if assetType != "" {
 		assetTypeStr = assetType
@@ -805,7 +816,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 	if subType != "" {
 		subTypeStr = subType
 	}
-	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "]")
+	log.Debug("Get GeoData for assetType[", assetTypeStr, "] subType[", subTypeStr, "] excludePath[", excludePath, "]")
 
 	var assetList GeoDataAssetList
 
@@ -827,7 +838,13 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 			asset.AssetName = ue.Name
 			asset.AssetType = AssetTypeUe
 			asset.SubType = mod.NodeTypeUE
-			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+
+			// Exclude path if necessary
+			if excludePath == "true" {
+				err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+			} else {
+				err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+			}
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -913,6 +930,10 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	assetName := vars["assetName"]
 	log.Debug("Get GeoData for asset: ", assetName)
 
+	// Retrieve query parameters
+	query := r.URL.Query()
+	excludePath := query.Get("excludePath")
+
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
 		err := errors.New("No active scenario")
@@ -947,7 +968,12 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+		// Exclude path if necessary
+		if excludePath == "true" {
+			err = fillGeoDataAsset(&asset, ue.Position, 0, "", ue.PathMode, ue.PathVelocity)
+		} else {
+			err = fillGeoDataAsset(&asset, ue.Position, 0, ue.Path, ue.PathMode, ue.PathVelocity)
+		}
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)

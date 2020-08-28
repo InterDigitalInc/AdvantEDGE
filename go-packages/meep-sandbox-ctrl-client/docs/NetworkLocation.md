@@ -14,6 +14,9 @@ Name | Type | Description | Notes
 **Meta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **UserMeta** | **map[string]string** | Key/Value Pair Map (string, string) | [optional] [default to null]
 **CellularPoaConfig** | [***CellularPoaConfig**](CellularPoaConfig.md) |  | [optional] [default to null]
+**Poa4GConfig** | [***Poa4GConfig**](Poa4GConfig.md) |  | [optional] [default to null]
+**Poa5GConfig** | [***Poa5GConfig**](Poa5GConfig.md) |  | [optional] [default to null]
+**PoaWifiConfig** | [***PoaWifiConfig**](PoaWifiConfig.md) |  | [optional] [default to null]
 **GeoData** | [***GeoData**](GeoData.md) |  | [optional] [default to null]
 **PhysicalLocations** | [**[]PhysicalLocation**](PhysicalLocation.md) |  | [optional] [default to null]
 

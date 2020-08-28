@@ -71,6 +71,8 @@ export const FIELD_MCC = 'mcc';
 export const FIELD_MNC = 'mnc';
 export const FIELD_DEFAULT_CELL_ID = 'defaultCellId';
 export const FIELD_CELL_ID = 'cellId';
+export const FIELD_NR_CELL_ID = 'nrCellId';
+export const FIELD_MAC_ID = 'macId';
 export const FIELD_GEO_LOCATION = 'location';
 export const FIELD_GEO_RADIUS = 'radius';
 export const FIELD_GEO_PATH = 'path';
@@ -111,6 +113,9 @@ export const FIELD_APP_LATENCY_VAR = 'appLatencyVariation';
 export const FIELD_APP_THROUGHPUT_DL = 'appThroughput_Dl';
 export const FIELD_APP_THROUGHPUT_UL = 'appThroughput_Ul';
 export const FIELD_APP_PKT_LOSS = 'appPacketLoss';
+export const FIELD_META_DISPLAY_MAP_COLOR = 'metaDisplayMapColor';
+export const FIELD_META_DISPLAY_MAP_ICON = 'metaDisplayMapIcon';
+
 
 export const getElemFieldVal = (elem, field) => {
   return (elem && elem[field]) ? elem[field].val : null;
@@ -132,8 +137,18 @@ export const setElemFieldErr = (elem, field, err) => {
   }
 };
 
+export const resetElem = (elem) => {
+  if (elem) {
+    elem.editColor = false;
+  }
+};
+
 export const createElem = name => {
   var elem = {};
+  // State
+  resetElem(elem);
+
+  // Fields
   setElemFieldVal(elem, FIELD_TYPE, '');
   setElemFieldVal(elem, FIELD_PARENT, '');
   setElemFieldVal(elem, FIELD_NAME, name);
@@ -155,6 +170,8 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_MCC, '');
   setElemFieldVal(elem, FIELD_DEFAULT_CELL_ID, '');
   setElemFieldVal(elem, FIELD_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_NR_CELL_ID, '');
+  setElemFieldVal(elem, FIELD_MAC_ID, '');
   setElemFieldVal(elem, FIELD_GEO_LOCATION, '');
   setElemFieldVal(elem, FIELD_GEO_RADIUS, '');
   setElemFieldVal(elem, FIELD_GEO_PATH, '');
@@ -195,23 +212,22 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_APP_THROUGHPUT_DL, DEFAULT_THROUGHPUT_DL_APP);
   setElemFieldVal(elem, FIELD_APP_THROUGHPUT_UL, DEFAULT_THROUGHPUT_UL_APP);
   setElemFieldVal(elem, FIELD_APP_PKT_LOSS, DEFAULT_PACKET_LOSS_APP);
+  setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_COLOR, '');
+  setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, '');
 
   return elem;
 };
 
 export const createUniqueName = (entries, namePrefix) => {
   var increment = 1;
-  var found = true;
+  var isUniqueName = false;
   var suggestedName = namePrefix + String(increment);
-  while(found) {
-    found = false;
-    for (var i = 0; i < entries.length; i++) {
-      if (getElemFieldVal(entries[i], FIELD_NAME) === suggestedName) {
-        found=true;
-        increment++;
-        suggestedName = namePrefix + String(increment);
-        break;
-      }
+  while (!isUniqueName) {
+    if (!entries[suggestedName]) {
+      isUniqueName = true;
+    } else {
+      increment++;
+      suggestedName = namePrefix + String(increment);
     }
   }
   return suggestedName;

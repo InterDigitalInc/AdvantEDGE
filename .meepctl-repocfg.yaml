@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.5.0
+version: 1.5.2
 repo:
   name: AdvantEDGE
 
@@ -20,11 +20,6 @@ repo:
   #  Deployment
   #------------------------------
   deployment:
-    # enable the alternate HTTP server
-    #   - serves AdvantEDGE FE on alternate port 8080 instead of default 80/443
-    #   - useful in conjunction with user.frontend=true &&
-    #     when limiting endpoints exposed on public network
-    alt-server: false
     # user supplied resources
     user:
       # user supplied frontend UI located @ .meep/user/frontend
@@ -75,7 +70,7 @@ repo:
           - meep-open-map-tiles
           - meep-postgis
           - meep-redis
-        # list of paltform pods to monitor
+        # list of platform pods to monitor
         core-pods:
           - meep-mon-engine
           - meep-platform-ctrl
@@ -117,6 +112,8 @@ repo:
           swagger: bin/meep-platform-swagger-ui
           # location of AdvantEDGE frontend
           frontend: bin/meep-frontend
+          # location of REST API permissions file
+          'permissions.yaml': config/permissions.yaml
       meep-virt-engine:
         # location of source code
         src: go-apps/meep-virt-engine
@@ -497,19 +494,6 @@ repo:
       chart: charts/nginx-ingress
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-ingress.yaml
-    meep-alt-ingress:
-      # enable meepctl build -> deps are never built
-      build: false
-      # enable meepctl dockerize -> deps are never dockerized
-      dockerize: false
-      # enable meepctl deploy/delete
-      deploy: true
-      # location of deployment chart
-      chart: charts/nginx-ingress
-      # uses different default values
-      values: charts/nginx-ingress/alt-values.yaml
-      # user supplied value file located @ .meep/user/values (use below file name)
-      chart-user-values: meep-alt-ingress.yaml
     meep-redis:
       # enable meepctl build -> deps are never built
       build: false
@@ -667,6 +651,11 @@ repo:
       meep-sandbox-store:
         # location of source code
         src: go-packages/meep-sandbox-store
+        # supports linting
+        lint: true
+      meep-sessions:
+        # location of source code
+        src: go-packages/meep-sessions
         # supports linting
         lint: true
       meep-watchdog:

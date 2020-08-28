@@ -27,5 +27,5 @@ package server
 type UeInfo struct {
 	AssociateId []AssociateId `json:"associateId,omitempty"`
 
-	ErabInfo []ErabQosParameters `json:"erabInfo"`
+	ErabInfo []ErabInfo `json:"erabInfo"`
 }

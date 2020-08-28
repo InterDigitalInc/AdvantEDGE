@@ -40,7 +40,9 @@ import {
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_POA_GENERIC,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   //ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -63,7 +65,9 @@ import {
   DOMAIN_TYPE_STR,
   DOMAIN_CELL_TYPE_STR,
   POA_TYPE_STR,
-  POA_CELL_TYPE_STR,
+  POA_4G_TYPE_STR,
+  POA_5G_TYPE_STR,
+  POA_WIFI_TYPE_STR,
   DC_TYPE_STR,
   UE_APP_TYPE_STR,
   EDGE_APP_TYPE_STR,
@@ -116,7 +120,9 @@ const ncApplicableTypes = [
   ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA_GENERIC,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_EDGE,
   ELEMENT_TYPE_FOG,
@@ -161,8 +167,14 @@ class NetworkCharacteristicsEventPane extends Component {
     case ELEMENT_TYPE_POA_GENERIC:
       neType = POA_TYPE_STR;
       break;
-    case ELEMENT_TYPE_POA_CELL:
-      neType = POA_CELL_TYPE_STR;
+    case ELEMENT_TYPE_POA_4G:
+      neType = POA_4G_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_5G:
+      neType = POA_5G_TYPE_STR;
+      break;
+    case ELEMENT_TYPE_POA_WIFI:
+      neType = POA_WIFI_TYPE_STR;
       break;
     case ELEMENT_TYPE_DC:
       neType = DC_TYPE_STR;
@@ -232,7 +244,9 @@ class NetworkCharacteristicsEventPane extends Component {
       return PREFIX_INTRA_ZONE;
     case ELEMENT_TYPE_POA:
     case ELEMENT_TYPE_POA_GENERIC:
-    case ELEMENT_TYPE_POA_CELL:
+    case ELEMENT_TYPE_POA_4G:
+    case ELEMENT_TYPE_POA_5G:
+    case ELEMENT_TYPE_POA_WIFI:
       return PREFIX_TERM_LINK;
     case ELEMENT_TYPE_EDGE:
       return PREFIX_LINK;
@@ -337,12 +351,8 @@ class NetworkCharacteristicsEventPane extends Component {
 
   getElementByName(name) {
     var elements = this.props.networkElements;
-    for (var i = 0; i < elements.length; i++) {
-      if (getElemFieldVal(elements[i], FIELD_NAME) === name) {
-        return elements[i];
-      }
-    }
-    return null;
+    var element = elements[name];
+    return element ? element : null;
   }
 
   render() {

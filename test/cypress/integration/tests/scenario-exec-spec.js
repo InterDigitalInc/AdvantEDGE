@@ -276,11 +276,7 @@ describe('Scenario Execution', function () {
   // Retrieve Element entry from Application table
   function getEntry(entries, name) {
     if (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
-          return entries[i];
-        }
-      }
+      return entries[name] ? entries[name] : null;
     }
     return null;
   }

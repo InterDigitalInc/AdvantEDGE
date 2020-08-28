@@ -29,7 +29,11 @@ Name | Type | Description | Notes
 
 * `POA` (value: `"POA"`)
 
-* `POA_CELLULAR` (value: `"POA-CELLULAR"`)
+* `pOA4G` (value: `"POA-4G"`)
+
+* `pOA5G` (value: `"POA-5G"`)
+
+* `POA_WIFI` (value: `"POA-WIFI"`)
 
 * `EDGE` (value: `"EDGE"`)
 

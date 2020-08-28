@@ -58,10 +58,6 @@ spec:
             - name: USER_SWAGGER_SANDBOX
               value: {{ .Values.user.swagger.servepath }}
             {{- end }}
-            {{- if .Values.altService.enabled}}
-            - name: ALT_SERVICE_PORT
-              value: "{{ .Values.deployment.altPort }}"
-            {{- end}}
           volumeMounts:
           {{- if .Values.codecov.enabled}}
             - name: codecov-storage
