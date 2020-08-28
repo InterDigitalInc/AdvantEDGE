@@ -19,16 +19,24 @@ package sessions
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	"github.com/gorilla/mux"
 )
 
+type SessionTimeoutHandler func(*Session)
+
 type SessionMgr struct {
-	service string
-	ss      *SessionStore
-	ps      *PermissionStore
+	service   string
+	ss        *SessionStore
+	ps        *PermissionStore
+	wdTicker  *time.Ticker
+	wdHandler SessionTimeoutHandler
+	wdStarted bool
 }
+
+const wathdogInterval = 60 // 1 minute
 
 // NewSessionStore - Create and initialize a Session Store instance
 func NewSessionMgr(service string, ssAddr string, psAddr string) (sm *SessionMgr, err error) {
@@ -37,6 +45,9 @@ func NewSessionMgr(service string, ssAddr string, psAddr string) (sm *SessionMgr
 	log.Info("Creating new Session Manager")
 	sm = new(SessionMgr)
 	sm.service = service
+	sm.wdTicker = nil
+	sm.wdHandler = nil
+	sm.wdStarted = false
 
 	// Create new Session Store instance
 	sm.ss, err = NewSessionStore(ssAddr)
@@ -113,4 +124,57 @@ func (sm *SessionMgr) Authorizer(inner http.Handler) http.Handler {
 			return
 		}
 	})
+}
+
+// StartSessionWatchdog -
+func (sm *SessionMgr) StartSessionWatchdog(handler SessionTimeoutHandler) {
+	// Update Watchdog callback function
+	sm.wdHandler = handler
+
+	// Start Session Watchdog ticker to monitor timed out sessions
+	if !sm.wdStarted {
+		sm.wdStarted = true
+		sm.wdTicker = time.NewTicker(wathdogInterval * time.Second)
+		go func() {
+			for range sm.wdTicker.C {
+				if sm.wdStarted {
+					ss := sm.GetSessionStore()
+
+					// Get all sessions
+					sessionList, err := ss.GetAll()
+					if err != nil {
+						log.Warn("Failed to retrieve session list")
+						continue
+					}
+
+					// Remove timed out sessions
+					currentTime := time.Now()
+					for _, session := range sessionList {
+						if currentTime.After(session.Timestamp.Add(SessionDuration * time.Second)) {
+							// Invoke watchdog timeout handler
+							if sm.wdHandler != nil {
+								sm.wdHandler(session)
+							}
+
+							// Remove session
+							_ = ss.DelById(session.ID)
+						}
+					}
+				}
+			}
+		}()
+		log.Info("Started Session Watchdog")
+	}
+
+}
+
+// StopSessionWatchdog -
+func (sm *SessionMgr) StopSessionWatchdog() {
+	if sm.wdStarted {
+		sm.wdStarted = false
+		sm.wdTicker.Stop()
+		sm.wdTicker = nil
+		sm.wdHandler = nil
+		log.Info("Stopped Session Watchdog")
+	}
 }

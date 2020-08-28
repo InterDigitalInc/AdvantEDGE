@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -34,11 +35,14 @@ const sessionCookie = "authCookie"
 const sessionsKey = "sessions:"
 const sessionsRedisTable = 0
 
+const SessionDuration = 1200 // 20 minutes
+
 const (
 	ValSessionID = "sid"
 	ValUsername  = "user"
 	ValSandbox   = "sbox"
 	ValRole      = "role"
+	ValTimestamp = "timestamp"
 )
 
 const (
@@ -48,10 +52,11 @@ const (
 )
 
 type Session struct {
-	ID       string
-	Username string
-	Sandbox  string
-	Role     string
+	ID        string
+	Username  string
+	Sandbox   string
+	Role      string
+	Timestamp time.Time
 }
 
 type SessionStore struct {
@@ -88,7 +93,7 @@ func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	ss.cs = sessions.NewCookieStore([]byte(sessionKey))
 	ss.cs.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   60 * 20, // 20 minutes
+		MaxAge:   SessionDuration, // 20 minutes
 		HttpOnly: true,
 	}
 	log.Info("Created Cookie Store")
@@ -128,7 +133,32 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	s.Username = session[ValUsername]
 	s.Sandbox = session[ValSandbox]
 	s.Role = session[ValRole]
+	s.Timestamp, _ = time.Parse(time.RFC3339, session[ValTimestamp])
 	return s, nil
+}
+
+// GetAll - Retrieve session by name
+func (ss *SessionStore) GetAll() (sessionList []*Session, err error) {
+	// Get all sessions, if any
+	err = ss.rc.ForEachEntry(ss.baseKey+"*", getSessionEntryHandler, &sessionList)
+	if err != nil {
+		return nil, err
+	}
+	return sessionList, nil
+}
+
+func getSessionEntryHandler(key string, fields map[string]string, userData interface{}) error {
+	sessionList := userData.(*([]*Session))
+
+	// Retrieve session information & add to session list
+	s := new(Session)
+	s.ID = fields[ValSessionID]
+	s.Username = fields[ValUsername]
+	s.Sandbox = fields[ValSandbox]
+	s.Role = fields[ValRole]
+	s.Timestamp, _ = time.Parse(time.RFC3339, fields[ValTimestamp])
+	*sessionList = append(*sessionList, s)
+	return nil
 }
 
 // GetByName - Retrieve session by name
@@ -149,18 +179,19 @@ func (ss *SessionStore) GetByName(username string) (s *Session, err error) {
 }
 
 func getUserEntryHandler(key string, fields map[string]string, userData interface{}) error {
-	session := userData.(*Session)
+	s := userData.(*Session)
 
 	// Check if session already found
-	if session.ID != "" {
+	if s.ID != "" {
 		return nil
 	}
 
 	// look for matching username
-	if fields[ValUsername] == session.Username {
-		session.ID = fields[ValSessionID]
-		session.Sandbox = fields[ValSandbox]
-		session.Role = fields[ValRole]
+	if fields[ValUsername] == s.Username {
+		s.ID = fields[ValSessionID]
+		s.Sandbox = fields[ValSandbox]
+		s.Role = fields[ValRole]
+		s.Timestamp, _ = time.Parse(time.RFC3339, fields[ValTimestamp])
 	}
 	return nil
 }
@@ -189,6 +220,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	fields[ValUsername] = s.Username
 	fields[ValSandbox] = s.Sandbox
 	fields[ValRole] = s.Role
+	fields[ValTimestamp] = time.Now().Format(time.RFC3339)
 	err = ss.rc.SetEntry(ss.baseKey+sessionId, fields)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -205,7 +237,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-// Del - Remove session by ID
+// Del - Remove session by cookie
 func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 	// Get session cookie
 	sessionCookie, err := ss.cs.Get(r, sessionCookie)
@@ -236,24 +268,30 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// Del - Remove session by ID
+func (ss *SessionStore) DelById(sessionId string) error {
+	// Remove session from DB
+	err := ss.rc.DelEntry(ss.baseKey + sessionId)
+	if err != nil {
+		log.Error("Failed to delete entry for ", sessionId, " with err: ", err.Error())
+		return err
+	}
+	return nil
+}
+
 // Refresh - Remove session by ID
 func (ss *SessionStore) Refresh(w http.ResponseWriter, r *http.Request) error {
 
 	// Get existing session, if any
-	session, err := ss.Get(r)
+	s, err := ss.Get(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return err
 	}
 
-	// Update session timestamp
-	log.Info(session.ID)
-
-	// Refresh session cookie
-	sessionCookie, _ := ss.cs.Get(r, sessionCookie)
-	err = sessionCookie.Save(r, w)
+	// Set session to refresh timestamp and cookie
+	err = ss.Set(s, w, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
 	return nil

@@ -167,6 +167,9 @@ func Init() (err error) {
 // Run Starts the Platform Controller
 func Run() (err error) {
 
+	// Start Session Watchdog
+	pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+
 	return nil
 }
 
@@ -215,6 +218,13 @@ func setPermissions() {
 			}
 		}
 	}
+}
+
+func sessionTimeoutCb(session *sm.Session) {
+	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
+
+	// Destroy session sandbox
+	deleteSandbox(session.Sandbox)
 }
 
 // Create a new scenario in the scenario store
