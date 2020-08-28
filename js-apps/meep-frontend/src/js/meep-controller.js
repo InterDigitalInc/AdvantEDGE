@@ -23,6 +23,8 @@ import 'vis/dist/vis.min.css';
 import 'ionicons/scss/ionicons.scss';
 import '../css/meep-controller.scss';
 
+import '../img/ID-Icon-01-idcc-blue.svg';
+
 // Import module dependencies
 // import 'material-design-icons';
 import React from 'react';

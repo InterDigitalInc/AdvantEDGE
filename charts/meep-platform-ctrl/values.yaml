@@ -9,6 +9,7 @@ deployment:
   port: 80
   protocol: TCP
   altPort: 8080
+  dependency: kube-dns
 
 affinity:
   nodeAffinity:

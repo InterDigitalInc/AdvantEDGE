@@ -11,7 +11,9 @@ deployment:
   replicas: 1
   port: 443
   protocol: TCP
-  dependency: meep-redis-master
+  dependency:
+    redis: meep-redis-master
+    coredns: kube-dns
 
 service:
   type: ClusterIP
