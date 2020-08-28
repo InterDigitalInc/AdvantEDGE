@@ -32,7 +32,7 @@ import (
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,8 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get existing session by user name, if any
-	session, err := pfmCtrl.sessionStore.GetByName(username)
+	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
+	session, err := sessionStore.GetByName(username)
 	if err != nil {
 		// Get requested sandbox name from user profile, if any
 		user, err := pfmCtrl.userStore.GetUser(username)
@@ -80,16 +81,17 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Create new session
-		session = new(ss.Session)
+		session = new(sm.Session)
 		session.ID = ""
 		session.Username = username
 		session.Sandbox = sandboxName
+		session.Role = user.Role
 	} else {
 		sandboxName = session.Sandbox
 	}
 
 	// Set session
-	err = pfmCtrl.sessionStore.Set(session, w, r)
+	err = sessionStore.Set(session, w, r)
 	if err != nil {
 		log.Error("Failed to set session with err: ", err.Error())
 		// Remove newly created sandbox on failure
@@ -121,14 +123,15 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
 
 	// Get existing session
-	session, err := pfmCtrl.sessionStore.Get(r)
+	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
+	session, err := sessionStore.Get(r)
 	if err == nil {
 		// Delete sandbox
 		deleteSandbox(session.Sandbox)
 	}
 
 	// Delete session
-	err = pfmCtrl.sessionStore.Del(w, r)
+	err = sessionStore.Del(w, r)
 	if err != nil {
 		log.Error("Failed to delete session with err: ", err.Error())
 		return

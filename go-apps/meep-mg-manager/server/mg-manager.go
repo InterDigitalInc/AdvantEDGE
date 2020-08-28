@@ -34,6 +34,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/RyanCarrier/dijkstra"
 	"github.com/gorilla/mux"
@@ -132,6 +133,7 @@ type MgManager struct {
 	networkGraph *dijkstra.Graph
 	activeModel  *mod.Model
 	lbRulesStore *lbRulesStore
+	sessionMgr   *sm.SessionMgr
 
 	// Scenario network location list
 	netLocList []string
@@ -209,6 +211,14 @@ func Init() (err error) {
 
 	// Flush module data
 	_ = mgm.lbRulesStore.rc.DBFlush(mgm.baseKey)
+
+	// Connect to Session Manager
+	mgm.sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	// Initialize Edge-LB rules with current active scenario
 	processActiveScenarioUpdate()

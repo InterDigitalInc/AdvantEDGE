@@ -14,7 +14,8 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users v0.0.0
 	github.com/gorilla/handlers v1.4.0
-	github.com/gorilla/mux v1.7.3
+	github.com/gorilla/mux v1.7.4
+	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3
 )
 
 replace (

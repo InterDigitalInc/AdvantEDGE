@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/roymx/viper"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -34,8 +35,8 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 )
 
@@ -46,8 +47,8 @@ type Scenario struct {
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	rc            *redis.Connector
-	sandboxStore  *sbs.SandboxStore
-	sessionStore  *ss.SessionStore
+	sessionMgr    *sm.SessionMgr
+	sandboxStore  *ss.SandboxStore
 	userStore     *users.Connector
 	mqGlobal      *mq.MsgQueue
 }
@@ -58,6 +59,7 @@ const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
+const permissionsRoot = "services"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -132,20 +134,20 @@ func Init() (err error) {
 	}
 
 	// Connect to Sandbox Store
-	pfmCtrl.sandboxStore, err = sbs.NewSandboxStore(redisDBAddr)
+	pfmCtrl.sandboxStore, err = ss.NewSandboxStore(redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Connect to Session Store
-	pfmCtrl.sessionStore, err = ss.NewSessionStore(redisDBAddr)
+	// Connect to Session Manager
+	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, redisDBAddr, redisDBAddr)
 	if err != nil {
-		log.Error("Failed connection to Session Store: ", err.Error())
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Session Store")
+	log.Info("Connected to Session Manager")
 
 	// Connect to User Store
 	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
@@ -156,6 +158,9 @@ func Init() (err error) {
 	_ = pfmCtrl.userStore.CreateTables()
 	log.Info("Connected to User Store")
 
+	// Set endpoint authorization permissions
+	setPermissions()
+
 	return nil
 }
 
@@ -163,6 +168,53 @@ func Init() (err error) {
 func Run() (err error) {
 
 	return nil
+}
+
+func setPermissions() {
+
+	// Flush old permissions
+	ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	ps.Flush()
+
+	// Read & apply API permissions from file
+	permissionsFile := "/permissions.yaml"
+	permissions := viper.New()
+	permissions.SetConfigFile(permissionsFile)
+	err := permissions.ReadInConfig()
+	if err != nil {
+		log.Warn("Failed to read permissions from file")
+		log.Warn("Granting full API access for all roles by default")
+		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
+		return
+	}
+
+	// Loop through services
+	for service := range permissions.GetStringMap(permissionsRoot) {
+		// Default permissions
+		if service == "default" {
+			permissionsRoute := permissionsRoot + ".default"
+			permission := new(sm.Permission)
+			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+			permission.RolePermissions = make(map[string]string)
+			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+				permission.RolePermissions[role] = access
+			}
+			_ = ps.SetDefaultPermission(permission)
+		} else {
+			// Service route names
+			permissionsService := permissionsRoot + "." + service
+			for name := range permissions.GetStringMap(permissionsService) {
+				permissionsRoute := permissionsService + "." + name
+				permission := new(sm.Permission)
+				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+				permission.RolePermissions = make(map[string]string)
+				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+					permission.RolePermissions[role] = access
+				}
+				_ = ps.Set(service, name, permission)
+			}
+		}
+	}
 }
 
 // Create a new scenario in the scenario store
@@ -594,7 +646,7 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 	_ = pfmCtrl.rc.DBFlush(dkm.GetKeyRoot(sandboxName))
 
 	// Create sandbox in DB
-	sbox := new(sbs.Sandbox)
+	sbox := new(ss.Sandbox)
 	sbox.Name = sandboxName
 	sbox.ScenarioName = sandboxConfig.ScenarioName
 	err = pfmCtrl.sandboxStore.Set(sbox)

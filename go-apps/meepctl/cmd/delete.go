@@ -102,11 +102,7 @@ func deleteRun(cmd *cobra.Command, args []string) {
 }
 
 func deleteApps(apps []string, cobraCmd *cobra.Command) {
-	altServer := utils.RepoCfg.GetBool("repo.deployment.alt-server")
 	for _, app := range apps {
-		if !altServer && app == "meep-alt-ingress" {
-			continue
-		}
 		k8sDelete(app, cobraCmd)
 	}
 }

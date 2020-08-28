@@ -116,7 +116,6 @@ type SandboxTemplate struct {
 	SandboxName    string
 	Namespace      string
 	HostUrl        string
-	AltServer      string
 	UserSwagger    string
 	UserSwaggerDir string
 }
@@ -508,7 +507,6 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.SandboxName = sandboxName
 	sandboxTemplate.Namespace = sandboxName
 	sandboxTemplate.HostUrl = ve.hostUrl
-	sandboxTemplate.AltServer = ve.altServer
 	sandboxTemplate.UserSwagger = ve.userSwagger
 	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
 

@@ -34,9 +34,12 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+
 	"github.com/gorilla/mux"
 )
 
+const moduleName = "meep-rnis"
 const rnisBasePath = "/rni/v1/"
 const rnisKey string = "rnis:"
 const logModuleRNIS string = "meep-rnis"
@@ -60,6 +63,7 @@ var currentStoreName = ""
 var RNIS_DB = 5
 
 var rc *redis.Connector
+var sessionMgr *sm.SessionMgr
 var hostUrl *url.URL
 var sandboxName string
 var basePath string
@@ -127,6 +131,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Redis DB, RNI service table")
+
+	// Connect to Session Manager
+	sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	reInit()
 

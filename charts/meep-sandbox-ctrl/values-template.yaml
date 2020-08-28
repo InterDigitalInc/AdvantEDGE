@@ -32,12 +32,6 @@ service:
   type: ClusterIP
   port: 80
 
-# secondary server
-altService:
-  enabled: {{ .AltServer }}
-  type: ClusterIP
-  port: 8080
-
 ingress:
   enabled: true
   # Used to create an Ingress record.
@@ -45,6 +39,7 @@ ingress:
     - name: ''
       paths:
         - /{{ .SandboxName }}/api
+        - /{{ .SandboxName }}/alt/api
         - /{{ .SandboxName }}/sandbox-ctrl
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -52,31 +47,9 @@ ingress:
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/{{ .SandboxName }}/api$ $scheme://$http_host/{{ .SandboxName }}/api/ permanent;
+      rewrite ^/{{ .SandboxName }}/alt/api$ $scheme://$http_host/{{ .SandboxName }}/alt/api/ permanent;
       rewrite ^/{{ .SandboxName }}/api(/|$)(.*)$ /api/$2 break;
-      rewrite ^/{{ .SandboxName }}/sandbox-ctrl(/|$)(.*)$ /sandbox-ctrl/$2 break;
-  labels: {}
-  tls:
-    # Secrets must be manually created in the namespace.
-    # - secretName: chart-example-tls
-    #   hosts:
-    #     - chart-example.local
-
-# use when alt-server is enabled
-altIngress:
-  enabled: {{ .AltServer }}
-  # Used to create an Ingress record.
-  hosts:
-    - name: ''
-      paths:
-        - /{{ .SandboxName }}/api
-        - /{{ .SandboxName }}/sandbox-ctrl
-  annotations:
-    kubernetes.io/ingress.class: alt-nginx
-    # kubernetes.io/tls-acme: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/{{ .SandboxName }}/api$ $scheme://$http_host/{{ .SandboxName }}/api/ permanent;
-      rewrite ^/{{ .SandboxName }}/api(/|$)(.*)$ /api/$2 break;
+      rewrite ^/{{ .SandboxName }}/alt/api(/|$)(.*)$ /alt/api/$2 break;
       rewrite ^/{{ .SandboxName }}/sandbox-ctrl(/|$)(.*)$ /sandbox-ctrl/$2 break;
   labels: {}
   tls:

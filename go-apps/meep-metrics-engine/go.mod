@@ -16,7 +16,7 @@ require (
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/handlers v1.4.0
-	github.com/gorilla/mux v1.7.1
+	github.com/gorilla/mux v1.7.4
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect
 	github.com/olivere/elastic v6.2.21+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect

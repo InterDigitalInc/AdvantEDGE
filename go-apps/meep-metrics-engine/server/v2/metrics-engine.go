@@ -37,7 +37,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
@@ -74,7 +74,7 @@ var hostUrl *url.URL
 var basePath string
 var baseKey string
 
-var SessionStore *ss.SessionStore
+var SessionMgr *sm.SessionMgr
 var rc *redis.Connector
 
 type EventRegistration struct {
@@ -154,13 +154,13 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Redis DB")
 
-	// Connect to Session Store
-	SessionStore, err = ss.NewSessionStore(redisAddr)
+	// Connect to Session Manager
+	SessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
 	if err != nil {
-		log.Error("Failed connection to Session Store: ", err.Error())
+		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err
 	}
-	log.Info("Connected to Session Store")
+	log.Info("Connected to Session Manager")
 
 	nextNetworkSubscriptionIdAvailable = 1
 	nextEventSubscriptionIdAvailable = 1

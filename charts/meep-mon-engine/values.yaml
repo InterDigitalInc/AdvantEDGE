@@ -46,20 +46,6 @@ ingress:
     # nginx.ingress.kubernetes.io/configuration-snippet: |
     #   rewrite ^(/api)$ $1/ redirect;
 
-altIngress:
-  enabled: false
-  # Used to create an Ingress record.
-  hosts:
-    - name: ''
-      paths:
-        - /mon-engine
-  annotations:
-    kubernetes.io/ingress.class: alt-nginx
-    # kubernetes.io/tls-acme: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    # nginx.ingress.kubernetes.io/configuration-snippet: |
-    #   rewrite ^(/api)$ $1/ redirect;
-
 codecov:
   enabled: false
 

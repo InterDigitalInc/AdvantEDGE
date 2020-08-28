@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package sessionstore
+package sessions
 
 import (
 	"errors"
@@ -32,24 +32,26 @@ import (
 
 const sessionCookie = "authCookie"
 const sessionsKey = "sessions:"
-const redisTable = 0
+const sessionsRedisTable = 0
 
 const (
 	ValSessionID = "sid"
 	ValUsername  = "user"
 	ValSandbox   = "sbox"
+	ValRole      = "role"
 )
 
 const (
-	AccessBlock  = "block"
-	AccessVerify = "verify"
-	AccessGrant  = "grant"
+	RoleDefault = "default"
+	RoleUser    = "user"
+	RoleAdmin   = "admin"
 )
 
 type Session struct {
 	ID       string
 	Username string
 	Sandbox  string
+	Role     string
 }
 
 type SessionStore struct {
@@ -75,7 +77,7 @@ func NewSessionStore(addr string) (ss *SessionStore, err error) {
 	ss = new(SessionStore)
 
 	// Connect to Redis DB
-	ss.rc, err = redis.NewConnector(addr, redisTable)
+	ss.rc, err = redis.NewConnector(addr, sessionsRedisTable)
 	if err != nil {
 		log.Error("Failed connection to Session Store redis DB. Error: ", err)
 		return nil, err
@@ -125,6 +127,7 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	s.ID = sessionId
 	s.Username = session[ValUsername]
 	s.Sandbox = session[ValSandbox]
+	s.Role = session[ValRole]
 	return s, nil
 }
 
@@ -157,6 +160,7 @@ func getUserEntryHandler(key string, fields map[string]string, userData interfac
 	if fields[ValUsername] == session.Username {
 		session.ID = fields[ValSessionID]
 		session.Sandbox = fields[ValSandbox]
+		session.Role = fields[ValRole]
 	}
 	return nil
 }
@@ -184,6 +188,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	fields[ValSessionID] = sessionId
 	fields[ValUsername] = s.Username
 	fields[ValSandbox] = s.Sandbox
+	fields[ValRole] = s.Role
 	err = ss.rc.SetEntry(ss.baseKey+sessionId, fields)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -229,27 +234,4 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	return nil
-}
-
-// AccessVerifier - Access verification handler
-func (ss *SessionStore) AccessVerifier(inner http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Verify session exists
-		_, err := ss.Get(r)
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		// TODO - Verify user permissions
-
-		inner.ServeHTTP(w, r)
-	})
-}
-
-// AccessBlocker - Access blocking handler
-func (ss *SessionStore) AccessBlocker(inner http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	})
 }
