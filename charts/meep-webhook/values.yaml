@@ -30,6 +30,7 @@ sidecar:
     repository: meep-docker-registry:30001/meep-tc-sidecar
     tag: latest
     pullPolicy: Always
+  dependency: kube-dns
 
 webhook:
   name: meep-webhook.idcc.com
