@@ -33,11 +33,6 @@ import {
 class MobilityEventPane extends Component {
   constructor(props) {
     super(props);
-    // this.values = {
-    //   eventType: '',
-    //   eventTarget: '',
-    //   eventDestination: ''
-    // };
 
     this.state = {};
   }
@@ -72,7 +67,6 @@ class MobilityEventPane extends Component {
       this.props.MobTypes !== nextProps.MobTypes ||
       this.props.FogEdges !== nextProps.FogEdges ||
       this.props.EdgeApps !== nextProps.EdgeApps ||
-      // this.state.eventTarget !== nextState.eventTarget
       this.props.mobilityEventTarget !== nextProps.mobilityEventTarget
     );
   }
@@ -90,8 +84,6 @@ class MobilityEventPane extends Component {
       name: 'name',
       type: this.props.currentEvent,
       eventMobility: {
-        // elementName: this.values.eventTarget,
-        // dest: this.values.eventDestination
         elementName: this.props.mobilityEventTarget,
         dest: this.props.mobilityEventDestination
       }
@@ -108,7 +100,6 @@ class MobilityEventPane extends Component {
   render() {
     //let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
     //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
-    // var target = this.state.eventTarget;
     var target = this.props.mobilityEventTarget;
     var found = this.props.UEs.find(function(element) {
       return element.label === target;
@@ -153,12 +144,9 @@ class MobilityEventPane extends Component {
                 options={_.map(this.props.MobTypes, elem =>
                   getElemFieldVal(elem, FIELD_NAME)
                 )}
-                // onChange={event => {
-                //   this.values['eventTarget'] = event.target.value;
-                //   this.setState({ eventTarget: event.target.value });
-                // }}
                 onChange={event => {
                   this.props.changeEventTarget(event.target.value);
+                  this.props.changeEventDestination('');
                 }}
                 data-cy={EXEC_EVT_MOB_TARGET}
                 value={this.props.mobilityEventTarget}
@@ -175,10 +163,6 @@ class MobilityEventPane extends Component {
                 options={_.map(populateDestination, elem =>
                   getElemFieldVal(elem, FIELD_NAME)
                 )}
-                // onChange={event => {
-                //   this.values['eventDestination'] = event.target.value;
-                //   this.setState({ eventDestination: event.target.value });
-                // }}
                 onChange={event => {
                   this.props.changeEventDestination(event.target.value);
                 }}
@@ -191,7 +175,6 @@ class MobilityEventPane extends Component {
           <CancelApplyPair
             cancelText="Close"
             applyText="Submit"
-            // onCancel={this.props.onClose}
             onCancel={e => this.onMobilityPaneClose(e)}
             onApply={e => this.triggerEvent(e)}
           />
@@ -233,5 +216,3 @@ const ConnectedMobilityEventPane = connect(
 )(MobilityEventPane);
 
 export default ConnectedMobilityEventPane;
-
-// export default MobilityEventPane;

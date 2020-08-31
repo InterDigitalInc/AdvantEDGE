@@ -147,7 +147,6 @@ class EventCreationPane extends Component {
             this.updateElement(element);
           }}
           onSuccess={this.props.onSuccess}
-          // onClose={this.props.onClose}
           onClose={e => this.onEventPaneClose(e)}
           UEs={this.props.UEs}
           POAs={this.props.POAs}

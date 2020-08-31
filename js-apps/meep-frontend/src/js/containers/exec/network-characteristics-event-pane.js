@@ -137,14 +137,28 @@ class NetworkCharacteristicsEventPane extends Component {
     super(props);
 
     this.state = {
-      dialogOpen: false
-      // currentElementType: ''
+      dialogOpen: false,
+      ncTypes: []
     };
+  }
+
+  componentDidMount() {
+    let ncTypes = ncApplicableTypes.filter(e => {
+      for (let item = 0; item < this.props.networkElements.length; item++) {
+        if (e === getElemFieldVal(this.props.networkElements[item], FIELD_TYPE)) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    this.setState({ ncTypes });
   }
 
   onNetworkCharacPaneClose(e) {
     e.preventDefault();
-    setElemFieldVal(this.props.element, FIELD_TYPE, '');
+    this.onUpdateElement(FIELD_TYPE, '', null);
+    this.onUpdateElement(FIELD_NAME, '', null);
     this.props.onClose(e);
   }
 
@@ -164,7 +178,6 @@ class NetworkCharacteristicsEventPane extends Component {
     }
 
     var neType = '';
-    // switch(this.state.currentElementType) {
     switch(type) {
     case ELEMENT_TYPE_OPERATOR_GENERIC:
       neType = DOMAIN_TYPE_STR;
@@ -197,7 +210,6 @@ class NetworkCharacteristicsEventPane extends Component {
       neType = CLOUD_APP_TYPE_STR;
       break;
     default:
-      // neType = this.state.currentElementType;
       neType = type;
     }
 
@@ -243,7 +255,6 @@ class NetworkCharacteristicsEventPane extends Component {
 
   currentPrefix() {
     var type = getElemFieldVal(this.props.element, FIELD_TYPE);
-    // switch (this.state.currentElementType) {
     switch (type) {
     case ELEMENT_TYPE_SCENARIO:
       return PREFIX_INT_DOM;
@@ -378,7 +389,6 @@ class NetworkCharacteristicsEventPane extends Component {
 
     var elements = _.chain(this.props.networkElements)
       .filter(e => {
-        // var type = this.state.currentElementType;
         var type = getElemFieldVal(element, FIELD_TYPE);
         var elemType = getElemFieldVal(e, FIELD_TYPE);
 
@@ -404,11 +414,10 @@ class NetworkCharacteristicsEventPane extends Component {
               style={styles.select}
               label="Network Element Type"
               outlined
-              options={ncApplicableTypes}
+              options={this.state.ncTypes}
               onChange={event => {
                 var elem = this.firstElementMatchingType(event.target.value);
                 this.props.updateElement(elem);
-                // this.setState({ currentElementType: event.target.value });
               }}
               data-cy={EXEC_EVT_NC_TYPE}
               value={element ? getElemFieldVal(element, FIELD_TYPE) || '' : ''}
@@ -447,9 +456,6 @@ class NetworkCharacteristicsEventPane extends Component {
         <CancelApplyPair
           cancelText="Close"
           applyText="Submit"
-          // onCancel={() => {
-          //  this.props.onClose();
-          // }}
           onCancel={e => this.onNetworkCharacPaneClose(e)}
           onApply={e => this.triggerEvent(e)}
           saveDisabled={

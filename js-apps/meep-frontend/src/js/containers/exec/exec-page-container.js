@@ -81,10 +81,6 @@ class ExecPageContainer extends Component {
     autoBind(this);
   }
 
-  componentDidMount() {
-    // this.props.changeCurrentEvent(MOBILITY_EVENT);
-  }
-
   /**
    * Callback function to receive the result of the getScenarioList operation.
    * @callback module:api/ScenarioConfigurationApi~getScenarioListCallback
