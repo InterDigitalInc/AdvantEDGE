@@ -12,3 +12,8 @@ data:
         capabilities:
           add:
             - NET_ADMIN
+    initContainers:
+    - name: init-{{ .Values.sidecar.dependency }}
+      image: busybox:1.28
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'until nslookup {{ .Values.sidecar.dependency }}.kube-system ; do echo waiting for {{ .Values.sidecar.dependency }}; sleep 0.25; done;']

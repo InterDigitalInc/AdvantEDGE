@@ -64,8 +64,9 @@ type WhSvrParameters struct {
 }
 
 type Config struct {
-	Containers []corev1.Container `yaml:"containers"`
-	Volumes    []corev1.Volume    `yaml:"volumes"`
+	Containers     []corev1.Container `yaml:"containers"`
+	Volumes        []corev1.Volume    `yaml:"volumes"`
+	InitContainers []corev1.Container `yaml:"initContainers"`
 }
 
 type patchOperation struct {
@@ -144,6 +145,11 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarContainers, "/spec/template/spec/containers")...)
 	patchOps = append(patchOps, addVolume(template.Spec.Volumes, sidecarConfig.Volumes, "/spec/template/spec/volumes")...)
 	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
+
+	// Init Cointainer for dependency check
+	var initContainers []corev1.Container
+	initContainers = append(initContainers, sidecarConfig.InitContainers...)
+	patchOps = append(patchOps, addContainer(template.Spec.InitContainers, initContainers, "/spec/template/spec/initContainers")...)
 
 	// Serialize patch
 	patch, err = json.Marshal(patchOps)
