@@ -35,6 +35,8 @@ const initialState = {
   automationPoasInRangeMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
+  mobilityEventTarget: '',
+  mobilityEventDestination: '',
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,
@@ -117,6 +119,22 @@ const UI_EXEC_CHANGE_CURRENT_EVENT = 'UI_EXEC_CHANGE_CURRENT_EVENT';
 export function uiExecChangeCurrentEvent(event) {
   return {
     type: UI_EXEC_CHANGE_CURRENT_EVENT,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET = 'UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET';
+export function uiExecChangeMobilityEventTarget(event) {
+  return {
+    type: UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION = 'UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION';
+export function uiExecChangeMobilityEventDestination(event) {
+  return {
+    type: UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION,
     payload: event
   };
 }
@@ -307,6 +325,10 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { sandboxCfg: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
+  case UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET:
+    return updateObject(state, { mobilityEventTarget: action.payload });
+  case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
+    return updateObject(state, { mobilityEventDestination: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:

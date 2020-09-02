@@ -23,6 +23,12 @@ module.exports = env => {
     node: {
       fs: 'empty'
     },
+    resolve: {
+      extensions: ['.js', '.json'],
+      alias: {
+        '@': path.resolve('src')
+      }
+    },
     module: {
       rules: [
         {
