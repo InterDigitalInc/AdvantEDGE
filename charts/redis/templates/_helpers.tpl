@@ -130,3 +130,25 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the appropriate apiVersion for deployment.
+*/}}
+{{- define "redis.deployment.apiVersion" -}}
+{{- if semverCompare ">=1.4-0, <1.8-0" .Capabilities.KubeVersion.GitVersion -}}
+"extensions/v1beta1"
+{{- else if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion -}}
+"apps/v1"
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the appropriate apiVersion for statefulset.
+*/}}
+{{- define "redis.statefulset.apiVersion" -}}
+{{- if semverCompare ">=1.4-0, <1.8-0" .Capabilities.KubeVersion.GitVersion -}}
+"apps/v1beta2"
+{{- else if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion -}}
+"apps/v1"
+{{- end -}}
+{{- end -}}
