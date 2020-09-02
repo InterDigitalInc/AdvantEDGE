@@ -1,5 +1,5 @@
 {{- if .Values.metrics.enabled }}
-apiVersion: {{ template "redis.deployment.apiVersion" . }}
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "redis.fullname" . }}-metrics

@@ -1,4 +1,4 @@
-apiVersion: {{ template "kube-state-metrics.deployment.apiVersion" . }}
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "kube-state-metrics.fullname" . }}

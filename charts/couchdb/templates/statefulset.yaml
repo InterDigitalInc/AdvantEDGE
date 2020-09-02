@@ -1,4 +1,4 @@
-apiVersion: {{ template "couchdb.statefulset.apiVersion" . }}
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "couchdb.fullname" . }}

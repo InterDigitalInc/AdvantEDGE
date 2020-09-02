@@ -23,14 +23,3 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Return the appropriate apiVersion for deployment.
-*/}}
-{{- define "kube-state-metrics.deployment.apiVersion" -}}
-{{- if semverCompare ">=1.4-0, <1.8-0" .Capabilities.KubeVersion.GitVersion -}}
-"extensions/v1beta1"
-{{- else if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion -}}
-"apps/v1"
-{{- end -}}
-{{- end -}}

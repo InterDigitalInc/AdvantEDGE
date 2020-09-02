@@ -42,14 +42,3 @@ Create a random string if the supplied key does not exist
 {{- randAlphaNum 20 | b64enc | quote -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Return the appropriate apiVersion for statefulset.
-*/}}
-{{- define "couchdb.statefulset.apiVersion" -}}
-{{- if semverCompare ">=1.4-0, <1.8-0" .Capabilities.KubeVersion.GitVersion -}}
-"apps/v1beta2"
-{{- else if semverCompare "^1.8-0" .Capabilities.KubeVersion.GitVersion -}}
-"apps/v1"
-{{- end -}}
-{{- end -}}
