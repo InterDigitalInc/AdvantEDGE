@@ -448,7 +448,7 @@ services:
 #       roles:
 #         admin: 'allow'
 #         user: 'allow'
-#     RefreshUser:
+#     TriggerWatchdog:
 #       # access authorization mode: allow|block|verify
 #       mode: 'verify'
 #       # role permissions: allow|block
