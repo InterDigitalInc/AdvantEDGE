@@ -141,9 +141,7 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func uaRefreshUser(w http.ResponseWriter, r *http.Request) {
-	log.Info("----- KEEP-ALIVE -----")
-
+func uaTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 	// Refresh session
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
 	err := sessionStore.Refresh(w, r)

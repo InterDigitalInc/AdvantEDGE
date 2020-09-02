@@ -202,9 +202,9 @@ var routes = Routes{
 	},
 
 	Route{
-		"RefreshUser",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/login",
-		RefreshUser,
+		"TriggerWatchdog",
+		strings.ToUpper("Post"),
+		"/platform-ctrl/v1/watchdog",
+		TriggerWatchdog,
 	},
 }

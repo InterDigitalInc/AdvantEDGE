@@ -93,12 +93,12 @@
           done();
         });
       });
-      describe('refreshUser', function() {
-        it('should call refreshUser successfully', function(done) {
-          // TODO: uncomment refreshUser call
+      describe('triggerWatchdog', function() {
+        it('should call triggerWatchdog successfully', function(done) {
+          // TODO: uncomment triggerWatchdog call
           /*
 
-          instance.refreshUser(function(error, data, response) {
+          instance.triggerWatchdog(function(error, data, response) {
             if (error) {
               done(error);
               return;

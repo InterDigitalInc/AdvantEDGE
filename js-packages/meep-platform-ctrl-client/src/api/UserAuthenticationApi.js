@@ -150,19 +150,19 @@
     }
 
     /**
-     * Callback function to receive the result of the refreshUser operation.
-     * @callback module:api/UserAuthenticationApi~refreshUserCallback
+     * Callback function to receive the result of the triggerWatchdog operation.
+     * @callback module:api/UserAuthenticationApi~triggerWatchdogCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
      */
 
     /**
-     * Get new session cookie
-     * Keep-alive endpoint used to renew session cookie and reset session timeout timer
-     * @param {module:api/UserAuthenticationApi~refreshUserCallback} callback The callback function, accepting three arguments: error, data, response
+     * Send heartbeat to watchdog
+     * Send heartbeat to watchdog to keep session alive
+     * @param {module:api/UserAuthenticationApi~triggerWatchdogCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.refreshUser = function(callback) {
+    this.triggerWatchdog = function(callback) {
       var postBody = null;
 
 
@@ -183,7 +183,7 @@
       var returnType = null;
 
       return this.apiClient.callApi(
-        '/login', 'GET',
+        '/watchdog', 'POST',
         pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
         authNames, contentTypes, accepts, returnType, callback
       );

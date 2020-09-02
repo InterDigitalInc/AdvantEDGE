@@ -17,6 +17,7 @@
 package sessions
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -126,55 +127,59 @@ func (sm *SessionMgr) Authorizer(inner http.Handler) http.Handler {
 	})
 }
 
-// StartSessionWatchdog -
-func (sm *SessionMgr) StartSessionWatchdog(handler SessionTimeoutHandler) {
-	// Update Watchdog callback function
+// StartSessionWatchdog - Start Session Watchdog
+func (sm *SessionMgr) StartSessionWatchdog(handler SessionTimeoutHandler) error {
+	// Validate input
+	if handler == nil {
+		return errors.New("Invalid handler")
+	}
+
+	// Verify watchdog state
+	if sm.wdStarted {
+		return errors.New("Session Watchdog already running")
+	}
+
+	// Register callback function & start Session Watchdog to monitor timed out sessions
+	sm.wdStarted = true
 	sm.wdHandler = handler
+	sm.wdTicker = time.NewTicker(wathdogInterval * time.Second)
+	go func() {
+		for range sm.wdTicker.C {
+			if sm.wdStarted {
+				ss := sm.GetSessionStore()
 
-	// Start Session Watchdog ticker to monitor timed out sessions
-	if !sm.wdStarted {
-		sm.wdStarted = true
-		sm.wdTicker = time.NewTicker(wathdogInterval * time.Second)
-		go func() {
-			for range sm.wdTicker.C {
-				if sm.wdStarted {
-					ss := sm.GetSessionStore()
+				// Get all sessions
+				sessionList, err := ss.GetAll()
+				if err != nil {
+					log.Warn("Failed to retrieve session list")
+					continue
+				}
 
-					// Get all sessions
-					sessionList, err := ss.GetAll()
-					if err != nil {
-						log.Warn("Failed to retrieve session list")
-						continue
-					}
+				// Remove timed out sessions
+				currentTime := time.Now()
+				for _, session := range sessionList {
+					if currentTime.After(session.Timestamp.Add(SessionDuration * time.Second)) {
+						// Invoke watchdog timeout handler
+						sm.wdHandler(session)
 
-					// Remove timed out sessions
-					currentTime := time.Now()
-					for _, session := range sessionList {
-						if currentTime.After(session.Timestamp.Add(SessionDuration * time.Second)) {
-							// Invoke watchdog timeout handler
-							if sm.wdHandler != nil {
-								sm.wdHandler(session)
-							}
-
-							// Remove session
-							_ = ss.DelById(session.ID)
-						}
+						// Remove session
+						_ = ss.DelById(session.ID)
 					}
 				}
 			}
-		}()
-		log.Info("Started Session Watchdog")
-	}
+		}
+	}()
 
+	log.Info("Started Session Watchdog")
+	return nil
 }
 
-// StopSessionWatchdog -
+// StopSessionWatchdog - Stop Session Watchdog
 func (sm *SessionMgr) StopSessionWatchdog() {
 	if sm.wdStarted {
 		sm.wdStarted = false
 		sm.wdTicker.Stop()
 		sm.wdTicker = nil
-		sm.wdHandler = nil
 		log.Info("Stopped Session Watchdog")
 	}
 }

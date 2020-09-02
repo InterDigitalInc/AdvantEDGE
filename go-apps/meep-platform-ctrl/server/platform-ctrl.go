@@ -161,6 +161,7 @@ func Init() (err error) {
 	// Set endpoint authorization permissions
 	setPermissions()
 
+	log.Info("Platform Controller initialized")
 	return nil
 }
 
@@ -168,8 +169,13 @@ func Init() (err error) {
 func Run() (err error) {
 
 	// Start Session Watchdog
-	pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	err = pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	if err != nil {
+		log.Error("Failed start Session Watchdog: ", err.Error())
+		return err
+	}
 
+	log.Info("Platform Controller started")
 	return nil
 }
 

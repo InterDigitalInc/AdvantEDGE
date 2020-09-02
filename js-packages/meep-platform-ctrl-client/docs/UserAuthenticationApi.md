@@ -6,7 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**loginUser**](UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
 [**logoutUser**](UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
-[**refreshUser**](UserAuthenticationApi.md#refreshUser) | **GET** /login | Get new session cookie
+[**triggerWatchdog**](UserAuthenticationApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 <a name="loginUser"></a>
@@ -98,13 +98,13 @@ No authorization required
  - **Content-Type**: application/json
  - **Accept**: application/json
 
-<a name="refreshUser"></a>
-# **refreshUser**
-> refreshUser()
+<a name="triggerWatchdog"></a>
+# **triggerWatchdog**
+> triggerWatchdog()
 
-Get new session cookie
+Send heartbeat to watchdog
 
-Keep-alive endpoint used to renew session cookie and reset session timeout timer
+Send heartbeat to watchdog to keep session alive
 
 ### Example
 ```javascript
@@ -119,7 +119,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully.');
   }
 };
-apiInstance.refreshUser(callback);
+apiInstance.triggerWatchdog(callback);
 ```
 
 ### Parameters

@@ -36,6 +36,6 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 	uaLogoutUser(w, r)
 }
 
-func RefreshUser(w http.ResponseWriter, r *http.Request) {
-	uaRefreshUser(w, r)
+func TriggerWatchdog(w http.ResponseWriter, r *http.Request) {
+	uaTriggerWatchdog(w, r)
 }
