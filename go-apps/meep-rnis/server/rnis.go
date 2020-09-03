@@ -26,6 +26,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-rnis/sbi"
@@ -68,6 +69,7 @@ var hostUrl *url.URL
 var sandboxName string
 var basePath string
 var baseKey string
+var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
 
@@ -307,6 +309,7 @@ func createClient(notifyPath string) (*clientNotif.APIClient, error) {
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
+	mutex.Lock()
 	for expiryTime, subsIndexList := range subscriptionExpiryMap {
 		if expiryTime <= nowTime {
 			subscriptionExpiryMap[expiryTime] = nil
@@ -337,7 +340,7 @@ func checkForExpiredSubscriptions() {
 			}
 		}
 	}
-
+	mutex.Unlock()
 }
 
 func repopulateCcSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
@@ -354,12 +357,14 @@ func repopulateCcSubscriptionMap(key string, jsonInfo string, userData interface
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
+	mutex.Lock()
 	ccSubscriptionMap[subsId] = &subscription
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
 	}
+	mutex.Unlock()
 
 	//reinitialisation of next available Id for future subscription request
 	if subsId >= nextSubscriptionIdAvailable {
@@ -383,12 +388,14 @@ func repopulateReSubscriptionMap(key string, jsonInfo string, userData interface
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
+	mutex.Lock()
 	reSubscriptionMap[subsId] = &subscription
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
 	}
+	mutex.Unlock()
 
 	//reinitialisation of next available Id for future subscription request
 	if subsId >= nextSubscriptionIdAvailable {
@@ -412,12 +419,14 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
+	mutex.Lock()
 	rrSubscriptionMap[subsId] = &subscription
 	if subscription.ExpiryDeadline != nil {
 		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
 	}
+	mutex.Unlock()
 
 	//reinitialisation of next available Id for future subscription request
 	if subsId >= nextSubscriptionIdAvailable {
@@ -433,6 +442,8 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	if newCellId == "" || oldCellId == "" {
 		return
 	}
+
+	mutex.Lock()
 
 	//check all that applies
 	for subsId, sub := range ccSubscriptionMap {
@@ -490,6 +501,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".")
 				if jsonInfo == "" {
+					mutex.Unlock()
 					return
 				}
 
@@ -541,6 +553,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 		}
 	}
+	mutex.Unlock()
 }
 
 func checkReNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
@@ -549,6 +562,8 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	if oldCellId != "" || newCellId == "" {
 		return
 	}
+
+	mutex.Lock()
 
 	//check all that applies
 	for subsId, sub := range reSubscriptionMap {
@@ -600,6 +615,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+rabEstSubscriptionType+":"+subsIdStr, ".")
 				if jsonInfo == "" {
+					mutex.Unlock()
 					return
 				}
 
@@ -638,6 +654,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 		}
 	}
+	mutex.Unlock()
 }
 
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
@@ -646,6 +663,8 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	if newCellId != "" || oldCellId == "" {
 		return
 	}
+
+	mutex.Lock()
 
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
@@ -697,6 +716,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subsIdStr := strconv.Itoa(subsId)
 				jsonInfo, _ := rc.JSONGetEntry(baseKey+rabRelSubscriptionType+":"+subsIdStr, ".")
 				if jsonInfo == "" {
+					mutex.Unlock()
 					return
 				}
 
@@ -733,6 +753,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 		}
 	}
+	mutex.Unlock()
 }
 
 func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.CellChangeNotification) {
@@ -866,34 +887,47 @@ func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func isSubscriptionIdRegisteredCc(subsIdStr string) bool {
+	var returnVal bool
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	if ccSubscriptionMap[subsId] != nil {
-		return true
+		returnVal = true
 	} else {
-		return false
+		returnVal = false
 	}
+	mutex.Unlock()
+	return returnVal
 }
 
 func isSubscriptionIdRegisteredRe(subsIdStr string) bool {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	var returnVal bool
+	mutex.Lock()
 	if reSubscriptionMap[subsId] != nil {
-		return true
+		returnVal = true
 	} else {
-		return false
+		returnVal = false
 	}
+	mutex.Unlock()
+	return returnVal
 }
 
 func isSubscriptionIdRegisteredRr(subsIdStr string) bool {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	var returnVal bool
+	mutex.Lock()
 	if rrSubscriptionMap[subsId] != nil {
-		return true
+		returnVal = true
 	} else {
-		return false
+		returnVal = false
 	}
+	mutex.Unlock()
+	return returnVal
 }
 
 func registerCc(cellChangeSubscription *CellChangeSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	ccSubscriptionMap[subsId] = cellChangeSubscription
 	if cellChangeSubscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -901,12 +935,13 @@ func registerCc(cellChangeSubscription *CellChangeSubscription, subsIdStr string
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(cellChangeSubscription.ExpiryDeadline.Seconds)] = intList
 	}
-
+	mutex.Unlock()
 	log.Info("New registration: ", subsId, " type: ", cellChangeSubscriptionType)
 }
 
 func registerRe(rabEstSubscription *RabEstSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	reSubscriptionMap[subsId] = rabEstSubscription
 	if rabEstSubscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -914,12 +949,13 @@ func registerRe(rabEstSubscription *RabEstSubscription, subsIdStr string) {
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(rabEstSubscription.ExpiryDeadline.Seconds)] = intList
 	}
-
+	mutex.Unlock()
 	log.Info("New registration: ", subsId, " type: ", rabEstSubscriptionType)
 }
 
 func registerRr(rabRelSubscription *RabRelSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	rrSubscriptionMap[subsId] = rabRelSubscription
 	if rabRelSubscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -927,25 +963,31 @@ func registerRr(rabRelSubscription *RabRelSubscription, subsIdStr string) {
 		intList = append(intList, subsId)
 		subscriptionExpiryMap[int(rabRelSubscription.ExpiryDeadline.Seconds)] = intList
 	}
-
+	mutex.Unlock()
 	log.Info("New registration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
 func deregisterCc(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	ccSubscriptionMap[subsId] = nil
+	mutex.Unlock()
 	log.Info("Deregistration: ", subsId, " type: ", cellChangeSubscriptionType)
 }
 
 func deregisterRe(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	reSubscriptionMap[subsId] = nil
+	mutex.Unlock()
 	log.Info("Deregistration: ", subsId, " type: ", rabEstSubscriptionType)
 }
 
 func deregisterRr(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
 	rrSubscriptionMap[subsId] = nil
+	mutex.Unlock()
 	log.Info("Deregistration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
@@ -1576,6 +1618,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 
 	if subType == "" || subType == cellChangeSubscriptionType {
 		//loop through cell_change map
+		mutex.Lock()
 		for _, ccSubscription := range ccSubscriptionMap {
 			if ccSubscription != nil {
 				var subscription Subscription
@@ -1585,9 +1628,11 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}
+		mutex.Unlock()
 	}
 	if subType == "" || subType == rabEstSubscriptionType {
 		//loop through cell_change map
+		mutex.Lock()
 		for _, reSubscription := range reSubscriptionMap {
 			if reSubscription != nil {
 				var subscription Subscription
@@ -1597,9 +1642,11 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}
+		mutex.Unlock()
 	}
 	if subType == "" || subType == rabRelSubscriptionType {
 		//loop through cell_change map
+		mutex.Lock()
 		for _, rrSubscription := range rrSubscriptionMap {
 			if rrSubscription != nil {
 				var subscription Subscription
@@ -1609,6 +1656,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
 			}
 		}
+		mutex.Unlock()
 	}
 
 	//no other maps to go through
@@ -1698,9 +1746,11 @@ func cleanUp() {
 	nextSubscriptionIdAvailable = 1
 	nextAvailableErabId = 1
 
+	mutex.Lock()
 	ccSubscriptionMap = map[int]*CellChangeSubscription{}
 	reSubscriptionMap = map[int]*RabEstSubscription{}
 	rrSubscriptionMap = map[int]*RabRelSubscription{}
+	mutex.Unlock()
 
 	subscriptionExpiryMap = map[int][]int{}
 	updateStoreName("")
