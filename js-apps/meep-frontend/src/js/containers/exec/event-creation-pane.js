@@ -166,6 +166,7 @@ class EventCreationPane extends Component {
             applyText="Submit"
             onCancel={e => this.onEventPaneClose(e)}
             saveDisabled={true}
+            removeCyApply={true}
           />
         </div>
       </div>

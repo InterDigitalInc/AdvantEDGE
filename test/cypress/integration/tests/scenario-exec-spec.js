@@ -225,12 +225,12 @@ describe('Scenario Execution', function () {
   function testNetCharEvent(scenario) {
     cy.log('Create & Validate Network Characteristic event');
     createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000, 'Pareto');
-    createNetCharEvent('OPERATOR GENERIC', 'operator1', 10, 3, 2, 90000, '');
+    createNetCharEvent('OPERATOR', 'operator1', 10, 3, 2, 90000, '');
     createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000, '');
     createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000, '');
-    createNetCharEvent('POA GENERIC', 'zone1-poa1', 2, 3, 4, 10000, '');
-    createNetCharEvent('POA GENERIC', 'zone1-poa2', 40, 5, 2, 20000, '');
-    createNetCharEvent('POA GENERIC', 'zone2-poa1', 0, 0, 1, 15000, '');
+    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000, '');
+    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000, '');
+    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000, '');
   }
 
   // Create a Mobility event
@@ -306,7 +306,7 @@ describe('Scenario Execution', function () {
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_UL), tpUl);
 
           break;
-        case 'OPERATOR GENERIC':
+        case 'OPERATOR':
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
@@ -320,7 +320,7 @@ describe('Scenario Execution', function () {
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), tpDl);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), tpUl);
           break;
-        case 'POA GENERIC':
+        case 'POA':
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);

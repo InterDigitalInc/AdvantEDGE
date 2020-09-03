@@ -146,8 +146,8 @@ class NetworkCharacteristicsEventPane extends Component {
 
   componentDidMount() {
     let ncTypes = ncApplicableTypes.filter(e => {
-      for (let item = 0; item < this.props.networkElements.length; item++) {
-        if (e === getElemFieldVal(this.props.networkElements[item], FIELD_TYPE)) {
+      for (const key in this.props.networkElements) {
+        if (e === getElemFieldVal(this.props.networkElements[key], FIELD_TYPE)) {
           return true;
         }
       }
@@ -463,6 +463,7 @@ class NetworkCharacteristicsEventPane extends Component {
           saveDisabled={
             !elements.length || !element.elementType || !this.props.element.name || nbErrors
           }
+          removeCyCancel={true}
         />
       </div>
     );
