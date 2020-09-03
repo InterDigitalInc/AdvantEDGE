@@ -72,6 +72,21 @@ paths:
           description: "OK"
         401:
           description: "Unauthorized"
+  /watchdog:
+    post:
+      tags:
+      - "User Authentication"
+      summary: "Send heartbeat to watchdog"
+      description: "Send heartbeat to watchdog to keep session alive"
+      operationId: "triggerWatchdog"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
   /scenarios:
     get:
       tags:

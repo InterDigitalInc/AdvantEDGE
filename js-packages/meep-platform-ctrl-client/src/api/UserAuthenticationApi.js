@@ -148,6 +148,46 @@
         authNames, contentTypes, accepts, returnType, callback
       );
     }
+
+    /**
+     * Callback function to receive the result of the triggerWatchdog operation.
+     * @callback module:api/UserAuthenticationApi~triggerWatchdogCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Send heartbeat to watchdog
+     * Send heartbeat to watchdog to keep session alive
+     * @param {module:api/UserAuthenticationApi~triggerWatchdogCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.triggerWatchdog = function(callback) {
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/watchdog', 'POST',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
   };
 
   return exports;

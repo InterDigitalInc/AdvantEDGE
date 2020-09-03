@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**loginUser**](UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
 [**logoutUser**](UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
+[**triggerWatchdog**](UserAuthenticationApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 <a name="loginUser"></a>
@@ -79,6 +80,46 @@ var callback = function(error, data, response) {
   }
 };
 apiInstance.logoutUser(callback);
+```
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+<a name="triggerWatchdog"></a>
+# **triggerWatchdog**
+> triggerWatchdog()
+
+Send heartbeat to watchdog
+
+Send heartbeat to watchdog to keep session alive
+
+### Example
+```javascript
+var AdvantEdgePlatformControllerRestApi = require('advant_edge_platform_controller_rest_api');
+
+var apiInstance = new AdvantEdgePlatformControllerRestApi.UserAuthenticationApi();
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+apiInstance.triggerWatchdog(callback);
 ```
 
 ### Parameters

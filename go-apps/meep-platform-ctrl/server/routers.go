@@ -200,4 +200,11 @@ var routes = Routes{
 		"/platform-ctrl/v1/logout",
 		LogoutUser,
 	},
+
+	Route{
+		"TriggerWatchdog",
+		strings.ToUpper("Post"),
+		"/platform-ctrl/v1/watchdog",
+		TriggerWatchdog,
+	},
 }

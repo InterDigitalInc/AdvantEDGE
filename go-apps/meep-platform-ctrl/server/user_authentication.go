@@ -140,3 +140,16 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 }
+
+func uaTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
+	// Refresh session
+	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
+	err := sessionStore.Refresh(w, r)
+	if err != nil {
+		log.Error("Failed to refresh session with err: ", err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+}

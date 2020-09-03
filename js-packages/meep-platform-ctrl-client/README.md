@@ -131,6 +131,7 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
 *AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginUser**](docs/UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
 *AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**logoutUser**](docs/UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**triggerWatchdog**](docs/UserAuthenticationApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 ## Documentation for Models

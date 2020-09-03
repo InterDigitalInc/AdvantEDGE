@@ -161,12 +161,21 @@ func Init() (err error) {
 	// Set endpoint authorization permissions
 	setPermissions()
 
+	log.Info("Platform Controller initialized")
 	return nil
 }
 
 // Run Starts the Platform Controller
 func Run() (err error) {
 
+	// Start Session Watchdog
+	err = pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	if err != nil {
+		log.Error("Failed start Session Watchdog: ", err.Error())
+		return err
+	}
+
+	log.Info("Platform Controller started")
 	return nil
 }
 
@@ -215,6 +224,13 @@ func setPermissions() {
 			}
 		}
 	}
+}
+
+func sessionTimeoutCb(session *sm.Session) {
+	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
+
+	// Destroy session sandbox
+	deleteSandbox(session.Sandbox)
 }
 
 // Create a new scenario in the scenario store

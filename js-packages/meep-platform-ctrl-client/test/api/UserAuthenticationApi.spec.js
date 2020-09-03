@@ -93,6 +93,24 @@
           done();
         });
       });
+      describe('triggerWatchdog', function() {
+        it('should call triggerWatchdog successfully', function(done) {
+          // TODO: uncomment triggerWatchdog call
+          /*
+
+          instance.triggerWatchdog(function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
     });
   });
 
