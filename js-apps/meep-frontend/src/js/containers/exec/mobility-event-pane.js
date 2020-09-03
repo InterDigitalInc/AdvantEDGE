@@ -177,6 +177,7 @@ class MobilityEventPane extends Component {
             applyText="Submit"
             onCancel={e => this.onMobilityPaneClose(e)}
             onApply={e => this.triggerEvent(e)}
+            removeCyCancel={true}
           />
         </>
       </div>
