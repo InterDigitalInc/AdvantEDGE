@@ -159,8 +159,7 @@ class NetworkCharacteristicsEventPane extends Component {
 
   onNetworkCharacPaneClose(e) {
     e.preventDefault();
-    this.onUpdateElement(FIELD_TYPE, '', null);
-    this.onUpdateElement(FIELD_NAME, '', null);
+    this.props.updateElement(null);
     this.props.onClose(e);
   }
 

@@ -34,6 +34,7 @@ import {
 
 import {
   execChangeSelectedScenarioElement,
+  execResetSelectedScenarioElement,
   execUEs,
   execPOAs,
   execMobTypes,
@@ -117,9 +118,13 @@ class EventCreationPane extends Component {
   }
 
   updateElement(values) {
-    var element = updateObject({}, this.props.selectedScenarioElement);
-    element = updateObject(element, values);
-    this.props.changeSelectedScenarioElement(element);
+    if (values === null) {
+      this.props.resetSelectedScenarioElement();
+    } else {
+      var element = updateObject({}, this.props.selectedScenarioElement);
+      element = updateObject(element, values);
+      this.props.changeSelectedScenarioElement(element);
+    }
   }
 
   render() {
@@ -208,7 +213,8 @@ const mapDispatchToProps = dispatch => {
   return {
     changeEvent: event => dispatch(uiExecChangeCurrentEvent(event)),
     changeSelectedScenarioElement: element =>
-      dispatch(execChangeSelectedScenarioElement(element))
+      dispatch(execChangeSelectedScenarioElement(element)),
+    resetSelectedScenarioElement: () => dispatch(execResetSelectedScenarioElement())
   };
 };
 
