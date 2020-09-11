@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 appVersion: "1.0.0"
 description: MEEP Metrics Engine Service Helm chart for Kubernetes
 name: meep-metrics-engine

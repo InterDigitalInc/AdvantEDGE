@@ -297,6 +297,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 			if strings.HasPrefix(rel.Name, releasePrefix) {
 				var c helm.Chart
 				c.ReleaseName = rel.Name
+				c.Namespace = sandboxName
 				toDelete = append(toDelete, c)
 			}
 		}

@@ -25,11 +25,11 @@ COPY ./meep-virt-chart-templates /templates/scenario/meep-virt-chart-templates
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./meep-virt-engine /meep-virt-engine
 
-ENV HELM_VERSION="v2.16.1"
+ENV HELM_VERSION="v3.3.1"
 RUN mkdir -p /active \
     && apt-get update \
     && apt-get install -y wget \
-    && wget -q https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm \
     && chmod +x /entrypoint.sh
 

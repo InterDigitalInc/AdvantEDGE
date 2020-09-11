@@ -31,8 +31,8 @@ func deleteReleases(charts []Chart) error {
 }
 
 func deleteRelease(chart Chart) {
-	log.Debug("Deleting release: " + chart.ReleaseName)
-	var cmd = exec.Command("helm", "delete", chart.ReleaseName, "--purge")
+	log.Debug("Deleting release: ", chart.ReleaseName, ", Namespace: ", chart.Namespace)
+	var cmd = exec.Command("helm", "uninstall", chart.ReleaseName, "-n", chart.Namespace)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Error("Chart couldn't be released: ", string(out), "---", err)

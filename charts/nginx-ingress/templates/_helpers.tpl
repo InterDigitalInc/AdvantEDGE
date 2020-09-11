@@ -87,7 +87,7 @@ Create the name of the backend service account to use - only used when podsecuri
 Return the appropriate apiVersion for deployment.
 */}}
 {{- define "deployment.apiVersion" -}}
-{{- if semverCompare ">=1.9-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- if semverCompare ">=1.9-0" .Capabilities.KubeVersion.Version -}}
 {{- print "apps/v1" -}}
 {{- else -}}
 {{- print "extensions/v1beta1" -}}
@@ -98,7 +98,7 @@ Return the appropriate apiVersion for deployment.
 Return the appropriate apiGroup for PodSecurityPolicy.
 */}}
 {{- define "podSecurityPolicy.apiGroup" -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.Version -}}
 {{- print "policy" -}}
 {{- else -}}
 {{- print "extensions" -}}
@@ -109,7 +109,7 @@ Return the appropriate apiGroup for PodSecurityPolicy.
 Return the appropriate apiVersion for podSecurityPolicy.
 */}}
 {{- define "podSecurityPolicy.apiVersion" -}}
-{{- if semverCompare ">=1.10-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- if semverCompare ">=1.10-0" .Capabilities.KubeVersion.Version -}}
 {{- print "policy/v1beta1" -}}
 {{- else -}}
 {{- print "extensions/v1beta1" -}}
