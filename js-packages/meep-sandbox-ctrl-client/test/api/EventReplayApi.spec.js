@@ -100,6 +100,9 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];
@@ -367,6 +370,12 @@
                               expect(data).to.be("");
                             }
                           }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be("");
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta;
                             expect(dataCtr).to.be.an(Object);

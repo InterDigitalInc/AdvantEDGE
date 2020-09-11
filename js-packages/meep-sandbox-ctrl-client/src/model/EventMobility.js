@@ -85,7 +85,7 @@
   exports.prototype.elementName = undefined;
 
   /**
-   * Destination element identifier
+   * Destination element identifier or 'DISCONNECTED'
    * @member {String} dest
    */
   exports.prototype.dest = undefined;

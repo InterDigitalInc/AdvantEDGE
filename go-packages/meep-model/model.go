@@ -59,6 +59,8 @@ const (
 	ScenarioModify = "MODIFY"
 )
 
+const Disconnected = "DISCONNECTED"
+
 // ModelCfg - Model Configuration
 type ModelCfg struct {
 	Name      string
@@ -765,26 +767,35 @@ func (m *Model) movePL(node *Node, destName string) (oldLocName string, newLocNa
 	var oldNL *dataModel.NetworkLocation
 	var newNL *dataModel.NetworkLocation
 
-	// Node is a UE
+	// Get Physical location & old Network Location
 	pl = node.object.(*dataModel.PhysicalLocation)
-	// fmt.Printf("+++ pl: %+v\n", pl)
-
+	if pl == nil {
+		return "", "", errors.New("MoveNode: " + node.name + " not found)")
+	}
 	oldNL = node.parent.(*dataModel.NetworkLocation)
-	// fmt.Printf("+++ oldNL: %+v\n", oldNL)
 	if oldNL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
 	}
 
-	newNLNode := m.nodeMap.FindByName(destName)
-	// fmt.Printf("+++ newNLNode: %+v\n", newNLNode)
-	if newNLNode == nil {
-		return "", "", errors.New("MoveNode: " + destName + " not found")
+	// Get new Network Location
+	if destName == Disconnected {
+		// Only support UE disconnection
+		if pl.Type_ != NodeTypeUE {
+			return "", "", errors.New("MoveNode: cannot disconnect " + node.name)
+		}
+		newNL = oldNL
+		pl.Connected = false
+	} else {
+		newNLNode := m.nodeMap.FindByName(destName)
+		if newNLNode == nil {
+			return "", "", errors.New("MoveNode: " + destName + " not found")
+		}
+		newNL = newNLNode.object.(*dataModel.NetworkLocation)
+		pl.Connected = true
 	}
-	newNL = newNLNode.object.(*dataModel.NetworkLocation)
-	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
-	if pl != nil && oldNL != newNL {
+	if oldNL != newNL {
 		log.Debug("Found PL & destination. Updating PL location.")
 
 		// Add PL to new location
@@ -819,32 +830,32 @@ func (m *Model) moveProc(node *Node, destName string) (oldLocName string, newLoc
 	var oldPL *dataModel.PhysicalLocation
 	var newPL *dataModel.PhysicalLocation
 
-	// Node is a process
+	// Get Process & old Physical Location
 	proc = node.object.(*dataModel.Process)
-	// fmt.Printf("+++ process: %+v\n", proc)
-	//process part of a mobility group can't be moved
-	if proc.ServiceConfig != nil {
-		if proc.ServiceConfig.MeSvcName != "" {
-			return "", "", errors.New("Process part of a mobility group cannot be moved ")
-		}
+	if proc == nil {
+		return "", "", errors.New("MoveNode: " + node.name + " not found)")
 	}
-
+	if proc.ServiceConfig != nil && proc.ServiceConfig.MeSvcName != "" {
+		return "", "", errors.New("Process part of a mobility group cannot be moved ")
+	}
 	oldPL = node.parent.(*dataModel.PhysicalLocation)
-	// fmt.Printf("+++ oldPL: %+v\n", oldPL)
 	if oldPL == nil {
 		return "", "", errors.New("MoveNode: " + node.name + " old location not found)")
 	}
 
-	newPLNode := m.nodeMap.FindByName(destName)
-	// fmt.Printf("+++ newPLNode: %+v\n", newPLNode)
-	if newPLNode == nil {
-		return "", "", errors.New("MoveNode: " + destName + " not found")
+	// Get new Physical Location
+	if destName == Disconnected {
+		return "", "", errors.New("MoveNode: cannot disconnect a process")
+	} else {
+		newPLNode := m.nodeMap.FindByName(destName)
+		if newPLNode == nil {
+			return "", "", errors.New("MoveNode: " + destName + " not found")
+		}
+		newPL = newPLNode.object.(*dataModel.PhysicalLocation)
 	}
-	newPL = newPLNode.object.(*dataModel.PhysicalLocation)
-	// fmt.Printf("+++ newNL: %+v\n", newNL)
 
 	// Update location if necessary
-	if proc != nil && oldPL != newPL {
+	if oldPL != newPL {
 		log.Debug("Found Process & destination. Updating PL location.")
 
 		// Add PL to new location
