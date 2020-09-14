@@ -194,7 +194,7 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateUeData(name string, mnc string, mcc string, cellId string, erabId int32) {
+func updateUeData(name string, mnc string, mcc string, cellId string, erabIdValid bool) {
 
 	var plmn Plmn
 	var newEcgi Ecgi
@@ -230,13 +230,13 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabId int
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
-		//allocating a new erabId if entering a 3GPP environment
-		if oldCellId == "" && cellId != "" {
+		//allocating a new erabId if entering a 4G environment (existence of an erabId)
+		if oldErabId == -1 && erabIdValid {
 			//rab establishment case
 			ueData.ErabId = int32(nextAvailableErabId)
 			nextAvailableErabId++
 		} else {
-			if oldCellId != "" && cellId == "" {
+			if oldErabId != -1 && !erabIdValid {
 				//rab release case
 				ueData.ErabId = -1
 			} else {
@@ -253,9 +253,15 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabId int
 		//log to model for all apps on that UE
 		checkCcNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, "", cellId, oldCellId)
 		//ueData contains newErabId
-		checkReNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
-		checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, oldErabId)
-
+		log.Info("TEST SIMON")
+		if oldErabId == -1 && ueData.ErabId != -1 {
+			log.Info("SIMON")
+			checkReNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
+		}
+		if oldErabId != -1 && ueData.ErabId == -1 {
+			log.Info("SIMON2")
+			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
+		}
 	}
 }
 
@@ -546,9 +552,9 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 func checkReNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
 	//only applies if coming from a non 3gpp element
-	if oldCellId != "" || newCellId == "" {
-		return
-	}
+	//	if oldCellId != "" || newCellId == "" {
+	//		return
+	//	}
 
 	//check all that applies
 	for subsId, sub := range reSubscriptionMap {
@@ -568,7 +574,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (oldPlmn == nil || oldCellId == "")) {
+			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (oldPlmn == nil || oldCellId == "" || erabId != -1)) {
 				match = true
 			} else {
 				match = false
@@ -643,9 +649,9 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
 	//only applies if going to a non 3gpp element
-	if newCellId != "" || oldCellId == "" {
-		return
-	}
+	//	if newCellId != "" || oldCellId == "" {
+	//		return
+	//	}
 
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
@@ -665,7 +671,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				match = false
 			}
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (newPlmn == nil || newCellId == "")) {
+			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (newPlmn == nil || newCellId == "" || erabId == -1)) {
 				match = true
 			} else {
 				match = false
@@ -1381,9 +1387,9 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 
 			ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
 			if ecgi != nil {
-				if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" && ecgi.CellId != "" {
+				if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" {
 					var plmnInfo PlmnInfo
-					plmnInfo.Ecgi = ecgi
+					plmnInfo.Plmn = ecgi.Plmn
 					plmnInfo.AppInsId = meAppName
 					plmnInfo.TimeStamp = &timeStamp
 					response.PlmnInfo = append(response.PlmnInfo, plmnInfo)

@@ -29,5 +29,5 @@ type PlmnInfo struct {
 	// Unique identifier for the mobile edge application instance
 	AppInsId string `json:"appInsId"`
 
-	Ecgi *Ecgi `json:"ecgi"`
+	Plmn *Plmn `json:"plmn,omitempty"`
 }

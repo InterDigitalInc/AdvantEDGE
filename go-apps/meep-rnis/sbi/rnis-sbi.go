@@ -34,7 +34,7 @@ type SbiCfg struct {
 	RedisAddr      string
 	PostgisHost    string
 	PostgisPort    string
-	UeDataCb       func(string, string, string, string, int32)
+	UeDataCb       func(string, string, string, string, bool)
 	AppEcgiInfoCb  func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -46,7 +46,7 @@ type RnisSbi struct {
 	handlerId            int
 	activeModel          *mod.Model
 	pc                   *postgis.Connector
-	updateUeDataCB       func(string, string, string, string, int32)
+	updateUeDataCB       func(string, string, string, string, bool)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -196,18 +196,31 @@ func processActiveScenarioUpdate() {
 					mnc := ""
 					mcc := ""
 					cellId := ""
+					erabIdValid := false
 					if domain.CellularDomainConfig != nil {
 						mnc = domain.CellularDomainConfig.Mnc
 						mcc = domain.CellularDomainConfig.Mcc
+						cellId = domain.CellularDomainConfig.DefaultCellId
 					}
-					if poa.Poa4GConfig != nil {
-						if poa.Poa4GConfig.CellId != "" {
-							cellId = poa.Poa4GConfig.CellId
-						} else {
-							cellId = domain.CellularDomainConfig.DefaultCellId
+					switch poa.Type_ {
+					case mod.NodeTypePoa4G:
+						if poa.Poa4GConfig != nil {
+							if poa.Poa4GConfig.CellId != "" {
+								cellId = poa.Poa4GConfig.CellId
+							}
 						}
+						erabIdValid = true
+					case mod.NodeTypePoa5G:
+						if poa.Poa5GConfig != nil {
+							if poa.Poa5GConfig.CellId != "" {
+								cellId = poa.Poa5GConfig.CellId
+							}
+						}
+					case mod.NodeTypePoaWifi:
+						cellId = ""
 					}
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, -1)
+
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, erabIdValid)
 				}
 			}
 		}
@@ -258,17 +271,23 @@ func processActiveScenarioUpdate() {
 						if domain.CellularDomainConfig != nil {
 							mnc = domain.CellularDomainConfig.Mnc
 							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
-						if nl.Poa4GConfig != nil {
-							if nl.Poa4GConfig.CellId != "" {
-								cellId = nl.Poa4GConfig.CellId
-							} else {
-								cellId = domain.CellularDomainConfig.DefaultCellId
+						switch nl.Type_ {
+						case mod.NodeTypePoa4G:
+							if nl.Poa4GConfig != nil {
+								if nl.Poa4GConfig.CellId != "" {
+									cellId = nl.Poa4GConfig.CellId
+								}
 							}
-						} else {
-							if domain.CellularDomainConfig != nil {
-								cellId = domain.CellularDomainConfig.DefaultCellId
+						case mod.NodeTypePoa5G:
+							if nl.Poa5GConfig != nil {
+								if nl.Poa5GConfig.CellId != "" {
+									cellId = nl.Poa5GConfig.CellId
+								}
 							}
+						case mod.NodeTypePoaWifi:
+							cellId = ""
 						}
 
 						sbi.updateAppEcgiInfoCB(appName, mnc, mcc, cellId)

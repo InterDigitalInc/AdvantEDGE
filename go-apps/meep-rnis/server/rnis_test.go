@@ -2268,11 +2268,8 @@ func TestPlmnInfoGet(t *testing.T) {
 	 * expected response section
 	 ******************************/
 	var expectedMcc [2]string
-	var expectedCellId [2]string
 	expectedMcc[INITIAL] = "123"
 	expectedMcc[UPDATED] = "123"
-	expectedCellId[INITIAL] = "2345678"
-	expectedCellId[UPDATED] = "1234567"
 
 	/******************************
 	 * request vars section
@@ -2305,10 +2302,7 @@ func TestPlmnInfoGet(t *testing.T) {
 	}
 
 	if respBody.PlmnInfo != nil {
-		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[INITIAL] {
-			t.Fatalf("Failed to get expected response")
-		}
-		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[INITIAL] {
+		if respBody.PlmnInfo[0].Plmn.Mcc != expectedMcc[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -2326,10 +2320,7 @@ func TestPlmnInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	if respBody.PlmnInfo != nil {
-		if respBody.PlmnInfo[0].Ecgi.Plmn.Mcc != expectedMcc[UPDATED] {
-			t.Fatalf("Failed to get expected response")
-		}
-		if respBody.PlmnInfo[0].Ecgi.CellId != expectedCellId[UPDATED] {
+		if respBody.PlmnInfo[0].Plmn.Mcc != expectedMcc[UPDATED] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
