@@ -253,13 +253,10 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 		//log to model for all apps on that UE
 		checkCcNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, "", cellId, oldCellId)
 		//ueData contains newErabId
-		log.Info("TEST SIMON")
 		if oldErabId == -1 && ueData.ErabId != -1 {
-			log.Info("SIMON")
 			checkReNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
 		}
 		if oldErabId != -1 && ueData.ErabId == -1 {
-			log.Info("SIMON2")
 			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
 		}
 	}
@@ -551,11 +548,6 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 func checkReNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
-	//only applies if coming from a non 3gpp element
-	//	if oldCellId != "" || newCellId == "" {
-	//		return
-	//	}
-
 	//check all that applies
 	for subsId, sub := range reSubscriptionMap {
 
@@ -647,11 +639,6 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 }
 
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
-
-	//only applies if going to a non 3gpp element
-	//	if newCellId != "" || oldCellId == "" {
-	//		return
-	//	}
 
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
