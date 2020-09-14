@@ -20,8 +20,11 @@ func GetReleasesName() ([]Release, error) {
 	return getReleasesName()
 }
 
-// currently GetReleases is not used. Since it uses helm status and helmv3 doesn't show resources
-// https://github.com/helm/helm/issues/5952 
+/*
+* currently GetReleases is not used. Since it uses helm status and helmv3 doesn't show resources
+* https://github.com/helm/helm/issues/5952
+ */
+
 func GetReleases() ([]Release, error) {
 	return getReleases()
 }
