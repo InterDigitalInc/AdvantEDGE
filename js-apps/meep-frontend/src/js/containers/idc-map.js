@@ -93,8 +93,8 @@ const UE_OPACITY_BACKGROUND = 0.3;
 const UE_PATH_OPACITY = 0.5;
 const UE_PATH_OPACITY_BACKGROUND = 0.3;
 
-// POA icons: 'ion-connection-bars', 'ion-wifi'
 const POA_ICON = 'ion-connection-bars';
+const POA_ICON_WIFI = 'ion-wifi';
 const POA_COLOR_DEFAULT = '#696969';
 const POA_OPACITY = 1.0;
 const POA_OPACITY_BACKGROUND = 0.35;
@@ -472,14 +472,14 @@ class IDCMap extends Component {
   }
 
   setPoaIcon(iconDiv, iconTextDiv, poa) {
+    var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
     var metaIcon = getElemFieldVal(this.getTable().entries[poa], FIELD_META_DISPLAY_MAP_ICON);
-    var icon = metaIcon ? metaIcon : POA_ICON;
+    var icon = metaIcon ? metaIcon : (poaType === ELEMENT_TYPE_POA_WIFI) ? POA_ICON_WIFI : POA_ICON;
     iconDiv.className = 'custom-marker-icon ion ' + icon;
     iconDiv.innerHTML = '';
 
     var innerHTML = '';
     if (!metaIcon) {
-      var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
       if (poaType === ELEMENT_TYPE_POA_4G) {
         innerHTML = '4G';
       }

@@ -53,6 +53,9 @@ import {
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS,
+  FIELD_WIRELESS_TYPE,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
   FIELD_INT_DOM_LATENCY_DIST,
@@ -1240,6 +1243,9 @@ export function createPL(uniqueId, name, type, element) {
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
+    connected: getElemFieldVal(element, FIELD_CONNECTED),
+    wireless: getElemFieldVal(element, FIELD_WIRELESS),
+    wirelessType: getElemFieldVal(element, FIELD_WIRELESS_TYPE),
     netChar: {
       latency: getElemFieldVal(element, FIELD_LINK_LATENCY),
       latencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
@@ -1437,9 +1443,11 @@ export function getElementFromScenario(scenario, elementId) {
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
           if (pl.id === elementId) {
+            var defaultWireless = false;
             switch (pl.type) {
             case UE_TYPE_STR:
               setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_UE);
+              defaultWireless = true;
               break;
             case FOG_TYPE_STR:
               setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_FOG);
@@ -1456,6 +1464,7 @@ export function getElementFromScenario(scenario, elementId) {
             default:
               break;
             }
+
             setElemFieldVal(elem, FIELD_NAME, pl.name);
             setElemFieldVal(elem, FIELD_PARENT, domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name :
               zone.type === COMMON_ZONE_TYPE_STR ? domain.name :
@@ -1468,6 +1477,9 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.netChar.packetLoss || DEFAULT_PACKET_LOSS_LINK);
             }
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
+            setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || true);
+            setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || defaultWireless);
+            setElemFieldVal(elem, FIELD_WIRELESS_TYPE, pl.wirelessType || '');
 
             if (pl.geoData) {
               if (pl.geoData.location) {
@@ -1707,7 +1719,7 @@ export function addPlNode(pl, parent, nodes, edges) {
   case FOG_TYPE_STR: {
     // latency = "0";
     e['color'] = {
-      color: '#606060',
+      color: (pl.connected) ? '#606060' : '#FF0000',
       highlight: '#606060',
       hover: '#606060'
     };
@@ -1729,7 +1741,7 @@ export function addPlNode(pl, parent, nodes, edges) {
   case EDGE_TYPE_STR: {
     // latency = "0";
     e['color'] = {
-      color: '#606060',
+      color: (pl.connected) ? '#606060' : '#FF0000',
       highlight: '#606060',
       hover: '#606060'
     };
@@ -1753,6 +1765,10 @@ export function addPlNode(pl, parent, nodes, edges) {
     latency = parent.terminalLinkLatency;
     e['dashes'] = true;
     n['level'] = 4;
+
+    if (!pl.connected) {
+      e['color'] = {color: '#FF0000'};
+    }
 
     if (pl.isExternal) {
       const image = getScenarioSpecificImage(
@@ -1782,6 +1798,11 @@ export function addPlNode(pl, parent, nodes, edges) {
     // latency = "0";
     n['level'] = 2;
     n['group'] = pl.isExternal ? 'pLocExtCN' : 'pLocIntCN';
+
+    if (!pl.connected) {
+      e['color'] = {color: '#FF0000'};
+    }
+
     break;
   }
 
@@ -1791,6 +1812,10 @@ export function addPlNode(pl, parent, nodes, edges) {
       latency = String(interDomainLatency / 2);
     }
     n['level'] = -1;
+
+    if (!pl.connected) {
+      e['color'] = {color: '#FF0000'};
+    }
 
     if (pl.isExternal) {
       n['group'] = 'pLocExtDC';

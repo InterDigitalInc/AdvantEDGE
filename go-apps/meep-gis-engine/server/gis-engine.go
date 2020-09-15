@@ -57,15 +57,27 @@ const (
 	AssetTypeCompute = "COMPUTE"
 )
 
+type AssetGeoData struct {
+	position string
+	radius   float32
+	path     string
+	mode     string
+	velocity float32
+}
+
 type Asset struct {
-	assetType       string
-	geoDataAssigned bool
+	name         string
+	typ          string
+	geoData      *AssetGeoData
+	connected    bool
+	wirelessType string
 }
 
 type PoaInfo struct {
 	poa        string
 	distance   float32
 	poaInRange []string
+	connected  bool
 }
 
 type GisEngine struct {
@@ -76,7 +88,7 @@ type GisEngine struct {
 	activeModel    *mod.Model
 	sessionMgr     *sm.SessionMgr
 	pc             *postgis.Connector
-	assets         map[string]Asset
+	assets         map[string]*Asset
 	uePoaInfo      map[string]PoaInfo
 	automation     map[string]bool
 	ticker         *time.Ticker
@@ -88,7 +100,7 @@ var ge *GisEngine
 // Init - GIS Engine initialization
 func Init() (err error) {
 	ge = new(GisEngine)
-	ge.assets = make(map[string]Asset)
+	ge.assets = make(map[string]*Asset)
 	ge.uePoaInfo = make(map[string]PoaInfo)
 	ge.automation = make(map[string]bool)
 	resetAutomation()
@@ -229,12 +241,12 @@ func processScenarioActivate() {
 
 	// Retrieve & process POA and Compute Assets in active scenario
 	assetList := ge.activeModel.GetNodeNames(mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
-	addAssets(assetList)
+	setAssets(assetList)
 
 	// Retrieve & process UE assets in active scenario
 	// NOTE: Required to make sure initial UE selection takes all POAs into account
 	assetList = ge.activeModel.GetNodeNames(mod.NodeTypeUE)
-	addAssets(assetList)
+	setAssets(assetList)
 }
 
 func processScenarioUpdate() {
@@ -242,27 +254,22 @@ func processScenarioUpdate() {
 	ge.activeModel.UpdateScenario()
 
 	// Get latest asset list
-	newAssetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
-	newAssets := make(map[string]bool)
-	var assetsToAdd []string
+	assetList := ge.activeModel.GetNodeNames(mod.NodeTypeUE, mod.NodeTypePoa, mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypeEdge, mod.NodeTypeFog, mod.NodeTypeCloud)
+	assets := make(map[string]bool)
 	var assetsToRemove []string
 
-	// Compare with GIS Engine asset list to identify assets that should be added or removed from DB
-	for _, assetName := range newAssetList {
-		newAssets[assetName] = true
-		asset, found := ge.assets[assetName]
-		if !found || !asset.geoDataAssigned {
-			assetsToAdd = append(assetsToAdd, assetName)
-		}
+	// Create list of assets to be removed from DB
+	for _, assetName := range assetList {
+		assets[assetName] = true
 	}
 	for assetName := range ge.assets {
-		if _, found := newAssets[assetName]; !found {
+		if _, found := assets[assetName]; !found {
 			assetsToRemove = append(assetsToRemove, assetName)
 		}
 	}
 
-	// Add & remove assets from model update
-	addAssets(assetsToAdd)
+	// Create, update & delete assets according to scenario update
+	setAssets(assetList)
 	removeAssets(assetsToRemove)
 }
 
@@ -277,73 +284,55 @@ func processScenarioTerminate() {
 
 	// Clear asset list
 	log.Debug("GeoData deleted for all assets")
-	ge.assets = make(map[string]Asset)
+	ge.assets = make(map[string]*Asset)
 }
 
-func addAssets(assetList []string) {
+func setAssets(assetList []string) {
 	for _, assetName := range assetList {
-		// Get node type
-		nodeType := ge.activeModel.GetNodeType(assetName)
+		var geoData *AssetGeoData = nil
+		var err error
 
-		// Default asset geodata to unassigned state
-		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
+		// Get asset or create new one
+		asset := ge.assets[assetName]
+		if asset == nil {
+			asset = new(Asset)
+			asset.name = assetName
+			asset.typ = ge.activeModel.GetNodeType(assetName)
+			asset.geoData = nil
+			ge.assets[assetName] = asset
+		}
 
-		if isUe(nodeType) {
+		// Set asset according to type
+		if isUe(asset.typ) {
+			// Set initial geoData only
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-
-			// Parse Geo Data
-			position, _, path, mode, velocity, err := parseGeoData(pl.GeoData)
-			if err != nil {
-				continue
+			if asset.geoData == nil {
+				geoData, err = parseGeoData(pl.GeoData)
+				if err != nil {
+					continue
+				}
 			}
-
-			// Set default EOP mode to LOOP if not provided
-			if mode == "" {
-				mode = postgis.PathModeLoop
-			}
-
-			// Create UE
-			err = ge.pc.CreateUe(pl.Id, assetName, position, path, mode, velocity)
-			if err != nil {
-				log.Error(err.Error())
-				continue
-			}
-			log.Debug("GeoData stored for UE: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
-		} else if isPoa(nodeType) {
+			_ = setUe(asset, pl, geoData)
+		} else if isPoa(asset.typ) {
+			// Set initial geoData only
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
-
-			// Parse Geo Data
-			position, radius, _, _, _, err := parseGeoData(nl.GeoData)
-			if err != nil {
-				continue
+			if asset.geoData == nil {
+				geoData, err = parseGeoData(nl.GeoData)
+				if err != nil {
+					continue
+				}
 			}
-
-			// Create POA
-			err = ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
-			if err != nil {
-				log.Error(err.Error())
-				continue
-			}
-			log.Debug("GeoData stored for POA: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
-		} else if isCompute(nodeType) {
+			_ = setPoa(asset, nl, geoData)
+		} else if isCompute(asset.typ) {
+			// Set initial geoData only
 			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-
-			// Parse Geo Data
-			position, _, _, _, _, err := parseGeoData(pl.GeoData)
-			if err != nil {
-				continue
+			if asset.geoData == nil {
+				geoData, err = parseGeoData(pl.GeoData)
+				if err != nil {
+					continue
+				}
 			}
-
-			// Create Compute
-			err = ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
-			if err != nil {
-				log.Error(err.Error())
-				continue
-			}
-			log.Debug("GeoData stored for Compute: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
+			_ = setCompute(asset, pl, geoData)
 		}
 	}
 }
@@ -351,7 +340,7 @@ func addAssets(assetList []string) {
 func removeAssets(assetList []string) {
 	for _, assetName := range assetList {
 		// Get asset node type
-		nodeType := ge.assets[assetName].assetType
+		nodeType := ge.assets[assetName].typ
 
 		// Remove asset
 		delete(ge.assets, assetName)
@@ -383,62 +372,187 @@ func removeAssets(assetList []string) {
 	}
 }
 
-func parseGeoData(geoData *dataModel.GeoData) (position string, radius float32, path string, mode string, velocity float32, err error) {
-	// Validate GeoData
-	if geoData == nil {
-		err = errors.New("geoData == nil")
-		return
-	}
+func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) error {
+	// UE data map
+	ueData := make(map[string]interface{})
 
-	// Get position
-	if geoData.Location != nil {
-		var positionBytes []byte
-		positionBytes, err = json.Marshal(geoData.Location)
-		if err != nil {
-			return
+	// Create new UE entry if geodata not set
+	if asset.geoData == nil && geoData != nil {
+		// Validate position available
+		if geoData.position == "" {
+			return errors.New("Missing location")
 		}
-		position = string(positionBytes)
-	}
-
-	// Get Radius
-	radius = geoData.Radius
-	if radius < 0 {
-		err = errors.New("radius < 0")
-		return
-	}
-
-	// Get path
-	if geoData.Path != nil {
-		var pathBytes []byte
-		pathBytes, err = json.Marshal(geoData.Path)
-		if err != nil {
-			return
+		// Set default EOP mode to LOOP if not provided
+		if geoData.mode == "" {
+			geoData.mode = postgis.PathModeLoop
 		}
-		path = string(pathBytes)
+
+		// Fill UE data
+		ueData[postgis.FieldConnected] = pl.Connected
+		ueData[postgis.FieldPriority] = initWirelessType(pl.Wireless, pl.WirelessType)
+		ueData[postgis.FieldPosition] = geoData.position
+		if geoData.path != "" {
+			ueData[postgis.FieldPath] = geoData.path
+			// Set default EOP mode to LOOP if not provided
+			if geoData.mode == "" {
+				geoData.mode = postgis.PathModeLoop
+			}
+			ueData[postgis.FieldMode] = geoData.mode
+			ueData[postgis.FieldVelocity] = geoData.velocity
+		}
+
+		// Create UE
+		err := ge.pc.CreateUe(pl.Id, asset.name, ueData)
+		if err != nil {
+			return err
+		}
+		log.Debug("GeoData created for UE: ", asset.name)
+		asset.geoData = geoData
+
+	} else {
+		// Update Geodata
+		if geoData != nil {
+			if geoData.position != "" && geoData.position != asset.geoData.position {
+				ueData[postgis.FieldPosition] = geoData.position
+				asset.geoData.position = geoData.position
+			}
+			if geoData.path != "" && (geoData.path != asset.geoData.path ||
+				geoData.mode != asset.geoData.mode || geoData.velocity != asset.geoData.velocity) {
+				ueData[postgis.FieldPath] = geoData.path
+				ueData[postgis.FieldMode] = geoData.mode
+				ueData[postgis.FieldVelocity] = geoData.velocity
+				asset.geoData.path = geoData.path
+				asset.geoData.mode = geoData.mode
+				asset.geoData.velocity = geoData.velocity
+			}
+		}
+
+		// Update connection state
+		if pl.Connected != asset.connected {
+			ueData[postgis.FieldConnected] = pl.Connected
+			asset.connected = pl.Connected
+		}
+		wirelessType := initWirelessType(pl.Wireless, pl.WirelessType)
+		if wirelessType != asset.wirelessType {
+			ueData[postgis.FieldPriority] = wirelessType
+			asset.wirelessType = wirelessType
+		}
+
+		// Update UE if necessary
+		if len(ueData) > 0 {
+			err := ge.pc.UpdateUe(asset.name, ueData)
+			if err != nil {
+				return err
+			}
+			log.Debug("GeoData updated for UE: ", asset.name)
+		}
 	}
 
-	// Get Path Mode
-	mode = geoData.EopMode
-	if mode != "" && mode != postgis.PathModeLoop && mode != postgis.PathModeReverse {
-		err = errors.New("Unsupported end-of-path mode: " + mode)
-		return
-	}
-
-	// Get velocity
-	velocity = geoData.Velocity
-	if velocity < 0 {
-		err = errors.New("velocity < 0")
-		return
-	}
-
-	return
+	return nil
 }
 
-func parseGeoDataAsset(geoData *GeoDataAsset) (position string, radius float32, path string, mode string, velocity float32, err error) {
-	// Validate GeoData
+func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) error {
+	// Get POA Data
+	poaData := make(map[string]interface{})
+
+	// Create new POA entry if geodata not set
+	if asset.geoData == nil && geoData != nil {
+		// Validate position available
+		if geoData.position == "" {
+			return errors.New("Missing location")
+		}
+
+		// Get POA data
+		poaData[postgis.FieldSubtype] = asset.typ
+		poaData[postgis.FieldRadius] = geoData.radius
+		poaData[postgis.FieldPosition] = geoData.position
+
+		// Create POA
+		err := ge.pc.CreatePoa(nl.Id, asset.name, poaData)
+		if err != nil {
+			return err
+		}
+		log.Debug("GeoData stored for POA: ", asset.name)
+		asset.geoData = geoData
+	} else {
+		// Update Geodata
+		if geoData != nil {
+			if geoData.radius != asset.geoData.radius {
+				poaData[postgis.FieldRadius] = geoData.radius
+			}
+			if geoData.position != "" && geoData.position != asset.geoData.position {
+				poaData[postgis.FieldPosition] = geoData.position
+			}
+		}
+
+		// Update POA
+		if len(poaData) > 0 {
+			err := ge.pc.UpdatePoa(asset.name, poaData)
+			if err != nil {
+				return err
+			}
+			log.Debug("GeoData created for POA: ", asset.name)
+		}
+	}
+	return nil
+}
+
+func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) error {
+	// Get Compute Data
+	computeData := make(map[string]interface{})
+
+	// Create new POA entry if geodata not set
+	if asset.geoData == nil && geoData != nil {
+		// Validate position available
+		if geoData.position == "" {
+			return errors.New("Missing location")
+		}
+
+		// Get Compute connection state
+		computeData[postgis.FieldSubtype] = asset.typ
+		computeData[postgis.FieldConnected] = pl.Connected
+		computeData[postgis.FieldPosition] = geoData.position
+
+		// Create Compute
+		err := ge.pc.CreateCompute(pl.Id, asset.name, computeData)
+		if err != nil {
+			return err
+		}
+		log.Debug("GeoData created for Compute: ", asset.name)
+		asset.geoData = geoData
+	} else {
+		// Update Geodata
+		if geoData != nil {
+			if geoData.position != "" && geoData.position != asset.geoData.position {
+				computeData[postgis.FieldPosition] = geoData.position
+			}
+		}
+
+		// Update connection state
+		if pl.Connected != asset.connected {
+			computeData[postgis.FieldConnected] = pl.Connected
+			asset.connected = pl.Connected
+		}
+
+		// Update Compute
+		if len(computeData) > 0 {
+			err := ge.pc.UpdateCompute(asset.name, computeData)
+			if err != nil {
+				return err
+			}
+			log.Debug("GeoData updated for Compute: ", asset.name)
+		}
+	}
+	return nil
+}
+
+func parseGeoData(geoData *dataModel.GeoData) (assetGeoData *AssetGeoData, err error) {
+	// Create new asset geodata
+	assetGeoData = new(AssetGeoData)
+
+	// Validate input GeoData
 	if geoData == nil {
-		err = errors.New("geoData == nil")
-		return
+		return nil, errors.New("geoData == nil")
 	}
 
 	// Get position
@@ -446,16 +560,16 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (position string, radius float32, 
 		var positionBytes []byte
 		positionBytes, err = json.Marshal(geoData.Location)
 		if err != nil {
-			return
+			return nil, err
 		}
-		position = string(positionBytes)
+		assetGeoData.position = string(positionBytes)
 	}
 
 	// Get Radius
-	radius = geoData.Radius
-	if radius < 0 {
+	assetGeoData.radius = geoData.Radius
+	if assetGeoData.radius < 0 {
 		err = errors.New("radius < 0")
-		return
+		return nil, err
 	}
 
 	// Get path
@@ -463,26 +577,74 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (position string, radius float32, 
 		var pathBytes []byte
 		pathBytes, err = json.Marshal(geoData.Path)
 		if err != nil {
-			return
+			return nil, err
 		}
-		path = string(pathBytes)
+		assetGeoData.path = string(pathBytes)
 	}
 
 	// Get Path Mode
-	mode = geoData.EopMode
-	if mode != "" && mode != postgis.PathModeLoop && mode != postgis.PathModeReverse {
-		err = errors.New("Unsupported end-of-path mode: " + mode)
-		return
+	assetGeoData.mode = geoData.EopMode
+	if assetGeoData.mode != "" && assetGeoData.mode != postgis.PathModeLoop && assetGeoData.mode != postgis.PathModeReverse {
+		return nil, errors.New("Unsupported end-of-path mode: " + assetGeoData.mode)
 	}
 
 	// Get velocity
-	velocity = geoData.Velocity
-	if velocity < 0 {
-		err = errors.New("velocity < 0")
-		return
+	assetGeoData.velocity = geoData.Velocity
+	if assetGeoData.velocity < 0 {
+		return nil, errors.New("velocity < 0")
 	}
 
-	return
+	return assetGeoData, nil
+}
+
+func parseGeoDataAsset(geoData *GeoDataAsset) (assetGeoData *AssetGeoData, err error) {
+	// Create new asset geodata
+	assetGeoData = new(AssetGeoData)
+
+	// Validate input GeoData
+	if geoData == nil {
+		return nil, errors.New("geoData == nil")
+	}
+
+	// Get position
+	if geoData.Location != nil {
+		var positionBytes []byte
+		positionBytes, err = json.Marshal(geoData.Location)
+		if err != nil {
+			return nil, err
+		}
+		assetGeoData.position = string(positionBytes)
+	}
+
+	// Get Radius
+	assetGeoData.radius = geoData.Radius
+	if assetGeoData.radius < 0 {
+		return nil, errors.New("radius < 0")
+	}
+
+	// Get path
+	if geoData.Path != nil {
+		var pathBytes []byte
+		pathBytes, err = json.Marshal(geoData.Path)
+		if err != nil {
+			return nil, err
+		}
+		assetGeoData.path = string(pathBytes)
+	}
+
+	// Get Path Mode
+	assetGeoData.mode = geoData.EopMode
+	if assetGeoData.mode != "" && assetGeoData.mode != postgis.PathModeLoop && assetGeoData.mode != postgis.PathModeReverse {
+		return nil, errors.New("Unsupported end-of-path mode: " + assetGeoData.mode)
+	}
+
+	// Get velocity
+	assetGeoData.velocity = geoData.Velocity
+	if assetGeoData.velocity < 0 {
+		return nil, errors.New("velocity < 0")
+	}
+
+	return assetGeoData, nil
 }
 
 func fillGeoDataAsset(geoData *GeoDataAsset, position string, radius float32, path string, mode string, velocity float32) (err error) {
@@ -530,6 +692,16 @@ func isPoa(nodeType string) bool {
 
 func isCompute(nodeType string) bool {
 	return nodeType == mod.NodeTypeFog || nodeType == mod.NodeTypeEdge || nodeType == mod.NodeTypeCloud
+}
+
+func initWirelessType(wireless bool, wirelessType string) string {
+	wt := wirelessType
+	if !wireless {
+		wt = "other"
+	} else if wt == "" {
+		wt = "wifi,5g,4g,other"
+	}
+	return wt
 }
 
 func resetAutomation() {
@@ -609,12 +781,16 @@ func runAutomation() {
 
 				// Send mobility event if necessary
 				if ge.automation[AutoTypeMobility] {
-					if !found || poaInfo.poa != ue.Poa {
+					if !found || (ue.Poa != "" && ue.Poa != poaInfo.poa) || (ue.Poa == "" && poaInfo.connected) {
 						var event sbox.Event
 						var mobilityEvent sbox.EventMobility
 						event.Type_ = AutoTypeMobility
 						mobilityEvent.ElementName = ue.Name
-						mobilityEvent.Dest = ue.Poa
+						if ue.Poa != "" {
+							mobilityEvent.Dest = ue.Poa
+						} else {
+							mobilityEvent.Dest = postgis.PoaTypeDisconnected
+						}
 						event.EventMobility = &mobilityEvent
 
 						go func() {
@@ -658,7 +834,7 @@ func runAutomation() {
 				}
 
 				// Update POA info
-				ge.uePoaInfo[ue.Name] = PoaInfo{poa: ue.Poa, distance: ue.PoaDistance, poaInRange: ue.PoaInRange}
+				ge.uePoaInfo[ue.Name] = PoaInfo{poa: ue.Poa, distance: ue.PoaDistance, poaInRange: ue.PoaInRange, connected: ue.Connected}
 			}
 		} else {
 			log.Error(err.Error())
@@ -760,42 +936,39 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters
 	vars := mux.Vars(r)
 	assetName := vars["assetName"]
-	log.Debug("Delete GeoData for asset: ", assetName)
-
-	// Get node type then remove it from the DB
-	nodeType := ge.activeModel.GetNodeType(assetName)
-	if isUe(nodeType) {
-		log.Debug("GeoData deleted for UE: ", assetName)
-		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
-		err := ge.pc.DeleteUe(assetName)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else if isPoa(nodeType) {
-		log.Debug("GeoData deleted for POA: ", assetName)
-		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
-		err := ge.pc.DeletePoa(assetName)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else if isCompute(nodeType) {
-		log.Debug("GeoData deleted for Compute: ", assetName)
-		ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: false}
-		err := ge.pc.DeleteCompute(assetName)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else {
-		err := errors.New("Asset not found in scenario model")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	asset := ge.assets[assetName]
+	if asset == nil {
+		err := errors.New("Failed to find asset")
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
+	}
+	log.Debug("Delete GeoData for asset: ", asset.name)
+
+	// Remove asset from DB
+	if isUe(asset.typ) {
+		asset.geoData = nil
+		err := ge.pc.DeleteUe(asset.name)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if isPoa(asset.typ) {
+		asset.geoData = nil
+		err := ge.pc.DeletePoa(asset.name)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if isCompute(asset.typ) {
+		asset.geoData = nil
+		err := ge.pc.DeleteCompute(asset.name)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -1052,28 +1225,6 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate request Geo Data
-	if geoData.AssetName != assetName {
-		err := errors.New("Request body asset name differs from path asset name")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if geoData.AssetType != AssetTypeUe && geoData.AssetType != AssetTypePoa && geoData.AssetType != AssetTypeCompute {
-		err := errors.New("Missing or invalid asset type")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Parse Geo Data Asset
-	position, radius, path, mode, velocity, err := parseGeoDataAsset(&geoData)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	// Make sure scenario is active
 	if ge.activeModel.GetScenarioName() == "" {
 		err := errors.New("No active scenario")
@@ -1082,86 +1233,51 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create/Update asset in DB
-	nodeType := ge.activeModel.GetNodeType(assetName)
-
-	// Validate subtype
-	if (geoData.AssetType == AssetTypeUe && !isUe(nodeType)) ||
-		(geoData.AssetType == AssetTypePoa && !isPoa(nodeType)) ||
-		(geoData.AssetType == AssetTypeCompute && !isCompute(nodeType)) {
-		err := errors.New("AssetType invalid for selected asset subType")
+	// Validate request Geo Data
+	if geoData.AssetName != assetName {
+		err := errors.New("Request body asset name differs from path asset name")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	asset := ge.assets[assetName]
+	if asset == nil {
+		err := errors.New("Asset not in scenario")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if geoData.AssetType == AssetTypeUe {
-		if !ge.assets[assetName].geoDataAssigned {
-			// Create UE
-			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-			err := ge.pc.CreateUe(pl.Id, assetName, position, path, mode, velocity)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			log.Debug("GeoData stored for UE: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
-		} else {
-			// Update UE
-			err := ge.pc.UpdateUe(assetName, position, path, mode, velocity)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-	} else if geoData.AssetType == AssetTypePoa {
-		if !ge.assets[assetName].geoDataAssigned {
-			// Create POA
-			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
-			err := ge.pc.CreatePoa(nl.Id, assetName, nodeType, position, radius)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			log.Debug("GeoData stored for POA: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
-		} else {
-			// Update POA
-			err := ge.pc.UpdatePoa(assetName, position, radius)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-	} else if geoData.AssetType == AssetTypeCompute {
-		if !ge.assets[assetName].geoDataAssigned {
-			// Create Compute
-			pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
-			err := ge.pc.CreateCompute(pl.Id, assetName, nodeType, position)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			log.Debug("GeoData stored for Compute: ", assetName)
-			ge.assets[assetName] = Asset{assetType: nodeType, geoDataAssigned: true}
-		} else {
-			// Update Compute
-			err := ge.pc.UpdateCompute(assetName, position)
-			if err != nil {
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-	} else {
-		err := errors.New("Asset not found in active scenario")
+	assetGeoData, err := parseGeoDataAsset(&geoData)
+	if err != nil {
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if (geoData.AssetType != AssetTypeUe && geoData.AssetType != AssetTypePoa && geoData.AssetType != AssetTypeCompute) ||
+		(geoData.AssetType == AssetTypeUe && !isUe(asset.typ)) ||
+		(geoData.AssetType == AssetTypePoa && !isPoa(asset.typ)) ||
+		(geoData.AssetType == AssetTypeCompute && !isCompute(asset.typ)) {
+		err := errors.New("Missing or invalid asset type")
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Set asset according to type
+	if isUe(asset.typ) {
+		pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
+		err = setUe(asset, pl, assetGeoData)
+	} else if isPoa(asset.typ) {
+		nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
+		err = setPoa(asset, nl, assetGeoData)
+	} else if isCompute(asset.typ) {
+		pl := (ge.activeModel.GetNode(assetName)).(*dataModel.PhysicalLocation)
+		err = setCompute(asset, pl, assetGeoData)
+	}
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

@@ -351,12 +351,11 @@ func upgradeScenarioTo153(scenario *dataModel.Scenario) {
 					for iPl := range nl.PhysicalLocations {
 						pl := &nl.PhysicalLocations[iPl]
 						pl.Connected = true
+						pl.WirelessType = ""
 						if pl.Type_ == "UE" {
 							pl.Wireless = true
-							pl.WirelessType = "wifi,5g,4g"
 						} else {
 							pl.Wireless = false
-							pl.WirelessType = ""
 						}
 					}
 				}
