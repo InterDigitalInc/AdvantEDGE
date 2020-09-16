@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **networkLocationsInRange** | **[String]** |  | [optional] 
 **connected** | **Boolean** | true: Physical location has network connectivity false: Physical location has no network connectivity | [optional] 
 **wireless** | **Boolean** | true: Physical location uses a wireless connection false: Physical location uses a wired connection | [optional] 
-**wirelessType** | **String** | Prioritized, comma-separated list of supported wireless connection types. Wireless connection types: - 4g - 5g - wifi - other Default value: 'wifi,5g,4g' | [optional] [default to 'wifi,5g,4g']
+**wirelessType** | **String** | Prioritized, comma-separated list of supported wireless connection types. Default priority if not specififed is 'wifi,5g,4g,other'. Wireless connection types: - 4g - 5g - wifi - other | [optional] 
 **meta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **userMeta** | **{String: String}** | Key/Value Pair Map (string, string) | [optional] 
 **processes** | [**[Process]**](Process.md) |  | [optional] 

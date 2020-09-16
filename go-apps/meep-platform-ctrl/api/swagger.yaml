@@ -813,9 +813,8 @@ definitions:
       wirelessType:
         type: "string"
         description: "Prioritized, comma-separated list of supported wireless connection\
-          \ types.\nWireless connection types:\n- 4g\n- 5g\n- wifi\n- other\nDefault\
-          \ value: 'wifi,5g,4g'"
-        default: "wifi,5g,4g"
+          \ types.\nDefault priority if not specififed is 'wifi,5g,4g,other'.\nWireless\
+          \ connection types:\n- 4g\n- 5g\n- wifi\n- other"
       meta:
         type: "object"
         description: "Key/Value Pair Map (string, string)"

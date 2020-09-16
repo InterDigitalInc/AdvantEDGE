@@ -558,14 +558,13 @@ definitions:
         type: string
         description: |-
           Prioritized, comma-separated list of supported wireless connection types.
+          Default priority if not specififed is 'wifi,5g,4g,other'.
           Wireless connection types:
           - 4g
           - 5g
           - wifi
           - other
-          Default value: 'wifi,5g,4g'
         required: false
-        default: 'wifi,5g,4g'
       meta:
         type: object
         description: 'Key/Value Pair Map (string, string)'

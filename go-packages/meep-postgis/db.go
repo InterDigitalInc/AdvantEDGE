@@ -1457,18 +1457,24 @@ func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*Po
 		// Stay on current POA until out of range or more localized RAT is in range
 		// Start with current POA as selected POA, if still in range
 		currentPoaType := ""
+		selectedPoaType := ""
 		currentPoaInfo, found := poaInfoMap[currentPoa]
-		if found && currentPoaInfo.InRange && getPoaTypePriority(currentPoaInfo.SubType, poaTypePrio) != -1 {
+		if found && currentPoaInfo.InRange && isSupportedPoaType(currentPoaInfo.SubType, poaTypePrio) {
 			currentPoaType = currentPoaInfo.SubType
+			selectedPoaType = currentPoaType
 			selectedPoa = currentPoa
 		}
 
 		// Look for closest POA in range with a more localized RAT
 		for _, poa := range poaInRange {
 			poaInfo := poaInfoMap[poa]
-			if getPoaTypePriority(poaInfo.SubType, poaTypePrio) != -1 {
-				if selectedPoa == "" || (comparePoaTypes(poaInfo.SubType, currentPoaType, poaTypePrio) > 0 &&
-					poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
+			if isSupportedPoaType(poaInfo.SubType, poaTypePrio) {
+				if selectedPoa == "" ||
+					comparePoaTypes(poaInfo.SubType, selectedPoaType, poaTypePrio) > 0 ||
+					(comparePoaTypes(poaInfo.SubType, selectedPoaType, poaTypePrio) == 0 &&
+						comparePoaTypes(poaInfo.SubType, currentPoaType, poaTypePrio) > 0 &&
+						poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
+					selectedPoaType = poaInfo.SubType
 					selectedPoa = poa
 				}
 			}
@@ -1487,6 +1493,10 @@ func comparePoaTypes(poaTypeA string, poaTypeB string, poaTypePrio []string) int
 		return -1
 	}
 	return 1
+}
+
+func isSupportedPoaType(poaType string, poaTypePrio []string) bool {
+	return (getPoaTypePriority(poaType, poaTypePrio) != -1)
 }
 
 func getPoaTypePriority(poaType string, poaTypePrio []string) int {

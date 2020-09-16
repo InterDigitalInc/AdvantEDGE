@@ -155,11 +155,10 @@
   exports.prototype.wireless = undefined;
 
   /**
-   * Prioritized, comma-separated list of supported wireless connection types. Wireless connection types: - 4g - 5g - wifi - other Default value: 'wifi,5g,4g'
+   * Prioritized, comma-separated list of supported wireless connection types. Default priority if not specififed is 'wifi,5g,4g,other'. Wireless connection types: - 4g - 5g - wifi - other
    * @member {String} wirelessType
-   * @default 'wifi,5g,4g'
    */
-  exports.prototype.wirelessType = 'wifi,5g,4g';
+  exports.prototype.wirelessType = undefined;
 
   /**
    * Key/Value Pair Map (string, string)
