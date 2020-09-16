@@ -89,7 +89,7 @@ type GisEngine struct {
 	sessionMgr     *sm.SessionMgr
 	pc             *postgis.Connector
 	assets         map[string]*Asset
-	uePoaInfo      map[string]PoaInfo
+	uePoaInfo      map[string]*PoaInfo
 	automation     map[string]bool
 	ticker         *time.Ticker
 	updateTime     time.Time
@@ -101,7 +101,7 @@ var ge *GisEngine
 func Init() (err error) {
 	ge = new(GisEngine)
 	ge.assets = make(map[string]*Asset)
-	ge.uePoaInfo = make(map[string]PoaInfo)
+	ge.uePoaInfo = make(map[string]*PoaInfo)
 	ge.automation = make(map[string]bool)
 	resetAutomation()
 	startAutomation()
@@ -776,12 +776,22 @@ func runAutomation() {
 		ueMap, err := ge.pc.GetAllUe()
 		if err == nil {
 			for _, ue := range ueMap {
-				// Get last POA info
+				// Get stored UE POA info or create new one
+				newPoaInfo := false
 				poaInfo, found := ge.uePoaInfo[ue.Name]
+				if !found {
+					poaInfo = new(PoaInfo)
+					poaInfo.connected = false
+					poaInfo.distance = 0
+					poaInfo.poaInRange = []string{}
+					poaInfo.poa = ""
+					ge.uePoaInfo[ue.Name] = poaInfo
+					newPoaInfo = true
+				}
 
 				// Send mobility event if necessary
 				if ge.automation[AutoTypeMobility] {
-					if !found || (ue.Poa != "" && ue.Poa != poaInfo.poa) || (ue.Poa == "" && poaInfo.connected) {
+					if newPoaInfo || (ue.Poa != "" && ue.Poa != poaInfo.poa) || (ue.Poa == "" && poaInfo.connected) {
 						var event sbox.Event
 						var mobilityEvent sbox.EventMobility
 						event.Type_ = AutoTypeMobility
@@ -799,13 +809,18 @@ func runAutomation() {
 								log.Error(err)
 							}
 						}()
+
+						// Update sotred data
+						poaInfo.poa = ue.Poa
+						poaInfo.distance = ue.PoaDistance
+						poaInfo.connected = ue.Connected
 					}
 				}
 
 				// Send POA in range event if necessary
 				if ge.automation[AutoTypePoaInRange] {
 					updateRequired := false
-					if len(poaInfo.poaInRange) != len(ue.PoaInRange) {
+					if newPoaInfo || len(poaInfo.poaInRange) != len(ue.PoaInRange) {
 						updateRequired = true
 					} else {
 						sort.Strings(poaInfo.poaInRange)
@@ -830,12 +845,20 @@ func runAutomation() {
 								log.Error(err)
 							}
 						}()
+
+						// Update sotred data
+						poaInfo.poaInRange = ue.PoaInRange
 					}
 				}
-
-				// Update POA info
-				ge.uePoaInfo[ue.Name] = PoaInfo{poa: ue.Poa, distance: ue.PoaDistance, poaInRange: ue.PoaInRange, connected: ue.Connected}
 			}
+
+			// Remove UE Poa info if UEs no longer present
+			for ueName := range ge.uePoaInfo {
+				if _, found := ueMap[ueName]; !found {
+					delete(ge.uePoaInfo, ueName)
+				}
+			}
+
 		} else {
 			log.Error(err.Error())
 		}

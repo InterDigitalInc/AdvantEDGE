@@ -883,7 +883,7 @@ func (m *Model) UpdateScenario() {
 	// An update was received - Update the object state and call the external Handler
 	// Retrieve active scenario from DB
 	j, err := m.rc.JSONGetEntry(m.activeKey, ".")
-	log.Debug("Scenario Event:", j)
+	log.Trace("Scenario Event:", j)
 	if err != nil {
 		log.Debug("Scenario was deleted")
 		// Scenario was deleted
