@@ -642,7 +642,7 @@ func (m *Model) GetNodeParent(name string) (parent interface{}) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 
-	parent = ""
+	parent = nil
 	n := m.nodeMap.nameMap[name]
 	if n != nil {
 		parent = n.parent
