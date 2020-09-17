@@ -300,6 +300,7 @@ export const VIEW_NAME_NONE = 'None';
 export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
+export const DEST_DISCONNECTED = 'DISCONNECTED';
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 
