@@ -60,6 +60,8 @@ import {
   FIELD_GEO_LOCATION,
   FIELD_GEO_PATH,
   FIELD_GEO_RADIUS,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS_TYPE,
   FIELD_META_DISPLAY_MAP_COLOR,
   FIELD_META_DISPLAY_MAP_ICON,
   getElemFieldVal,
@@ -384,7 +386,6 @@ class IDCMap extends Component {
     this.updateCfg({baselayerName: event.name});
   }
 
-  // Get Zones
   getUePoa(ue) {
     var poa = null;
     var table = this.getTable();
@@ -551,27 +552,35 @@ class IDCMap extends Component {
   // UE Marker Event Handler
   updateUePopup(marker) {
     var latlng = marker.getLatLng();
-    var poa = this.getUePoa(marker.options.meep.ue.id);
-    var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
     var hasPath = (marker.options.meep.ue.path) ? true : false;
     var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
     msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-    msg += 'poa: ' + poa + '<br>';
     
-    switch (poaType) {
-    case ELEMENT_TYPE_POA_4G: 
-      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_CELL_ID) + '<br>';
-      break;
-    case ELEMENT_TYPE_POA_5G:
-      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_NR_CELL_ID) + '<br>';
-      break;
-    case ELEMENT_TYPE_POA_WIFI:
-      msg += 'mac: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_MAC_ID) + '<br>';
-      break;
-    default: 
-      break;
+    var ue = this.getTable().entries[marker.options.meep.ue.id];
+    var connected = getElemFieldVal(ue, FIELD_CONNECTED);
+    if (connected) {
+      var poa = this.getUePoa(marker.options.meep.ue.id);
+      var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
+      msg += 'poa: ' + poa + '<br>';
+      switch (poaType) {
+      case ELEMENT_TYPE_POA_4G: 
+        msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_CELL_ID) + '<br>';
+        break;
+      case ELEMENT_TYPE_POA_5G:
+        msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_NR_CELL_ID) + '<br>';
+        break;
+      case ELEMENT_TYPE_POA_WIFI:
+        msg += 'mac: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_MAC_ID) + '<br>';
+        break;
+      default: 
+        break;
+      }
+      msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
+    } else {
+      msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+      msg += 'types: ' + (getElemFieldVal(ue, FIELD_WIRELESS_TYPE) || 'wifi,5g,4g,other') + '<br>';
     }
-    msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
+    
     msg += 'location: ' + this.getLocationStr(latlng);
     marker.getPopup().setContent(msg);
   }

@@ -1307,20 +1307,17 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	// Select POA
 	selectedPoa := selectPoa(currentPoa, poaInRange, poaInfoMap, poaTypePrio)
 	distance := float32(0)
-	connected := false
 	if selectedPoa != "" {
 		distance = poaInfoMap[selectedPoa].Distance
-		connected = true
 	}
 
 	// Update POA entries for UE
 	query := `UPDATE ` + UeTable + `
 		SET poa = $2,
 			poa_distance = $3,
-			poa_in_range = $4,
-			connected = $5
+			poa_in_range = $4
 		WHERE name = ($1)`
-	_, err = pc.db.Exec(query, name, selectedPoa, distance, pq.Array(poaInRange), connected)
+	_, err = pc.db.Exec(query, name, selectedPoa, distance, pq.Array(poaInRange))
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -1427,20 +1424,17 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 		// Select POA
 		selectedPoa := selectPoa(uePoaInfo.CurrentPoa, uePoaInfo.PoaInRange, uePoaInfo.PoaInfoMap, uePoaInfo.PoaTypePrio)
 		distance := float32(0)
-		connected := false
 		if selectedPoa != "" {
 			distance = uePoaInfo.PoaInfoMap[selectedPoa].Distance
-			connected = true
 		}
 
 		// Update in DB
 		query := `UPDATE ` + UeTable + `
 			SET poa = $2,
 				poa_distance = $3,
-				poa_in_range = $4,
-				connected = $5
+				poa_in_range = $4
 			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, ue, selectedPoa, distance, pq.Array(uePoaInfo.PoaInRange), connected)
+		_, err = pc.db.Exec(query, ue, selectedPoa, distance, pq.Array(uePoaInfo.PoaInRange))
 		if err != nil {
 			log.Error(err.Error())
 			return err

@@ -73,9 +73,8 @@ type Asset struct {
 	wirelessType string
 }
 
-type PoaInfo struct {
+type UeInfo struct {
 	poa        string
-	distance   float32
 	poaInRange []string
 	connected  bool
 }
@@ -89,7 +88,7 @@ type GisEngine struct {
 	sessionMgr     *sm.SessionMgr
 	pc             *postgis.Connector
 	assets         map[string]*Asset
-	uePoaInfo      map[string]*PoaInfo
+	ueInfo         map[string]*UeInfo
 	automation     map[string]bool
 	ticker         *time.Ticker
 	updateTime     time.Time
@@ -101,7 +100,7 @@ var ge *GisEngine
 func Init() (err error) {
 	ge = new(GisEngine)
 	ge.assets = make(map[string]*Asset)
-	ge.uePoaInfo = make(map[string]*PoaInfo)
+	ge.ueInfo = make(map[string]*UeInfo)
 	ge.automation = make(map[string]bool)
 	resetAutomation()
 	startAutomation()
@@ -313,6 +312,13 @@ func setAssets(assetList []string) {
 				}
 			}
 			_ = setUe(asset, pl, geoData)
+
+			// Update stored UE POA Info used in automation updates
+			nl := (ge.activeModel.GetNodeParent(assetName)).(*dataModel.NetworkLocation)
+			ueInfo, _ := getUeInfo(assetName)
+			ueInfo.poa = nl.Name
+			ueInfo.connected = pl.Connected
+
 		} else if isPoa(asset.typ) {
 			// Set initial geoData only
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
@@ -776,22 +782,12 @@ func runAutomation() {
 		ueMap, err := ge.pc.GetAllUe()
 		if err == nil {
 			for _, ue := range ueMap {
-				// Get stored UE POA info or create new one
-				newPoaInfo := false
-				poaInfo, found := ge.uePoaInfo[ue.Name]
-				if !found {
-					poaInfo = new(PoaInfo)
-					poaInfo.connected = false
-					poaInfo.distance = 0
-					poaInfo.poaInRange = []string{}
-					poaInfo.poa = ""
-					ge.uePoaInfo[ue.Name] = poaInfo
-					newPoaInfo = true
-				}
+				// Get stored UE info
+				ueInfo, isNew := getUeInfo(ue.Name)
 
 				// Send mobility event if necessary
 				if ge.automation[AutoTypeMobility] {
-					if newPoaInfo || (ue.Poa != "" && ue.Poa != poaInfo.poa) || (ue.Poa == "" && poaInfo.connected) {
+					if isNew || (ue.Poa != "" && (!ueInfo.connected || ue.Poa != ueInfo.poa)) || (ue.Poa == "" && ueInfo.connected) {
 						var event sbox.Event
 						var mobilityEvent sbox.EventMobility
 						event.Type_ = AutoTypeMobility
@@ -809,23 +805,18 @@ func runAutomation() {
 								log.Error(err)
 							}
 						}()
-
-						// Update sotred data
-						poaInfo.poa = ue.Poa
-						poaInfo.distance = ue.PoaDistance
-						poaInfo.connected = ue.Connected
 					}
 				}
 
 				// Send POA in range event if necessary
 				if ge.automation[AutoTypePoaInRange] {
 					updateRequired := false
-					if newPoaInfo || len(poaInfo.poaInRange) != len(ue.PoaInRange) {
+					if isNew || len(ueInfo.poaInRange) != len(ue.PoaInRange) {
 						updateRequired = true
 					} else {
-						sort.Strings(poaInfo.poaInRange)
+						sort.Strings(ueInfo.poaInRange)
 						sort.Strings(ue.PoaInRange)
-						for i, poa := range poaInfo.poaInRange {
+						for i, poa := range ueInfo.poaInRange {
 							if poa != ue.PoaInRange[i] {
 								updateRequired = true
 							}
@@ -847,15 +838,15 @@ func runAutomation() {
 						}()
 
 						// Update sotred data
-						poaInfo.poaInRange = ue.PoaInRange
+						ueInfo.poaInRange = ue.PoaInRange
 					}
 				}
 			}
 
-			// Remove UE Poa info if UEs no longer present
-			for ueName := range ge.uePoaInfo {
+			// Remove UE info if UE no longer present
+			for ueName := range ge.ueInfo {
 				if _, found := ueMap[ueName]; !found {
-					delete(ge.uePoaInfo, ueName)
+					delete(ge.ueInfo, ueName)
 				}
 			}
 
@@ -868,6 +859,21 @@ func runAutomation() {
 	if ge.automation[AutoTypeNetChar] {
 		log.Debug("Auto Net Char: updating network characteristics")
 	}
+}
+
+func getUeInfo(ueName string) (*UeInfo, bool) {
+	// Get stored UE POA info or create new one
+	isNew := false
+	ueInfo, found := ge.ueInfo[ueName]
+	if !found {
+		ueInfo = new(UeInfo)
+		ueInfo.connected = false
+		ueInfo.poaInRange = []string{}
+		ueInfo.poa = ""
+		ge.ueInfo[ueName] = ueInfo
+		isNew = true
+	}
+	return ueInfo, isNew
 }
 
 // ----------------------------  REST API  ------------------------------------
