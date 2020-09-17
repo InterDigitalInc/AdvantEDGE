@@ -593,36 +593,40 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   updateUePopup(marker) {
-    var latlng = marker.getLatLng();
-    var hasPath = (marker.options.meep.ue.path) ? true : false;
-    var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
-    msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-    
-    if (this.isConnected(marker.options.meep.ue.id)) {
-      var poa = this.getUePoa(marker.options.meep.ue.id);
-      var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
-      msg += 'poa: ' + poa + '<br>';
-      switch (poaType) {
-      case ELEMENT_TYPE_POA_4G: 
-        msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_CELL_ID) + '<br>';
-        break;
-      case ELEMENT_TYPE_POA_5G:
-        msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_NR_CELL_ID) + '<br>';
-        break;
-      case ELEMENT_TYPE_POA_WIFI:
-        msg += 'mac: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_MAC_ID) + '<br>';
-        break;
-      default: 
-        break;
+    var table = this.getTable();
+    if (marker && table && table.entries) {
+      var latlng = marker.getLatLng();
+      var hasPath = (marker.options.meep.ue.path) ? true : false;
+      var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
+      msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
+
+      if (this.isConnected(marker.options.meep.ue.id)) {
+        var poa = this.getUePoa(marker.options.meep.ue.id);
+        var poaType = getElemFieldVal(table.entries[poa], FIELD_TYPE);
+        msg += 'poa: ' + poa + '<br>';
+        switch(poaType) {
+        case ELEMENT_TYPE_POA_4G:
+          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
+          break;
+        case ELEMENT_TYPE_POA_5G:
+          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
+          break;
+        case ELEMENT_TYPE_POA_WIFI:
+          msg += 'mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
+          break;
+        default:
+          break;
+        }
+
+        msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
+      } else {
+        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+        msg += 'types: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
       }
-      msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
-    } else {
-      msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
-      msg += 'types: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
+
+      msg += 'location: ' + this.getLocationStr(latlng);
+      marker.getPopup().setContent(msg);
     }
-    
-    msg += 'location: ' + this.getLocationStr(latlng);
-    marker.getPopup().setContent(msg);
   }
 
   // POA Marker Event Handler
