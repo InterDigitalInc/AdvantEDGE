@@ -640,6 +640,11 @@ export function updateElementInScenario(scenario, element) {
             pl.netChar.throughputUl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_UL);
             pl.netChar.packetLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
 
+            pl.connected = getElemFieldVal(element, FIELD_CONNECTED);
+            var wireless = getElemFieldVal(element, FIELD_WIRELESS);
+            pl.wireless = wireless;
+            pl.wirelessType = wireless ? getElemFieldVal(element, FIELD_WIRELESS_TYPE) : '';
+
             if (!pl.geoData) {
               pl.geoData = {};
             }
@@ -1238,14 +1243,15 @@ export function createDefaultNL(zoneName) {
 
 export function createPL(uniqueId, name, type, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var wireless = getElemFieldVal(element, FIELD_WIRELESS);
   var pl = {
     id: uniqueId,
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
     connected: getElemFieldVal(element, FIELD_CONNECTED),
-    wireless: getElemFieldVal(element, FIELD_WIRELESS),
-    wirelessType: getElemFieldVal(element, FIELD_WIRELESS_TYPE),
+    wireless: wireless,
+    wirelessType: wireless ? getElemFieldVal(element, FIELD_WIRELESS_TYPE) : '',
     netChar: {
       latency: getElemFieldVal(element, FIELD_LINK_LATENCY),
       latencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
@@ -1443,11 +1449,9 @@ export function getElementFromScenario(scenario, elementId) {
         for (var l in nl.physicalLocations) {
           var pl = nl.physicalLocations[l];
           if (pl.id === elementId) {
-            var defaultWireless = false;
             switch (pl.type) {
             case UE_TYPE_STR:
               setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_UE);
-              defaultWireless = true;
               break;
             case FOG_TYPE_STR:
               setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_FOG);
@@ -1477,8 +1481,8 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.netChar.packetLoss || DEFAULT_PACKET_LOSS_LINK);
             }
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
-            setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || true);
-            setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || defaultWireless);
+            setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || false);
+            setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || false);
             setElemFieldVal(elem, FIELD_WIRELESS_TYPE, pl.wirelessType || '');
 
             if (pl.geoData) {
@@ -1713,18 +1717,20 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   var latency = null;
+  var lineColor = (pl.connected) ? '#606060' : '#FF0000';
+  e['color'] = {
+    color: lineColor,
+    highlight: lineColor,
+    hover: lineColor
+  };
+  e['dashes'] = pl.wireless;
 
   // Set level and group based on PL type
   switch (pl.type) {
   case FOG_TYPE_STR: {
     // latency = "0";
-    e['color'] = {
-      color: (pl.connected) ? '#606060' : '#FF0000',
-      highlight: '#606060',
-      hover: '#606060'
-    };
     n['level'] = 4;
-
+    
     if (pl.isExternal) {
       n['group'] = 'pLocExtFog';
     } else {
@@ -1740,11 +1746,6 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
   case EDGE_TYPE_STR: {
     // latency = "0";
-    e['color'] = {
-      color: (pl.connected) ? '#606060' : '#FF0000',
-      highlight: '#606060',
-      hover: '#606060'
-    };
     n['level'] = 3;
 
     if (pl.isExternal) {
@@ -1763,13 +1764,8 @@ export function addPlNode(pl, parent, nodes, edges) {
 
   case UE_TYPE_STR: {
     latency = parent.terminalLinkLatency;
-    e['dashes'] = true;
     n['level'] = 4;
-
-    if (!pl.connected) {
-      e['color'] = {color: '#FF0000'};
-    }
-
+     
     if (pl.isExternal) {
       const image = getScenarioSpecificImage(
         n.label + '-ext',
@@ -1798,11 +1794,6 @@ export function addPlNode(pl, parent, nodes, edges) {
     // latency = "0";
     n['level'] = 2;
     n['group'] = pl.isExternal ? 'pLocExtCN' : 'pLocIntCN';
-
-    if (!pl.connected) {
-      e['color'] = {color: '#FF0000'};
-    }
-
     break;
   }
 
@@ -1812,10 +1803,6 @@ export function addPlNode(pl, parent, nodes, edges) {
       latency = String(interDomainLatency / 2);
     }
     n['level'] = -1;
-
-    if (!pl.connected) {
-      e['color'] = {color: '#FF0000'};
-    }
 
     if (pl.isExternal) {
       n['group'] = 'pLocExtDC';
