@@ -1039,7 +1039,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               onUpdate={onUpdate}
               element={element}
               validate={validateWirelessType}
-              label='Wireless Type Priority'
+              label='Supported Wireless Types (order by priority)'
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
@@ -1139,12 +1139,13 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               onUpdate={onUpdate}
               element={element}
               validate={validateWirelessType}
-              label='Wireless Type Priority'
+              label='Supported Wireless Types (order by priority)'
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
           </Grid> : <></>
         }
+        
         <Grid>
           <CfgTextFieldCell
             span={12}
