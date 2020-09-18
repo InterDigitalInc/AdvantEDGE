@@ -621,9 +621,9 @@ class IDCMap extends Component {
         msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
       } else {
         msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
-        msg += 'types: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
       }
 
+      msg += 'wireless: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
       msg += 'location: ' + this.getLocationStr(latlng);
       marker.getPopup().setContent(msg);
     }
