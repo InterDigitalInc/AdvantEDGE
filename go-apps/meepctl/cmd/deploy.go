@@ -156,6 +156,7 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/influxdb")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/tmp")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/omt")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/postgis")
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
