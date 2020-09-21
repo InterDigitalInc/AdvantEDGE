@@ -21,7 +21,7 @@ import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 
-import { EXEC_EVT_MOB_TARGET, EXEC_EVT_MOB_DEST } from '../../meep-constants';
+import { EXEC_EVT_MOB_TARGET, EXEC_EVT_MOB_DEST, DEST_DISCONNECTED } from '../../meep-constants';
 
 import { getElemFieldVal, FIELD_NAME } from '../../util/elem-utils';
 
@@ -131,6 +131,8 @@ class MobilityEventPane extends Component {
         }
       }
     }
+    var destOptions = _.map(populateDestination, elem => getElemFieldVal(elem, FIELD_NAME));
+    destOptions.push(DEST_DISCONNECTED);
 
     return (
       <div>
@@ -160,9 +162,7 @@ class MobilityEventPane extends Component {
                 style={styles.select}
                 label="Destination"
                 outlined
-                options={_.map(populateDestination, elem =>
-                  getElemFieldVal(elem, FIELD_NAME)
-                )}
+                options={destOptions}
                 onChange={event => {
                   this.props.changeEventDestination(event.target.value);
                 }}

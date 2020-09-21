@@ -27,6 +27,6 @@ package model
 type EventMobility struct {
 	// Name of the network element to be updated
 	ElementName string `json:"elementName,omitempty"`
-	// Destination element identifier
+	// Destination element identifier or 'DISCONNECTED'
 	Dest string `json:"dest,omitempty"`
 }

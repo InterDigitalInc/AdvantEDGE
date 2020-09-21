@@ -38,6 +38,17 @@ const (
 )
 
 const (
+	FieldPosition  = "position"
+	FieldPath      = "path"
+	FieldMode      = "mode"
+	FieldVelocity  = "velocity"
+	FieldConnected = "connected"
+	FieldPriority  = "priority"
+	FieldSubtype   = "subtype"
+	FieldRadius    = "radius"
+)
+
+const (
 	AllAssets = "ALL"
 )
 
@@ -63,10 +74,11 @@ const (
 
 // POA Types
 const (
-	PoaTypeGeneric = "POA"
-	PoaTypeCell4g  = "POA-4G"
-	PoaTypeCell5g  = "POA-5G"
-	PoaTypeWifi    = "POA-WIFI"
+	PoaTypeGeneric      = "POA"
+	PoaTypeCell4g       = "POA-4G"
+	PoaTypeCell5g       = "POA-5G"
+	PoaTypeWifi         = "POA-WIFI"
+	PoaTypeDisconnected = "DISCONNECTED"
 )
 
 type Ue struct {
@@ -82,6 +94,8 @@ type Ue struct {
 	Poa           string
 	PoaDistance   float32
 	PoaInRange    []string
+	PoaTypePrio   []string
+	Connected     bool
 }
 
 type Poa struct {
@@ -93,10 +107,11 @@ type Poa struct {
 }
 
 type Compute struct {
-	Id       string
-	Name     string
-	SubType  string
-	Position string
+	Id        string
+	Name      string
+	SubType   string
+	Position  string
+	Connected bool
 }
 
 type PoaInfo struct {
@@ -106,9 +121,10 @@ type PoaInfo struct {
 }
 
 type UePoaInfo struct {
-	PoaInRange []string
-	PoaInfoMap map[string]*PoaInfo
-	CurrentPoa string
+	PoaInRange  []string
+	PoaInfoMap  map[string]*PoaInfo
+	CurrentPoa  string
+	PoaTypePrio []string
 }
 
 // Connector - Implements a Postgis SQL DB connector
@@ -250,6 +266,8 @@ func (pc *Connector) CreateTables() (err error) {
 		poa				varchar(100)			NOT NULL DEFAULT '',
 		poa_distance    decimal(10,3)         	NOT NULL DEFAULT '0.000',
 		poa_in_range	varchar(100)[]			NOT NULL DEFAULT array[]::varchar[],
+		poa_type_prio	varchar(20)[]			NOT NULL DEFAULT array[]::varchar[],
+		connected		boolean					NOT NULL DEFAULT 'false',
 		start_time		timestamptz 			NOT NULL DEFAULT now()
 	)`)
 	if err != nil {
@@ -277,7 +295,8 @@ func (pc *Connector) CreateTables() (err error) {
 		id 				varchar(36) 			NOT NULL PRIMARY KEY,
 		name 			varchar(100) 			NOT NULL UNIQUE,
 		type 			varchar(20)				NOT NULL DEFAULT '',
-		position		geometry(POINT,4326)	NOT NULL
+		position		geometry(POINT,4326)	NOT NULL,
+		connected		boolean					NOT NULL DEFAULT 'false'
 	)`)
 	if err != nil {
 		log.Error(err.Error())
@@ -308,7 +327,15 @@ func (pc *Connector) DeleteTable(tableName string) (err error) {
 }
 
 // CreateUe - Create new UE
-func (pc *Connector) CreateUe(id string, name string, position string, path string, mode string, velocity float32) (err error) {
+func (pc *Connector) CreateUe(id string, name string, data map[string]interface{}) (err error) {
+	var position string
+	var path string
+	var mode string
+	var velocity float32
+	var connected bool
+	var priority string
+	var ok bool
+
 	// Validate input
 	if id == "" {
 		return errors.New("Missing ID")
@@ -316,9 +343,47 @@ func (pc *Connector) CreateUe(id string, name string, position string, path stri
 	if name == "" {
 		return errors.New("Missing Name")
 	}
-	if position == "" {
-		return errors.New("Missing Position")
+
+	// Get position
+	if dataPosition, found := data[FieldPosition]; !found {
+		return errors.New("Missing position")
+	} else if position, ok = dataPosition.(string); !ok {
+		return errors.New("Invalid position data type")
+	} else if position == "" {
+		return errors.New("Invalid position")
 	}
+
+	// Get path, mode & velocity, if any
+	if dataPath, found := data[FieldPath]; found {
+		if path, ok = dataPath.(string); !ok {
+			return errors.New("Invalid path data type")
+		}
+	}
+	if dataMode, found := data[FieldMode]; found {
+		if mode, ok = dataMode.(string); !ok {
+			return errors.New("Invalid mode data type")
+		}
+	}
+	if dataVelocity, found := data[FieldVelocity]; found {
+		if velocity, ok = dataVelocity.(float32); !ok {
+			return errors.New("Invalid velocity data type")
+		}
+	}
+
+	// Get connection state
+	if dataConnected, found := data[FieldConnected]; !found {
+		return errors.New("Missing connection state")
+	} else if connected, ok = dataConnected.(bool); !ok {
+		return errors.New("Invalid connection state data type")
+	}
+
+	// Get access type priority list
+	if dataPriority, found := data[FieldPriority]; !found {
+		return errors.New("Missing access type priority list")
+	} else if priority, ok = dataPriority.(string); !ok {
+		return errors.New("Invalid access type priority list data type")
+	}
+	priorityList := strings.Split(strings.TrimSpace(priority), ",")
 
 	if path != "" {
 		// Validate Path parameters
@@ -327,9 +392,9 @@ func (pc *Connector) CreateUe(id string, name string, position string, path stri
 		}
 
 		// Create UE entry with path
-		query := `INSERT INTO ` + UeTable + ` (id, name, position, path, path_mode, path_velocity)
-			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), ST_GeomFromGeoJSON('` + path + `'), $3, $4)`
-		_, err = pc.db.Exec(query, id, name, mode, velocity)
+		query := `INSERT INTO ` + UeTable + ` (id, name, position, path, path_mode, path_velocity, poa_type_prio, connected)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), ST_GeomFromGeoJSON('` + path + `'), $3, $4, $5, $6)`
+		_, err = pc.db.Exec(query, id, name, mode, velocity, pq.Array(priorityList), connected)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -343,9 +408,9 @@ func (pc *Connector) CreateUe(id string, name string, position string, path stri
 		}
 	} else {
 		// Create UE entry without path
-		query := `INSERT INTO ` + UeTable + ` (id, name, position)
-			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'))`
-		_, err = pc.db.Exec(query, id, name)
+		query := `INSERT INTO ` + UeTable + ` (id, name, position, poa_type_prio, connected)
+			VALUES ($1, $2, ST_GeomFromGeoJSON('` + position + `'), $3, $4)`
+		_, err = pc.db.Exec(query, id, name, pq.Array(priorityList), connected)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -366,7 +431,12 @@ func (pc *Connector) CreateUe(id string, name string, position string, path stri
 }
 
 // CreatePoa - Create new POA
-func (pc *Connector) CreatePoa(id string, name string, subType string, position string, radius float32) (err error) {
+func (pc *Connector) CreatePoa(id string, name string, data map[string]interface{}) (err error) {
+	var subtype string
+	var position string
+	var radius float32
+	var ok bool
+
 	// Validate input
 	if id == "" {
 		return errors.New("Missing ID")
@@ -374,17 +444,36 @@ func (pc *Connector) CreatePoa(id string, name string, subType string, position 
 	if name == "" {
 		return errors.New("Missing Name")
 	}
-	if subType == "" {
-		return errors.New("Missing Type")
+
+	// Get subtype
+	if dataSubtype, found := data[FieldSubtype]; !found {
+		return errors.New("Missing subtype")
+	} else if subtype, ok = dataSubtype.(string); !ok {
+		return errors.New("Invalid subtype data type")
+	} else if subtype == "" {
+		return errors.New("Invalid subtype")
 	}
-	if position == "" {
-		return errors.New("Missing Position")
+
+	// Get position
+	if dataPosition, found := data[FieldPosition]; !found {
+		return errors.New("Missing position")
+	} else if position, ok = dataPosition.(string); !ok {
+		return errors.New("Invalid position data type")
+	} else if position == "" {
+		return errors.New("Invalid position")
+	}
+
+	// Get radius
+	if dataRadius, found := data[FieldRadius]; !found {
+		return errors.New("Missing radius")
+	} else if radius, ok = dataRadius.(float32); !ok {
+		return errors.New("Invalid radius data type")
 	}
 
 	// Create POA entry
 	query := `INSERT INTO ` + PoaTable + ` (id, name, type, position, radius)
 		VALUES ($1, $2, $3, ST_GeomFromGeoJSON('` + position + `'), $4)`
-	_, err = pc.db.Exec(query, id, name, subType, radius)
+	_, err = pc.db.Exec(query, id, name, subtype, radius)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -405,7 +494,12 @@ func (pc *Connector) CreatePoa(id string, name string, subType string, position 
 }
 
 // CreateCompute - Create new Compute
-func (pc *Connector) CreateCompute(id string, name string, subType string, position string) (err error) {
+func (pc *Connector) CreateCompute(id string, name string, data map[string]interface{}) (err error) {
+	var subtype string
+	var position string
+	var connected bool
+	var ok bool
+
 	// Validate input
 	if id == "" {
 		return errors.New("Missing ID")
@@ -413,17 +507,36 @@ func (pc *Connector) CreateCompute(id string, name string, subType string, posit
 	if name == "" {
 		return errors.New("Missing Name")
 	}
-	if subType == "" {
-		return errors.New("Missing Type")
+
+	// Get subtype
+	if dataSubtype, found := data[FieldSubtype]; !found {
+		return errors.New("Missing subtype")
+	} else if subtype, ok = dataSubtype.(string); !ok {
+		return errors.New("Invalid subtype data type")
+	} else if subtype == "" {
+		return errors.New("Invalid subtype")
 	}
-	if position == "" {
-		return errors.New("Missing Position")
+
+	// Get position
+	if dataPosition, found := data[FieldPosition]; !found {
+		return errors.New("Missing position")
+	} else if position, ok = dataPosition.(string); !ok {
+		return errors.New("Invalid position data type")
+	} else if position == "" {
+		return errors.New("Invalid position")
+	}
+
+	// Get connection state
+	if dataConnected, found := data[FieldConnected]; !found {
+		return errors.New("Missing connection state")
+	} else if connected, ok = dataConnected.(bool); !ok {
+		return errors.New("Invalid connection state data type")
 	}
 
 	// Create Compute entry
-	query := `INSERT INTO ` + ComputeTable + ` (id, name, type, position)
-		VALUES ($1, $2, $3, ST_GeomFromGeoJSON('` + position + `'))`
-	_, err = pc.db.Exec(query, id, name, subType)
+	query := `INSERT INTO ` + ComputeTable + ` (id, name, type, position, connected)
+		VALUES ($1, $2, $3, ST_GeomFromGeoJSON('` + position + `'), $4)`
+	_, err = pc.db.Exec(query, id, name, subtype, connected)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -436,54 +549,123 @@ func (pc *Connector) CreateCompute(id string, name string, subType string, posit
 }
 
 // UpdateUe - Update existing UE
-func (pc *Connector) UpdateUe(name string, position string, path string, mode string, velocity float32) (err error) {
+func (pc *Connector) UpdateUe(name string, data map[string]interface{}) (err error) {
 	// Validate input
 	if name == "" {
 		return errors.New("Missing Name")
 	}
 
-	if position != "" {
-		// Update UE position
-		query := `UPDATE ` + UeTable + `
-			SET position = ST_GeomFromGeoJSON('` + position + `')
-			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, name)
-		if err != nil {
-			log.Error(err.Error())
-			return err
-		}
+	// Update position
+	if dataPosition, found := data[FieldPosition]; found {
+		if position, ok := dataPosition.(string); ok {
+			if position != "" {
+				// Update UE position
+				query := `UPDATE ` + UeTable + `
+					SET position = ST_GeomFromGeoJSON('` + position + `')
+					WHERE name = ($1)`
+				_, err = pc.db.Exec(query, name)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
 
-		// Refresh UE POA information
-		err = pc.refreshUePoa(name)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+				// Refresh UE POA information
+				err = pc.refreshUePoa(name)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+			}
 		}
 	}
 
-	if path != "" {
-		// Validate Path parameters
-		if mode == "" {
-			return errors.New("Missing Path Mode")
-		}
+	// Update path, mode & velocity
+	if dataPath, found := data[FieldPath]; found {
+		if path, ok := dataPath.(string); ok {
+			if path != "" {
+				// Get path mode
+				var mode string
+				if dataMode, found := data[FieldMode]; !found {
+					return errors.New("Missing path mode")
+				} else if mode, ok = dataMode.(string); !ok {
+					return errors.New("Invalid mode data type")
+				} else if mode == "" {
+					return errors.New("Invalid Path Mode")
+				}
 
-		// Update UE position
-		query := `UPDATE ` + UeTable + `
-			SET path = ST_GeomFromGeoJSON('` + path + `'),
-				path_mode = $2,
-				path_velocity = $3
+				// Get path velocity
+				var velocity float32
+				if dataVelocity, found := data[FieldVelocity]; !found {
+					return errors.New("Missing velocity")
+				} else if velocity, ok = dataVelocity.(float32); !ok {
+					return errors.New("Invalid velocity data type")
+				}
+
+				// Update UE position
+				query := `UPDATE ` + UeTable + `
+					SET path = ST_GeomFromGeoJSON('` + path + `'),
+						path_mode = $2,
+						path_velocity = $3
+					WHERE name = ($1)`
+				_, err = pc.db.Exec(query, name, mode, velocity)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+
+				// Calculate UE path length & increment
+				err = pc.refreshUePath(name)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+			}
+		}
+	}
+
+	// Update connection state
+	if dataConnected, found := data[FieldConnected]; found {
+		if connected, ok := dataConnected.(bool); ok {
+			// Update connection status
+			query := `UPDATE ` + UeTable + `
+			SET connected = $2
 			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, name, mode, velocity)
-		if err != nil {
-			log.Error(err.Error())
-			return err
-		}
+			_, err = pc.db.Exec(query, name, connected)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 
-		// Calculate UE path length & increment
-		err = pc.refreshUePath(name)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+			// Refresh UE POA information
+			err = pc.refreshUePoa(name)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+		}
+	}
+
+	// Update access type priority list
+	if dataPriority, found := data[FieldPriority]; found {
+		if priority, ok := dataPriority.(string); ok {
+			priorityList := strings.Split(strings.TrimSpace(priority), ",")
+
+			// Update priority list
+			query := `UPDATE ` + UeTable + `
+			SET poa_type_prio = $2
+			WHERE name = ($1)`
+			_, err = pc.db.Exec(query, name, pq.Array(priorityList))
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
+			// Refresh UE POA information
+			err = pc.refreshUePoa(name)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 		}
 	}
 
@@ -494,33 +676,41 @@ func (pc *Connector) UpdateUe(name string, position string, path string, mode st
 }
 
 // UpdatePoa - Update existing POA
-func (pc *Connector) UpdatePoa(name string, position string, radius float32) (err error) {
+func (pc *Connector) UpdatePoa(name string, data map[string]interface{}) (err error) {
 	// Validate input
 	if name == "" {
 		return errors.New("Missing Name")
 	}
 
-	if position != "" {
-		// Update POA position
-		query := `UPDATE ` + PoaTable + `
-			SET position = ST_GeomFromGeoJSON('` + position + `')
-			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, name)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+	// Update position
+	if dataPosition, found := data[FieldPosition]; found {
+		if position, ok := dataPosition.(string); ok {
+			if position != "" {
+				// Update POA position
+				query := `UPDATE ` + PoaTable + `
+					SET position = ST_GeomFromGeoJSON('` + position + `')
+					WHERE name = ($1)`
+				_, err = pc.db.Exec(query, name)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+			}
 		}
 	}
 
-	if radius != -1 {
-		// Update POA radius
-		query := `UPDATE ` + PoaTable + `
-			SET radius = $2
-			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, name, radius)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+	// Update radius
+	if dataRadius, found := data[FieldRadius]; found {
+		if radius, ok := dataRadius.(float32); ok {
+			// Update POA radius
+			query := `UPDATE ` + PoaTable + `
+				SET radius = $2
+				WHERE name = ($1)`
+			_, err = pc.db.Exec(query, name, radius)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 		}
 	}
 
@@ -539,21 +729,48 @@ func (pc *Connector) UpdatePoa(name string, position string, radius float32) (er
 }
 
 // UpdateCompute - Update existing Compute
-func (pc *Connector) UpdateCompute(name string, position string) (err error) {
+func (pc *Connector) UpdateCompute(name string, data map[string]interface{}) (err error) {
 	// Validate input
 	if name == "" {
 		return errors.New("Missing Name")
 	}
 
-	if position != "" {
-		// Update Compute position
-		query := `UPDATE ` + ComputeTable + `
-			SET position = ST_GeomFromGeoJSON('` + position + `')
+	// Update position
+	if dataPosition, found := data[FieldPosition]; found {
+		if position, ok := dataPosition.(string); ok {
+			if position != "" {
+				// Update POA position
+				query := `UPDATE ` + ComputeTable + `
+					SET position = ST_GeomFromGeoJSON('` + position + `')
+					WHERE name = ($1)`
+				_, err = pc.db.Exec(query, name)
+				if err != nil {
+					log.Error(err.Error())
+					return err
+				}
+			}
+		}
+	}
+
+	// Update connection state
+	if dataConnected, found := data[FieldConnected]; found {
+		if connected, ok := dataConnected.(bool); ok {
+			// Update connection status
+			query := `UPDATE ` + ComputeTable + `
+			SET connected = $2
 			WHERE name = ($1)`
-		_, err = pc.db.Exec(query, name)
-		if err != nil {
-			log.Error(err.Error())
-			return err
+			_, err = pc.db.Exec(query, name, connected)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
+
+			// Refresh UE POA information
+			err = pc.refreshUePoa(name)
+			if err != nil {
+				log.Error(err.Error())
+				return err
+			}
 		}
 	}
 
@@ -576,7 +793,7 @@ func (pc *Connector) GetUe(name string) (ue *Ue, err error) {
 	rows, err = pc.db.Query(`
 		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
 			path_mode, path_velocity, path_length, path_increment, path_fraction,
-			poa, poa_distance, poa_in_range
+			poa, poa_distance, poa_in_range, poa_type_prio, connected
 		FROM `+UeTable+`
 		WHERE name = ($1)`, name)
 	if err != nil {
@@ -592,7 +809,7 @@ func (pc *Connector) GetUe(name string) (ue *Ue, err error) {
 
 		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
 			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
-			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
+			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange), pq.Array(&ue.PoaTypePrio), &ue.Connected)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -669,7 +886,7 @@ func (pc *Connector) GetCompute(name string) (compute *Compute, err error) {
 	// Get Compute entry
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT id, name, type, ST_AsGeoJSON(position)
+		SELECT id, name, type, ST_AsGeoJSON(position), connected
 		FROM `+ComputeTable+`
 		WHERE name = ($1)`, name)
 	if err != nil {
@@ -681,7 +898,7 @@ func (pc *Connector) GetCompute(name string) (compute *Compute, err error) {
 	// Scan result
 	for rows.Next() {
 		compute = new(Compute)
-		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
+		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position, &compute.Connected)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -710,7 +927,7 @@ func (pc *Connector) GetAllUe() (ueMap map[string]*Ue, err error) {
 	rows, err = pc.db.Query(`
 		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
 			path_mode, path_velocity, path_length, path_increment, path_fraction,
-			poa, poa_distance, poa_in_range
+			poa, poa_distance, poa_in_range, poa_type_prio, connected
 		FROM ` + UeTable)
 	if err != nil {
 		log.Error(err.Error())
@@ -726,7 +943,7 @@ func (pc *Connector) GetAllUe() (ueMap map[string]*Ue, err error) {
 		// Fill UE
 		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
 			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
-			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange))
+			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange), pq.Array(&ue.PoaTypePrio), &ue.Connected)
 		if err != nil {
 			log.Error(err.Error())
 			return ueMap, err
@@ -794,7 +1011,7 @@ func (pc *Connector) GetAllCompute() (computeMap map[string]*Compute, err error)
 	// Get Compute entries
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT id, name, type, ST_AsGeoJSON(position)
+		SELECT id, name, type, ST_AsGeoJSON(position), connected
 		FROM ` + ComputeTable)
 	if err != nil {
 		log.Error(err.Error())
@@ -807,7 +1024,7 @@ func (pc *Connector) GetAllCompute() (computeMap map[string]*Compute, err error)
 		compute := new(Compute)
 
 		// Fill Compute
-		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position)
+		err = rows.Scan(&compute.Id, &compute.Name, &compute.SubType, &compute.Position, &compute.Connected)
 		if err != nil {
 			log.Error(err.Error())
 			return computeMap, err
@@ -1041,7 +1258,8 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	rows, err = pc.db.Query(`
 		SELECT ue.name AS ue, ue.poa AS cur_poa, poa.name as poa, poa.type AS type,
 			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
-			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
+			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range,
+			ue.poa_type_prio as poa_type_prio
 		FROM `+UeTable+` AS ue, `+PoaTable+` AS poa
 		WHERE ue.name = ($1)`, name)
 	if err != nil {
@@ -1053,6 +1271,7 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	poaInRange := []string{}
 	poaInfoMap := make(map[string]*PoaInfo)
 	currentPoa := ""
+	poaTypePrio := []string{}
 
 	// Scan results
 	for rows.Next() {
@@ -1063,7 +1282,7 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 		dist := float32(0)
 		inRange := false
 
-		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange)
+		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange, pq.Array(&poaTypePrio))
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -1086,7 +1305,7 @@ func (pc *Connector) refreshUePoa(name string) (err error) {
 	}
 
 	// Select POA
-	selectedPoa := selectPoa(currentPoa, poaInRange, poaInfoMap)
+	selectedPoa := selectPoa(currentPoa, poaInRange, poaInfoMap, poaTypePrio)
 	distance := float32(0)
 	if selectedPoa != "" {
 		distance = poaInfoMap[selectedPoa].Distance
@@ -1114,7 +1333,8 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 	rows, err = pc.db.Query(`
 		SELECT ue.name AS ue, ue.poa AS cur_poa, poa.name as poa, poa.type AS type,
 			ST_Distance(ue.position::geography, poa.position::geography) AS dist,
-			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range
+			ST_DWithin(ue.position::geography, poa.position::geography, poa.radius) AS in_range,
+			ue.poa_type_prio as poa_type_prio
 		FROM ` + UeTable + `, ` + PoaTable)
 	if err != nil {
 		log.Error(err.Error())
@@ -1132,8 +1352,9 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 		poaType := ""
 		dist := float32(0)
 		inRange := false
+		poaTypePrio := []string{}
 
-		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange)
+		err := rows.Scan(&ue, &curPoa, &poaName, &poaType, &dist, &inRange, pq.Array(&poaTypePrio))
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -1146,6 +1367,7 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 			uePoaInfo.PoaInRange = []string{}
 			uePoaInfo.PoaInfoMap = make(map[string]*PoaInfo)
 			uePoaInfo.CurrentPoa = ""
+			uePoaInfo.PoaTypePrio = poaTypePrio
 			uePoaInfoMap[ue] = uePoaInfo
 		}
 
@@ -1188,6 +1410,7 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 			uePoaInfo.PoaInRange = []string{}
 			uePoaInfo.PoaInfoMap = make(map[string]*PoaInfo)
 			uePoaInfo.CurrentPoa = ""
+			uePoaInfo.PoaTypePrio = []string{}
 			uePoaInfoMap[ue] = uePoaInfo
 		}
 		err = rows.Err()
@@ -1199,7 +1422,7 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 	// Select & update POA for all UEs
 	for ue, uePoaInfo := range uePoaInfoMap {
 		// Select POA
-		selectedPoa := selectPoa(uePoaInfo.CurrentPoa, uePoaInfo.PoaInRange, uePoaInfo.PoaInfoMap)
+		selectedPoa := selectPoa(uePoaInfo.CurrentPoa, uePoaInfo.PoaInRange, uePoaInfo.PoaInfoMap, uePoaInfo.PoaTypePrio)
 		distance := float32(0)
 		if selectedPoa != "" {
 			distance = uePoaInfo.PoaInfoMap[selectedPoa].Distance
@@ -1222,38 +1445,32 @@ func (pc *Connector) refreshAllUePoa() (err error) {
 }
 
 // POA Selection Algorithm
-func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*PoaInfo) (selectedPoa string) {
-	if len(poaInRange) == 0 {
-		// Stay on current POA if it still exists
-		if _, found := poaInfoMap[currentPoa]; found {
-			selectedPoa = currentPoa
-		} else {
-			// Get nearest POA
-			for poa, poaInfo := range poaInfoMap {
-				if selectedPoa == "" || poaInfo.Distance < poaInfoMap[selectedPoa].Distance {
-					selectedPoa = poa
-				}
-			}
-		}
-	} else if len(poaInRange) == 1 {
-		// Select only available POA
-		selectedPoa = poaInRange[0]
-	} else {
+func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*PoaInfo, poaTypePrio []string) (selectedPoa string) {
+	// Only evaluate POAs in range
+	if len(poaInRange) >= 1 {
 		// Stay on current POA until out of range or more localized RAT is in range
 		// Start with current POA as selected POA, if still in range
 		currentPoaType := ""
+		selectedPoaType := ""
 		currentPoaInfo, found := poaInfoMap[currentPoa]
-		if found && currentPoaInfo.InRange {
+		if found && currentPoaInfo.InRange && isSupportedPoaType(currentPoaInfo.SubType, poaTypePrio) {
 			currentPoaType = currentPoaInfo.SubType
+			selectedPoaType = currentPoaType
 			selectedPoa = currentPoa
 		}
 
 		// Look for closest POA in range with a more localized RAT
 		for _, poa := range poaInRange {
 			poaInfo := poaInfoMap[poa]
-			if selectedPoa == "" || (comparePoaTypes(poaInfo.SubType, currentPoaType) > 0 &&
-				poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
-				selectedPoa = poa
+			if isSupportedPoaType(poaInfo.SubType, poaTypePrio) {
+				if selectedPoa == "" ||
+					comparePoaTypes(poaInfo.SubType, selectedPoaType, poaTypePrio) > 0 ||
+					(comparePoaTypes(poaInfo.SubType, selectedPoaType, poaTypePrio) == 0 &&
+						comparePoaTypes(poaInfo.SubType, currentPoaType, poaTypePrio) > 0 &&
+						poaInfo.Distance < poaInfoMap[selectedPoa].Distance) {
+					selectedPoaType = poaInfo.SubType
+					selectedPoa = poa
+				}
 			}
 		}
 	}
@@ -1261,9 +1478,9 @@ func selectPoa(currentPoa string, poaInRange []string, poaInfoMap map[string]*Po
 	return selectedPoa
 }
 
-func comparePoaTypes(poaTypeA string, poaTypeB string) int {
-	poaTypeAPriority := getPoaTypePriority(poaTypeA)
-	poaTypeBPriority := getPoaTypePriority(poaTypeB)
+func comparePoaTypes(poaTypeA string, poaTypeB string, poaTypePrio []string) int {
+	poaTypeAPriority := getPoaTypePriority(poaTypeA, poaTypePrio)
+	poaTypeBPriority := getPoaTypePriority(poaTypeB, poaTypePrio)
 	if poaTypeAPriority == poaTypeBPriority {
 		return 0
 	} else if poaTypeAPriority < poaTypeBPriority {
@@ -1272,16 +1489,34 @@ func comparePoaTypes(poaTypeA string, poaTypeB string) int {
 	return 1
 }
 
-func getPoaTypePriority(poaType string) int {
-	priority := 0
+func isSupportedPoaType(poaType string, poaTypePrio []string) bool {
+	return (getPoaTypePriority(poaType, poaTypePrio) != -1)
+}
+
+func getPoaTypePriority(poaType string, poaTypePrio []string) int {
+	if len(poaTypePrio) == 0 {
+		poaTypePrio = []string{"wifi", "5g", "4g", "other"}
+	}
+
+	// Determine string to search for
+	poaTypeStr := ""
 	if poaType == PoaTypeGeneric {
-		priority = 1
+		poaTypeStr = "other"
 	} else if poaType == PoaTypeCell4g {
-		priority = 2
+		poaTypeStr = "4g"
 	} else if poaType == PoaTypeCell5g {
-		priority = 3
+		poaTypeStr = "5g"
 	} else if poaType == PoaTypeWifi {
-		priority = 4
+		poaTypeStr = "wifi"
+	}
+
+	// Get priority
+	priority := -1
+	for i, poaType := range poaTypePrio {
+		if poaType == poaTypeStr {
+			priority = len(poaTypePrio) - i
+			break
+		}
 	}
 	return priority
 }

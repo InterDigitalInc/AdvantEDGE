@@ -82,6 +82,12 @@
         obj.geoData = GeoData.constructFromObject(data['geoData']);
       if (data.hasOwnProperty('networkLocationsInRange'))
         obj.networkLocationsInRange = ApiClient.convertToType(data['networkLocationsInRange'], ['String']);
+      if (data.hasOwnProperty('connected'))
+        obj.connected = ApiClient.convertToType(data['connected'], 'Boolean');
+      if (data.hasOwnProperty('wireless'))
+        obj.wireless = ApiClient.convertToType(data['wireless'], 'Boolean');
+      if (data.hasOwnProperty('wirelessType'))
+        obj.wirelessType = ApiClient.convertToType(data['wirelessType'], 'String');
       if (data.hasOwnProperty('meta'))
         obj.meta = ApiClient.convertToType(data['meta'], {'String': 'String'});
       if (data.hasOwnProperty('userMeta'))
@@ -135,6 +141,24 @@
    * @member {Array.<String>} networkLocationsInRange
    */
   exports.prototype.networkLocationsInRange = undefined;
+
+  /**
+   * true: Physical location has network connectivity false: Physical location has no network connectivity
+   * @member {Boolean} connected
+   */
+  exports.prototype.connected = undefined;
+
+  /**
+   * true: Physical location uses a wireless connection false: Physical location uses a wired connection
+   * @member {Boolean} wireless
+   */
+  exports.prototype.wireless = undefined;
+
+  /**
+   * Prioritized, comma-separated list of supported wireless connection types. Default priority if not specififed is 'wifi,5g,4g,other'. Wireless connection types: - 4g - 5g - wifi - other
+   * @member {String} wirelessType
+   */
+  exports.prototype.wirelessType = undefined;
 
   /**
    * Key/Value Pair Map (string, string)

@@ -153,19 +153,40 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
-
 	log.Debug("processActiveScenarioUpdate")
 
-	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
+	// Get previous list of connected UEs & APPS
+	prevUeNames := []string{}
+	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range prevUeNameList {
+		if isUeConnected(name) {
+			prevUeNames = append(prevUeNames, name)
+		}
+	}
+	prevApps := []string{}
+	prevAppList := sbi.activeModel.GetNodeNames("UE-APP", "EDGE-APP")
+	for _, app := range prevAppList {
+		if isAppConnected(app) {
+			prevApps = append(prevApps, app)
+		}
+	}
 
+	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
 	// Update UE info
+	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+		ueNames = append(ueNames, name)
+
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
 			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
@@ -192,31 +213,38 @@ func processActiveScenarioUpdate() {
 		}
 	}
 
-	//only find UEs that were removed, check that former UEs are in new UE list
-	for _, oldUe := range formerUeNameList {
+	// Update UEs that were removed
+	for _, prevUeName := range prevUeNames {
 		found := false
-		for _, newUe := range ueNameList {
-			if newUe == oldUe {
+		for _, ueName := range ueNames {
+			if ueName == prevUeName {
 				found = true
 				break
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(oldUe, "", "", "", -1)
-			log.Info("Ue removed : ", oldUe)
+			sbi.updateUeDataCB(prevUeName, "", "", "", -1)
+			log.Info("Ue removed : ", prevUeName)
 		}
 	}
 
 	// Update Edge App info
+	appNames := []string{}
 	meAppNameList := sbi.activeModel.GetNodeNames("EDGE-APP")
 	ueAppNameList := sbi.activeModel.GetNodeNames("UE-APP")
 	var appNameList []string
 	appNameList = append(appNameList, meAppNameList...)
 	appNameList = append(appNameList, ueAppNameList...)
 
-	for _, meAppName := range appNameList {
-		meAppParent := sbi.activeModel.GetNodeParent(meAppName)
+	for _, appName := range appNameList {
+		meAppParent := sbi.activeModel.GetNodeParent(appName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
+			// Ignore disconnected apps
+			if !pl.Connected {
+				continue
+			}
+			appNames = append(appNames, appName)
+
 			plParent := sbi.activeModel.GetNodeParent(pl.Name)
 			if nl, ok := plParent.(*dataModel.NetworkLocation); ok {
 				//nl can be either POA for {FOG or UE} or Zone Default for {Edge
@@ -243,10 +271,25 @@ func processActiveScenarioUpdate() {
 							}
 						}
 
-						sbi.updateAppEcgiInfoCB(meAppName, mnc, mcc, cellId)
+						sbi.updateAppEcgiInfoCB(appName, mnc, mcc, cellId)
 					}
 				}
 			}
+		}
+	}
+
+	// Update APPs that were removed
+	for _, prevApp := range prevApps {
+		found := false
+		for _, app := range appNames {
+			if app == prevApp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			sbi.updateAppEcgiInfoCB(prevApp, "", "", "")
+			log.Info("App removed : ", prevApp)
 		}
 	}
 }
@@ -272,4 +315,22 @@ func processGisEngineUpdate(assetMap map[string]string) {
 			}
 		}
 	}
+}
+
+func isUeConnected(name string) bool {
+	node := sbi.activeModel.GetNode(name)
+	if node != nil {
+		pl := node.(*dataModel.PhysicalLocation)
+		return pl.Connected
+	}
+	return false
+}
+
+func isAppConnected(app string) bool {
+	parentNode := sbi.activeModel.GetNodeParent(app)
+	if parentNode != nil {
+		pl := parentNode.(*dataModel.PhysicalLocation)
+		return pl.Connected
+	}
+	return false
 }

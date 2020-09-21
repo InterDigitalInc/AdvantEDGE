@@ -155,7 +155,15 @@ func processActiveScenarioTerminate() {
 
 func processActiveScenarioUpdate() {
 	log.Debug("processActiveScenarioUpdate")
-	previousUeNameList := sbi.activeModel.GetNodeNames("UE")
+
+	// Get previous list of connected UEs
+	prevUeNames := []string{}
+	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range prevUeNameList {
+		if isUeConnected(name) {
+			prevUeNames = append(prevUeNames, name)
+		}
+	}
 
 	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
@@ -172,8 +180,15 @@ func processActiveScenarioUpdate() {
 	poaMap, _ := sbi.pc.GetAllPoa()
 
 	// Update UE info
+	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+		ueNames = append(ueNames, name)
+
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
 			log.Error(err.Error())
@@ -192,17 +207,17 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Update UEs that were removed
-	for _, oldUe := range previousUeNameList {
+	for _, prevUeName := range prevUeNames {
 		found := false
-		for _, newUe := range ueNameList {
-			if newUe == oldUe {
+		for _, ueName := range ueNames {
+			if ueName == prevUeName {
 				found = true
 				break
 			}
 		}
 		if !found {
-			sbi.updateUserInfoCB(oldUe, "", "", nil, nil)
-			log.Info("Ue removed : ", oldUe)
+			sbi.updateUserInfoCB(prevUeName, "", "", nil, nil)
+			log.Info("Ue removed : ", prevUeName)
 		}
 	}
 
@@ -278,6 +293,11 @@ func parsePosition(position string) (longitude *float32, latitude *float32) {
 }
 
 func updateUserPosition(name string) {
+	// Ignore disconnected UE
+	if !isUeConnected(name) {
+		return
+	}
+
 	// Get network location
 	zone, netLoc, err := getNetworkLocation(name)
 	if err != nil {
@@ -304,6 +324,11 @@ func updateAllUserPosition() {
 	// Update info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+
 		// Get network location
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {
@@ -370,4 +395,15 @@ func updateAllAccessPointPosition() {
 func Stop() (err error) {
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
+}
+
+func isUeConnected(name string) bool {
+	node := sbi.activeModel.GetNode(name)
+	if node != nil {
+		pl := node.(*dataModel.PhysicalLocation)
+		if pl.Connected {
+			return true
+		}
+	}
+	return false
 }

@@ -505,6 +505,12 @@
                                   expect(data).to.be("");
                                 }
                               }
+                              expect(data.connected).to.be.a('boolean');
+                              expect(data.connected).to.be(false);
+                              expect(data.wireless).to.be.a('boolean');
+                              expect(data.wireless).to.be(false);
+                              expect(data.wirelessType).to.be.a('string');
+                              expect(data.wirelessType).to.be("");
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);

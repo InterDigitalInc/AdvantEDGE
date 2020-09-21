@@ -65,7 +65,10 @@ import {
   IDC_DIALOG_NEW_SCENARIO,
   IDC_DIALOG_SAVE_SCENARIO,
   IDC_DIALOG_DELETE_SCENARIO,
-  IDC_DIALOG_EXPORT_SCENARIO
+  IDC_DIALOG_EXPORT_SCENARIO,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI
 } from '../../meep-constants';
 
 import {
@@ -77,7 +80,10 @@ import {
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
   getElemFieldVal,
-  resetElem
+  resetElem,
+  FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
+  FIELD_MAC_ID
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -263,6 +269,27 @@ class CfgPageContainer extends Component {
       var gpuType = getElemFieldVal(element, FIELD_GPU_TYPE);
       if (gpuType === null || gpuType === '') {
         this.props.cfgElemSetErrMsg('GPU type not selected');
+        return false;
+      }
+    }
+
+    // Verify cellid/mac address if required
+    if (type === ELEMENT_TYPE_POA_4G) {
+      var cellId = getElemFieldVal(element, FIELD_CELL_ID);
+      if (!cellId) {
+        this.props.cfgElemSetErrMsg('Missing Cell ID');
+        return false;
+      }
+    } else if (type === ELEMENT_TYPE_POA_5G) {
+      var nrCellId = getElemFieldVal(element, FIELD_NR_CELL_ID);
+      if (!nrCellId) {
+        this.props.cfgElemSetErrMsg('Missing NR Cell ID');
+        return false;
+      }
+    } else if (type === ELEMENT_TYPE_POA_WIFI) {
+      var macId = getElemFieldVal(element, FIELD_MAC_ID);
+      if (!macId) {
+        this.props.cfgElemSetErrMsg('Missing MAC Address');
         return false;
       }
     }

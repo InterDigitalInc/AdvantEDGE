@@ -27,7 +27,6 @@ import { Icon } from '@rmwc/icon';
 import { ChromePicker } from 'react-color';
 
 import { updateObject } from '../../util/object-util';
-import { createUniqueName } from '../../util/elem-utils';
 import L from 'leaflet';
 
 import IDSelect from '../../components/helper-components/id-select';
@@ -66,11 +65,15 @@ import {
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS,
+  FIELD_WIRELESS_TYPE,
   FIELD_META_DISPLAY_MAP_COLOR,
   getElemFieldVal,
   setElemFieldVal,
   getElemFieldErr,
-  setElemFieldErr
+  setElemFieldErr,
+  createUniqueName
 } from '../../util/elem-utils';
 
 import {
@@ -104,6 +107,12 @@ import {
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
+
+  // Connection state & type options
+  OPT_CONNECTED,
+  OPT_DISCONNECTED,
+  OPT_WIRELESS,
+  OPT_WIRED,
 
   // GPU types
   GPU_TYPE_NVIDIA,
@@ -147,6 +156,9 @@ import {
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
   CFG_ELEM_CHART_ALT_VAL,
+  CFG_ELEM_CONNECTED,
+  CFG_ELEM_WIRELESS,
+  CFG_ELEM_WIRELESS_TYPE,
   CFG_ELEM_INGRESS_SVC_MAP,
   CFG_ELEM_EGRESS_SVC_MAP,
   CFG_BTN_NEW_ELEM,
@@ -284,6 +296,15 @@ const validateGpuCount = count => {
   const p = Number(count);
   if (p !== '' && (p < GPU_COUNT_MIN || p > GPU_COUNT_MAX)) {
     return GPU_COUNT_MIN + ' < count < ' + GPU_COUNT_MAX;
+  }
+  return null;
+};
+
+const validateWirelessType = val => {
+  if (val) {
+    if (!val.match(/^((,\s*)?(wifi|5g|4g|other))+$/)) {
+      return 'Comma-separated values: wifi|5g|4g|other';
+    }
   }
   return null;
 };
@@ -722,6 +743,8 @@ const ColorIcon = (color) => {
 // Display element-specific form fields
 const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
+  var isConnected = getElemFieldVal(element, FIELD_CONNECTED) || false;
+  var isWireless = getElemFieldVal(element, FIELD_WIRELESS) || false;
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
@@ -984,6 +1007,45 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           element={element}
           prefixes={[PREFIX_LINK]}
         />
+
+        <Grid style={{ paddingTop: 16 }} >
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRELESS]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ?
+          <Grid>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid> : <></>
+        }
+
         <Grid>
           <CfgTextFieldCell
             span={12}
@@ -1045,6 +1107,45 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           element={element}
           prefixes={[PREFIX_LINK]}
         />
+
+        <Grid style={{ paddingTop: 16 }} >
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRED]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ?
+          <Grid>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid> : <></>
+        }
+        
         <Grid>
           <CfgTextFieldCell
             span={12}
@@ -1573,6 +1674,10 @@ export class CfgNetworkElementContainer extends Component {
     var elementTypeOverride = getElementTypeOverrideBack(elementType);
     setElemFieldVal(elem, FIELD_TYPE, elementTypeOverride);
     setElemFieldVal(elem, FIELD_PARENT, null);
+    if (elementTypeOverride === ELEMENT_TYPE_UE) {
+      setElemFieldVal(elem, FIELD_WIRELESS, true);
+      setElemFieldVal(elem, FIELD_WIRELESS_TYPE, 'wifi,5g,4g,other');
+    }
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementTypeOverride));
 

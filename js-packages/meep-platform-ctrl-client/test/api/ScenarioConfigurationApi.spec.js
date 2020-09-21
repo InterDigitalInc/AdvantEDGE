@@ -178,6 +178,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];
@@ -657,6 +660,12 @@
                                   expect(data).to.be("");
                                 }
                               }
+                              expect(data.connected).to.be.a('boolean');
+                              expect(data.connected).to.be(false);
+                              expect(data.wireless).to.be.a('boolean');
+                              expect(data.wireless).to.be(false);
+                              expect(data.wirelessType).to.be.a('string');
+                              expect(data.wirelessType).to.be("");
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);
@@ -1226,6 +1235,12 @@
                                       expect(data).to.be("");
                                     }
                                   }
+                                  expect(data.connected).to.be.a('boolean');
+                                  expect(data.connected).to.be(false);
+                                  expect(data.wireless).to.be.a('boolean');
+                                  expect(data.wireless).to.be(false);
+                                  expect(data.wirelessType).to.be.a('string');
+                                  expect(data.wirelessType).to.be("");
                                   {
                                     let dataCtr = data.meta;
                                     expect(dataCtr).to.be.an(Object);
@@ -1555,6 +1570,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];

@@ -19,6 +19,7 @@ package postgisdb
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"testing"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -38,67 +39,80 @@ const (
 	point4 = "[7.418944,43.732591]"
 	point5 = "[7.417135,43.731531]"
 
-	ue1Id       = "ue1-id"
-	ue1Name     = "ue1"
-	ue1Loc      = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
-	ue1Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point1 + "," + point2 + "," + point3 + "," + point4 + "," + point1 + "]}"
-	ue1PathMode = PathModeLoop
-	ue1Velocity = 5.0
+	ue1Id               = "ue1-id"
+	ue1Name             = "ue1"
+	ue1Loc              = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+	ue1Path             = "{\"type\":\"LineString\",\"coordinates\":[" + point1 + "," + point2 + "," + point3 + "," + point4 + "," + point1 + "]}"
+	ue1PathMode         = PathModeLoop
+	ue1Velocity float32 = 5.0
 
-	ue2Id       = "ue2-id"
-	ue2Name     = "ue2"
-	ue2Loc      = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
-	ue2Path     = ""
-	ue2PathMode = PathModeLoop
-	ue2Velocity = 0.0
+	ue2Id               = "ue2-id"
+	ue2Name             = "ue2"
+	ue2Loc              = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+	ue2Path             = ""
+	ue2PathMode         = PathModeLoop
+	ue2Velocity float32 = 0.0
 
-	ue3Id       = "ue3-id"
-	ue3Name     = "ue3"
-	ue3Loc      = "{\"type\":\"Point\",\"coordinates\":" + point4 + "}"
-	ue3Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point4 + "," + point3 + "," + point2 + "]}"
-	ue3PathMode = PathModeReverse
-	ue3Velocity = 25.0
+	ue3Id               = "ue3-id"
+	ue3Name             = "ue3"
+	ue3Loc              = "{\"type\":\"Point\",\"coordinates\":" + point4 + "}"
+	ue3Path             = "{\"type\":\"LineString\",\"coordinates\":[" + point4 + "," + point3 + "," + point2 + "]}"
+	ue3PathMode         = PathModeReverse
+	ue3Velocity float32 = 25.0
 
-	ue4Id       = "ue4-id"
-	ue4Name     = "ue4"
-	ue4Loc      = "{\"type\":\"Point\",\"coordinates\":" + point5 + "}"
-	ue4Path     = "{\"type\":\"LineString\",\"coordinates\":[" + point5 + "," + point4 + "," + point1 + "]}"
-	ue4PathMode = PathModeReverse
-	ue4Velocity = 10.0
+	ue4Id               = "ue4-id"
+	ue4Name             = "ue4"
+	ue4Loc              = "{\"type\":\"Point\",\"coordinates\":" + point5 + "}"
+	ue4Path             = "{\"type\":\"LineString\",\"coordinates\":[" + point5 + "," + point4 + "," + point1 + "]}"
+	ue4PathMode         = PathModeReverse
+	ue4Velocity float32 = 10.0
 
-	poa1Id     = "poa1-id"
-	poa1Name   = "poa1"
-	poa1Type   = "POA-4G"
-	poa1Loc    = "{\"type\":\"Point\",\"coordinates\":[7.418494,43.733449]}"
-	poa1Radius = 160.0
+	poa1Id             = "poa1-id"
+	poa1Name           = "poa1"
+	poa1Type           = "POA-4G"
+	poa1Loc            = "{\"type\":\"Point\",\"coordinates\":[7.418494,43.733449]}"
+	poa1Radius float32 = 160.0
 
-	poa2Id     = "poa2-id"
-	poa2Name   = "poa2"
-	poa2Type   = "POA"
-	poa2Loc    = "{\"type\":\"Point\",\"coordinates\":[7.421626,43.736983]}"
-	poa2Radius = 350.0
+	poa2Id             = "poa2-id"
+	poa2Name           = "poa2"
+	poa2Type           = "POA"
+	poa2Loc            = "{\"type\":\"Point\",\"coordinates\":[7.421626,43.736983]}"
+	poa2Radius float32 = 350.0
 
-	poa3Id     = "poa3-id"
-	poa3Name   = "poa3"
-	poa3Type   = "POA-4G"
-	poa3Loc    = "{\"type\":\"Point\",\"coordinates\":[7.422239,43.732972]}"
-	poa3Radius = 220.0
+	poa3Id             = "poa3-id"
+	poa3Name           = "poa3"
+	poa3Type           = "POA-4G"
+	poa3Loc            = "{\"type\":\"Point\",\"coordinates\":[7.422239,43.732972]}"
+	poa3Radius float32 = 220.0
 
-	compute1Id   = "compute1-id"
-	compute1Name = "compute1"
-	compute1Type = "EDGE"
-	compute1Loc  = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+	compute1Id        = "compute1-id"
+	compute1Name      = "compute1"
+	compute1Type      = "EDGE"
+	compute1Loc       = "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
+	compute1Connected = true
 
-	compute2Id   = "compute2-id"
-	compute2Name = "compute2"
-	compute2Type = "FOG"
-	compute2Loc  = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+	compute2Id        = "compute2-id"
+	compute2Name      = "compute2"
+	compute2Type      = "FOG"
+	compute2Loc       = "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
+	compute2Connected = true
 
-	compute3Id   = "compute3-id"
-	compute3Name = "compute3"
-	compute3Type = "EDGE"
-	compute3Loc  = "{\"type\":\"Point\",\"coordinates\":" + point3 + "}"
+	compute3Id        = "compute3-id"
+	compute3Name      = "compute3"
+	compute3Type      = "EDGE"
+	compute3Loc       = "{\"type\":\"Point\",\"coordinates\":" + point3 + "}"
+	compute3Connected = true
 )
+
+// var ue1Priority = []string{"wifi", "5g", "4g"}
+// var ue2Priority = []string{"5g", "4g"}
+// var ue3Priority = []string{"4g", "wifi", "5g"}
+// var ue4Priority = []string{"wifi"}
+
+var ue1Priority = []string{"wifi", "5g", "4g", "other"}
+var ue2Priority = []string{"wifi", "5g", "4g", "other"}
+var ue3Priority = []string{"wifi", "5g", "4g", "other"}
+var ue4Priority = []string{"wifi", "5g", "4g", "other"}
 
 func TestPostgisConnectorNew(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -184,86 +198,178 @@ func TestPostgisCreateUe(t *testing.T) {
 
 	// Add Invalid UE
 	fmt.Println("Create Invalid UEs")
-	err = pc.CreateUe("", ue1Name, ue1Loc, ue1Path, PathModeLoop, ue1Velocity)
+	ueData := map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe("", ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
-	err = pc.CreateUe(ue1Id, "", ue1Loc, ue1Path, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, "", ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, "", ue1Path, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  "",
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	ueLocInvalid := "{\"type\":\"Invalid\",\"coordinates\":[0,0]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, ue1Path, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ueLocInvalid,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	ueLocInvalid = "{\"type\":\"Point\",\"coordinates\":[]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ueLocInvalid, ue1Path, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ueLocInvalid,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	uePathInvalid := "{\"type\":\"Invalid\",\"coordinates\":[[0,0],[1,1]]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, uePathInvalid, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      uePathInvalid,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 	uePathInvalid = "{\"type\":\"LineString\",\"coordinates\":[[0,0],[]]}"
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, uePathInvalid, PathModeLoop, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      uePathInvalid,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
 
 	// Add UE & Validate successfully added
 	fmt.Println("Add UEs & Validate successfully added")
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err := pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue2Loc,
+		FieldPath:      ue2Path,
+		FieldMode:      ue2PathMode,
+		FieldVelocity:  ue2Velocity,
+		FieldPriority:  strings.Join(ue2Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, "", 0.000, []string{}, ue2Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue3Loc,
+		FieldPath:      ue3Path,
+		FieldMode:      ue3PathMode,
+		FieldVelocity:  ue3Velocity,
+		FieldPriority:  strings.Join(ue3Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue3Id, ue3Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue4Loc,
+		FieldPath:      ue4Path,
+		FieldMode:      ue4PathMode,
+		FieldVelocity:  ue4Velocity,
+		FieldPriority:  strings.Join(ue4Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue4Id, ue4Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue4Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -280,15 +386,24 @@ func TestPostgisCreateUe(t *testing.T) {
 
 	// Add UE & validate update
 	fmt.Println("Add UE & validate update")
-	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue2Loc,
+		FieldPath:      ue2Path,
+		FieldMode:      ue2PathMode,
+		FieldVelocity:  ue2Velocity,
+		FieldPriority:  strings.Join(ue2Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, "", 0.000, []string{}, ue2Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -339,9 +454,14 @@ func TestPostgisCreatePoa(t *testing.T) {
 
 	// Add POA & Validate successfully added
 	fmt.Println("Add POAs & Validate successfully added")
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	poaData := map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
+	}
+	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	poa, err := pc.GetPoa(poa1Name)
 	if err != nil || poa == nil {
@@ -351,9 +471,14 @@ func TestPostgisCreatePoa(t *testing.T) {
 		t.Fatalf("POA validation failed")
 	}
 
-	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa2Type,
+		FieldPosition: poa2Loc,
+		FieldRadius:   poa2Radius,
+	}
+	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	poa, err = pc.GetPoa(poa2Name)
 	if err != nil || poa == nil {
@@ -363,9 +488,14 @@ func TestPostgisCreatePoa(t *testing.T) {
 		t.Fatalf("POA validation failed")
 	}
 
-	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa3Type,
+		FieldPosition: poa3Loc,
+		FieldRadius:   poa3Radius,
+	}
+	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	poa, err = pc.GetPoa(poa3Name)
 	if err != nil || poa == nil {
@@ -388,9 +518,14 @@ func TestPostgisCreatePoa(t *testing.T) {
 
 	// Add POA and validate updates
 	fmt.Println("Add POA & validate updates")
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
+	}
+	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	poa, err = pc.GetPoa(poa1Name)
 	if err != nil || poa == nil {
@@ -447,9 +582,14 @@ func TestPostgisCreateCompute(t *testing.T) {
 
 	// Add Compute & Validate successfully added
 	fmt.Println("Add Computes & Validate successfully added")
-	err = pc.CreateCompute(compute1Id, compute1Name, compute1Type, compute1Loc)
+	computeData := map[string]interface{}{
+		FieldSubtype:   compute1Type,
+		FieldPosition:  compute1Loc,
+		FieldConnected: compute1Connected,
+	}
+	err = pc.CreateCompute(compute1Id, compute1Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	compute, err := pc.GetCompute(compute1Name)
 	if err != nil || compute == nil {
@@ -459,9 +599,14 @@ func TestPostgisCreateCompute(t *testing.T) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	err = pc.CreateCompute(compute2Id, compute2Name, compute2Type, compute2Loc)
+	computeData = map[string]interface{}{
+		FieldSubtype:   compute2Type,
+		FieldPosition:  compute2Loc,
+		FieldConnected: compute2Connected,
+	}
+	err = pc.CreateCompute(compute2Id, compute2Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	compute, err = pc.GetCompute(compute2Name)
 	if err != nil || compute == nil {
@@ -471,9 +616,14 @@ func TestPostgisCreateCompute(t *testing.T) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	computeData = map[string]interface{}{
+		FieldSubtype:   compute3Type,
+		FieldPosition:  compute3Loc,
+		FieldConnected: compute3Connected,
+	}
+	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	compute, err = pc.GetCompute(compute3Name)
 	if err != nil || compute == nil {
@@ -485,7 +635,10 @@ func TestPostgisCreateCompute(t *testing.T) {
 
 	// Update Compute poistion & validate update
 	fmt.Println("Update Compute position & validate update")
-	err = pc.UpdateCompute(compute3Name, compute1Loc)
+	computeData = map[string]interface{}{
+		FieldPosition: compute1Loc,
+	}
+	err = pc.UpdateCompute(compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to update Compute")
 	}
@@ -497,7 +650,10 @@ func TestPostgisCreateCompute(t *testing.T) {
 		t.Fatalf("Compute validation failed")
 	}
 
-	err = pc.UpdateCompute(compute3Name, compute3Loc)
+	computeData = map[string]interface{}{
+		FieldPosition: compute3Loc,
+	}
+	err = pc.UpdateCompute(compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to update Compute")
 	}
@@ -522,9 +678,14 @@ func TestPostgisCreateCompute(t *testing.T) {
 
 	// Add Compute & validate update
 	fmt.Println("Add Compute & validate update")
-	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	computeData = map[string]interface{}{
+		FieldSubtype:   compute3Type,
+		FieldPosition:  compute3Loc,
+		FieldConnected: compute3Connected,
+	}
+	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	compute, err = pc.GetCompute(compute3Name)
 	if err != nil || compute == nil {
@@ -571,129 +732,216 @@ func TestPostgisPoaSelection(t *testing.T) {
 
 	// Add POAs first
 	fmt.Println("Add POAs")
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
-	if err != nil {
-		t.Fatalf("Failed to create asset")
+	poaData := map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
+	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa2Type,
+		FieldPosition: poa2Loc,
+		FieldRadius:   poa2Radius,
+	}
+	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
+	}
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa3Type,
+		FieldPosition: poa3Loc,
+		FieldRadius:   poa3Radius,
+	}
+	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
+	if err != nil {
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 
 	// Add UEs & Validate POA selection
 	fmt.Println("Add UEs & Validate POA selection")
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	ueData := map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err := pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue2Loc,
+		FieldPath:      ue2Path,
+		FieldMode:      ue2PathMode,
+		FieldVelocity:  ue2Velocity,
+		FieldPriority:  strings.Join(ue2Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ue, ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue3Loc,
+		FieldPath:      ue3Path,
+		FieldMode:      ue3PathMode,
+		FieldVelocity:  ue3Velocity,
+		FieldPriority:  strings.Join(ue3Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue3Id, ue3Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.CreateUe(ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue4Loc,
+		FieldPath:      ue4Path,
+		FieldMode:      ue4PathMode,
+		FieldVelocity:  ue4Velocity,
+		FieldPriority:  strings.Join(ue4Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue4Id, ue4Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue4Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa1Name, 239.585, []string{}) {
+	if !validateUe(ue, ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Add Compute & Validate successfully added
 	fmt.Println("Add Computes & Validate successfully added")
-	err = pc.CreateCompute(compute1Id, compute1Name, compute1Type, compute1Loc)
-	if err != nil {
-		t.Fatalf("Failed to create asset")
+	computeData := map[string]interface{}{
+		FieldSubtype:   compute1Type,
+		FieldPosition:  compute1Loc,
+		FieldConnected: compute1Connected,
 	}
-	err = pc.CreateCompute(compute2Id, compute2Name, compute2Type, compute2Loc)
+	err = pc.CreateCompute(compute1Id, compute1Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	err = pc.CreateCompute(compute3Id, compute3Name, compute3Type, compute3Loc)
+	computeData = map[string]interface{}{
+		FieldSubtype:   compute2Type,
+		FieldPosition:  compute2Loc,
+		FieldConnected: compute2Connected,
+	}
+	err = pc.CreateCompute(compute2Id, compute2Name, computeData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
+	}
+	computeData = map[string]interface{}{
+		FieldSubtype:   compute3Type,
+		FieldPosition:  compute3Loc,
+		FieldConnected: compute3Connected,
+	}
+	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
+	if err != nil {
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 
 	// Update UE position + path & validate POA selection
 	fmt.Println("Update UE position & validate POA selection")
 	ueLoc := "{\"type\":\"Point\",\"coordinates\":" + point2 + "}"
-	err = pc.UpdateUe(ue1Name, ueLoc, "", "", 0)
+	ueData = map[string]interface{}{
+		FieldPosition: ueLoc,
+	}
+	err = pc.UpdateUe(ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to update UE")
+		t.Fatalf("Failed to update UE: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa2Name, 10.085, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
 	fmt.Println("Update UE path & validate update")
-	err = pc.UpdateUe(ue1Name, "", ue3Path, ue3PathMode, ue3Velocity)
+	ueData = map[string]interface{}{
+		FieldPath:     ue3Path,
+		FieldMode:     ue3PathMode,
+		FieldVelocity: ue3Velocity,
+	}
+	err = pc.UpdateUe(ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to update UE")
+		t.Fatalf("Failed to update UE: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, poa2Name, 10.085, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
 	fmt.Println("Update UE position + path & validate update")
-	err = pc.UpdateUe(ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition: ue1Loc,
+		FieldPath:     ue1Path,
+		FieldMode:     ue1PathMode,
+		FieldVelocity: ue1Velocity,
+	}
+	err = pc.UpdateUe(ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to update UE")
+		t.Fatalf("Failed to update UE: " + err.Error())
 	}
 	ue, err = pc.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Update POA position + radius & validate POA selection
 	fmt.Println("Update POA position + radius & validate POA selection")
 	poaLoc := "{\"type\":\"Point\",\"coordinates\":" + point1 + "}"
-	err = pc.UpdatePoa(poa2Name, poaLoc, 1000.0)
+	poaData = map[string]interface{}{
+		FieldPosition: poaLoc,
+		FieldRadius:   float32(1000.0),
+	}
+	err = pc.UpdatePoa(poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to update POA")
 	}
@@ -708,20 +956,28 @@ func TestPostgisPoaSelection(t *testing.T) {
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name, poa2Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name, poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 391.155, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 391.155, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name, poa2Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name, poa2Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 316.692, []string{poa2Name}) {
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, poa2Name, 316.692, []string{poa2Name}, ue4Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
-	err = pc.UpdatePoa(poa2Name, poa2Loc, poa2Radius)
+	poaData = map[string]interface{}{
+		FieldPosition: poa2Loc,
+		FieldRadius:   poa2Radius,
+	}
+	err = pc.UpdatePoa(poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to update POA")
 	}
@@ -736,16 +992,20 @@ func TestPostgisPoaSelection(t *testing.T) {
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -763,24 +1023,33 @@ func TestPostgisPoaSelection(t *testing.T) {
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa3Name, 328.983, []string{}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa3Name, 268.817, []string{}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
 	// Add POA and validate updates
 	fmt.Println("Add POA & validate updates")
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
+	}
+	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 	poa, err = pc.GetPoa(poa1Name)
 	if err != nil || poa == nil {
@@ -793,16 +1062,20 @@ func TestPostgisPoaSelection(t *testing.T) {
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, poa1Name, 83.25, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, poa1Name, 101.991, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, poa2Name, 705.582, []string{}) {
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -820,16 +1093,20 @@ func TestPostgisPoaSelection(t *testing.T) {
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.000, "", 0.000, []string{}, ue1Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, "", 0.000, []string{}, ue2Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.000, "", 0.000, []string{}, ue3Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity, 369.139, 0.02709, 0.000, "", 0.000, []string{}) {
+	if !validateUe(ueMap[ue4Name], ue4Id, ue4Name, ue4Loc, ue4Path, ue4PathMode, ue4Velocity,
+		369.139, 0.02709, 0.000, "", 0.000, []string{}, ue4Priority, false) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -859,32 +1136,71 @@ func TestPostgisMovement(t *testing.T) {
 
 	// Add POAs first
 	fmt.Println("Add POAs")
-	err = pc.CreatePoa(poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius)
-	if err != nil {
-		t.Fatalf("Failed to create asset")
+	poaData := map[string]interface{}{
+		FieldSubtype:  poa1Type,
+		FieldPosition: poa1Loc,
+		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius)
+	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	err = pc.CreatePoa(poa3Id, poa3Name, poa3Type, poa3Loc, poa3Radius)
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa2Type,
+		FieldPosition: poa2Loc,
+		FieldRadius:   poa2Radius,
+	}
+	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
+	}
+	poaData = map[string]interface{}{
+		FieldSubtype:  poa3Type,
+		FieldPosition: poa3Loc,
+		FieldRadius:   poa3Radius,
+	}
+	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
+	if err != nil {
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 
 	// Add UEs & Validate POA selection
 	fmt.Println("Add UEs & Validate POA selection")
-	err = pc.CreateUe(ue1Id, ue1Name, ue1Loc, ue1Path, ue1PathMode, ue1Velocity)
-	if err != nil {
-		t.Fatalf("Failed to create asset")
+	ueData := map[string]interface{}{
+		FieldPosition:  ue1Loc,
+		FieldPath:      ue1Path,
+		FieldMode:      ue1PathMode,
+		FieldVelocity:  ue1Velocity,
+		FieldPriority:  strings.Join(ue1Priority, ","),
+		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity)
+	err = pc.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	err = pc.CreateUe(ue3Id, ue3Name, ue3Loc, ue3Path, ue3PathMode, ue3Velocity)
+	ueData = map[string]interface{}{
+		FieldPosition:  ue2Loc,
+		FieldPath:      ue2Path,
+		FieldMode:      ue2PathMode,
+		FieldVelocity:  ue2Velocity,
+		FieldPriority:  strings.Join(ue2Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
-		t.Fatalf("Failed to create asset")
+		t.Fatalf("Failed to create asset: " + err.Error())
+	}
+	ueData = map[string]interface{}{
+		FieldPosition:  ue3Loc,
+		FieldPath:      ue3Path,
+		FieldMode:      ue3PathMode,
+		FieldVelocity:  ue3Velocity,
+		FieldPriority:  strings.Join(ue3Priority, ","),
+		FieldConnected: true,
+	}
+	err = pc.CreateUe(ue3Id, ue3Name, ueData)
+	if err != nil {
+		t.Fatalf("Failed to create asset: " + err.Error())
 	}
 
 	// Advance UE1 along Looping path and validate UE
@@ -899,7 +1215,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.09035, poa2Name, 276.166, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.09035, poa2Name, 276.166, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -912,7 +1229,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.27105, poa2Name, 33.516, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.27105, poa2Name, 33.516, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -925,7 +1243,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.45175, poa3Name, 199.781, []string{poa2Name, poa3Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.45175, poa3Name, 199.781, []string{poa2Name, poa3Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -938,7 +1257,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 1.02999, poa1Name, 118.255, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 1.02999, poa1Name, 118.255, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -951,7 +1271,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 1.12034, poa2Name, 235.784, []string{poa2Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 1.12034, poa2Name, 235.784, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -964,7 +1285,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 2.02384, poa1Name, 110.777, []string{poa1Name}) {
+	if !validateUe(ue, ue1Id, ue1Name, ueLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 2.02384, poa1Name, 110.777, []string{poa1Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -980,7 +1302,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 0.77095, poa2Name, 208.545, []string{poa2Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 0.77095, poa2Name, 208.545, []string{poa2Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -993,7 +1316,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 1.07933, poa2Name, 72.259, []string{poa2Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 1.07933, poa2Name, 72.259, []string{poa2Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1006,7 +1330,8 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
-	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 2.066146, poa1Name, 128.753, []string{poa1Name}) {
+	if !validateUe(ue, ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 2.066146, poa1Name, 128.753, []string{poa1Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1023,13 +1348,16 @@ func TestPostgisMovement(t *testing.T) {
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}
-	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity, 1383.59, 0.003614, 0.20454, poa2Name, 122.472, []string{poa2Name}) {
+	if !validateUe(ueMap[ue1Name], ue1Id, ue1Name, ue1AdvLoc, ue1Path, ue1PathMode, ue1Velocity,
+		1383.59, 0.003614, 0.20454, poa2Name, 122.472, []string{poa2Name}, ue1Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity, 0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}) {
+	if !validateUe(ueMap[ue2Name], ue2Id, ue2Name, ue2Loc, ue2Path, ue2PathMode, ue2Velocity,
+		0.000, 0.000, 0.000, poa2Name, 10.085, []string{poa2Name}, ue2Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
-	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity, 810.678, 0.030838, 1.608046, poa3Name, 73.962, []string{poa3Name}) {
+	if !validateUe(ueMap[ue3Name], ue3Id, ue3Name, ue3AdvLoc, ue3Path, ue3PathMode, ue3Velocity,
+		810.678, 0.030838, 1.608046, poa3Name, 73.962, []string{poa3Name}, ue3Priority, true) {
 		t.Fatalf("UE validation failed")
 	}
 
@@ -1038,7 +1366,7 @@ func TestPostgisMovement(t *testing.T) {
 
 func validateUe(ue *Ue, id string, name string, position string, path string,
 	mode string, velocity float32, length float32, increment float32, fraction float32,
-	poa string, distance float32, poaInRange []string) bool {
+	poa string, distance float32, poaInRange []string, poaTypePrio []string, connected bool) bool {
 	if ue == nil {
 		fmt.Println("ue == nil")
 		return false
@@ -1103,6 +1431,23 @@ func validateUe(ue *Ue, id string, name string, position string, path string,
 		}
 	}
 
+	if len(ue.PoaTypePrio) != len(poaTypePrio) {
+		fmt.Println("len(ue.PoaTypePrio) != len(poaTypePrio)")
+		return false
+	} else {
+		for i, poaType := range ue.PoaTypePrio {
+			if poaType != poaTypePrio[i] {
+				fmt.Println("poaType != poaTypePrio[i]")
+				return false
+			}
+		}
+	}
+
+	if ue.Connected != connected {
+		fmt.Println("ue.Connected != connected")
+		return false
+	}
+
 	return true
 }
 
@@ -1129,6 +1474,7 @@ func validatePoa(poa *Poa, id string, name string, subType string, position stri
 	}
 	if poa.Radius != radius {
 		fmt.Println("poa.Radius != radius")
+		fmt.Printf("%g != %g\n", poa.Radius, radius)
 		return false
 	}
 

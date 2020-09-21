@@ -96,6 +96,9 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];

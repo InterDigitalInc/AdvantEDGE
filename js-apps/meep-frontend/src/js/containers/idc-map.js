@@ -60,6 +60,8 @@ import {
   FIELD_GEO_LOCATION,
   FIELD_GEO_PATH,
   FIELD_GEO_RADIUS,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS_TYPE,
   FIELD_META_DISPLAY_MAP_COLOR,
   FIELD_META_DISPLAY_MAP_ICON,
   getElemFieldVal,
@@ -80,6 +82,7 @@ const ZONE_COLOR_LIST = [
   'gold',
   'darkturquoise'
 ];
+const DISCONNECTED_COLOR = 'red';
 
 const TYPE_UE = 'UE';
 const TYPE_POA = 'POA';
@@ -93,8 +96,8 @@ const UE_OPACITY_BACKGROUND = 0.3;
 const UE_PATH_OPACITY = 0.5;
 const UE_PATH_OPACITY_BACKGROUND = 0.3;
 
-// POA icons: 'ion-connection-bars', 'ion-wifi'
 const POA_ICON = 'ion-connection-bars';
+const POA_ICON_WIFI = 'ion-wifi';
 const POA_COLOR_DEFAULT = '#696969';
 const POA_OPACITY = 1.0;
 const POA_OPACITY_BACKGROUND = 0.35;
@@ -384,7 +387,6 @@ class IDCMap extends Component {
     this.updateCfg({baselayerName: event.name});
   }
 
-  // Get Zones
   getUePoa(ue) {
     var poa = null;
     var table = this.getTable();
@@ -432,16 +434,19 @@ class IDCMap extends Component {
   getZoneColor(zone) {
     var color = null;
     if (zone) {
-      // Get zone color from meta
-      color = getElemFieldVal(this.getTable().entries[zone], FIELD_META_DISPLAY_MAP_COLOR);
-      if (!color) {
-        // Get zone color from zone color map
-        color = this.zoneColorMap[zone];
+      var table = this.getTable();
+      if (table && table.entries) {
+        // Get zone color from meta
+        color = getElemFieldVal(table.entries[zone], FIELD_META_DISPLAY_MAP_COLOR);
         if (!color) {
-          // Get a new color for this zone
-          color = this.zoneColorMap[zone] = ZONE_COLOR_LIST[Object.keys(this.zoneColorMap).length % ZONE_COLOR_LIST.length];
-          // // Generate a random color for this zone
-          // color = this.zoneColorMap[zone] = tinycolor.random().toHexString();
+          // Get zone color from zone color map
+          color = this.zoneColorMap[zone];
+          if (!color) {
+            // Get a new color for this zone
+            color = this.zoneColorMap[zone] = ZONE_COLOR_LIST[Object.keys(this.zoneColorMap).length % ZONE_COLOR_LIST.length];
+            // // Generate a random color for this zone
+            // color = this.zoneColorMap[zone] = tinycolor.random().toHexString();
+          }
         }
       }
     }
@@ -449,7 +454,11 @@ class IDCMap extends Component {
   }
 
   getUeColor(ue) {
-    var color = this.getZoneColor(this.getUeZone(ue));
+    // var color = this.getZoneColor(this.getUeZone(ue));
+    var color = undefined;
+    if (!this.isConnected(ue)) {
+      color = DISCONNECTED_COLOR;
+    }
     return color ? color : UE_COLOR_DEFAULT;
   }
 
@@ -459,52 +468,86 @@ class IDCMap extends Component {
   }
 
   getComputeColor(compute) {
-    var color = this.getZoneColor(this.getComputeZone(compute));
+    var color = undefined;
+    if (this.isConnected(compute)) {
+      color = this.getZoneColor(this.getComputeZone(compute));
+    } else {
+      color = DISCONNECTED_COLOR;
+    }
     return color ? color : COMPUTE_COLOR_DEFAULT;
+  }
+
+  // Get connected status
+  isConnected(name) {
+    var connected = false;
+    var table = this.getTable();
+    if (table && table.entries) {
+      connected = getElemFieldVal(table.entries[name], FIELD_CONNECTED);
+    }
+    return connected;
+  }
+
+  // Get wireless type Priority
+  getWirelessTypePrio(name) {
+    var wirelessTypePrio = '';
+    var table = this.getTable();
+    if (table && table.entries) {
+      wirelessTypePrio = getElemFieldVal(table.entries[name], FIELD_WIRELESS_TYPE);
+    }
+    return wirelessTypePrio;
   }
 
   // Set Icons
   setUeIcon(iconDiv, ue) {
-    var metaIcon = getElemFieldVal(this.getTable().entries[ue], FIELD_META_DISPLAY_MAP_ICON);
-    var icon = metaIcon ? metaIcon : UE_ICON;
-    iconDiv.className = 'custom-marker-icon ion ' + icon;
-    iconDiv.innerHTML = '';
+    var table = this.getTable();
+    if (table && table.entries) {
+      var metaIcon = getElemFieldVal(table.entries[ue], FIELD_META_DISPLAY_MAP_ICON);
+      var icon = metaIcon ? metaIcon : UE_ICON;
+      iconDiv.className = 'custom-marker-icon ion ' + icon;
+      iconDiv.innerHTML = '';
+    }
   }
 
   setPoaIcon(iconDiv, iconTextDiv, poa) {
-    var metaIcon = getElemFieldVal(this.getTable().entries[poa], FIELD_META_DISPLAY_MAP_ICON);
-    var icon = metaIcon ? metaIcon : POA_ICON;
-    iconDiv.className = 'custom-marker-icon ion ' + icon;
-    iconDiv.innerHTML = '';
+    var table = this.getTable();
+    if (table && table.entries) {
+      var poaType = getElemFieldVal(table.entries[poa], FIELD_TYPE);
+      var metaIcon = getElemFieldVal(table.entries[poa], FIELD_META_DISPLAY_MAP_ICON);
+      var icon = metaIcon ? metaIcon : (poaType === ELEMENT_TYPE_POA_WIFI) ? POA_ICON_WIFI : POA_ICON;
+      iconDiv.className = 'custom-marker-icon ion ' + icon;
+      iconDiv.innerHTML = '';
 
-    var innerHTML = '';
-    if (!metaIcon) {
-      var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
-      if (poaType === ELEMENT_TYPE_POA_4G) {
-        innerHTML = '4G';
+      var innerHTML = '';
+      if (!metaIcon) {
+        if (poaType === ELEMENT_TYPE_POA_4G) {
+          innerHTML = '4G';
+        }
+        if (poaType === ELEMENT_TYPE_POA_5G) {
+          innerHTML = '5G';
+        }
       }
-      if (poaType === ELEMENT_TYPE_POA_5G) {
-        innerHTML = '5G';
-      }
+      iconTextDiv.innerHTML = innerHTML;
     }
-    iconTextDiv.innerHTML = innerHTML;
   }
 
   setComputeIcon(iconDiv, compute) {
-    var metaIcon = getElemFieldVal(this.getTable().entries[compute], FIELD_META_DISPLAY_MAP_ICON);
-    var icon = metaIcon ? metaIcon : COMPUTE_ICON;
-    iconDiv.className = 'custom-marker-icon ion ' + icon;
-    iconDiv.innerHTML = '';
+    var table = this.getTable();
+    if (table && table.entries) {
+      var metaIcon = getElemFieldVal(table.entries[compute], FIELD_META_DISPLAY_MAP_ICON);
+      var icon = metaIcon ? metaIcon : COMPUTE_ICON;
+      iconDiv.className = 'custom-marker-icon ion ' + icon;
+      iconDiv.innerHTML = '';
+    }
   }
 
   // Set styles
   setUeMarkerStyle(marker) {
     if (marker._icon) {
-      // // Set marker border color
-      // var color = tinycolor(this.getUeColor(marker.options.meep.ue.id));
-      // var markerStyle = marker._icon.querySelector('.custom-marker-pin').style;
-      // markerStyle['background'] = color;
-      // markerStyle['border-color'] = color.darken(10);
+      // Set marker color
+      var color = tinycolor(this.getUeColor(marker.options.meep.ue.id));
+      var markerStyle = marker._icon.querySelector('.custom-marker-pin').style;
+      markerStyle['background'] = color;
+      markerStyle['border-color'] = color.darken(10);
 
       // Set marker icon
       var iconDiv = marker._icon.querySelector('.custom-marker-icon');
@@ -550,30 +593,40 @@ class IDCMap extends Component {
 
   // UE Marker Event Handler
   updateUePopup(marker) {
-    var latlng = marker.getLatLng();
-    var poa = this.getUePoa(marker.options.meep.ue.id);
-    var poaType = getElemFieldVal(this.getTable().entries[poa], FIELD_TYPE);
-    var hasPath = (marker.options.meep.ue.path) ? true : false;
-    var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
-    msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
-    msg += 'poa: ' + poa + '<br>';
-    
-    switch (poaType) {
-    case ELEMENT_TYPE_POA_4G: 
-      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_CELL_ID) + '<br>';
-      break;
-    case ELEMENT_TYPE_POA_5G:
-      msg += 'cell: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_NR_CELL_ID) + '<br>';
-      break;
-    case ELEMENT_TYPE_POA_WIFI:
-      msg += 'mac: ' + getElemFieldVal(this.getTable().entries[poa], FIELD_MAC_ID) + '<br>';
-      break;
-    default: 
-      break;
+    var table = this.getTable();
+    if (marker && table && table.entries) {
+      var latlng = marker.getLatLng();
+      var hasPath = (marker.options.meep.ue.path) ? true : false;
+      var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
+      msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
+
+      if (this.isConnected(marker.options.meep.ue.id)) {
+        var poa = this.getUePoa(marker.options.meep.ue.id);
+        var poaType = getElemFieldVal(table.entries[poa], FIELD_TYPE);
+        msg += 'poa: ' + poa + '<br>';
+        switch(poaType) {
+        case ELEMENT_TYPE_POA_4G:
+          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_CELL_ID) + '<br>';
+          break;
+        case ELEMENT_TYPE_POA_5G:
+          msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
+          break;
+        case ELEMENT_TYPE_POA_WIFI:
+          msg += 'mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
+          break;
+        default:
+          break;
+        }
+
+        msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
+      } else {
+        msg += 'state: <b style="color:red;">DISCONNECTED</b><br>';
+      }
+
+      msg += 'wireless: ' + (this.getWirelessTypePrio(marker.options.meep.ue.id) || 'wifi,5g,4g,other') + '<br>';
+      msg += 'location: ' + this.getLocationStr(latlng);
+      marker.getPopup().setContent(msg);
     }
-    msg += 'zone: ' + this.getUeZone(marker.options.meep.ue.id) + '<br>';
-    msg += 'location: ' + this.getLocationStr(latlng);
-    marker.getPopup().setContent(msg);
   }
 
   // POA Marker Event Handler
@@ -649,7 +702,8 @@ class IDCMap extends Component {
             id: ue.assetName,
             path: p,
             eopMode: ue.eopMode,
-            velocity: ue.velocity
+            velocity: ue.velocity,
+            connected: true
           }
         },
         icon: markerIcon,
@@ -706,10 +760,19 @@ class IDCMap extends Component {
         }
       }
 
-      // Refresh marker style & position
+      // Refresh marker style if necessary
       if (this.props.type === TYPE_CFG) {
         this.setUeMarkerStyle(existingMarker);
       } else {
+        var connected = this.isConnected(ue.assetName);
+        if (existingMarker.options.meep.ue.connected !== connected) {
+          this.setUeMarkerStyle(existingMarker);
+          existingMarker.options.meep.ue.connected = connected;
+        }
+      }
+
+      // Refresh popup text & position
+      if (this.props.type === TYPE_EXEC) {
         this.updateUePopup(existingMarker);
       }
     }
@@ -822,7 +885,8 @@ class IDCMap extends Component {
       var m = L.marker(latlng, {
         meep: {
           compute: {
-            id: compute.assetName
+            id: compute.assetName,
+            connected: true
           }
         },
         icon: markerIcon,
@@ -849,10 +913,19 @@ class IDCMap extends Component {
       // Update COMPUTE position
       existingMarker.setLatLng(latlng);
 
-      // Refresh marker style & position
+      // Refresh marker style if necessary
       if (this.props.type === TYPE_CFG) {
         this.setComputeMarkerStyle(existingMarker);
       } else {
+        var connected = this.isConnected(compute.assetName);
+        if (existingMarker.options.meep.compute.connected !== connected) {
+          this.setComputeMarkerStyle(existingMarker);
+          existingMarker.options.meep.compute.connected = connected;
+        }
+      }
+
+      // Refresh popup text & position
+      if (this.props.type === TYPE_EXEC) {
         this.updateComputePopup(existingMarker);
       }
     }
