@@ -1,4 +1,4 @@
-version: 1.5.1
+version: 1.5.3
 name: demo1
 deployment:
     netChar:
@@ -53,6 +53,7 @@ deployment:
                                     id: 1cda8009-92c8-4a3d-adc9-0fbc72b0b490
                                     name: cloud1
                                     type: DC
+                                    connected: true
                                     processes:
                                         -
                                             id: d3faf837-477f-496f-b435-66b3d6e9d0f5
@@ -141,6 +142,8 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -153,7 +156,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                     interFogLatency: null
                     interFogLatencyVariation: null
@@ -220,7 +226,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null
@@ -267,6 +276,7 @@ deployment:
                                     id: e8bd434f-1ef2-4d32-b185-98f0bcc1e090
                                     name: zone1-edge1
                                     type: EDGE
+                                    connected: true
                                     processes:
                                         -
                                             id: fdff97b7-f342-4eb5-9a84-57ab4e19f0b5
@@ -355,6 +365,8 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -367,7 +379,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                         -
                             id: 6b477dd3-eb67-49f9-b1d2-2bfae9376a33
@@ -386,6 +401,7 @@ deployment:
                                     id: 7e992adf-c946-4527-b8e0-f3000215b234
                                     name: zone1-fog1
                                     type: FOG
+                                    connected: true
                                     processes:
                                         -
                                             id: 80f1b9b0-ec43-460a-9948-c59972198f14
@@ -474,6 +490,8 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -484,6 +502,8 @@ deployment:
                                     id: a95c7d87-1086-419b-9525-cf74807492e4
                                     name: ue1
                                     type: UE
+                                    connected: true
+                                    wireless: true
                                     processes:
                                         -
                                             id: b0ace81a-f113-4c3a-8414-956165cba4a5
@@ -527,6 +547,7 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -537,6 +558,8 @@ deployment:
                                     id: a4bff832-de45-4cbb-a54c-17b6b26735ef
                                     name: ue2-ext
                                     type: UE
+                                    connected: true
+                                    wireless: true
                                     processes:
                                         -
                                             id: b13e0551-e6f2-44bd-b720-6e47380bbf4f
@@ -602,6 +625,7 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -614,7 +638,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                         -
                             id: 956fd663-ef11-4992-8845-499a12ea969e
@@ -634,7 +661,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null
@@ -681,6 +711,7 @@ deployment:
                                     id: d4626b7c-fa9b-47e4-b0bd-8bbf792c4606
                                     name: zone2-edge1
                                     type: EDGE
+                                    connected: true
                                     processes:
                                         -
                                             id: 2e9b5291-51d1-4bf7-b464-fb902e3122cc
@@ -769,6 +800,8 @@ deployment:
                                     isExternal: null
                                     geoData: null
                                     networkLocationsInRange: null
+                                    wireless: null
+                                    wirelessType: null
                                     meta: null
                                     userMeta: null
                                     linkLatency: null
@@ -781,7 +814,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                         -
                             id: d4f98d78-253e-470a-af75-02c885c69a0e
@@ -801,7 +837,10 @@ deployment:
                             terminalLinkPacketLoss: null
                             meta: null
                             userMeta: null
+                            cellularPoaConfig: null
                             poa4GConfig: null
+                            poa5GConfig: null
+                            poaWifiConfig: null
                             geoData: null
                             physicalLocations: null
                     interFogLatency: null
@@ -834,4 +873,3 @@ deployment:
 id: null
 description: null
 config: null
-
