@@ -206,8 +206,8 @@ func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
+	defer mutex.Unlock()
 	zoneStatusSubscriptionMap[subsId] = nil
-	mutex.Unlock()
 }
 
 func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAPThreshold int32, opStatus []OperationStatus, subsIdStr string) {
@@ -232,18 +232,18 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 	zoneStatus.NbUsersInAPThreshold = (int)(nbOfUsersAPThreshold)
 	zoneStatus.ZoneId = zoneId
 	mutex.Lock()
+	defer mutex.Unlock()
 	zoneStatusSubscriptionMap[subsId] = &zoneStatus
-	mutex.Unlock()
 }
 
 func deregisterZonal(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
+	defer mutex.Unlock()
 	zonalSubscriptionMap[subsId] = ""
 	zonalSubscriptionEnteringMap[subsId] = ""
 	zonalSubscriptionLeavingMap[subsId] = ""
 	zonalSubscriptionTransferringMap[subsId] = ""
-	mutex.Unlock()
 }
 
 func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
@@ -251,6 +251,7 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 
 	mutex.Lock()
+	defer mutex.Unlock()
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
@@ -269,23 +270,23 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 		zonalSubscriptionTransferringMap[subsId] = zoneId
 	}
 	zonalSubscriptionMap[subsId] = zoneId
-	mutex.Unlock()
 }
 
 func deregisterUser(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
+	defer mutex.Unlock()
 	userSubscriptionMap[subsId] = ""
 	userSubscriptionEnteringMap[subsId] = ""
 	userSubscriptionLeavingMap[subsId] = ""
 	userSubscriptionTransferringMap[subsId] = ""
-	mutex.Unlock()
 }
 
 func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
+	defer mutex.Unlock()
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
@@ -304,7 +305,6 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 		userSubscriptionTransferringMap[subsId] = userAddress
 	}
 	userSubscriptionMap[subsId] = userAddress
-	mutex.Unlock()
 }
 
 func checkNotificationRegistrations(checkType int, param1 string, param2 string, param3 string, param4 string, param5 string) {
@@ -324,6 +324,7 @@ func checkNotificationRegistrations(checkType int, param1 string, param2 string,
 func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAPStr string, nbUsersInZoneStr string) {
 
 	mutex.Lock()
+	defer mutex.Unlock()
 
 	//check all that applies
 	for subsId, zoneStatus := range zoneStatusSubscriptionMap {
@@ -352,7 +353,6 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 					subsIdStr := strconv.Itoa(subsId)
 					jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
 					if jsonInfo == "" {
-						mutex.Unlock()
 						return
 					}
 
@@ -378,13 +378,12 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 			}
 		}
 	}
-	mutex.Unlock()
 }
 
 func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
 	mutex.Lock()
-
+	defer mutex.Unlock()
 	//check all that applies
 	for subsId, value := range userSubscriptionMap {
 		if value == userId {
@@ -392,7 +391,6 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			subsIdStr := strconv.Itoa(subsId)
 			jsonInfo, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".")
 			if jsonInfo == "" {
-				mutex.Unlock()
 				return
 			}
 
@@ -441,7 +439,6 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			}
 		}
 	}
-	mutex.Unlock()
 }
 
 func sendNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.TrackingNotification) {
@@ -493,6 +490,7 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
 	mutex.Lock()
+	defer mutex.Unlock()
 
 	//check all that applies
 	for subsId, value := range zonalSubscriptionMap {
@@ -572,7 +570,6 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 			}
 		}
 	}
-	mutex.Unlock()
 }
 
 func usersGet(w http.ResponseWriter, r *http.Request) {
@@ -1328,7 +1325,7 @@ func cleanUp() {
 	nextZoneStatusSubscriptionIdAvailable = 1
 
 	mutex.Lock()
-
+	defer mutex.Unlock()
 	zonalSubscriptionEnteringMap = map[int]string{}
 	zonalSubscriptionLeavingMap = map[int]string{}
 	zonalSubscriptionTransferringMap = map[int]string{}
@@ -1340,8 +1337,6 @@ func cleanUp() {
 	userSubscriptionMap = map[int]string{}
 
 	zoneStatusSubscriptionMap = map[int]*ZoneStatusCheck{}
-
-	mutex.Unlock()
 
 	updateStoreName("")
 }
@@ -1468,6 +1463,7 @@ func zoneStatusReInit() {
 
 	maxZoneStatusSubscriptionId := 0
 	mutex.Lock()
+	defer mutex.Unlock()
 	for _, zone := range zoneList.ZoneStatusSubscription {
 		resourceUrl := strings.Split(zone.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
@@ -1499,7 +1495,6 @@ func zoneStatusReInit() {
 			zoneStatusSubscriptionMap[subscriptionId] = &zoneStatus
 		}
 	}
-	mutex.Unlock()
 	nextZoneStatusSubscriptionIdAvailable = maxZoneStatusSubscriptionId + 1
 }
 
@@ -1512,6 +1507,7 @@ func zonalTrafficReInit() {
 
 	maxZonalSubscriptionId := 0
 	mutex.Lock()
+	defer mutex.Unlock()
 	for _, zone := range zoneList.ZonalTrafficSubscription {
 		resourceUrl := strings.Split(zone.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
@@ -1536,7 +1532,6 @@ func zonalTrafficReInit() {
 			zonalSubscriptionMap[subscriptionId] = zone.ZoneId
 		}
 	}
-	mutex.Unlock()
 	nextZonalSubscriptionIdAvailable = maxZonalSubscriptionId + 1
 }
 
@@ -1549,6 +1544,8 @@ func userTrackingReInit() {
 
 	maxUserSubscriptionId := 0
 	mutex.Lock()
+	defer mutex.Unlock()
+
 	for _, user := range userList.UserTrackingSubscription {
 		resourceUrl := strings.Split(user.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
@@ -1573,6 +1570,5 @@ func userTrackingReInit() {
 			userSubscriptionMap[subscriptionId] = user.Address
 		}
 	}
-	mutex.Unlock()
 	nextUserSubscriptionIdAvailable = maxUserSubscriptionId + 1
 }
