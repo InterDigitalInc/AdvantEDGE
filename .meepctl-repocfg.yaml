@@ -83,6 +83,7 @@ repo:
           - meep-metrics-engine
           - meep-mg-manager
           - meep-rnis
+          - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
       meep-platform-ctrl:
@@ -143,6 +144,7 @@ repo:
           meep-metrics-engine: charts/meep-metrics-engine
           meep-mg-manager: charts/meep-mg-manager
           meep-rnis: charts/meep-rnis
+          meep-wais: charts/meep-wais
           meep-sandbox-ctrl: charts/meep-sandbox-ctrl
           meep-tc-engine: charts/meep-tc-engine
           meep-virt-chart-templates: charts/meep-virt-chart-templates
@@ -153,6 +155,7 @@ repo:
           - meep-metrics-engine
           - meep-mg-manager
           - meep-rnis
+          - meep-wais
           - meep-sandbox-ctrl
           - meep-tc-engine
       meep-webhook:
@@ -239,6 +242,8 @@ repo:
           - packages.go-packages.meep-loc-serv-notification-client
           - sandbox.go-apps.meep-rnis
           - packages.go-packages.meep-rnis-notification-client
+          - sandbox.go-apps.meep-wais
+          - packages.go-packages.meep-wais-notification-client
           - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
           - sandbox.go-apps.meep-mg-manager
@@ -365,6 +370,30 @@ repo:
         lint: true
         # location of API specification
         api: go-apps/meep-rnis/api/swagger.yaml
+      meep-wais:
+        # location of source code
+        src: go-apps/meep-wais
+        # location of binary
+        bin: bin/meep-wais
+        # location of deployment chart
+        chart: charts/meep-wais
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-wais.yaml
+        # extra build flags
+        build-flags:
+          - -mod=vendor
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: false
+        # supports linting
+        lint: true
+        # location of API specification
+        api: go-apps/meep-wais/api/swagger.yaml
       meep-sandbox-ctrl:
         # location of source code
         src: go-apps/meep-sandbox-ctrl
@@ -643,6 +672,18 @@ repo:
         lint: false
         # location of API specification
         api: go-packages/meep-rnis-notification-client/api/swagger.yaml
+      meep-wais-client:
+        # location of source code
+        src: go-packages/meep-wais-client
+        # supports linting
+        lint: false
+      meep-wais-notification-client:
+        # location of source code
+        src: go-packages/meep-wais-notification-client
+        # supports linting
+        lint: false
+        # location of API specification
+        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-sandbox-ctrl-client:
         # location of source code
         src: go-packages/meep-sandbox-ctrl-client
