@@ -218,6 +218,8 @@ func processActiveScenarioUpdate() {
 						}
 					case mod.NodeTypePoaWifi:
 						cellId = ""
+					default:
+						cellId = ""
 					}
 
 					sbi.updateUeDataCB(name, mnc, mcc, cellId, erabIdValid)
@@ -287,6 +289,8 @@ func processActiveScenarioUpdate() {
 								}
 							}
 						case mod.NodeTypePoaWifi:
+							cellId = ""
+						default:
 							cellId = ""
 						}
 
