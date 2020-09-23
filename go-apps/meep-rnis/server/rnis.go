@@ -230,18 +230,21 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 	//updateDB if changes occur
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
-		//allocating a new erabId if entering a 4G environment (existence of an erabId)
-		if oldErabId == -1 && erabIdValid {
-			//rab establishment case
-			ueData.ErabId = int32(nextAvailableErabId)
-			nextAvailableErabId++
+		//allocating a new erabId if entering a 4G environment (using existence of an erabId)
+		if oldErabId == -1 { //if no erabId established (== -1), means not coming from a 4G environment
+			if erabIdValid { //if a new erabId should be allocated (meaning entering into a 4G environment)
+				//rab establishment case
+				ueData.ErabId = int32(nextAvailableErabId)
+				nextAvailableErabId++
+			} else { //was not connected to a 4G POA and still not connected to a 4G POA, so, no change
+				ueData.ErabId = oldErabId // = -1
+			}
 		} else {
-			if oldErabId != -1 && !erabIdValid {
+			if erabIdValid { //was connected to a 4G POA and still is, so, no change
+				ueData.ErabId = oldErabId // = sameAsBefore
+			} else { //was connected to a 4G POA, but now not connected to one, so need to release the 4G connection
 				//rab release case
 				ueData.ErabId = -1
-			} else {
-				//no change
-				ueData.ErabId = oldErabId
 			}
 		}
 
