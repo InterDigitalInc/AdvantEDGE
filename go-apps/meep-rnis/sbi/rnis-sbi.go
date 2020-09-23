@@ -238,7 +238,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", -1)
+			sbi.updateUeDataCB(prevUeName, "", "", "", false)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
