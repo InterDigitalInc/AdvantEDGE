@@ -1723,7 +1723,7 @@ export function addPlNode(pl, parent, nodes, edges) {
     highlight: lineColor,
     hover: lineColor
   };
-  e['dashes'] = pl.wireless;
+  e['dashes'] = pl.wireless || false;
 
   // Set level and group based on PL type
   switch (pl.type) {

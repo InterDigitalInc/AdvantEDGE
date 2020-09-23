@@ -44,911 +44,449 @@ const UPDATED = 1
 //json format using spacing to facilitate reading
 const testScenario string = `
 {
-   "version": "1.5.0",
-   "name": "test-scenario",
-   "deployment": {
-      "netChar": {
-         "latency": 50,
-         "latencyVariation": 5,
-         "throughputDl": 1000,
-         "throughputUl": 1000,
-         "latencyDistribution": null,
-         "throughput": null,
-         "packetLoss": null
-      },
-      "domains": [
-         {
-            "id": "PUBLIC",
-            "name": "PUBLIC",
-            "type": "PUBLIC",
-            "netChar": {
-               "latency": 6,
-               "latencyVariation": 2,
-               "throughputDl": 1000000,
-               "throughputUl": 1000000,
-               "latencyDistribution": null,
-               "throughput": null,
-               "packetLoss": null
+    "version":"1.5.3",
+    "name":"test-scenario",
+    "deployment":{
+        "netChar":{
+            "latency":50,
+            "latencyVariation":5,
+            "throughputDl":1000,
+            "throughputUl":1000
+        },
+        "domains":[
+            {
+                "id":"PUBLIC",
+                "name":"PUBLIC",
+                "type":"PUBLIC",
+                "netChar":{
+                    "latency":6,
+                    "latencyVariation":2,
+                    "throughputDl":1000000,
+                    "throughputUl":1000000
+                },
+                "zones":[
+                    {
+                        "id":"PUBLIC-COMMON",
+                        "name":"PUBLIC-COMMON",
+                        "type":"COMMON",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughput":1000000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"PUBLIC-COMMON-DEFAULT",
+                                "name":"PUBLIC-COMMON-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":50000,
+                                    "throughputUl":50000,
+                                    "packetLoss":1
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
-            "zones": [
-               {
-                  "id": "PUBLIC-COMMON",
-                  "name": "PUBLIC-COMMON",
-                  "type": "COMMON",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughput": 1000000,
-                     "latencyDistribution": null,
-                     "throughputDl": null,
-                     "throughputUl": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "PUBLIC-COMMON-DEFAULT",
-                        "name": "PUBLIC-COMMON-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 50000,
-                           "throughputUl": 50000,
-                           "packetLoss": 1,
-                           "latencyDistribution": null,
-                           "throughput": null
+            {
+                "id":"4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
+                "name":"operator-cell1",
+                "type":"OPERATOR-CELLULAR",
+                "netChar":{
+                    "latency":6,
+                    "latencyVariation":2,
+                    "throughputDl":1000,
+                    "throughputUl":1000
+                },
+                "cellularDomainConfig":{
+                    "mnc":"456",
+                    "mcc":"123",
+                    "defaultCellId":"1234567"
+                },
+                "zones":[
+                    {
+                        "id":"operator-cell1-COMMON",
+                        "name":"operator-cell1-COMMON",
+                        "type":"COMMON",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughput":1000
                         },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               }
-            ],
-            "interZoneLatency": null,
-            "interZoneLatencyVariation": null,
-            "interZoneThroughput": null,
-            "interZonePacketLoss": null,
-            "meta": null,
-            "userMeta": null,
-            "cellularDomainConfig": null
-         },
-         {
-            "id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
-            "name": "operator-cell1",
-            "type": "OPERATOR-CELLULAR",
-            "netChar": {
-               "latency": 6,
-               "latencyVariation": 2,
-               "throughputDl": 1000,
-               "throughputUl": 1000,
-               "latencyDistribution": null,
-               "throughput": null,
-               "packetLoss": null
+                        "networkLocations":[
+                            {
+                                "id":"operator-cell1-COMMON-DEFAULT",
+                                "name":"operator-cell1-COMMON-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id":"0836975f-a7ea-41ec-b0e0-aff43178194d",
+                        "name":"zone1",
+                        "type":"ZONE",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughput":1000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"zone1-DEFAULT",
+                                "name":"zone1-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
+                                        "name":"zone1-edge1",
+                                        "type":"EDGE",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"fcf1269c-a061-448e-aa80-6dd9c2d4c548",
+                                                "name":"zone1-edge1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone1-edge1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"35697e68-c627-4b8d-9cd7-ad8b8e226aee",
+                                                "name":"zone1-edge1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone1-edge1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"7a6f8077-b0b3-403d-b954-3351e21afeb7",
+                                "name":"zone1-poa-cell1",
+                                "type":"POA-4G",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "poa4GConfig":{
+                                    "cellId":"2345678"
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"32a2ced4-a262-49a8-8503-8489a94386a2",
+                                        "name":"ue1",
+                                        "type":"UE",
+                                        "connected":true,
+                                        "wireless":true,
+                                        "processes":[
+                                            {
+                                                "id":"9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
+                                                "name":"ue1-iperf",
+                                                "type":"UE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-client",
+                                                "commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT\n-t 3600 -b 50M;",
+                                                "commandExe":"/bin/bash",
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    },
+                                    {
+                                        "id":"b1851da5-c9e1-4bd8-ad23-5925c82ee127",
+                                        "name":"zone1-fog1",
+                                        "type":"FOG",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
+                                                "name":"zone1-fog1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone1-fog1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"53b5806b-e213-4c5a-a181-f1c31c24287b",
+                                                "name":"zone1-fog1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone1-fog1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"7ff90180-2c1a-4c11-b59a-3608c5d8d874",
+                                "name":"zone1-poa-cell2",
+                                "type":"POA-4G",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "poa4GConfig":{
+                                    "cellId":"3456789"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id":"d1f06b00-4454-4d35-94a5-b573888e7ea9",
+                        "name":"zone2",
+                        "type":"ZONE",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughput":1000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"zone2-DEFAULT",
+                                "name":"zone2-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"fb130d18-fd81-43e0-900c-c584e7190302",
+                                        "name":"zone2-edge1",
+                                        "type":"EDGE",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
+                                                "name":"zone2-edge1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone2-edge1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"53fa28f0-80e2-414c-8841-86db9bd37d51",
+                                                "name":"zone2-edge1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone2-edge1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"c44b8937-58af-44b2-acdb-e4d1c4a1510b",
+                                "name":"zone2-poa1",
+                                "type":"POA",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":20,
+                                    "throughputUl":20
+                                }
+                            }
+                        ]
+                    }
+                ]
             },
-            "cellularDomainConfig": {
-               "mnc": "456",
-               "mcc": "123",
-               "defaultCellId": "1234567"
-            },
-            "zones": [
-               {
-                  "id": "operator-cell1-COMMON",
-                  "name": "operator-cell1-COMMON",
-                  "type": "COMMON",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughput": 1000,
-                     "latencyDistribution": null,
-                     "throughputDl": null,
-                     "throughputUl": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "operator-cell1-COMMON-DEFAULT",
-                        "name": "operator-cell1-COMMON-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
+            {
+                "id":"e29138fb-cf03-4372-8335-fd2665b77a11",
+                "name":"operator1",
+                "type":"OPERATOR",
+                "netChar":{
+                    "latency":6,
+                    "latencyVariation":2,
+                    "throughputDl":1000,
+                    "throughputUl":1000
+                },
+                "zones":[
+                    {
+                        "id":"operator1-COMMON",
+                        "name":"operator1-COMMON",
+                        "type":"COMMON",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000,
+                            "throughputUl":1000
                         },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               },
-               {
-                  "id": "0836975f-a7ea-41ec-b0e0-aff43178194d",
-                  "name": "zone1",
-                  "type": "ZONE",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughput": 1000,
-                     "latencyDistribution": null,
-                     "throughputDl": null,
-                     "throughputUl": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "zone1-DEFAULT",
-                        "name": "zone1-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
+                        "networkLocations":[
+                            {
+                                "id":"operator1-COMMON-DEFAULT",
+                                "name":"operator1-COMMON-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id":"7d8bee73-6d5c-4c5a-a3a0-49ebe3cd2c71",
+                        "name":"zone3",
+                        "type":"ZONE",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000,
+                            "throughputUl":1000
                         },
-                        "physicalLocations": [
-                           {
-                              "id": "97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
-                              "name": "zone1-edge1",
-                              "type": "EDGE",
-                              "processes": [
-                                 {
-                                    "id": "fcf1269c-a061-448e-aa80-6dd9c2d4c548",
-                                    "name": "zone1-edge1-iperf",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/iperf-server",
-                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT",
-                                    "commandExe": "/bin/bash",
-                                    "serviceConfig": {
-                                       "name": "zone1-edge1-iperf",
-                                       "meSvcName": "iperf",
-                                       "ports": [
-                                          {
-                                             "protocol": "UDP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "environment": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 },
-                                 {
-                                    "id": "35697e68-c627-4b8d-9cd7-ad8b8e226aee",
-                                    "name": "zone1-edge1-svc",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/demo-server",
-                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
-                                    "serviceConfig": {
-                                       "name": "zone1-edge1-svc",
-                                       "meSvcName": "svc",
-                                       "ports": [
-                                          {
-                                             "protocol": "TCP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "commandArguments": null,
-                                    "commandExe": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 }
-                              ],
-                              "netChar": {
-                                 "throughputDl": 1000,
-                                 "throughputUl": 1000,
-                                 "latency": null,
-                                 "latencyVariation": null,
-                                 "latencyDistribution": null,
-                                 "throughput": null,
-                                 "packetLoss": null
-                              },
-                              "isExternal": null,
-                              "geoData": null,
-                              "networkLocationsInRange": null,
-                              "meta": null,
-                              "userMeta": null,
-                              "linkLatency": null,
-                              "linkLatencyVariation": null,
-                              "linkThroughput": null,
-                              "linkPacketLoss": null
-                           }
-                        ],
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null
-                     },
-                     {
-                        "id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
-                        "name": "zone1-poa-cell1",
-                        "type": "POA-4G",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "poa4GConfig": {
-                           "cellId": "2345678"
-                        },
-                        "physicalLocations": [
-                           {
-                              "id": "32a2ced4-a262-49a8-8503-8489a94386a2",
-                              "name": "ue1",
-                              "type": "UE",
-                              "processes": [
-                                 {
-                                    "id": "9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
-                                    "name": "ue1-iperf",
-                                    "type": "UE-APP",
-                                    "image": "meep-docker-registry:30001/iperf-client",
-                                    "commandArguments": "-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;",
-                                    "commandExe": "/bin/bash",
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "environment": null,
-                                    "serviceConfig": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 }
-                              ],
-                              "netChar": {
-                                 "throughputDl": 1000,
-                                 "throughputUl": 1000,
-                                 "latency": null,
-                                 "latencyVariation": null,
-                                 "latencyDistribution": null,
-                                 "throughput": null,
-                                 "packetLoss": null
-                              },
-                              "isExternal": null,
-                              "geoData": null,
-                              "networkLocationsInRange": null,
-                              "meta": null,
-                              "userMeta": null,
-                              "linkLatency": null,
-                              "linkLatencyVariation": null,
-                              "linkThroughput": null,
-                              "linkPacketLoss": null
-                           },
-                           {
-                              "id": "b1851da5-c9e1-4bd8-ad23-5925c82ee127",
-                              "name": "zone1-fog1",
-                              "type": "FOG",
-                              "processes": [
-                                 {
-                                    "id": "c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
-                                    "name": "zone1-fog1-iperf",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/iperf-server",
-                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-                                    "commandExe": "/bin/bash",
-                                    "serviceConfig": {
-                                       "name": "zone1-fog1-iperf",
-                                       "meSvcName": "iperf",
-                                       "ports": [
-                                          {
-                                             "protocol": "UDP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "environment": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 },
-                                 {
-                                    "id": "53b5806b-e213-4c5a-a181-f1c31c24287b",
-                                    "name": "zone1-fog1-svc",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/demo-server",
-                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
-                                    "serviceConfig": {
-                                       "name": "zone1-fog1-svc",
-                                       "meSvcName": "svc",
-                                       "ports": [
-                                          {
-                                             "protocol": "TCP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "commandArguments": null,
-                                    "commandExe": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 }
-                              ],
-                              "netChar": {
-                                 "throughputDl": 1000,
-                                 "throughputUl": 1000,
-                                 "latency": null,
-                                 "latencyVariation": null,
-                                 "latencyDistribution": null,
-                                 "throughput": null,
-                                 "packetLoss": null
-                              },
-                              "isExternal": null,
-                              "geoData": null,
-                              "networkLocationsInRange": null,
-                              "meta": null,
-                              "userMeta": null,
-                              "linkLatency": null,
-                              "linkLatencyVariation": null,
-                              "linkThroughput": null,
-                              "linkPacketLoss": null
-                           }
-                        ],
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "geoData": null
-                     },
-                     {
-                        "id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
-                        "name": "zone1-poa-cell2",
-                        "type": "POA-4G",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "poa4GConfig": {
-                           "cellId": "3456789"
-                        },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               },
-               {
-                  "id": "d1f06b00-4454-4d35-94a5-b573888e7ea9",
-                  "name": "zone2",
-                  "type": "ZONE",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughput": 1000,
-                     "latencyDistribution": null,
-                     "throughputDl": null,
-                     "throughputUl": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "zone2-DEFAULT",
-                        "name": "zone2-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "physicalLocations": [
-                           {
-                              "id": "fb130d18-fd81-43e0-900c-c584e7190302",
-                              "name": "zone2-edge1",
-                              "type": "EDGE",
-                              "processes": [
-                                 {
-                                    "id": "5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
-                                    "name": "zone2-edge1-iperf",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/iperf-server",
-                                    "commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-                                    "commandExe": "/bin/bash",
-                                    "serviceConfig": {
-                                       "name": "zone2-edge1-iperf",
-                                       "meSvcName": "iperf",
-                                       "ports": [
-                                          {
-                                             "protocol": "UDP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "environment": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 },
-                                 {
-                                    "id": "53fa28f0-80e2-414c-8841-86db9bd37d51",
-                                    "name": "zone2-edge1-svc",
-                                    "type": "EDGE-APP",
-                                    "image": "meep-docker-registry:30001/demo-server",
-                                    "environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
-                                    "serviceConfig": {
-                                       "name": "zone2-edge1-svc",
-                                       "meSvcName": "svc",
-                                       "ports": [
-                                          {
-                                             "protocol": "TCP",
-                                             "port": 80,
-                                             "externalPort": null
-                                          }
-                                       ]
-                                    },
-                                    "netChar": {
-                                       "throughputDl": 1000,
-                                       "throughputUl": 1000,
-                                       "latency": null,
-                                       "latencyVariation": null,
-                                       "latencyDistribution": null,
-                                       "throughput": null,
-                                       "packetLoss": null
-                                    },
-                                    "isExternal": null,
-                                    "commandArguments": null,
-                                    "commandExe": null,
-                                    "gpuConfig": null,
-                                    "externalConfig": null,
-                                    "status": null,
-                                    "userChartLocation": null,
-                                    "userChartAlternateValues": null,
-                                    "userChartGroup": null,
-                                    "meta": null,
-                                    "userMeta": null,
-                                    "appLatency": null,
-                                    "appLatencyVariation": null,
-                                    "appThroughput": null,
-                                    "appPacketLoss": null,
-                                    "placementId": null
-                                 }
-                              ],
-                              "netChar": {
-                                 "throughputDl": 1000,
-                                 "throughputUl": 1000,
-                                 "latency": null,
-                                 "latencyVariation": null,
-                                 "latencyDistribution": null,
-                                 "throughput": null,
-                                 "packetLoss": null
-                              },
-                              "isExternal": null,
-                              "geoData": null,
-                              "networkLocationsInRange": null,
-                              "meta": null,
-                              "userMeta": null,
-                              "linkLatency": null,
-                              "linkLatencyVariation": null,
-                              "linkThroughput": null,
-                              "linkPacketLoss": null
-                           }
-                        ],
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null
-                     },
-                     {
-                        "id": "c44b8937-58af-44b2-acdb-e4d1c4a1510b",
-                        "name": "zone2-poa1",
-                        "type": "POA",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 20,
-                           "throughputUl": 20,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               }
-            ],
-            "interZoneLatency": null,
-            "interZoneLatencyVariation": null,
-            "interZoneThroughput": null,
-            "interZonePacketLoss": null,
-            "meta": null,
-            "userMeta": null
-         },
-         {
-            "id": "e29138fb-cf03-4372-8335-fd2665b77a11",
-            "name": "operator1",
-            "type": "OPERATOR",
-            "netChar": {
-               "latency": 6,
-               "latencyVariation": 2,
-               "throughputDl": 1000,
-               "throughputUl": 1000,
-               "latencyDistribution": null,
-               "throughput": null,
-               "packetLoss": null
-            },
-            "zones": [
-               {
-                  "id": "operator1-COMMON",
-                  "name": "operator1-COMMON",
-                  "type": "COMMON",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughputDl": 1000,
-                     "throughputUl": 1000,
-                     "latencyDistribution": null,
-                     "throughput": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "operator1-COMMON-DEFAULT",
-                        "name": "operator1-COMMON-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               },
-               {
-                  "id": "7d8bee73-6d5c-4c5a-a3a0-49ebe3cd2c71",
-                  "name": "zone3",
-                  "type": "ZONE",
-                  "netChar": {
-                     "latency": 5,
-                     "latencyVariation": 1,
-                     "throughputDl": 1000,
-                     "throughputUl": 1000,
-                     "latencyDistribution": null,
-                     "throughput": null,
-                     "packetLoss": null
-                  },
-                  "networkLocations": [
-                     {
-                        "id": "zone3-DEFAULT",
-                        "name": "zone3-DEFAULT",
-                        "type": "DEFAULT",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     },
-                     {
-                        "id": "ecc2a41b-7381-4108-a037-52862c520733",
-                        "name": "poa1",
-                        "type": "POA",
-                        "netChar": {
-                           "latency": 1,
-                           "latencyVariation": 1,
-                           "throughputDl": 1000,
-                           "throughputUl": 1000,
-                           "latencyDistribution": null,
-                           "throughput": null,
-                           "packetLoss": null
-                        },
-                        "terminalLinkLatency": null,
-                        "terminalLinkLatencyVariation": null,
-                        "terminalLinkThroughput": null,
-                        "terminalLinkPacketLoss": null,
-                        "meta": null,
-                        "userMeta": null,
-                        "poa4GConfig": null,
-                        "geoData": null,
-                        "physicalLocations": null
-                     }
-                  ],
-                  "interFogLatency": null,
-                  "interFogLatencyVariation": null,
-                  "interFogThroughput": null,
-                  "interFogPacketLoss": null,
-                  "interEdgeLatency": null,
-                  "interEdgeLatencyVariation": null,
-                  "interEdgeThroughput": null,
-                  "interEdgePacketLoss": null,
-                  "edgeFogLatency": null,
-                  "edgeFogLatencyVariation": null,
-                  "edgeFogThroughput": null,
-                  "edgeFogPacketLoss": null,
-                  "meta": null,
-                  "userMeta": null
-               }
-            ],
-            "interZoneLatency": null,
-            "interZoneLatencyVariation": null,
-            "interZoneThroughput": null,
-            "interZonePacketLoss": null,
-            "meta": null,
-            "userMeta": null,
-            "cellularDomainConfig": null
-         }
-      ],
-      "interDomainLatency": null,
-      "interDomainLatencyVariation": null,
-      "interDomainThroughput": null,
-      "interDomainPacketLoss": null,
-      "meta": null,
-      "userMeta": null
-   },
-   "id": null,
-   "description": null,
-   "config": null
+                        "networkLocations":[
+                            {
+                                "id":"zone3-DEFAULT",
+                                "name":"zone3-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                }
+                            },
+                            {
+                                "id":"ecc2a41b-7381-4108-a037-52862c520733",
+                                "name":"poa1",
+                                "type":"POA",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
 }
 `
 
