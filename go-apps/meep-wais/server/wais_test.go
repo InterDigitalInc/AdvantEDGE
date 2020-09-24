@@ -5891,37 +5891,6 @@ const testScenarioName = "testScenario"
 var m *mod.Model
 var mqLocal *mq.MsgQueue
 
-func TestNotImplemented(t *testing.T) {
-	fmt.Println("--- ", t.Name())
-	log.MeepTextLogInit(t.Name())
-
-	//measurements
-	_, err := sendRequest(http.MethodGet, "/measurements", nil, nil, nil, http.StatusNotImplemented, MeasurementLinkListMeasurementsGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodPost, "/measurements", nil, nil, nil, http.StatusNotImplemented, MeasurementsPOST)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodGet, "/measurements/1", nil, nil, nil, http.StatusNotImplemented, MeasurementsGET)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodPut, "/measurements/1", nil, nil, nil, http.StatusNotImplemented, MeasurementsPUT)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
-	_, err = sendRequest(http.MethodDelete, "/measurements/1", nil, nil, nil, http.StatusNotImplemented, MeasurementIdDELETE)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-}
-
 func TestSuccessSubscriptionAssocSta(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
