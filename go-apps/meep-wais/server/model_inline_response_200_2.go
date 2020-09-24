@@ -24,5 +24,5 @@
 package server
 
 type InlineResponse2002 struct {
-	MeasurementLinkList *MeasurementLinkList `json:"MeasurementLinkList"`
+	SubscriptionLinkList *SubscriptionLinkList `json:"SubscriptionLinkList"`
 }

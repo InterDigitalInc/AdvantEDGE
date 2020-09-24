@@ -79,41 +79,6 @@ var routes = Routes{
 	},
 
 	Route{
-		"MeasurementIdDELETE",
-		strings.ToUpper("Delete"),
-		"/wai/v2/measurements/{measurementId}",
-		MeasurementIdDELETE,
-	},
-
-	Route{
-		"MeasurementLinkListMeasurementsGET",
-		strings.ToUpper("Get"),
-		"/wai/v2/measurements/",
-		MeasurementLinkListMeasurementsGET,
-	},
-
-	Route{
-		"MeasurementsGET",
-		strings.ToUpper("Get"),
-		"/wai/v2/measurements/{measurementId}",
-		MeasurementsGET,
-	},
-
-	Route{
-		"MeasurementsPOST",
-		strings.ToUpper("Post"),
-		"/wai/v2/measurements/",
-		MeasurementsPOST,
-	},
-
-	Route{
-		"MeasurementsPUT",
-		strings.ToUpper("Put"),
-		"/wai/v2/measurements/{measurementId}",
-		MeasurementsPUT,
-	},
-
-	Route{
 		"StaInfoGET",
 		strings.ToUpper("Get"),
 		"/wai/v2/queries/sta/sta_information",

@@ -24,5 +24,5 @@
 package client
 
 type InlineResponse2003 struct {
-	SubscriptionLinkList *SubscriptionLinkList `json:"SubscriptionLinkList"`
+	Subscription *Subscription `json:"Subscription"`
 }

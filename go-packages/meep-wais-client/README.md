@@ -22,11 +22,6 @@ All URIs are relative to *http://localhost/wai/v2*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *DefaultApi* | [**ApInfoGET**](docs/DefaultApi.md#apinfoget) | **Get** /queries/ap/ap_information | 
-*DefaultApi* | [**MeasurementIdDELETE**](docs/DefaultApi.md#measurementiddelete) | **Delete** /measurements/{measurementId} | 
-*DefaultApi* | [**MeasurementLinkListMeasurementsGET**](docs/DefaultApi.md#measurementlinklistmeasurementsget) | **Get** /measurements/ | 
-*DefaultApi* | [**MeasurementsGET**](docs/DefaultApi.md#measurementsget) | **Get** /measurements/{measurementId} | 
-*DefaultApi* | [**MeasurementsPOST**](docs/DefaultApi.md#measurementspost) | **Post** /measurements/ | 
-*DefaultApi* | [**MeasurementsPUT**](docs/DefaultApi.md#measurementsput) | **Put** /measurements/{measurementId} | 
 *DefaultApi* | [**StaInfoGET**](docs/DefaultApi.md#stainfoget) | **Get** /queries/sta/sta_information | 
 *DefaultApi* | [**SubscriptionLinkListSubscriptionsGET**](docs/DefaultApi.md#subscriptionlinklistsubscriptionsget) | **Get** /subscriptions/ | 
 *DefaultApi* | [**SubscriptionsDELETE**](docs/DefaultApi.md#subscriptionsdelete) | **Delete** /subscriptions/{subscriptionId} | 
@@ -56,14 +51,10 @@ Class | Method | HTTP request | Description
  - [InlineResponse2001](docs/InlineResponse2001.md)
  - [InlineResponse2002](docs/InlineResponse2002.md)
  - [InlineResponse2003](docs/InlineResponse2003.md)
- - [InlineResponse2004](docs/InlineResponse2004.md)
  - [InlineResponse201](docs/InlineResponse201.md)
  - [InlineResponse400](docs/InlineResponse400.md)
  - [InlineResponse403](docs/InlineResponse403.md)
  - [Link](docs/Link.md)
- - [Measurement](docs/Measurement.md)
- - [MeasurementConfig](docs/MeasurementConfig.md)
- - [MeasurementLinkList](docs/MeasurementLinkList.md)
  - [NeighborReport](docs/NeighborReport.md)
  - [OptionalSubelement](docs/OptionalSubelement.md)
  - [ProblemDetails](docs/ProblemDetails.md)

@@ -175,282 +175,6 @@ paths:
           schema:
             $ref: "#/definitions/inline_response_400"
       x-swagger-router-controller: "Default"
-  /measurements/:
-    get:
-      description: "The GET method can be used to request information about the measurements\
-        \ for this requestor"
-      operationId: "MeasurementLinkList_measurementsGET"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters: []
-      responses:
-        200:
-          description: "Response body contains the list of links to requestors measurements."
-          examples:
-            application/json:
-              MeasurementLinkList:
-                _links:
-                  self: "http://meAppServer.example.com/wai/v2/measurements"
-                  measurement:
-                  - href: "http://meAppClient.example.com/wai/v2/measurements/1"
-                  - href: "http://meAppClient.example.com/wai/v2/measurements/2"
-          schema:
-            $ref: "#/definitions/inline_response_200_2"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
-    post:
-      description: "Creates a measurement to the WLAN Access Information Service."
-      operationId: "measurementsPOST"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters:
-      - in: "body"
-        name: "Measurement"
-        description: "Use to creates a measurement."
-        required: true
-        schema:
-          $ref: "#/definitions/Measurement"
-        x-exportParamName: "Measurement"
-      responses:
-        201:
-          description: "Successful measurement creation"
-          examples:
-            application/json:
-              MeasurementConfig:
-                measurementId: 1
-                measurementDuration: 10
-                randomInterval: 1
-                staStatistics:
-                  staId:
-                    macId: "11:22:33:44:55:66"
-                  groupIdentity: 0
-                  triggeredReport: true
-                  triggerTimeout: 10
-                  triggerCondition: 1
-          schema:
-            $ref: "#/definitions/Measurement"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        415:
-          description: "Unsupported Media Type"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        422:
-          description: "Unprocessable Entity"
-          examples:
-            application/problem+json:
-              ProblemDetails:
-                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
-                title: "Too many targets"
-                status: "422"
-                detail: "The target area for the request is considered too large"
-                instance: "/meAppClient.example.com/77777/msgs/abc"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
-  /measurements/{measurementId}:
-    get:
-      description: "Get a measurement information"
-      operationId: "MeasurementsGET"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters:
-      - name: "measurementId"
-        in: "path"
-        description: "Measurement Id, specifically the \"self\" returned in the measurement\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "MeasurementId"
-      responses:
-        200:
-          description: "Measurement information"
-          examples:
-            application/json:
-              MeasurementConfig:
-                measurementId: 1
-                measurementDuration: 10
-                randomInterval: 1
-                staStatistics:
-                  staId:
-                    macId: "11:22:33:44:55:66"
-                  groupIdentity: 0
-                  triggeredReport: true
-                  triggerTimeout: 10
-                  triggerCondition: 1
-          schema:
-            $ref: "#/definitions/Measurement"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-    put:
-      description: "Updates a measurement from WLAN Access Information Service"
-      operationId: "MeasurementsPUT"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters:
-      - in: "body"
-        name: "Measurement"
-        description: "Use to creates a measurement."
-        required: true
-        schema:
-          $ref: "#/definitions/Measurement"
-        x-exportParamName: "Measurement"
-      - name: "measurementId"
-        in: "path"
-        description: "Measurement Id, specifically the \"self\" returned in the measurement\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "MeasurementId"
-      responses:
-        200:
-          description: "Successful measurement update"
-          examples:
-            application/json:
-              MeasurementConfig:
-                measurementId: 1
-                measurementDuration: 10
-                randomInterval: 1
-                staStatistics:
-                  staId:
-                    macId: "11:22:33:44:55:66"
-                  groupIdentity: 0
-                  triggeredReport: true
-                  triggerTimeout: 10
-                  triggerCondition: 1
-          schema:
-            $ref: "#/definitions/Measurement"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        412:
-          description: "Precondition failed"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        422:
-          description: "Unprocessable Entity"
-          examples:
-            application/problem+json:
-              ProblemDetails:
-                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
-                title: "Too many targets"
-                status: "422"
-                detail: "The target area for the request is considered too large"
-                instance: "/meAppClient.example.com/77777/msgs/abc"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-    delete:
-      description: "Method to delete a measurement"
-      operationId: "MeasurementIdDELETE"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "measurementId"
-        in: "path"
-        description: "Measurement Id, specifically the \"self\" returned in the measurement\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "MeasurementId"
-      responses:
-        204:
-          description: "No Content"
-      x-swagger-router-controller: "Default"
   /subscriptions/:
     get:
       description: "The GET method can be used to request information about the subscriptions\
@@ -469,12 +193,12 @@ paths:
                 _links:
                   self: "http://meAppServer.example.com/wai/v2/subscriptions"
                   subscription:
-                  - href: "http://meAppClient.example.com/wai/v2/notifications/1"
+                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/1"
                     subscriptionType: "AssocStaSubscription"
-                  - href: "http://meAppClient.example.com/wai/v2/notifications/2"
+                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/2"
                     subscriptionType: "StaDataRateSubscription"
           schema:
-            $ref: "#/definitions/inline_response_200_3"
+            $ref: "#/definitions/inline_response_200_2"
         400:
           description: "Bad Request"
           schema:
@@ -606,7 +330,7 @@ paths:
                   seconds: 1577836800
                   nanoSeconds: 0
           schema:
-            $ref: "#/definitions/inline_response_200_4"
+            $ref: "#/definitions/inline_response_200_3"
         400:
           description: "Bad Request"
           schema:
@@ -2255,17 +1979,6 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Subscription"
-  MeasurementLinkList:
-    type: "object"
-    required:
-    - "_links"
-    properties:
-      _links:
-        $ref: "#/definitions/Link"
-      measurementConfig:
-        type: "array"
-        items:
-          $ref: "#/definitions/MeasurementConfig"
   Link:
     type: "object"
     properties:
@@ -2352,13 +2065,6 @@ definitions:
         description: "Channel load."
       apId:
         $ref: "#/definitions/ApIdentity"
-    example:
-      apId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-      channelLoad: 5
-      channelId: 1
   BeaconRequestConfig:
     type: "object"
     required:
@@ -2393,17 +2099,6 @@ definitions:
         type: "integer"
         example: 1
         description: "."
-    example:
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      measurementMode: 0
-      reportingCondition: 1
-      bssId: "myBssId"
-      channelId: 1
-      ssId: "myIBSS"
   StaStatisticsConfig:
     type: "object"
     required:
@@ -2429,71 +2124,6 @@ definitions:
       triggerCondition:
         type: "integer"
         description: "Bitmap defining the metrics returned by the STA Statistics Report."
-    example:
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      triggerCondition: 2
-      triggerTimeout: 5
-      groupIdentity: 0
-      triggeredReport: true
-  MeasurementConfig:
-    type: "object"
-    required:
-    - "measurementDuration"
-    - "measurementId"
-    - "randomInterval"
-    properties:
-      measurementId:
-        type: "string"
-        description: "Identifier of this measurement configuration"
-      measurementDuration:
-        type: "integer"
-        description: "Duration of the measurement"
-      randomInterval:
-        type: "integer"
-        description: "Interval to be used for starting the measurement"
-      channelLoad:
-        $ref: "#/definitions/ChannelLoadConfig"
-      beaconRequest:
-        $ref: "#/definitions/BeaconRequestConfig"
-      staStatistics:
-        $ref: "#/definitions/StaStatisticsConfig"
-    description: "MeasurementConfig object"
-    example:
-      randomInterval: 6
-      staStatistics:
-        staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        triggerCondition: 2
-        triggerTimeout: 5
-        groupIdentity: 0
-        triggeredReport: true
-      measurementDuration: 0
-      beaconRequest:
-        staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        measurementMode: 0
-        reportingCondition: 1
-        bssId: "myBssId"
-        channelId: 1
-        ssId: "myIBSS"
-      channelLoad:
-        apId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-        channelLoad: 5
-        channelId: 1
-      measurementId: "measurementId"
   inline_response_200:
     type: "object"
     properties:
@@ -2985,51 +2615,6 @@ definitions:
   inline_response_200_2:
     type: "object"
     required:
-    - "MeasurementLinkList"
-    properties:
-      MeasurementLinkList:
-        $ref: "#/definitions/MeasurementLinkList"
-  Measurement:
-    type: "object"
-    properties:
-      MeasurementConfig:
-        $ref: "#/definitions/MeasurementConfig"
-    example:
-      MeasurementConfig:
-        randomInterval: 6
-        staStatistics:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          triggerCondition: 2
-          triggerTimeout: 5
-          groupIdentity: 0
-          triggeredReport: true
-        measurementDuration: 0
-        beaconRequest:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          measurementMode: 0
-          reportingCondition: 1
-          bssId: "myBssId"
-          channelId: 1
-          ssId: "myIBSS"
-        channelLoad:
-          apId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-          channelLoad: 5
-          channelId: 1
-        measurementId: "measurementId"
-  inline_response_200_3:
-    type: "object"
-    required:
     - "SubscriptionLinkList"
     properties:
       SubscriptionLinkList:
@@ -3044,7 +2629,7 @@ definitions:
     properties:
       Subscription:
         $ref: "#/definitions/Subscription"
-  inline_response_200_4:
+  inline_response_200_3:
     type: "object"
     required:
     - "Subscription"
@@ -3082,23 +2667,6 @@ parameters:
     type: "string"
     format: "uri"
     x-exportParamName: "SubscriptionId"
-  Body.Measurement:
-    in: "body"
-    name: "Measurement"
-    description: "Use to creates a measurement."
-    required: true
-    schema:
-      $ref: "#/definitions/Measurement"
-    x-exportParamName: "Measurement"
-  Path.measurementId:
-    name: "measurementId"
-    in: "path"
-    description: "Measurement Id, specifically the \"self\" returned in the measurement\
-      \ request"
-    required: true
-    type: "string"
-    format: "uri"
-    x-exportParamName: "MeasurementId"
   Query.Filter:
     name: "filter"
     in: "query"

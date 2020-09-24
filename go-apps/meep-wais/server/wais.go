@@ -82,11 +82,6 @@ type ApInfoComplete struct {
 	StaMacIds  []string
 }
 
-func notImplemented(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
 // Init - WAI Service initialization
 func Init() (err error) {
 
@@ -430,7 +425,7 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var response InlineResponse2004
+	var response InlineResponse2003
 	var subscription Subscription
 	response.Subscription = &subscription
 
@@ -536,7 +531,7 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2004
+	var response InlineResponse2003
 	subscription1 := new(Subscription1)
 
 	decoder := json.NewDecoder(r.Body)
@@ -745,7 +740,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2003
+	var response InlineResponse2002
 
 	subscriptionLinkList := createSubscriptionLinkList("")
 

@@ -31,26 +31,6 @@ func ApInfoGET(w http.ResponseWriter, r *http.Request) {
 	apInfoGET(w, r)
 }
 
-func MeasurementIdDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func MeasurementLinkListMeasurementsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func MeasurementsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func MeasurementsPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func MeasurementsPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
 func StaInfoGET(w http.ResponseWriter, r *http.Request) {
 	staInfoGET(w, r)
 }

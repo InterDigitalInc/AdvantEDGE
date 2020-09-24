@@ -6039,7 +6039,7 @@ func testSubscriptionListGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse2003
+	var respBody InlineResponse2002
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -6119,7 +6119,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	expectedCallBackRef := "myCallbakRef"
 	expectedLink := Link{"/" + testScenarioName + "/wai/v2/subscriptions/" + subscriptionId}
 	expectedExpiry := TimeStamp{1988599770, 0}
-	expectedResponse := InlineResponse2004{&Subscription{expectedSubscriptionType, expectedCallBackRef, &expectedLink, &expectedExpiry, &expectedApId, nil}}
+	expectedResponse := InlineResponse2003{&Subscription{expectedSubscriptionType, expectedCallBackRef, &expectedLink, &expectedExpiry, &expectedApId, nil}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6156,7 +6156,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2004
+		var respBody InlineResponse2003
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -6210,7 +6210,7 @@ func testSubscriptionAssocStaGet(t *testing.T, subscriptionId string, expectedRe
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2004
+		var respBody InlineResponse2003
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")

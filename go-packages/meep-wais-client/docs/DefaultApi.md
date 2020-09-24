@@ -5,11 +5,6 @@ All URIs are relative to *http://localhost/wai/v2*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**ApInfoGET**](DefaultApi.md#ApInfoGET) | **Get** /queries/ap/ap_information | 
-[**MeasurementIdDELETE**](DefaultApi.md#MeasurementIdDELETE) | **Delete** /measurements/{measurementId} | 
-[**MeasurementLinkListMeasurementsGET**](DefaultApi.md#MeasurementLinkListMeasurementsGET) | **Get** /measurements/ | 
-[**MeasurementsGET**](DefaultApi.md#MeasurementsGET) | **Get** /measurements/{measurementId} | 
-[**MeasurementsPOST**](DefaultApi.md#MeasurementsPOST) | **Post** /measurements/ | 
-[**MeasurementsPUT**](DefaultApi.md#MeasurementsPUT) | **Put** /measurements/{measurementId} | 
 [**StaInfoGET**](DefaultApi.md#StaInfoGET) | **Get** /queries/sta/sta_information | 
 [**SubscriptionLinkListSubscriptionsGET**](DefaultApi.md#SubscriptionLinkListSubscriptionsGET) | **Get** /subscriptions/ | 
 [**SubscriptionsDELETE**](DefaultApi.md#SubscriptionsDELETE) | **Delete** /subscriptions/{subscriptionId} | 
@@ -57,143 +52,6 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **MeasurementIdDELETE**
-> MeasurementIdDELETE(ctx, measurementId)
-
-
-Method to delete a measurement
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **measurementId** | **string**| Measurement Id, specifically the \&quot;self\&quot; returned in the measurement request | 
-
-### Return type
-
- (empty response body)
-
-### Authorization
-
-[OauthSecurity](../README.md#OauthSecurity)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **MeasurementLinkListMeasurementsGET**
-> InlineResponse2002 MeasurementLinkListMeasurementsGET(ctx, )
-
-
-The GET method can be used to request information about the measurements for this requestor
-
-### Required Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**InlineResponse2002**](inline_response_200_2.md)
-
-### Authorization
-
-[OauthSecurity](../README.md#OauthSecurity)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **MeasurementsGET**
-> Measurement MeasurementsGET(ctx, measurementId)
-
-
-Get a measurement information
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **measurementId** | **string**| Measurement Id, specifically the \&quot;self\&quot; returned in the measurement request | 
-
-### Return type
-
-[**Measurement**](Measurement.md)
-
-### Authorization
-
-[OauthSecurity](../README.md#OauthSecurity)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **MeasurementsPOST**
-> Measurement MeasurementsPOST(ctx, measurement)
-
-
-Creates a measurement to the WLAN Access Information Service.
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **measurement** | [**Measurement**](Measurement.md)| Use to creates a measurement. | 
-
-### Return type
-
-[**Measurement**](Measurement.md)
-
-### Authorization
-
-[OauthSecurity](../README.md#OauthSecurity)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **MeasurementsPUT**
-> Measurement MeasurementsPUT(ctx, measurement, measurementId)
-
-
-Updates a measurement from WLAN Access Information Service
-
-### Required Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **measurement** | [**Measurement**](Measurement.md)| Use to creates a measurement. | 
-  **measurementId** | **string**| Measurement Id, specifically the \&quot;self\&quot; returned in the measurement request | 
-
-### Return type
-
-[**Measurement**](Measurement.md)
-
-### Authorization
-
-[OauthSecurity](../README.md#OauthSecurity)
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json, application/problem+json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **StaInfoGET**
 > InlineResponse2001 StaInfoGET(ctx, optional)
 
@@ -234,7 +92,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionLinkListSubscriptionsGET**
-> InlineResponse2003 SubscriptionLinkListSubscriptionsGET(ctx, )
+> InlineResponse2002 SubscriptionLinkListSubscriptionsGET(ctx, )
 
 
 The GET method can be used to request information about the subscriptions for this requestor
@@ -244,7 +102,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponse2003**](inline_response_200_3.md)
+[**InlineResponse2002**](inline_response_200_2.md)
 
 ### Authorization
 
@@ -286,7 +144,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsGET**
-> InlineResponse2004 SubscriptionsGET(ctx, subscriptionId)
+> InlineResponse2003 SubscriptionsGET(ctx, subscriptionId)
 
 
 Get cell change subscription information
@@ -300,7 +158,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2004**](inline_response_200_4.md)
+[**InlineResponse2003**](inline_response_200_3.md)
 
 ### Authorization
 
