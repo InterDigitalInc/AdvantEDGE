@@ -260,7 +260,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 			checkReNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
 		}
 		if oldErabId != -1 && ueData.ErabId == -1 {
-			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
+			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, oldErabId)
 		}
 	}
 }
@@ -433,6 +433,183 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 	return nil
 }
 
+func isMatchCcFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocHo)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AppInsId == "" {
+		return true
+	}
+	return (appId == filter.AppInsId)
+}
+
+func isMatchRabFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AppInsId == "" {
+		return true
+	}
+	return (appId == filter.AppInsId)
+}
+
+func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocHo)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AssociateId == nil {
+		return true
+	}
+	//if filter accepts something specific but no assocId, then we fail right away
+	if assocId == nil {
+		return false
+	}
+	return (assocId.Value == filter.AssociateId.Value)
+}
+
+func isMatchRabFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AssociateId == nil {
+		return true
+	}
+	//if filter accepts something specific but no assocId, then we fail right away
+	if assocId == nil {
+		return false
+	}
+	return (assocId.Value == filter.AssociateId.Value)
+}
+
+func isMatchCcFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocHo)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Plmn == nil {
+		return true
+	}
+	//either of the Plmn should match the filter,
+	match := false
+
+	if newPlmn != nil {
+		if newPlmn.Mnc == filter.Plmn.Mnc && newPlmn.Mcc == filter.Plmn.Mcc {
+			match = true
+		}
+	}
+	if oldPlmn != nil {
+		if oldPlmn.Mnc == filter.Plmn.Mnc && oldPlmn.Mcc == filter.Plmn.Mcc {
+			match = true
+		}
+	}
+
+	return match
+}
+
+func isMatchRabFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Plmn == nil {
+		return true
+	}
+	//either of the Plmn should match the filter,
+	match := false
+
+	if newPlmn != nil {
+		if newPlmn.Mnc == filter.Plmn.Mnc && newPlmn.Mcc == filter.Plmn.Mcc {
+			match = true
+		}
+	}
+	if oldPlmn != nil {
+		if oldPlmn.Mnc == filter.Plmn.Mnc && oldPlmn.Mcc == filter.Plmn.Mcc {
+			match = true
+		}
+	}
+
+	return match
+}
+
+func isMatchCcFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocHo)
+
+	if filter.CellId == nil {
+		return true
+	}
+
+	//either the old of new cellId should match one of the cellId in the filter list
+	for _, cellId := range filter.CellId {
+
+		if newCellId == cellId {
+			return true
+		}
+		if oldCellId == cellId {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchRabFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*FilterCriteriaAssocQci)
+
+	if filter.CellId == nil {
+		return true
+	}
+
+	//either the old of new cellId should match one of the cellId in the filter list
+	for _, cellId := range filter.CellId {
+		if newCellId == cellId {
+			return true
+		}
+		if oldCellId == cellId {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchFilterCriteriaAppInsId(subscriptionType string, filterCriteria interface{}, appId string) bool {
+	switch subscriptionType {
+	case cellChangeSubscriptionType:
+		return isMatchCcFilterCriteriaAppInsId(filterCriteria, appId)
+	case rabEstSubscriptionType, rabRelSubscriptionType:
+		return isMatchRabFilterCriteriaAppInsId(filterCriteria, appId)
+	}
+	return true
+}
+
+func isMatchFilterCriteriaAssociateId(subscriptionType string, filterCriteria interface{}, assocId *AssociateId) bool {
+	switch subscriptionType {
+	case cellChangeSubscriptionType:
+		return isMatchCcFilterCriteriaAssociateId(filterCriteria, assocId)
+	case rabEstSubscriptionType, rabRelSubscriptionType:
+		return isMatchRabFilterCriteriaAssociateId(filterCriteria, assocId)
+	}
+	return true
+}
+
+func isMatchFilterCriteriaPlmn(subscriptionType string, filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+	switch subscriptionType {
+	case cellChangeSubscriptionType:
+		return isMatchCcFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+	case rabEstSubscriptionType, rabRelSubscriptionType:
+		return isMatchRabFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+	}
+	return true
+}
+
+func isMatchFilterCriteriaCellId(subscriptionType string, filterCriteria interface{}, newCellId string, oldCellId string) bool {
+	switch subscriptionType {
+	case cellChangeSubscriptionType:
+		return isMatchCcFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
+	case rabEstSubscriptionType, rabRelSubscriptionType:
+		return isMatchRabFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
+	}
+	return true
+}
+
 func checkCcNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, hoStatus string, newCellId string, oldCellId string) {
 
 	//no cell change if no cellIds present (cell change within 3gpp elements only)
@@ -443,51 +620,20 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	//check all that applies
 	for subsId, sub := range ccSubscriptionMap {
 
-		match := false
-
 		if sub != nil {
-			if (sub.FilterCriteria.AppInsId == "") || (sub.FilterCriteria.AppInsId != "" && appId == sub.FilterCriteria.AppInsId) {
-				match = true
-			} else {
-				match = false
-			}
 
-			if match && ((sub.FilterCriteria.AssociateId == nil) || (sub.FilterCriteria.AssociateId != nil && assocId != nil && assocId.Value == sub.FilterCriteria.AssociateId.Value)) {
-				match = true
-			} else {
-				match = false
-			}
-
-			if match && ((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && ((newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc) || (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc)))) {
-				match = true
-			} else {
-				match = false
-			}
-
-			//loop through all cellIds
+			//verifying every criteria of the filter
+			match := isMatchFilterCriteriaAppInsId(cellChangeSubscriptionType, sub.FilterCriteria, appId)
 			if match {
-				if sub.FilterCriteria.CellId != nil {
-					matchOne := false
+				match = isMatchFilterCriteriaAssociateId(cellChangeSubscriptionType, sub.FilterCriteria, assocId)
+			}
 
-					for _, cellId := range sub.FilterCriteria.CellId {
-						if newCellId != oldCellId {
-							if newCellId != "" && newCellId == cellId {
-								matchOne = true
-								break
-							} else {
-								if oldCellId != "" && oldCellId == cellId {
-									matchOne = true
-									break
-								}
-							}
-						}
-					}
-					if matchOne {
-						match = true
-					} else {
-						match = false
-					}
-				}
+			if match {
+				match = isMatchFilterCriteriaPlmn(cellChangeSubscriptionType, sub.FilterCriteria, newPlmn, oldPlmn)
+			}
+
+			if match {
+				match = isMatchFilterCriteriaCellId(cellChangeSubscriptionType, sub.FilterCriteria, newCellId, oldCellId)
 			}
 
 			//we ignore hoStatus
@@ -551,48 +697,30 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 func checkReNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
+	//checking filters only if we were not connected to a POA-4G and now connecting to one
+	//condition to be connecting to a POA-4G from non POA-4G: 1) had no plmn 2) had no cellId 3) has erabId being allocated to it
+	if oldPlmn != nil && oldCellId != "" && erabId == -1 {
+		return
+	}
+
 	//check all that applies
 	for subsId, sub := range reSubscriptionMap {
 
-		match := false
-
 		if sub != nil {
-			if (sub.FilterCriteria.AppInsId == "") || (sub.FilterCriteria.AppInsId != "" && appId == sub.FilterCriteria.AppInsId) {
-				match = true
-			} else {
-				match = false
-			}
 
-			if match && ((sub.FilterCriteria.AssociateId == nil) || (sub.FilterCriteria.AssociateId != nil && assocId != nil && assocId.Value == sub.FilterCriteria.AssociateId.Value)) {
-				match = true
-			} else {
-				match = false
-			}
+			//verifying every criteria of the filter
+			match := isMatchFilterCriteriaAppInsId(rabEstSubscriptionType, sub.FilterCriteria, appId)
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (newPlmn != nil && newPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && newPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (oldPlmn == nil || oldCellId == "" || erabId != -1)) {
-				match = true
-			} else {
-				match = false
-			}
-
-			//loop through all cellIds
 			if match {
-				if sub.FilterCriteria.CellId != nil {
-					matchOne := false
+				match = isMatchFilterCriteriaAssociateId(rabEstSubscriptionType, sub.FilterCriteria, assocId)
+			}
 
-					for _, cellId := range sub.FilterCriteria.CellId {
-						//if we are here, oldPlmn is null or oldCellId is ""
-						if newCellId == cellId {
-							matchOne = true
-							break
-						}
-					}
-					if matchOne {
-						match = true
-					} else {
-						match = false
-					}
-				}
+			if match {
+				match = isMatchFilterCriteriaPlmn(rabEstSubscriptionType, sub.FilterCriteria, newPlmn, nil)
+			}
+
+			if match {
+				match = isMatchFilterCriteriaCellId(rabEstSubscriptionType, sub.FilterCriteria, newCellId, oldCellId)
 			}
 
 			//we ignore qci
@@ -643,48 +771,30 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
+	//checking filters only if we were connected to a POA-4G and now disconnecting from one
+	//condition to be disconnecting from a POA-4G: 1) has an empty new plmn 2) has empty cellId 
+	if newPlmn != nil && newCellId != "" {
+		return
+	}
+
 	//check all that applies
 	for subsId, sub := range rrSubscriptionMap {
 
-		match := false
-
 		if sub != nil {
-			if (sub.FilterCriteria.AppInsId == "") || (sub.FilterCriteria.AppInsId != "" && appId == sub.FilterCriteria.AppInsId) {
-				match = true
-			} else {
-				match = false
-			}
 
-			if match && ((sub.FilterCriteria.AssociateId == nil) || (sub.FilterCriteria.AssociateId != nil && assocId != nil && assocId.Value == sub.FilterCriteria.AssociateId.Value)) {
-				match = true
-			} else {
-				match = false
-			}
+			//verifying every criteria of the filter
+			match := isMatchFilterCriteriaAppInsId(rabRelSubscriptionType, sub.FilterCriteria, appId)
 
-			if match && (((sub.FilterCriteria.Plmn == nil) || (sub.FilterCriteria.Plmn != nil && (oldPlmn != nil && oldPlmn.Mnc == sub.FilterCriteria.Plmn.Mnc && oldPlmn.Mcc == sub.FilterCriteria.Plmn.Mcc))) && (newPlmn == nil || newCellId == "" || erabId == -1)) {
-				match = true
-			} else {
-				match = false
-			}
-
-			//loop through all cellIds
 			if match {
-				if sub.FilterCriteria.CellId != nil {
-					matchOne := false
+				match = isMatchFilterCriteriaAssociateId(rabRelSubscriptionType, sub.FilterCriteria, assocId)
+			}
 
-					for _, cellId := range sub.FilterCriteria.CellId {
-						//if we are here, newPlmn is null or newCellId is ""
-						if oldCellId == cellId {
-							matchOne = true
-							break
-						}
-					}
-					if matchOne {
-						match = true
-					} else {
-						match = false
-					}
-				}
+			if match {
+				match = isMatchFilterCriteriaPlmn(rabRelSubscriptionType, sub.FilterCriteria, nil, oldPlmn)
+			}
+
+			if match {
+				match = isMatchFilterCriteriaCellId(rabRelSubscriptionType, sub.FilterCriteria, "", oldCellId)
 			}
 
 			//we ignore qci

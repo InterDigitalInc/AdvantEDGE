@@ -216,9 +216,8 @@ func processActiveScenarioUpdate() {
 								cellId = poa.Poa5GConfig.CellId
 							}
 						}
-					case mod.NodeTypePoaWifi:
-						cellId = ""
 					default:
+						//empty cells for POAs not supporting RNIS
 						cellId = ""
 					}
 
@@ -288,9 +287,8 @@ func processActiveScenarioUpdate() {
 									cellId = nl.Poa5GConfig.CellId
 								}
 							}
-						case mod.NodeTypePoaWifi:
-							cellId = ""
 						default:
+							//empty cells for POAs not supporting RNIS
 							cellId = ""
 						}
 
