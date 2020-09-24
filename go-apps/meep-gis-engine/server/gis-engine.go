@@ -29,10 +29,10 @@ import (
 	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	am "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-asset-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 	sbox "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	"github.com/gorilla/mux"
@@ -86,7 +86,7 @@ type GisEngine struct {
 	sboxCtrlClient *sbox.APIClient
 	activeModel    *mod.Model
 	sessionMgr     *sm.SessionMgr
-	pc             *postgis.Connector
+	assetMgr       *am.AssetMgr
 	assets         map[string]*Asset
 	ueInfo         map[string]*UeInfo
 	automation     map[string]bool
@@ -156,26 +156,26 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Session Manager")
 
-	// Connect to Postgis DB
-	ge.pc, err = postgis.NewConnector(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
+	// Connect to GIS Asset Manager
+	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
 	if err != nil {
-		log.Error("Failed connection to Postgis: ", err)
+		log.Error("Failed connection to GIS Asset Manager: ", err)
 		return err
 	}
-	log.Info("Connected to GIS Engine DB")
+	log.Info("Connected to GIS Asset Manager")
 
 	// Delete any old tables
-	_ = ge.pc.DeleteTables()
+	_ = ge.assetMgr.DeleteTables()
 
 	// Create new tables
-	err = ge.pc.CreateTables()
+	err = ge.assetMgr.CreateTables()
 	if err != nil {
-		log.Error("Failed connection to Postgis: ", err)
+		log.Error("Failed to create tables: ", err)
 		return err
 	}
 	log.Info("Created new GIS Engine DB tables")
 
-	// Initialize Postgis DB with current active scenario assets
+	// Initialize GIS Asset Manager with current active scenario assets
 	processScenarioActivate()
 
 	return nil
@@ -192,18 +192,18 @@ func Run() (err error) {
 		return err
 	}
 
-	// Register Postgis listener
-	err = ge.pc.SetListener(gisHandler)
+	// Register Asset Manager listener
+	err = ge.assetMgr.SetListener(gisHandler)
 	if err != nil {
-		log.Error("Failed to register Postgis listener: ", err.Error())
+		log.Error("Failed to register Asset Manager listener: ", err.Error())
 		return err
 	}
-	log.Info("Registered Postgis listener")
+	log.Info("Registered Asset Manager listener")
 
 	return nil
 }
 
-// Postgis handler
+// Asset Manager handler
 func gisHandler(updateType string, assetName string) {
 	// Create & fill gis update message
 	msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
@@ -276,10 +276,10 @@ func processScenarioTerminate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
-	// Flush all postgis tables
-	_ = ge.pc.DeleteAllUe()
-	_ = ge.pc.DeleteAllPoa()
-	_ = ge.pc.DeleteAllCompute()
+	// Flush all Asset Manager tables
+	_ = ge.assetMgr.DeleteAllUe()
+	_ = ge.assetMgr.DeleteAllPoa()
+	_ = ge.assetMgr.DeleteAllCompute()
 
 	// Clear asset list
 	log.Debug("GeoData deleted for all assets")
@@ -353,21 +353,21 @@ func removeAssets(assetList []string) {
 
 		if isUe(nodeType) {
 			log.Debug("GeoData deleted for UE: ", assetName)
-			err := ge.pc.DeleteUe(assetName)
+			err := ge.assetMgr.DeleteUe(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isPoa(nodeType) {
 			log.Debug("GeoData deleted for POA: ", assetName)
-			err := ge.pc.DeletePoa(assetName)
+			err := ge.assetMgr.DeletePoa(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
 			}
 		} else if isCompute(nodeType) {
 			log.Debug("GeoData deleted for Compute: ", assetName)
-			err := ge.pc.DeleteCompute(assetName)
+			err := ge.assetMgr.DeleteCompute(assetName)
 			if err != nil {
 				log.Error(err.Error())
 				continue
@@ -390,25 +390,25 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 		}
 		// Set default EOP mode to LOOP if not provided
 		if geoData.mode == "" {
-			geoData.mode = postgis.PathModeLoop
+			geoData.mode = am.PathModeLoop
 		}
 
 		// Fill UE data
-		ueData[postgis.FieldConnected] = pl.Connected
-		ueData[postgis.FieldPriority] = initWirelessType(pl.Wireless, pl.WirelessType)
-		ueData[postgis.FieldPosition] = geoData.position
+		ueData[am.FieldConnected] = pl.Connected
+		ueData[am.FieldPriority] = initWirelessType(pl.Wireless, pl.WirelessType)
+		ueData[am.FieldPosition] = geoData.position
 		if geoData.path != "" {
-			ueData[postgis.FieldPath] = geoData.path
+			ueData[am.FieldPath] = geoData.path
 			// Set default EOP mode to LOOP if not provided
 			if geoData.mode == "" {
-				geoData.mode = postgis.PathModeLoop
+				geoData.mode = am.PathModeLoop
 			}
-			ueData[postgis.FieldMode] = geoData.mode
-			ueData[postgis.FieldVelocity] = geoData.velocity
+			ueData[am.FieldMode] = geoData.mode
+			ueData[am.FieldVelocity] = geoData.velocity
 		}
 
 		// Create UE
-		err := ge.pc.CreateUe(pl.Id, asset.name, ueData)
+		err := ge.assetMgr.CreateUe(pl.Id, asset.name, ueData)
 		if err != nil {
 			return err
 		}
@@ -419,14 +419,14 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 		// Update Geodata
 		if geoData != nil {
 			if geoData.position != "" && geoData.position != asset.geoData.position {
-				ueData[postgis.FieldPosition] = geoData.position
+				ueData[am.FieldPosition] = geoData.position
 				asset.geoData.position = geoData.position
 			}
 			if geoData.path != "" && (geoData.path != asset.geoData.path ||
 				geoData.mode != asset.geoData.mode || geoData.velocity != asset.geoData.velocity) {
-				ueData[postgis.FieldPath] = geoData.path
-				ueData[postgis.FieldMode] = geoData.mode
-				ueData[postgis.FieldVelocity] = geoData.velocity
+				ueData[am.FieldPath] = geoData.path
+				ueData[am.FieldMode] = geoData.mode
+				ueData[am.FieldVelocity] = geoData.velocity
 				asset.geoData.path = geoData.path
 				asset.geoData.mode = geoData.mode
 				asset.geoData.velocity = geoData.velocity
@@ -435,18 +435,18 @@ func setUe(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoData) 
 
 		// Update connection state
 		if pl.Connected != asset.connected {
-			ueData[postgis.FieldConnected] = pl.Connected
+			ueData[am.FieldConnected] = pl.Connected
 			asset.connected = pl.Connected
 		}
 		wirelessType := initWirelessType(pl.Wireless, pl.WirelessType)
 		if wirelessType != asset.wirelessType {
-			ueData[postgis.FieldPriority] = wirelessType
+			ueData[am.FieldPriority] = wirelessType
 			asset.wirelessType = wirelessType
 		}
 
 		// Update UE if necessary
 		if len(ueData) > 0 {
-			err := ge.pc.UpdateUe(asset.name, ueData)
+			err := ge.assetMgr.UpdateUe(asset.name, ueData)
 			if err != nil {
 				return err
 			}
@@ -469,12 +469,12 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 		}
 
 		// Get POA data
-		poaData[postgis.FieldSubtype] = asset.typ
-		poaData[postgis.FieldRadius] = geoData.radius
-		poaData[postgis.FieldPosition] = geoData.position
+		poaData[am.FieldSubtype] = asset.typ
+		poaData[am.FieldRadius] = geoData.radius
+		poaData[am.FieldPosition] = geoData.position
 
 		// Create POA
-		err := ge.pc.CreatePoa(nl.Id, asset.name, poaData)
+		err := ge.assetMgr.CreatePoa(nl.Id, asset.name, poaData)
 		if err != nil {
 			return err
 		}
@@ -484,16 +484,16 @@ func setPoa(asset *Asset, nl *dataModel.NetworkLocation, geoData *AssetGeoData) 
 		// Update Geodata
 		if geoData != nil {
 			if geoData.radius != asset.geoData.radius {
-				poaData[postgis.FieldRadius] = geoData.radius
+				poaData[am.FieldRadius] = geoData.radius
 			}
 			if geoData.position != "" && geoData.position != asset.geoData.position {
-				poaData[postgis.FieldPosition] = geoData.position
+				poaData[am.FieldPosition] = geoData.position
 			}
 		}
 
 		// Update POA
 		if len(poaData) > 0 {
-			err := ge.pc.UpdatePoa(asset.name, poaData)
+			err := ge.assetMgr.UpdatePoa(asset.name, poaData)
 			if err != nil {
 				return err
 			}
@@ -515,12 +515,12 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 		}
 
 		// Get Compute connection state
-		computeData[postgis.FieldSubtype] = asset.typ
-		computeData[postgis.FieldConnected] = pl.Connected
-		computeData[postgis.FieldPosition] = geoData.position
+		computeData[am.FieldSubtype] = asset.typ
+		computeData[am.FieldConnected] = pl.Connected
+		computeData[am.FieldPosition] = geoData.position
 
 		// Create Compute
-		err := ge.pc.CreateCompute(pl.Id, asset.name, computeData)
+		err := ge.assetMgr.CreateCompute(pl.Id, asset.name, computeData)
 		if err != nil {
 			return err
 		}
@@ -530,19 +530,19 @@ func setCompute(asset *Asset, pl *dataModel.PhysicalLocation, geoData *AssetGeoD
 		// Update Geodata
 		if geoData != nil {
 			if geoData.position != "" && geoData.position != asset.geoData.position {
-				computeData[postgis.FieldPosition] = geoData.position
+				computeData[am.FieldPosition] = geoData.position
 			}
 		}
 
 		// Update connection state
 		if pl.Connected != asset.connected {
-			computeData[postgis.FieldConnected] = pl.Connected
+			computeData[am.FieldConnected] = pl.Connected
 			asset.connected = pl.Connected
 		}
 
 		// Update Compute
 		if len(computeData) > 0 {
-			err := ge.pc.UpdateCompute(asset.name, computeData)
+			err := ge.assetMgr.UpdateCompute(asset.name, computeData)
 			if err != nil {
 				return err
 			}
@@ -590,7 +590,7 @@ func parseGeoData(geoData *dataModel.GeoData) (assetGeoData *AssetGeoData, err e
 
 	// Get Path Mode
 	assetGeoData.mode = geoData.EopMode
-	if assetGeoData.mode != "" && assetGeoData.mode != postgis.PathModeLoop && assetGeoData.mode != postgis.PathModeReverse {
+	if assetGeoData.mode != "" && assetGeoData.mode != am.PathModeLoop && assetGeoData.mode != am.PathModeReverse {
 		return nil, errors.New("Unsupported end-of-path mode: " + assetGeoData.mode)
 	}
 
@@ -640,7 +640,7 @@ func parseGeoDataAsset(geoData *GeoDataAsset) (assetGeoData *AssetGeoData, err e
 
 	// Get Path Mode
 	assetGeoData.mode = geoData.EopMode
-	if assetGeoData.mode != "" && assetGeoData.mode != postgis.PathModeLoop && assetGeoData.mode != postgis.PathModeReverse {
+	if assetGeoData.mode != "" && assetGeoData.mode != am.PathModeLoop && assetGeoData.mode != am.PathModeReverse {
 		return nil, errors.New("Unsupported end-of-path mode: " + assetGeoData.mode)
 	}
 
@@ -767,7 +767,7 @@ func runAutomation() {
 		increment := float32(currentTime.Sub(ge.updateTime).Seconds())
 
 		// Update all UE positions with increment
-		err := ge.pc.AdvanceAllUePosition(increment)
+		err := ge.assetMgr.AdvanceAllUePosition(increment)
 		if err != nil {
 			log.Error(err)
 		}
@@ -779,7 +779,7 @@ func runAutomation() {
 	// Mobility & POA In Range
 	if ge.automation[AutoTypeMobility] || ge.automation[AutoTypePoaInRange] {
 		// Get all UE POA information
-		ueMap, err := ge.pc.GetAllUe()
+		ueMap, err := ge.assetMgr.GetAllUe()
 		if err == nil {
 			for _, ue := range ueMap {
 				// Get stored UE info
@@ -795,7 +795,7 @@ func runAutomation() {
 						if ue.Poa != "" {
 							mobilityEvent.Dest = ue.Poa
 						} else {
-							mobilityEvent.Dest = postgis.PoaTypeDisconnected
+							mobilityEvent.Dest = am.PoaTypeDisconnected
 						}
 						event.EventMobility = &mobilityEvent
 
@@ -976,7 +976,7 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Remove asset from DB
 	if isUe(asset.typ) {
 		asset.geoData = nil
-		err := ge.pc.DeleteUe(asset.name)
+		err := ge.assetMgr.DeleteUe(asset.name)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -984,7 +984,7 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if isPoa(asset.typ) {
 		asset.geoData = nil
-		err := ge.pc.DeletePoa(asset.name)
+		err := ge.assetMgr.DeletePoa(asset.name)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -992,7 +992,7 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if isCompute(asset.typ) {
 		asset.geoData = nil
-		err := ge.pc.DeleteCompute(asset.name)
+		err := ge.assetMgr.DeleteCompute(asset.name)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1024,7 +1024,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 	// Get all UEs
 	if assetType == "" || assetType == AssetTypeUe {
-		ueMap, err := ge.pc.GetAllUe()
+		ueMap, err := ge.assetMgr.GetAllUe()
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1058,7 +1058,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 	// Get all POAs
 	if assetType == "" || assetType == AssetTypePoa {
-		poaMap, err := ge.pc.GetAllPoa()
+		poaMap, err := ge.assetMgr.GetAllPoa()
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1086,7 +1086,7 @@ func geGetAssetData(w http.ResponseWriter, r *http.Request) {
 
 	// Get all Computes
 	if assetType == "" || assetType == AssetTypeCompute {
-		computeMap, err := ge.pc.GetAllCompute()
+		computeMap, err := ge.assetMgr.GetAllCompute()
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1157,14 +1157,14 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	var asset GeoDataAsset
 	asset.AssetName = assetName
 
-	// Retrieve geodata from postgis using asset name & type
+	// Retrieve geodata from Asset Manager using asset name & type
 	nodeType := ge.activeModel.GetNodeType(assetName)
 	asset.SubType = nodeType
 
 	if isUe(nodeType) {
 		// Get UE information
 		asset.AssetType = AssetTypeUe
-		ue, err := ge.pc.GetUe(assetName)
+		ue, err := ge.assetMgr.GetUe(assetName)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -1184,7 +1184,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	} else if isPoa(nodeType) {
 		// Get POA information
 		asset.AssetType = AssetTypePoa
-		poa, err := ge.pc.GetPoa(assetName)
+		poa, err := ge.assetMgr.GetPoa(assetName)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -1199,7 +1199,7 @@ func geGetGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	} else if isCompute(nodeType) {
 		// Get Compute information
 		asset.AssetType = AssetTypeCompute
-		compute, err := ge.pc.GetCompute(assetName)
+		compute, err := ge.assetMgr.GetCompute(assetName)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
