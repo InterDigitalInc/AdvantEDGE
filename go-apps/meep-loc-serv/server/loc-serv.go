@@ -26,6 +26,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
@@ -104,6 +105,7 @@ var sandboxName string
 var basePath string
 var baseKey string
 var sessionMgr *sm.SessionMgr
+var mutex sync.Mutex
 
 // Init - Location Service initialization
 func Init() (err error) {
@@ -203,6 +205,8 @@ func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
 
 func deregisterZoneStatus(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
 	zoneStatusSubscriptionMap[subsId] = nil
 }
 
@@ -227,12 +231,15 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 	zoneStatus.NbUsersInZoneThreshold = (int)(nbOfUsersZoneThreshold)
 	zoneStatus.NbUsersInAPThreshold = (int)(nbOfUsersAPThreshold)
 	zoneStatus.ZoneId = zoneId
-
+	mutex.Lock()
+	defer mutex.Unlock()
 	zoneStatusSubscriptionMap[subsId] = &zoneStatus
 }
 
 func deregisterZonal(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
 	zonalSubscriptionMap[subsId] = ""
 	zonalSubscriptionEnteringMap[subsId] = ""
 	zonalSubscriptionLeavingMap[subsId] = ""
@@ -243,6 +250,8 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 
 	subsId, _ := strconv.Atoi(subsIdStr)
 
+	mutex.Lock()
+	defer mutex.Unlock()
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
@@ -265,6 +274,8 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 
 func deregisterUser(subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
 	userSubscriptionMap[subsId] = ""
 	userSubscriptionEnteringMap[subsId] = ""
 	userSubscriptionLeavingMap[subsId] = ""
@@ -274,7 +285,8 @@ func deregisterUser(subsIdStr string) {
 func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 
 	subsId, _ := strconv.Atoi(subsIdStr)
-
+	mutex.Lock()
+	defer mutex.Unlock()
 	if event != nil {
 		for i := 0; i < len(event); i++ {
 			switch event[i] {
@@ -310,6 +322,9 @@ func checkNotificationRegistrations(checkType int, param1 string, param2 string,
 }
 
 func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAPStr string, nbUsersInZoneStr string) {
+
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	//check all that applies
 	for subsId, zoneStatus := range zoneStatusSubscriptionMap {
@@ -367,6 +382,8 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 
 func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
 
+	mutex.Lock()
+	defer mutex.Unlock()
 	//check all that applies
 	for subsId, value := range userSubscriptionMap {
 		if value == userId {
@@ -471,6 +488,9 @@ func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionI
 }
 
 func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApId string, newApId string, userId string) {
+
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	//check all that applies
 	for subsId, value := range zonalSubscriptionMap {
@@ -1304,6 +1324,8 @@ func cleanUp() {
 	nextUserSubscriptionIdAvailable = 1
 	nextZoneStatusSubscriptionIdAvailable = 1
 
+	mutex.Lock()
+	defer mutex.Unlock()
 	zonalSubscriptionEnteringMap = map[int]string{}
 	zonalSubscriptionLeavingMap = map[int]string{}
 	zonalSubscriptionTransferringMap = map[int]string{}
@@ -1440,6 +1462,8 @@ func zoneStatusReInit() {
 	_ = rc.ForEachJSONEntry(keyName, populateZoneStatusList, &zoneList)
 
 	maxZoneStatusSubscriptionId := 0
+	mutex.Lock()
+	defer mutex.Unlock()
 	for _, zone := range zoneList.ZoneStatusSubscription {
 		resourceUrl := strings.Split(zone.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
@@ -1482,6 +1506,8 @@ func zonalTrafficReInit() {
 	_ = rc.ForEachJSONEntry(keyName, populateZonalTrafficList, &zoneList)
 
 	maxZonalSubscriptionId := 0
+	mutex.Lock()
+	defer mutex.Unlock()
 	for _, zone := range zoneList.ZonalTrafficSubscription {
 		resourceUrl := strings.Split(zone.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
@@ -1517,6 +1543,9 @@ func userTrackingReInit() {
 	_ = rc.ForEachJSONEntry(keyName, populateUserTrackingList, &userList)
 
 	maxUserSubscriptionId := 0
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	for _, user := range userList.UserTrackingSubscription {
 		resourceUrl := strings.Split(user.ResourceURL, "/")
 		subscriptionId, err := strconv.Atoi(resourceUrl[len(resourceUrl)-1])
