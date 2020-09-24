@@ -333,8 +333,8 @@ const validateCellularCellId = val => {
 
 const validateCellularNrCellId = val => {
   if (val) {
-    if (val.length > 7) {
-      return 'Maximum 7 characters';
+    if (val.length > 9) {
+      return 'Maximum 9 characters';
     } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
       return 'Alphanumeric hex characters only';
     }

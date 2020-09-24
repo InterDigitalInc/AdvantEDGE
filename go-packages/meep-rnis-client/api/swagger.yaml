@@ -2899,7 +2899,6 @@ definitions:
     type: "object"
     required:
     - "appInsId"
-    - "ecgi"
     properties:
       timeStamp:
         $ref: "#/definitions/TimeStamp"
@@ -2908,8 +2907,8 @@ definitions:
         format: "string"
         example: "01"
         description: "Unique identifier for the mobile edge application instance"
-      ecgi:
-        $ref: "#/definitions/Ecgi"
+      plmn:
+        $ref: "#/definitions/Plmn"
   RabInfo:
     type: "object"
     required:
