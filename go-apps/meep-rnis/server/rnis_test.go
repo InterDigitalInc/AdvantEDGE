@@ -2182,8 +2182,8 @@ func TestSbi(t *testing.T) {
 
 	var expectedAppEcgiStr [2]string
 	var expectedAppEcgi [2]Ecgi
-	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, "1234567"}
-	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, "1234567"}
+	expectedAppEcgi[INITIAL] = Ecgi{&Plmn{"123", "456"}, ""}
+	expectedAppEcgi[UPDATED] = Ecgi{&Plmn{"123", "456"}, ""}
 
 	j, err := json.Marshal(expectedUeData[INITIAL])
 	if err != nil {

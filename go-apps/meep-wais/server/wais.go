@@ -27,6 +27,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-wais/sbi"
@@ -66,6 +67,7 @@ var hostUrl *url.URL
 var sandboxName string
 var basePath string
 var baseKey string
+var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
 
@@ -268,6 +270,8 @@ func createClient(notifyPath string) (*clientNotif.APIClient, error) {
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
+	mutex.Lock()
+	defer mutex.Unlock()
 	for expiryTime, subsIndexList := range subscriptionExpiryMap {
 		if expiryTime <= nowTime {
 			subscriptionExpiryMap[expiryTime] = nil
@@ -293,7 +297,7 @@ func checkForExpiredSubscriptions() {
 					notif.ExpiryDeadline = &expiryTimeStamp
 
 					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
-					_ = delSubscription(baseKey+"subscription", subsIdStr)
+					_ = delSubscription(baseKey+"subscription", subsIdStr, true)
 				}
 			}
 		}
@@ -315,6 +319,9 @@ func repopulateSubscriptionMap(key string, jsonInfo string, userData interface{}
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	//only assocSta subscription for now
 	assocStaSubscriptionMap[subsId] = &subscription
 	if subscription.ExpiryDeadline != nil {
@@ -333,6 +340,8 @@ func repopulateSubscriptionMap(key string, jsonInfo string, userData interface{}
 
 func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacId string) {
 
+	mutex.Lock()
+	defer mutex.Unlock()
 	//check all that applies
 	for subsId, sub := range assocStaSubscriptionMap {
 		match := false
@@ -456,6 +465,8 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 
 func isSubscriptionIdRegistered(subsIdStr string) bool {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
 	if assocStaSubscriptionMap[subsId] != nil {
 		return true
 	} else {
@@ -465,6 +476,9 @@ func isSubscriptionIdRegistered(subsIdStr string) bool {
 
 func register(subscription *Subscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	assocStaSubscriptionMap[subsId] = subscription
 	if subscription.ExpiryDeadline != nil {
 		//get current list of subscription meant to expire at this time
@@ -476,8 +490,12 @@ func register(subscription *Subscription, subsIdStr string) {
 	log.Info("New registration: ", subsId, " type: ", subscription.SubscriptionType)
 }
 
-func deregister(subsIdStr string) {
+func deregister(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
 	assocStaSubscriptionMap[subsId] = nil
 	log.Info("Deregistration: ", subsId, " type: ", assocStaSubscriptionType)
 }
@@ -571,10 +589,10 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func delSubscription(keyPrefix string, subsId string) error {
+func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
-	deregister(subsId)
+	deregister(subsId, mutexTaken)
 	return err
 }
 
@@ -582,7 +600,7 @@ func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+"subscription:", vars["subscriptionId"])
+	err := delSubscription(baseKey+"subscription:", vars["subscriptionId"], false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -724,6 +742,9 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 
 	//loop through all different types of subscription
 
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	if subType == "" || subType == assocStaSubscriptionType {
 		//loop through assocSta map
 		for _, assocStaSubscription := range assocStaSubscriptionMap {
@@ -763,6 +784,9 @@ func cleanUp() {
 	log.Info("Terminate all")
 	rc.DBFlush(baseKey)
 	nextSubscriptionIdAvailable = 1
+
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	assocStaSubscriptionMap = map[int]*Subscription{}
 

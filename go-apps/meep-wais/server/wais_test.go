@@ -332,6 +332,7 @@ const testScenario string = `
                               "id": "c52208b3-93bb-4255-9b34-52432acc4398",
                               "name": "10.100.0.1",
                               "type": "UE",
+                              "macId": "101000100000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -2575,6 +2576,7 @@ const testScenario string = `
                               "id": "0ca4bfcc-7346-4f57-9c85-bb92642ec37e",
                               "name": "10.1.0.2",
                               "type": "UE",
+                              "macId": "101020000000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -2912,6 +2914,7 @@ const testScenario string = `
                               "id": "ec32caa6-ddc6-4f5e-a815-654782b31abb",
                               "name": "10.100.0.2",
                               "type": "UE",
+                              "macId": "101000200000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -3843,6 +3846,7 @@ const testScenario string = `
                               "id": "1d2683f4-086e-47d6-abbb-07fa481a25fb",
                               "name": "10.10.0.1",
                               "type": "UE",
+                              "macId": "101001000000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -4724,6 +4728,7 @@ const testScenario string = `
                               "id": "c3bc8d8d-170b-45bb-93a9-8ce658571321",
                               "name": "10.1.0.1",
                               "type": "UE",
+                              "macId": "101010000000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -5181,6 +5186,7 @@ const testScenario string = `
                               "id": "824cf1bf-f91d-44c2-906d-e939fa3339cd",
                               "name": "10.10.0.2",
                               "type": "UE",
+                              "macId": "101002000000",
                               "geoData": {
                                  "location": {
                                     "type": "Point",
@@ -6334,7 +6340,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	expectedApId := ApIdentity{"0050C272800A", "", ""}
 	expectedSubscriptionType := assocStaSubscriptionType
 	expectedApIdMacIdStr := "{\"macId\":\"0050C272800A\"}"
-	expectedStaIdMacIdStr := "[{\"macId\":\"10.10.0.2\"}]"
+	expectedStaIdMacIdStr := "[{\"macId\":\"101002000000\"}]"
 
 	/******************************
 	 * request vars section
@@ -6434,7 +6440,7 @@ func TestSbi(t *testing.T) {
 
 	//different tests
 	ueName := "10.10.0.2"
-	ueMacId := "10.10.0.2" //currently name
+	ueMacId := "101002000000" //currently name
 	apName1 := "4g-macro-cell-10"
 	apMacId1 := ""
 	apName2 := "w10"
@@ -6595,7 +6601,7 @@ func TestStaInfoGet(t *testing.T) {
 	 * expected response section
 	 ******************************/
 	nbExpectedStaInfo := 1
-	expectedStaIdMacId := "10.10.0.2"
+	expectedStaIdMacId := "101002000000"
 
 	/******************************
 	 * request vars section

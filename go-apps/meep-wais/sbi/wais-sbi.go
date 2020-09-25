@@ -217,7 +217,7 @@ func processActiveScenarioUpdate() {
 		var ueMacIdList []string
 
 		for _, pl := range poa.PhysicalLocations {
-			ueMacIdList = append(ueMacIdList, pl.Name)
+			ueMacIdList = append(ueMacIdList, pl.MacId)
 		}
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
 	}

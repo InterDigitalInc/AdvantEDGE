@@ -342,7 +342,7 @@ func checkForExpiredSubscriptions() {
 					notif.ExpiryDeadline = &expiryTimeStamp
 
 					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
-					_ = delSubscription(baseKey+cellChangeSubscriptionType, subsIdStr)
+					_ = delSubscription(baseKey+cellChangeSubscriptionType, subsIdStr, true)
 				}
 			}
 		}
@@ -1076,28 +1076,33 @@ func registerRr(rabRelSubscription *RabRelSubscription, subsIdStr string) {
 	log.Info("New registration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
-func deregisterCc(subsIdStr string) {
+func deregisterCc(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
-	mutex.Lock()
-	defer mutex.Unlock()
-
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
 	ccSubscriptionMap[subsId] = nil
 	log.Info("Deregistration: ", subsId, " type: ", cellChangeSubscriptionType)
 }
 
-func deregisterRe(subsIdStr string) {
+func deregisterRe(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
-	mutex.Lock()
-	defer mutex.Unlock()
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
 
 	reSubscriptionMap[subsId] = nil
 	log.Info("Deregistration: ", subsId, " type: ", rabEstSubscriptionType)
 }
 
-func deregisterRr(subsIdStr string) {
+func deregisterRr(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
-	mutex.Lock()
-	defer mutex.Unlock()
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
 
 	rrSubscriptionMap[subsId] = nil
 	log.Info("Deregistration: ", subsId, " type: ", rabRelSubscriptionType)
@@ -1197,12 +1202,12 @@ func cellChangeSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func delSubscription(keyPrefix string, subsId string) error {
+func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
-	deregisterCc(subsId)
-	deregisterRe(subsId)
-	deregisterRr(subsId)
+	deregisterCc(subsId, mutexTaken)
+	deregisterRe(subsId, mutexTaken)
+	deregisterRr(subsId, mutexTaken)
 	return err
 }
 
@@ -1210,7 +1215,7 @@ func cellChangeSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+cellChangeSubscriptionType, vars["subscriptionId"])
+	err := delSubscription(baseKey+cellChangeSubscriptionType, vars["subscriptionId"], false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1346,7 +1351,7 @@ func rabEstSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+rabEstSubscriptionType, vars["subscriptionId"])
+	err := delSubscription(baseKey+rabEstSubscriptionType, vars["subscriptionId"], false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1482,7 +1487,7 @@ func rabRelSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+rabRelSubscriptionType, vars["subscriptionId"])
+	err := delSubscription(baseKey+rabRelSubscriptionType, vars["subscriptionId"], false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
