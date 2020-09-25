@@ -788,7 +788,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 func checkRrNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, qci int32, newCellId string, oldCellId string, erabId int32) {
 
 	//checking filters only if we were connected to a POA-4G and now disconnecting from one
-	//condition to be disconnecting from a POA-4G: 1) has an empty new plmn 2) has empty cellId 
+	//condition to be disconnecting from a POA-4G: 1) has an empty new plmn 2) has empty cellId
 	if newPlmn != nil && newCellId != "" {
 		return
 	}
