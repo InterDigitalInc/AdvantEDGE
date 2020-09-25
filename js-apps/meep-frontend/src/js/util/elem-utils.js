@@ -73,6 +73,7 @@ export const FIELD_DEFAULT_CELL_ID = 'defaultCellId';
 export const FIELD_CELL_ID = 'cellId';
 export const FIELD_NR_CELL_ID = 'nrCellId';
 export const FIELD_MAC_ID = 'macId';
+export const FIELD_UE_MAC_ID = 'ueMacId';
 export const FIELD_GEO_LOCATION = 'location';
 export const FIELD_GEO_RADIUS = 'radius';
 export const FIELD_GEO_PATH = 'path';

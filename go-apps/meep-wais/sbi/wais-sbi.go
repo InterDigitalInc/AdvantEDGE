@@ -179,8 +179,9 @@ func processActiveScenarioUpdate() {
 			case mod.NodeTypePoaWifi:
 				apMacId = poa.PoaWifiConfig.MacId
 			}
+			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
 
-			sbi.updateUeDataCB(name /*ownMacId*/, name, apMacId)
+			sbi.updateUeDataCB(ue.MacId, name, apMacId)
 		}
 	}
 

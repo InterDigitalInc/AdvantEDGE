@@ -694,6 +694,8 @@
                               expect(data.linkThroughput).to.be(0);
                               expect(data.linkPacketLoss).to.be.a('number');
                               expect(data.linkPacketLoss).to.be(0.0);
+                              expect(data.macId).to.be.a('string');
+                              expect(data.macId).to.be("");
                             }
                           }
                         }

@@ -245,6 +245,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkPacketLoss = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].macId = "";
 
           instance.createScenario(name, scenario, function(error, data, response) {
             if (error) {
@@ -849,6 +850,8 @@
                               expect(data.linkThroughput).to.be(0);
                               expect(data.linkPacketLoss).to.be.a('number');
                               expect(data.linkPacketLoss).to.be(0.0);
+                              expect(data.macId).to.be.a('string');
+                              expect(data.macId).to.be("");
                             }
                           }
                         }
@@ -1424,6 +1427,8 @@
                                   expect(data.linkThroughput).to.be(0);
                                   expect(data.linkPacketLoss).to.be.a('number');
                                   expect(data.linkPacketLoss).to.be(0.0);
+                                  expect(data.macId).to.be.a('string');
+                                  expect(data.macId).to.be("");
                                 }
                               }
                             }
@@ -1637,6 +1642,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkPacketLoss = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].macId = "";
 
           instance.setScenario(name, scenario, function(error, data, response) {
             if (error) {

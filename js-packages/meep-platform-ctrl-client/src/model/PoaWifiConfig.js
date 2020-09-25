@@ -77,7 +77,7 @@
   }
 
   /**
-   * TBD
+   * WIFI POA MAC Address
    * @member {String} macId
    */
   exports.prototype.macId = undefined;

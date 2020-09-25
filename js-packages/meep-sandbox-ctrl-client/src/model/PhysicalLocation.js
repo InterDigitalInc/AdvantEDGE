@@ -104,6 +104,8 @@
         obj.linkThroughput = ApiClient.convertToType(data['linkThroughput'], 'Number');
       if (data.hasOwnProperty('linkPacketLoss'))
         obj.linkPacketLoss = ApiClient.convertToType(data['linkPacketLoss'], 'Number');
+      if (data.hasOwnProperty('macId'))
+        obj.macId = ApiClient.convertToType(data['macId'], 'String');
     }
     return obj;
   }
@@ -205,6 +207,12 @@
    * @member {Number} linkPacketLoss
    */
   exports.prototype.linkPacketLoss = undefined;
+
+  /**
+   * Physical location MAC Address
+   * @member {String} macId
+   */
+  exports.prototype.macId = undefined;
 
 
   /**

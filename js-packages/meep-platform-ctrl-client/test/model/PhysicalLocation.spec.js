@@ -157,6 +157,12 @@
         // expect(instance.linkPacketLoss).to.be(expectedValueLiteral);
       });
 
+      it('should have the property macId (base name: "macId")', function() {
+        // TODO: update the code to test the property macId
+        expect(instance).to.have.property('macId');
+        // expect(instance.macId).to.be(expectedValueLiteral);
+      });
+
     });
   });
 

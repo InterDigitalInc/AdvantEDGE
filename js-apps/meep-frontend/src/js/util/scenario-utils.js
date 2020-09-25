@@ -44,6 +44,7 @@ import {
   FIELD_CELL_ID,
   FIELD_NR_CELL_ID,
   FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_RADIUS,
   FIELD_GEO_PATH,
@@ -662,6 +663,8 @@ export function updateElementInScenario(scenario, element) {
             const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
             pl.geoData.velocity = velocity ? velocity : null;
 
+            pl.macId = getElemFieldVal(element, FIELD_UE_MAC_ID);
+
             pl.label = name;
             pl.name = name;
             return;
@@ -1265,6 +1268,7 @@ export function createPL(uniqueId, name, type, element) {
         coordinates: JSON.parse(location)
       }
     },
+    macId: getElemFieldVal(element, FIELD_UE_MAC_ID),
     processes: []
   };
 
@@ -1484,6 +1488,8 @@ export function getElementFromScenario(scenario, elementId) {
             setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || false);
             setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || false);
             setElemFieldVal(elem, FIELD_WIRELESS_TYPE, pl.wirelessType || '');
+
+            setElemFieldVal(elem, FIELD_UE_MAC_ID, pl.macId || '');
 
             if (pl.geoData) {
               if (pl.geoData.location) {
