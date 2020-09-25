@@ -674,7 +674,7 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 		staInfo.ApAssociated = &apAssociated
 
 		//TODO put a value in rssi that is coming from postGIS
-		log.Info("SIMON RSSI")
+		log.Info("TODO forced RSSI")
 		staInfo.Rssi = 121
 
 		resp.StaInfo = append(resp.StaInfo, staInfo)

@@ -172,17 +172,14 @@ func processActiveScenarioUpdate() {
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
-		log.Info("SIMON ", name)
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
-			log.Info("SIMON poa ", poa.Name)
 			apMacId := ""
 			switch poa.Type_ {
 			case mod.NodeTypePoaWifi:
 				apMacId = poa.PoaWifiConfig.MacId
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
-			log.Info("SIMON all", ue.MacId, "---", name, "---", apMacId)
 			sbi.updateUeDataCB(name, ue.MacId, apMacId)
 		}
 	}
