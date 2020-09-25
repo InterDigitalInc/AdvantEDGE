@@ -74,6 +74,7 @@ import {
   FIELD_MNC,
   FIELD_MCC,
   FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
   FIELD_NR_CELL_ID,
@@ -914,6 +915,7 @@ describe('Scenario Configuration', function () {
   // ==============================
   // UE
   // ==============================
+  let ueMacId = '123456123456';
 
   function addUe(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -930,6 +932,7 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
+    type(meep.CFG_ELEM_UE_MAC_ID, ueMacId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -948,6 +951,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_UE_MAC_ID), ueMacId);
     });
   }
 
