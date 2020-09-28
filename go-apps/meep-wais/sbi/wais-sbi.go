@@ -137,9 +137,6 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
-	case mq.MsgGeUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -220,29 +217,6 @@ func processActiveScenarioUpdate() {
 			ueMacIdList = append(ueMacIdList, pl.MacId)
 		}
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
-	}
-}
-
-func processGisEngineUpdate(assetMap map[string]string) {
-	for assetName, assetType := range assetMap {
-		// Only process UE updates
-		// NOTE: WAIS might requires distance measurements in the future.
-		//       Not yet implemented, the distance measurements are simply logged here for now.
-		if assetType == postgis.TypeUe {
-			if assetName == postgis.AllAssets {
-				ueMap, err := sbi.pc.GetAllUe()
-				if err == nil {
-					for _, ue := range ueMap {
-						log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-					}
-				}
-			} else {
-				ue, err := sbi.pc.GetUe(assetName)
-				if err == nil {
-					log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-				}
-			}
-		}
 	}
 }
 

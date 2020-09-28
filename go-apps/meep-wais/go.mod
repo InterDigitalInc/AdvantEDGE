@@ -12,7 +12,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client v0.0.0-20200703133018-94138d8210a3 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-client v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-notification-client v0.0.0

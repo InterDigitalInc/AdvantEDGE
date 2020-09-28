@@ -44,7 +44,7 @@ const UPDATED = 1
 //json format using spacing to facilitate reading
 const testScenario string = `
 {
-   "version": "1.5.1",
+   "version": "1.5.3",
    "name": "4g-5g-wifi-macro",
    "deployment": {
       "netChar": {
