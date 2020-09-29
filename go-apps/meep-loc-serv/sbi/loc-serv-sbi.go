@@ -17,27 +17,22 @@
 package sbi
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
+	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-loc-serv-sbi"
-const geModuleName string = "meep-gis-engine"
-const postgisUser string = "postgres"
-const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	PostgisHost    string
-	PostgisPort    string
 	UserInfoCb     func(string, string, string, *float32, *float32)
 	ZoneInfoCb     func(string, int, int, int)
 	ApInfoCb       func(string, string, string, string, int, *float32, *float32)
@@ -50,7 +45,8 @@ type LocServSbi struct {
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
-	pc                      *postgis.Connector
+	gisCache                *gc.GisCache
+	refreshTicker           *time.Ticker
 	updateUserInfoCB        func(string, string, string, *float32, *float32)
 	updateZoneInfoCB        func(string, int, int, int)
 	updateAccessPointInfoCB func(string, string, string, string, int, *float32, *float32)
@@ -95,13 +91,13 @@ func Init(cfg SbiCfg) (err error) {
 	}
 	log.Info("Active Scenario Model created")
 
-	// Connect to Postgis DB
-	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
+	// Connect to GIS cache
+	sbi.gisCache, err = gc.NewGisCache(cfg.RedisAddr)
 	if err != nil {
-		log.Error("Failed to create postgis connector with error: ", err.Error())
+		log.Error("Failed to GIS Cache: ", err.Error())
 		return err
 	}
-	log.Info("Postgis Connector created")
+	log.Info("Connected to GIS Cache")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -121,7 +117,28 @@ func Run() (err error) {
 	}
 	log.Info("Registered local Msg Queue listener")
 
+	// Start refresh loop
+	startRefreshTicker()
+
 	return nil
+}
+
+func startRefreshTicker() {
+	log.Debug("Starting refresh loop")
+	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
+	go func() {
+		for range sbi.refreshTicker.C {
+			refreshPositions()
+		}
+	}()
+}
+
+func stopRefreshTicker() {
+	if sbi.refreshTicker != nil {
+		sbi.refreshTicker.Stop()
+		sbi.refreshTicker = nil
+		log.Debug("Refresh loop stopped")
+	}
 }
 
 // Message Queue handler
@@ -136,9 +153,6 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
-	case mq.MsgGeUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -176,8 +190,8 @@ func processActiveScenarioUpdate() {
 	poaPerZoneMap := make(map[string]int)
 
 	// Get all UE & POA positions
-	ueMap, _ := sbi.pc.GetAllUe()
-	poaMap, _ := sbi.pc.GetAllPoa()
+	uePositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypeUe)
+	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 
 	// Update UE info
 	ueNames := []string{}
@@ -197,8 +211,9 @@ func processActiveScenarioUpdate() {
 
 		var longitude *float32
 		var latitude *float32
-		if ue, found := ueMap[name]; found {
-			longitude, latitude = parsePosition(ue.Position)
+		if position, found := uePositionMap[name]; found {
+			longitude = &position.Longitude
+			latitude = &position.Latitude
 		}
 
 		sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
@@ -236,8 +251,9 @@ func processActiveScenarioUpdate() {
 
 			var longitude *float32
 			var latitude *float32
-			if poa, found := poaMap[name]; found {
-				longitude, latitude = parsePosition(poa.Position)
+			if position, found := poaPositionMap[name]; found {
+				longitude = &position.Longitude
+				latitude = &position.Latitude
 			}
 
 			switch poaType {
@@ -264,24 +280,6 @@ func processActiveScenarioUpdate() {
 	}
 }
 
-func processGisEngineUpdate(assetMap map[string]string) {
-	for assetName, assetType := range assetMap {
-		if assetType == postgis.TypeUe {
-			if assetName == postgis.AllAssets {
-				updateAllUserPosition()
-			} else {
-				updateUserPosition(assetName)
-			}
-		} else if assetType == postgis.TypePoa {
-			if assetName == postgis.AllAssets {
-				updateAllAccessPointPosition()
-			} else {
-				updateAccessPointPosition(assetName)
-			}
-		}
-	}
-}
-
 func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 	ctx := sbi.activeModel.GetNodeContext(name)
 	if ctx == nil {
@@ -298,45 +296,10 @@ func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 	return zone, netLoc, nil
 }
 
-func parsePosition(position string) (longitude *float32, latitude *float32) {
-	var point dataModel.Point
-	err := json.Unmarshal([]byte(position), &point)
-	if err != nil {
-		return nil, nil
-	}
-	return &point.Coordinates[0], &point.Coordinates[1]
-}
+func refreshPositions() {
 
-func updateUserPosition(name string) {
-	// Ignore disconnected UE
-	if !isUeConnected(name) {
-		return
-	}
-
-	// Get network location
-	zone, netLoc, err := getNetworkLocation(name)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	// Get position
-	var longitude *float32
-	var latitude *float32
-	ue, err := sbi.pc.GetUe(name)
-	if err == nil {
-		longitude, latitude = parsePosition(ue.Position)
-	}
-
-	// Update info
-	sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
-}
-
-func updateAllUserPosition() {
-	// Get all positions
-	ueMap, _ := sbi.pc.GetAllUe()
-
-	// Update info
+	// Update UE Positions
+	uePositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypeUe)
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
 		// Ignore disconnected UEs
@@ -354,40 +317,17 @@ func updateAllUserPosition() {
 		// Get position
 		var longitude *float32
 		var latitude *float32
-		if ue, found := ueMap[name]; found {
-			longitude, latitude = parsePosition(ue.Position)
+		if position, found := uePositionMap[name]; found {
+			longitude = &position.Longitude
+			latitude = &position.Latitude
 		}
 
 		sbi.updateUserInfoCB(name, zone, netLoc, longitude, latitude)
 	}
-}
 
-func updateAccessPointPosition(name string) {
-	// Get network location
-	zone, netLoc, err := getNetworkLocation(name)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	// Get position
-	var longitude *float32
-	var latitude *float32
-	poa, err := sbi.pc.GetPoa(name)
-	if err == nil {
-		longitude, latitude = parsePosition(poa.Position)
-	}
-
-	// Update info
-	sbi.updateAccessPointInfoCB(zone, netLoc, "", "", -1, longitude, latitude)
-}
-
-func updateAllAccessPointPosition() {
-	// Get all positions
-	poaMap, _ := sbi.pc.GetAllPoa()
-
-	// Update info
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G)
+	// Update POA Positions
+	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
 	for _, name := range poaNameList {
 		// Get network location
 		zone, netLoc, err := getNetworkLocation(name)
@@ -399,8 +339,9 @@ func updateAllAccessPointPosition() {
 		// Get position
 		var longitude *float32
 		var latitude *float32
-		if poa, found := poaMap[name]; found {
-			longitude, latitude = parsePosition(poa.Position)
+		if position, found := poaPositionMap[name]; found {
+			longitude = &position.Longitude
+			latitude = &position.Latitude
 		}
 
 		sbi.updateAccessPointInfoCB(zone, netLoc, "", "", -1, longitude, latitude)
@@ -408,6 +349,9 @@ func updateAllAccessPointPosition() {
 }
 
 func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
 }

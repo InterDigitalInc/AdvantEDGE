@@ -5890,8 +5890,6 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const postgisTestHost = "localhost"
-const postgisTestPort = "30432"
 const testScenarioName = "testScenario"
 
 var m *mod.Model
@@ -6734,8 +6732,6 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	postgisHost = postgisTestHost
-	postgisPort = postgisTestPort
 	sandboxName = testScenarioName
 }
 

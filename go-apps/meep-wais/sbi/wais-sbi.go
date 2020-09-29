@@ -17,19 +17,14 @@
 package sbi
 
 import (
-	"encoding/json"
-
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-wais-sbi"
-const geModuleName string = "meep-gis-engine"
-const postgisUser string = "postgres"
-const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
@@ -47,7 +42,7 @@ type WaisSbi struct {
 	mqLocal                 *mq.MsgQueue
 	handlerId               int
 	activeModel             *mod.Model
-	pc                      *postgis.Connector
+	gisCache                *gc.GisCache
 	updateUeDataCB          func(string, string, string)
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
 	updateScenarioNameCB    func(string)
@@ -92,13 +87,13 @@ func Init(cfg SbiCfg) (err error) {
 		return err
 	}
 
-	// Connect to Postgis DB
-	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
+	// Connect to GIS cache
+	sbi.gisCache, err = gc.NewGisCache(cfg.RedisAddr)
 	if err != nil {
-		log.Error("Failed to create postgis connector with error: ", err.Error())
+		log.Error("Failed to GIS Cache: ", err.Error())
 		return err
 	}
-	log.Info("Postgis Connector created")
+	log.Info("Connected to GIS Cache")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -162,9 +157,8 @@ func processActiveScenarioUpdate() {
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
-	// Get all UE & POA positions
-	//ueMap, _ := sbi.pc.GetAllUe()
-	poaMap, _ := sbi.pc.GetAllPoa()
+	// Get all POA positions
+	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 
 	// Update UE info
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
@@ -207,8 +201,9 @@ func processActiveScenarioUpdate() {
 
 		var longitude *float32
 		var latitude *float32
-		if myPoa, found := poaMap[name]; found {
-			longitude, latitude = parsePosition(myPoa.Position)
+		if position, found := poaPositionMap[name]; found {
+			longitude = &position.Longitude
+			latitude = &position.Latitude
 		}
 		//list of Ues MacIds
 		var ueMacIdList []string
@@ -218,13 +213,4 @@ func processActiveScenarioUpdate() {
 		}
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
 	}
-}
-
-func parsePosition(position string) (longitude *float32, latitude *float32) {
-	var point dataModel.Point
-	err := json.Unmarshal([]byte(position), &point)
-	if err != nil {
-		return nil, nil
-	}
-	return &point.Coordinates[0], &point.Coordinates[1]
 }

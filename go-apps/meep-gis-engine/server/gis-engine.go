@@ -30,6 +30,7 @@ import (
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	am "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-asset-mgr"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -80,18 +81,20 @@ type UeInfo struct {
 }
 
 type GisEngine struct {
-	sandboxName    string
-	mqLocal        *mq.MsgQueue
-	handlerId      int
-	sboxCtrlClient *sbox.APIClient
-	activeModel    *mod.Model
-	sessionMgr     *sm.SessionMgr
-	assetMgr       *am.AssetMgr
-	assets         map[string]*Asset
-	ueInfo         map[string]*UeInfo
-	automation     map[string]bool
-	ticker         *time.Ticker
-	updateTime     time.Time
+	sandboxName      string
+	mqLocal          *mq.MsgQueue
+	handlerId        int
+	sboxCtrlClient   *sbox.APIClient
+	activeModel      *mod.Model
+	gisCache         *gc.GisCache
+	sessionMgr       *sm.SessionMgr
+	assetMgr         *am.AssetMgr
+	assets           map[string]*Asset
+	ueInfo           map[string]*UeInfo
+	automation       map[string]bool
+	automationTicker *time.Ticker
+	// cacheTicker      *time.Ticker
+	updateTime time.Time
 }
 
 var ge *GisEngine
@@ -103,9 +106,6 @@ func Init() (err error) {
 	ge.ueInfo = make(map[string]*UeInfo)
 	ge.automation = make(map[string]bool)
 	resetAutomation()
-	startAutomation()
-
-	// timer := time.NewTimer(time.Second)
 
 	// Retrieve Sandbox name from environment variable
 	ge.sandboxName = strings.TrimSpace(os.Getenv("MEEP_SANDBOX_NAME"))
@@ -156,6 +156,14 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Session Manager")
 
+	// Connect to GIS cache
+	ge.gisCache, err = gc.NewGisCache(redisAddr)
+	if err != nil {
+		log.Error("Failed to GIS Cache: ", err.Error())
+		return err
+	}
+	log.Info("Connected to GIS Cache")
+
 	// Connect to GIS Asset Manager
 	ge.assetMgr, err = am.NewAssetMgr(moduleName, ge.sandboxName, postgisUser, postgisPwd, "", "")
 	if err != nil {
@@ -200,21 +208,29 @@ func Run() (err error) {
 	}
 	log.Info("Registered Asset Manager listener")
 
+	// Start automation loop
+	startAutomation()
+
+	// Start cache loop
+	// startCaching()
+
 	return nil
 }
 
 // Asset Manager handler
 func gisHandler(updateType string, assetName string) {
-	// Create & fill gis update message
-	msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
-	msg.Payload[assetName] = updateType
-	log.Debug("TX MSG: ", mq.PrintMsg(msg))
+	runCache()
 
-	// Send message on local Msg Queue
-	err := ge.mqLocal.SendMsg(msg)
-	if err != nil {
-		log.Error("Failed to send message with error: ", err.Error())
-	}
+	// // Create & fill gis update message
+	// msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
+	// msg.Payload[assetName] = updateType
+	// log.Debug("TX MSG: ", mq.PrintMsg(msg))
+
+	// // Send message on local Msg Queue
+	// err := ge.mqLocal.SendMsg(msg)
+	// if err != nil {
+	// 	log.Error("Failed to send message with error: ", err.Error())
+	// }
 }
 
 // Message Queue handler
@@ -710,6 +726,100 @@ func initWirelessType(wireless bool, wirelessType string) string {
 	return wt
 }
 
+// func startCaching() {
+// 	log.Debug("Starting cache loop")
+// 	ge.cacheTicker = time.NewTicker(1000 * time.Millisecond)
+// 	go func() {
+// 		for range ge.cacheTicker.C {
+// 			runCache()
+// 		}
+// 	}()
+// }
+
+func runCache() {
+
+	// Get UE asset snapshot
+	ueMap, err := ge.assetMgr.GetAllUe()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get cached UE positions
+	cachedUePosMap, err := ge.gisCache.GetAllPositions(gc.TypeUe)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// // Get cached UE measurements
+	// cachedUeMeasMap, err :=
+
+	// Update UE positions
+	for _, ue := range ueMap {
+		// Parse UE position
+		longitude, latitude := parsePosition(ue.Position)
+		if longitude == nil || latitude == nil {
+			log.Error("longitude == nil || latitude == nil for UE: ", ue.Name)
+			continue
+		}
+
+		// Update positions if different from cached value
+		cachedUePos, found := cachedUePosMap[ue.Name]
+		if !found || cachedUePos.Longitude != *longitude || cachedUePos.Latitude != *latitude {
+			position := new(gc.Position)
+			position.Longitude = *longitude
+			position.Latitude = *latitude
+			_ = ge.gisCache.SetPosition(gc.TypeUe, ue.Name, position)
+		}
+
+		for _, meas := range ue.Measurements {
+			log.Info(meas.Poa)
+		}
+	}
+
+	// Remove stale UEs
+	for ueName := range cachedUePosMap {
+		if _, found := ueMap[ueName]; !found {
+			ge.gisCache.Del(gc.TypeUe, ueName)
+		}
+	}
+
+	// Update UE measurements
+
+	// Get POA asset snapshot
+	_, err = ge.assetMgr.GetAllPoa()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get cached POA positions
+
+	// Update POA positions
+
+	// Get Compute asset snapshot
+	_, err = ge.assetMgr.GetAllCompute()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// Get cached Compute positions
+
+	// Update Compute positions
+
+}
+
+func parsePosition(position string) (longitude *float32, latitude *float32) {
+	var point dataModel.Point
+	err := json.Unmarshal([]byte(position), &point)
+	if err != nil {
+		return nil, nil
+	}
+	return &point.Coordinates[0], &point.Coordinates[1]
+}
+
 func resetAutomation() {
 	// Stop automation if running
 	_ = setAutomation(AutoTypeMovement, false)
@@ -726,9 +836,9 @@ func resetAutomation() {
 
 func startAutomation() {
 	log.Debug("Starting automation loop")
-	ge.ticker = time.NewTicker(1000 * time.Millisecond)
+	ge.automationTicker = time.NewTicker(1000 * time.Millisecond)
 	go func() {
-		for range ge.ticker.C {
+		for range ge.automationTicker.C {
 			runAutomation()
 		}
 	}()
@@ -777,30 +887,15 @@ func runAutomation() {
 		ge.updateTime = currentTime
 	}
 
-	// Cache asset snapshot
-	ueMap, err := ge.assetMgr.GetAllUe()
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
-	// for _, ue := range ueMap {
-	// 	ue.
-	// }
-
-	// poaMap, err := ge.assetMgr.GetAllPoa()
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return
-	// }
-	// computeMap, err := ge.assetMgr.GetAllCompute()
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return
-	// }
-
 	// Mobility & POA In Range
 	if ge.automation[AutoTypeMobility] || ge.automation[AutoTypePoaInRange] {
+		// Get UE geodata
+		ueMap, err := ge.assetMgr.GetAllUe()
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+
 		// Loop through UEs
 		for _, ue := range ueMap {
 			// Get stored UE info

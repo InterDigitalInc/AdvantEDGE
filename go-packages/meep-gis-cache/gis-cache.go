@@ -17,6 +17,10 @@
 package giscache
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -24,15 +28,36 @@ import (
 
 const redisTable = 0
 
+const (
+	TypeUe      = "ue"
+	TypePoa     = "poa"
+	TypeCompute = "compute"
+)
+
+const (
+	fieldLatitude  = "lat"
+	fieldLongitude = "long"
+	// fieldRssi      = "rssi"
+	// fieldRsrp      = "rsrp"
+	// fieldRsrq      = "rsrq"
+)
+
 // Root key
 var keyRoot = dkm.GetKeyRootGlobal() + "gis-cache:"
+var keyPositions = keyRoot + "positions:"
 
-type Location struct {
-	Name string
+// var keyMeasurements = keyRoot + "measurements:"
+
+type Position struct {
+	Latitude  float32
+	Longitude float32
 }
 
 type UeMeasurement struct {
-	Name string
+	PoaName string
+	Rssi    float32
+	Rsrp    float32
+	Rsrq    float32
 }
 
 type GisCache struct {
@@ -56,86 +81,76 @@ func NewGisCache(redisAddr string) (gc *GisCache, err error) {
 	return gc, nil
 }
 
-// // Set - Create or update entry in DB
-// func (gc *GisCache) Set(name string, location *Location) error {
+// SetPosition - Create or update entry in DB
+func (gc *GisCache) SetPosition(typ string, name string, position *Position) error {
+	key := keyPositions + typ + ":" + name
 
-// 	// Prepare data
-// 	fields := make(map[string]interface{})
-// 	fields[fieldSandboxName] = sbox.Name
-// 	fields[fieldScenarioName] = sbox.ScenarioName
+	// Prepare data
+	fields := make(map[string]interface{})
+	fields[fieldLatitude] = fmt.Sprintf("%f", position.Latitude)
+	fields[fieldLongitude] = fmt.Sprintf("%f", position.Longitude)
 
-// 	// Update entry in DB
-// 	key := keyRoot + sbox.Name
-// 	err := ss.rc.SetEntry(key, fields)
-// 	if err != nil {
-// 		log.Error("Failed to set entry with error: ", err.Error())
-// 		return err
-// 	}
-// 	return nil
-// }
+	// Update entry in DB
+	err := gc.rc.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Failed to set entry with error: ", err.Error())
+		return err
+	}
+	return nil
+}
 
-// // Get - Return sandbox with provided name
-// func (gc *GisCache) Get(name string) (*Sandbox, error) {
-// 	key := keyRoot + sboxName
+// GetAllPositions - Return positions with provided type
+func (gc *GisCache) GetAllPositions(typ string) (map[string]*Position, error) {
+	keyMatchStr := keyPositions + typ + ":*"
 
-// 	// Make sure entry exists
-// 	if !ss.rc.EntryExists(key) {
-// 		err := errors.New("Entry not found")
-// 		log.Error(err.Error())
-// 		return nil, err
-// 	}
+	// Create position map
+	positionMap := make(map[string]*Position)
 
-// 	// Find entry
-// 	fields, err := ss.rc.GetEntry(key)
-// 	if err != nil {
-// 		log.Error("Failed to get entry with error: ", err.Error())
-// 		return nil, err
-// 	}
+	// Get all position entry details
+	err := gc.rc.ForEachEntry(keyMatchStr, getPosition, &positionMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
 
-// 	// Prepare sandbox
-// 	sbox := new(Sandbox)
-// 	sbox.Name = fields[fieldSandboxName]
-// 	sbox.ScenarioName = fields[fieldScenarioName]
-// 	return sbox, nil
-// }
+	return positionMap, nil
+}
 
-// // GetAll - Return all sandboxes
-// func (gc *GisCache) GetAll() (map[string]*Sandbox, error) {
-// 	sboxMap := make(map[string]*Sandbox)
-// 	keyMatchStr := keyRoot + "*"
+// Del - Remove position with provided name
+func (gc *GisCache) Del(typ string, name string) {
+	key := keyPositions + typ + ":" + name
+	err := gc.rc.DelEntry(key)
+	if err != nil {
+		log.Error("Failed to delete position for ", name, " with err: ", err.Error())
+	}
+}
 
-// 	// Get all sandbox entry details
-// 	err := ss.rc.ForEachEntry(keyMatchStr, getSandbox, &sboxMap)
-// 	if err != nil {
-// 		log.Error("Failed to get all entries with error: ", err.Error())
-// 		return nil, err
-// 	}
-// 	return sboxMap, nil
-// }
-
-// // Del - Remove sandbox with provided name
-// func (gc *GisCache) Del(sboxName string) {
-// 	key := keyRoot + sboxName
-// 	err := ss.rc.DelEntry(key)
-// 	if err != nil {
-// 		log.Error("Failed to delete entry for ", sboxName, " with err: ", err.Error())
-// 	}
-// }
-
-// Flush - Remove all sandbox store entries
+// Flush - Remove all GIS cache entries
 func (gc *GisCache) Flush() {
 	gc.rc.DBFlush(keyRoot)
 }
 
-// func getSandbox(key string, fields map[string]string, userData interface{}) error {
-// 	sboxMap := *(userData.(*map[string]*Sandbox))
+func getPosition(key string, fields map[string]string, userData interface{}) error {
+	positionMap := *(userData.(*map[string]*Position))
 
-// 	// Prepare sandbox
-// 	sbox := new(Sandbox)
-// 	sbox.Name = fields[fieldSandboxName]
-// 	sbox.ScenarioName = fields[fieldScenarioName]
+	// Prepare position
+	position := new(Position)
+	if latitude, err := strconv.ParseFloat(fields[fieldLatitude], 32); err == nil {
+		position.Latitude = float32(latitude)
+	}
+	if longitude, err := strconv.ParseFloat(fields[fieldLongitude], 32); err == nil {
+		position.Longitude = float32(longitude)
+	}
 
-// 	// Add sandbox to
-// 	sboxMap[sbox.Name] = sbox
-// 	return nil
-// }
+	// Add position to map
+	positionMap[getKeyTarget(key)] = position
+	return nil
+}
+
+func getKeyTarget(key string) string {
+	pos := strings.LastIndex(key, ":")
+	if pos == -1 {
+		return ""
+	}
+	return key[pos:]
+}

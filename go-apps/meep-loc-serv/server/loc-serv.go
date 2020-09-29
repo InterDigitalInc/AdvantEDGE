@@ -96,8 +96,6 @@ var currentStoreName = ""
 
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
-var postgisHost string = "meep-postgis.default.svc.cluster.local"
-var postgisPort string = "5432"
 
 var rc *redis.Connector
 var hostUrl *url.URL
@@ -163,8 +161,6 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
-		PostgisHost:    postgisHost,
-		PostgisPort:    postgisPort,
 		UserInfoCb:     updateUserInfo,
 		ZoneInfoCb:     updateZoneInfo,
 		ApInfoCb:       updateAccessPointInfo,

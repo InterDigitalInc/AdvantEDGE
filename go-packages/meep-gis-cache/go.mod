@@ -6,7 +6,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0-20200703133018-94138d8210a3 // indirect
 )
 
 replace (

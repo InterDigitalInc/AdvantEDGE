@@ -1,4 +1,7 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
+github.com/InterDigitalInc/AdvantEDGE v1.5.0 h1:Gv1wxW7kV31reTqxX5TflvvYEEqnxaUlKWvgoandpfI=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0-20200703133018-94138d8210a3 h1:x6ku4d3G04iUxzUBnTi4D8LsoNCm2Aghb6D66ngq3Qs=
+github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0-20200703133018-94138d8210a3/go.mod h1:Q83rM8qt/cAkQKcsN5MKmvyNe/IeZMvbWPXB7oTW1Xs=
 github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db/go.mod h1:RU+6d0CNIRSp6yo1mXLIIrnFa/3LHhvcDVLVJyovptM=
 github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351 h1:1u1XrfCBnY+GijnyU6O1k4odp5TnqZQTsp5v7+n/E4Y=
 github.com/KromDaniel/rejonson v0.0.0-20180822072824-00b5bcf2b351/go.mod h1:HxwfbuElTuGf+/uKZfjJrCnv0BmmpkPJDI7gBwj1KkM=
