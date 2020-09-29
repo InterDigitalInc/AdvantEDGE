@@ -758,6 +758,7 @@ func setAutomation(automationType string, state bool) (err error) {
 }
 
 func runAutomation() {
+
 	// Movement
 	if ge.automation[AutoTypeMovement] {
 		log.Debug("Auto Movement: updating UE positions")
@@ -776,82 +777,98 @@ func runAutomation() {
 		ge.updateTime = currentTime
 	}
 
+	// Cache asset snapshot
+	ueMap, err := ge.assetMgr.GetAllUe()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+
+	// for _, ue := range ueMap {
+	// 	ue.
+	// }
+
+	// poaMap, err := ge.assetMgr.GetAllPoa()
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return
+	// }
+	// computeMap, err := ge.assetMgr.GetAllCompute()
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return
+	// }
+
 	// Mobility & POA In Range
 	if ge.automation[AutoTypeMobility] || ge.automation[AutoTypePoaInRange] {
-		// Get all UE POA information
-		ueMap, err := ge.assetMgr.GetAllUe()
-		if err == nil {
-			for _, ue := range ueMap {
-				// Get stored UE info
-				ueInfo, isNew := getUeInfo(ue.Name)
+		// Loop through UEs
+		for _, ue := range ueMap {
+			// Get stored UE info
+			ueInfo, isNew := getUeInfo(ue.Name)
 
-				// Send mobility event if necessary
-				if ge.automation[AutoTypeMobility] {
-					if isNew || (ue.Poa != "" && (!ueInfo.connected || ue.Poa != ueInfo.poa)) || (ue.Poa == "" && ueInfo.connected) {
-						var event sbox.Event
-						var mobilityEvent sbox.EventMobility
-						event.Type_ = AutoTypeMobility
-						mobilityEvent.ElementName = ue.Name
-						if ue.Poa != "" {
-							mobilityEvent.Dest = ue.Poa
-						} else {
-							mobilityEvent.Dest = am.PoaTypeDisconnected
-						}
-						event.EventMobility = &mobilityEvent
-
-						go func() {
-							_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-							if err != nil {
-								log.Error(err)
-							}
-						}()
-					}
-				}
-
-				// Send POA in range event if necessary
-				if ge.automation[AutoTypePoaInRange] {
-					updateRequired := false
-					if isNew || len(ueInfo.poaInRange) != len(ue.PoaInRange) {
-						updateRequired = true
+			// Send mobility event if necessary
+			if ge.automation[AutoTypeMobility] {
+				if isNew || (ue.Poa != "" && (!ueInfo.connected || ue.Poa != ueInfo.poa)) || (ue.Poa == "" && ueInfo.connected) {
+					var event sbox.Event
+					var mobilityEvent sbox.EventMobility
+					event.Type_ = AutoTypeMobility
+					mobilityEvent.ElementName = ue.Name
+					if ue.Poa != "" {
+						mobilityEvent.Dest = ue.Poa
 					} else {
-						sort.Strings(ueInfo.poaInRange)
-						sort.Strings(ue.PoaInRange)
-						for i, poa := range ueInfo.poaInRange {
-							if poa != ue.PoaInRange[i] {
-								updateRequired = true
-							}
+						mobilityEvent.Dest = am.PoaTypeDisconnected
+					}
+					event.EventMobility = &mobilityEvent
+
+					go func() {
+						_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+						if err != nil {
+							log.Error(err)
+						}
+					}()
+				}
+			}
+
+			// Send POA in range event if necessary
+			if ge.automation[AutoTypePoaInRange] {
+				updateRequired := false
+				if isNew || len(ueInfo.poaInRange) != len(ue.PoaInRange) {
+					updateRequired = true
+				} else {
+					sort.Strings(ueInfo.poaInRange)
+					sort.Strings(ue.PoaInRange)
+					for i, poa := range ueInfo.poaInRange {
+						if poa != ue.PoaInRange[i] {
+							updateRequired = true
 						}
 					}
+				}
 
-					if updateRequired {
-						var event sbox.Event
-						var poasInRangeEvent sbox.EventPoasInRange
-						event.Type_ = AutoTypePoaInRange
-						poasInRangeEvent = sbox.EventPoasInRange{Ue: ue.Name, PoasInRange: ue.PoaInRange}
-						event.EventPoasInRange = &poasInRangeEvent
+				if updateRequired {
+					var event sbox.Event
+					var poasInRangeEvent sbox.EventPoasInRange
+					event.Type_ = AutoTypePoaInRange
+					poasInRangeEvent = sbox.EventPoasInRange{Ue: ue.Name, PoasInRange: ue.PoaInRange}
+					event.EventPoasInRange = &poasInRangeEvent
 
-						go func() {
-							_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-							if err != nil {
-								log.Error(err)
-							}
-						}()
+					go func() {
+						_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
+						if err != nil {
+							log.Error(err)
+						}
+					}()
 
-						// Update sotred data
-						ueInfo.poaInRange = ue.PoaInRange
-					}
+					// Update sotred data
+					ueInfo.poaInRange = ue.PoaInRange
 				}
 			}
+		}
 
-			// Remove UE info if UE no longer present
-			for ueName := range ge.ueInfo {
-				if _, found := ueMap[ueName]; !found {
-					delete(ge.ueInfo, ueName)
-				}
+		// Remove UE info if UE no longer present
+		for ueName := range ge.ueInfo {
+			if _, found := ueMap[ueName]; !found {
+				delete(ge.ueInfo, ueName)
 			}
-
-		} else {
-			log.Error(err.Error())
 		}
 	}
 

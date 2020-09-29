@@ -296,7 +296,7 @@ func (am *AssetMgr) CreateTables() (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("Created UE Mearuements table: ", UeMeasurementTable)
+	log.Info("Created UE Measurements table: ", UeMeasurementTable)
 
 	// POA Table
 	_, err = am.db.Exec(`CREATE TABLE ` + PoaTable + ` (
@@ -818,9 +818,11 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	rows, err = am.db.Query(`
 		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
 			path_mode, path_velocity, path_length, path_increment, path_fraction,
-			poa, poa_distance, poa_in_range, poa_type_prio, connected
-		FROM `+UeTable+`
-		WHERE name = ($1)`, name)
+			poa, poa_distance, poa_in_range, poa_type_prio, connected,
+			meas.poa, meas.type, meas.radius, meas.distance, meas.in_range, meas.rssi, meas.rsrp, meas.rsrq
+		FROM `+UeTable+` AS ue
+		LEFT JOIN `+UeMeasurementTable+` AS meas ON (ue.name = meas.ue)
+		WHERE ue.name = ($1)`, name)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
@@ -829,20 +831,33 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 
 	// Scan result
 	for rows.Next() {
-		ue = new(Ue)
+		ueEntry := new(Ue)
+		ueMeas := new(UeMeasurement)
 		path := new(string)
 
-		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
-			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
-			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange), pq.Array(&ue.PoaTypePrio), &ue.Connected)
+		// Fill UE
+		err = rows.Scan(&ueEntry.Id, &ueEntry.Name, &ueEntry.Position, &path,
+			&ueEntry.PathMode, &ueEntry.PathVelocity, &ueEntry.PathLength, &ueEntry.PathIncrement, &ueEntry.PathFraction,
+			&ueEntry.Poa, &ueEntry.PoaDistance, pq.Array(&ueEntry.PoaInRange), pq.Array(&ueEntry.PoaTypePrio), &ueEntry.Connected,
+			&ueMeas.Poa, &ueMeas.SubType, &ueMeas.Radius, &ueMeas.Distance, &ueMeas.InRange,
+			&ueMeas.Rssi, &ueMeas.Rsrp, &ueMeas.Rsrq)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
 		}
 
-		// Store path
-		if path != nil {
-			ue.Path = *path
+		// Create new UE if not set
+		if ue == nil {
+			ue = ueEntry
+			ue.Measurements = make(map[string]*UeMeasurement)
+			if path != nil {
+				ue.Path = *path
+			}
+		}
+
+		// Set UE measurement if in range
+		if ueMeas.InRange {
+			ue.Measurements[ueMeas.Poa] = ueMeas
 		}
 	}
 	err = rows.Err()
@@ -950,10 +965,12 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 	// Get UE entries
 	var rows *sql.Rows
 	rows, err = am.db.Query(`
-		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
-			path_mode, path_velocity, path_length, path_increment, path_fraction,
-			poa, poa_distance, poa_in_range, poa_type_prio, connected
-		FROM ` + UeTable)
+		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ST_AsGeoJSON(ue.path),
+			ue.path_mode, ue.path_velocity, ue.path_length, ue.path_increment, ue.path_fraction,
+			ue.poa, ue.poa_distance, ue.poa_in_range, ue.poa_type_prio, ue.connected,
+			meas.poa, meas.type, meas.radius, meas.distance, meas.in_range, meas.rssi, meas.rsrp, meas.rsrq
+		FROM ` + UeTable + ` AS ue
+		LEFT JOIN ` + UeMeasurementTable + ` AS meas ON (ue.name = meas.ue)`)
 	if err != nil {
 		log.Error(err.Error())
 		return ueMap, err
@@ -962,25 +979,36 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 
 	// Scan results
 	for rows.Next() {
-		ue := new(Ue)
+		ueEntry := new(Ue)
+		ueMeas := new(UeMeasurement)
 		path := new(string)
 
 		// Fill UE
-		err = rows.Scan(&ue.Id, &ue.Name, &ue.Position, &path,
-			&ue.PathMode, &ue.PathVelocity, &ue.PathLength, &ue.PathIncrement, &ue.PathFraction,
-			&ue.Poa, &ue.PoaDistance, pq.Array(&ue.PoaInRange), pq.Array(&ue.PoaTypePrio), &ue.Connected)
+		err = rows.Scan(&ueEntry.Id, &ueEntry.Name, &ueEntry.Position, &path,
+			&ueEntry.PathMode, &ueEntry.PathVelocity, &ueEntry.PathLength, &ueEntry.PathIncrement, &ueEntry.PathFraction,
+			&ueEntry.Poa, &ueEntry.PoaDistance, pq.Array(&ueEntry.PoaInRange), pq.Array(&ueEntry.PoaTypePrio), &ueEntry.Connected,
+			&ueMeas.Poa, &ueMeas.SubType, &ueMeas.Radius, &ueMeas.Distance, &ueMeas.InRange,
+			&ueMeas.Rssi, &ueMeas.Rsrp, &ueMeas.Rsrq)
 		if err != nil {
 			log.Error(err.Error())
 			return ueMap, err
 		}
 
-		// Store path
-		if path != nil {
-			ue.Path = *path
+		// Get UE entry from UE map (create new entry if not found)
+		ue := ueMap[ueEntry.Name]
+		if ue == nil {
+			ue = ueEntry
+			ue.Measurements = make(map[string]*UeMeasurement)
+			if path != nil {
+				ue.Path = *path
+			}
+			ueMap[ue.Name] = ue
 		}
 
-		// Add UE to map
-		ueMap[ue.Name] = ue
+		// Set UE measurement if in range
+		if ueMeas.InRange {
+			ue.Measurements[ueMeas.Poa] = ueMeas
+		}
 	}
 	err = rows.Err()
 	if err != nil {
@@ -1458,6 +1486,8 @@ func (am *AssetMgr) resetUePoaInfo(name string, ueMap map[string]*Ue) (err error
 // Update all UE Poa Info
 func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 
+	// start := time.Now()
+
 	// Begin Update Transaction
 	tx, err := am.db.Begin()
 	if err != nil {
@@ -1481,7 +1511,7 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 				poa_distance = $3,
 				poa_in_range = $4
 			WHERE name = ($1)`
-		_, err = am.db.Exec(query, ueName, selectedPoa, distance, pq.Array(ue.PoaInRange))
+		_, err = tx.Exec(query, ueName, selectedPoa, distance, pq.Array(ue.PoaInRange))
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -1489,25 +1519,26 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 
 		// Update UE measurements
 		for poaName, meas := range ue.Measurements {
-
 			// Calculate power measurements
-			rssi := 1.1
-			rsrp := 2.2
-			rsrq := -3.3
+			rssi, rsrp, rsrq := calculatePower(meas.SubType, meas.Radius, meas.Distance)
 
-			query := `INSERT INTO ` + UeMeasurementTable + ` (ue, poa, type, radius, distance, in_range, rssi, rsrp, rsrq)
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			// Add new entry or update existing one
+			id := ueName + "-" + poaName
+			query := `INSERT INTO ` + UeMeasurementTable + ` (id, ue, poa, type, radius, distance, in_range, rssi, rsrp, rsrq)
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 				ON CONFLICT (id)
-				DO UPDATE SET radius = $4, distance = $5, in_range = $6, rssi = $7, rsrp = $8, rsrq = $9
-					WHERE ue = ($1) AND poa = ($2)`
-			log.Error(query)
-			_, err = am.db.Exec(query, ueName, poaName, meas.SubType, meas.Radius, meas.Distance, meas.InRange, rssi, rsrp, rsrq)
+				DO UPDATE SET radius = $5, distance = $6, in_range = $7, rssi = $8, rsrp = $9, rsrq = $10
+					WHERE ` + UeMeasurementTable + `.ue = ($2) AND ` + UeMeasurementTable + `.poa = ($3)`
+			_, err = tx.Exec(query, id, ueName, poaName, meas.SubType, meas.Radius, meas.Distance, meas.InRange, rssi, rsrp, rsrq)
 			if err != nil {
 				log.Error(err.Error())
 				return err
 			}
 		}
 	}
+
+	// finish := time.Now()
+	// log.Error("UPDATE DURATION: ", finish.Sub(start))
 
 	return nil
 }
@@ -1588,4 +1619,74 @@ func getPoaTypePriority(poaType string, poaTypePrio []string) int {
 		}
 	}
 	return priority
+}
+
+func calculatePower(subtype string, radius float32, distance float32) (rssi float32, rsrp float32, rsrq float32) {
+	switch subtype {
+	case PoaTypeCell4g:
+		rsrp, rsrq = calculateCell4gPower(radius, distance)
+	case PoaTypeCell5g:
+		rsrp, rsrq = calculateCell5gPower(radius, distance)
+	case PoaTypeWifi:
+		rssi = calculateWifiPower(radius, distance)
+	default:
+	}
+	return rssi, rsrp, rsrq
+}
+
+// 4G Cellular signal strength calculator
+// RSRP power range: -156 dBm to -44 dBm
+// Equivalent RSRP range: -17 to 97
+// RSRQ power range: -34 dBm to 2.5 dBm
+// Equivalent RSRQ range: -30 to 46
+// Algorithm: Linear proportion to distance over radius, if in range
+const minCell4gRsrp = float32(-17)
+const maxCell4gRsrp = float32(97)
+const minCell4gRsrq = float32(-30)
+const maxCell4gRsrq = float32(46)
+
+func calculateCell4gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
+	rsrp = minCell4gRsrp
+	rsrq = minCell4gRsrq
+	if distance < radius {
+		rsrp = float32(int(minCell4gRsrp + ((maxCell4gRsrp - minCell4gRsrp) * (1 - (distance / radius)))))
+		rsrq = float32(int(minCell4gRsrq + ((maxCell4gRsrq - minCell4gRsrq) * (1 - (distance / radius)))))
+	}
+	return rsrp, rsrq
+}
+
+// 5G Cellular signal strength calculator
+// RSRP power range: -156 dBm to -31 dBm
+// Equivalent RSRP range: 0 to 127
+// RSRQ power range: -43 dBm to 20 dBm
+// Equivalent RSRQ range: 0 to 127
+// Algorithm: Linear proportion to distance over radius, if in range
+const minCell5gRsrp = float32(0)
+const maxCell5gRsrp = float32(127)
+const minCell5gRsrq = float32(0)
+const maxCell5gRsrq = float32(127)
+
+func calculateCell5gPower(radius float32, distance float32) (rsrp float32, rsrq float32) {
+	rsrp = minCell5gRsrp
+	rsrq = minCell5gRsrq
+	if distance < radius {
+		rsrp = float32(int(minCell5gRsrp + ((maxCell5gRsrp - minCell5gRsrp) * (1 - (distance / radius)))))
+		rsrq = float32(int(minCell5gRsrq + ((maxCell5gRsrq - minCell5gRsrq) * (1 - (distance / radius)))))
+	}
+	return rsrp, rsrq
+}
+
+// WiFi signal strength calculator
+// Signal power range: -113 dBm to -10 dBm
+// Equivalent RSSI range: 0 to 100
+// Algorithm: Linear proportion to distance over radius, if in range
+const minWifiRssi = float32(0)
+const maxWifiRssi = float32(100)
+
+func calculateWifiPower(radius float32, distance float32) (rssi float32) {
+	rssi = minWifiRssi
+	if distance < radius {
+		rssi = float32(int(minWifiRssi + ((maxWifiRssi - minWifiRssi) * (1 - (distance / radius)))))
+	}
+	return rssi
 }
