@@ -714,7 +714,7 @@ definitions:
     properties:
       macId:
         type: "string"
-        description: "TBD"
+        description: "WIFI POA MAC Address"
     description: "WIFI POA configuration information"
   GeoData:
     type: "object"
@@ -853,6 +853,9 @@ definitions:
         type: "number"
         format: "double"
         description: "**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss"
+      macId:
+        type: "string"
+        description: "Physical location MAC Address"
     description: "Physical location object"
     example: {}
   Process:

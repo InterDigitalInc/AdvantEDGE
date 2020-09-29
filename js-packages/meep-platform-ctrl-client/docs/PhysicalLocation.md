@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **linkLatencyVariation** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar latencyVariation | [optional] 
 **linkThroughput** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar throughputUl and throughputDl | [optional] 
 **linkPacketLoss** | **Number** | **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss | [optional] 
+**macId** | **String** | Physical location MAC Address | [optional] 
 
 
 <a name="TypeEnum"></a>

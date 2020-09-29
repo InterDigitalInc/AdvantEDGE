@@ -167,6 +167,7 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation = 0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId = "";
           replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
           replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
 
@@ -559,6 +560,8 @@
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput).to.be(0);
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be.a('number');
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be(0.0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be("");
                       expect(data.event.eventScenarioUpdate.node.parent).to.be.a('string');
                       expect(data.event.eventScenarioUpdate.node.parent).to.be("");
                       {

@@ -40,7 +40,7 @@ definitions:
     properties:
       macId:
         type: string
-        description: TBD
+        description: WIFI POA MAC Address
     description: WIFI POA configuration information
   CellularDomainConfig:
     type: object
@@ -602,6 +602,9 @@ definitions:
         format: double
         description: '**DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss'
         required: false
+      macId:
+        type: string
+        description: Physical location MAC Address
     description: Physical location object
     example: {}
   Process:

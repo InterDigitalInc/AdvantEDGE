@@ -3,6 +3,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**macId** | **String** | TBD | [optional] 
+**macId** | **String** | WIFI POA MAC Address | [optional] 
 
 

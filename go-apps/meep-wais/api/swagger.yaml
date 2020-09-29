@@ -1,0 +1,2715 @@
+---
+swagger: "2.0"
+info:
+  description: "WLAN Access Information Service is AdvantEDGE's implementation of\
+    \ [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf)\
+    \ <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
+    \ <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais)\
+    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
+    \ information about WLAN access information in the network <p>**Details**<br>API\
+    \ details available at _your-AdvantEDGE-ip-address/api_"
+  version: "2.1.1"
+  title: "AdvantEDGE WLAN Access Information Service REST API"
+  license:
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+basePath: "/wai/v2"
+schemes:
+- "http"
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+security:
+- OauthSecurity:
+  - "all"
+paths:
+  /queries/ap/ap_information:
+    get:
+      description: "Gets information on existing WLAN Access Points"
+      operationId: "ap_infoGET"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "filter"
+        in: "query"
+        description: "Attribute-based filtering expression"
+        required: false
+        type: "string"
+        x-exportParamName: "Filter"
+        x-optionalDataType: "String"
+      - name: "all_fields"
+        in: "query"
+        description: "Include all complex attributes in response."
+        required: false
+        type: "string"
+        x-exportParamName: "AllFields"
+        x-optionalDataType: "String"
+      - name: "fields"
+        in: "query"
+        description: "Complex attributes to be included in the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "Fields"
+      - name: "exclude_fields"
+        in: "query"
+        description: "Complex attributes to be excluded from the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "ExcludeFields"
+      - name: "exclude_default"
+        in: "query"
+        description: "Complex attributes to be excluded from the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "ExcludeDefault"
+      responses:
+        200:
+          description: "Successful response to ap_info request"
+          schema:
+            $ref: "#/definitions/inline_response_200"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "Default"
+  /queries/sta/sta_information:
+    get:
+      description: "Gets information on existing WLAN stations"
+      operationId: "sta_infoGET"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "filter"
+        in: "query"
+        description: "Attribute-based filtering expression"
+        required: false
+        type: "string"
+        x-exportParamName: "Filter"
+        x-optionalDataType: "String"
+      - name: "all_fields"
+        in: "query"
+        description: "Include all complex attributes in response."
+        required: false
+        type: "string"
+        x-exportParamName: "AllFields"
+        x-optionalDataType: "String"
+      - name: "fields"
+        in: "query"
+        description: "Complex attributes to be included in the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "Fields"
+      - name: "exclude_fields"
+        in: "query"
+        description: "Complex attributes to be excluded from the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "ExcludeFields"
+      - name: "exclude_default"
+        in: "query"
+        description: "Complex attributes to be excluded from the response."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+        x-exportParamName: "ExcludeDefault"
+      responses:
+        200:
+          description: "Successful response to sta_info request"
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "Default"
+  /subscriptions/:
+    get:
+      description: "The GET method can be used to request information about the subscriptions\
+        \ for this requestor"
+      operationId: "SubscriptionLinkList_subscriptionsGET"
+      produces:
+      - "application/json"
+      - "application/problem+json"
+      parameters: []
+      responses:
+        200:
+          description: "Response body contains the list of links to requestors subscriptions."
+          examples:
+            application/json:
+              SubscriptionLinkList:
+                _links:
+                  self: "http://meAppServer.example.com/wai/v2/subscriptions"
+                  subscription:
+                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/1"
+                    subscriptionType: "AssocStaSubscription"
+                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/2"
+                    subscriptionType: "StaDataRateSubscription"
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "Default"
+    post:
+      description: "Creates a subscription to the WLAN Access Information Service."
+      operationId: "subscriptionsPOST"
+      produces:
+      - "application/json"
+      - "application/problem+json"
+      parameters:
+      - in: "body"
+        name: "SubscriptionPost"
+        description: "Use to creates a subscription."
+        required: true
+        schema:
+          $ref: "#/definitions/SubscriptionPost_1"
+        x-exportParamName: "SubscriptionPost"
+      responses:
+        201:
+          description: "Successful subscription to response to notifications"
+          examples:
+            application/json:
+              Subscription:
+                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+                _links:
+                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
+                apId:
+                  macId: "11:22:33:44:55:66"
+                  ssid: "mySsid"
+                  ipAddress: "1.2.3.4"
+                expiryDeadline:
+                  seconds: 1577836800
+                  nanoSeconds: 0
+          schema:
+            $ref: "#/definitions/inline_response_201"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        415:
+          description: "Unsupported Media Type"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        422:
+          description: "Unprocessable Entity"
+          examples:
+            application/problem+json:
+              ProblemDetails:
+                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
+                title: "Too many targets"
+                status: "422"
+                detail: "The target area for the request is considered too large"
+                instance: "/meAppClient.example.com/77777/msgs/abc"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+      x-swagger-router-controller: "Default"
+  /subscriptions/{subscriptionId}:
+    get:
+      description: "Get cell change subscription information"
+      operationId: "SubscriptionsGET"
+      produces:
+      - "application/json"
+      - "application/problem+json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription Id, specifically the \"self\" returned in the subscription\
+          \ request"
+        required: true
+        type: "string"
+        format: "uri"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        200:
+          description: "Subscription information regarding subscription notifications"
+          examples:
+            application/json:
+              Subscription:
+                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+                _links:
+                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
+                apId:
+                  macId: "11:22:33:44:55:66"
+                  ssid: "mySsid"
+                  ipAddress: "1.2.3.4"
+                expiryDeadline:
+                  seconds: 1577836800
+                  nanoSeconds: 0
+          schema:
+            $ref: "#/definitions/inline_response_200_3"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+    put:
+      description: "Updates a subscription from WLAN Access Information Service"
+      operationId: "SubscriptionsPUT"
+      produces:
+      - "application/json"
+      - "application/problem+json"
+      parameters:
+      - in: "body"
+        name: "Subscription"
+        description: "Use to creates a subscription."
+        required: true
+        schema:
+          $ref: "#/definitions/Subscription_1"
+        x-exportParamName: "Subscription"
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription Id, specifically the \"self\" returned in the subscription\
+          \ request"
+        required: true
+        type: "string"
+        format: "uri"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        200:
+          description: "Successful subscription to response to subscription notifications"
+          examples:
+            application/json:
+              Subscription:
+                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+                _links:
+                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
+                apId:
+                  macId: "11:22:33:44:55:66"
+                  ssid: "mySsid"
+                  ipAddress: "1.2.3.4"
+                expiryDeadline:
+                  seconds: 1577836800
+                  nanoSeconds: 0
+          schema:
+            $ref: "#/definitions/Subscription_1"
+        400:
+          description: "Bad Request"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        401:
+          description: "Unauthorized"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/inline_response_403"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        406:
+          description: "Not Acceptable"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        412:
+          description: "Precondition failed"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        422:
+          description: "Unprocessable Entity"
+          examples:
+            application/problem+json:
+              ProblemDetails:
+                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
+                title: "Too many targets"
+                status: "422"
+                detail: "The target area for the request is considered too large"
+                instance: "/meAppClient.example.com/77777/msgs/abc"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+        429:
+          description: "Too Many Requests"
+          schema:
+            $ref: "#/definitions/inline_response_400"
+    delete:
+      description: "Method to delete a subscription"
+      operationId: "SubscriptionsDELETE"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subscriptionId"
+        in: "path"
+        description: "Subscription Id, specifically the \"self\" returned in the subscription\
+          \ request"
+        required: true
+        type: "string"
+        format: "uri"
+        x-exportParamName: "SubscriptionId"
+      responses:
+        204:
+          description: "No Content"
+      x-swagger-router-controller: "Default"
+securityDefinitions:
+  OauthSecurity:
+    type: "oauth2"
+    tokenUrl: "https://oauth.exampleAPI/token"
+    flow: "application"
+    scopes:
+      all: "Single oauth2 scope for API"
+definitions:
+  ProblemDetails:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        format: "uri"
+        description: "A URI reference according to IETF RFC 3986 that identifies the\
+          \ problem type"
+      title:
+        type: "string"
+        description: "A short, human-readable summary of the problem type"
+      status:
+        type: "integer"
+        format: "uint32"
+        description: "The HTTP status code for this occurrence of the problem"
+      detail:
+        type: "string"
+        description: "A human-readable explanation specific to this occurrence of\
+          \ the problem"
+      instance:
+        type: "string"
+        format: "uri"
+        description: "A URI reference that identifies the specific occurrence of the\
+          \ problem"
+  ApIdentity:
+    type: "object"
+    required:
+    - "macId"
+    properties:
+      macId:
+        type: "string"
+        example: "11:22:33:44:55:66"
+        description: "Identifier assigned to an Access Point for communications at\
+          \ the data link layer of a network segment."
+      ssid:
+        type: "string"
+        example: "mySsid"
+        description: "Service set identifier to identify logical networks."
+      ipAddress:
+        type: "string"
+        example: "1.2.3.4"
+        description: "IPv4 or IPv6 address allocated to the Access Point."
+    example:
+      macId: "11:22:33:44:55:66"
+      ipAddress: "1.2.3.4"
+      ssid: "mySsid"
+  HtCapabilities:
+    type: "object"
+    required:
+    - "ampduParameters"
+    - "aselCap"
+    - "htCapabilityInfo"
+    - "htExtendedCap"
+    - "supportedMcsSet"
+    - "txBeamFormCap"
+    properties:
+      htCapabilityInfo:
+        example: "1"
+        description: "HT Capability Information."
+      ampduParameters:
+        type: "integer"
+        example: 1
+        description: "A-MPDU parameters."
+      supportedMcsSet:
+        type: "integer"
+        format: "uint64"
+        example: 1
+        description: "SupportedMCS set (128 bytes)."
+      htExtendedCap:
+        type: "integer"
+        example: 1
+        description: "Extended HT Capabilities."
+      txBeamFormCap:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Transmit Beamforming Capabilities."
+      aselCap:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "ASEL capabilities."
+    example:
+      txBeamFormCap: 1
+      aselCap: 1
+      ampduParameters: 1
+      htCapabilityInfo: "1"
+      htExtendedCap: 1
+      supportedMcsSet: 1
+  VhtCapabilities:
+    type: "object"
+    required:
+    - "vhtCapInfo"
+    - "vhtMcsNss"
+    properties:
+      vhtCapInfo:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "VHT Capabilities."
+      vhtMcsNss:
+        type: "integer"
+        format: "uint64"
+        example: 1
+        description: "Supported VHT-MCS and NSS Set."
+    example:
+      vhtMcsNss: 1
+      vhtCapInfo: 1
+  HeCapabilities:
+    type: "object"
+    required:
+    - "heMacCapInfo"
+    - "hePhyCapInfo"
+    properties:
+      heMacCapInfo:
+        type: "integer"
+        example: 1
+        description: "MAC capabilities of an Access Point."
+      hePhyCapInfo:
+        type: "integer"
+        example: 1
+        description: "PHY capabilities of an Access Point."
+      supportedHeMcsNss:
+        type: "integer"
+        example: 1
+        description: "Supported MCS and NSS Set."
+      ppeThresholds:
+        type: "integer"
+        example: 0
+        description: "Nominal packet padding value for a HE PPDU."
+    example:
+      supportedHeMcsNss: 1
+      hePhyCapInfo: 1
+      heMacCapInfo: 1
+      ppeThresholds: 0
+  DmgCapabilities:
+    type: "object"
+    required:
+    - "dmgApOrPcpCapInfo"
+    - "dmgStaBeamTrackTimeLimit"
+    - "dmgStaCapInfo"
+    - "extScMcsCap"
+    - "maxNrBasicAmsduSubframes"
+    - "maxNrShortAmsduSubframes"
+    - "sarCap"
+    - "tddCap"
+    properties:
+      dmgStaCapInfo:
+        type: "integer"
+        format: "uint64"
+        example: 1
+        description: "DMG station capabilities information."
+      dmgApOrPcpCapInfo:
+        type: "integer"
+        example: 1
+        description: "DMG AP or PCP capabilities information."
+      dmgStaBeamTrackTimeLimit:
+        type: "integer"
+        example: 1
+        description: "DMG station beam tracking time limit."
+      extScMcsCap:
+        type: "integer"
+        example: 0
+        description: "Extended SC MCS capabilities."
+      maxNrBasicAmsduSubframes:
+        type: "integer"
+        example: 1
+        description: "Number of basic A-MSDU subframes in A-MSDU."
+      maxNrShortAmsduSubframes:
+        type: "integer"
+        example: 1
+        description: "Number of short A-MSDU subframes in A-MSDU."
+      tddCap:
+        type: "integer"
+        example: 1
+        description: "TDD capabilities."
+      sarCap:
+        type: "integer"
+        example: 1
+        description: "SAR capabilities."
+    example:
+      dmgStaCapInfo: 1
+      maxNrShortAmsduSubframes: 1
+      extScMcsCap: 0
+      sarCap: 1
+      maxNrBasicAmsduSubframes: 1
+      dmgStaBeamTrackTimeLimit: 1
+      dmgApOrPcpCapInfo: 1
+      tddCap: 1
+  EdmgCapabilities:
+    type: "object"
+    required:
+    - "ampduParameters"
+    - "supportedMcs"
+    - "tmParameters"
+    properties:
+      ampduParameters:
+        type: "integer"
+        example: 1
+        description: "A-MPDU parameters."
+      tmParameters:
+        type: "integer"
+        example: 1
+        description: "Training parameters."
+      supportedMcs:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Supported MCS."
+      reserved:
+        type: "integer"
+        example: 0
+        description: "Reserved field."
+    example:
+      supportedMcs: 1
+      reserved: 0
+      ampduParameters: 1
+      tmParameters: 1
+  WlanCapabilities:
+    type: "object"
+    properties:
+      ht:
+        $ref: "#/definitions/HtCapabilities"
+      vht:
+        $ref: "#/definitions/VhtCapabilities"
+      he:
+        $ref: "#/definitions/HeCapabilities"
+      dmg:
+        $ref: "#/definitions/DmgCapabilities"
+      edmg:
+        $ref: "#/definitions/EdmgCapabilities"
+    example:
+      vht:
+        vhtMcsNss: 1
+        vhtCapInfo: 1
+      edmg:
+        supportedMcs: 1
+        reserved: 0
+        ampduParameters: 1
+        tmParameters: 1
+      ht:
+        txBeamFormCap: 1
+        aselCap: 1
+        ampduParameters: 1
+        htCapabilityInfo: "1"
+        htExtendedCap: 1
+        supportedMcsSet: 1
+      he:
+        supportedHeMcsNss: 1
+        hePhyCapInfo: 1
+        heMacCapInfo: 1
+        ppeThresholds: 0
+      dmg:
+        dmgStaCapInfo: 1
+        maxNrShortAmsduSubframes: 1
+        extScMcsCap: 0
+        sarCap: 1
+        maxNrBasicAmsduSubframes: 1
+        dmgStaBeamTrackTimeLimit: 1
+        dmgApOrPcpCapInfo: 1
+        tddCap: 1
+  WanMetrics:
+    type: "object"
+    required:
+    - "downlinkLoad"
+    - "downlinkSpeed"
+    - "lmd"
+    - "uplinkLoad"
+    - "uplinkSpeed"
+    - "wanInfo"
+    properties:
+      wanInfo:
+        type: "integer"
+        example: 1
+        description: "Info about WAN link status, link symmetricity and capacity currently\
+          \ used."
+      downlinkSpeed:
+        type: "integer"
+        format: "uint32"
+        example: 1000
+        description: "Estimate of the WAN Backhaul link current downlink speed in\
+          \ kbps."
+      uplinkSpeed:
+        type: "integer"
+        format: "uint32"
+        example: 1000
+        description: "Estimate of the WAN Backhaul link current downlink speed in\
+          \ kbps."
+      downlinkLoad:
+        type: "integer"
+        example: 1
+        description: "Current scaled percentage loading of the downlink WAN connection."
+      uplinkLoad:
+        type: "integer"
+        example: 1
+        description: "Current scaled percentage loading of the downlink WAN connection."
+      lmd:
+        type: "integer"
+        example: 10
+        description: "Duration over which the Downlink Load and Uplink Load have been\
+          \ measured, in tenths of a second."
+    example:
+      uplinkLoad: 1
+      downlinkLoad: 1
+      lmd: 10
+      uplinkSpeed: 1000
+      downlinkSpeed: 1000
+      wanInfo: 1
+  BssLoad:
+    type: "object"
+    required:
+    - "availAdmCap"
+    - "channelUtilization"
+    - "staCount"
+    properties:
+      staCount:
+        type: "integer"
+        example: 1
+        description: "Total number of STAs currently associated with this BSS."
+      channelUtilization:
+        type: "integer"
+        example: 1
+        description: "Scaled percentage of time the AP sensed the medium was busy."
+      availAdmCap:
+        type: "integer"
+        example: 1000
+        description: "Remaining amount of medium time available via explicit admission\
+          \ control, in units of 32us/s."
+    example:
+      channelUtilization: 1
+      staCount: 1
+      availAdmCap: 1000
+  ExtBssLoad:
+    type: "object"
+    required:
+    - "muMimoStaCount"
+    - "obsSec20MhzUtil"
+    - "obsSec40MhzUtil"
+    - "obsSec80MhzUtil"
+    - "spatStreamUnderUtil"
+    properties:
+      muMimoStaCount:
+        type: "integer"
+        example: 1
+        description: "Total number of STAs currently associated with this BSS that\
+          \ have a 1 in the MU Beamforme Capable field of their VHT Capabilities."
+      spatStreamUnderUtil:
+        type: "integer"
+        example: 1
+        description: "Scaled percentage of time the AP has underutilized spatial dom,ain\
+          \ resources for given busy time of the medium."
+      obsSec20MhzUtil:
+        type: "integer"
+        example: 1
+        description: "Observable loading on each of the secondary 20 MHz channel."
+      obsSec40MhzUtil:
+        type: "integer"
+        example: 1
+        description: "Observable loading on each of the secondary 40 MHz channel."
+      obsSec80MhzUtil:
+        type: "integer"
+        example: 1
+        description: "Observable loading on each of the secondary 80 MHz channel."
+    example:
+      obsSec80MhzUtil: 1
+      obsSec40MhzUtil: 1
+      muMimoStaCount: 1
+      spatStreamUnderUtil: 1
+      obsSec20MhzUtil: 1
+  GeoLocation:
+    type: "object"
+    required:
+    - "datum"
+    - "lat"
+    - "latUncertainty"
+    - "long"
+    - "longUncertainty"
+    properties:
+      latUncertainty:
+        type: "integer"
+        example: 1
+        description: "Uncertainty for Latitude information."
+      lat:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Latitude value of the location."
+      longUncertainty:
+        type: "integer"
+        example: 1
+        description: "Uncertainty for Longitude information."
+      long:
+        type: "integer"
+        format: "uint64"
+        example: 1
+        description: "Longitude value of the location."
+      altitudeType:
+        type: "integer"
+        example: 1
+        description: "Type description for altitude information."
+      altitudeUncertainty:
+        type: "integer"
+        example: 1
+        description: "Uncertainty for altitude information."
+      altitude:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Altitude value of the location."
+      datum:
+        type: "integer"
+        example: 1
+        description: "Datum value to express how coordinates are organized."
+    example:
+      datum: 1
+      altitude: 1
+      longUncertainty: 1
+      altitudeType: 1
+      altitudeUncertainty: 1
+      latUncertainty: 1
+      lat: 1
+      long: 1
+  CivicLocation:
+    type: "object"
+    required:
+    - "country"
+    properties:
+      country:
+        type: "string"
+        example: "US"
+        description: "ISO 3166 country code in capital ASCII letters."
+      ca0:
+        type: "string"
+        description: "Language."
+      ca1:
+        type: "string"
+        description: "National subdivisions (state, canton, region, province, prefecture)."
+      ca2:
+        type: "string"
+        description: "Country, parish, gun(JP), district (IN)"
+      ca3:
+        type: "string"
+        description: "City, township, shi (JP)"
+      ca4:
+        type: "string"
+        description: "City division, borough, city district, ward, chou (JP)."
+      ca5:
+        type: "string"
+        description: "Neighborhood, block."
+      ca6:
+        type: "string"
+        description: "Group of streets below the neighborhood level."
+      ca16:
+        type: "string"
+        description: "Leading street direction."
+      ca17:
+        type: "string"
+        description: "Trailing street suffix."
+      ca18:
+        type: "string"
+        description: "Street suffix or type."
+      ca19:
+        type: "string"
+        description: "House number."
+      ca20:
+        type: "string"
+        description: "House number suffix."
+      ca21:
+        type: "string"
+        description: "Landmark of vanity address."
+      ca22:
+        type: "string"
+        description: "Additional location information."
+      ca23:
+        type: "string"
+        description: "Name (residence and office occupant)."
+      ca24:
+        type: "string"
+        description: "Postal/Zip code."
+      ca25:
+        type: "string"
+        description: "Building (structure)."
+      ca26:
+        type: "string"
+        description: "Unit (apartment/suite)."
+      ca27:
+        type: "string"
+        description: "Floor."
+      ca28:
+        type: "string"
+        description: "Room."
+      ca29:
+        type: "string"
+        description: "Type of place."
+      ca30:
+        type: "string"
+        description: "Postal community name."
+      ca31:
+        type: "string"
+        description: "Post office box."
+      ca32:
+        type: "string"
+        description: "Additional code."
+      ca33:
+        type: "string"
+        description: "Seat (desk, cubicle, workstation)."
+      ca34:
+        type: "string"
+        description: "Primary road name."
+      ca35:
+        type: "string"
+        description: "Road section."
+      ca36:
+        type: "string"
+        description: "Branch road name."
+      ca37:
+        type: "string"
+        description: "Sub-branch road name."
+      ca38:
+        type: "string"
+        description: "Street name pre-modifier."
+      ca39:
+        type: "string"
+        description: "Street name post-modifier."
+      ca128:
+        type: "string"
+        description: "Script."
+    example:
+      country: "US"
+      ca128: "ca128"
+      ca28: "ca28"
+      ca29: "ca29"
+      ca26: "ca26"
+      ca27: "ca27"
+      ca24: "ca24"
+      ca25: "ca25"
+      ca33: "ca33"
+      ca34: "ca34"
+      ca1: "ca1"
+      ca31: "ca31"
+      ca0: "ca0"
+      ca32: "ca32"
+      ca3: "ca3"
+      ca2: "ca2"
+      ca30: "ca30"
+      ca5: "ca5"
+      ca4: "ca4"
+      ca6: "ca6"
+      ca19: "ca19"
+      ca17: "ca17"
+      ca39: "ca39"
+      ca18: "ca18"
+      ca37: "ca37"
+      ca16: "ca16"
+      ca38: "ca38"
+      ca35: "ca35"
+      ca36: "ca36"
+      ca22: "ca22"
+      ca23: "ca23"
+      ca20: "ca20"
+      ca21: "ca21"
+  ApLocation:
+    type: "object"
+    properties:
+      geoLocation:
+        $ref: "#/definitions/GeoLocation"
+      civiLocation:
+        $ref: "#/definitions/CivicLocation"
+    example:
+      geoLocation:
+        datum: 1
+        altitude: 1
+        longUncertainty: 1
+        altitudeType: 1
+        altitudeUncertainty: 1
+        latUncertainty: 1
+        lat: 1
+        long: 1
+      civiLocation:
+        country: "US"
+        ca128: "ca128"
+        ca28: "ca28"
+        ca29: "ca29"
+        ca26: "ca26"
+        ca27: "ca27"
+        ca24: "ca24"
+        ca25: "ca25"
+        ca33: "ca33"
+        ca34: "ca34"
+        ca1: "ca1"
+        ca31: "ca31"
+        ca0: "ca0"
+        ca32: "ca32"
+        ca3: "ca3"
+        ca2: "ca2"
+        ca30: "ca30"
+        ca5: "ca5"
+        ca4: "ca4"
+        ca6: "ca6"
+        ca19: "ca19"
+        ca17: "ca17"
+        ca39: "ca39"
+        ca18: "ca18"
+        ca37: "ca37"
+        ca16: "ca16"
+        ca38: "ca38"
+        ca35: "ca35"
+        ca36: "ca36"
+        ca22: "ca22"
+        ca23: "ca23"
+        ca20: "ca20"
+        ca21: "ca21"
+  NeighborReport:
+    type: "object"
+    required:
+    - "bssid"
+    - "bssidInfo"
+    - "channel"
+    - "operatingClass"
+    - "phyType"
+    properties:
+      bssid:
+        type: "string"
+        example: "1"
+        description: "BSS Id of the Access Point that is being reported."
+      bssidInfo:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Additional information related to Access Point being reported."
+      operatingClass:
+        type: "integer"
+        example: 1
+        description: "Channel set of the AP."
+      channel:
+        type: "integer"
+        example: 1
+        description: "Channel currently used by this Access Point."
+      phyType:
+        type: "integer"
+        example: 1
+        description: "PHY type of the AP indicated by this BSSID."
+      optionalSubelement:
+        $ref: "#/definitions/OptionalSubelement"
+    example:
+      optionalSubelement:
+        optionalSubelement: ""
+      bssid: "1"
+      operatingClass: 1
+      channel: 1
+      phyType: 1
+      bssidInfo: 1
+  ApInfo:
+    type: "object"
+    required:
+    - "apId"
+    properties:
+      timeStamp:
+        $ref: "#/definitions/TimeStamp"
+      apId:
+        $ref: "#/definitions/ApIdentity"
+      channel:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Channel configured for the Access Point."
+      wlanCap:
+        $ref: "#/definitions/WlanCapabilities"
+      wanMetrics:
+        $ref: "#/definitions/WanMetrics"
+      bssLoad:
+        $ref: "#/definitions/BssLoad"
+      extBssLoad:
+        $ref: "#/definitions/ExtBssLoad"
+      apLocation:
+        $ref: "#/definitions/ApLocation"
+      apNeighbor:
+        $ref: "#/definitions/NeighborReport"
+    example:
+      timeStamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+      bssLoad:
+        channelUtilization: 1
+        staCount: 1
+        availAdmCap: 1000
+      extBssLoad:
+        obsSec80MhzUtil: 1
+        obsSec40MhzUtil: 1
+        muMimoStaCount: 1
+        spatStreamUnderUtil: 1
+        obsSec20MhzUtil: 1
+      apId:
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+      channel: 1
+      wlanCap:
+        vht:
+          vhtMcsNss: 1
+          vhtCapInfo: 1
+        edmg:
+          supportedMcs: 1
+          reserved: 0
+          ampduParameters: 1
+          tmParameters: 1
+        ht:
+          txBeamFormCap: 1
+          aselCap: 1
+          ampduParameters: 1
+          htCapabilityInfo: "1"
+          htExtendedCap: 1
+          supportedMcsSet: 1
+        he:
+          supportedHeMcsNss: 1
+          hePhyCapInfo: 1
+          heMacCapInfo: 1
+          ppeThresholds: 0
+        dmg:
+          dmgStaCapInfo: 1
+          maxNrShortAmsduSubframes: 1
+          extScMcsCap: 0
+          sarCap: 1
+          maxNrBasicAmsduSubframes: 1
+          dmgStaBeamTrackTimeLimit: 1
+          dmgApOrPcpCapInfo: 1
+          tddCap: 1
+      apLocation:
+        geoLocation:
+          datum: 1
+          altitude: 1
+          longUncertainty: 1
+          altitudeType: 1
+          altitudeUncertainty: 1
+          latUncertainty: 1
+          lat: 1
+          long: 1
+        civiLocation:
+          country: "US"
+          ca128: "ca128"
+          ca28: "ca28"
+          ca29: "ca29"
+          ca26: "ca26"
+          ca27: "ca27"
+          ca24: "ca24"
+          ca25: "ca25"
+          ca33: "ca33"
+          ca34: "ca34"
+          ca1: "ca1"
+          ca31: "ca31"
+          ca0: "ca0"
+          ca32: "ca32"
+          ca3: "ca3"
+          ca2: "ca2"
+          ca30: "ca30"
+          ca5: "ca5"
+          ca4: "ca4"
+          ca6: "ca6"
+          ca19: "ca19"
+          ca17: "ca17"
+          ca39: "ca39"
+          ca18: "ca18"
+          ca37: "ca37"
+          ca16: "ca16"
+          ca38: "ca38"
+          ca35: "ca35"
+          ca36: "ca36"
+          ca22: "ca22"
+          ca23: "ca23"
+          ca20: "ca20"
+          ca21: "ca21"
+      wanMetrics:
+        uplinkLoad: 1
+        downlinkLoad: 1
+        lmd: 10
+        uplinkSpeed: 1000
+        downlinkSpeed: 1000
+        wanInfo: 1
+      apNeighbor:
+        optionalSubelement:
+          optionalSubelement: ""
+        bssid: "1"
+        operatingClass: 1
+        channel: 1
+        phyType: 1
+        bssidInfo: 1
+  ApAssociated:
+    type: "object"
+    required:
+    - "macId"
+    properties:
+      macId:
+        type: "string"
+        example: "11:22:33:44:55:66"
+        description: "Identifier assigned to Access Point for communications at the\
+          \ data link layer of a network segment."
+      ssid:
+        type: "string"
+        example: "mySsid"
+        description: "Service set identifier to identify logical networks."
+      assocId:
+        type: "string"
+        example: "1234"
+        description: "Number which identifies a particular association between a station\
+          \ and Access Point."
+      ipAddress:
+        type: "string"
+        example: "1.2.3.4"
+        description: "IPv4 or IPv6 address allocated to Access Point."
+    example:
+      assocId: "1234"
+      macId: "11:22:33:44:55:66"
+      ipAddress: "1.2.3.4"
+      ssid: "mySsid"
+  StaIdentity:
+    type: "object"
+    required:
+    - "macId"
+    properties:
+      macId:
+        type: "string"
+        example: "11:22:33:44:55:66"
+        description: "Identifier assigned to station for communications at the data\
+          \ link layer of a network segment."
+      ssid:
+        type: "string"
+        example: "mySsid"
+        description: "Service set identifier to identify logical networks."
+      aid:
+        type: "string"
+        example: "1234"
+        description: "Number which identifies a particular association between a station\
+          \ and Access Point."
+      ipAddress:
+        type: "string"
+        example: "1.2.3.4"
+        description: "IPv4 or IPv6 address allocated to a station."
+    example:
+      macId: "11:22:33:44:55:66"
+      ipAddress: "1.2.3.4"
+      ssid: "mySsid"
+      aid: "1234"
+  StaDataRate:
+    type: "object"
+    properties:
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      staLastDataDownlinkRate:
+        type: "integer"
+        format: "uint32"
+        example: 1000
+        description: "The data transmit rate in kbps that was most recently used for\
+          \ transmission of data PPDUs from the access point to the station."
+      staLastDataUplinkRate:
+        type: "integer"
+        format: "uint32"
+        example: 1000
+        description: "The data transmit rate in kbps that was most recently used for\
+          \ transmission of data PPDUs from the associated station to the access point."
+    example:
+      staId:
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+        aid: "1234"
+      staLastDataDownlinkRate: 1000
+      staLastDataUplinkRate: 1000
+  StatisticsGroupData:
+    type: "object"
+    properties:
+      dot11TransmittedFragmentCount:
+        type: "integer"
+        format: "uint32"
+      dot11GroupTransmittedFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11FailedCount:
+        type: "integer"
+        format: "uint32"
+      dot11ReceivedFragmentCount:
+        type: "integer"
+        format: "uint32"
+      dot11GroupReceivedFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11FCSErrorCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11RetryCount:
+        type: "integer"
+        format: "uint32"
+      dot11MultipleRetryCount:
+        type: "integer"
+        format: "uint32"
+      dot11FrameDuplicateCount:
+        type: "integer"
+        format: "uint32"
+      dot11RTSSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11RTSFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11AckFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosTransmittedFragmentCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosFailedCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosRetryCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosMultipleRetryCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosFrameDuplicateCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosRTSSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosRTSFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosAckFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosReceivedFragmentCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosTransmittedFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosDiscardedFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosMPDUsReceivedCount:
+        type: "integer"
+        format: "uint32"
+      dot11QosRetriesReceivedCount:
+        type: "integer"
+        format: "uint32"
+      dot11STAStatisticsAPAverageAccessDelay:
+        type: "integer"
+      dot11STAStatisticsAverageAccessDelayBestEffort:
+        type: "integer"
+      dot11STAStatisticsAverageAccessDelayBackGround:
+        type: "integer"
+      dot11STAStatisticsAverageAccessDelayVideo:
+        type: "integer"
+      dot11STAStatisticsAverageAccessDelayVoice:
+        type: "integer"
+      dot11STAStatisticsStationCount:
+        type: "integer"
+      dot11STAStatisticsChannelUtilization:
+        type: "integer"
+      dot11TransmittedAMSDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11FailedAMSDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11RetryAMSDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11MultipleRetryAMSDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedOctetsInAMSDUCount:
+        type: "integer"
+        format: "uint64"
+      dot11AMSDUAckFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11ReceivedAMSDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11ReceivedOctetsInAMSDUCount:
+        type: "integer"
+        format: "uint64"
+      dot11TransmittedAMPDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedMPDUsInAMPDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedOctetsInAMPDUCount:
+        type: "integer"
+        format: "uint64"
+      dot11AMPDUReceivedCount:
+        type: "integer"
+        format: "uint32"
+      dot11MPDUInReceivedAMPDUCount:
+        type: "integer"
+        format: "uint32"
+      dot11ReceivedOctetsInAMPDUCount:
+        type: "integer"
+        format: "uint64"
+      dot11AMPDUDelimiterCRCErrorCount:
+        type: "integer"
+        format: "uint32"
+      dot11ImplicitBARFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11ExplicitBARFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11ChannelWidthSwitchCount:
+        type: "integer"
+        format: "uint32"
+      dot11TwentyMHzFrameTransmittedCount:
+        type: "integer"
+        format: "uint32"
+      dot11FortyMHzFrameTransmittedCount:
+        type: "integer"
+        format: "uint32"
+      dot11TwentyMHzFrameReceivedCount:
+        type: "integer"
+        format: "uint32"
+      dot11FortyMHzFrameReceivedCount:
+        type: "integer"
+        format: "uint32"
+      dot11PSMPUTTGrantDuration:
+        type: "integer"
+        format: "uint32"
+      dot11PSMPUTTUsedDuration:
+        type: "integer"
+        format: "uint32"
+      dot11GrantedRDGUsedCount:
+        type: "integer"
+        format: "uint32"
+      dot11GrantedRDGUnusedCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedFramesInGrantedRDGCount:
+        type: "integer"
+        format: "uint32"
+      dot11TransmittedOctetsInGrantedRDGCount:
+        type: "integer"
+        format: "uint32"
+      dot11DualCTSSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11DualCTSFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11RTSLSIGSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11RTSLSIGFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11BeamformingFrameCount:
+        type: "integer"
+        format: "uint32"
+      dot11STBCCTSSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11STBCCTSFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11nonSTBCCTSSuccessCount:
+        type: "integer"
+        format: "uint32"
+      dot11nonSTBCCTSFailureCount:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsBIPMICErrors:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsCMACReplays:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsRobustMgmtCCMPReplays:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsTKIPICVErrors:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsTKIPReplays:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsCCMPDecryptErrors:
+        type: "integer"
+        format: "uint32"
+      dot11RSNAStatsCCMPReplays:
+        type: "integer"
+        format: "uint32"
+    example:
+      dot11STAStatisticsStationCount: 6
+      dot11DualCTSFailureCount: 4
+      dot11RSNAStatsTKIPICVErrors: 8
+      dot11TransmittedOctetsInGrantedRDGCount: 7
+      dot11BeamformingFrameCount: 4
+      dot11RSNAStatsCMACReplays: 6
+      dot11RSNAStatsCCMPReplays: 3
+      dot11QosRTSSuccessCount: 4
+      dot11FailedCount: 1
+      dot11STBCCTSSuccessCount: 3
+      dot11RSNAStatsBIPMICErrors: 8
+      dot11RSNAStatsRobustMgmtCCMPReplays: 4
+      dot11ImplicitBARFailureCount: 3
+      dot11AckFailureCount: 1
+      dot11MultipleRetryCount: 3
+      dot11TwentyMHzFrameReceivedCount: 1
+      dot11FailedAMSDUCount: 3
+      dot11RetryCount: 9
+      dot11STAStatisticsAverageAccessDelayVoice: 6
+      dot11QosDiscardedFrameCount: 8
+      dot11GroupTransmittedFrameCount: 6
+      dot11FrameDuplicateCount: 2
+      dot11nonSTBCCTSFailureCount: 1
+      dot11AMPDUDelimiterCRCErrorCount: 5
+      dot11ReceivedAMSDUCount: 6
+      dot11QosReceivedFragmentCount: 9
+      dot11QosMPDUsReceivedCount: 9
+      dot11RTSLSIGSuccessCount: 6
+      dot11QosFrameDuplicateCount: 1
+      dot11STAStatisticsAverageAccessDelayBackGround: 1
+      dot11QosAckFailureCount: 9
+      dot11TransmittedMPDUsInAMPDUCount: 8
+      dot11nonSTBCCTSSuccessCount: 2
+      dot11GroupReceivedFrameCount: 5
+      dot11FCSErrorCount: 2
+      dot11TransmittedFrameCount: 7
+      dot11STAStatisticsChannelUtilization: 5
+      dot11QosRetryCount: 6
+      dot11TwentyMHzFrameTransmittedCount: 6
+      dot11TransmittedOctetsInAMSDUCount: 0
+      dot11QosTransmittedFrameCount: 6
+      dot11QosFailedCount: 1
+      dot11TransmittedOctetsInAMPDUCount: 7
+      dot11TransmittedAMPDUCount: 4
+      dot11DualCTSSuccessCount: 5
+      dot11MultipleRetryAMSDUCount: 7
+      dot11ReceivedOctetsInAMPDUCount: 7
+      dot11ReceivedOctetsInAMSDUCount: 0
+      dot11TransmittedAMSDUCount: 6
+      dot11GrantedRDGUsedCount: 0
+      dot11RTSLSIGFailureCount: 8
+      dot11ChannelWidthSwitchCount: 0
+      dot11RTSFailureCount: 7
+      dot11TransmittedFramesInGrantedRDGCount: 0
+      dot11STAStatisticsAPAverageAccessDelay: 3
+      dot11TransmittedFragmentCount: 0
+      dot11QosRTSFailureCount: 5
+      dot11PSMPUTTGrantDuration: 7
+      dot11QosMultipleRetryCount: 7
+      dot11STAStatisticsAverageAccessDelayVideo: 2
+      dot11AMSDUAckFailureCount: 7
+      dot11RetryAMSDUCount: 3
+      dot11QosTransmittedFragmentCount: 1
+      dot11GrantedRDGUnusedCount: 9
+      dot11RSNAStatsCCMPDecryptErrors: 1
+      dot11QosRetriesReceivedCount: 6
+      dot11PSMPUTTUsedDuration: 9
+      dot11STAStatisticsAverageAccessDelayBestEffort: 6
+      dot11RSNAStatsTKIPReplays: 9
+      dot11FortyMHzFrameReceivedCount: 4
+      dot11ExplicitBARFailureCount: 4
+      dot11FortyMHzFrameTransmittedCount: 4
+      dot11AMPDUReceivedCount: 3
+      dot11ReceivedFragmentCount: 5
+      dot11STBCCTSFailureCount: 0
+      dot11MPDUInReceivedAMPDUCount: 3
+      dot11RTSSuccessCount: 4
+  OptionalSubelement:
+    type: "object"
+    properties:
+      optionalSubelement:
+        type: "string"
+        example: ""
+        description: "Optional Sub Elements"
+    example:
+      optionalSubelement: ""
+  StaStatistics:
+    type: "object"
+    required:
+    - "groupIdentity"
+    - "md"
+    - "statisticsGroupData"
+    properties:
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      md:
+        type: "integer"
+        example: 1000
+        description: "Measurement Duration."
+      groupIdentity:
+        type: "integer"
+        example: 1
+        description: "Indicates the requested statistics group describing the Statistics\
+          \ Group Data."
+      statisticsGroupData:
+        $ref: "#/definitions/StatisticsGroupData"
+      optionalSubelement:
+        $ref: "#/definitions/OptionalSubelement"
+    example:
+      staId:
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+        aid: "1234"
+      optionalSubelement:
+        optionalSubelement: ""
+      md: 1000
+      groupIdentity: 1
+      statisticsGroupData:
+        dot11STAStatisticsStationCount: 6
+        dot11DualCTSFailureCount: 4
+        dot11RSNAStatsTKIPICVErrors: 8
+        dot11TransmittedOctetsInGrantedRDGCount: 7
+        dot11BeamformingFrameCount: 4
+        dot11RSNAStatsCMACReplays: 6
+        dot11RSNAStatsCCMPReplays: 3
+        dot11QosRTSSuccessCount: 4
+        dot11FailedCount: 1
+        dot11STBCCTSSuccessCount: 3
+        dot11RSNAStatsBIPMICErrors: 8
+        dot11RSNAStatsRobustMgmtCCMPReplays: 4
+        dot11ImplicitBARFailureCount: 3
+        dot11AckFailureCount: 1
+        dot11MultipleRetryCount: 3
+        dot11TwentyMHzFrameReceivedCount: 1
+        dot11FailedAMSDUCount: 3
+        dot11RetryCount: 9
+        dot11STAStatisticsAverageAccessDelayVoice: 6
+        dot11QosDiscardedFrameCount: 8
+        dot11GroupTransmittedFrameCount: 6
+        dot11FrameDuplicateCount: 2
+        dot11nonSTBCCTSFailureCount: 1
+        dot11AMPDUDelimiterCRCErrorCount: 5
+        dot11ReceivedAMSDUCount: 6
+        dot11QosReceivedFragmentCount: 9
+        dot11QosMPDUsReceivedCount: 9
+        dot11RTSLSIGSuccessCount: 6
+        dot11QosFrameDuplicateCount: 1
+        dot11STAStatisticsAverageAccessDelayBackGround: 1
+        dot11QosAckFailureCount: 9
+        dot11TransmittedMPDUsInAMPDUCount: 8
+        dot11nonSTBCCTSSuccessCount: 2
+        dot11GroupReceivedFrameCount: 5
+        dot11FCSErrorCount: 2
+        dot11TransmittedFrameCount: 7
+        dot11STAStatisticsChannelUtilization: 5
+        dot11QosRetryCount: 6
+        dot11TwentyMHzFrameTransmittedCount: 6
+        dot11TransmittedOctetsInAMSDUCount: 0
+        dot11QosTransmittedFrameCount: 6
+        dot11QosFailedCount: 1
+        dot11TransmittedOctetsInAMPDUCount: 7
+        dot11TransmittedAMPDUCount: 4
+        dot11DualCTSSuccessCount: 5
+        dot11MultipleRetryAMSDUCount: 7
+        dot11ReceivedOctetsInAMPDUCount: 7
+        dot11ReceivedOctetsInAMSDUCount: 0
+        dot11TransmittedAMSDUCount: 6
+        dot11GrantedRDGUsedCount: 0
+        dot11RTSLSIGFailureCount: 8
+        dot11ChannelWidthSwitchCount: 0
+        dot11RTSFailureCount: 7
+        dot11TransmittedFramesInGrantedRDGCount: 0
+        dot11STAStatisticsAPAverageAccessDelay: 3
+        dot11TransmittedFragmentCount: 0
+        dot11QosRTSFailureCount: 5
+        dot11PSMPUTTGrantDuration: 7
+        dot11QosMultipleRetryCount: 7
+        dot11STAStatisticsAverageAccessDelayVideo: 2
+        dot11AMSDUAckFailureCount: 7
+        dot11RetryAMSDUCount: 3
+        dot11QosTransmittedFragmentCount: 1
+        dot11GrantedRDGUnusedCount: 9
+        dot11RSNAStatsCCMPDecryptErrors: 1
+        dot11QosRetriesReceivedCount: 6
+        dot11PSMPUTTUsedDuration: 9
+        dot11STAStatisticsAverageAccessDelayBestEffort: 6
+        dot11RSNAStatsTKIPReplays: 9
+        dot11FortyMHzFrameReceivedCount: 4
+        dot11ExplicitBARFailureCount: 4
+        dot11FortyMHzFrameTransmittedCount: 4
+        dot11AMPDUReceivedCount: 3
+        dot11ReceivedFragmentCount: 5
+        dot11STBCCTSFailureCount: 0
+        dot11MPDUInReceivedAMPDUCount: 3
+        dot11RTSSuccessCount: 4
+  BeaconReport:
+    type: "object"
+    required:
+    - "bssId"
+    - "channelId"
+    - "measurementId"
+    - "staId"
+    properties:
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      measurementId:
+        type: "string"
+        example: "myId"
+        description: "Measurement ID of the Measurement configuration applied to this\
+          \ Beacon Report."
+      channelId:
+        type: "integer"
+        example: 1
+        description: "Channel number where the beacon was received."
+      bssId:
+        type: "array"
+        example: "myBssId"
+        description: "BssId of the BSS for which a beacon report has been received."
+        items:
+          type: "string"
+      ssId:
+        type: "array"
+        example: "myIBSS"
+        description: "ESS or IBSS for which a beacon report is received."
+        items:
+          type: "string"
+      reportingCondition:
+        type: "integer"
+        example: 1
+        description: "."
+    example:
+      staId:
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+        aid: "1234"
+      reportingCondition: 1
+      bssId: "myBssId"
+      measurementId: "myId"
+      channelId: 1
+      ssId: "myIBSS"
+  StaInfo:
+    type: "object"
+    required:
+    - "staId"
+    properties:
+      timeStamp:
+        $ref: "#/definitions/TimeStamp"
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      channel:
+        type: "integer"
+        format: "uint32"
+        example: 1
+        description: "Channel currently used by the station."
+      apAssociated:
+        $ref: "#/definitions/ApAssociated"
+      rssi:
+        type: "integer"
+        example: 44
+        description: "Received Signal Strength Indicator from a station."
+      staDataRate:
+        $ref: "#/definitions/StaDataRate"
+      staStatistics:
+        $ref: "#/definitions/StaStatistics"
+      beaconReport:
+        $ref: "#/definitions/BeaconReport"
+    example:
+      timeStamp:
+        seconds: 1577836800
+        nanoSeconds: 0
+      staId:
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+        aid: "1234"
+      rssi: 44
+      staStatistics:
+        staId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+          aid: "1234"
+        optionalSubelement:
+          optionalSubelement: ""
+        md: 1000
+        groupIdentity: 1
+        statisticsGroupData:
+          dot11STAStatisticsStationCount: 6
+          dot11DualCTSFailureCount: 4
+          dot11RSNAStatsTKIPICVErrors: 8
+          dot11TransmittedOctetsInGrantedRDGCount: 7
+          dot11BeamformingFrameCount: 4
+          dot11RSNAStatsCMACReplays: 6
+          dot11RSNAStatsCCMPReplays: 3
+          dot11QosRTSSuccessCount: 4
+          dot11FailedCount: 1
+          dot11STBCCTSSuccessCount: 3
+          dot11RSNAStatsBIPMICErrors: 8
+          dot11RSNAStatsRobustMgmtCCMPReplays: 4
+          dot11ImplicitBARFailureCount: 3
+          dot11AckFailureCount: 1
+          dot11MultipleRetryCount: 3
+          dot11TwentyMHzFrameReceivedCount: 1
+          dot11FailedAMSDUCount: 3
+          dot11RetryCount: 9
+          dot11STAStatisticsAverageAccessDelayVoice: 6
+          dot11QosDiscardedFrameCount: 8
+          dot11GroupTransmittedFrameCount: 6
+          dot11FrameDuplicateCount: 2
+          dot11nonSTBCCTSFailureCount: 1
+          dot11AMPDUDelimiterCRCErrorCount: 5
+          dot11ReceivedAMSDUCount: 6
+          dot11QosReceivedFragmentCount: 9
+          dot11QosMPDUsReceivedCount: 9
+          dot11RTSLSIGSuccessCount: 6
+          dot11QosFrameDuplicateCount: 1
+          dot11STAStatisticsAverageAccessDelayBackGround: 1
+          dot11QosAckFailureCount: 9
+          dot11TransmittedMPDUsInAMPDUCount: 8
+          dot11nonSTBCCTSSuccessCount: 2
+          dot11GroupReceivedFrameCount: 5
+          dot11FCSErrorCount: 2
+          dot11TransmittedFrameCount: 7
+          dot11STAStatisticsChannelUtilization: 5
+          dot11QosRetryCount: 6
+          dot11TwentyMHzFrameTransmittedCount: 6
+          dot11TransmittedOctetsInAMSDUCount: 0
+          dot11QosTransmittedFrameCount: 6
+          dot11QosFailedCount: 1
+          dot11TransmittedOctetsInAMPDUCount: 7
+          dot11TransmittedAMPDUCount: 4
+          dot11DualCTSSuccessCount: 5
+          dot11MultipleRetryAMSDUCount: 7
+          dot11ReceivedOctetsInAMPDUCount: 7
+          dot11ReceivedOctetsInAMSDUCount: 0
+          dot11TransmittedAMSDUCount: 6
+          dot11GrantedRDGUsedCount: 0
+          dot11RTSLSIGFailureCount: 8
+          dot11ChannelWidthSwitchCount: 0
+          dot11RTSFailureCount: 7
+          dot11TransmittedFramesInGrantedRDGCount: 0
+          dot11STAStatisticsAPAverageAccessDelay: 3
+          dot11TransmittedFragmentCount: 0
+          dot11QosRTSFailureCount: 5
+          dot11PSMPUTTGrantDuration: 7
+          dot11QosMultipleRetryCount: 7
+          dot11STAStatisticsAverageAccessDelayVideo: 2
+          dot11AMSDUAckFailureCount: 7
+          dot11RetryAMSDUCount: 3
+          dot11QosTransmittedFragmentCount: 1
+          dot11GrantedRDGUnusedCount: 9
+          dot11RSNAStatsCCMPDecryptErrors: 1
+          dot11QosRetriesReceivedCount: 6
+          dot11PSMPUTTUsedDuration: 9
+          dot11STAStatisticsAverageAccessDelayBestEffort: 6
+          dot11RSNAStatsTKIPReplays: 9
+          dot11FortyMHzFrameReceivedCount: 4
+          dot11ExplicitBARFailureCount: 4
+          dot11FortyMHzFrameTransmittedCount: 4
+          dot11AMPDUReceivedCount: 3
+          dot11ReceivedFragmentCount: 5
+          dot11STBCCTSFailureCount: 0
+          dot11MPDUInReceivedAMPDUCount: 3
+          dot11RTSSuccessCount: 4
+      apAssociated:
+        assocId: "1234"
+        macId: "11:22:33:44:55:66"
+        ipAddress: "1.2.3.4"
+        ssid: "mySsid"
+      staDataRate:
+        staId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+          aid: "1234"
+        staLastDataDownlinkRate: 1000
+        staLastDataUplinkRate: 1000
+      channel: 1
+      beaconReport:
+        staId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+          aid: "1234"
+        reportingCondition: 1
+        bssId: "myBssId"
+        measurementId: "myId"
+        channelId: 1
+        ssId: "myIBSS"
+  TimeStamp:
+    type: "object"
+    required:
+    - "nanoSeconds"
+    - "seconds"
+    properties:
+      seconds:
+        type: "integer"
+        format: "uint32"
+        example: 1577836800
+        description: "The seconds part of the time. Time is defined as Unix-time since\
+          \ January 1, 1970, 00:00:00 UTC"
+      nanoSeconds:
+        type: "integer"
+        format: "uint32"
+        example: 0
+        description: "The nanoseconds part of the time. Time is defined as Unix-time\
+          \ since January 1, 1970, 00:00:00 UTC"
+    example:
+      seconds: 1577836800
+      nanoSeconds: 0
+  SubscriptionLinkList:
+    type: "object"
+    required:
+    - "_links"
+    properties:
+      _links:
+        $ref: "#/definitions/Link"
+      subscription:
+        type: "array"
+        items:
+          $ref: "#/definitions/Subscription"
+  Link:
+    type: "object"
+    properties:
+      self:
+        type: "string"
+        format: "uri"
+        example: "http://meAppClient.example.com/wai/v2/"
+        description: "URI referring to a resource"
+    description: "List of hyperlinks related to the resource"
+  Subscription:
+    type: "object"
+    required:
+    - "callbackReference"
+    - "subscriptionType"
+    properties:
+      subscriptionType:
+        type: "string"
+        description: "Subscription type"
+        enum:
+        - "StaDataRateSubscription"
+        - "AssocStaSubscription"
+      callbackReference:
+        type: "string"
+        format: "uri"
+        example: "http://meAppClient.example.com/wai/v2/"
+        description: "URL selected by the Mobile Edge application to receive notifications\
+          \ on the subscribed WAIS information."
+      _links:
+        $ref: "#/definitions/Link"
+      expiryDeadline:
+        $ref: "#/definitions/TimeStamp"
+      apId:
+        $ref: "#/definitions/ApIdentity"
+      staId:
+        $ref: "#/definitions/StaIdentity"
+    description: "Subscription object"
+  SubscriptionPost:
+    type: "object"
+    required:
+    - "callbackReference"
+    - "subscriptionType"
+    properties:
+      subscriptionType:
+        type: "string"
+        description: "Subscription type"
+        enum:
+        - "StaDataRateSubscription"
+        - "AssocStaSubscription"
+      callbackReference:
+        type: "string"
+        format: "uri"
+        example: "http://meAppClient.example.com/wai/v2/"
+        description: "URL selected by the Mobile Edge application to receive notifications\
+          \ on the subscribed WAIS information."
+      expiryDeadline:
+        $ref: "#/definitions/TimeStamp"
+      apId:
+        $ref: "#/definitions/ApIdentity"
+      staId:
+        $ref: "#/definitions/StaIdentity"
+    description: "Subscription object"
+    example:
+      subscriptionType: "AssocStaSubscription"
+      callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+      expiryDeadline:
+        seconds: 1977836800
+        nanoSeconds: 0
+      apId:
+        macId: "11:22:33:44:55:66"
+        ssid: "mySsid"
+        ipAddress: "1.2.3.4"
+  ChannelLoadConfig:
+    type: "object"
+    required:
+    - "apId"
+    - "channelId"
+    - "channelLoad"
+    properties:
+      channelId:
+        type: "integer"
+        description: "Channel number which load is reported"
+      channelLoad:
+        type: "integer"
+        description: "Channel load."
+      apId:
+        $ref: "#/definitions/ApIdentity"
+  BeaconRequestConfig:
+    type: "object"
+    required:
+    - "bssId"
+    - "channelId"
+    - "measurementMode"
+    - "staId"
+    properties:
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      measurementMode:
+        type: "integer"
+        example: 0
+        description: "Measurement mode (0-passive, 1-active, 2-beacon table)."
+      channelId:
+        type: "integer"
+        example: 1
+        description: "Channel number where the beacon was received."
+      bssId:
+        type: "array"
+        example: "myBssId"
+        description: "BssId of the BSS for which a beacon report has been received."
+        items:
+          type: "string"
+      ssId:
+        type: "array"
+        example: "myIBSS"
+        description: "ESS or IBSS for which a beacon report is received."
+        items:
+          type: "string"
+      reportingCondition:
+        type: "integer"
+        example: 1
+        description: "."
+  StaStatisticsConfig:
+    type: "object"
+    required:
+    - "groupIdentity"
+    - "staId"
+    - "triggerCondition"
+    - "triggerTimeout"
+    - "triggeredReport"
+    properties:
+      staId:
+        $ref: "#/definitions/StaIdentity"
+      groupIdentity:
+        type: "integer"
+        example: 0
+        description: "Group Identity."
+      triggeredReport:
+        type: "boolean"
+        description: "Use triggered report ot not."
+      triggerTimeout:
+        type: "integer"
+        description: "Trigger timeout during which a measuring STA does not generate\
+          \ further triggered STA Statistics Reports."
+      triggerCondition:
+        type: "integer"
+        description: "Bitmap defining the metrics returned by the STA Statistics Report."
+  inline_response_200:
+    type: "object"
+    properties:
+      ApInfo:
+        type: "array"
+        items:
+          $ref: "#/definitions/ApInfo"
+    example:
+      ApInfo:
+      - timeStamp:
+          seconds: 1577836800
+          nanoSeconds: 0
+        bssLoad:
+          channelUtilization: 1
+          staCount: 1
+          availAdmCap: 1000
+        extBssLoad:
+          obsSec80MhzUtil: 1
+          obsSec40MhzUtil: 1
+          muMimoStaCount: 1
+          spatStreamUnderUtil: 1
+          obsSec20MhzUtil: 1
+        apId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+        channel: 1
+        wlanCap:
+          vht:
+            vhtMcsNss: 1
+            vhtCapInfo: 1
+          edmg:
+            supportedMcs: 1
+            reserved: 0
+            ampduParameters: 1
+            tmParameters: 1
+          ht:
+            txBeamFormCap: 1
+            aselCap: 1
+            ampduParameters: 1
+            htCapabilityInfo: "1"
+            htExtendedCap: 1
+            supportedMcsSet: 1
+          he:
+            supportedHeMcsNss: 1
+            hePhyCapInfo: 1
+            heMacCapInfo: 1
+            ppeThresholds: 0
+          dmg:
+            dmgStaCapInfo: 1
+            maxNrShortAmsduSubframes: 1
+            extScMcsCap: 0
+            sarCap: 1
+            maxNrBasicAmsduSubframes: 1
+            dmgStaBeamTrackTimeLimit: 1
+            dmgApOrPcpCapInfo: 1
+            tddCap: 1
+        apLocation:
+          geoLocation:
+            datum: 1
+            altitude: 1
+            longUncertainty: 1
+            altitudeType: 1
+            altitudeUncertainty: 1
+            latUncertainty: 1
+            lat: 1
+            long: 1
+          civiLocation:
+            country: "US"
+            ca128: "ca128"
+            ca28: "ca28"
+            ca29: "ca29"
+            ca26: "ca26"
+            ca27: "ca27"
+            ca24: "ca24"
+            ca25: "ca25"
+            ca33: "ca33"
+            ca34: "ca34"
+            ca1: "ca1"
+            ca31: "ca31"
+            ca0: "ca0"
+            ca32: "ca32"
+            ca3: "ca3"
+            ca2: "ca2"
+            ca30: "ca30"
+            ca5: "ca5"
+            ca4: "ca4"
+            ca6: "ca6"
+            ca19: "ca19"
+            ca17: "ca17"
+            ca39: "ca39"
+            ca18: "ca18"
+            ca37: "ca37"
+            ca16: "ca16"
+            ca38: "ca38"
+            ca35: "ca35"
+            ca36: "ca36"
+            ca22: "ca22"
+            ca23: "ca23"
+            ca20: "ca20"
+            ca21: "ca21"
+        wanMetrics:
+          uplinkLoad: 1
+          downlinkLoad: 1
+          lmd: 10
+          uplinkSpeed: 1000
+          downlinkSpeed: 1000
+          wanInfo: 1
+        apNeighbor:
+          optionalSubelement:
+            optionalSubelement: ""
+          bssid: "1"
+          operatingClass: 1
+          channel: 1
+          phyType: 1
+          bssidInfo: 1
+      - timeStamp:
+          seconds: 1577836800
+          nanoSeconds: 0
+        bssLoad:
+          channelUtilization: 1
+          staCount: 1
+          availAdmCap: 1000
+        extBssLoad:
+          obsSec80MhzUtil: 1
+          obsSec40MhzUtil: 1
+          muMimoStaCount: 1
+          spatStreamUnderUtil: 1
+          obsSec20MhzUtil: 1
+        apId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+        channel: 1
+        wlanCap:
+          vht:
+            vhtMcsNss: 1
+            vhtCapInfo: 1
+          edmg:
+            supportedMcs: 1
+            reserved: 0
+            ampduParameters: 1
+            tmParameters: 1
+          ht:
+            txBeamFormCap: 1
+            aselCap: 1
+            ampduParameters: 1
+            htCapabilityInfo: "1"
+            htExtendedCap: 1
+            supportedMcsSet: 1
+          he:
+            supportedHeMcsNss: 1
+            hePhyCapInfo: 1
+            heMacCapInfo: 1
+            ppeThresholds: 0
+          dmg:
+            dmgStaCapInfo: 1
+            maxNrShortAmsduSubframes: 1
+            extScMcsCap: 0
+            sarCap: 1
+            maxNrBasicAmsduSubframes: 1
+            dmgStaBeamTrackTimeLimit: 1
+            dmgApOrPcpCapInfo: 1
+            tddCap: 1
+        apLocation:
+          geoLocation:
+            datum: 1
+            altitude: 1
+            longUncertainty: 1
+            altitudeType: 1
+            altitudeUncertainty: 1
+            latUncertainty: 1
+            lat: 1
+            long: 1
+          civiLocation:
+            country: "US"
+            ca128: "ca128"
+            ca28: "ca28"
+            ca29: "ca29"
+            ca26: "ca26"
+            ca27: "ca27"
+            ca24: "ca24"
+            ca25: "ca25"
+            ca33: "ca33"
+            ca34: "ca34"
+            ca1: "ca1"
+            ca31: "ca31"
+            ca0: "ca0"
+            ca32: "ca32"
+            ca3: "ca3"
+            ca2: "ca2"
+            ca30: "ca30"
+            ca5: "ca5"
+            ca4: "ca4"
+            ca6: "ca6"
+            ca19: "ca19"
+            ca17: "ca17"
+            ca39: "ca39"
+            ca18: "ca18"
+            ca37: "ca37"
+            ca16: "ca16"
+            ca38: "ca38"
+            ca35: "ca35"
+            ca36: "ca36"
+            ca22: "ca22"
+            ca23: "ca23"
+            ca20: "ca20"
+            ca21: "ca21"
+        wanMetrics:
+          uplinkLoad: 1
+          downlinkLoad: 1
+          lmd: 10
+          uplinkSpeed: 1000
+          downlinkSpeed: 1000
+          wanInfo: 1
+        apNeighbor:
+          optionalSubelement:
+            optionalSubelement: ""
+          bssid: "1"
+          operatingClass: 1
+          channel: 1
+          phyType: 1
+          bssidInfo: 1
+  inline_response_400:
+    type: "object"
+    properties:
+      ProblemDetails:
+        $ref: "#/definitions/ProblemDetails"
+  inline_response_403:
+    type: "object"
+    required:
+    - "ProblemDetails"
+    properties:
+      ProblemDetails:
+        $ref: "#/definitions/ProblemDetails"
+  inline_response_200_1:
+    type: "object"
+    properties:
+      StaInfo:
+        type: "array"
+        items:
+          $ref: "#/definitions/StaInfo"
+    example:
+      StaInfo:
+      - timeStamp:
+          seconds: 1577836800
+          nanoSeconds: 0
+        staId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+          aid: "1234"
+        rssi: 44
+        staStatistics:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          optionalSubelement:
+            optionalSubelement: ""
+          md: 1000
+          groupIdentity: 1
+          statisticsGroupData:
+            dot11STAStatisticsStationCount: 6
+            dot11DualCTSFailureCount: 4
+            dot11RSNAStatsTKIPICVErrors: 8
+            dot11TransmittedOctetsInGrantedRDGCount: 7
+            dot11BeamformingFrameCount: 4
+            dot11RSNAStatsCMACReplays: 6
+            dot11RSNAStatsCCMPReplays: 3
+            dot11QosRTSSuccessCount: 4
+            dot11FailedCount: 1
+            dot11STBCCTSSuccessCount: 3
+            dot11RSNAStatsBIPMICErrors: 8
+            dot11RSNAStatsRobustMgmtCCMPReplays: 4
+            dot11ImplicitBARFailureCount: 3
+            dot11AckFailureCount: 1
+            dot11MultipleRetryCount: 3
+            dot11TwentyMHzFrameReceivedCount: 1
+            dot11FailedAMSDUCount: 3
+            dot11RetryCount: 9
+            dot11STAStatisticsAverageAccessDelayVoice: 6
+            dot11QosDiscardedFrameCount: 8
+            dot11GroupTransmittedFrameCount: 6
+            dot11FrameDuplicateCount: 2
+            dot11nonSTBCCTSFailureCount: 1
+            dot11AMPDUDelimiterCRCErrorCount: 5
+            dot11ReceivedAMSDUCount: 6
+            dot11QosReceivedFragmentCount: 9
+            dot11QosMPDUsReceivedCount: 9
+            dot11RTSLSIGSuccessCount: 6
+            dot11QosFrameDuplicateCount: 1
+            dot11STAStatisticsAverageAccessDelayBackGround: 1
+            dot11QosAckFailureCount: 9
+            dot11TransmittedMPDUsInAMPDUCount: 8
+            dot11nonSTBCCTSSuccessCount: 2
+            dot11GroupReceivedFrameCount: 5
+            dot11FCSErrorCount: 2
+            dot11TransmittedFrameCount: 7
+            dot11STAStatisticsChannelUtilization: 5
+            dot11QosRetryCount: 6
+            dot11TwentyMHzFrameTransmittedCount: 6
+            dot11TransmittedOctetsInAMSDUCount: 0
+            dot11QosTransmittedFrameCount: 6
+            dot11QosFailedCount: 1
+            dot11TransmittedOctetsInAMPDUCount: 7
+            dot11TransmittedAMPDUCount: 4
+            dot11DualCTSSuccessCount: 5
+            dot11MultipleRetryAMSDUCount: 7
+            dot11ReceivedOctetsInAMPDUCount: 7
+            dot11ReceivedOctetsInAMSDUCount: 0
+            dot11TransmittedAMSDUCount: 6
+            dot11GrantedRDGUsedCount: 0
+            dot11RTSLSIGFailureCount: 8
+            dot11ChannelWidthSwitchCount: 0
+            dot11RTSFailureCount: 7
+            dot11TransmittedFramesInGrantedRDGCount: 0
+            dot11STAStatisticsAPAverageAccessDelay: 3
+            dot11TransmittedFragmentCount: 0
+            dot11QosRTSFailureCount: 5
+            dot11PSMPUTTGrantDuration: 7
+            dot11QosMultipleRetryCount: 7
+            dot11STAStatisticsAverageAccessDelayVideo: 2
+            dot11AMSDUAckFailureCount: 7
+            dot11RetryAMSDUCount: 3
+            dot11QosTransmittedFragmentCount: 1
+            dot11GrantedRDGUnusedCount: 9
+            dot11RSNAStatsCCMPDecryptErrors: 1
+            dot11QosRetriesReceivedCount: 6
+            dot11PSMPUTTUsedDuration: 9
+            dot11STAStatisticsAverageAccessDelayBestEffort: 6
+            dot11RSNAStatsTKIPReplays: 9
+            dot11FortyMHzFrameReceivedCount: 4
+            dot11ExplicitBARFailureCount: 4
+            dot11FortyMHzFrameTransmittedCount: 4
+            dot11AMPDUReceivedCount: 3
+            dot11ReceivedFragmentCount: 5
+            dot11STBCCTSFailureCount: 0
+            dot11MPDUInReceivedAMPDUCount: 3
+            dot11RTSSuccessCount: 4
+        apAssociated:
+          assocId: "1234"
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+        staDataRate:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          staLastDataDownlinkRate: 1000
+          staLastDataUplinkRate: 1000
+        channel: 1
+        beaconReport:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          reportingCondition: 1
+          bssId: "myBssId"
+          measurementId: "myId"
+          channelId: 1
+          ssId: "myIBSS"
+      - timeStamp:
+          seconds: 1577836800
+          nanoSeconds: 0
+        staId:
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+          aid: "1234"
+        rssi: 44
+        staStatistics:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          optionalSubelement:
+            optionalSubelement: ""
+          md: 1000
+          groupIdentity: 1
+          statisticsGroupData:
+            dot11STAStatisticsStationCount: 6
+            dot11DualCTSFailureCount: 4
+            dot11RSNAStatsTKIPICVErrors: 8
+            dot11TransmittedOctetsInGrantedRDGCount: 7
+            dot11BeamformingFrameCount: 4
+            dot11RSNAStatsCMACReplays: 6
+            dot11RSNAStatsCCMPReplays: 3
+            dot11QosRTSSuccessCount: 4
+            dot11FailedCount: 1
+            dot11STBCCTSSuccessCount: 3
+            dot11RSNAStatsBIPMICErrors: 8
+            dot11RSNAStatsRobustMgmtCCMPReplays: 4
+            dot11ImplicitBARFailureCount: 3
+            dot11AckFailureCount: 1
+            dot11MultipleRetryCount: 3
+            dot11TwentyMHzFrameReceivedCount: 1
+            dot11FailedAMSDUCount: 3
+            dot11RetryCount: 9
+            dot11STAStatisticsAverageAccessDelayVoice: 6
+            dot11QosDiscardedFrameCount: 8
+            dot11GroupTransmittedFrameCount: 6
+            dot11FrameDuplicateCount: 2
+            dot11nonSTBCCTSFailureCount: 1
+            dot11AMPDUDelimiterCRCErrorCount: 5
+            dot11ReceivedAMSDUCount: 6
+            dot11QosReceivedFragmentCount: 9
+            dot11QosMPDUsReceivedCount: 9
+            dot11RTSLSIGSuccessCount: 6
+            dot11QosFrameDuplicateCount: 1
+            dot11STAStatisticsAverageAccessDelayBackGround: 1
+            dot11QosAckFailureCount: 9
+            dot11TransmittedMPDUsInAMPDUCount: 8
+            dot11nonSTBCCTSSuccessCount: 2
+            dot11GroupReceivedFrameCount: 5
+            dot11FCSErrorCount: 2
+            dot11TransmittedFrameCount: 7
+            dot11STAStatisticsChannelUtilization: 5
+            dot11QosRetryCount: 6
+            dot11TwentyMHzFrameTransmittedCount: 6
+            dot11TransmittedOctetsInAMSDUCount: 0
+            dot11QosTransmittedFrameCount: 6
+            dot11QosFailedCount: 1
+            dot11TransmittedOctetsInAMPDUCount: 7
+            dot11TransmittedAMPDUCount: 4
+            dot11DualCTSSuccessCount: 5
+            dot11MultipleRetryAMSDUCount: 7
+            dot11ReceivedOctetsInAMPDUCount: 7
+            dot11ReceivedOctetsInAMSDUCount: 0
+            dot11TransmittedAMSDUCount: 6
+            dot11GrantedRDGUsedCount: 0
+            dot11RTSLSIGFailureCount: 8
+            dot11ChannelWidthSwitchCount: 0
+            dot11RTSFailureCount: 7
+            dot11TransmittedFramesInGrantedRDGCount: 0
+            dot11STAStatisticsAPAverageAccessDelay: 3
+            dot11TransmittedFragmentCount: 0
+            dot11QosRTSFailureCount: 5
+            dot11PSMPUTTGrantDuration: 7
+            dot11QosMultipleRetryCount: 7
+            dot11STAStatisticsAverageAccessDelayVideo: 2
+            dot11AMSDUAckFailureCount: 7
+            dot11RetryAMSDUCount: 3
+            dot11QosTransmittedFragmentCount: 1
+            dot11GrantedRDGUnusedCount: 9
+            dot11RSNAStatsCCMPDecryptErrors: 1
+            dot11QosRetriesReceivedCount: 6
+            dot11PSMPUTTUsedDuration: 9
+            dot11STAStatisticsAverageAccessDelayBestEffort: 6
+            dot11RSNAStatsTKIPReplays: 9
+            dot11FortyMHzFrameReceivedCount: 4
+            dot11ExplicitBARFailureCount: 4
+            dot11FortyMHzFrameTransmittedCount: 4
+            dot11AMPDUReceivedCount: 3
+            dot11ReceivedFragmentCount: 5
+            dot11STBCCTSFailureCount: 0
+            dot11MPDUInReceivedAMPDUCount: 3
+            dot11RTSSuccessCount: 4
+        apAssociated:
+          assocId: "1234"
+          macId: "11:22:33:44:55:66"
+          ipAddress: "1.2.3.4"
+          ssid: "mySsid"
+        staDataRate:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          staLastDataDownlinkRate: 1000
+          staLastDataUplinkRate: 1000
+        channel: 1
+        beaconReport:
+          staId:
+            macId: "11:22:33:44:55:66"
+            ipAddress: "1.2.3.4"
+            ssid: "mySsid"
+            aid: "1234"
+          reportingCondition: 1
+          bssId: "myBssId"
+          measurementId: "myId"
+          channelId: 1
+          ssId: "myIBSS"
+  inline_response_200_2:
+    type: "object"
+    required:
+    - "SubscriptionLinkList"
+    properties:
+      SubscriptionLinkList:
+        $ref: "#/definitions/SubscriptionLinkList"
+  SubscriptionPost_1:
+    type: "object"
+    properties:
+      Subscription:
+        $ref: "#/definitions/SubscriptionPost"
+  inline_response_201:
+    type: "object"
+    properties:
+      Subscription:
+        $ref: "#/definitions/Subscription"
+  inline_response_200_3:
+    type: "object"
+    required:
+    - "Subscription"
+    properties:
+      Subscription:
+        $ref: "#/definitions/Subscription"
+  Subscription_1:
+    type: "object"
+    properties:
+      Subscription:
+        $ref: "#/definitions/Subscription"
+parameters:
+  Body.SubscriptionPost:
+    in: "body"
+    name: "SubscriptionPost"
+    description: "Use to creates a subscription."
+    required: true
+    schema:
+      $ref: "#/definitions/SubscriptionPost_1"
+    x-exportParamName: "SubscriptionPost"
+  Body.Subscription:
+    in: "body"
+    name: "Subscription"
+    description: "Use to creates a subscription."
+    required: true
+    schema:
+      $ref: "#/definitions/Subscription_1"
+    x-exportParamName: "Subscription"
+  Path.subscrId:
+    name: "subscriptionId"
+    in: "path"
+    description: "Subscription Id, specifically the \"self\" returned in the subscription\
+      \ request"
+    required: true
+    type: "string"
+    format: "uri"
+    x-exportParamName: "SubscriptionId"
+  Query.Filter:
+    name: "filter"
+    in: "query"
+    description: "Attribute-based filtering expression"
+    required: false
+    type: "string"
+    x-exportParamName: "Filter"
+    x-optionalDataType: "String"
+  Query.AllFields:
+    name: "all_fields"
+    in: "query"
+    description: "Include all complex attributes in response."
+    required: false
+    type: "string"
+    x-exportParamName: "AllFields"
+    x-optionalDataType: "String"
+  Query.Fields:
+    name: "fields"
+    in: "query"
+    description: "Complex attributes to be included in the response."
+    required: false
+    type: "array"
+    items:
+      type: "string"
+    x-exportParamName: "Fields"
+  Query.ExcludeFields:
+    name: "exclude_fields"
+    in: "query"
+    description: "Complex attributes to be excluded from the response."
+    required: false
+    type: "array"
+    items:
+      type: "string"
+    x-exportParamName: "ExcludeFields"
+  Query.ExcludeDefault:
+    name: "exclude_default"
+    in: "query"
+    description: "Complex attributes to be excluded from the response."
+    required: false
+    type: "array"
+    items:
+      type: "string"
+    x-exportParamName: "ExcludeDefault"
+externalDocs:
+  description: "ETSI MEC028 V2.1.1 WLAN Access Information Service API"
+  url: "http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf"

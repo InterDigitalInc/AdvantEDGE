@@ -26,6 +26,6 @@ package client
 
 // WIFI POA configuration information
 type PoaWifiConfig struct {
-	// TBD
+	// WIFI POA MAC Address
 	MacId string `json:"macId,omitempty"`
 }

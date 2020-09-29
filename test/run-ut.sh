@@ -7,6 +7,7 @@ BASEDIR=$(dirname "$SCRIPT")
 GOAPPS=(
     meep-loc-serv/server
     meep-rnis/server
+    meep-wais/server
 )
 
 GOPKGS=(

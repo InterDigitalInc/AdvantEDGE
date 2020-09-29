@@ -56,4 +56,6 @@ type PhysicalLocation struct {
 	LinkThroughput int32 `json:"linkThroughput,omitempty"`
 	// **DEPRECATED** As of release 1.5.0, replaced by netChar packetLoss
 	LinkPacketLoss float64 `json:"linkPacketLoss,omitempty"`
+	// Physical location MAC Address
+	MacId string `json:"macId,omitempty"`
 }

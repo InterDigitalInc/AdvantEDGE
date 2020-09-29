@@ -163,6 +163,7 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation = 0;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId = "";
           event.eventScenarioUpdate.node.parent = "";
           event.eventScenarioUpdate.node.children = [""];
 

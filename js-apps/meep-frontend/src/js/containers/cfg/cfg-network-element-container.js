@@ -53,6 +53,7 @@ import {
   FIELD_MCC,
   FIELD_MNC,
   FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
   FIELD_NR_CELL_ID,
@@ -144,6 +145,7 @@ import {
   CFG_ELEM_MNC,
   CFG_ELEM_MCC,
   CFG_ELEM_MAC_ID,
+  CFG_ELEM_UE_MAC_ID,
   CFG_ELEM_DEFAULT_CELL_ID,
   CFG_ELEM_CELL_ID,
   CFG_ELEM_NR_CELL_ID,
@@ -1093,6 +1095,17 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             label='Velocity (m/s)'
             fieldName={FIELD_GEO_VELOCITY}
             cydata={CFG_ELEM_GEO_VELOCITY}
+          />
+        </Grid>
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateMacAddress}
+            label="Mac Address"
+            fieldName={FIELD_UE_MAC_ID}
+            cydata={CFG_ELEM_UE_MAC_ID}
           />
         </Grid>
       </>
