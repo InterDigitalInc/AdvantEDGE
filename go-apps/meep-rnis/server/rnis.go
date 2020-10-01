@@ -89,6 +89,12 @@ type UeData struct {
 	Ecgi   *Ecgi `json:"ecgi"`
 }
 
+type DomainData struct {
+	Mcc    string `json:"mcc"`
+	Mnc    string `json:"mnc"`
+	CellId string `json:"cellId"`
+}
+
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotImplemented)
@@ -159,6 +165,7 @@ func Init() (err error) {
 		PostgisPort:    postgisPort,
 		UeDataCb:       updateUeData,
 		AppEcgiInfoCb:  updateAppEcgiInfo,
+		DomainDataCb:   updateDomainData,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
 	}
@@ -261,8 +268,8 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 		if oldErabId == -1 && ueData.ErabId != -1 {
 			checkReNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, ueData.ErabId)
 		}
-		if oldErabId != -1 && ueData.ErabId == -1 {
-			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, cellId, oldCellId, oldErabId)
+		if oldErabId != -1 && ueData.ErabId == -1 { //sending oldErabId to release and no new 4G cellId
+			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, "", oldCellId, oldErabId)
 		}
 	}
 }
@@ -296,6 +303,35 @@ func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 		//updateDB
 		_ = rc.JSONSetEntry(baseKey+"APP:"+name, ".", convertEcgiToJson(&newEcgi))
+	}
+}
+
+func updateDomainData(name string, mnc string, mcc string, cellId string) {
+
+	oldMnc := ""
+	oldMcc := ""
+	oldCellId := ""
+
+	//get from DB
+	jsonDomainData, _ := rc.JSONGetEntry(baseKey+"DOM:"+name, ".")
+
+	if jsonDomainData != "" {
+		domainDataObj := convertJsonToDomainData(jsonDomainData)
+		if domainDataObj != nil {
+			oldMnc = domainDataObj.Mnc
+			oldMcc = domainDataObj.Mcc
+			oldCellId = domainDataObj.CellId
+		}
+	}
+
+	//updateDB if changes occur
+	if mnc != oldMnc || mcc != oldMcc || cellId != oldCellId {
+		//updateDB
+		var domainData DomainData
+		domainData.Mnc = mnc
+		domainData.Mcc = mcc
+		domainData.CellId = cellId
+		_ = rc.JSONSetEntry(baseKey+"DOM:"+name, ".", convertDomainDataToJson(&domainData))
 	}
 }
 
@@ -1515,7 +1551,6 @@ func measRepUeReportSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) 
 func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	u, _ := url.Parse(r.URL.String())
 	log.Info("url: ", u.RequestURI())
 	q := u.Query()
@@ -1530,25 +1565,40 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	var timeStamp TimeStamp
 	timeStamp.Seconds = int32(seconds)
 
-	for _, meAppName := range appInsIdArray {
-		meAppName = strings.TrimSpace(meAppName)
+	//if AppId is set, we return info as per AppIds, otherwise, we return the domain info only
+	if appInsId != "" {
 
-		//get from DB
-		jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+meAppName, ".")
+		for _, meAppName := range appInsIdArray {
+			meAppName = strings.TrimSpace(meAppName)
 
-		if jsonAppEcgiInfo != "" {
+			//get from DB
+			jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+meAppName, ".")
 
-			ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
-			if ecgi != nil {
-				if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" {
-					var plmnInfo PlmnInfo
-					plmnInfo.Plmn = ecgi.Plmn
-					plmnInfo.AppInsId = meAppName
-					plmnInfo.TimeStamp = &timeStamp
-					response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
-					atLeastOne = true
+			if jsonAppEcgiInfo != "" {
+
+				ecgi := convertJsonToEcgi(jsonAppEcgiInfo)
+				if ecgi != nil {
+					if ecgi.Plmn.Mnc != "" && ecgi.Plmn.Mcc != "" {
+						var plmnInfo PlmnInfo
+						plmnInfo.Plmn = ecgi.Plmn
+						plmnInfo.AppInsId = meAppName
+						plmnInfo.TimeStamp = &timeStamp
+						response.PlmnInfo = append(response.PlmnInfo, plmnInfo)
+						atLeastOne = true
+					}
 				}
 			}
+		}
+	} else {
+		keyName := baseKey + "DOM:*"
+		err := rc.ForEachJSONEntry(keyName, populatePlmnInfo, &response)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if len(response.PlmnInfo) > 0 {
+			atLeastOne = true
 		}
 	}
 
@@ -1565,6 +1615,27 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
+}
+
+func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
+	resp := response.(*InlineResponse2001)
+	if resp == nil {
+		return errors.New("Response not defined")
+	}
+
+	// Retrieve user info from DB
+	var domainData DomainData
+	err := json.Unmarshal([]byte(jsonInfo), &domainData)
+	if err != nil {
+		return err
+	}
+	var plmnInfo PlmnInfo
+	var plmn Plmn
+	plmn.Mnc = domainData.Mnc
+	plmn.Mcc = domainData.Mcc
+	plmnInfo.Plmn = &plmn
+	resp.PlmnInfo = append(resp.PlmnInfo, plmnInfo)
+	return nil
 }
 
 func rabInfoGET(w http.ResponseWriter, r *http.Request) {

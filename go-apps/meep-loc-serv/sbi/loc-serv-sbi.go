@@ -221,8 +221,8 @@ func processActiveScenarioUpdate() {
 		}
 	}
 
-	// Update POA Cellular info
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G)
+	// Update POA Cellular and Wifi info
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
 	for _, name := range poaNameList {
 		zone, netLoc, err := getNetworkLocation(name)
 		if err != nil {

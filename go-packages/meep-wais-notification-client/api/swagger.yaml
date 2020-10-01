@@ -158,8 +158,6 @@ definitions:
           nanoSeconds: 0
         apId:
           macId: "11:22:33:44:55:66"
-          ssid: "mySsid"
-          ipAddress: "1.2.3.4"
   ApIdentity:
     type: "object"
     required:
