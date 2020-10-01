@@ -25,6 +25,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SESSION_KEY: "my-secret-key"
+    MEEP_MAX_SESSIONS: "10"
 
 service:
   type: ClusterIP
