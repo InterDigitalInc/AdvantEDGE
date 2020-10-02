@@ -403,15 +403,7 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 			zonal.CallbackData = subscription.ClientCorrelator
 
 			if newZoneId != oldZoneId {
-				if userSubscriptionEnteringMap[subsId] != "" && newZoneId != "" {
-					zonal.ZoneId = newZoneId
-					zonal.CurrentAccessPointId = newApId
-					event := new(clientNotifOMA.UserEventType)
-					*event = clientNotifOMA.ENTERING_UserEventType
-					zonal.UserEventType = event
-					sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
-					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
-				}
+				//process LEAVING events prior to entering ones
 				if oldZoneId != "" {
 					if userSubscriptionLeavingMap[subsId] != "" {
 						zonal.ZoneId = oldZoneId
@@ -423,6 +415,16 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
 					}
 				}
+				if userSubscriptionEnteringMap[subsId] != "" && newZoneId != "" {
+					zonal.ZoneId = newZoneId
+					zonal.CurrentAccessPointId = newApId
+					event := new(clientNotifOMA.UserEventType)
+					*event = clientNotifOMA.ENTERING_UserEventType
+					zonal.UserEventType = event
+					sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
+				}
+
 			} else {
 				if newApId != oldApId {
 					if userSubscriptionTransferringMap[subsId] != "" {
@@ -1424,14 +1426,16 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 		apInfo = new(AccessPointInfo)
 		apInfo.AccessPointId = apId
 		apInfo.ResourceURL = hostUrl.String() + basePath + "zones/" + zoneId + "/accessPoints/" + apId
-		conType := convertStringToConnectionType(conTypeStr)
-		apInfo.ConnectionType = &conType
 	}
 
 	// Update info
 	if opStatusStr != "" {
 		opStatus := convertStringToOperationStatus(opStatusStr)
 		apInfo.OperationStatus = &opStatus
+	}
+	if conTypeStr != "" {
+		conType := convertStringToConnectionType(conTypeStr)
+		apInfo.ConnectionType = &conType
 	}
 	if nbUsers != -1 {
 		apInfo.NumberOfUsers = int32(nbUsers)

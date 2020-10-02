@@ -206,12 +206,37 @@ func updateUeData(name string, ownMacId string, apMacId string) {
 	}
 }
 
+func convertFloatToGeolocationFormat(value *float32) int32 {
+
+	str := fmt.Sprintf("%f", *value)
+	strArray := strings.Split(str, ".")
+	integerPart, err := strconv.Atoi(strArray[0])
+	if err != nil {
+		log.Error("Can't convert float to int")
+		return 0
+	}
+	fractionPart, err := strconv.Atoi(strArray[1])
+	if err != nil {
+		log.Error("Can't convert float to int")
+		return 0
+	}
+
+	//9 first bits are the integer part, last 23 bits are fraction part
+	valueToReturn := (integerPart << 23) + fractionPart
+	log.Info("SIMON ", integerPart, "---", fractionPart, "---", valueToReturn)
+	return int32(valueToReturn)
+}
+
 func updateApInfo(name string, apMacId string, longitude *float32, latitude *float32, staMacIds []string) {
 
 	//get from DB
 	jsonApInfoComplete, _ := rc.JSONGetEntry(baseKey+"AP:"+name, ".")
 
 	var oldStaMacIds []string
+	var oldLat int32 = 0
+	var oldLong int32 = 0
+	var newLat int32 = 0
+	var newLong int32 = 0
 
 	needUpdate := false
 
@@ -220,6 +245,14 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
 
 		oldStaMacIds = apInfoComplete.StaMacIds
+
+		if apInfoComplete.ApLocation.GeoLocation != nil {
+			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
+			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
+		}
+
+		newLat = convertFloatToGeolocationFormat(latitude)
+		newLong = convertFloatToGeolocationFormat(longitude)
 	} else {
 		needUpdate = true
 	}
@@ -232,24 +265,30 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		}
 	}
 
+	if !needUpdate {
+		//check if AP moved
+		if oldLat != newLat || oldLong != newLong {
+			needUpdate = true
+		}
+	}
+
 	if needUpdate {
 		//updateDB
 		var apInfoComplete ApInfoComplete
 		var apLocation ApLocation
 		var geoLocation GeoLocation
 		var apId ApIdentity
-		if latitude != nil {
-			geoLocation.Lat = int32(*latitude)
-		}
-		if longitude != nil {
-			geoLocation.Long = int32(*longitude)
-		}
+		geoLocation.Lat = newLat
+		geoLocation.Long = newLong
+
 		apLocation.GeoLocation = &geoLocation
 		apInfoComplete.ApLocation = apLocation
+
 		apInfoComplete.StaMacIds = staMacIds
 		apId.MacId = apMacId
 		apInfoComplete.ApId = apId
 		_ = rc.JSONSetEntry(baseKey+"AP:"+name, ".", convertApInfoCompleteToJson(&apInfoComplete))
+		log.Info("SIMON SIMON ", name, "---", geoLocation.Lat, "---", geoLocation.Long, "---", apMacId)
 		checkAssocStaNotificationRegisteredSubscriptions(staMacIds, apMacId)
 	}
 }

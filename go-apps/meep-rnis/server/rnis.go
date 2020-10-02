@@ -1565,6 +1565,8 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	var timeStamp TimeStamp
 	timeStamp.Seconds = int32(seconds)
 
+	//forcing to ignore the appInsId parameter, while keeping the comparison code if turned on again
+	appInsId = ""
 	//if AppId is set, we return info as per AppIds, otherwise, we return the domain info only
 	if appInsId != "" {
 
