@@ -208,6 +208,9 @@ func updateUeData(name string, ownMacId string, apMacId string) {
 
 func convertFloatToGeolocationFormat(value *float32) int32 {
 
+	if value == nil {
+		return 0
+	}
 	str := fmt.Sprintf("%f", *value)
 	strArray := strings.Split(str, ".")
 	integerPart, err := strconv.Atoi(strArray[0])
@@ -223,8 +226,24 @@ func convertFloatToGeolocationFormat(value *float32) int32 {
 
 	//9 first bits are the integer part, last 23 bits are fraction part
 	valueToReturn := (integerPart << 23) + fractionPart
-	log.Info("SIMON ", integerPart, "---", fractionPart, "---", valueToReturn)
 	return int32(valueToReturn)
+}
+
+func isUpdateApInfoNeeded(newLong int32, oldLong int32, newLat int32, oldLat int32, staMacIds []string, oldStaMacIds []string) bool {
+
+	//if AP moved
+	if oldLat != newLat || oldLong != newLong {
+		return true
+	}
+
+	//if number of STAs connected changes
+	if len(oldStaMacIds) != len(staMacIds) {
+		return true
+	}
+
+	//if the list of connected STAs is different
+	return !reflect.DeepEqual(oldStaMacIds, staMacIds)
+
 }
 
 func updateApInfo(name string, apMacId string, longitude *float32, latitude *float32, staMacIds []string) {
@@ -235,44 +254,23 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 	var oldStaMacIds []string
 	var oldLat int32 = 0
 	var oldLong int32 = 0
-	var newLat int32 = 0
-	var newLong int32 = 0
-
-	needUpdate := false
+	var newLat int32
+	var newLong int32
 
 	if jsonApInfoComplete != "" {
-
 		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
-
 		oldStaMacIds = apInfoComplete.StaMacIds
 
 		if apInfoComplete.ApLocation.GeoLocation != nil {
 			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
 			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
 		}
-
-		newLat = convertFloatToGeolocationFormat(latitude)
-		newLong = convertFloatToGeolocationFormat(longitude)
-	} else {
-		needUpdate = true
 	}
 
-	if !needUpdate {
-		if len(oldStaMacIds) != len(staMacIds) {
-			needUpdate = true
-		} else {
-			needUpdate = !reflect.DeepEqual(oldStaMacIds, staMacIds)
-		}
-	}
+	newLat = convertFloatToGeolocationFormat(latitude)
+	newLong = convertFloatToGeolocationFormat(longitude)
 
-	if !needUpdate {
-		//check if AP moved
-		if oldLat != newLat || oldLong != newLong {
-			needUpdate = true
-		}
-	}
-
-	if needUpdate {
+	if isUpdateApInfoNeeded(newLong, oldLong, newLat, oldLat, staMacIds, oldStaMacIds) {
 		//updateDB
 		var apInfoComplete ApInfoComplete
 		var apLocation ApLocation
@@ -288,7 +286,6 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		apId.MacId = apMacId
 		apInfoComplete.ApId = apId
 		_ = rc.JSONSetEntry(baseKey+"AP:"+name, ".", convertApInfoCompleteToJson(&apInfoComplete))
-		log.Info("SIMON SIMON ", name, "---", geoLocation.Lat, "---", geoLocation.Long, "---", apMacId)
 		checkAssocStaNotificationRegisteredSubscriptions(staMacIds, apMacId)
 	}
 }
