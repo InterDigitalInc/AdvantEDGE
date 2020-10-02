@@ -229,7 +229,21 @@ func convertFloatToGeolocationFormat(value *float32) int32 {
 	return int32(valueToReturn)
 }
 
-func isUpdateApInfoNeeded(newLong int32, oldLong int32, newLat int32, oldLat int32, staMacIds []string, oldStaMacIds []string) bool {
+func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32, staMacIds []string) bool {
+
+	var oldStaMacIds []string
+	var oldLat int32 = 0
+	var oldLong int32 = 0
+
+	if jsonApInfoComplete != "" {
+		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
+		oldStaMacIds = apInfoComplete.StaMacIds
+
+		if apInfoComplete.ApLocation.GeoLocation != nil {
+			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
+			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
+		}
+	}
 
 	//if AP moved
 	if oldLat != newLat || oldLong != newLong {
@@ -251,26 +265,10 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 	//get from DB
 	jsonApInfoComplete, _ := rc.JSONGetEntry(baseKey+"AP:"+name, ".")
 
-	var oldStaMacIds []string
-	var oldLat int32 = 0
-	var oldLong int32 = 0
-	var newLat int32
-	var newLong int32
+	newLat := convertFloatToGeolocationFormat(latitude)
+	newLong := convertFloatToGeolocationFormat(longitude)
 
-	if jsonApInfoComplete != "" {
-		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
-		oldStaMacIds = apInfoComplete.StaMacIds
-
-		if apInfoComplete.ApLocation.GeoLocation != nil {
-			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
-			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
-		}
-	}
-
-	newLat = convertFloatToGeolocationFormat(latitude)
-	newLong = convertFloatToGeolocationFormat(longitude)
-
-	if isUpdateApInfoNeeded(newLong, oldLong, newLat, oldLat, staMacIds, oldStaMacIds) {
+	if isUpdateApInfoNeeded(jsonApInfoComplete, newLong, newLat, staMacIds) {
 		//updateDB
 		var apInfoComplete ApInfoComplete
 		var apLocation ApLocation
