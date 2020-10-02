@@ -59,7 +59,7 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 		if count >= pfmCtrl.maxSessions {
 			err = errors.New("Maximum session count exceeded")
 			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInsufficientStorage)
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 			return
 		}
 
