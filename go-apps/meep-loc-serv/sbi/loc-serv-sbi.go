@@ -222,22 +222,37 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Update POA Cellular and Wifi info
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
-	for _, name := range poaNameList {
-		zone, netLoc, err := getNetworkLocation(name)
-		if err != nil {
-			log.Error(err.Error())
-			continue
-		}
+	poaTypeList := [3]string{mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi}
+	conType := ""
+	for _, poaType := range poaTypeList {
 
-		var longitude *float32
-		var latitude *float32
-		if poa, found := poaMap[name]; found {
-			longitude, latitude = parsePosition(poa.Position)
-		}
+		poaNameList := sbi.activeModel.GetNodeNames(poaType)
+		for _, name := range poaNameList {
+			zone, netLoc, err := getNetworkLocation(name)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			}
 
-		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "SERVICEABLE", uePerNetLocMap[netLoc], longitude, latitude)
-		poaPerZoneMap[zone]++
+			var longitude *float32
+			var latitude *float32
+			if poa, found := poaMap[name]; found {
+				longitude, latitude = parsePosition(poa.Position)
+			}
+
+			switch poaType {
+			case mod.NodeTypePoa4G:
+				conType = "Macro"
+			case mod.NodeTypePoa5G:
+				conType = "Smallcell"
+			case mod.NodeTypePoaWifi:
+				conType = "Wifi"
+			default:
+				conType = "Unknown"
+			}
+			sbi.updateAccessPointInfoCB(zone, netLoc, conType, "Serviceable", uePerNetLocMap[netLoc], longitude, latitude)
+			poaPerZoneMap[zone]++
+		}
 	}
 
 	// Update Zone info
@@ -364,7 +379,7 @@ func updateAccessPointPosition(name string) {
 	}
 
 	// Update info
-	sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "", -1, longitude, latitude)
+	sbi.updateAccessPointInfoCB(zone, netLoc, "", "", -1, longitude, latitude)
 }
 
 func updateAllAccessPointPosition() {
@@ -388,7 +403,7 @@ func updateAllAccessPointPosition() {
 			longitude, latitude = parsePosition(poa.Position)
 		}
 
-		sbi.updateAccessPointInfoCB(zone, netLoc, "UNKNOWN", "", -1, longitude, latitude)
+		sbi.updateAccessPointInfoCB(zone, netLoc, "", "", -1, longitude, latitude)
 	}
 }
 

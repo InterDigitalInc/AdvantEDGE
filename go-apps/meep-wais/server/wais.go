@@ -206,46 +206,80 @@ func updateUeData(name string, ownMacId string, apMacId string) {
 	}
 }
 
+func convertFloatToGeolocationFormat(value *float32) int32 {
+
+	if value == nil {
+		return 0
+	}
+	str := fmt.Sprintf("%f", *value)
+	strArray := strings.Split(str, ".")
+	integerPart, err := strconv.Atoi(strArray[0])
+	if err != nil {
+		log.Error("Can't convert float to int")
+		return 0
+	}
+	fractionPart, err := strconv.Atoi(strArray[1])
+	if err != nil {
+		log.Error("Can't convert float to int")
+		return 0
+	}
+
+	//9 first bits are the integer part, last 23 bits are fraction part
+	valueToReturn := (integerPart << 23) + fractionPart
+	return int32(valueToReturn)
+}
+
+func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32, staMacIds []string) bool {
+
+	var oldStaMacIds []string
+	var oldLat int32 = 0
+	var oldLong int32 = 0
+
+	if jsonApInfoComplete != "" {
+		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
+		oldStaMacIds = apInfoComplete.StaMacIds
+
+		if apInfoComplete.ApLocation.GeoLocation != nil {
+			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
+			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
+		}
+	}
+
+	//if AP moved
+	if oldLat != newLat || oldLong != newLong {
+		return true
+	}
+
+	//if number of STAs connected changes
+	if len(oldStaMacIds) != len(staMacIds) {
+		return true
+	}
+
+	//if the list of connected STAs is different
+	return !reflect.DeepEqual(oldStaMacIds, staMacIds)
+
+}
+
 func updateApInfo(name string, apMacId string, longitude *float32, latitude *float32, staMacIds []string) {
 
 	//get from DB
 	jsonApInfoComplete, _ := rc.JSONGetEntry(baseKey+"AP:"+name, ".")
 
-	var oldStaMacIds []string
+	newLat := convertFloatToGeolocationFormat(latitude)
+	newLong := convertFloatToGeolocationFormat(longitude)
 
-	needUpdate := false
-
-	if jsonApInfoComplete != "" {
-
-		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
-
-		oldStaMacIds = apInfoComplete.StaMacIds
-	} else {
-		needUpdate = true
-	}
-
-	if !needUpdate {
-		if len(oldStaMacIds) != len(staMacIds) {
-			needUpdate = true
-		} else {
-			needUpdate = !reflect.DeepEqual(oldStaMacIds, staMacIds)
-		}
-	}
-
-	if needUpdate {
+	if isUpdateApInfoNeeded(jsonApInfoComplete, newLong, newLat, staMacIds) {
 		//updateDB
 		var apInfoComplete ApInfoComplete
 		var apLocation ApLocation
 		var geoLocation GeoLocation
 		var apId ApIdentity
-		if latitude != nil {
-			geoLocation.Lat = int32(*latitude)
-		}
-		if longitude != nil {
-			geoLocation.Long = int32(*longitude)
-		}
+		geoLocation.Lat = newLat
+		geoLocation.Long = newLong
+
 		apLocation.GeoLocation = &geoLocation
 		apInfoComplete.ApLocation = apLocation
+
 		apInfoComplete.StaMacIds = staMacIds
 		apId.MacId = apMacId
 		apInfoComplete.ApId = apId

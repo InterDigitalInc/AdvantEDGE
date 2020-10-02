@@ -1551,11 +1551,11 @@ func measRepUeReportSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) 
 func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	u, _ := url.Parse(r.URL.String())
-	log.Info("url: ", u.RequestURI())
-	q := u.Query()
-	appInsId := q.Get("app_ins_id")
-	appInsIdArray := strings.Split(appInsId, ",")
+	//u, _ := url.Parse(r.URL.String())
+	//log.Info("url: ", u.RequestURI())
+	//q := u.Query()
+	//appInsId := q.Get("app_ins_id")
+	//appInsIdArray := strings.Split(appInsId, ",")
 
 	var response InlineResponse2001
 	atLeastOne := false
@@ -1565,8 +1565,11 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	var timeStamp TimeStamp
 	timeStamp.Seconds = int32(seconds)
 
+	//forcing to ignore the appInsId parameter
+	//commenting the check but keeping the code
+
 	//if AppId is set, we return info as per AppIds, otherwise, we return the domain info only
-	if appInsId != "" {
+	/*if appInsId != "" {
 
 		for _, meAppName := range appInsIdArray {
 			meAppName = strings.TrimSpace(meAppName)
@@ -1590,17 +1593,18 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		keyName := baseKey + "DOM:*"
-		err := rc.ForEachJSONEntry(keyName, populatePlmnInfo, &response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if len(response.PlmnInfo) > 0 {
-			atLeastOne = true
-		}
+	*/
+	keyName := baseKey + "DOM:*"
+	err := rc.ForEachJSONEntry(keyName, populatePlmnInfo, &response)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	if len(response.PlmnInfo) > 0 {
+		atLeastOne = true
+	}
+	//}
 
 	if atLeastOne {
 		jsonResponse, err := json.Marshal(response)
