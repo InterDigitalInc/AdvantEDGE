@@ -66,6 +66,28 @@ func convertUeDataToJson(obj *UeData) string {
 	return string(jsonData)
 }
 
+func convertJsonToDomainData(jsonData string) *DomainData {
+
+	var obj DomainData
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertDomainDataToJson(obj *DomainData) string {
+
+	jsonData, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonData)
+}
+
 func convertJsonToCellChangeSubscription(jsonInfo string) *CellChangeSubscription {
 
 	var obj CellChangeSubscription

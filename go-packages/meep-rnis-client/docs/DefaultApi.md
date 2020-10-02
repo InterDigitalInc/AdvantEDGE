@@ -503,7 +503,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PlmnInfoGET**
-> InlineResponse2001 PlmnInfoGET(ctx, appInsId)
+> InlineResponse2001 PlmnInfoGET(ctx, optional)
 
 
 Gets the information on Mobile Network(s) that are associated with a specific mobile edge application instance
@@ -513,7 +513,14 @@ Gets the information on Mobile Network(s) that are associated with a specific mo
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **appInsId** | [**[]string**](string.md)| Application instance identifier | 
+ **optional** | ***PlmnInfoGETOpts** | optional parameters | nil if no parameters
+
+### Optional Parameters
+Optional parameters are passed through a pointer to a PlmnInfoGETOpts struct
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **appInsId** | [**optional.Interface of []string**](string.md)| Application instance identifier | 
 
 ### Return type
 

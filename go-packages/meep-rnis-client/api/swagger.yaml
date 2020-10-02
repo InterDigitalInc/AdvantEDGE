@@ -201,7 +201,7 @@ paths:
       - name: "app_ins_id"
         in: "query"
         description: "Application instance identifier"
-        required: true
+        required: false
         type: "array"
         items:
           type: "string"
@@ -4047,7 +4047,7 @@ parameters:
     name: "app_ins_id"
     in: "query"
     description: "Application instance identifier"
-    required: true
+    required: false
     type: "array"
     items:
       type: "string"

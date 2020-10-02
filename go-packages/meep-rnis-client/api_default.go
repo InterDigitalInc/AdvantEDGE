@@ -2373,11 +2373,17 @@ func (a *DefaultApiService) MeasTaSubscriptionsSubscrIdDELETE(ctx context.Contex
 DefaultApiService
 Gets the information on Mobile Network(s) that are associated with a specific mobile edge application instance
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param appInsId Application instance identifier
+ * @param optional nil or *PlmnInfoGETOpts - Optional Parameters:
+     * @param "AppInsId" (optional.Interface of []string) -  Application instance identifier
 
 @return InlineResponse2001
 */
-func (a *DefaultApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (InlineResponse2001, *http.Response, error) {
+
+type PlmnInfoGETOpts struct {
+	AppInsId optional.Interface
+}
+
+func (a *DefaultApiService) PlmnInfoGET(ctx context.Context, localVarOptionals *PlmnInfoGETOpts) (InlineResponse2001, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
@@ -2393,7 +2399,9 @@ func (a *DefaultApiService) PlmnInfoGET(ctx context.Context, appInsId []string) 
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
-	localVarQueryParams.Add("app_ins_id", parameterToString(appInsId, "csv"))
+	if localVarOptionals != nil && localVarOptionals.AppInsId.IsSet() {
+		localVarQueryParams.Add("app_ins_id", parameterToString(localVarOptionals.AppInsId.Value(), "csv"))
+	}
 	// to determine the Content-Type header
 	localVarHttpContentTypes := []string{"application/json"}
 

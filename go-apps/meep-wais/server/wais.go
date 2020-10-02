@@ -622,14 +622,32 @@ func populateApInfo(key string, jsonInfo string, response interface{}) error {
 		return err
 	}
 
-	seconds := time.Now().Unix()
-	var timeStamp TimeStamp
-	timeStamp.Seconds = int32(seconds)
+	//timeStamp is optional, commenting the code
+	//seconds := time.Now().Unix()
+	//var timeStamp TimeStamp
+	//timeStamp.Seconds = int32(seconds)
 
 	var apInfo ApInfo
-	apInfo.TimeStamp = &timeStamp
+	//apInfo.TimeStamp = &timeStamp
 
 	apInfo.ApId = &apInfoComplete.ApId
+
+	var bssLoad BssLoad
+	bssLoad.StaCount = int32(len(apInfoComplete.StaMacIds))
+	bssLoad.ChannelUtilization = 0
+	bssLoad.AvailAdmCap = 0
+	apInfo.BssLoad = &bssLoad
+
+	var apLocation ApLocation
+	var geoLocation GeoLocation
+	if apInfoComplete.ApLocation.GeoLocation != nil {
+		geoLocation.Lat = apInfoComplete.ApLocation.GeoLocation.Lat
+		geoLocation.Long = apInfoComplete.ApLocation.GeoLocation.Long
+		geoLocation.Datum = 1
+		apLocation.GeoLocation = &geoLocation
+		apInfo.ApLocation = &apLocation
+	}
+
 	resp.ApInfo = append(resp.ApInfo, apInfo)
 
 	return nil
@@ -676,12 +694,13 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 	//if not connected to any wifi poa, ignore
 	if ueData.ApMacId != "" {
 
-		seconds := time.Now().Unix()
-		var timeStamp TimeStamp
-		timeStamp.Seconds = int32(seconds)
+		//timeStamp is optional, commenting the code
+		//seconds := time.Now().Unix()
+		//var timeStamp TimeStamp
+		//timeStamp.Seconds = int32(seconds)
 
 		var staInfo StaInfo
-		staInfo.TimeStamp = &timeStamp
+		//staInfo.TimeStamp = &timeStamp
 
 		var staId StaIdentity
 		staId.MacId = ueData.OwnMacId
@@ -692,8 +711,8 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 		staInfo.ApAssociated = &apAssociated
 
 		//TODO put a value in rssi that is coming from postGIS
-		log.Info("TODO forced RSSI")
-		staInfo.Rssi = 121
+		//log.Info("TODO forced RSSI")
+		//staInfo.Rssi = 121
 
 		resp.StaInfo = append(resp.StaInfo, staInfo)
 

@@ -157,9 +157,7 @@ definitions:
           seconds: 1577836800
           nanoSeconds: 0
         apId:
-          macId: "11:22:33:44:55:66"
-          ssid: "mySsid"
-          ipAddress: "1.2.3.4"
+          macId: "AA2233445566"
   ApIdentity:
     type: "object"
     required:
@@ -167,7 +165,7 @@ definitions:
     properties:
       macId:
         type: "string"
-        example: "11:22:33:44:55:66"
+        example: "AA2233445566"
         description: "Identifier assigned to an Access Point for communications at\
           \ the data link layer of a network segment."
       ssid:
@@ -185,7 +183,7 @@ definitions:
     properties:
       macId:
         type: "string"
-        example: "11:22:33:44:55:66"
+        example: "AA2233445566"
         description: "Identifier assigned to station for communications at the data\
           \ link layer of a network segment."
       ssid:

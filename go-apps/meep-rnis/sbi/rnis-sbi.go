@@ -36,6 +36,7 @@ type SbiCfg struct {
 	PostgisPort    string
 	UeDataCb       func(string, string, string, string, bool)
 	AppEcgiInfoCb  func(string, string, string, string)
+	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
 }
@@ -48,6 +49,7 @@ type RnisSbi struct {
 	pc                   *postgis.Connector
 	updateUeDataCB       func(string, string, string, string, bool)
 	updateAppEcgiInfoCB  func(string, string, string, string)
+	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
 }
@@ -65,6 +67,7 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.sandboxName = cfg.SandboxName
 	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
+	sbi.updateDomainDataCB = cfg.DomainDataCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
 
@@ -176,6 +179,22 @@ func processActiveScenarioUpdate() {
 
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
+
+	// Update DOMAIN info
+	domainNameList := sbi.activeModel.GetNodeNames("OPERATOR-CELLULAR")
+
+	for _, name := range domainNameList {
+		node := sbi.activeModel.GetNode(name)
+		if node != nil {
+			domain := node.(*dataModel.Domain)
+			if domain.CellularDomainConfig != nil {
+				mnc := domain.CellularDomainConfig.Mnc
+				mcc := domain.CellularDomainConfig.Mcc
+				cellId := domain.CellularDomainConfig.DefaultCellId
+				sbi.updateDomainDataCB(name, mnc, mcc, cellId)
+			}
+		}
+	}
 
 	// Update UE info
 	ueNames := []string{}
