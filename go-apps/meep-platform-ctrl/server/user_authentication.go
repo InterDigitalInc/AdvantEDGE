@@ -54,6 +54,15 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
 	session, err := sessionStore.GetByName(username)
 	if err != nil {
+		// Check if max session count is reached before creating a new one
+		count := sessionStore.GetCount()
+		if count >= pfmCtrl.maxSessions {
+			err = errors.New("Maximum session count exceeded")
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+
 		// Get requested sandbox name from user profile, if any
 		user, err := pfmCtrl.userStore.GetUser(username)
 		if err == nil {

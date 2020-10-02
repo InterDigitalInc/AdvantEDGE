@@ -23,6 +23,8 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -51,6 +53,7 @@ type PlatformCtrl struct {
 	sandboxStore  *ss.SandboxStore
 	userStore     *users.Connector
 	mqGlobal      *mq.MsgQueue
+	maxSessions   int
 }
 
 const scenarioDBName = "scenarios"
@@ -81,6 +84,12 @@ func Init() (err error) {
 
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
+
+	// Retrieve maximum session count from environment variable
+	if maxSessions, err := strconv.ParseInt(os.Getenv("MEEP_MAX_SESSIONS"), 10, 0); err == nil {
+		pfmCtrl.maxSessions = int(maxSessions)
+	}
+	log.Info("MEEP_MAX_SESSIONS: ", pfmCtrl.maxSessions)
 
 	// Create message queue
 	pfmCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisDBAddr)

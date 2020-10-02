@@ -598,6 +598,36 @@ services:
 #       mode: 'allow'
 
 #   #------------------------------
+#   #  WAI Service
+#   #------------------------------
+#   meep-wais:
+#     # REST API endpoint routes: names provided to endpoint routes during router initialization
+#     Index:
+#       # access authorization mode: allow|block|verify
+#       mode: 'block'
+#     ApInfoGET:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     StaInfoGET:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     SubscriptionLinkListSubscriptionsGET:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     SubscriptionsGET:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     SubscriptionsPOST:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     SubscriptionsPUT:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     SubscriptionsSubscrIdDELETE:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+
+#   #------------------------------
 #   #  Sandbox Controller
 #   #------------------------------
 #   meep-sandbox-ctrl:

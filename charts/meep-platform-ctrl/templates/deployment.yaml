@@ -52,7 +52,7 @@ spec:
           env:
             {{- range $key, $value := .Values.image.env }}
             - name: {{ $key }}
-              value: {{ $value }}
+              value: {{ $value | quote }}
             {{- end }}
             {{- if .Values.user.frontend.enabled}}
             - name: USER_FRONTEND

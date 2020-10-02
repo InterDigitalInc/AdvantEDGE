@@ -137,6 +137,18 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	return s, nil
 }
 
+// GetCount - Retrieve session count
+func (ss *SessionStore) GetCount() (count int) {
+	_ = ss.rc.ForEachEntry(ss.baseKey+"*", getCountHandler, &count)
+	return count
+}
+
+func getCountHandler(key string, fields map[string]string, userData interface{}) error {
+	count := userData.(*int)
+	*count += 1
+	return nil
+}
+
 // GetAll - Retrieve session by name
 func (ss *SessionStore) GetAll() (sessionList []*Session, err error) {
 	// Get all sessions, if any

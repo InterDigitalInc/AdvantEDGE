@@ -122,6 +122,7 @@ func Init() (err error) {
 		log.Error("Failed connection to Redis DB. Error: ", err)
 		return err
 	}
+	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, RNI service table")
 
 	// Connect to Session Manager
