@@ -236,7 +236,9 @@ func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32
 	var oldLat int32 = 0
 	var oldLong int32 = 0
 
-	if jsonApInfoComplete != "" {
+	if jsonApInfoComplete == "" {
+		return true
+	} else {
 		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
 		oldStaMacIds = apInfoComplete.StaMacIds
 
@@ -258,7 +260,6 @@ func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32
 
 	//if the list of connected STAs is different
 	return !reflect.DeepEqual(oldStaMacIds, staMacIds)
-
 }
 
 func updateApInfo(name string, apMacId string, longitude *float32, latitude *float32, staMacIds []string) {

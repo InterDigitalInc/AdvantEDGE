@@ -1667,8 +1667,8 @@ func TestAPInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedConnType := CONTYPE_UNKNOWN
-	expectedOpStatus := OPSTATUS_UNKNOWN
+	expectedConnType := MACRO
+	expectedOpStatus := SERVICEABLE
 	expectedTimeZone := time.Time{}
 	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", nil, &expectedConnType, &expectedOpStatus, 2, expectedTimeZone, "", ""}
 
