@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 appVersion: 0.30.0
 description: An nginx Ingress controller that uses ConfigMap to store the nginx configuration.
 engine: gotpl

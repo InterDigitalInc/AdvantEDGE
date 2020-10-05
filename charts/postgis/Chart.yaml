@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 name: postgis
 version: 8.9.5
 appVersion: 11.7.0

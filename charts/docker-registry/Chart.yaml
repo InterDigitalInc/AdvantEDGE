@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 appVersion: 2.7.1
 description: A Helm chart for Docker Registry
 home: https://hub.docker.com/_/registry/

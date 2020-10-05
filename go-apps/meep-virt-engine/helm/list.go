@@ -52,7 +52,7 @@ func getReleases() ([]Release, error) {
 }
 
 func getList() ([]byte, error) {
-	var cmd = exec.Command("helm", "ls")
+	var cmd = exec.Command("helm", "ls", "-A")
 	out, err := cmd.Output()
 	if err != nil {
 		err = errors.New("Unable to list Releases")

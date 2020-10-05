@@ -179,8 +179,7 @@ func versionsDep(cobraCmd *cobra.Command) {
 }
 
 func getHelmVersion(cobraCmd *cobra.Command) {
-	clientStr := formatVersion("helm client", na, "", "")
-	serverStr := formatVersion("helm server", na, "", "")
+	helmStr := formatVersion("helm", na, "", "")
 	cmd := exec.Command("helm", "version")
 	output, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
@@ -188,18 +187,12 @@ func getHelmVersion(cobraCmd *cobra.Command) {
 	} else {
 		output = strings.Replace(output, "\"", "", -1)
 		outAll := strings.Split(output, "}")
-		outClient := outAll[0]
-		outServer := outAll[1]
-		//client part
-		out := strings.Split(outClient, ",")
-		clientStr = formatVersion("helm client", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1], "")
-		//server part
-		out = strings.Split(outServer, ",")
-		serverStr = formatVersion("helm server", strings.Split(out[0], ":")[2], strings.Split(out[1], ":")[1], "")
+		outVersion := outAll[0]
+		out := strings.Split(outVersion, ",")
+		helmStr = formatVersion("helm", strings.Split(out[0], ":")[1], strings.Split(out[1], ":")[1], "")
 	}
 
-	fmt.Println(clientStr)
-	fmt.Println(serverStr)
+	fmt.Println(helmStr)
 }
 
 func getDockerVersion(cobraCmd *cobra.Command) {

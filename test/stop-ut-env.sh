@@ -10,4 +10,4 @@ echo ">>> Stopping UT environment"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo ""
 
-helm ls --short | grep meep-ut | xargs -L1 helm delete --purge
+helm ls --short | grep meep-ut | xargs -L1 helm uninstall

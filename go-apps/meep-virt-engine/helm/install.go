@@ -61,16 +61,14 @@ func install(chart Chart) error {
 	log.Debug("Installing chart: " + chart.ReleaseName)
 	var cmd *exec.Cmd
 	if strings.Trim(chart.ValuesFile, " ") == "" {
-		cmd = exec.Command("helm", "install",
-			"--name", chart.ReleaseName,
-			"--namespace", chart.Namespace,
+		cmd = exec.Command("helm", "install", chart.ReleaseName,
+			"--namespace", chart.Namespace, "--create-namespace",
 			"--set", "nameOverride="+chart.Name,
 			"--set", "fullnameOverride="+chart.Name,
-			chart.Location, "--replace")
+			chart.Location, "--replace", "--disable-openapi-validation")
 	} else {
-		cmd = exec.Command("helm", "install",
-			"--name", chart.ReleaseName,
-			"--namespace", chart.Namespace,
+		cmd = exec.Command("helm", "install", chart.ReleaseName,
+			"--namespace", chart.Namespace, "--create-namespace",
 			"--set", "nameOverride="+chart.Name,
 			"--set", "fullnameOverride="+chart.Name,
 			"-f", chart.ValuesFile,
