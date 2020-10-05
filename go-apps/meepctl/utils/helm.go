@@ -44,8 +44,13 @@ func IsHelmRelease(name string, cobraCmd *cobra.Command) (exist bool, err error)
 		fmt.Println(err)
 	} else {
 		s := string(out)
-		exist = strings.HasPrefix(s, name)
-
+		lines := strings.Split(s, "\n")
+		for _, line := range lines {
+			if line == name {
+				exist = true
+				break
+			}
+		}
 	}
 	if verbose {
 		r := FormatResult("Result: "+string(out), elapsed, cobraCmd)
