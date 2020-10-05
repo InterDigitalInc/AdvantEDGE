@@ -37,7 +37,7 @@ func IsHelmRelease(name string, cobraCmd *cobra.Command) (exist bool, err error)
 	if verbose {
 		fmt.Println("Cmd:", cmd.Args)
 	}
-	out, err := cmd.CombinedOutput()
+	out, err := cmd.Output()
 	elapsed := time.Since(start)
 	if err != nil {
 		err = errors.New("Error listing component [" + name + "]")
@@ -45,7 +45,6 @@ func IsHelmRelease(name string, cobraCmd *cobra.Command) (exist bool, err error)
 	} else {
 		s := string(out)
 		exist = strings.HasPrefix(s, name)
-
 	}
 	if verbose {
 		r := FormatResult("Result: "+string(out), elapsed, cobraCmd)
