@@ -37,16 +37,15 @@ const (
 const (
 	fieldLatitude  = "lat"
 	fieldLongitude = "long"
-	// fieldRssi      = "rssi"
-	// fieldRsrp      = "rsrp"
-	// fieldRsrq      = "rsrq"
+	fieldRssi      = "rssi"
+	fieldRsrp      = "rsrp"
+	fieldRsrq      = "rsrq"
 )
 
 // Root key
 var keyRoot = dkm.GetKeyRootGlobal() + "gis-cache:"
-var keyPositions = keyRoot + "positions:"
-
-// var keyMeasurements = keyRoot + "measurements:"
+var keyPositions = keyRoot + "pos:"
+var keyMeasurements = keyRoot + "meas:"
 
 type Position struct {
 	Latitude  float32
@@ -54,10 +53,13 @@ type Position struct {
 }
 
 type UeMeasurement struct {
-	PoaName string
-	Rssi    float32
-	Rsrp    float32
-	Rsrq    float32
+	Measurements map[string]*Measurement
+}
+
+type Measurement struct {
+	Rssi float32
+	Rsrp float32
+	Rsrq float32
 }
 
 type GisCache struct {
@@ -116,20 +118,6 @@ func (gc *GisCache) GetAllPositions(typ string) (map[string]*Position, error) {
 	return positionMap, nil
 }
 
-// Del - Remove position with provided name
-func (gc *GisCache) Del(typ string, name string) {
-	key := keyPositions + typ + ":" + name
-	err := gc.rc.DelEntry(key)
-	if err != nil {
-		log.Error("Failed to delete position for ", name, " with err: ", err.Error())
-	}
-}
-
-// Flush - Remove all GIS cache entries
-func (gc *GisCache) Flush() {
-	gc.rc.DBFlush(keyRoot)
-}
-
 func getPosition(key string, fields map[string]string, userData interface{}) error {
 	positionMap := *(userData.(*map[string]*Position))
 
@@ -143,14 +131,107 @@ func getPosition(key string, fields map[string]string, userData interface{}) err
 	}
 
 	// Add position to map
-	positionMap[getKeyTarget(key)] = position
+	pos := strings.LastIndex(key, ":")
+	if pos != -1 {
+		positionMap[key[pos+1:]] = position
+	}
 	return nil
 }
 
-func getKeyTarget(key string) string {
-	pos := strings.LastIndex(key, ":")
-	if pos == -1 {
-		return ""
+// DelPosition - Remove position with provided name
+func (gc *GisCache) DelPosition(typ string, name string) {
+	key := keyPositions + typ + ":" + name
+	err := gc.rc.DelEntry(key)
+	if err != nil {
+		log.Error("Failed to delete position for ", name, " with err: ", err.Error())
 	}
-	return key[pos:]
+}
+
+// SetMeasurement - Create or update entry in DB
+func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) error {
+	key := keyMeasurements + ue + ":" + poa
+
+	// Prepare data
+	fields := make(map[string]interface{})
+	fields[fieldRssi] = fmt.Sprintf("%f", meas.Rssi)
+	fields[fieldRsrp] = fmt.Sprintf("%f", meas.Rsrp)
+	fields[fieldRsrq] = fmt.Sprintf("%f", meas.Rsrq)
+
+	// Update entry in DB
+	err := gc.rc.SetEntry(key, fields)
+	if err != nil {
+		log.Error("Failed to set entry with error: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+// GetAllMeasurements - Return measurements with provided type
+func (gc *GisCache) GetAllMeasurements() (measurementMap map[string]*UeMeasurement, err error) {
+	keyMatchStr := keyMeasurements + "*"
+
+	// Create measurement map
+	measurementMap = make(map[string]*UeMeasurement)
+
+	// Get all measurment entry details
+	err = gc.rc.ForEachEntry(keyMatchStr, getMeasurement, &measurementMap)
+	if err != nil {
+		log.Error("Failed to get all entries with error: ", err.Error())
+		return nil, err
+	}
+	return measurementMap, nil
+}
+
+func getMeasurement(key string, fields map[string]string, userData interface{}) error {
+	measurementMap := *(userData.(*map[string]*UeMeasurement))
+
+	// Retrieve UE & POA name from key
+	ueName := ""
+	poaName := ""
+	poaPos := strings.LastIndex(key, ":")
+	if poaPos == -1 {
+		return nil
+	}
+	poaName = key[poaPos+1:]
+	uePos := strings.LastIndex(key[:poaPos], ":")
+	if uePos == -1 {
+		return nil
+	}
+	ueName = key[uePos+1 : poaPos]
+
+	// Prepare measurement
+	meas := new(Measurement)
+	if rssi, err := strconv.ParseFloat(fields[fieldRssi], 32); err == nil {
+		meas.Rssi = float32(rssi)
+	}
+	if rsrp, err := strconv.ParseFloat(fields[fieldRsrp], 32); err == nil {
+		meas.Rsrp = float32(rsrp)
+	}
+	if rsrq, err := strconv.ParseFloat(fields[fieldRsrq], 32); err == nil {
+		meas.Rsrq = float32(rsrq)
+	}
+
+	// Add measurement to map
+	ueMeas, found := measurementMap[ueName]
+	if !found {
+		ueMeas = new(UeMeasurement)
+		ueMeas.Measurements = make(map[string]*Measurement)
+		measurementMap[ueName] = ueMeas
+	}
+	ueMeas.Measurements[poaName] = meas
+	return nil
+}
+
+// DelMeasurements - Remove measurement with provided name
+func (gc *GisCache) DelMeasurement(ue string, poa string) {
+	key := keyMeasurements + ue + ":" + poa
+	err := gc.rc.DelEntry(key)
+	if err != nil {
+		log.Error("Failed to delete measurement for ue: ", ue, " and poa: ", poa, " with err: ", err.Error())
+	}
+}
+
+// Flush - Remove all GIS cache entries
+func (gc *GisCache) Flush() {
+	gc.rc.DBFlush(keyRoot)
 }

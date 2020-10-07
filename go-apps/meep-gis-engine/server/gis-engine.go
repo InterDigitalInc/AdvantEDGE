@@ -45,6 +45,12 @@ const sboxCtrlBasepath = "http://meep-sandbox-ctrl/sandbox-ctrl/v1"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
 
+// Enable profiling
+const profiling = false
+
+var proStart time.Time
+var proFinish time.Time
+
 const (
 	AutoTypeMovement   = "MOVEMENT"
 	AutoTypeMobility   = "MOBILITY"
@@ -93,8 +99,7 @@ type GisEngine struct {
 	ueInfo           map[string]*UeInfo
 	automation       map[string]bool
 	automationTicker *time.Ticker
-	// cacheTicker      *time.Ticker
-	updateTime time.Time
+	updateTime       time.Time
 }
 
 var ge *GisEngine
@@ -200,37 +205,10 @@ func Run() (err error) {
 		return err
 	}
 
-	// Register Asset Manager listener
-	err = ge.assetMgr.SetListener(gisHandler)
-	if err != nil {
-		log.Error("Failed to register Asset Manager listener: ", err.Error())
-		return err
-	}
-	log.Info("Registered Asset Manager listener")
-
 	// Start automation loop
 	startAutomation()
 
-	// Start cache loop
-	// startCaching()
-
 	return nil
-}
-
-// Asset Manager handler
-func gisHandler(updateType string, assetName string) {
-	runCache()
-
-	// // Create & fill gis update message
-	// msg := ge.mqLocal.CreateMsg(mq.MsgGeUpdate, mq.TargetAll, ge.sandboxName)
-	// msg.Payload[assetName] = updateType
-	// log.Debug("TX MSG: ", mq.PrintMsg(msg))
-
-	// // Send message on local Msg Queue
-	// err := ge.mqLocal.SendMsg(msg)
-	// if err != nil {
-	// 	log.Error("Failed to send message with error: ", err.Error())
-	// }
 }
 
 // Message Queue handler
@@ -262,6 +240,9 @@ func processScenarioActivate() {
 	// NOTE: Required to make sure initial UE selection takes all POAs into account
 	assetList = ge.activeModel.GetNodeNames(mod.NodeTypeUE)
 	setAssets(assetList)
+
+	// Update Gis cache
+	updateCache()
 }
 
 func processScenarioUpdate() {
@@ -286,6 +267,9 @@ func processScenarioUpdate() {
 	// Create, update & delete assets according to scenario update
 	setAssets(assetList)
 	removeAssets(assetsToRemove)
+
+	// Update Gis cache
+	updateCache()
 }
 
 func processScenarioTerminate() {
@@ -300,6 +284,9 @@ func processScenarioTerminate() {
 	// Clear asset list
 	log.Debug("GeoData deleted for all assets")
 	ge.assets = make(map[string]*Asset)
+
+	// Flush cache
+	ge.gisCache.Flush()
 }
 
 func setAssets(assetList []string) {
@@ -726,17 +713,13 @@ func initWirelessType(wireless bool, wirelessType string) string {
 	return wt
 }
 
-// func startCaching() {
-// 	log.Debug("Starting cache loop")
-// 	ge.cacheTicker = time.NewTicker(1000 * time.Millisecond)
-// 	go func() {
-// 		for range ge.cacheTicker.C {
-// 			runCache()
-// 		}
-// 	}()
-// }
+func updateCache() {
 
-func runCache() {
+	if profiling {
+		proStart = time.Now()
+	}
+
+	/* ----- UE ----- */
 
 	// Get UE asset snapshot
 	ueMap, err := ge.assetMgr.GetAllUe()
@@ -752,8 +735,12 @@ func runCache() {
 		return
 	}
 
-	// // Get cached UE measurements
-	// cachedUeMeasMap, err :=
+	// Get cached UE measurements
+	cachedUeMeasMap, err := ge.gisCache.GetAllMeasurements()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
 	// Update UE positions
 	for _, ue := range ueMap {
@@ -773,42 +760,136 @@ func runCache() {
 			_ = ge.gisCache.SetPosition(gc.TypeUe, ue.Name, position)
 		}
 
-		for _, meas := range ue.Measurements {
-			log.Info(meas.Poa)
+		// Update measurements if different from cached value
+		for _, ueMeas := range ue.Measurements {
+			updateRequired := false
+			cachedUeMeas, found := cachedUeMeasMap[ue.Name]
+			if !found {
+				updateRequired = true
+			} else {
+				cachedMeas, found := cachedUeMeas.Measurements[ueMeas.Poa]
+				if !found || cachedMeas.Rssi != ueMeas.Rssi || cachedMeas.Rsrp != ueMeas.Rsrp || cachedMeas.Rsrq != ueMeas.Rsrq {
+					updateRequired = true
+				}
+			}
+
+			if updateRequired {
+				measurement := new(gc.Measurement)
+				measurement.Rssi = ueMeas.Rssi
+				measurement.Rsrp = ueMeas.Rsrp
+				measurement.Rsrq = ueMeas.Rsrq
+				_ = ge.gisCache.SetMeasurement(ue.Name, ueMeas.Poa, measurement)
+			}
 		}
 	}
 
 	// Remove stale UEs
 	for ueName := range cachedUePosMap {
 		if _, found := ueMap[ueName]; !found {
-			ge.gisCache.Del(gc.TypeUe, ueName)
+			ge.gisCache.DelPosition(gc.TypeUe, ueName)
 		}
 	}
 
-	// Update UE measurements
+	// Remove stale measurements
+	for ueName, ueMeas := range cachedUeMeasMap {
+		for poaName := range ueMeas.Measurements {
+			if ue, ueFound := ueMap[ueName]; ueFound {
+				if _, poaFound := ue.Measurements[poaName]; poaFound {
+					continue
+				}
+			}
+			ge.gisCache.DelMeasurement(ueName, poaName)
+		}
+	}
+
+	/* ----- POA ----- */
 
 	// Get POA asset snapshot
-	_, err = ge.assetMgr.GetAllPoa()
+	poaMap, err := ge.assetMgr.GetAllPoa()
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
 
 	// Get cached POA positions
+	cachedPoaPosMap, err := ge.gisCache.GetAllPositions(gc.TypePoa)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
 	// Update POA positions
+	for _, poa := range poaMap {
+		// Parse POA position
+		longitude, latitude := parsePosition(poa.Position)
+		if longitude == nil || latitude == nil {
+			log.Error("longitude == nil || latitude == nil for POA: ", poa.Name)
+			continue
+		}
+
+		// Update positions if different from cached value
+		cachedPoaPos, found := cachedPoaPosMap[poa.Name]
+		if !found || cachedPoaPos.Longitude != *longitude || cachedPoaPos.Latitude != *latitude {
+			position := new(gc.Position)
+			position.Longitude = *longitude
+			position.Latitude = *latitude
+			_ = ge.gisCache.SetPosition(gc.TypePoa, poa.Name, position)
+		}
+	}
+
+	// Remove stale POAs
+	for poaName := range cachedPoaPosMap {
+		if _, found := poaMap[poaName]; !found {
+			ge.gisCache.DelPosition(gc.TypePoa, poaName)
+		}
+	}
+
+	/* ----- COMPUTE ----- */
 
 	// Get Compute asset snapshot
-	_, err = ge.assetMgr.GetAllCompute()
+	computeMap, err := ge.assetMgr.GetAllCompute()
 	if err != nil {
 		log.Error(err.Error())
 		return
 	}
 
 	// Get cached Compute positions
+	cachedComputePosMap, err := ge.gisCache.GetAllPositions(gc.TypeCompute)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
 	// Update Compute positions
+	for _, compute := range computeMap {
+		// Parse Compute position
+		longitude, latitude := parsePosition(compute.Position)
+		if longitude == nil || latitude == nil {
+			log.Error("longitude == nil || latitude == nil for Compute: ", compute.Name)
+			continue
+		}
 
+		// Update positions if different from cached value
+		cachedComputePos, found := cachedComputePosMap[compute.Name]
+		if !found || cachedComputePos.Longitude != *longitude || cachedComputePos.Latitude != *latitude {
+			position := new(gc.Position)
+			position.Longitude = *longitude
+			position.Latitude = *latitude
+			_ = ge.gisCache.SetPosition(gc.TypeCompute, compute.Name, position)
+		}
+	}
+
+	// Remove stale Computes
+	for computeName := range cachedComputePosMap {
+		if _, found := computeMap[computeName]; !found {
+			ge.gisCache.DelPosition(gc.TypeCompute, computeName)
+		}
+	}
+
+	if profiling {
+		proFinish = time.Now()
+		log.Debug("updateCache: ", proFinish.Sub(proStart))
+	}
 }
 
 func parsePosition(position string) (longitude *float32, latitude *float32) {
@@ -885,6 +966,9 @@ func runAutomation() {
 
 		// Store new update timestamp
 		ge.updateTime = currentTime
+
+		// Update Gis cache
+		updateCache()
 	}
 
 	// Mobility & POA In Range
@@ -1111,6 +1195,9 @@ func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	// Update Gis cache
+	updateCache()
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -1421,6 +1508,9 @@ func geUpdateGeoDataByName(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Update Gis cache
+	updateCache()
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
