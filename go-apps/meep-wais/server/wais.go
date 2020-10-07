@@ -71,11 +71,6 @@ var expiryTicker *time.Ticker
 
 var nextSubscriptionIdAvailable int
 
-type UeData struct {
-	ApMacId  string `json:"apMacId"`
-	OwnMacId string `json:"macId"`
-}
-
 type ApInfoComplete struct {
 	ApId       ApIdentity
 	ApLocation ApLocation
@@ -144,7 +139,7 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
-		UeDataCb:       updateUeData,
+		StaInfoCb:      updateStaInfo,
 		ApInfoCb:       updateApInfo,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
@@ -179,28 +174,67 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateUeData(name string, ownMacId string, apMacId string) {
+func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32) {
 
-	oldApMacId := ""
-	oldOwnMacId := ""
+	// Get STA Info from DB, if any
+	var staInfo *StaInfo
+	jsonStaInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+	if jsonStaInfo != "" {
+		staInfo = convertJsonToStaInfo(jsonStaInfo)
+	}
 
-	//get from DB
-	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+	// Update DB if STA Info does not exist or has changed
+	if isStaInfoUpdateRequired(staInfo, ownMacId, apMacId, rssi) {
 
-	if jsonUeData != "" {
-		ueDataObj := convertJsonToUeData(jsonUeData)
-		if ueDataObj != nil {
-			oldApMacId = ueDataObj.ApMacId
-			oldOwnMacId = ueDataObj.OwnMacId
+		// Set STA Mac ID
+		if staInfo == nil {
+			staInfo = new(StaInfo)
+			staInfo.StaId = new(StaIdentity)
 		}
+		staInfo.StaId.MacId = ownMacId
+
+		// Set Associated AP, if any
+		if apMacId == "" {
+			staInfo.ApAssociated = nil
+		} else {
+			if staInfo.ApAssociated == nil {
+				staInfo.ApAssociated = new(ApAssociated)
+			}
+			staInfo.ApAssociated.MacId = apMacId
+		}
+
+		// Set RSSI
+		if rssi == nil {
+			staInfo.Rssi = 0
+		} else {
+			staInfo.Rssi = *rssi
+		}
+
+		// Update DB
+		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertStaInfoToJson(staInfo))
 	}
-	//updateDB if changes occur
-	if oldApMacId != apMacId || oldOwnMacId != ownMacId || name == "10.10.0.2" {
-		var ueData UeData
-		ueData.ApMacId = apMacId
-		ueData.OwnMacId = ownMacId
-		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
+}
+
+func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, rssi *int32) bool {
+	// Check if STA Info exists
+	if staInfo == nil {
+		return true
 	}
+	// Compare STA Mac
+	if ownMacId != staInfo.StaId.MacId {
+		return true
+	}
+	// Compare AP Mac
+	if (apMacId == "" && staInfo.ApAssociated != nil) ||
+		(apMacId != "" && (staInfo.ApAssociated == nil || apMacId != staInfo.ApAssociated.MacId)) {
+		return true
+	}
+	// Compare RSSI
+	if (rssi == nil && staInfo.Rssi != 0) ||
+		(rssi != nil && *rssi != staInfo.Rssi) {
+		return true
+	}
+	return false
 }
 
 func convertFloatToGeolocationFormat(value *float32) int32 {
@@ -716,50 +750,25 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 		return errors.New("Response not defined")
 	}
 
-	// Retrieve user info from DB
-	var ueData UeData
-	err := json.Unmarshal([]byte(jsonInfo), &ueData)
-	if err != nil {
-		return err
-	}
-
-	//if not connected to any wifi poa, ignore
-	if ueData.ApMacId != "" {
-
+	// Add STA info to reponse (ignore if not associated to a wifi AP)
+	staInfo := convertJsonToStaInfo(jsonInfo)
+	if staInfo.ApAssociated != nil {
 		//timeStamp is optional, commenting the code
 		//seconds := time.Now().Unix()
 		//var timeStamp TimeStamp
 		//timeStamp.Seconds = int32(seconds)
-
-		var staInfo StaInfo
 		//staInfo.TimeStamp = &timeStamp
 
-		var staId StaIdentity
-		staId.MacId = ueData.OwnMacId
-		staInfo.StaId = &staId
-
-		var apAssociated ApAssociated
-		apAssociated.MacId = ueData.ApMacId
-		staInfo.ApAssociated = &apAssociated
-
-		//TODO put a value in rssi that is coming from postGIS
-		//log.Info("TODO forced RSSI")
-		//staInfo.Rssi = 121
-
-		resp.StaInfo = append(resp.StaInfo, staInfo)
-
+		resp.StaInfo = append(resp.StaInfo, *staInfo)
 	}
-
 	return nil
 }
 
 func staInfoGET(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 	var response InlineResponse2001
 
-	//loop through each AP
+	// Loop through each STA
 	keyName := baseKey + "UE:*"
 	err := rc.ForEachJSONEntry(keyName, populateStaInfo, &response)
 	if err != nil {

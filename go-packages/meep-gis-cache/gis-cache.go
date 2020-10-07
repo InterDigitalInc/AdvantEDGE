@@ -166,7 +166,7 @@ func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) err
 	return nil
 }
 
-// GetAllMeasurements - Return measurements with provided type
+// GetAllMeasurements - Return all UE measurements
 func (gc *GisCache) GetAllMeasurements() (measurementMap map[string]*UeMeasurement, err error) {
 	keyMatchStr := keyMeasurements + "*"
 

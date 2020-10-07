@@ -123,6 +123,14 @@ func Run() (err error) {
 	return nil
 }
 
+func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
+	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
+	return nil
+}
+
 func startRefreshTicker() {
 	log.Debug("Starting refresh loop")
 	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
@@ -346,14 +354,6 @@ func refreshPositions() {
 
 		sbi.updateAccessPointInfoCB(zone, netLoc, "", "", -1, longitude, latitude)
 	}
-}
-
-func Stop() (err error) {
-	// Stop refresh loop
-	stopRefreshTicker()
-
-	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
-	return nil
 }
 
 func isUeConnected(name string) bool {

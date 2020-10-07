@@ -17,6 +17,8 @@
 package sbi
 
 import (
+	"time"
+
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -31,7 +33,7 @@ type SbiCfg struct {
 	RedisAddr      string
 	PostgisHost    string
 	PostgisPort    string
-	UeDataCb       func(string, string, string)
+	StaInfoCb      func(string, string, string, *int32)
 	ApInfoCb       func(string, string, *float32, *float32, []string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -43,7 +45,8 @@ type WaisSbi struct {
 	handlerId               int
 	activeModel             *mod.Model
 	gisCache                *gc.GisCache
-	updateUeDataCB          func(string, string, string)
+	refreshTicker           *time.Ticker
+	updateStaInfoCB         func(string, string, string, *int32)
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
 	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
@@ -60,7 +63,7 @@ func Init(cfg SbiCfg) (err error) {
 	}
 	sbi = new(WaisSbi)
 	sbi.sandboxName = cfg.SandboxName
-	sbi.updateUeDataCB = cfg.UeDataCb
+	sbi.updateStaInfoCB = cfg.StaInfoCb
 	sbi.updateAccessPointInfoCB = cfg.ApInfoCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
@@ -112,12 +115,37 @@ func Run() (err error) {
 		return err
 	}
 
+	// Start refresh loop
+	startRefreshTicker()
+
 	return nil
 }
 
 func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
+}
+
+func startRefreshTicker() {
+	log.Debug("Starting refresh loop")
+	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
+	go func() {
+		for range sbi.refreshTicker.C {
+			refreshPositions()
+			refreshMeasurements()
+		}
+	}()
+}
+
+func stopRefreshTicker() {
+	if sbi.refreshTicker != nil {
+		sbi.refreshTicker.Stop()
+		sbi.refreshTicker = nil
+		log.Debug("Refresh loop stopped")
+	}
 }
 
 // Message Queue handler
@@ -147,46 +175,63 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
-
 	log.Debug("processActiveScenarioUpdate")
 
-	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
+	// Get previous list of connected UEs
+	prevUeNames := []string{}
+	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range prevUeNameList {
+		if isUeConnected(name) {
+			prevUeNames = append(prevUeNames, name)
+		}
+	}
 
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
-	// Get all POA positions
+	// Get all POA positions & UE measurments
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
+	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
 
 	// Update UE info
+	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+		ueNames = append(ueNames, name)
+
+		// Update STA Info
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
 			apMacId := ""
+			var rssi *int32
 			switch poa.Type_ {
 			case mod.NodeTypePoaWifi:
 				apMacId = poa.PoaWifiConfig.MacId
+				rssi = getRssi(name, poa.Name, ueMeasMap)
 			}
 			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
-			sbi.updateUeDataCB(name, ue.MacId, apMacId)
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi)
 		}
 	}
 
-	//only find UEs that were removed, check that former UEs are in new UE list
-	for _, oldUe := range formerUeNameList {
+	// Update UEs that were removed
+	for _, prevUeName := range prevUeNames {
 		found := false
-		for _, newUe := range ueNameList {
-			if newUe == oldUe {
+		for _, ueName := range ueNames {
+			if ueName == prevUeName {
 				found = true
 				break
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(oldUe, oldUe, "")
-			log.Info("Ue removed : ", oldUe)
+			sbi.updateStaInfoCB(prevUeName, "", "", nil)
+			log.Info("Ue removed : ", prevUeName)
 		}
 	}
 
@@ -213,4 +258,81 @@ func processActiveScenarioUpdate() {
 		}
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
 	}
+}
+
+func refreshPositions() {
+	// Update POA Positions
+	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaWifi)
+	for _, name := range poaNameList {
+		// Get Network Location
+		poa := (sbi.activeModel.GetNode(name)).(*dataModel.NetworkLocation)
+		if poa == nil {
+			log.Error("Can't find poa named " + name)
+			continue
+		}
+
+		// Get position
+		var longitude *float32
+		var latitude *float32
+		if position, found := poaPositionMap[name]; found {
+			longitude = &position.Longitude
+			latitude = &position.Latitude
+		}
+
+		// Get list UE MacIds
+		var ueMacIdList []string
+		for _, pl := range poa.PhysicalLocations {
+			ueMacIdList = append(ueMacIdList, pl.MacId)
+		}
+
+		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
+	}
+}
+
+func refreshMeasurements() {
+	// Update UE measurements
+	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	ueNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+
+		// Update STA Info
+		ueParent := sbi.activeModel.GetNodeParent(name)
+		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
+			apMacId := ""
+			var rssi *int32
+			switch poa.Type_ {
+			case mod.NodeTypePoaWifi:
+				apMacId = poa.PoaWifiConfig.MacId
+				rssi = getRssi(name, poa.Name, ueMeasMap)
+			}
+			ue := (sbi.activeModel.GetNode(name)).(*dataModel.PhysicalLocation)
+			sbi.updateStaInfoCB(name, ue.MacId, apMacId, rssi)
+		}
+	}
+}
+
+func getRssi(ue string, poa string, ueMeasMap map[string]*gc.UeMeasurement) *int32 {
+	if ueMeas, ueFound := ueMeasMap[ue]; ueFound {
+		if meas, poaFound := ueMeas.Measurements[poa]; poaFound {
+			rssi := int32(meas.Rssi)
+			return &rssi
+		}
+	}
+	return nil
+}
+
+func isUeConnected(name string) bool {
+	node := sbi.activeModel.GetNode(name)
+	if node != nil {
+		pl := node.(*dataModel.PhysicalLocation)
+		if pl.Connected {
+			return true
+		}
+	}
+	return false
 }
