@@ -17,6 +17,8 @@
 package sbi
 
 import (
+	"time"
+
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -42,6 +44,7 @@ type RnisSbi struct {
 	handlerId            int
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
+	refreshTicker        *time.Ticker
 	updateUeDataCB       func(string, string, string, string, bool)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateDomainDataCB   func(string, string, string, string)
@@ -113,12 +116,36 @@ func Run() (err error) {
 		return err
 	}
 
+	// Start refresh loop
+	startRefreshTicker()
+
 	return nil
 }
 
 func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
+}
+
+func startRefreshTicker() {
+	log.Debug("Starting refresh loop")
+	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
+	go func() {
+		for range sbi.refreshTicker.C {
+			refreshMeasurements()
+		}
+	}()
+}
+
+func stopRefreshTicker() {
+	if sbi.refreshTicker != nil {
+		sbi.refreshTicker.Stop()
+		sbi.refreshTicker = nil
+		log.Debug("Refresh loop stopped")
+	}
 }
 
 // Message Queue handler
@@ -324,6 +351,26 @@ func processActiveScenarioUpdate() {
 			log.Info("App removed : ", prevApp)
 		}
 	}
+}
+
+func refreshMeasurements() {
+	// // Update UE measurements
+	// ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	// ueNameList := sbi.activeModel.GetNodeNames("UE")
+	// for _, name := range ueNameList {
+	// 	// Ignore disconnected UEs
+	// 	if !isUeConnected(name) {
+	// 		continue
+	// 	}
+
+	// 	// TODO - Update RSRP & RSRQ in RNIS
+	// 	if ueMeas, found := ueMeasMap[name]; found {
+	// 		log.Debug("UE Measurements for ", name, ":")
+	// 		for poaName, meas := range ueMeas.Measurements {
+	// 			log.Debug("  ", poaName, ": ", fmt.Sprintf("%+v", *meas))
+	// 		}
+	// 	}
+	// }
 }
 
 func isUeConnected(name string) bool {
