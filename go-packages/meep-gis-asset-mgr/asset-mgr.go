@@ -887,10 +887,11 @@ func (am *AssetMgr) GetUe(name string) (ue *Ue, err error) {
 	// Get UE entry
 	var rows *sql.Rows
 	rows, err = am.db.Query(`
-		SELECT id, name, ST_AsGeoJSON(position), ST_AsGeoJSON(path),
-			path_mode, path_velocity, path_length, path_increment, path_fraction,
-			poa, poa_distance, poa_in_range, poa_type_prio, connected,
-			meas.poa, meas.type, meas.radius, meas.distance, meas.in_range, meas.rssi, meas.rsrp, meas.rsrq
+		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ST_AsGeoJSON(ue.path),
+			ue.path_mode, ue.path_velocity, ue.path_length, ue.path_increment, ue.path_fraction,
+			ue.poa, ue.poa_distance, ue.poa_in_range, ue.poa_type_prio, ue.connected,
+			COALESCE (meas.poa,''), COALESCE (meas.type,''), COALESCE (meas.radius,'0.0'), COALESCE (meas.distance,'0.000'),
+			COALESCE (meas.in_range,'false'), COALESCE (meas.rssi,'0.000'), COALESCE (meas.rsrp,'0.0'), COALESCE (meas.rsrq,'0.0')
 		FROM `+UeTable+` AS ue
 		LEFT JOIN `+UeMeasurementTable+` AS meas ON (ue.name = meas.ue)
 		WHERE ue.name = ($1)`, name)
@@ -1066,7 +1067,8 @@ func (am *AssetMgr) GetAllUe() (ueMap map[string]*Ue, err error) {
 		SELECT ue.id, ue.name, ST_AsGeoJSON(ue.position), ST_AsGeoJSON(ue.path),
 			ue.path_mode, ue.path_velocity, ue.path_length, ue.path_increment, ue.path_fraction,
 			ue.poa, ue.poa_distance, ue.poa_in_range, ue.poa_type_prio, ue.connected,
-			meas.poa, meas.type, meas.radius, meas.distance, meas.in_range, meas.rssi, meas.rsrp, meas.rsrq
+			COALESCE (meas.poa,''), COALESCE (meas.type,''), COALESCE (meas.radius,'0.0'), COALESCE (meas.distance,'0.000'),
+			COALESCE (meas.in_range,'false'), COALESCE (meas.rssi,'0.000'), COALESCE (meas.rsrp,'0.0'), COALESCE (meas.rsrq,'0.0')
 		FROM ` + UeTable + ` AS ue
 		LEFT JOIN ` + UeMeasurementTable + ` AS meas ON (ue.name = meas.ue)`)
 	if err != nil {
