@@ -579,6 +579,16 @@ repo:
         src: go-packages/meep-data-model
         # supports linting
         lint: true
+      meep-gis-asset-mgr:
+        # location of source code
+        src: go-packages/meep-gis-asset-mgr
+        # supports linting
+        lint: true
+      meep-gis-cache:
+        # location of source code
+        src: go-packages/meep-gis-cache
+        # supports linting
+        lint: true
       meep-http-logger:
         # location of source code
         src: go-packages/meep-http-logger
@@ -601,6 +611,11 @@ repo:
         src: go-packages/meep-logger
         # supports linting
         lint: true
+      meep-metric-store:
+        # location of source code
+        src: go-packages/meep-metric-store
+        # supports linting
+        lint: true
       meep-metrics-engine-notification-client:
         # location of source code
         src: go-packages/meep-metrics-engine-notification-client
@@ -608,11 +623,6 @@ repo:
         lint: false
         # location of API specification
         api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
-      meep-metric-store:
-        # location of source code
-        src: go-packages/meep-metric-store
-        # supports linting
-        lint: true
       meep-mg-app-client:
         # location of source code
         src: go-packages/meep-mg-app-client
@@ -645,11 +655,6 @@ repo:
         src: go-packages/meep-net-char-mgr
         # supports linting
         lint: true
-      meep-postgis:
-        # location of source code
-        src: go-packages/meep-postgis
-        # supports linting
-        lint: true
       meep-redis:
         # location of source code
         src: go-packages/meep-redis
@@ -672,18 +677,6 @@ repo:
         lint: false
         # location of API specification
         api: go-packages/meep-rnis-notification-client/api/swagger.yaml
-      meep-wais-client:
-        # location of source code
-        src: go-packages/meep-wais-client
-        # supports linting
-        lint: false
-      meep-wais-notification-client:
-        # location of source code
-        src: go-packages/meep-wais-notification-client
-        # supports linting
-        lint: false
-        # location of API specification
-        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-sandbox-ctrl-client:
         # location of source code
         src: go-packages/meep-sandbox-ctrl-client
@@ -699,6 +692,23 @@ repo:
         src: go-packages/meep-sessions
         # supports linting
         lint: true
+      meep-users:
+        # location of source code
+        src: go-packages/meep-users
+        # supports linting
+        lint: true
+      meep-wais-client:
+        # location of source code
+        src: go-packages/meep-wais-client
+        # supports linting
+        lint: false
+      meep-wais-notification-client:
+        # location of source code
+        src: go-packages/meep-wais-notification-client
+        # supports linting
+        lint: false
+        # location of API specification
+        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-watchdog:
         # location of source code
         src: go-packages/meep-watchdog

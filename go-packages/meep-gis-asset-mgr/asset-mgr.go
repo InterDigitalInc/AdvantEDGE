@@ -1678,7 +1678,9 @@ func (am *AssetMgr) updateUeInfo(ueMap map[string]*Ue) (err error) {
 		log.Error(err.Error())
 		return err
 	}
-	defer tx.Commit()
+	defer func() {
+		_ = tx.Commit()
+	}()
 
 	// For each UE, run POA Selection & Measurement calculations
 	for ueName, ue := range ueMap {
