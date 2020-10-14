@@ -24,12 +24,14 @@ import { Typography } from '@rmwc/typography';
 import {
   uiExecChangeAutomationMovementMode,
   uiExecChangeAutomationMobilityMode,
-  uiExecChangeAutomationPoasInRangeMode
+  uiExecChangeAutomationPoasInRangeMode,
+  uiExecChangeAutomationNetCharMode
 } from '../../state/ui';
 
 const AUTO_TYPE_MOVEMENT = 'MOVEMENT';
 const AUTO_TYPE_MOBILITY = 'MOBILITY';
 const AUTO_TYPE_POAS_IN_RANGE = 'POAS-IN-RANGE';
+const AUTO_TYPE_NET_CHAR = 'NETWORK-CHARACTERISTICS-UPDATE';
 
 class EventAutomationPane extends Component {
   constructor(props) {
@@ -63,6 +65,9 @@ class EventAutomationPane extends Component {
           case AUTO_TYPE_POAS_IN_RANGE:
             this.props.changeAutomationPoasInRangeMode(mode);
             break;
+          case AUTO_TYPE_NET_CHAR:
+            this.props.changeAutomationNetCharMode(mode);
+            break;
           default:
             break;
           }
@@ -94,6 +99,16 @@ class EventAutomationPane extends Component {
   setPoasInRangeMode(mode) {
     this.props.changeAutomationPoasInRangeMode(mode);
     this.props.api.setAutomationStateByName(AUTO_TYPE_POAS_IN_RANGE, mode, (error) => {
+      if (error) {
+        // TODO consider showing an alert
+        // console.log(error);
+      }
+    });
+  }
+
+  setNetCharMode(mode) {
+    this.props.changeAutomationNetCharMode(mode);
+    this.props.api.setAutomationStateByName(AUTO_TYPE_NET_CHAR, mode, (error) => {
       if (error) {
         // TODO consider showing an alert
         // console.log(error);
@@ -137,6 +152,14 @@ class EventAutomationPane extends Component {
               POAs in range
             </Checkbox>
           </GridCell>
+          <GridCell span={12}>
+            <Checkbox
+              checked={this.props.automationNetCharMode}
+              onChange={e => this.setNetCharMode(e.target.checked)}
+            >
+              Network Characteristics
+            </Checkbox>
+          </GridCell>
         </Grid>
 
         <Grid style={{ marginTop: 10 }}>
@@ -174,6 +197,7 @@ const mapStateToProps = state => {
     automationMovementMode: state.ui.automationMovementMode,
     automationMobilityMode: state.ui.automationMobilityMode,
     automationPoasInRangeMode: state.ui.automationPoasInRangeMode,
+    automationNetCharMode: state.ui.automationNetCharMode,
     sandbox: state.ui.sandbox
   };
 };
@@ -182,7 +206,8 @@ const mapDispatchToProps = dispatch => {
   return {
     changeAutomationMovementMode: mode => dispatch(uiExecChangeAutomationMovementMode(mode)),
     changeAutomationMobilityMode: mode => dispatch(uiExecChangeAutomationMobilityMode(mode)),
-    changeAutomationPoasInRangeMode: mode => dispatch(uiExecChangeAutomationPoasInRangeMode(mode))
+    changeAutomationPoasInRangeMode: mode => dispatch(uiExecChangeAutomationPoasInRangeMode(mode)),
+    changeAutomationNetCharMode: mode => dispatch(uiExecChangeAutomationNetCharMode(mode))
   };
 };
 

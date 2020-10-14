@@ -17,14 +17,11 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -52,13 +49,6 @@ var proStart time.Time
 var proFinish time.Time
 
 const (
-	AutoTypeMovement   = "MOVEMENT"
-	AutoTypeMobility   = "MOBILITY"
-	AutoTypeNetChar    = "NETWORK-CHARACTERISTICS-UPDATE"
-	AutoTypePoaInRange = "POAS-IN-RANGE"
-)
-
-const (
 	AssetTypeUe      = "UE"
 	AssetTypePoa     = "POA"
 	AssetTypeCompute = "COMPUTE"
@@ -81,9 +71,12 @@ type Asset struct {
 }
 
 type UeInfo struct {
-	poa        string
-	poaInRange []string
-	connected  bool
+	poa              string
+	poaInRange       []string
+	connected        bool
+	isAutoMobility   bool
+	isAutoPoaInRange bool
+	isAutoNetChar    bool
 }
 
 type GisEngine struct {
@@ -205,9 +198,6 @@ func Run() (err error) {
 		return err
 	}
 
-	// Start automation loop
-	startAutomation()
-
 	return nil
 }
 
@@ -276,6 +266,9 @@ func processScenarioTerminate() {
 	// Sync with active scenario store
 	ge.activeModel.UpdateScenario()
 
+	// Stop automation
+	resetAutomation()
+
 	// Flush all Asset Manager tables
 	_ = ge.assetMgr.DeleteAllUe()
 	_ = ge.assetMgr.DeleteAllPoa()
@@ -318,10 +311,9 @@ func setAssets(assetList []string) {
 
 			// Update stored UE POA Info used in automation updates
 			nl := (ge.activeModel.GetNodeParent(assetName)).(*dataModel.NetworkLocation)
-			ueInfo, _ := getUeInfo(assetName)
+			ueInfo := getUeInfo(assetName)
 			ueInfo.poa = nl.Name
 			ueInfo.connected = pl.Connected
-
 		} else if isPoa(asset.typ) {
 			// Set initial geoData only
 			nl := (ge.activeModel.GetNode(assetName)).(*dataModel.NetworkLocation)
@@ -901,261 +893,23 @@ func parsePosition(position string) (longitude *float32, latitude *float32) {
 	return &point.Coordinates[0], &point.Coordinates[1]
 }
 
-func resetAutomation() {
-	// Stop automation if running
-	_ = setAutomation(AutoTypeMovement, false)
-	_ = setAutomation(AutoTypeMobility, false)
-	_ = setAutomation(AutoTypeNetChar, false)
-	_ = setAutomation(AutoTypePoaInRange, false)
-
-	// Reset automation
-	ge.automation[AutoTypeMovement] = false
-	ge.automation[AutoTypeMobility] = false
-	ge.automation[AutoTypeNetChar] = false
-	ge.automation[AutoTypePoaInRange] = false
-}
-
-func startAutomation() {
-	log.Debug("Starting automation loop")
-	ge.automationTicker = time.NewTicker(1000 * time.Millisecond)
-	go func() {
-		for range ge.automationTicker.C {
-			runAutomation()
-		}
-	}()
-}
-
-func setAutomation(automationType string, state bool) (err error) {
-	// Validate automation type
-	if _, found := ge.automation[automationType]; !found {
-		return errors.New("Automation type not found")
-	}
-
-	// Type-specific configuration
-	if automationType == AutoTypeNetChar {
-		return errors.New("Automation type not supported")
-	} else if automationType == AutoTypeMovement {
-		if state {
-			ge.updateTime = time.Now()
-		} else {
-			ge.updateTime = time.Time{}
-		}
-	}
-
-	// Update automation state
-	ge.automation[automationType] = state
-
-	return nil
-}
-
-func runAutomation() {
-
-	// Movement
-	if ge.automation[AutoTypeMovement] {
-		log.Debug("Auto Movement: updating UE positions")
-
-		// Calculate number of increments (seconds) for position update
-		currentTime := time.Now()
-		increment := float32(currentTime.Sub(ge.updateTime).Seconds())
-
-		// Update all UE positions with increment
-		err := ge.assetMgr.AdvanceAllUePosition(increment)
-		if err != nil {
-			log.Error(err)
-		}
-
-		// Store new update timestamp
-		ge.updateTime = currentTime
-
-		// Update Gis cache
-		updateCache()
-	}
-
-	// Mobility & POA In Range
-	if ge.automation[AutoTypeMobility] || ge.automation[AutoTypePoaInRange] {
-		// Get UE geodata
-		ueMap, err := ge.assetMgr.GetAllUe()
-		if err != nil {
-			log.Error(err.Error())
-			return
-		}
-
-		// Loop through UEs
-		for _, ue := range ueMap {
-			// Get stored UE info
-			ueInfo, isNew := getUeInfo(ue.Name)
-
-			// Send mobility event if necessary
-			if ge.automation[AutoTypeMobility] {
-				if isNew || (ue.Poa != "" && (!ueInfo.connected || ue.Poa != ueInfo.poa)) || (ue.Poa == "" && ueInfo.connected) {
-					var event sbox.Event
-					var mobilityEvent sbox.EventMobility
-					event.Type_ = AutoTypeMobility
-					mobilityEvent.ElementName = ue.Name
-					if ue.Poa != "" {
-						mobilityEvent.Dest = ue.Poa
-					} else {
-						mobilityEvent.Dest = am.PoaTypeDisconnected
-					}
-					event.EventMobility = &mobilityEvent
-
-					go func() {
-						_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-						if err != nil {
-							log.Error(err)
-						}
-					}()
-				}
-			}
-
-			// Send POA in range event if necessary
-			if ge.automation[AutoTypePoaInRange] {
-				updateRequired := false
-				if isNew || len(ueInfo.poaInRange) != len(ue.PoaInRange) {
-					updateRequired = true
-				} else {
-					sort.Strings(ueInfo.poaInRange)
-					sort.Strings(ue.PoaInRange)
-					for i, poa := range ueInfo.poaInRange {
-						if poa != ue.PoaInRange[i] {
-							updateRequired = true
-						}
-					}
-				}
-
-				if updateRequired {
-					var event sbox.Event
-					var poasInRangeEvent sbox.EventPoasInRange
-					event.Type_ = AutoTypePoaInRange
-					poasInRangeEvent = sbox.EventPoasInRange{Ue: ue.Name, PoasInRange: ue.PoaInRange}
-					event.EventPoasInRange = &poasInRangeEvent
-
-					go func() {
-						_, err := ge.sboxCtrlClient.EventsApi.SendEvent(context.TODO(), event.Type_, event)
-						if err != nil {
-							log.Error(err)
-						}
-					}()
-
-					// Update sotred data
-					ueInfo.poaInRange = ue.PoaInRange
-				}
-			}
-		}
-
-		// Remove UE info if UE no longer present
-		for ueName := range ge.ueInfo {
-			if _, found := ueMap[ueName]; !found {
-				delete(ge.ueInfo, ueName)
-			}
-		}
-	}
-
-	// Net Char
-	if ge.automation[AutoTypeNetChar] {
-		log.Debug("Auto Net Char: updating network characteristics")
-	}
-}
-
-func getUeInfo(ueName string) (*UeInfo, bool) {
+func getUeInfo(ueName string) *UeInfo {
 	// Get stored UE POA info or create new one
-	isNew := false
 	ueInfo, found := ge.ueInfo[ueName]
 	if !found {
 		ueInfo = new(UeInfo)
 		ueInfo.connected = false
 		ueInfo.poaInRange = []string{}
 		ueInfo.poa = ""
+		ueInfo.isAutoMobility = false
+		ueInfo.isAutoPoaInRange = false
+		ueInfo.isAutoNetChar = false
 		ge.ueInfo[ueName] = ueInfo
-		isNew = true
 	}
-	return ueInfo, isNew
+	return ueInfo
 }
 
 // ----------------------------  REST API  ------------------------------------
-
-func geGetAutomationState(w http.ResponseWriter, r *http.Request) {
-	log.Debug("Get all automation states")
-
-	var automationList AutomationStateList
-	for automation, state := range ge.automation {
-		var automationState AutomationState
-		automationState.Type_ = automation
-		automationState.Active = state
-		automationList.States = append(automationList.States, automationState)
-	}
-
-	// Format response
-	jsonResponse, err := json.Marshal(&automationList)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Send response
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, string(jsonResponse))
-}
-
-func geGetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
-	// Get automation type from request path parameters
-	vars := mux.Vars(r)
-	automationType := vars["type"]
-	log.Debug("Get automation state for type: ", automationType)
-
-	// Get automation state
-	var automationState AutomationState
-	automationState.Type_ = automationType
-	if state, found := ge.automation[automationType]; found {
-		automationState.Active = state
-	} else {
-		err := errors.New("Automation type not found")
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Format response
-	jsonResponse, err := json.Marshal(&automationState)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Send response
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, string(jsonResponse))
-}
-
-func geSetAutomationStateByName(w http.ResponseWriter, r *http.Request) {
-	// Get automation type from request path parameters
-	vars := mux.Vars(r)
-	automationType := vars["type"]
-
-	// Retrieve requested state from query parameters
-	query := r.URL.Query()
-	automationState, _ := strconv.ParseBool(query.Get("run"))
-	if automationState {
-		log.Debug("Start automation for type: ", automationType)
-	} else {
-		log.Debug("Stop automation for type: ", automationType)
-	}
-
-	// Set automation state
-	err := setAutomation(automationType, automationState)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-}
 
 func geDeleteGeoDataByName(w http.ResponseWriter, r *http.Request) {
 	// Get asset name from request path parameters

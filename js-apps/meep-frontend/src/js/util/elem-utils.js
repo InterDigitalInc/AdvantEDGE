@@ -176,6 +176,7 @@ export const createElem = name => {
   setElemFieldVal(elem, FIELD_CELL_ID, '');
   setElemFieldVal(elem, FIELD_NR_CELL_ID, '');
   setElemFieldVal(elem, FIELD_MAC_ID, '');
+  setElemFieldVal(elem, FIELD_UE_MAC_ID, '');
   setElemFieldVal(elem, FIELD_GEO_LOCATION, '');
   setElemFieldVal(elem, FIELD_GEO_RADIUS, '');
   setElemFieldVal(elem, FIELD_GEO_PATH, '');

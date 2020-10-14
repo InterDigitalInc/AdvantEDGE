@@ -26,7 +26,7 @@ package server
 
 type AutomationState struct {
 
-	// Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
+	// Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
 	Type_ string `json:"type,omitempty"`
 
 	// Automation feature state

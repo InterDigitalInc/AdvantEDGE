@@ -33,6 +33,7 @@ const initialState = {
   automationMovementMode: false,
   automationMobilityMode: false,
   automationPoasInRangeMode: false,
+  automationNetCharMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
   mobilityEventTarget: '',
@@ -175,6 +176,14 @@ const UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE = 'UI_EXEC_CHANGE_AUTOMATION_
 export const uiExecChangeAutomationPoasInRangeMode = val => {
   return {
     type: UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE = 'UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE';
+export const uiExecChangeAutomationNetCharMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE,
     payload: val
   };
 };
@@ -343,6 +352,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { automationMobilityMode: action.payload });
   case UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE:
     return updateObject(state, { automationPoasInRangeMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE:
+    return updateObject(state, { automationNetCharMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_REPLAY_MODE:
     return updateObject(state, { eventReplayMode: action.payload });
   case UI_EXEC_CHANGE_DASH_CFG_MODE:
