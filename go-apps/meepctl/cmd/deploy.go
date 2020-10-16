@@ -241,17 +241,37 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
 	case "meep-ingress":
-		deployCreateIngressCerts(chart, cobraCmd)
-		httpPort, httpsPort := deployGetPorts()
-		// NOTE: here port!=80 means that NodePort is used
-		// TODO: make the condition clearer & don't rely on port 80 value
-		if httpPort != "80" {
+		// Port configuration
+		hostPorts := utils.RepoCfg.GetBool("repo.deployment.ingress.host-ports")
+		httpPort := utils.RepoCfg.GetString("repo.deployment.ingress.http.port")
+		httpsPort := utils.RepoCfg.GetString("repo.deployment.ingress.https.port")
+		if hostPorts {
+			flags = utils.HelmFlags(flags, "--set", "controller.service.ports.http="+httpPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.hostPorts.http="+httpPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.containerPort.http="+httpPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.service.ports.https="+httpsPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.hostPorts.https="+httpsPort)
+			flags = utils.HelmFlags(flags, "--set", "controller.containerPort.https="+httpsPort)
+		} else {
+			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.useHostPort=false")
 			flags = utils.HelmFlags(flags, "--set", "controller.hostNetwork=false")
 			flags = utils.HelmFlags(flags, "--set", "controller.dnsPolicy=ClusterFirst")
-			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.useHostPort=false")
 			flags = utils.HelmFlags(flags, "--set", "controller.service.type=NodePort")
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
+		}
+		// HTTPS configuration
+		httpsEnabled := utils.RepoCfg.GetBool("repo.deployment.ingress.https.enabled")
+		flags = utils.HelmFlags(flags, "--set", "controller.service.enableHttps="+strconv.FormatBool(httpsEnabled))
+		if httpsEnabled {
+			ca := utils.RepoCfg.GetString("repo.deployment.ingress.https.ca")
+			switch ca {
+			case "lets-encrypt":
+				flags = utils.HelmFlags(flags, "--set", "controller.extraArgs.default-ssl-certificate=default/meep-ingress-le")
+			default: // self-signed
+				deployCreateIngressCerts(chart, cobraCmd)
+				flags = utils.HelmFlags(flags, "--set", "controller.extraArgs.default-ssl-certificate=default/meep-ingress")
+			}
 		}
 	case "meep-mon-engine":
 		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
@@ -343,12 +363,6 @@ func deploySetOmtConfig(chart string, cobraCmd *cobra.Command) {
 	configOmt := chart + "/config.json"
 	cmd := exec.Command("cp", configOmt, deployData.workdir+"/omt/config.json")
 	_, _ = utils.ExecuteCmd(cmd, cobraCmd)
-}
-
-func deployGetPorts() (string, string) {
-	ports := viper.GetString("meep.ports")
-	p := strings.Split(ports, "/")
-	return p[0], p[1]
 }
 
 func getPodList(target string) string {

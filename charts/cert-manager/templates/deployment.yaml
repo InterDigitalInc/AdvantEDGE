@@ -10,6 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "controller"
     helm.sh/chart: {{ template "cert-manager.chart" . }}
+    release: {{ .Release.Name }}
   {{- if .Values.deploymentAnnotations }}
   annotations:
 {{ toYaml .Values.deploymentAnnotations | indent 4 }}
@@ -34,6 +35,7 @@ spec:
         app.kubernetes.io/component: "controller"
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         helm.sh/chart: {{ template "cert-manager.chart" . }}
+        release: {{ .Release.Name }}
 {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
 {{- end }}

@@ -28,6 +28,23 @@ repo:
       # user supplied sandbox swagger UI located @ .meep/user/sandbox-swagger
       swagger: false
 
+    # platform access configuration
+    ingress:
+      # bind to host ports (true) or node ports (false)
+      host-ports: true
+      # http config
+      http:
+        # http port number
+        port: 80
+      # https config
+      https:
+        # enable https
+        enabled: true
+        # https port number
+        port: 443
+        # certificate authority (self-signed|lets-encrypt) default: self-signed
+        ca: self-signed
+
   #------------------------------
   #  Core Subsystem
   #------------------------------
