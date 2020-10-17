@@ -17,6 +17,7 @@
   tags: node
 
 - name: "Install nvm"
+  become: false
   shell: "bash install_nvm.sh"
   tags: node
   args:
