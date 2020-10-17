@@ -18,5 +18,9 @@ kubeadmin_config: /etc/kubernetes/admin.conf
 helm_version: "3.3/stable"
 
 # Go
-#go_version: "1.13.12"
-#golangci_lint_version: "v1.18.0"
+go_version: "1.15.3"
+golangci_lint_version: "v1.18.0"
+
+# Node
+node_version: "10.16.3"
+eslint_version: "5.16.0"
