@@ -37,16 +37,20 @@
   args:
     executable: /bin/bash
 
-# - name: Update bashrc gopath
-#   become: false
-#   lineinfile:
-#     dest: /home/{{ ansible_user }}/.bashrc
-#     state: present
-#     line: 'export GOPATH=$HOME/gocode'
+# source .bashrc doesn't work so added golang part in .profile. But .profile
+# only works if logging into the machine remotely or use login shell option is
+# selected in terminal preferences. So adding it in .profile and .bashrc both.
 
-# - name: Update bashrc path
-#   become: false
-#   lineinfile:
-#     dest: /home/{{ ansible_user }}/.bashrc
-#     state: present
-#     line: 'export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin'
+- name: Update bashrc gopath
+  become: false
+  lineinfile:
+    dest: /home/{{ ansible_user }}/.bashrc
+    state: present
+    line: 'export GOPATH=$HOME/gocode'
+
+- name: Update bashrc path
+  become: false
+  lineinfile:
+    dest: /home/{{ ansible_user }}/.bashrc
+    state: present
+    line: 'export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin'
