@@ -16,4 +16,4 @@ letsEncrypt:
 
   tls:
     secret: meep-ingress
-    host: try-mec.testfqdn.dev
+    host: my-advantedge.com
