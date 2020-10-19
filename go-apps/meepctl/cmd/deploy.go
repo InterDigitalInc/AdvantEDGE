@@ -263,14 +263,18 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		// HTTPS configuration
 		httpsEnabled := utils.RepoCfg.GetBool("repo.deployment.ingress.https.enabled")
 		flags = utils.HelmFlags(flags, "--set", "controller.service.enableHttps="+strconv.FormatBool(httpsEnabled))
+	case "meep-ingress-certs":
+		// Deploy Lets-Encrypt or self-signed Certificates
+		httpsEnabled := utils.RepoCfg.GetBool("repo.deployment.ingress.https.enabled")
 		if httpsEnabled {
 			ca := utils.RepoCfg.GetString("repo.deployment.ingress.https.ca")
 			switch ca {
 			case "lets-encrypt":
-				flags = utils.HelmFlags(flags, "--set", "controller.extraArgs.default-ssl-certificate=default/meep-ingress-le")
+				host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+				flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
+				flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
 			default: // self-signed
 				deployCreateIngressCerts(chart, cobraCmd)
-				flags = utils.HelmFlags(flags, "--set", "controller.extraArgs.default-ssl-certificate=default/meep-ingress")
 			}
 		}
 	case "meep-mon-engine":

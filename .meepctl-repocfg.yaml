@@ -28,8 +28,10 @@ repo:
       # user supplied sandbox swagger UI located @ .meep/user/sandbox-swagger
       swagger: false
 
-    # platform access configuration
+    # platform ingress configuration
     ingress:
+      # host name
+      host: my-advantedge.com
       # bind to host ports (true) or node ports (false)
       host-ports: true
       # http config
@@ -52,6 +54,19 @@ repo:
 
     # Go Applications
     go-apps:
+      meep-ingress-certs:
+        # enable meepctl build
+        build: false
+        # location of deployment chart
+        chart: charts/meep-ingress-certs
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-ingress-certs.yaml
+        # enable meepctl dockerize
+        dockerize: false
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports linting
+        lint: false
       meep-mon-engine:
         # location of source code
         src: go-apps/meep-mon-engine
