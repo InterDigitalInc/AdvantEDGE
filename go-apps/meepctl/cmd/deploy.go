@@ -243,8 +243,8 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-ingress":
 		// Port configuration
 		hostPorts := utils.RepoCfg.GetBool("repo.deployment.ingress.host-ports")
-		httpPort := utils.RepoCfg.GetString("repo.deployment.ingress.http.port")
-		httpsPort := utils.RepoCfg.GetString("repo.deployment.ingress.https.port")
+		httpPort := utils.RepoCfg.GetString("repo.deployment.ingress.http-port")
+		httpsPort := utils.RepoCfg.GetString("repo.deployment.ingress.https-port")
 		if hostPorts {
 			flags = utils.HelmFlags(flags, "--set", "controller.service.ports.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.daemonset.hostPorts.http="+httpPort)
@@ -260,22 +260,18 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
-		// HTTPS configuration
-		httpsEnabled := utils.RepoCfg.GetBool("repo.deployment.ingress.https.enabled")
-		flags = utils.HelmFlags(flags, "--set", "controller.service.enableHttps="+strconv.FormatBool(httpsEnabled))
 	case "meep-ingress-certs":
 		// Deploy Lets-Encrypt or self-signed Certificates
-		httpsEnabled := utils.RepoCfg.GetBool("repo.deployment.ingress.https.enabled")
-		if httpsEnabled {
-			ca := utils.RepoCfg.GetString("repo.deployment.ingress.https.ca")
-			switch ca {
-			case "lets-encrypt":
-				host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
-				flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
-				flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
-			default: // self-signed
-				deployCreateIngressCerts(chart, cobraCmd)
-			}
+		ca := utils.RepoCfg.GetString("repo.deployment.ingress.https.ca")
+		switch ca {
+		case "lets-encrypt":
+			host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
+		case "self-signed":
+			deployCreateIngressCerts(chart, cobraCmd)
+		default:
+			// none
 		}
 	case "meep-mon-engine":
 		monEngineTarget := "repo.core.go-apps.meep-mon-engine"

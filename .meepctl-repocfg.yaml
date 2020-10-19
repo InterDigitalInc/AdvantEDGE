@@ -34,18 +34,12 @@ repo:
       host: my-advantedge.com
       # bind to host ports (true) or node ports (false)
       host-ports: true
-      # http config
-      http:
-        # http port number
-        port: 80
+      # http port number
+      http-port: 80
       # https config
-      https:
-        # enable https
-        enabled: true
-        # https port number
-        port: 443
-        # certificate authority (self-signed|lets-encrypt) default: self-signed
-        ca: self-signed
+      https-port: 443
+      # certificate authority (none|self-signed|lets-encrypt) default: none
+      ca: self-signed
 
   #------------------------------
   #  Core Subsystem
