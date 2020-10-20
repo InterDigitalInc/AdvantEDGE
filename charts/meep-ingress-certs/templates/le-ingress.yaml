@@ -2,20 +2,28 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ template "meep-ingress-certs.fullname" . }}-le
+  name: {{ template "meep-ingress-certs.fullname" . }}
   labels:
-    app: {{ template "meep-ingress-certs.name" . }}-le
+    app: {{ template "meep-ingress-certs.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.letsEncrypt.issuer }}
+    {{- if .Values.letsEncrypt.acme.prod }}
+    cert-manager.io/cluster-issuer: {{ .Values.letsEncrypt.issuer }}-prod
+    {{- else }}
+    cert-manager.io/cluster-issuer: {{ .Values.letsEncrypt.issuer }}-staging
+    {{- end }}
 spec:
-  backend:
-    serviceName: {{ .Values.letsEncrypt.defaultBackend.service.name }}
-    servicePort: {{ .Values.letsEncrypt.defaultBackend.service.port }}
+  rules:
+    - http:
+        paths:
+          - path: "/letsencrypt/"
+            backend:
+              serviceName: {{ .Values.letsEncrypt.defaultBackend.service.name }}
+              servicePort: {{ .Values.letsEncrypt.defaultBackend.service.port }}
   tls:
     - secretName: {{ .Values.letsEncrypt.tls.secret }}
       hosts:
-      - {{ .Values.letsEncrypt.tls.host }} 
+      - {{ .Values.letsEncrypt.tls.host }}
 {{- end }}
