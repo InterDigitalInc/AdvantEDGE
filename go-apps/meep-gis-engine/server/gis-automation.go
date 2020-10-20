@@ -260,7 +260,10 @@ func runAutoNetChar(ueMap map[string]*am.Ue, poaMap map[string]*am.Poa) {
 		ueInfo := getUeInfo(ue.Name)
 
 		// Get current network characteristics
-		pl := (ge.activeModel.GetNode(ue.Name)).(*dataModel.PhysicalLocation)
+		pl, ok := (ge.activeModel.GetNode(ue.Name)).(*dataModel.PhysicalLocation)
+		if !ok {
+			continue
+		}
 		netChar := *pl.NetChar
 
 		// Ignore disconnected UE
@@ -347,7 +350,10 @@ func resetAutoNetChar() {
 	// Loop through UEs
 	for _, ue := range ueMap {
 		// Get current network characteristics
-		pl := (ge.activeModel.GetNode(ue.Name)).(*dataModel.PhysicalLocation)
+		pl, ok := (ge.activeModel.GetNode(ue.Name)).(*dataModel.PhysicalLocation)
+		if !ok {
+			continue
+		}
 		netChar := *pl.NetChar
 
 		updateRequired := false
