@@ -89,7 +89,7 @@ repo:
         api: go-apps/meep-mon-engine/api/swagger.yaml
         # list of dependencies pods to monitor
         dependency-pods:
-          - meep-cert-manager
+          # - meep-cert-manager
           - meep-couchdb
           - meep-docker-registry
           - meep-grafana
@@ -492,7 +492,7 @@ repo:
       # enable meepctl dockerize -> deps are never dockerized
       dockerize: false
       # enable meepctl deploy/delete
-      deploy: true
+      deploy: false
       # location of deployment chart
       chart: charts/cert-manager
       # user supplied value file located @ .meep/user/values (use below file name)
