@@ -40,6 +40,8 @@ repo:
       https-port: 443
       # certificate authority (none|self-signed|lets-encrypt) default: none
       ca: self-signed
+      # lets-encrypt production server (true) or staging server (false)
+      le-server-prod: false
 
   #------------------------------
   #  Core Subsystem

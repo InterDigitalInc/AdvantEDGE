@@ -7,7 +7,9 @@ letsEncrypt:
 
   issuer: letsencrypt
   acme:
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    prod: true
+    prodServer: https://acme-v02.api.letsencrypt.org/directory
+    stagingServer: https://acme-staging-v02.api.letsencrypt.org/directory
 
   defaultBackend:
     service:

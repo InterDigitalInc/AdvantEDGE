@@ -5,7 +5,11 @@ metadata:
   name: {{ .Values.letsEncrypt.issuer }}
 spec:
   acme:
-    server: {{ .Values.letsEncrypt.acme.server }}
+    {{- if .Values.letsEncrypt.acme.prod }}
+    server: {{ .Values.letsEncrypt.acme.prodServer }}
+    {{- else }}
+    server: {{ .Values.letsEncrypt.acme.stagingServer }}
+    {{- end }}
     email: AdvantEDGE@InterDigital.com
     privateKeySecretRef:
       name: letsencrypt

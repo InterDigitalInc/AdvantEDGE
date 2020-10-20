@@ -262,12 +262,14 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		}
 	case "meep-ingress-certs":
 		// Deploy Lets-Encrypt or self-signed Certificates
-		ca := utils.RepoCfg.GetString("repo.deployment.ingress.https.ca")
+		ca := utils.RepoCfg.GetString("repo.deployment.ingress.ca")
 		switch ca {
 		case "lets-encrypt":
 			host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
-			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
+			prod := utils.RepoCfg.GetBool("repo.deployment.ingress.le-server-prod")
 			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.acme.prod="+strconv.FormatBool(prod))
 		case "self-signed":
 			deployCreateIngressCerts(chart, cobraCmd)
 		default:
