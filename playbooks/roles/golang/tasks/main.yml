@@ -7,6 +7,16 @@
       - ansible_distribution_version == '18.04'
     quiet: yes
 
-- name: Install Go
+- name: Check if golang is installed
+  command: /bin/bash -c "source /home/{{ ansible_user }}/.profile; go version | awk '{print $3}' | cut -c 3-"
+  register: go_check
+  failed_when: "'command not found' in go_check.stdout"
+
+- debug:
+    msg: "[WARNING] Current golang version is lower than recommended version {{ go_version }}"
+  when: go_check.stdout != '' and go_check.stdout is version_compare(go_version, '<')
+
+- name: Install golang if go command not found
   include_tasks:
     file: install.yml
+  when: go_check.stdout == ''

@@ -7,10 +7,25 @@
       - ansible_distribution_version == '18.04'
     quiet: yes
 
-- name: Install Node
+- name: Check if node is installed
+  command: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh; node -v | cut -c 2-"
+  register: node_check
+  failed_when: "'command not found' in node_check.stdout"
+
+- debug:
+    msg: "[WARNING] Current node version is lower than recommended version {{ node_version }}"
+  when: node_check.stdout != '' and node_check.stdout is version_compare(node_version, '<')
+
+- name: Check if npm is installed
+  command: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh; npm -v"
+  register: npm_check
+  failed_when: "'command not found' in npm_check.stdout"
+
+- debug:
+    msg: "[WARNING] Current npm version is lower than recommended version {{ npm_version }}"
+  when: npm_check.stdout != '' and npm_check.stdout is version_compare(npm_version, '<')
+
+- name: Install Node and NPM if node or npm command not found
   include_tasks:
     file: install.yml
-
-# - name: Remove Node
-#   include_tasks:
-#     file: uninstall.yml
+  when: node_check.stdout == '' or npm_check.stdout == ''

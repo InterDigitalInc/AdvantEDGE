@@ -21,6 +21,7 @@ helm_version: "3.3/stable"
 go_version: "1.15.3"
 golangci_lint_version: "v1.18.0"
 
-# Node
+# Node and NPM
 node_version: "10.16.3"
+npm_version: "6.14.8"
 eslint_version: "5.16.0"
