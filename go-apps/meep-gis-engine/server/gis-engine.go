@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -93,6 +94,7 @@ type GisEngine struct {
 	automation       map[string]bool
 	automationTicker *time.Ticker
 	updateTime       time.Time
+	mutex            sync.Mutex
 }
 
 var ge *GisEngine
@@ -203,6 +205,9 @@ func Run() (err error) {
 
 // Message Queue handler
 func msgHandler(msg *mq.Msg, userData interface{}) {
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
 	switch msg.Message {
 	case mq.MsgScenarioActivate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))

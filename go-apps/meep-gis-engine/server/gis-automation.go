@@ -124,6 +124,14 @@ func runAutomation() {
 	var poaMap map[string]*am.Poa
 	var err error
 
+	ge.mutex.Lock()
+	defer ge.mutex.Unlock()
+
+	// Movement - Update UE positions & recalculate UE measurements
+	if ge.automation[AutoTypeMovement] {
+		runAutoMovement()
+	}
+
 	// Get UE & POA geodata
 	ueMap, err = ge.assetMgr.GetAllUe()
 	if err != nil {
@@ -134,11 +142,6 @@ func runAutomation() {
 	if err != nil {
 		log.Error(err.Error())
 		return
-	}
-
-	// Movement
-	if ge.automation[AutoTypeMovement] {
-		runAutoMovement()
 	}
 
 	// Mobility
