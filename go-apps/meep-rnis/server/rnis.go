@@ -48,8 +48,6 @@ const logModuleRNIS string = "meep-rnis"
 //const module string = "rnis"
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
-var postgisHost string = "meep-postgis.default.svc.cluster.local"
-var postgisPort string = "5432"
 
 const cellChangeSubscriptionType = "cell_change"
 const rabEstSubscriptionType = "rab_est"
@@ -162,8 +160,6 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
-		PostgisHost:    postgisHost,
-		PostgisPort:    postgisPort,
 		UeDataCb:       updateUeData,
 		AppEcgiInfoCb:  updateAppEcgiInfo,
 		DomainDataCb:   updateDomainData,

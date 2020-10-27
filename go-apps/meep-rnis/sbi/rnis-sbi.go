@@ -17,23 +17,20 @@
 package sbi
 
 import (
+	"time"
+
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-rnis-sbi"
-const geModuleName string = "meep-gis-engine"
-const postgisUser string = "postgres"
-const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	PostgisHost    string
-	PostgisPort    string
 	UeDataCb       func(string, string, string, string, bool)
 	AppEcgiInfoCb  func(string, string, string, string)
 	DomainDataCb   func(string, string, string, string)
@@ -46,7 +43,8 @@ type RnisSbi struct {
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	activeModel          *mod.Model
-	pc                   *postgis.Connector
+	gisCache             *gc.GisCache
+	refreshTicker        *time.Ticker
 	updateUeDataCB       func(string, string, string, string, bool)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateDomainDataCB   func(string, string, string, string)
@@ -93,13 +91,13 @@ func Init(cfg SbiCfg) (err error) {
 		return err
 	}
 
-	// Connect to Postgis DB
-	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
+	// Connect to GIS cache
+	sbi.gisCache, err = gc.NewGisCache(cfg.RedisAddr)
 	if err != nil {
-		log.Error("Failed to create postgis connector with error: ", err.Error())
+		log.Error("Failed to GIS Cache: ", err.Error())
 		return err
 	}
-	log.Info("Postgis Connector created")
+	log.Info("Connected to GIS Cache")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -118,12 +116,36 @@ func Run() (err error) {
 		return err
 	}
 
+	// Start refresh loop
+	startRefreshTicker()
+
 	return nil
 }
 
 func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
+}
+
+func startRefreshTicker() {
+	log.Debug("Starting refresh loop")
+	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
+	go func() {
+		for range sbi.refreshTicker.C {
+			refreshMeasurements()
+		}
+	}()
+}
+
+func stopRefreshTicker() {
+	if sbi.refreshTicker != nil {
+		sbi.refreshTicker.Stop()
+		sbi.refreshTicker = nil
+		log.Debug("Refresh loop stopped")
+	}
 }
 
 // Message Queue handler
@@ -138,9 +160,6 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
-	case mq.MsgGeUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -334,27 +353,24 @@ func processActiveScenarioUpdate() {
 	}
 }
 
-func processGisEngineUpdate(assetMap map[string]string) {
-	for assetName, assetType := range assetMap {
-		// Only process UE updates
-		// NOTE: RNIS requires distance measurements to calculate Timing Advance. Because timing advance
-		//       is not yet implemented, the distance measurements are simply logged here for now.
-		if assetType == postgis.TypeUe {
-			if assetName == postgis.AllAssets {
-				ueMap, err := sbi.pc.GetAllUe()
-				if err == nil {
-					for _, ue := range ueMap {
-						log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-					}
-				}
-			} else {
-				ue, err := sbi.pc.GetUe(assetName)
-				if err == nil {
-					log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-				}
-			}
-		}
-	}
+func refreshMeasurements() {
+	// // Update UE measurements
+	// ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	// ueNameList := sbi.activeModel.GetNodeNames("UE")
+	// for _, name := range ueNameList {
+	// 	// Ignore disconnected UEs
+	// 	if !isUeConnected(name) {
+	// 		continue
+	// 	}
+
+	// 	// TODO - Update RSRP & RSRQ in RNIS
+	// 	if ueMeas, found := ueMeasMap[name]; found {
+	// 		log.Debug("UE Measurements for ", name, ":")
+	// 		for poaName, meas := range ueMeas.Measurements {
+	// 			log.Debug("  ", poaName, ": ", fmt.Sprintf("%+v", *meas))
+	// 		}
+	// 	}
+	// }
 }
 
 func isUeConnected(name string) bool {

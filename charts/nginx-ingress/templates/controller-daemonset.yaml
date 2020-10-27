@@ -64,6 +64,8 @@ spec:
           {{- end }}
           args:
             - /nginx-ingress-controller
+            - --http-port={{ .Values.controller.containerPort.http }}
+            - --https-port={{ .Values.controller.containerPort.https }}
           {{- if .Values.defaultBackend.enabled }}
             - --default-backend-service={{ .Release.Namespace }}/{{ template "nginx-ingress.defaultBackend.fullname" . }}
           {{- else }}

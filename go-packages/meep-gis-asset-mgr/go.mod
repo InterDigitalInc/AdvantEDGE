@@ -1,4 +1,4 @@
-module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis
+module github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-asset-mgr
 
 go 1.12
 

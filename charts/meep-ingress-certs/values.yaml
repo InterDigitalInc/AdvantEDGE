@@ -1,0 +1,21 @@
+# Default values for meep-ingress-certs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+letsEncrypt:
+  enabled: false
+
+  issuer: letsencrypt
+  acme:
+    prod: true
+    prodServer: https://acme-v02.api.letsencrypt.org/directory
+    stagingServer: https://acme-staging-v02.api.letsencrypt.org/directory
+
+  defaultBackend:
+    service:
+      name: meep-ingress-default-backend
+      port: 80
+
+  tls:
+    secret: meep-ingress
+    host: my-advantedge.com

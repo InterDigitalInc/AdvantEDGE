@@ -16,7 +16,7 @@ GOPKGS=(
     meep-model
     meep-mq
     meep-net-char-mgr
-    meep-postgis
+    meep-gis-asset-mgr
     meep-watchdog
 )
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package postgisdb
+package gisassetmgr
 
 import (
 	"fmt"
@@ -26,12 +26,12 @@ import (
 )
 
 const (
-	pcName      = "pc"
-	pcNamespace = "postgis-ns"
-	pcDBUser    = "postgres"
-	pcDBPwd     = "pwd"
-	pcDBHost    = "localhost"
-	pcDBPort    = "30432"
+	amName      = "pc"
+	amNamespace = "postgis-ns"
+	amDBUser    = "postgres"
+	amDBPwd     = "pwd"
+	amDBHost    = "localhost"
+	amDBPort    = "30432"
 
 	point1 = "[7.418522,43.734198]"
 	point2 = "[7.421501,43.736978]"
@@ -114,50 +114,51 @@ var ue2Priority = []string{"wifi", "5g", "4g", "other"}
 var ue3Priority = []string{"wifi", "5g", "4g", "other"}
 var ue4Priority = []string{"wifi", "5g", "4g", "other"}
 
-func TestPostgisConnectorNew(t *testing.T) {
+func TestNewAssetMgr(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Invalid Connector
-	fmt.Println("Invalid Postgis Connector")
-	pc, err := NewConnector("", pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err == nil || pc != nil {
+	fmt.Println("Invalid GIS Asset Manager")
+	am, err := NewAssetMgr("", amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err == nil || am != nil {
 		t.Fatalf("DB connection should have failed")
 	}
-	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, "invalid-host", pcDBPort)
-	if err == nil || pc != nil {
+	am, err = NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, "invalid-host", amDBPort)
+	if err == nil || am != nil {
 		t.Fatalf("DB connection should have failed")
 	}
-	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, "invalid-port")
-	if err == nil || pc != nil {
+	am, err = NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, "invalid-port")
+	if err == nil || am != nil {
 		t.Fatalf("DB connection should have failed")
 	}
-	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, "invalid-pwd", pcDBHost, pcDBPort)
-	if err == nil || pc != nil {
+	am, err = NewAssetMgr(amName, amNamespace, amDBUser, "invalid-pwd", amDBHost, amDBPort)
+	if err == nil || am != nil {
 		t.Fatalf("DB connection should have failed")
 	}
 
 	// Valid Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err = NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err = NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTable(UeTable)
-	_ = pc.DeleteTable(PoaTable)
-	_ = pc.DeleteTable(ComputeTable)
+	_ = am.DeleteTable(UeMeasurementTable)
+	_ = am.DeleteTable(UeTable)
+	_ = am.DeleteTable(PoaTable)
+	_ = am.DeleteTable(ComputeTable)
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
 
 	// Cleanup
-	err = pc.DeleteTables()
+	err = am.DeleteTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
@@ -165,30 +166,30 @@ func TestPostgisConnectorNew(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestPostgisCreateUe(t *testing.T) {
+func TestAssetMgrCreateUe(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Create Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTables()
+	_ = am.DeleteTables()
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
 
 	// Make sure UEs don't exist
 	fmt.Println("Verify no UEs present")
-	ueMap, err := pc.GetAllUe()
+	ueMap, err := am.GetAllUe()
 	if err != nil {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -206,7 +207,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe("", ue1Name, ueData)
+	err = am.CreateUe("", ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -218,7 +219,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, "", ueData)
+	err = am.CreateUe(ue1Id, "", ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -230,7 +231,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -243,7 +244,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -256,7 +257,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -269,7 +270,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -282,7 +283,7 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err == nil {
 		t.Fatalf("UE creation should have failed")
 	}
@@ -297,11 +298,11 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: false,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err := pc.GetUe(ue1Name)
+	ue, err := am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -318,11 +319,11 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue2Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue2Id, ue2Name, ueData)
+	err = am.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue2Name)
+	ue, err = am.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -339,11 +340,11 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue3Priority, ","),
 		FieldConnected: false,
 	}
-	err = pc.CreateUe(ue3Id, ue3Name, ueData)
+	err = am.CreateUe(ue3Id, ue3Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue3Name)
+	ue, err = am.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -360,11 +361,11 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue4Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue4Id, ue4Name, ueData)
+	err = am.CreateUe(ue4Id, ue4Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue4Name)
+	ue, err = am.GetUe(ue4Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -375,11 +376,11 @@ func TestPostgisCreateUe(t *testing.T) {
 
 	// Remove UE & validate update
 	fmt.Println("Remove UE & validate update")
-	err = pc.DeleteUe(ue2Name)
+	err = am.DeleteUe(ue2Name)
 	if err != nil {
 		t.Fatalf("Failed to delete UE")
 	}
-	ue, err = pc.GetUe(ue2Name)
+	ue, err = am.GetUe(ue2Name)
 	if err == nil || ue != nil {
 		t.Fatalf("UE should no longer exist")
 	}
@@ -394,11 +395,11 @@ func TestPostgisCreateUe(t *testing.T) {
 		FieldPriority:  strings.Join(ue2Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue2Id, ue2Name, ueData)
+	err = am.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue2Name)
+	ue, err = am.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -409,11 +410,11 @@ func TestPostgisCreateUe(t *testing.T) {
 
 	// Delete all UE & validate updates
 	fmt.Println("Delete all UE & validate updates")
-	err = pc.DeleteAllUe()
+	err = am.DeleteAllUe()
 	if err != nil {
 		t.Fatalf("Failed to delete all UE")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err = am.GetAllUe()
 	if err != nil || len(ueMap) != 0 {
 		t.Fatalf("UE should no longer exist")
 	}
@@ -421,30 +422,30 @@ func TestPostgisCreateUe(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestPostgisCreatePoa(t *testing.T) {
+func TestAssetMgrCreatePoa(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Create Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTables()
+	_ = am.DeleteTables()
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
 
 	// Make sure POAs don't exist
 	fmt.Println("Verify no POAs present")
-	poaMap, err := pc.GetAllPoa()
+	poaMap, err := am.GetAllPoa()
 	if err != nil {
 		t.Fatalf("Failed to get all POA")
 	}
@@ -459,11 +460,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 		FieldPosition: poa1Loc,
 		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	poa, err := pc.GetPoa(poa1Name)
+	poa, err := am.GetPoa(poa1Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
@@ -476,11 +477,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 		FieldPosition: poa2Loc,
 		FieldRadius:   poa2Radius,
 	}
-	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
+	err = am.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	poa, err = pc.GetPoa(poa2Name)
+	poa, err = am.GetPoa(poa2Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
@@ -493,11 +494,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 		FieldPosition: poa3Loc,
 		FieldRadius:   poa3Radius,
 	}
-	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
+	err = am.CreatePoa(poa3Id, poa3Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	poa, err = pc.GetPoa(poa3Name)
+	poa, err = am.GetPoa(poa3Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
@@ -507,11 +508,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 
 	// Remove POA & validate updates
 	fmt.Println("Remove POA & validate updates")
-	err = pc.DeletePoa(poa1Name)
+	err = am.DeletePoa(poa1Name)
 	if err != nil {
 		t.Fatalf("Failed to delete POA")
 	}
-	poa, err = pc.GetPoa(poa1Name)
+	poa, err = am.GetPoa(poa1Name)
 	if err == nil || poa != nil {
 		t.Fatalf("POA should no longer exist")
 	}
@@ -523,11 +524,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 		FieldPosition: poa1Loc,
 		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	poa, err = pc.GetPoa(poa1Name)
+	poa, err = am.GetPoa(poa1Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
@@ -537,11 +538,11 @@ func TestPostgisCreatePoa(t *testing.T) {
 
 	// Delete all POA & validate updates
 	fmt.Println("Delete all POA & validate updates")
-	err = pc.DeleteAllPoa()
+	err = am.DeleteAllPoa()
 	if err != nil {
 		t.Fatalf("Failed to delete all POA")
 	}
-	poaMap, err = pc.GetAllPoa()
+	poaMap, err = am.GetAllPoa()
 	if err != nil || len(poaMap) != 0 {
 		t.Fatalf("POAs should no longer exist")
 	}
@@ -549,30 +550,30 @@ func TestPostgisCreatePoa(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestPostgisCreateCompute(t *testing.T) {
+func TestAssetMgrCreateCompute(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Create Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTables()
+	_ = am.DeleteTables()
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
 
 	// Make sure Computes don't exist
 	fmt.Println("Verify no Computes present")
-	computeMap, err := pc.GetAllCompute()
+	computeMap, err := am.GetAllCompute()
 	if err != nil {
 		t.Fatalf("Failed to get all Compute")
 	}
@@ -587,11 +588,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 		FieldPosition:  compute1Loc,
 		FieldConnected: compute1Connected,
 	}
-	err = pc.CreateCompute(compute1Id, compute1Name, computeData)
+	err = am.CreateCompute(compute1Id, compute1Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	compute, err := pc.GetCompute(compute1Name)
+	compute, err := am.GetCompute(compute1Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -604,11 +605,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 		FieldPosition:  compute2Loc,
 		FieldConnected: compute2Connected,
 	}
-	err = pc.CreateCompute(compute2Id, compute2Name, computeData)
+	err = am.CreateCompute(compute2Id, compute2Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	compute, err = pc.GetCompute(compute2Name)
+	compute, err = am.GetCompute(compute2Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -621,11 +622,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 		FieldPosition:  compute3Loc,
 		FieldConnected: compute3Connected,
 	}
-	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
+	err = am.CreateCompute(compute3Id, compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	compute, err = pc.GetCompute(compute3Name)
+	compute, err = am.GetCompute(compute3Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -638,11 +639,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 	computeData = map[string]interface{}{
 		FieldPosition: compute1Loc,
 	}
-	err = pc.UpdateCompute(compute3Name, computeData)
+	err = am.UpdateCompute(compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to update Compute")
 	}
-	compute, err = pc.GetCompute(compute3Name)
+	compute, err = am.GetCompute(compute3Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -653,11 +654,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 	computeData = map[string]interface{}{
 		FieldPosition: compute3Loc,
 	}
-	err = pc.UpdateCompute(compute3Name, computeData)
+	err = am.UpdateCompute(compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to update Compute")
 	}
-	compute, err = pc.GetCompute(compute3Name)
+	compute, err = am.GetCompute(compute3Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -667,11 +668,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 
 	// Remove Compute & validate update
 	fmt.Println("Remove Compute & validate update")
-	err = pc.DeleteCompute(compute3Name)
+	err = am.DeleteCompute(compute3Name)
 	if err != nil {
 		t.Fatalf("Failed to delete Compute")
 	}
-	compute, err = pc.GetCompute(compute3Name)
+	compute, err = am.GetCompute(compute3Name)
 	if err == nil || compute != nil {
 		t.Fatalf("Compute should no longer exist")
 	}
@@ -683,11 +684,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 		FieldPosition:  compute3Loc,
 		FieldConnected: compute3Connected,
 	}
-	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
+	err = am.CreateCompute(compute3Id, compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	compute, err = pc.GetCompute(compute3Name)
+	compute, err = am.GetCompute(compute3Name)
 	if err != nil || compute == nil {
 		t.Fatalf("Failed to get Compute")
 	}
@@ -697,11 +698,11 @@ func TestPostgisCreateCompute(t *testing.T) {
 
 	// Delete all Compute & validate updates
 	fmt.Println("Delete all Compute & validate updates")
-	err = pc.DeleteAllCompute()
+	err = am.DeleteAllCompute()
 	if err != nil {
 		t.Fatalf("Failed to delete all Compute")
 	}
-	computeMap, err = pc.GetAllCompute()
+	computeMap, err = am.GetAllCompute()
 	if err != nil || len(computeMap) != 0 {
 		t.Fatalf("Compute should no longer exist")
 	}
@@ -709,23 +710,23 @@ func TestPostgisCreateCompute(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestPostgisPoaSelection(t *testing.T) {
+func TestAssetMgrPoaSelection(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Create Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTables()
+	_ = am.DeleteTables()
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
@@ -737,7 +738,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poa1Loc,
 		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -746,7 +747,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poa2Loc,
 		FieldRadius:   poa2Radius,
 	}
-	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
+	err = am.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -755,7 +756,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poa3Loc,
 		FieldRadius:   poa3Radius,
 	}
-	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
+	err = am.CreatePoa(poa3Id, poa3Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -770,11 +771,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err := pc.GetUe(ue1Name)
+	ue, err := am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -791,11 +792,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPriority:  strings.Join(ue2Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue2Id, ue2Name, ueData)
+	err = am.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue2Name)
+	ue, err = am.GetUe(ue2Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -812,11 +813,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPriority:  strings.Join(ue3Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue3Id, ue3Name, ueData)
+	err = am.CreateUe(ue3Id, ue3Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue3Name)
+	ue, err = am.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -833,11 +834,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPriority:  strings.Join(ue4Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue4Id, ue4Name, ueData)
+	err = am.CreateUe(ue4Id, ue4Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue4Name)
+	ue, err = am.GetUe(ue4Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -853,7 +854,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition:  compute1Loc,
 		FieldConnected: compute1Connected,
 	}
-	err = pc.CreateCompute(compute1Id, compute1Name, computeData)
+	err = am.CreateCompute(compute1Id, compute1Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -862,7 +863,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition:  compute2Loc,
 		FieldConnected: compute2Connected,
 	}
-	err = pc.CreateCompute(compute2Id, compute2Name, computeData)
+	err = am.CreateCompute(compute2Id, compute2Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -871,7 +872,7 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition:  compute3Loc,
 		FieldConnected: compute3Connected,
 	}
-	err = pc.CreateCompute(compute3Id, compute3Name, computeData)
+	err = am.CreateCompute(compute3Id, compute3Name, computeData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -882,11 +883,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 	ueData = map[string]interface{}{
 		FieldPosition: ueLoc,
 	}
-	err = pc.UpdateUe(ue1Name, ueData)
+	err = am.UpdateUe(ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to update UE: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -901,11 +902,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldMode:     ue3PathMode,
 		FieldVelocity: ue3Velocity,
 	}
-	err = pc.UpdateUe(ue1Name, ueData)
+	err = am.UpdateUe(ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to update UE: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -921,11 +922,11 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldMode:     ue1PathMode,
 		FieldVelocity: ue1Velocity,
 	}
-	err = pc.UpdateUe(ue1Name, ueData)
+	err = am.UpdateUe(ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to update UE: " + err.Error())
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -941,18 +942,18 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poaLoc,
 		FieldRadius:   float32(1000.0),
 	}
-	err = pc.UpdatePoa(poa2Name, poaData)
+	err = am.UpdatePoa(poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to update POA")
 	}
-	poa, err := pc.GetPoa(poa2Name)
+	poa, err := am.GetPoa(poa2Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
 	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poaLoc, 1000.0) {
 		t.Fatalf("POA validation failed")
 	}
-	ueMap, err := pc.GetAllUe()
+	ueMap, err := am.GetAllUe()
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -977,18 +978,18 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poa2Loc,
 		FieldRadius:   poa2Radius,
 	}
-	err = pc.UpdatePoa(poa2Name, poaData)
+	err = am.UpdatePoa(poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to update POA")
 	}
-	poa, err = pc.GetPoa(poa2Name)
+	poa, err = am.GetPoa(poa2Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
 	if !validatePoa(poa, poa2Id, poa2Name, poa2Type, poa2Loc, poa2Radius) {
 		t.Fatalf("POA validation failed")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err = am.GetAllUe()
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -1011,15 +1012,15 @@ func TestPostgisPoaSelection(t *testing.T) {
 
 	// Remove POA & validate updates
 	fmt.Println("Remove POA & validate updates")
-	err = pc.DeletePoa(poa1Name)
+	err = am.DeletePoa(poa1Name)
 	if err != nil {
 		t.Fatalf("Failed to delete POA")
 	}
-	poa, err = pc.GetPoa(poa1Name)
+	poa, err = am.GetPoa(poa1Name)
 	if err == nil || poa != nil {
 		t.Fatalf("POA should no longer exist")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err = am.GetAllUe()
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -1047,18 +1048,18 @@ func TestPostgisPoaSelection(t *testing.T) {
 		FieldPosition: poa1Loc,
 		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
-	poa, err = pc.GetPoa(poa1Name)
+	poa, err = am.GetPoa(poa1Name)
 	if err != nil || poa == nil {
 		t.Fatalf("Failed to get POA")
 	}
 	if !validatePoa(poa, poa1Id, poa1Name, poa1Type, poa1Loc, poa1Radius) {
 		t.Fatalf("POA validation failed")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err = am.GetAllUe()
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -1081,15 +1082,15 @@ func TestPostgisPoaSelection(t *testing.T) {
 
 	// Delete all POA & validate updates
 	fmt.Println("Delete all POA & validate updates")
-	err = pc.DeleteAllPoa()
+	err = am.DeleteAllPoa()
 	if err != nil {
 		t.Fatalf("Failed to delete all POA")
 	}
-	poaMap, err := pc.GetAllPoa()
+	poaMap, err := am.GetAllPoa()
 	if err != nil || len(poaMap) != 0 {
 		t.Fatalf("POAs should no longer exist")
 	}
-	ueMap, err = pc.GetAllUe()
+	ueMap, err = am.GetAllUe()
 	if err != nil || len(ueMap) != 4 {
 		t.Fatalf("Failed to get all UE")
 	}
@@ -1113,23 +1114,23 @@ func TestPostgisPoaSelection(t *testing.T) {
 	// t.Fatalf("DONE")
 }
 
-func TestPostgisMovement(t *testing.T) {
+func TestAssetMgrMovement(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
 	// Create Connector
-	fmt.Println("Create valid Postgis Connector")
-	pc, err := NewConnector(pcName, pcNamespace, pcDBUser, pcDBPwd, pcDBHost, pcDBPort)
-	if err != nil || pc == nil {
-		t.Fatalf("Failed to create postgis Connector")
+	fmt.Println("Create valid GIS Asset Manager")
+	am, err := NewAssetMgr(amName, amNamespace, amDBUser, amDBPwd, amDBHost, amDBPort)
+	if err != nil || am == nil {
+		t.Fatalf("Failed to create GIS Asset Manager")
 	}
 
 	// Cleanup
-	_ = pc.DeleteTables()
+	_ = am.DeleteTables()
 
 	// Create tables
 	fmt.Println("Create Tables")
-	err = pc.CreateTables()
+	err = am.CreateTables()
 	if err != nil {
 		t.Fatalf("Failed to create tables")
 	}
@@ -1141,7 +1142,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPosition: poa1Loc,
 		FieldRadius:   poa1Radius,
 	}
-	err = pc.CreatePoa(poa1Id, poa1Name, poaData)
+	err = am.CreatePoa(poa1Id, poa1Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1150,7 +1151,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPosition: poa2Loc,
 		FieldRadius:   poa2Radius,
 	}
-	err = pc.CreatePoa(poa2Id, poa2Name, poaData)
+	err = am.CreatePoa(poa2Id, poa2Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1159,7 +1160,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPosition: poa3Loc,
 		FieldRadius:   poa3Radius,
 	}
-	err = pc.CreatePoa(poa3Id, poa3Name, poaData)
+	err = am.CreatePoa(poa3Id, poa3Name, poaData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1174,7 +1175,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPriority:  strings.Join(ue1Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue1Id, ue1Name, ueData)
+	err = am.CreateUe(ue1Id, ue1Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1186,7 +1187,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPriority:  strings.Join(ue2Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue2Id, ue2Name, ueData)
+	err = am.CreateUe(ue2Id, ue2Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1198,7 +1199,7 @@ func TestPostgisMovement(t *testing.T) {
 		FieldPriority:  strings.Join(ue3Priority, ","),
 		FieldConnected: true,
 	}
-	err = pc.CreateUe(ue3Id, ue3Name, ueData)
+	err = am.CreateUe(ue3Id, ue3Name, ueData)
 	if err != nil {
 		t.Fatalf("Failed to create asset: " + err.Error())
 	}
@@ -1207,11 +1208,11 @@ func TestPostgisMovement(t *testing.T) {
 	fmt.Println("Advance UE1 along looping path and validate UE")
 
 	ue1AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.419448935,43.735063015]}"
-	err = pc.AdvanceUePosition(ue1Name, 25.0)
+	err = am.AdvanceUePosition(ue1Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err := pc.GetUe(ue1Name)
+	ue, err := am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1221,11 +1222,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421302805,43.736793045]}"
-	err = pc.AdvanceUePosition(ue1Name, 50.0)
+	err = am.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1235,11 +1236,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421945766,43.734757482]}"
-	err = pc.AdvanceUePosition(ue1Name, 50.0)
+	err = am.AdvanceUePosition(ue1Name, 50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1249,11 +1250,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.418829679,43.734485126]}"
-	err = pc.AdvanceUePosition(ue1Name, 160.0)
+	err = am.AdvanceUePosition(ue1Name, 160.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1263,11 +1264,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419756614,43.735350141]}"
-	err = pc.AdvanceUePosition(ue1Name, 25.0)
+	err = am.AdvanceUePosition(ue1Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1277,11 +1278,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ueLoc := "{\"type\":\"Point\",\"coordinates\":[7.418766584,43.734426245]}"
-	err = pc.AdvanceUePosition(ue1Name, 250.0)
+	err = am.AdvanceUePosition(ue1Name, 250.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue1Name)
+	ue, err = am.GetUe(ue1Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1294,11 +1295,11 @@ func TestPostgisMovement(t *testing.T) {
 	fmt.Println("Advance UE3 along reverse path and validate UE")
 
 	ue3AdvLoc := "{\"type\":\"Point\",\"coordinates\":[7.42187422,43.735114679]}"
-	err = pc.AdvanceUePosition(ue3Name, 25.0)
+	err = am.AdvanceUePosition(ue3Name, 25.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue3Name)
+	ue, err = am.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1308,11 +1309,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.421630262,43.736332651]}"
-	err = pc.AdvanceUePosition(ue3Name, 10.0)
+	err = am.AdvanceUePosition(ue3Name, 10.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue3Name)
+	ue, err = am.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1322,11 +1323,11 @@ func TestPostgisMovement(t *testing.T) {
 	}
 
 	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.419490696,43.732543162]}"
-	err = pc.AdvanceUePosition(ue3Name, 32.0)
+	err = am.AdvanceUePosition(ue3Name, 32.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ue, err = pc.GetUe(ue3Name)
+	ue, err = am.GetUe(ue3Name)
 	if err != nil || ue == nil {
 		t.Fatalf("Failed to get UE")
 	}
@@ -1340,11 +1341,11 @@ func TestPostgisMovement(t *testing.T) {
 
 	ue1AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.420620454,43.736156275]}"
 	ue3AdvLoc = "{\"type\":\"Point\",\"coordinates\":[7.422183498,43.732307532]}"
-	err = pc.AdvanceAllUePosition(50.0)
+	err = am.AdvanceAllUePosition(50.0)
 	if err != nil {
 		t.Fatalf("Failed to advance UE")
 	}
-	ueMap, err := pc.GetAllUe()
+	ueMap, err := am.GetAllUe()
 	if err != nil || len(ueMap) != 3 {
 		t.Fatalf("Failed to get all UE")
 	}

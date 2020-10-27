@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.5.4
+version: 1.5.5
 repo:
   name: AdvantEDGE
 
@@ -28,6 +28,21 @@ repo:
       # user supplied sandbox swagger UI located @ .meep/user/sandbox-swagger
       swagger: false
 
+    # platform ingress configuration
+    ingress:
+      # host name
+      host: my-advantedge.com
+      # bind to host ports (true) or node ports (false)
+      host-ports: true
+      # http port number
+      http-port: 80
+      # https config
+      https-port: 443
+      # certificate authority (none|self-signed|lets-encrypt) default: none
+      ca: self-signed
+      # lets-encrypt production server (true) or staging server (false)
+      le-server-prod: false
+
   #------------------------------
   #  Core Subsystem
   #------------------------------
@@ -35,6 +50,19 @@ repo:
 
     # Go Applications
     go-apps:
+      meep-ingress-certs:
+        # enable meepctl build
+        build: false
+        # location of deployment chart
+        chart: charts/meep-ingress-certs
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-ingress-certs.yaml
+        # enable meepctl dockerize
+        dockerize: false
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports linting
+        lint: false
       meep-mon-engine:
         # location of source code
         src: go-apps/meep-mon-engine
@@ -61,6 +89,7 @@ repo:
         api: go-apps/meep-mon-engine/api/swagger.yaml
         # list of dependencies pods to monitor
         dependency-pods:
+          # - meep-cert-manager
           - meep-couchdb
           - meep-docker-registry
           - meep-grafana
@@ -457,6 +486,17 @@ repo:
   #  Dependencies
   #------------------------------
   dep:
+    meep-cert-manager:
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: false
+      # location of deployment chart
+      chart: charts/cert-manager
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-cert-manager.yaml
     meep-couchdb:
       # enable meepctl build -> deps are never built
       build: false
@@ -579,6 +619,16 @@ repo:
         src: go-packages/meep-data-model
         # supports linting
         lint: true
+      meep-gis-asset-mgr:
+        # location of source code
+        src: go-packages/meep-gis-asset-mgr
+        # supports linting
+        lint: true
+      meep-gis-cache:
+        # location of source code
+        src: go-packages/meep-gis-cache
+        # supports linting
+        lint: true
       meep-http-logger:
         # location of source code
         src: go-packages/meep-http-logger
@@ -601,6 +651,11 @@ repo:
         src: go-packages/meep-logger
         # supports linting
         lint: true
+      meep-metric-store:
+        # location of source code
+        src: go-packages/meep-metric-store
+        # supports linting
+        lint: true
       meep-metrics-engine-notification-client:
         # location of source code
         src: go-packages/meep-metrics-engine-notification-client
@@ -608,11 +663,6 @@ repo:
         lint: false
         # location of API specification
         api: go-packages/meep-metrics-engine-notification-client/api/swagger.yaml
-      meep-metric-store:
-        # location of source code
-        src: go-packages/meep-metric-store
-        # supports linting
-        lint: true
       meep-mg-app-client:
         # location of source code
         src: go-packages/meep-mg-app-client
@@ -645,11 +695,6 @@ repo:
         src: go-packages/meep-net-char-mgr
         # supports linting
         lint: true
-      meep-postgis:
-        # location of source code
-        src: go-packages/meep-postgis
-        # supports linting
-        lint: true
       meep-redis:
         # location of source code
         src: go-packages/meep-redis
@@ -672,18 +717,6 @@ repo:
         lint: false
         # location of API specification
         api: go-packages/meep-rnis-notification-client/api/swagger.yaml
-      meep-wais-client:
-        # location of source code
-        src: go-packages/meep-wais-client
-        # supports linting
-        lint: false
-      meep-wais-notification-client:
-        # location of source code
-        src: go-packages/meep-wais-notification-client
-        # supports linting
-        lint: false
-        # location of API specification
-        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-sandbox-ctrl-client:
         # location of source code
         src: go-packages/meep-sandbox-ctrl-client
@@ -699,6 +732,23 @@ repo:
         src: go-packages/meep-sessions
         # supports linting
         lint: true
+      meep-users:
+        # location of source code
+        src: go-packages/meep-users
+        # supports linting
+        lint: true
+      meep-wais-client:
+        # location of source code
+        src: go-packages/meep-wais-client
+        # supports linting
+        lint: false
+      meep-wais-notification-client:
+        # location of source code
+        src: go-packages/meep-wais-notification-client
+        # supports linting
+        lint: false
+        # location of API specification
+        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-watchdog:
         # location of source code
         src: go-packages/meep-watchdog

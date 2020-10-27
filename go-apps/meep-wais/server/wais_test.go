@@ -5890,8 +5890,6 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const postgisTestHost = "localhost"
-const postgisTestPort = "30432"
 const testScenarioName = "testScenario"
 
 var m *mod.Model
@@ -6442,14 +6440,13 @@ func TestSbi(t *testing.T) {
 	ueName := "10.10.0.2"
 	ueMacId := "101002000000" //currently name
 	apName1 := "4g-macro-cell-10"
-	apMacId1 := ""
 	apName2 := "w10"
 	apMacId2 := "0050C272800A"
 
-	var expectedUeDataStr [2]string
-	var expectedUeData [2]UeData
-	expectedUeData[INITIAL] = UeData{apMacId1, ueMacId}
-	expectedUeData[UPDATED] = UeData{apMacId2, ueMacId}
+	var expectedStaInfoStr [2]string
+	var expectedStaInfo [2]StaInfo
+	expectedStaInfo[INITIAL] = StaInfo{StaId: &StaIdentity{MacId: ""}}
+	expectedStaInfo[UPDATED] = StaInfo{StaId: &StaIdentity{MacId: ueMacId}, ApAssociated: &ApAssociated{MacId: apMacId2}}
 
 	var expectedApInfoApIdMacIdStr [2]string
 	var expectedApInfoNbStas [2]int
@@ -6458,17 +6455,17 @@ func TestSbi(t *testing.T) {
 	expectedApInfoNbStas[INITIAL] = 0
 	expectedApInfoNbStas[UPDATED] = 1
 
-	j, err := json.Marshal(expectedUeData[INITIAL])
+	j, err := json.Marshal(expectedStaInfo[INITIAL])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedUeDataStr[INITIAL] = string(j)
+	expectedStaInfoStr[INITIAL] = string(j)
 
-	j, err = json.Marshal(expectedUeData[UPDATED])
+	j, err = json.Marshal(expectedStaInfo[UPDATED])
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	expectedUeDataStr[UPDATED] = string(j)
+	expectedStaInfoStr[UPDATED] = string(j)
 
 	/******************************
 	 * execution section
@@ -6478,7 +6475,7 @@ func TestSbi(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonUeData) != expectedUeDataStr[INITIAL] {
+	if string(jsonUeData) != expectedStaInfoStr[INITIAL] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -6494,7 +6491,7 @@ func TestSbi(t *testing.T) {
 	updateScenario("mobility1")
 
 	jsonUeData, _ = rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
-	if string(jsonUeData) != expectedUeDataStr[UPDATED] {
+	if string(jsonUeData) != expectedStaInfoStr[UPDATED] {
 		t.Fatalf("Failed to get expected response")
 	}
 
@@ -6734,8 +6731,6 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	postgisHost = postgisTestHost
-	postgisPort = postgisTestPort
 	sandboxName = testScenarioName
 }
 

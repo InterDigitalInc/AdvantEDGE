@@ -57,6 +57,7 @@ import {
   FIELD_CELL_ID,
   FIELD_NR_CELL_ID,
   FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_PATH,
   FIELD_GEO_RADIUS,
@@ -598,6 +599,10 @@ class IDCMap extends Component {
       var latlng = marker.getLatLng();
       var hasPath = (marker.options.meep.ue.path) ? true : false;
       var msg = '<b>id: ' + marker.options.meep.ue.id + '</b><br>';
+      var ownMac = getElemFieldVal(table.entries[marker.options.meep.ue.id], FIELD_UE_MAC_ID);
+      if (ownMac !== '') {
+        msg += 'mac: ' + ownMac + '<br>';
+      }
       msg += 'velocity: ' + (hasPath ? marker.options.meep.ue.velocity : '0') + ' m/s<br>';
 
       if (this.isConnected(marker.options.meep.ue.id)) {
@@ -612,7 +617,7 @@ class IDCMap extends Component {
           msg += 'cell: ' + getElemFieldVal(table.entries[poa], FIELD_NR_CELL_ID) + '<br>';
           break;
         case ELEMENT_TYPE_POA_WIFI:
-          msg += 'mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
+          msg += 'poa mac: ' + getElemFieldVal(table.entries[poa], FIELD_MAC_ID) + '<br>';
           break;
         default:
           break;
@@ -799,7 +804,7 @@ class IDCMap extends Component {
           }
         },
         color: this.getPoaColor(poa.assetName),
-        radius: poa.radius,
+        radius: poa.radius || 0,
         opacity: POA_RANGE_OPACITY,
         pmIgnore: true
       });

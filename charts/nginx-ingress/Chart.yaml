@@ -1,5 +1,6 @@
 apiVersion: v2
 appVersion: 0.30.0
+dependencies:
 description: An nginx Ingress controller that uses ConfigMap to store the nginx configuration.
 engine: gotpl
 home: https://github.com/kubernetes/ingress-nginx

@@ -23,7 +23,6 @@ import (
 )
 
 func convertJsonToApInfoComplete(jsonInfo string) *ApInfoComplete {
-
 	var obj ApInfoComplete
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
@@ -34,19 +33,16 @@ func convertJsonToApInfoComplete(jsonInfo string) *ApInfoComplete {
 }
 
 func convertApInfoCompleteToJson(obj *ApInfoComplete) string {
-
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
 
-func convertJsonToUeData(jsonData string) *UeData {
-
-	var obj UeData
+func convertJsonToStaInfo(jsonData string) *StaInfo {
+	var obj StaInfo
 	err := json.Unmarshal([]byte(jsonData), &obj)
 	if err != nil {
 		log.Error(err.Error())
@@ -55,36 +51,20 @@ func convertJsonToUeData(jsonData string) *UeData {
 	return &obj
 }
 
-func convertUeDataToJson(obj *UeData) string {
-
+func convertStaInfoToJson(obj *StaInfo) string {
 	jsonData, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonData)
 }
 
-/* not used
-func convertJsonToSubscription(jsonInfo string) *Subscription {
-
-	var obj Subscription
-	err := json.Unmarshal([]byte(jsonInfo), &obj)
-	if err != nil {
-		log.Error(err.Error())
-		return nil
-	}
-	return &obj
-}
-*/
 func convertSubscriptionToJson(obj *Subscription) string {
-
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())
 		return ""
 	}
-
 	return string(jsonInfo)
 }
