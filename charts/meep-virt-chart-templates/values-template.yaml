@@ -42,12 +42,24 @@ deployment:
     {{- end}}
 
   resources:
-    requests: {}
+    requests:
+    {{- if .Deployment.CpuEnabled}}
+      cpu: {{.Deployment.CpuMin}}
+    {{- end}}
+    {{- if .Deployment.MemoryEnabled}}
+      memory: {{.Deployment.MemoryMin}}
+    {{- end}}
     limits:
     {{- if .Deployment.GpuEnabled}}
     {{- if eq .Deployment.GpuType "NVIDIA" }}
       nvidia.com/gpu: {{.Deployment.GpuCount}}
     {{- end}}
+    {{- end}}
+    {{- if .Deployment.CpuEnabled}}
+      cpu: {{.Deployment.CpuMax}}
+    {{- end}}
+    {{- if .Deployment.MemoryEnabled}}
+      memory: {{.Deployment.MemoryMax}}
     {{- end}}
 
   nodeSelector: {}
