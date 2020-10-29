@@ -29,7 +29,7 @@ type UserEventType string
 
 // List of UserEventType
 const (
-	ENTERING     UserEventType = "Entering"
-	LEAVING      UserEventType = "Leaving"
-	TRANSFERRING UserEventType = "Transferring"
+	ENTERING_EVENT     UserEventType = "Entering"
+	LEAVING_EVENT      UserEventType = "Leaving"
+	TRANSFERRING_EVENT UserEventType = "Transferring"
 )

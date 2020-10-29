@@ -68,154 +68,259 @@ var routes = Routes{
 	Route{
 		"Index",
 		"GET",
-		"/location/v1/",
+		"/location/v2/",
 		Index,
 	},
 
 	Route{
-		"UserTrackingSubDelById",
+		"ApByIdGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/zones/{zoneId}/accessPoints/{accessPointId}",
+		ApByIdGET,
+	},
+
+	Route{
+		"ApGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/zones/{zoneId}/accessPoints",
+		ApGET,
+	},
+
+	Route{
+		"AreaCircleSubDELETE",
 		strings.ToUpper("Delete"),
-		"/location/v1/subscriptions/userTracking/{subscriptionId}",
-		UserTrackingSubDelById,
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubDELETE,
 	},
 
 	Route{
-		"UserTrackingSubGet",
+		"AreaCircleSubGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/userTracking",
-		UserTrackingSubGet,
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubGET,
 	},
 
 	Route{
-		"UserTrackingSubGetById",
+		"AreaCircleSubListGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/userTracking/{subscriptionId}",
-		UserTrackingSubGetById,
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubListGET,
 	},
 
 	Route{
-		"UserTrackingSubPost",
+		"AreaCircleSubPOST",
 		strings.ToUpper("Post"),
-		"/location/v1/subscriptions/userTracking",
-		UserTrackingSubPost,
+		"/location/v2/subscriptions/area/circle",
+		AreaCircleSubPOST,
 	},
 
 	Route{
-		"UserTrackingSubPutById",
+		"AreaCircleSubPUT",
 		strings.ToUpper("Put"),
-		"/location/v1/subscriptions/userTracking/{subscriptionId}",
-		UserTrackingSubPutById,
+		"/location/v2/subscriptions/area/circle/{subscriptionId}",
+		AreaCircleSubPUT,
 	},
 
 	Route{
-		"ZonalTrafficSubDelById",
+		"DistanceGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/distance",
+		DistanceGET,
+	},
+
+	Route{
+		"DistanceSubDELETE",
 		strings.ToUpper("Delete"),
-		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
-		ZonalTrafficSubDelById,
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubDELETE,
 	},
 
 	Route{
-		"ZonalTrafficSubGet",
+		"DistanceSubGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/zonalTraffic",
-		ZonalTrafficSubGet,
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubGET,
 	},
 
 	Route{
-		"ZonalTrafficSubGetById",
+		"DistanceSubListGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
-		ZonalTrafficSubGetById,
+		"/location/v2/subscriptions/distance",
+		DistanceSubListGET,
 	},
 
 	Route{
-		"ZonalTrafficSubPost",
+		"DistanceSubPOST",
 		strings.ToUpper("Post"),
-		"/location/v1/subscriptions/zonalTraffic",
-		ZonalTrafficSubPost,
+		"/location/v2/subscriptions/distance",
+		DistanceSubPOST,
 	},
 
 	Route{
-		"ZonalTrafficSubPutById",
+		"DistanceSubPUT",
 		strings.ToUpper("Put"),
-		"/location/v1/subscriptions/zonalTraffic/{subscriptionId}",
-		ZonalTrafficSubPutById,
+		"/location/v2/subscriptions/distance/{subscriptionId}",
+		DistanceSubPUT,
 	},
 
 	Route{
-		"ZoneStatusDelById",
+		"PeriodicSubDELETE",
 		strings.ToUpper("Delete"),
-		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
-		ZoneStatusDelById,
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubDELETE,
 	},
 
 	Route{
-		"ZoneStatusGet",
+		"PeriodicSubGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/zonalStatus",
-		ZoneStatusGet,
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubGET,
 	},
 
 	Route{
-		"ZoneStatusGetById",
+		"PeriodicSubListGET",
 		strings.ToUpper("Get"),
-		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
-		ZoneStatusGetById,
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubListGET,
 	},
 
 	Route{
-		"ZoneStatusPost",
+		"PeriodicSubPOST",
 		strings.ToUpper("Post"),
-		"/location/v1/subscriptions/zonalStatus",
-		ZoneStatusPost,
+		"/location/v2/subscriptions/periodic",
+		PeriodicSubPOST,
 	},
 
 	Route{
-		"ZoneStatusPutById",
+		"PeriodicSubPUT",
 		strings.ToUpper("Put"),
-		"/location/v1/subscriptions/zoneStatus/{subscriptionId}",
-		ZoneStatusPutById,
+		"/location/v2/subscriptions/periodic/{subscriptionId}",
+		PeriodicSubPUT,
 	},
 
 	Route{
-		"UsersGet",
-		strings.ToUpper("Get"),
-		"/location/v1/users",
-		UsersGet,
+		"UserTrackingSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/userTracking/{subscriptionId}",
+		UserTrackingSubDELETE,
 	},
 
 	Route{
-		"UsersGetById",
+		"UserTrackingSubGET",
 		strings.ToUpper("Get"),
-		"/location/v1/users/{userId}",
-		UsersGetById,
+		"/location/v2/subscriptions/userTracking/{subscriptionId}",
+		UserTrackingSubGET,
 	},
 
 	Route{
-		"ZonesByIdGetAps",
+		"UserTrackingSubListGET",
 		strings.ToUpper("Get"),
-		"/location/v1/zones/{zoneId}/accessPoints",
-		ZonesByIdGetAps,
+		"/location/v2/subscriptions/userTracking",
+		UserTrackingSubListGET,
 	},
 
 	Route{
-		"ZonesByIdGetApsById",
-		strings.ToUpper("Get"),
-		"/location/v1/zones/{zoneId}/accessPoints/{accessPointId}",
-		ZonesByIdGetApsById,
+		"UserTrackingSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/userTracking",
+		UserTrackingSubPOST,
 	},
 
 	Route{
-		"ZonesGet",
-		strings.ToUpper("Get"),
-		"/location/v1/zones",
-		ZonesGet,
+		"UserTrackingSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/userTracking/{subscriptionId}",
+		UserTrackingSubPUT,
 	},
 
 	Route{
-		"ZonesGetById",
+		"UsersGET",
 		strings.ToUpper("Get"),
-		"/location/v1/zones/{zoneId}",
-		ZonesGetById,
+		"/location/v2/queries/users",
+		UsersGET,
+	},
+
+	Route{
+		"ZonalTrafficSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/zonalTraffic/{subscriptionId}",
+		ZonalTrafficSubDELETE,
+	},
+
+	Route{
+		"ZonalTrafficSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/zonalTraffic/{subscriptionId}",
+		ZonalTrafficSubGET,
+	},
+
+	Route{
+		"ZonalTrafficSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/zonalTraffic",
+		ZonalTrafficSubListGET,
+	},
+
+	Route{
+		"ZonalTrafficSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/zonalTraffic",
+		ZonalTrafficSubPOST,
+	},
+
+	Route{
+		"ZonalTrafficSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/zonalTraffic/{subscriptionId}",
+		ZonalTrafficSubPUT,
+	},
+
+	Route{
+		"ZoneStatusSubDELETE",
+		strings.ToUpper("Delete"),
+		"/location/v2/subscriptions/zoneStatus/{subscriptionId}",
+		ZoneStatusSubDELETE,
+	},
+
+	Route{
+		"ZoneStatusSubGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/zoneStatus/{subscriptionId}",
+		ZoneStatusSubGET,
+	},
+
+	Route{
+		"ZoneStatusSubListGET",
+		strings.ToUpper("Get"),
+		"/location/v2/subscriptions/zoneStatus",
+		ZoneStatusSubListGET,
+	},
+
+	Route{
+		"ZoneStatusSubPOST",
+		strings.ToUpper("Post"),
+		"/location/v2/subscriptions/zoneStatus",
+		ZoneStatusSubPOST,
+	},
+
+	Route{
+		"ZoneStatusSubPUT",
+		strings.ToUpper("Put"),
+		"/location/v2/subscriptions/zoneStatus/{subscriptionId}",
+		ZoneStatusSubPUT,
+	},
+
+	Route{
+		"ZonesGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/zones",
+		ZonesGET,
+	},
+
+	Route{
+		"ZonesByIdGET",
+		strings.ToUpper("Get"),
+		"/location/v2/queries/zones/{zoneId}",
+		ZonesByIdGET,
 	},
 }

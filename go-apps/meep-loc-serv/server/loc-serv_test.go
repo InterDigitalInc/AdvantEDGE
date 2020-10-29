@@ -571,12 +571,12 @@ func testZonalSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, nil, nil, http.StatusOK, ZonalTrafficSubGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, nil, nil, http.StatusOK, ZonalTrafficSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZonalTrafficNotificationSubscriptionList
+	var respBody InlineResponse20015
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -596,13 +596,13 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestDuration := "0"
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zonalTraffic/" + strconv.Itoa(nextZonalSubscriptionIdAvailable)
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestDuration := int32(0)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + strconv.Itoa(nextZonalSubscriptionIdAvailable)
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := ResponseZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineResponse2014{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -628,12 +628,12 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZonalTrafficSubscription
+	var respBody InlineResponse20014
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -652,13 +652,13 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestDuration := "0"
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zonalTraffic/" + subscriptionId
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestDuration := int32(0)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + subscriptionId
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := ResponseZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineResponse20017{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -687,12 +687,12 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZonalTrafficSubscription
+		var respBody InlineResponse20017
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -703,7 +703,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -737,17 +737,17 @@ func testZonalSubscriptionGet(t *testing.T, subscriptionId string, expectedRespo
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNotFound, ZonalTrafficSubGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNotFound, ZonalTrafficSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusOK, ZonalTrafficSubGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusOK, ZonalTrafficSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneInfo
+		var respBody InlineResponse2003
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -782,7 +782,7 @@ func testZonalSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNoContent, ZonalTrafficSubDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNoContent, ZonalTrafficSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -906,12 +906,12 @@ func testUserSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, nil, nil, http.StatusOK, UserTrackingSubGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, nil, nil, http.StatusOK, UserTrackingSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseUserTrackingNotificationSubscriptionList
+	var respBody InlineResponse20012
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -931,12 +931,12 @@ func testUserSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/userTracking/" + strconv.Itoa(nextUserSubscriptionIdAvailable)
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + strconv.Itoa(nextUserSubscriptionIdAvailable)
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
+	expectedResponse := InlineResponse2013{&expectedUserTrackingSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -962,11 +962,11 @@ func testUserSubscriptionPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	var respBody ResponseUserTrackingSubscription
+	var respBody InlineResponse2013
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -985,12 +985,12 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/userTracking/" + subscriptionId
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + subscriptionId
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
+	expectedResponse := InlineResponse20014{&expectedUserTrackingSubscription}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1020,12 +1020,12 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseUserTrackingSubscription
+		var respBody InlineResponse20014
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1036,7 +1036,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1070,17 +1070,17 @@ func testUserSubscriptionGet(t *testing.T, subscriptionId string, expectedRespon
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusNotFound, UserTrackingSubGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusNotFound, UserTrackingSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusOK, UserTrackingSubGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusOK, UserTrackingSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseUserInfo
+		var respBody InlineResponse20013
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1115,7 +1115,7 @@ func testUserSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, http.StatusNoContent, UserTrackingSubDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, http.StatusNoContent, UserTrackingSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1239,12 +1239,12 @@ func testZoneStatusSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, nil, nil, http.StatusOK, ZoneStatusGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, nil, nil, http.StatusOK, ZoneStatusSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZoneStatusNotificationSubscriptionList
+	var respBody InlineResponse20018
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1267,11 +1267,11 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	requestOperationStatus := []OperationStatus{SERVICEABLE}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zoneStatus/" + strconv.Itoa(nextZoneStatusSubscriptionIdAvailable)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + strconv.Itoa(nextZoneStatusSubscriptionIdAvailable)
 
-	expectedZoneStatusSubscription := ZoneStatusSubscription{requestClientCorrelator, requestResourceURL, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, requestNumberOfUsersZoneThreshold, requestNumberOfUsersAPThreshold, requestOperationStatus}
+	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := ResponseZoneStatusSubscription2{&expectedZoneStatusSubscription}
+	expectedResponse := InlineResponse2015{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1296,12 +1296,12 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request execution section
 	 ******************************/
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZoneStatusPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZoneStatusSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZoneStatusSubscription2
+	var respBody InlineResponse2015
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1323,11 +1323,11 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	requestOperationStatus := []OperationStatus{SERVICEABLE}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zoneStatus/" + subscriptionId
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + subscriptionId
 
-	expectedZoneStatusSubscription := ZoneStatusSubscription{requestClientCorrelator, requestResourceURL, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, requestNumberOfUsersZoneThreshold, requestNumberOfUsersAPThreshold, requestOperationStatus}
+	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := ResponseZoneStatusSubscription2{&expectedZoneStatusSubscription}
+	expectedResponse := InlineResponse20020{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1356,12 +1356,12 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneStatusSubscription2
+		var respBody InlineResponse20020
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1372,7 +1372,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1406,17 +1406,17 @@ func testZoneStatusSubscriptionGet(t *testing.T, subscriptionId string, expected
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNotFound, ZoneStatusGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNotFound, ZoneStatusSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusOK, ZoneStatusGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusOK, ZoneStatusSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneStatusSubscription2
+		var respBody InlineResponse20019
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1451,7 +1451,7 @@ func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNoContent, ZoneStatusDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNoContent, ZoneStatusSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1479,16 +1479,28 @@ func TestUserInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedUserInfo := UserInfo{"ue1", "zone1-poa-cell1", "zone1", "", nil, "", ""}
+	expectedListResourceURL := "/" + testScenarioName + "/location/v2/users"
+	expectedResourceURL := expectedListResourceURL + "/ue1"
+	//expectedListResourceURL := ""
+	//expectedResourceURL := ""
+	expectedUserInfo := UserInfo{"zone1-poa-cell1", "ue1", "", "", nil, expectedResourceURL, nil, "zone1"}
+	expectedUserList := UserList{expectedListResourceURL, nil}
+	expectedUserList.User = append(expectedUserList.User, expectedUserInfo)
 
-	expectedResponseStr, err := json.Marshal(expectedUserInfo)
+	expectedResponseStr, err := json.Marshal(expectedUserList)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
 	testUserInfo(t, expectedUserInfo.Address, string(expectedResponseStr))
 
-	testUserInfo(t, "ue-unknown", "")
+	expectedUserList = UserList{expectedListResourceURL, nil}
+	expectedResponseStr, err = json.Marshal(expectedUserList)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	testUserInfo(t, "ue-unknown", string(expectedResponseStr))
 
 	/******************************
 	 * back to initial state section
@@ -1505,8 +1517,8 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	/******************************
 	 * request vars section
 	 ******************************/
-	vars := make(map[string]string)
-	vars["userId"] = userId
+	query := make(map[string]string)
+	query["address"] = userId
 
 	/******************************
 	 * request body section
@@ -1520,33 +1532,24 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	 * request execution section
 	 ******************************/
 
-	var err error
-	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/users", nil, vars, nil, http.StatusNotFound, UsersGetById)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
-	} else {
-		rr, err := sendRequest(http.MethodGet, "/users", nil, vars, nil, http.StatusOK, UsersGetById)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
+	rr, err := sendRequest(http.MethodGet, "/users", nil, nil, query, http.StatusOK, UsersGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
 
-		var respBody ResponseUserInfo
-		err = json.Unmarshal([]byte(rr), &respBody)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
-		//need to remove the resourec url since it was not given in the expected response
-		respBody.UserInfo.ResourceURL = ""
-		receivedResponseStr, err := json.Marshal(respBody.UserInfo)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+	var respBody InlineResponse2001
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	//need to remove the resourec url since it was not given in the expected response
+	receivedResponseStr, err := json.Marshal(respBody.UserList)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 
-		if string(receivedResponseStr) != expectedResponse {
-			t.Fatalf("Failed to get expected response")
-		}
+	if string(receivedResponseStr) != expectedResponse {
+		t.Fatalf("Failed to get expected response")
 	}
 }
 
@@ -1572,7 +1575,7 @@ func TestZoneInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedZoneInfo := ZoneInfo{"zone1", 2, 0, 2, ""}
+	expectedZoneInfo := ZoneInfo{2, 0, 2, "", "zone1"}
 
 	expectedResponseStr, err := json.Marshal(expectedZoneInfo)
 	if err != nil {
@@ -1615,17 +1618,17 @@ func testZoneInfo(t *testing.T, zoneId string, expectedResponse string) {
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
+		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
+		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneInfo
+		var respBody InlineResponse2003
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1667,8 +1670,8 @@ func TestAPInfo(t *testing.T) {
 	 ******************************/
 	expectedConnType := MACRO
 	expectedOpStatus := SERVICEABLE
-	expectedTimeZone := time.Time{}
-	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", nil, &expectedConnType, &expectedOpStatus, 2, expectedTimeZone, "", ""}
+
+	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", &expectedConnType, "", nil, 2, &expectedOpStatus, "", ""}
 
 	expectedResponseStr, err := json.Marshal(expectedAPInfo)
 	if err != nil {
@@ -1712,17 +1715,17 @@ func testAPInfo(t *testing.T, zoneId string, apId string, expectedResponse strin
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ZonesByIdGetApsById)
+		_, err = sendRequest(http.MethodGet, "/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ZonesByIdGetApsById)
+		rr, err := sendRequest(http.MethodGet, "/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseAccessPointInfo
+		var respBody InlineResponse2005
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1771,10 +1774,10 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "ue1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
 	requestResourceURL := ""
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
 	/*expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
 	  expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1801,7 +1804,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request execution section
 	 ******************************/
-	_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1876,21 +1879,21 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone2"
-	requestUserEvent := []UserEventType{ENTERING, LEAVING}
-	requestDuration := "0"
+	requestUserEvent := []UserEventType{ENTERING_EVENT, LEAVING_EVENT}
+	requestDuration := int32(0)
 	requestResourceURL := ""
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
 	//2nd request
 	requestClientCorrelator = "123"
 	requestCallbackReference = "myCallbackRef"
 	requestZoneId = "zone1"
-	requestUserEvent = []UserEventType{TRANSFERRING}
-	requestDuration = "0"
+	requestUserEvent = []UserEventType{TRANSFERRING_EVENT}
+	requestDuration = int32(0)
 	requestResourceURL = ""
 
-	expectedZonalTrafficSubscription2 := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription2 := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
 	/******************************
 	 * request vars section
@@ -1916,12 +1919,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request execution section
 	 ******************************/
-	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body2), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body2), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
