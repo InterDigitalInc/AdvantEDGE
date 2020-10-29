@@ -647,6 +647,10 @@ definitions:
         $ref: '#/definitions/ServiceConfig'
       gpuConfig:
         $ref: '#/definitions/GpuConfig'
+      memoryConfig:
+        $ref: '#/definitions/MemoryConfig'
+      cpuConfig:
+        $ref: '#/definitions/CpuConfig'
       externalConfig:
         $ref: '#/definitions/ExternalConfig'
       status:
@@ -975,3 +979,23 @@ definitions:
           $ref: '#/definitions/NetworkLocation'
     description: Logical zone (MEC network) object
     example: {}
+  MemoryConfig:
+    type: object
+    properties:
+      min:
+        type: string
+        description: Minimum requested memory
+      max:
+        type: string
+        description: Maximum requested memory
+    description: Memory configuration object
+  CpuConfig:
+    type: object
+    properties:
+      min:
+        type: string
+        description: Minimum requested CPU
+      max:
+        type: string
+        description: Maximum requested CPU
+    description: CPU configuration object

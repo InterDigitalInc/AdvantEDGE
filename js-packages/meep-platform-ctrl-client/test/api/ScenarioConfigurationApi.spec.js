@@ -202,6 +202,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig = new AdvantEdgePlatformControllerRestApi.GpuConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.type = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.count = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig = new AdvantEdgePlatformControllerRestApi.MemoryConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.min = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.max = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig = new AdvantEdgePlatformControllerRestApi.CpuConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.min = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.max = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig = new AdvantEdgePlatformControllerRestApi.ExternalConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap = [new AdvantEdgePlatformControllerRestApi.IngressService()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap[0].name = "";
@@ -735,6 +741,16 @@
                                     expect(data.gpuConfig.type).to.be("");
                                     expect(data.gpuConfig.count).to.be.a('number');
                                     expect(data.gpuConfig.count).to.be(0);
+                                  expect(data.memoryConfig).to.be.a(AdvantEdgePlatformControllerRestApi.MemoryConfig);
+                                        expect(data.memoryConfig.min).to.be.a('string');
+                                    expect(data.memoryConfig.min).to.be("");
+                                    expect(data.memoryConfig.max).to.be.a('string');
+                                    expect(data.memoryConfig.max).to.be("");
+                                  expect(data.cpuConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CpuConfig);
+                                        expect(data.cpuConfig.min).to.be.a('string');
+                                    expect(data.cpuConfig.min).to.be("");
+                                    expect(data.cpuConfig.max).to.be.a('string');
+                                    expect(data.cpuConfig.max).to.be("");
                                   expect(data.externalConfig).to.be.a(AdvantEdgePlatformControllerRestApi.ExternalConfig);
                                         {
                                       let dataCtr = data.externalConfig.ingressServiceMap;
@@ -1312,6 +1328,16 @@
                                         expect(data.gpuConfig.type).to.be("");
                                         expect(data.gpuConfig.count).to.be.a('number');
                                         expect(data.gpuConfig.count).to.be(0);
+                                      expect(data.memoryConfig).to.be.a(AdvantEdgePlatformControllerRestApi.MemoryConfig);
+                                            expect(data.memoryConfig.min).to.be.a('string');
+                                        expect(data.memoryConfig.min).to.be("");
+                                        expect(data.memoryConfig.max).to.be.a('string');
+                                        expect(data.memoryConfig.max).to.be("");
+                                      expect(data.cpuConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CpuConfig);
+                                            expect(data.cpuConfig.min).to.be.a('string');
+                                        expect(data.cpuConfig.min).to.be("");
+                                        expect(data.cpuConfig.max).to.be.a('string');
+                                        expect(data.cpuConfig.max).to.be("");
                                       expect(data.externalConfig).to.be.a(AdvantEdgePlatformControllerRestApi.ExternalConfig);
                                             {
                                           let dataCtr = data.externalConfig.ingressServiceMap;
@@ -1599,6 +1625,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig = new AdvantEdgePlatformControllerRestApi.GpuConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.type = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.count = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig = new AdvantEdgePlatformControllerRestApi.MemoryConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.min = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.max = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig = new AdvantEdgePlatformControllerRestApi.CpuConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.min = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.max = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig = new AdvantEdgePlatformControllerRestApi.ExternalConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap = [new AdvantEdgePlatformControllerRestApi.IngressService()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap[0].name = "";

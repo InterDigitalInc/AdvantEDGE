@@ -124,6 +124,12 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig = new AdvantEdgeSandboxControllerRestApi.GpuConfig();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.type = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.count = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig = new AdvantEdgeSandboxControllerRestApi.MemoryConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.min = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.max = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig = new AdvantEdgeSandboxControllerRestApi.CpuConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.min = "";
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.max = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].name = "";
@@ -445,6 +451,16 @@
                                 expect(data.gpuConfig.type).to.be("");
                                 expect(data.gpuConfig.count).to.be.a('number');
                                 expect(data.gpuConfig.count).to.be(0);
+                              expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                                    expect(data.memoryConfig.min).to.be.a('string');
+                                expect(data.memoryConfig.min).to.be("");
+                                expect(data.memoryConfig.max).to.be.a('string');
+                                expect(data.memoryConfig.max).to.be("");
+                              expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                                    expect(data.cpuConfig.min).to.be.a('string');
+                                expect(data.cpuConfig.min).to.be("");
+                                expect(data.cpuConfig.max).to.be.a('string');
+                                expect(data.cpuConfig.max).to.be("");
                               expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
                                     {
                                   let dataCtr = data.externalConfig.ingressServiceMap;
