@@ -615,7 +615,8 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -673,7 +674,8 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -703,7 +705,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPUT)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, ZonalTrafficSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -949,7 +951,8 @@ func testUserSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := Body6{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1006,7 +1009,8 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := Body6{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1036,7 +1040,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPUT)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, UserTrackingSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1284,7 +1288,8 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZoneStatusSubscription)
+	expectedBody := Body10{&expectedZoneStatusSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1342,7 +1347,8 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZoneStatusSubscription)
+	expectedBody := Body10{&expectedZoneStatusSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1372,7 +1378,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusSubPUT)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, ZoneStatusSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1792,7 +1798,8 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := Body6{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1902,12 +1909,14 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	body2, err := json.Marshal(expectedZonalTrafficSubscription2)
+	expectedBody2 := Body8{&expectedZonalTrafficSubscription2}
+	body2, err := json.Marshal(expectedBody2)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

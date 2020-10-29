@@ -897,14 +897,19 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var response InlineResponse2013
-	userTrackingSub := new(UserTrackingSubscription)
-	response.UserTrackingSubscription = userTrackingSub
 
+	var body Body6
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&userTrackingSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userTrackingSub := body.UserTrackingSubscription
+
+	if userTrackingSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -916,6 +921,8 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	userTrackingSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
+
+	response.UserTrackingSubscription = userTrackingSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -932,24 +939,46 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	var response InlineResponse20014
-	userTrackingSub := new(UserTrackingSubscription)
-	response.UserTrackingSubscription = userTrackingSub
 
+	var body Body6
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&userTrackingSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	userTrackingSub := body.UserTrackingSubscription
 
-	subsIdStr := vars["subscriptionId"]
+	if userTrackingSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	subsIdParamStr := vars["subscriptionId"]
+
+	selfUrl := strings.Split(userTrackingSub.ResourceURL, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	if subsIdStr != subsIdParamStr {
+		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		return
+	}
+
 	userTrackingSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
+
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if userSubscriptionMap[subsId] == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
 	deregisterUser(subsIdStr)
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
+
+	response.UserTrackingSubscription = userTrackingSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1049,14 +1078,19 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var response InlineResponse2014
-	zonalTrafficSub := new(ZonalTrafficSubscription)
-	response.ZonalTrafficSubscription = zonalTrafficSub
 
+	var body Body8
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&zonalTrafficSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	zonalTrafficSub := body.ZonalTrafficSubscription
+
+	if zonalTrafficSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -1081,6 +1115,8 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
 
+	response.ZonalTrafficSubscription = zonalTrafficSub
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -1096,24 +1132,46 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	var response InlineResponse20017
-	zonalTrafficSub := new(ZonalTrafficSubscription)
-	response.ZonalTrafficSubscription = zonalTrafficSub
 
+	var body Body8
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&zonalTrafficSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	zonalTrafficSub := body.ZonalTrafficSubscription
 
-	subsIdStr := vars["subscriptionId"]
+	if zonalTrafficSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	subsIdParamStr := vars["subscriptionId"]
+
+	selfUrl := strings.Split(zonalTrafficSub.ResourceURL, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	if subsIdStr != subsIdParamStr {
+		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		return
+	}
+
 	zonalTrafficSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
+
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if zonalSubscriptionMap[subsId] == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	_ = rc.JSONSetEntry(baseKey+typeZonalSubscription+":"+subsIdStr, ".", convertZonalSubscriptionToJson(zonalTrafficSub))
 
 	deregisterZonal(subsIdStr)
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
+
+	response.ZonalTrafficSubscription = zonalTrafficSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1214,14 +1272,19 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var response InlineResponse2015
-	zoneStatusSub := new(ZoneStatusSubscription)
-	response.ZoneStatusSubscription = zoneStatusSub
 
+	var body Body10
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&zoneStatusSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	zoneStatusSub := body.ZoneStatusSubscription
+
+	if zoneStatusSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -1235,6 +1298,8 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
 		zoneStatusSub.OperationStatus, subsIdStr)
+
+	response.ZoneStatusSubscription = zoneStatusSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1251,25 +1316,47 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	var response InlineResponse20020
-	zoneStatusSub := new(ZoneStatusSubscription)
-	response.ZoneStatusSubscription = zoneStatusSub
 
+	var body Body10
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&zoneStatusSub)
+	err := decoder.Decode(&body)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	zoneStatusSub := body.ZoneStatusSubscription
 
-	subsIdStr := vars["subscriptionId"]
+	if zoneStatusSub == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	subsIdParamStr := vars["subscriptionId"]
+
+	selfUrl := strings.Split(zoneStatusSub.ResourceURL, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	if subsIdStr != subsIdParamStr {
+		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		return
+	}
+
 	zoneStatusSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
+
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if zoneStatusSubscriptionMap[subsId] == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	_ = rc.JSONSetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".", convertZoneStatusSubscriptionToJson(zoneStatusSub))
 
 	deregisterZoneStatus(subsIdStr)
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
 		zoneStatusSub.OperationStatus, subsIdStr)
+
+	response.ZoneStatusSubscription = zoneStatusSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1356,8 +1443,17 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 			userInfo.LocationInfo.Accuracy = 1
 		}
 		//we only support shape != 7 in locationInfo
-		userInfo.LocationInfo.Longitude[0] = *longitude
-		userInfo.LocationInfo.Latitude[0] = *latitude
+		userInfo.LocationInfo.Shape = "2"
+		userInfo.LocationInfo.Longitude = nil
+		userInfo.LocationInfo.Longitude = append(userInfo.LocationInfo.Longitude, *longitude)
+		userInfo.LocationInfo.Latitude = nil
+		userInfo.LocationInfo.Latitude = append(userInfo.LocationInfo.Latitude, *latitude)
+
+		seconds := time.Now().Unix()
+		var timeStamp TimeStamp
+		timeStamp.Seconds = int32(seconds)
+
+		userInfo.LocationInfo.Timestamp = &timeStamp
 	}
 
 	// Update User info in DB & Send notifications
@@ -1426,9 +1522,19 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 			apInfo.LocationInfo = new(LocationInfo)
 			apInfo.LocationInfo.Accuracy = 1
 		}
+
 		//we only support shape != 7 in locationInfo
-		apInfo.LocationInfo.Longitude[0] = *longitude
-		apInfo.LocationInfo.Latitude[0] = *latitude
+		apInfo.LocationInfo.Shape = "2"
+		apInfo.LocationInfo.Longitude = nil
+		apInfo.LocationInfo.Longitude = append(apInfo.LocationInfo.Longitude, *longitude)
+		apInfo.LocationInfo.Latitude = nil
+		apInfo.LocationInfo.Latitude = append(apInfo.LocationInfo.Latitude, *latitude)
+
+		seconds := time.Now().Unix()
+		var timeStamp TimeStamp
+		timeStamp.Seconds = int32(seconds)
+
+		apInfo.LocationInfo.Timestamp = &timeStamp
 	}
 
 	// Update AP info in DB & Send notifications
