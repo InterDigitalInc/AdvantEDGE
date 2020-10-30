@@ -25,19 +25,206 @@
 package server
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
+	"github.com/google/go-github/github"
+	"github.com/xanzy/go-gitlab"
+	"golang.org/x/oauth2"
+	githuboauth "golang.org/x/oauth2/github"
+	gitlaboauth "golang.org/x/oauth2/gitlab"
 )
+
+const OAUTH_PROVIDER_GITHUB = "github"
+const OAUTH_PROVIDER_GITLAB = "gitlab"
+
+func initOAuth() {
+
+	// Get default platform URI
+	pfmCtrl.uri = strings.TrimSpace(os.Getenv("MEEP_PLATFORM_URI"))
+
+	// Initialize OAuth
+	pfmCtrl.oauthConfigs = make(map[string]*oauth2.Config)
+	pfmCtrl.loginRequests = make(map[string]*LoginRequest)
+
+	// Initialize Github config
+	githubClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
+	githubSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
+	githubRedirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_REDIRECT_URI"))
+	githubOauthConfig := &oauth2.Config{
+		ClientID:     githubClientId,
+		ClientSecret: githubSecret,
+		RedirectURL:  githubRedirectUri,
+		Scopes:       []string{},
+		Endpoint:     githuboauth.Endpoint,
+	}
+	pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
+
+	// Initialize Gitlab config
+	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
+	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
+	gitlabRedirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_REDIRECT_URI"))
+	gitlabOauthConfig := &oauth2.Config{
+		ClientID:     gitlabClientId,
+		ClientSecret: gitlabSecret,
+		RedirectURL:  gitlabRedirectUri,
+		Scopes:       []string{"read_user"},
+		Endpoint:     gitlaboauth.Endpoint,
+	}
+	pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
+}
+
+// Generate a random state string
+func generateState(n int) (string, error) {
+	data := make([]byte, n)
+	if _, err := io.ReadFull(rand.Reader, data); err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(data), nil
+}
+
+func getUniqueState() (state string, err error) {
+	for i := 0; i < 3; i++ {
+		// Get random state
+		randState, err := generateState(20)
+		if err != nil {
+			log.Error(err.Error())
+			return "", err
+		}
+
+		// Make sure state is unique
+		if _, found := pfmCtrl.loginRequests[randState]; !found {
+			return randState, nil
+		}
+	}
+	return "", errors.New("Failed to generate a random state string")
+}
+
+func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
+	log.Info("----- OAUTH LOGIN -----")
+
+	// Retrieve query parameters
+	query := r.URL.Query()
+	provider := query.Get("provider")
+
+	// Get provider-specific OAuth config
+	config, found := pfmCtrl.oauthConfigs[provider]
+	if !found {
+		log.Error("Provider config not found for: ", provider)
+		http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+		return
+	}
+
+	// Generate unique random state string
+	state, err := getUniqueState()
+	if err != nil {
+		log.Error(err.Error())
+		http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+		return
+	}
+
+	// Track oauth request
+	request := &LoginRequest{
+		provider:  provider,
+		timestamp: time.Now(),
+	}
+	pfmCtrl.loginRequests[state] = request
+
+	// Generate provider-specific oauth redirect
+	uri := config.AuthCodeURL(state, oauth2.AccessTypeOnline)
+	http.Redirect(w, r, uri, http.StatusFound)
+}
+
+func uaAuthorize(w http.ResponseWriter, r *http.Request) {
+
+	// Retrieve query parameters
+	query := r.URL.Query()
+	code := query.Get("code")
+	state := query.Get("state")
+
+	// Validate request state
+	request, found := pfmCtrl.loginRequests[state]
+	if !found {
+		log.Error("Login request not found with provided state: ", state)
+		http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+		return
+	}
+
+	// Get provider-specific OAuth config
+	config := pfmCtrl.oauthConfigs[request.provider]
+
+	// Retrieve access token
+	token, err := config.Exchange(context.Background(), code)
+	if err != nil {
+		log.Error(err.Error())
+		http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+		return
+	}
+
+	// Retrieve User ID
+	var userId string
+	switch request.provider {
+	case OAUTH_PROVIDER_GITHUB:
+		oauthClient := config.Client(context.Background(), token)
+		client := github.NewClient(oauthClient)
+		if client == nil {
+			err = errors.New("Failed to create new GitHub client")
+			log.Error(err.Error())
+			http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+			return
+		}
+		user, _, err := client.Users.Get(context.Background(), "")
+		if err != nil {
+			log.Error(err.Error())
+			http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+			return
+		}
+		userId = *user.Login
+	case OAUTH_PROVIDER_GITLAB:
+		client, err := gitlab.NewOAuthClient(token.AccessToken)
+		if err != nil {
+			err = errors.New("Failed to create new GitLab client")
+			log.Error(err.Error())
+			http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+			return
+		}
+		user, _, err := client.Users.CurrentUser()
+		if err != nil {
+			log.Error(err.Error())
+			http.Redirect(w, r, pfmCtrl.uri, http.StatusFound)
+			return
+		}
+		userId = user.Username
+	default:
+	}
+
+	// Start user session
+	sandboxName, err, errCode := startSession(userId, w, r)
+	if err != nil {
+		log.Error(err.Error())
+		http.Redirect(w, r, pfmCtrl.uri, errCode)
+		return
+	}
+
+	// Redirect user to sandbox
+	http.Redirect(w, r, pfmCtrl.uri+"?sbox="+sandboxName, http.StatusFound)
+}
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
-	var sandboxName string
 
 	// Get form data
 	username := r.FormValue("username")
@@ -50,63 +237,11 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get existing session by user name, if any
-	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
-	session, err := sessionStore.GetByName(username)
+	// Start user session
+	sandboxName, err, errCode := startSession(username, w, r)
 	if err != nil {
-		// Check if max session count is reached before creating a new one
-		count := sessionStore.GetCount()
-		if count >= pfmCtrl.maxSessions {
-			err = errors.New("Maximum session count exceeded")
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			return
-		}
-
-		// Get requested sandbox name from user profile, if any
-		user, err := pfmCtrl.userStore.GetUser(username)
-		if err == nil {
-			sandboxName = user.Sboxname
-		}
-
-		// Get a new unique sanbox name if not configured in user profile
-		if sandboxName == "" {
-			sandboxName = getUniqueSandboxName()
-			if sandboxName == "" {
-				err = errors.New("Failed to generate a unique sandbox name")
-				log.Error(err.Error())
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		// Create sandbox in DB
-		var sandboxConfig dataModel.SandboxConfig
-		err = createSandbox(sandboxName, &sandboxConfig)
-		if err != nil {
-			log.Error("Failed to create sandbox with error: ", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Create new session
-		session = new(sm.Session)
-		session.ID = ""
-		session.Username = username
-		session.Sandbox = sandboxName
-		session.Role = user.Role
-	} else {
-		sandboxName = session.Sandbox
-	}
-
-	// Set session
-	err = sessionStore.Set(session, w, r)
-	if err != nil {
-		log.Error("Failed to set session with err: ", err.Error())
-		// Remove newly created sandbox on failure
-		if session.ID == "" {
-			deleteSandbox(sandboxName)
-		}
+		log.Error(err.Error())
+		http.Error(w, err.Error(), errCode)
 		return
 	}
 
@@ -128,6 +263,67 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonResponse))
 }
 
+// Retrieve existing user session or create a new one
+func startSession(username string, w http.ResponseWriter, r *http.Request) (sandboxName string, err error, code int) {
+
+	// Get existing session by user name, if any
+	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
+	session, err := sessionStore.GetByName(username)
+	if err != nil {
+		// Check if max session count is reached before creating a new one
+		count := sessionStore.GetCount()
+		if count >= pfmCtrl.maxSessions {
+			err = errors.New("Maximum session count exceeded")
+			return "", err, http.StatusServiceUnavailable
+		}
+
+		// Get requested sandbox name & role from user profile, if any
+		role := users.RoleUser
+		user, err := pfmCtrl.userStore.GetUser(username)
+		if err == nil {
+			sandboxName = user.Sboxname
+			role = user.Role
+		}
+
+		// Get a new unique sanbox name if not configured in user profile
+		if sandboxName == "" {
+			sandboxName = getUniqueSandboxName()
+			if sandboxName == "" {
+				err = errors.New("Failed to generate a unique sandbox name")
+				return "", err, http.StatusInternalServerError
+			}
+		}
+
+		// Create sandbox in DB
+		var sandboxConfig dataModel.SandboxConfig
+		err = createSandbox(sandboxName, &sandboxConfig)
+		if err != nil {
+			return "", err, http.StatusInternalServerError
+		}
+
+		// Create new session
+		session = new(sm.Session)
+		session.ID = ""
+		session.Username = username
+		session.Sandbox = sandboxName
+		session.Role = role
+	} else {
+		sandboxName = session.Sandbox
+	}
+
+	// Set session
+	err, code = sessionStore.Set(session, w, r)
+	if err != nil {
+		log.Error("Failed to set session with err: ", err.Error())
+		// Remove newly created sandbox on failure
+		if session.ID == "" {
+			deleteSandbox(sandboxName)
+		}
+		return "", err, code
+	}
+	return sandboxName, nil, http.StatusOK
+}
+
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
 
@@ -140,9 +336,10 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete session
-	err = sessionStore.Del(w, r)
+	err, code := sessionStore.Del(w, r)
 	if err != nil {
 		log.Error("Failed to delete session with err: ", err.Error())
+		http.Error(w, err.Error(), code)
 		return
 	}
 
@@ -153,9 +350,10 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 func uaTriggerWatchdog(w http.ResponseWriter, r *http.Request) {
 	// Refresh session
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
-	err := sessionStore.Refresh(w, r)
+	err, code := sessionStore.Refresh(w, r)
 	if err != nil {
 		log.Error("Failed to refresh session with err: ", err.Error())
+		http.Error(w, err.Error(), code)
 		return
 	}
 

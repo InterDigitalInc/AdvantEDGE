@@ -39,6 +39,10 @@ func SubscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 	subscriptionLinkListSubscriptionsGET(w, r)
 }
 
+func SubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
+	subscriptionsDELETE(w, r)
+}
+
 func SubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	subscriptionsGET(w, r)
 }
@@ -49,8 +53,4 @@ func SubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 
 func SubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	subscriptionsPUT(w, r)
-}
-
-func SubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	subscriptionsDELETE(w, r)
 }

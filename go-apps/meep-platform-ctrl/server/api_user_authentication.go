@@ -28,6 +28,14 @@ import (
 	"net/http"
 )
 
+func Authorize(w http.ResponseWriter, r *http.Request) {
+	uaAuthorize(w, r)
+}
+
+func LoginOAuth(w http.ResponseWriter, r *http.Request) {
+	uaLoginOAuth(w, r)
+}
+
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	uaLoginUser(w, r)
 }

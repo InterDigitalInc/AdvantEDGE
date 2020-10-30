@@ -209,7 +209,7 @@ func getUserEntryHandler(key string, fields map[string]string, userData interfac
 }
 
 // Set - Create session
-func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) error {
+func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) (err error, code int) {
 	// Get session cookie
 	sessionCookie, err := ss.cs.Get(r, sessionCookie)
 	if err != nil {
@@ -217,8 +217,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 		// If error was due to new cookie store keys and new session
 		// is successfully created, then proceed with login
 		if sessionCookie == nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return err
+			return err, http.StatusInternalServerError
 		}
 	}
 
@@ -235,31 +234,28 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	fields[ValTimestamp] = time.Now().Format(time.RFC3339)
 	err = ss.rc.SetEntry(ss.baseKey+sessionId, fields)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return err, http.StatusInternalServerError
 	}
 
 	// Update session cookie
 	sessionCookie.Values[ValSessionID] = sessionId
 	err = sessionCookie.Save(r, w)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return err, http.StatusInternalServerError
 	}
-	return nil
+	return nil, http.StatusOK
 }
 
 // Del - Remove session by cookie
-func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
+func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) (err error, code int) {
 	// Get session cookie
 	sessionCookie, err := ss.cs.Get(r, sessionCookie)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return err, http.StatusInternalServerError
 	}
 	if sessionCookie.IsNew {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return err
+		err = errors.New("Unauthorized")
+		return err, http.StatusUnauthorized
 	}
 
 	// Get session from cookie & remove from DB
@@ -274,10 +270,9 @@ func (ss *SessionStore) Del(w http.ResponseWriter, r *http.Request) error {
 	sessionCookie.Options.MaxAge = -1
 	err = sessionCookie.Save(r, w)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
+		return err, http.StatusInternalServerError
 	}
-	return nil
+	return nil, http.StatusOK
 }
 
 // Del - Remove session by ID
@@ -292,19 +287,18 @@ func (ss *SessionStore) DelById(sessionId string) error {
 }
 
 // Refresh - Remove session by ID
-func (ss *SessionStore) Refresh(w http.ResponseWriter, r *http.Request) error {
+func (ss *SessionStore) Refresh(w http.ResponseWriter, r *http.Request) (err error, code int) {
 
 	// Get existing session, if any
 	s, err := ss.Get(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return err
+		return err, http.StatusUnauthorized
 	}
 
 	// Set session to refresh timestamp and cookie
-	err = ss.Set(s, w, r)
+	err, code = ss.Set(s, w, r)
 	if err != nil {
-		return err
+		return err, code
 	}
-	return nil
+	return nil, http.StatusOK
 }

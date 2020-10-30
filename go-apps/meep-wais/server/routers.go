@@ -93,6 +93,13 @@ var routes = Routes{
 	},
 
 	Route{
+		"SubscriptionsDELETE",
+		strings.ToUpper("Delete"),
+		"/wai/v2/subscriptions/{subscriptionId}",
+		SubscriptionsDELETE,
+	},
+
+	Route{
 		"SubscriptionsGET",
 		strings.ToUpper("Get"),
 		"/wai/v2/subscriptions/{subscriptionId}",
@@ -111,12 +118,5 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/wai/v2/subscriptions/{subscriptionId}",
 		SubscriptionsPUT,
-	},
-
-	Route{
-		"SubscriptionsSubscrIdDELETE",
-		strings.ToUpper("Delete"),
-		"/wai/v2/subscriptions/{subscriptionId}",
-		SubscriptionsDELETE,
 	},
 }

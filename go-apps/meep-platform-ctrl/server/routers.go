@@ -188,6 +188,20 @@ var routes = Routes{
 	},
 
 	Route{
+		"Authorize",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/authorize",
+		Authorize,
+	},
+
+	Route{
+		"LoginOAuth",
+		strings.ToUpper("Get"),
+		"/platform-ctrl/v1/login",
+		LoginOAuth,
+	},
+
+	Route{
 		"LoginUser",
 		strings.ToUpper("Post"),
 		"/platform-ctrl/v1/login",
