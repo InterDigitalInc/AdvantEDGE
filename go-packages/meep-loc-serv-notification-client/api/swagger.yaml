@@ -46,7 +46,7 @@ paths:
           $ref: "#/definitions/TrackingNotification"
         x-exportParamName: "Notification"
       responses:
-        204:
+        "204":
           description: "No Content"
   /zone_status_notifications/{subscriptionId}:
     post:
@@ -72,7 +72,7 @@ paths:
           $ref: "#/definitions/ZoneStatusNotification"
         x-exportParamName: "Notification"
       responses:
-        204:
+        "204":
           description: "No Content"
 definitions:
   Link:
