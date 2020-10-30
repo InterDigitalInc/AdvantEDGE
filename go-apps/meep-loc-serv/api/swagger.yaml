@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
+  title: AdvantEDGE Location Service REST API
   version: 2.1.1
-  title: "AdvantEDGE Location Service REST API"
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
