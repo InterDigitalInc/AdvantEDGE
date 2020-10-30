@@ -9,7 +9,7 @@ echo "USER_SWAGGER_SANDBOX: ${USER_SWAGGER_SANDBOX}"
 for file in /swagger/*-api.yaml; do
     echo "Prepending [${MEEP_SANDBOX_NAME}] to basepath in: $file"
     sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $file;
-    echo "Replacing {apiRoot} with ${MEEP_HOST_URL}/${MEEP_SANDBOX_NAME} to url in: $file"
+    echo "Replacing {apiRoot} with ${MEEP_SANDBOX_NAME} to url in: $file"
     sed -i 's/{apiRoot}/'${MEEP_SANDBOX_NAME}'/g' $file;
 done
 
@@ -20,8 +20,15 @@ if [[ ! -z "${USER_SWAGGER}" ]]; then
     for file in ${USER_SWAGGER_SANDBOX}/*-api.yaml; do
         echo "Prepending [${MEEP_SANDBOX_NAME}] to basepath in: $file"
         sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $file;
-        echo "Replacing {apiRoot} to url in: $file"
-        sed -i 's/{apiRoot}/'${MEEP_SANDBOX_NAME}'/g' $file;
+        echo "Replacing {apiRoot} with ${MEEP_SANDBOX_NAME} to url in: $file"
+        newValue=${MEEP_HOST_URL}/${MEEP_SANDBOX_NAME}
+        httpPrefixToRemove='http://'
+        httpsPrefixToRemove='https://'
+        echo $newValue
+        newValueSuffix="${newValue/$httpsPrefixToRemove/}"
+        newValueSuffix="${newValueSuffix/$httpPrefixToRemove/}"
+        echo $newValueSuffix
+        sed -i "s@{apiRoot}@$newValueSuffix@g" $file;
     done
 fi
 
