@@ -19,6 +19,7 @@ package server
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
@@ -48,6 +49,8 @@ type VirtEngine struct {
 	hostUrl             string
 	userSwagger         string
 	userSwaggerDir      string
+	sessionKey          string
+	httpsOnly           bool
 	handlerId           int
 	sboxPods            map[string]string
 }
@@ -103,6 +106,23 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
+
+	// Retrieve User Swagger Dir from environment variable
+	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
+	if ve.sessionKey == "" {
+		err = errors.New("MEEP_SESSION_KEY variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_SESSION_KEY found")
+
+	// Retrieve HTTPS only mode from environment variable
+	httpsOnlyStr := strings.TrimSpace(os.Getenv("MEEP_HTTPS_ONLY"))
+	httpsOnly, err := strconv.ParseBool(httpsOnlyStr)
+	if err == nil {
+		ve.httpsOnly = httpsOnly
+	}
+	log.Info("MEEP_HTTPS_ONLY: ", httpsOnlyStr)
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)

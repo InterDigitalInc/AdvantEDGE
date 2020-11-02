@@ -54,7 +54,7 @@ const OAUTH_PROVIDER_GITLAB = "gitlab"
 func initOAuth() {
 
 	// Get default platform URI
-	pfmCtrl.uri = strings.TrimSpace(os.Getenv("MEEP_PLATFORM_URI"))
+	pfmCtrl.uri = strings.TrimSpace(os.Getenv("MEEP_HOST_URL"))
 
 	// Initialize OAuth
 	pfmCtrl.oauthConfigs = make(map[string]*oauth2.Config)

@@ -173,6 +173,7 @@ func deployCore(cobraCmd *cobra.Command) {
 
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
+		sessionKey := utils.RepoCfg.GetString("repo.deployment.auth.session-key")
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
@@ -181,6 +182,7 @@ func deployCore(cobraCmd *cobra.Command) {
 		// Set core flags
 		coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+deployData.registry+"/"+app)
 		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+deployData.tag)
+		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.env.MEEP_SESSION_KEY="+sessionKey)
 		if deployData.codecov && codecov {
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.location="+deployData.workdir+"/codecov/"+app)
@@ -211,7 +213,6 @@ func deployDep(cobraCmd *cobra.Command) {
 func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobra.Command) [][]string {
 	var flags [][]string
 
-	nodeIp := viper.GetString("node.ip")
 	userValueDir := deployData.workdir + "/user/values"
 
 	userValueFile := userValueDir + "/" + targetName + ".yaml"
@@ -225,6 +226,13 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "-f", userValueFile)
 	}
 
+	// Common platform flags
+	httpsOnly := utils.RepoCfg.GetBool("repo.deployment.ingress.https-only")
+	if httpsOnly {
+		flags = utils.HelmFlags(flags, "--set", "ingress.annotations.\"nginx\\.ingress\\.kubernetes\\.io/force-ssl-redirect\"=true")
+	}
+
+	// Service-specific flags
 	switch targetName {
 	case "meep-couchdb":
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
@@ -280,12 +288,32 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
+	case "meep-platform-ctrl":
+		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+		redirectUri := utils.RepoCfg.GetString("repo.deployment.auth.redirect-uri")
+		githubClientId := utils.RepoCfg.GetString("repo.deployment.auth.github.client-id")
+		githubSecret := utils.RepoCfg.GetString("repo.deployment.auth.github.secret")
+		gitlabClientId := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.client-id")
+		gitlabSecret := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.secret")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_CLIENT_ID="+githubClientId)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_REDIRECT_URI="+redirectUri)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_SECRET="+githubSecret)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_CLIENT_ID="+gitlabClientId)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_REDIRECT_URI="+redirectUri)
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_SECRET="+gitlabSecret)
 	case "meep-virt-engine":
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+nodeIp)
+		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+		if httpsOnly {
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\"true\"")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
+		} else {
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
+		}
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER_DIR=\""+deployData.workdir+"/user/sandbox-swagger"+"\"")
