@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**CellChangeSubscription** | [***CellChangeSubscription**](CellChangeSubscription.md) |  | [optional] [default to null]
+**NotificationSubscription** | [***OneOfinlineResponse201NotificationSubscription**](OneOfinlineResponse201NotificationSubscription.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
