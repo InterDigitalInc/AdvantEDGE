@@ -28,14 +28,16 @@ import (
 	"testing"
 	"time"
 
-	//ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	//rnisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 
 	"github.com/gorilla/mux"
 )
+
+//	to be added in import above when notifications are in. Removed to get rid of goimports error
+//      ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
+//      rnisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 
 const INITIAL = 0
 const UPDATED = 1
@@ -491,7 +493,7 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const  testScenarioName = "testScenario"
+const testScenarioName = "testScenario"
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
