@@ -1,12 +1,12 @@
 ---
 
-- hosts: cluster
+- hosts: dev
   gather_facts: yes
   become: yes
   roles:
     - { role: golang, tags: golang }
 
-- hosts: cluster
+- hosts: dev
   gather_facts: yes
   become: yes
   roles:

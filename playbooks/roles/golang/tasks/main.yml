@@ -13,7 +13,9 @@
   failed_when: "'command not found' in go_check.stdout"
 
 - debug:
-    msg: "[WARNING] Current golang version is lower than recommended version {{ go_version }}"
+    msg: "[WARNING] Current golang version is lower than recommended version {{ go_version }}.\n
+    To get the script to install properly, uninstall the existing golang and rerun script.\n
+    Also remove all its dependencies and config/data."
   when: go_check.stdout != '' and go_check.stdout is version_compare(go_version, '<')
 
 - name: Install golang if go command not found

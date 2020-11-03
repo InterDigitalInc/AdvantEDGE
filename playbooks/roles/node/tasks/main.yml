@@ -13,7 +13,9 @@
   failed_when: "'command not found' in node_check.stdout"
 
 - debug:
-    msg: "[WARNING] Current node version is lower than recommended version {{ node_version }}"
+    msg: "[WARNING] Current node version is lower than recommended version {{ node_version }}.\n
+    To get the script to install properly, uninstall the existing node and rerun script.\n
+    Also remove the .nvm folder"
   when: node_check.stdout != '' and node_check.stdout is version_compare(node_version, '<')
 
 - name: Check if npm is installed
@@ -22,10 +24,12 @@
   failed_when: "'command not found' in npm_check.stdout"
 
 - debug:
-    msg: "[WARNING] Current npm version is lower than recommended version {{ npm_version }}"
+    msg: "[WARNING] Current npm version is lower than recommended version {{ npm_version }}.\n
+    To get the script to install properly, uninstall the existing npm and rerun script.\n
+    Also remove the .nvm folder"
   when: npm_check.stdout != '' and npm_check.stdout is version_compare(npm_version, '<')
 
 - name: Install Node and NPM if node or npm command not found
   include_tasks:
     file: install.yml
-  when: node_check.stdout == '' or npm_check.stdout == ''
+  when: node_check.stdout == '' and npm_check.stdout == ''

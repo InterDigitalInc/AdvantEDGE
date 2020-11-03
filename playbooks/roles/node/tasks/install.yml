@@ -25,7 +25,7 @@
 
 - name: Install node
   become: false
-  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && nvm ls-remote | grep 'Latest LTS'; nvm install {{ node_version }}"
+  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && nvm install {{ node_version }}"
 
 - name: Install npm and eslint
   become: false
