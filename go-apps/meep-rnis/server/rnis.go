@@ -47,8 +47,6 @@ const logModuleRNIS string = "meep-rnis"
 //const module string = "rnis"
 var redisAddr string = "meep-redis-master.default.svc.cluster.local:6379"
 var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
-var postgisHost string = "meep-postgis.default.svc.cluster.local"
-var postgisPort string = "5432"
 
 const cellChangeSubscriptionType = "cell_change"
 const rabEstSubscriptionType = "rab_est"
@@ -164,8 +162,6 @@ func Init() (err error) {
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
-		PostgisHost:    postgisHost,
-		PostgisPort:    postgisPort,
 		UeDataCb:       updateUeData,
 		AppEcgiInfoCb:  updateAppEcgiInfo,
 		DomainDataCb:   updateDomainData,
@@ -1013,11 +1009,11 @@ func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionI
 }
 
 func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-        vars := mux.Vars(r)
-        subIdParamStr := vars["subscriptionId"]
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+	subIdParamStr := vars["subscriptionId"]
 
-	//using 2006 
+	//using 2006
 	var response InlineResponse2006
 
 	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
@@ -1035,9 +1031,9 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-        var responseNotificationSubscription OneOfinlineResponse2006NotificationSubscription
-        responseNotificationSubscription.SubscriptionType = subscriptionDiscriminator.SubscriptionType
-        response.NotificationSubscription = &responseNotificationSubscription
+	var responseNotificationSubscription OneOfinlineResponse2006NotificationSubscription
+	responseNotificationSubscription.SubscriptionType = subscriptionDiscriminator.SubscriptionType
+	response.NotificationSubscription = &responseNotificationSubscription
 
 	switch subscriptionDiscriminator.SubscriptionType {
 	case CELL_CHANGE_SUBSCRIPTION:
@@ -1051,9 +1047,9 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		//distinctive subscription part
 		responseNotificationSubscription.FilterCriteriaAssocHo = subscription.FilterCriteriaAssocHo
 		//common part but getting the info directly from the subscription object
-	        responseNotificationSubscription.CallbackReference = subscription.CallbackReference
-	        responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
-	        responseNotificationSubscription.Links = subscription.Links
+		responseNotificationSubscription.CallbackReference = subscription.CallbackReference
+		responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
+		responseNotificationSubscription.Links = subscription.Links
 
 	case RAB_EST_SUBSCRIPTION:
 		subscription := new(RabEstSubscription)
@@ -1063,16 +1059,16 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-                //distinctive subscription part
-                responseFilterCriteriaQci := new(RabModSubscriptionFilterCriteriaQci)
-                responseFilterCriteriaQci.AppInstanceId = subscription.FilterCriteriaQci.AppInstanceId
-                responseFilterCriteriaQci.Ecgi = subscription.FilterCriteriaQci.Ecgi
-                responseFilterCriteriaQci.Qci = subscription.FilterCriteriaQci.Qci
-                responseNotificationSubscription.FilterCriteriaQci = responseFilterCriteriaQci
-                //common part but getting the info directly from the subscription object
-                responseNotificationSubscription.CallbackReference = subscription.CallbackReference
-                responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
-                responseNotificationSubscription.Links = subscription.Links
+		//distinctive subscription part
+		responseFilterCriteriaQci := new(RabModSubscriptionFilterCriteriaQci)
+		responseFilterCriteriaQci.AppInstanceId = subscription.FilterCriteriaQci.AppInstanceId
+		responseFilterCriteriaQci.Ecgi = subscription.FilterCriteriaQci.Ecgi
+		responseFilterCriteriaQci.Qci = subscription.FilterCriteriaQci.Qci
+		responseNotificationSubscription.FilterCriteriaQci = responseFilterCriteriaQci
+		//common part but getting the info directly from the subscription object
+		responseNotificationSubscription.CallbackReference = subscription.CallbackReference
+		responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
+		responseNotificationSubscription.Links = subscription.Links
 
 	case RAB_REL_SUBSCRIPTION:
 		subscription := new(RabRelSubscription)
@@ -1082,12 +1078,12 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-                //distinctive subscription part
-                responseNotificationSubscription.FilterCriteriaQci = subscription.FilterCriteriaQci
-                //common part but getting the info directly from the subscription object
-                responseNotificationSubscription.CallbackReference = subscription.CallbackReference
-                responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
-                responseNotificationSubscription.Links = subscription.Links
+		//distinctive subscription part
+		responseNotificationSubscription.FilterCriteriaQci = subscription.FilterCriteriaQci
+		//common part but getting the info directly from the subscription object
+		responseNotificationSubscription.CallbackReference = subscription.CallbackReference
+		responseNotificationSubscription.ExpiryDeadline = subscription.ExpiryDeadline
+		responseNotificationSubscription.Links = subscription.Links
 
 	default:
 		log.Error("Unknown subscription type")
@@ -1122,14 +1118,14 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 	//extract common body part
 	subscriptionType := subscriptionBody.NotificationSubscription.SubscriptionType
-	
+
 	//create object with notification content only to be converted in proper type
-        jsonOneOfSubscription, err := json.Marshal(subscriptionBody.NotificationSubscription)
-        if err != nil {
-                log.Error(err.Error())
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
+	jsonOneOfSubscription, err := json.Marshal(subscriptionBody.NotificationSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	callbackReference := subscriptionBody.NotificationSubscription.CallbackReference
 	expiryDeadline := subscriptionBody.NotificationSubscription.ExpiryDeadline
@@ -1154,24 +1150,24 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	switch subscriptionType {
 	case CELL_CHANGE_SUBSCRIPTION:
 		subscription := new(CellChangeSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		subscription.Links = link
 
-                if subscription.FilterCriteriaAssocHo == nil {
-                        log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+		if subscription.FilterCriteriaAssocHo == nil {
+			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
-	        if subscription.FilterCriteriaAssocHo.HoStatus == nil {
-                	subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
-	        }
+		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
+		}
 
 		//registration
 		registerCc(subscription, subsIdStr)
@@ -1181,20 +1177,20 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		responseNotificationSubscription.FilterCriteriaAssocHo = subscription.FilterCriteriaAssocHo
 	case RAB_EST_SUBSCRIPTION:
 		subscription := new(RabEstSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		subscription.Links = link
 
-                if subscription.FilterCriteriaQci == nil {
-                        log.Error("FilterCriteriaQci should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
 		//registration
 		registerRe(subscription, subsIdStr)
@@ -1208,20 +1204,20 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		responseNotificationSubscription.FilterCriteriaQci = responseFilterCriteriaQci
 	case RAB_REL_SUBSCRIPTION:
 		subscription := new(RabRelSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		subscription.Links = link
 
-                if subscription.FilterCriteriaQci == nil {
-                        log.Error("FilterCriteriaQci should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
 		//registration
 		registerRr(subscription, subsIdStr)
@@ -1263,13 +1259,13 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionBody.NotificationSubscription.SubscriptionType
 
-        //create object with notification content only to be converted in proper type
-        jsonOneOfSubscription, err := json.Marshal(subscriptionBody.NotificationSubscription)
-        if err != nil {
-                log.Error(err.Error())
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
+	//create object with notification content only to be converted in proper type
+	jsonOneOfSubscription, err := json.Marshal(subscriptionBody.NotificationSubscription)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	callbackReference := subscriptionBody.NotificationSubscription.CallbackReference
 	expiryDeadline := subscriptionBody.NotificationSubscription.ExpiryDeadline
@@ -1278,9 +1274,9 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 	link := subscriptionBody.NotificationSubscription.Links
 	if link == nil || link.Self == nil {
-                w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		log.Error("Mandatory Link parameter not present")
-                return
+		return
 	}
 
 	selfUrl := strings.Split(link.Self.Href, "/")
@@ -1303,24 +1299,24 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	switch subscriptionType {
 	case CELL_CHANGE_SUBSCRIPTION:
 		subscription := new(CellChangeSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-                subscription.Links = link
+		subscription.Links = link
 
 		if subscription.FilterCriteriaAssocHo == nil {
-                        log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
-                if subscription.FilterCriteriaAssocHo.HoStatus == nil {
-                        subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
-                }
+		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
+		}
 
 		//registration
 		if isSubscriptionIdRegisteredCc(subsIdStr) {
@@ -1332,20 +1328,20 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		}
 	case RAB_EST_SUBSCRIPTION:
 		subscription := new(RabEstSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		subscription.Links = link
 
-                if subscription.FilterCriteriaQci == nil {
-                        log.Error("FilterCriteriaQci should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
 		//registration
 		if isSubscriptionIdRegisteredRe(subsIdStr) {
@@ -1361,20 +1357,20 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		}
 	case RAB_REL_SUBSCRIPTION:
 		subscription := new(RabRelSubscription)
-                err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
-                if err != nil {
-                        log.Error(err.Error())
-                        http.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		err = json.Unmarshal([]byte(jsonOneOfSubscription), subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		subscription.Links = link
 
-                if subscription.FilterCriteriaQci == nil {
-                        log.Error("FilterCriteriaQci should not be null for this subscription type")
-                        http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
-                        return
-                }
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
 
 		//registration
 		if isSubscriptionIdRegisteredRr(subsIdStr) {
@@ -1402,23 +1398,23 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 }
 
 func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-        vars := mux.Vars(r)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
 
 	subIdParamStr := vars["subscriptionId"]
-        jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
-        if jsonRespDB == "" {
-                w.WriteHeader(http.StatusNotFound)
-                return
-        }
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+	if jsonRespDB == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-        err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
-        if err != nil {
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-        }
+	err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-        w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 /*

@@ -16,13 +16,13 @@ type OneOfinlineResponse201NotificationSubscription struct {
 
 	ExpiryDeadline *TimeStamp `json:"expiryDeadline,omitempty"`
 
-        SubscriptionType string `json:"subscriptionType"`
+	SubscriptionType string `json:"subscriptionType"`
 
-        FilterCriteriaAssoc *CaReconfSubscriptionFilterCriteriaAssoc `json:"filterCriteriaAssoc,omitempty"`
-        FilterCriteriaAssocHo *CellChangeSubscriptionFilterCriteriaAssocHo `json:"filterCriteriaAssocHo,omitempty"`
-	FilterCriteriaAssocTri *MeasRepUeSubscriptionFilterCriteriaAssocTri `json:"filterCriteriaAssocTri,omitempty"`
-	FilterCriteriaNrMrs *NrMeasRepUeSubscriptionFilterCriteriaNrMrs `json:"filterCriteriaNrMrs,omitempty"`
-        FilterCriteriaQci *RabModSubscriptionFilterCriteriaQci `json:"filterCriteriaQci,omitempty"`
+	FilterCriteriaAssoc          *CaReconfSubscriptionFilterCriteriaAssoc          `json:"filterCriteriaAssoc,omitempty"`
+	FilterCriteriaAssocHo        *CellChangeSubscriptionFilterCriteriaAssocHo      `json:"filterCriteriaAssocHo,omitempty"`
+	FilterCriteriaAssocTri       *MeasRepUeSubscriptionFilterCriteriaAssocTri      `json:"filterCriteriaAssocTri,omitempty"`
+	FilterCriteriaNrMrs          *NrMeasRepUeSubscriptionFilterCriteriaNrMrs       `json:"filterCriteriaNrMrs,omitempty"`
+	FilterCriteriaQci            *RabModSubscriptionFilterCriteriaQci              `json:"filterCriteriaQci,omitempty"`
 	S1BearerSubscriptionCriteria *S1BearerSubscriptionS1BearerSubscriptionCriteria `json:"S1BearerSubscriptionCriteria,omitempty"`
 
 	// Description of the subscribed event. The event is included both in the request and in the response. \\nFor the eventType, the following values are currently defined: 0 = RESERVED. 1 = S1_BEARER_ESTABLISH. 2 = S1_BEARER_MODIFY. 3 = S1_BEARER_RELEASE.

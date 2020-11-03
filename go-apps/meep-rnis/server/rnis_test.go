@@ -29,7 +29,6 @@ import (
 	"time"
 
 	//ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
-
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
@@ -492,9 +491,7 @@ const testScenario string = `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const postgisTestHost = "localhost"
-const postgisTestPort = "30432"
-const testScenarioName = "testScenario"
+const  testScenarioName = "testScenario"
 
 var m *mod.Model
 var mqLocal *mq.MsgQueue
@@ -569,7 +566,6 @@ func TestFailSubscriptionCellChange(t *testing.T) {
 	terminateScenario()
 }
 
-
 func TestSuccessSubscriptionRabEst(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -624,7 +620,6 @@ func TestFailSubscriptionRabEst(t *testing.T) {
 
 	//delete
 	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
-
 	terminateScenario()
 }
 
@@ -685,7 +680,6 @@ func TestFailSubscriptionRabRel(t *testing.T) {
 
 	terminateScenario()
 }
-
 
 func TestSubscriptionsListGet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -835,15 +829,15 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * expected response section
 	 ******************************/
-        expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
-        expectedEcgi := []Ecgi{expectedEcgi1}
-        expectedAssocId1 := AssociateId{"1", "2.2.2.2"}
-        expectedAssocId := []AssociateId{expectedAssocId1}
-        expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
-        expectedCallBackRef := "myCallbakRef"
-        expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-        //expectedExpiry := TimeStamp{1998599770, 0}
-        expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}}
+	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
+	expectedEcgi := []Ecgi{expectedEcgi1}
+	expectedAssocId1 := AssociateId{"1", "2.2.2.2"}
+	expectedAssocId := []AssociateId{expectedAssocId1}
+	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
+	//expectedExpiry := TimeStamp{1998599770, 0}
+	expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -859,7 +853,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-        cellChangeSubscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}
+	cellChangeSubscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}
 
 	body, err := json.Marshal(cellChangeSubscription1)
 	if err != nil {
@@ -969,16 +963,16 @@ func testSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess b
 	 * request execution section
 	 ******************************/
 
-        if expectSuccess {
+	if expectSuccess {
 		_, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNoContent, SubscriptionsDELETE)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-                _, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNotFound, SubscriptionsDELETE)
-                if err != nil {
-                        t.Fatalf("Failed to get expected response")
-                }
+		_, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNotFound, SubscriptionsDELETE)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
 	}
 }
 
@@ -1045,13 +1039,13 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	/******************************
 	 * expected response section
 	 ******************************/
-        expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
-        expectedEcgi := []Ecgi{expectedEcgi1}
-        expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 88}
-        expectedCallBackRef := "myCallbakRef"
-        expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-        //expectedExpiry := TimeStamp{1998599770, 0}
-        expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}}
+	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
+	expectedEcgi := []Ecgi{expectedEcgi1}
+	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 88}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
+	//expectedExpiry := TimeStamp{1998599770, 0}
+	expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1068,7 +1062,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-        subscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
+	subscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1117,7 +1111,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 80}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-//	expectedExpiry := TimeStamp{1988599770, 0}
+	//	expectedExpiry := TimeStamp{1988599770, 0}
 	expectedResponse := InlineResponse201{&OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1170,12 +1164,12 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	/******************************
 	 * expected response section
 	 ******************************/
-        expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
-        expectedEcgi := []Ecgi{expectedEcgi1}
-        expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 88}
-        expectedCallBackRef := "myCallbakRef"
-        expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-        expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}}
+	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
+	expectedEcgi := []Ecgi{expectedEcgi1}
+	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 88}
+	expectedCallBackRef := "myCallbakRef"
+	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
+	expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1192,7 +1186,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-        subscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
+	subscription1 := Body{&OneOfbodyNotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -2025,8 +2019,6 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	postgisHost = postgisTestHost
-	postgisPort = postgisTestPort
 	sandboxName = testScenarioName
 }
 

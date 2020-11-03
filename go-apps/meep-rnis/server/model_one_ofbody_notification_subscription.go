@@ -19,11 +19,11 @@ type OneOfbodyNotificationSubscription struct {
 	// Shall be set to \"S1BearerSubscription\".
 	SubscriptionType string `json:"subscriptionType,omitempty"`
 
-        FilterCriteriaAssoc          *CaReconfSubscriptionFilterCriteriaAssoc          `json:"filterCriteriaAssoc,omitempty"`
+	FilterCriteriaAssoc          *CaReconfSubscriptionFilterCriteriaAssoc          `json:"filterCriteriaAssoc,omitempty"`
 	FilterCriteriaAssocHo        *CellChangeSubscriptionFilterCriteriaAssocHo      `json:"filterCriteriaAssocHo,omitEmpty"`
 	FilterCriteriaAssocTri       *MeasRepUeSubscriptionFilterCriteriaAssocTri      `json:"filterCriteriaAssocTri,omitempty"`
 	FilterCriteriaNrMrs          *NrMeasRepUeSubscriptionFilterCriteriaNrMrs       `json:"filterCriteriaNrMrs,omitempty"`
-        FilterCriteriaQci            *RabModSubscriptionFilterCriteriaQci              `json:"filterCriteriaQci,omitEmpty"`
+	FilterCriteriaQci            *RabModSubscriptionFilterCriteriaQci              `json:"filterCriteriaQci,omitEmpty"`
 	S1BearerSubscriptionCriteria *S1BearerSubscriptionS1BearerSubscriptionCriteria `json:"S1BearerSubscriptionCriteria,omitempty"`
 	// Description of the subscribed event. The event is included both in the request and in the response. \\nFor the eventType, the following values are currently defined: 0 = RESERVED. 1 = S1_BEARER_ESTABLISH. 2 = S1_BEARER_MODIFY. 3 = S1_BEARER_RELEASE.
 	EventType []string `json:"eventType,omitempty"`
