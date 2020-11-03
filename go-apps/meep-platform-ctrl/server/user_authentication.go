@@ -220,7 +220,7 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Redirect user to sandbox
-	http.Redirect(w, r, pfmCtrl.uri+"?sbox="+sandboxName, http.StatusFound)
+	http.Redirect(w, r, pfmCtrl.uri+"?sbox="+sandboxName+"&user="+userId, http.StatusFound)
 }
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
