@@ -229,7 +229,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	// Common platform flags
 	httpsOnly := utils.RepoCfg.GetBool("repo.deployment.ingress.https-only")
 	if httpsOnly {
-		flags = utils.HelmFlags(flags, "--set", "ingress.annotations.\"nginx\\.ingress\\.kubernetes\\.io/force-ssl-redirect\"=true")
+		flags = utils.HelmFlags(flags, "--set", "ingress.annotations.nginx\\.ingress\\.kubernetes\\.io/force-ssl-redirect=\"true\"")
 	}
 
 	// Service-specific flags
