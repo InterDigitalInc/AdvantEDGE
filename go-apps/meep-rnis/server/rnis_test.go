@@ -29,15 +29,13 @@ import (
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	rnisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 
 	"github.com/gorilla/mux"
 )
-
-//	to be added in import above when notifications are in. Removed to get rid of goimports error
-//      ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
-//      rnisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 
 const INITIAL = 0
 const UPDATED = 1
@@ -776,7 +774,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{1998599770, 0}
+	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedResponse := InlineResponse201{&OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -838,7 +836,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	//expectedExpiry := TimeStamp{1998599770, 0}
+	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, CELL_CHANGE_SUBSCRIPTION, nil, &expectedFilter, nil, nil, nil, nil, nil}}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -988,7 +986,7 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 80}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//expectedExpiry := TimeStamp{1998599770, 0}
+	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedResponse := InlineResponse201{&OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1046,7 +1044,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 88}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	//expectedExpiry := TimeStamp{1998599770, 0}
+	//expectedExpiry := TimeStamp{0, 1998599770}
 	expectedResponse := InlineResponse2006{&OneOfinlineResponse2006NotificationSubscription{OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1113,7 +1111,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 80}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	//	expectedExpiry := TimeStamp{1988599770, 0}
+	//expectedExpiry := TimeStamp{0, 1988599770}
 	expectedResponse := InlineResponse201{&OneOfinlineResponse201NotificationSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1258,19 +1256,20 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
         expectedSrcEcgiInSub := Ecgi{Plmn: &expectedSrcPlmn, CellId: expectedSrcCellId}
         expectedEcgi := []Ecgi{expectedSrcEcgiInSub}
 	expectedDstPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
-	expectedDstCellId := []string{"3456789"}
+	expectedDstCellId := "3456789"
 	expectedDstEcgi := rnisNotif.Ecgi{Plmn: &expectedDstPlmnInNotif, CellId: expectedDstCellId}
 	movingUeAddr := "ue1" //based on the scenario change
 	expectedAssocId1 := AssociateId{"1", movingUeAddr}
         expectedAssocId := []AssociateId{expectedAssocId1}
-        expectedEcgi1 := Ecgi{"1234567", &Plmn{"123", "456"}}
-        expectedEcgi := []Ecgi{expectedEcgi1}
+        //expectedEcgi1 := Ecgi{"1234567", &Plmn{"123", "456"}}
+        //expectedEcgi := []Ecgi{expectedEcgi1}
 
-	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
 	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"", expectedAssocId, expectedEcgi, []string{"3"}}
 //FilterCriteriaAssocHo{"", &expectedAssocId, &expectedSrcPlmn, expectedSrcCellId, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
-	//expectedExpiry := TimeStamp{1988599770, 0}
+	//expectedExpiry := TimeStamp{0, 1988599770}
 
 	//******************************
 	// * request vars section
@@ -1318,11 +1317,18 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification rnisNotif.CellChangeNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var notificationBody rnisNotif.Body1
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+	notification := notificationBody.Notification
+
+        jsonResultAll, err := json.Marshal(notification)
+        if err != nil {
+                t.Fatalf(err.Error())
+        }
+	log.Info("SIMON ", string(jsonResultAll))
 
 	//transform the src and target ecgi in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.SrcEcgi)
@@ -1395,7 +1401,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	updateScenario("mobility1")
 
 	//cleanup allocated subscription
-	testSubscriptionCellChangeDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 
 	//******************************
 	// * back to initial state section
@@ -1403,7 +1409,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	terminateScenario()
 
 }
-
+*/
 func TestSubscriptionRabEstNotification(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())
@@ -1428,16 +1434,16 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	// ****************************** /
 	qci := int32(80)
 	expectedPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
-	expectedCellId := []string{"2345678"}
+	expectedCellId := "2345678"
 	expectedEcgi := rnisNotif.Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
 	expectedErabId := 2
-	expectedErabQosParameters := rnisNotif.ErabQosParameters{Qci: qci}
+	expectedErabQosParameters := rnisNotif.RabEstNotificationErabQosParameters{Qci: qci}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocId := AssociateId{"1", movingUeAddr}
-	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
-	expectedFilter := FilterCriteriaAssocQci{"", &expectedAssocId, nil, nil, qci}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
+	expectedFilter := RabModSubscriptionFilterCriteriaQci{Qci: qci} //"", nil, 0, qci}
 	expectedCallBackRef := "myCallbakRef"
-	expectedExpiry := TimeStamp{1988599770, 0}
+	//expectedExpiry := TimeStamp{0, 1988599770}
 
 	//******************************
 	// * request vars section
@@ -1447,7 +1453,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabEstSubscriptionPost1 := RabEstSubscriptionPost1{&RabEstSubscriptionPost{expectedCallBackRef, &expectedFilter, &expectedExpiry}}
+	rabEstSubscriptionPost1 := Body{&OneOfbodyNotificationSubscription{nil, expectedCallBackRef, nil, RAB_EST_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	body, err := json.Marshal(rabEstSubscriptionPost1)
 	if err != nil {
@@ -1462,7 +1468,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	// * request execution section
 	// ****************************** /
 
-	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_est", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabEstSubscriptionSubscriptionsPOST)
+	_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1481,11 +1487,12 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification rnisNotif.RabEstNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var notificationBody rnisNotif.Body4
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+	notification := notificationBody.Notification
 
 	//transform the assocId in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.AssociateId)
@@ -1534,7 +1541,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 
 	//******************************
 	// * back to initial state section
@@ -1567,15 +1574,15 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	// ****************************** /
 	qci := int32(80)
 	expectedPlmnInNotif := rnisNotif.Plmn{Mcc: "123", Mnc: "456"}
-	expectedCellId := []string{"2345678"}
+	expectedCellId := "2345678"
 	expectedEcgi := rnisNotif.Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
-	expectedErabReleaseInfo := rnisNotif.ErabReleaseInfo{ErabId: 1}
+	expectedErabReleaseInfo := rnisNotif.RabRelNotificationErabReleaseInfo{ErabId: 1}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocId := AssociateId{"1", movingUeAddr}
-	expectedAssocIdInNotif := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
-	expectedFilter := FilterCriteriaAssocQci{"", &expectedAssocId, nil, nil, qci}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
+	expectedFilter := RabModSubscriptionFilterCriteriaQci{"", nil, 1, qci}
 	expectedCallBackRef := "myCallbakRef"
-	expectedExpiry := TimeStamp{1988599770, 0}
+	//expectedExpiry := TimeStamp{0, 1988599770}
 
 	//******************************
 	// * request vars section
@@ -1585,7 +1592,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabRelSubscriptionPost1 := RabRelSubscriptionPost1{&RabRelSubscriptionPost{expectedCallBackRef, &expectedFilter, &expectedExpiry}}
+	rabRelSubscriptionPost1 := Body{&OneOfbodyNotificationSubscription{nil, expectedCallBackRef, nil, RAB_REL_SUBSCRIPTION, nil, nil, nil, nil, &expectedFilter, nil, nil}}
 
 	body, err := json.Marshal(rabRelSubscriptionPost1)
 	if err != nil {
@@ -1600,7 +1607,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	// * request execution section
 	// ****************************** /
 
-	_, err = sendRequest(http.MethodPost, "/subscriptions/rab_rel", bytes.NewBuffer(body), nil, nil, http.StatusCreated, RabRelSubscriptionSubscriptionsPOST)
+	_, err = sendRequest(http.MethodPost, "/subscriptions", bytes.NewBuffer(body), nil, nil, http.StatusCreated, SubscriptionsPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1617,11 +1624,12 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification rnisNotif.RabRelNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var notificationBody rnisNotif.Body6
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
+	notification := notificationBody.Notification
 
 	//transform the assocId in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.AssociateId)
@@ -1670,7 +1678,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testSubscriptionRabEstDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 
 	//******************************
 	// * back to initial state section
@@ -1678,7 +1686,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	terminateScenario()
 
 }
-*/
+
 func TestSbi(t *testing.T) {
 
 	fmt.Println("--- ", t.Name())

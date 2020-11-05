@@ -1,28 +1,34 @@
 # \NotificationsApi
 
-All URIs are relative to *https://localhost/rni/v1*
+All URIs are relative to *https://{apiRoot}/rni/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**PostCellChangeNotification**](NotificationsApi.md#PostCellChangeNotification) | **Post** /notifications/cell_change/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the cell change of a UE subscription
-[**PostExpiryNotification**](NotificationsApi.md#PostExpiryNotification) | **Post** /notifications/expiry/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a notification with regards to expiry of an existing subscription
-[**PostRabEstNotification**](NotificationsApi.md#PostRabEstNotification) | **Post** /notifications/rab_est/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab establishment of a UE subscription
-[**PostRabRelNotification**](NotificationsApi.md#PostRabRelNotification) | **Post** /notifications/rab_rel/{subscriptionId} | This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab release of a UE subscription
+[**PostCaReconfNotification**](NotificationsApi.md#PostCaReconfNotification) | **Post** /notifications/ca_reconf/{subscriptionId} | Carrier aggregation reconfiguration subscription notification
+[**PostCellChangeNotification**](NotificationsApi.md#PostCellChangeNotification) | **Post** /notifications/cell_change/{subscriptionId} | Cell change subscription notification
+[**PostExpiryNotification**](NotificationsApi.md#PostExpiryNotification) | **Post** /notifications/expiry/{subscriptionId} | Subscription expiry notification
+[**PostMeasRepUeNotification**](NotificationsApi.md#PostMeasRepUeNotification) | **Post** /notifications/meas_rep_ue/{subscriptionId} | Measurement report Ue subscription notification
+[**PostMeasTaNotification**](NotificationsApi.md#PostMeasTaNotification) | **Post** /notifications/ta/{subscriptionId} | Timing Advance subscription notification
+[**PostNrMeasRepUeNotification**](NotificationsApi.md#PostNrMeasRepUeNotification) | **Post** /notifications/nr_meas_rep_ue/{subscriptionId} | NR measurement report Ue subscription notification
+[**PostRabEstNotification**](NotificationsApi.md#PostRabEstNotification) | **Post** /notifications/rab_est/{subscriptionId} | Rab establishment subscription notification
+[**PostRabModNotification**](NotificationsApi.md#PostRabModNotification) | **Post** /notifications/rab_mod/{subscriptionId} | Rab modification subscription notification
+[**PostRabRelNotification**](NotificationsApi.md#PostRabRelNotification) | **Post** /notifications/rab_rel/{subscriptionId} | Rab release subscription notification
+[**PostS1BearerNotification**](NotificationsApi.md#PostS1BearerNotification) | **Post** /notifications/s1_bearer/{subscriptionId} | S1 bearer subscription notification
 
 
-# **PostCellChangeNotification**
-> PostCellChangeNotification(ctx, subscriptionId, notification)
-This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the cell change of a UE subscription
+# **PostCaReconfNotification**
+> PostCaReconfNotification(ctx, body, subscriptionId)
+Carrier aggregation reconfiguration subscription notification
 
-Cell change subscription notification
+This operation is used by the RNI Service to issue a callback notification of a CaReconfSubscription
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **subscriptionId** | **string**| Identity of a notification subscription | 
-  **notification** | [**CellChangeNotification**](CellChangeNotification.md)| Cell change Notification | 
+  **body** | [**Body**](Body.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
@@ -35,23 +41,52 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostCellChangeNotification**
+> PostCellChangeNotification(ctx, body, subscriptionId)
+Cell change subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a CellChangeSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body1**](Body1.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PostExpiryNotification**
-> PostExpiryNotification(ctx, subscriptionId, notification)
-This operation is used by the AdvantEDGE RNI Service to issue a notification with regards to expiry of an existing subscription
-
+> PostExpiryNotification(ctx, body, subscriptionId)
 Subscription expiry notification
+
+This operation is used by the RNI Service to issue a notification with regards to expiry of an existing subscription
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **subscriptionId** | **string**| Identity of a notification subscription | 
-  **notification** | [**ExpiryNotification**](ExpiryNotification.md)| Subscription expiry Notification | 
+  **body** | [**ExpiryNotification**](ExpiryNotification.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
@@ -64,23 +99,110 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostMeasRepUeNotification**
+> PostMeasRepUeNotification(ctx, body, subscriptionId)
+Measurement report Ue subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a MeasRepUeSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body2**](Body2.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostMeasTaNotification**
+> PostMeasTaNotification(ctx, body, subscriptionId)
+Timing Advance subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a MeasTaSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body8**](Body8.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostNrMeasRepUeNotification**
+> PostNrMeasRepUeNotification(ctx, body, subscriptionId)
+NR measurement report Ue subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a NrMeasRepUeSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body3**](Body3.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PostRabEstNotification**
-> PostRabEstNotification(ctx, subscriptionId, notification)
-This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab establishment of a UE subscription
-
+> PostRabEstNotification(ctx, body, subscriptionId)
 Rab establishment subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a RabEstSubscription
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **subscriptionId** | **string**| Identity of a notification subscription | 
-  **notification** | [**RabEstNotification**](RabEstNotification.md)| Rab establishment Notification | 
+  **body** | [**Body4**](Body4.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
@@ -93,23 +215,52 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostRabModNotification**
+> PostRabModNotification(ctx, body, subscriptionId)
+Rab modification subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a RabModSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body5**](Body5.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PostRabRelNotification**
-> PostRabRelNotification(ctx, subscriptionId, notification)
-This operation is used by the AdvantEDGE RNI Service to issue a callback notification to inform about the rab release of a UE subscription
-
+> PostRabRelNotification(ctx, body, subscriptionId)
 Rab release subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a RabRelSubscription
 
 ### Required Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **subscriptionId** | **string**| Identity of a notification subscription | 
-  **notification** | [**RabRelNotification**](RabRelNotification.md)| Rab release Notification | 
+  **body** | [**Body6**](Body6.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
@@ -122,7 +273,36 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: Not defined
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **PostS1BearerNotification**
+> PostS1BearerNotification(ctx, body, subscriptionId)
+S1 bearer subscription notification
+
+This operation is used by the RNI Service to issue a callback notification of a S1BearerSubscription
+
+### Required Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+  **body** | [**Body7**](Body7.md)| Notification body | 
+  **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

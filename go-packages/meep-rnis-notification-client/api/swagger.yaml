@@ -1,488 +1,1685 @@
----
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: "This API enables the Radio Network Information Service to post notification\
-    \ events to subscribers' applications <p>**Micro-service**<br>None <p>**Type &\
-    \ Usage**<br>User's Edge Applications subscribing to Radio Network Information\
-    \ events must implement this API <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_\
-    \ <p>**Note**<br>This API is not exposed by default on the AdvantEDGE platform"
-  version: "1.0.0"
-  title: "AdvantEDGE Radio Network Information Service Subscription Notification REST\
-    \ API"
+  title: AdvantEDGE Radio Network Information Service Subscription Notifications REST
+    API
+  description: Radio Network Information Service Subscription Notification is AdvantEDGE's
+    implementation of [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf)
+    notifications. <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+    <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis)
+    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
+    information about radio conditions in the network <p>**Details**<br>API details
+    available at _your-AdvantEDGE-ip-address/api_
   contact:
-    name: "InterDigital AdvantEDGE Support"
-    email: "AdvantEDGE@InterDigital.com"
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
   license:
-    name: "Apache 2.0"
-    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/rni/v1"
-tags:
-- name: "notifications"
-consumes:
-- "application/json"
-produces:
-- "application/json"
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+  version: 2.1.1
+externalDocs:
+  description: ETSI GS MEC 012 Radio Network Information API, V2.1.1
+  url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf
+servers:
+- url: https://{apiRoot}/rni/v2
 paths:
+  /notifications/ca_reconf/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Carrier aggregation reconfiguration subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a CaReconfSubscription
+      operationId: postCaReconfNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+        required: true
+      responses:
+        "204":
+          description: No Content
   /notifications/cell_change/{subscriptionId}:
     post:
       tags:
-      - "notifications"
-      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
-        \ notification to inform about the cell change of a UE subscription"
-      description: "Cell change subscription notification"
-      operationId: "postCellChangeNotification"
+      - Notifications
+      summary: Cell change subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a CellChangeSubscription
+      operationId: postCellChangeNotification
       parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Identity of a notification subscription"
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
         required: true
-        type: "string"
-        x-exportParamName: "SubscriptionId"
-      - in: "body"
-        name: "Notification"
-        description: "Cell change Notification"
-        required: true
+        style: simple
+        explode: false
         schema:
-          $ref: "#/definitions/CellChangeNotification"
-        x-exportParamName: "Notification"
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_1'
+        required: true
       responses:
-        204:
-          description: "No Content"
-  /notifications/rab_est/{subscriptionId}:
-    post:
-      tags:
-      - "notifications"
-      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
-        \ notification to inform about the rab establishment of a UE subscription"
-      description: "Rab establishment subscription notification"
-      operationId: "postRabEstNotification"
-      parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Identity of a notification subscription"
-        required: true
-        type: "string"
-        x-exportParamName: "SubscriptionId"
-      - in: "body"
-        name: "Notification"
-        description: "Rab establishment Notification"
-        required: true
-        schema:
-          $ref: "#/definitions/RabEstNotification"
-        x-exportParamName: "Notification"
-      responses:
-        204:
-          description: "No Content"
-  /notifications/rab_rel/{subscriptionId}:
-    post:
-      tags:
-      - "notifications"
-      summary: "This operation is used by the AdvantEDGE RNI Service to issue a callback\
-        \ notification to inform about the rab release of a UE subscription"
-      description: "Rab release subscription notification"
-      operationId: "postRabRelNotification"
-      parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Identity of a notification subscription"
-        required: true
-        type: "string"
-        x-exportParamName: "SubscriptionId"
-      - in: "body"
-        name: "Notification"
-        description: "Rab release Notification"
-        required: true
-        schema:
-          $ref: "#/definitions/RabRelNotification"
-        x-exportParamName: "Notification"
-      responses:
-        204:
-          description: "No Content"
+        "204":
+          description: No Content
   /notifications/expiry/{subscriptionId}:
     post:
       tags:
-      - "notifications"
-      summary: "This operation is used by the AdvantEDGE RNI Service to issue a notification\
-        \ with regards to expiry of an existing subscription"
-      description: "Subscription expiry notification"
-      operationId: "postExpiryNotification"
+      - Notifications
+      summary: Subscription expiry notification
+      description: This operation is used by the RNI Service to issue a notification
+        with regards to expiry of an existing subscription
+      operationId: postExpiryNotification
       parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Identity of a notification subscription"
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
         required: true
-        type: "string"
-        x-exportParamName: "SubscriptionId"
-      - in: "body"
-        name: "Notification"
-        description: "Subscription expiry Notification"
-        required: true
+        style: simple
+        explode: false
         schema:
-          $ref: "#/definitions/ExpiryNotification"
-        x-exportParamName: "Notification"
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpiryNotification'
+        required: true
       responses:
-        204:
-          description: "No Content"
-definitions:
-  AssociateId:
-    type: "object"
-    required:
-    - "type"
-    - "value"
-    properties:
-      type:
-        type: "string"
-        example: "UE_IPV4_ADDRESS"
-        description: "Numeric value (0-255) corresponding to specified type of identifier"
-        enum:
-        - "RESERVED_ASSOCIATED_ID_TYPE"
-        - "UE_IPV4_ADDRESS"
-        - "UE_IPV6_ADDRESS"
-        - "NATED_IP_ADDRESS"
-        - "GTP_TEID"
-      value:
-        type: "string"
-        example: "192.168.10.1"
-        description: "Value for the identifier"
-    example:
-      type: "UE_IPV4_ADDRESS"
-      value: "192.168.10.1"
-  Ecgi:
-    type: "object"
-    required:
-    - "cellId"
-    - "plmn"
-    properties:
-      plmn:
-        $ref: "#/definitions/Plmn"
-      cellId:
-        type: "array"
-        example: "0x800000A"
-        description: "The E-UTRAN Cell Identity as a bit string (size (28)), as defined\
-          \ in 3GPP TS 36.413"
-        items:
-          type: "string"
-          format: "binary"
-    description: "E-UTRAN CelI Global Identifier as defined in 3GPP TS 36.413"
-    example:
-      plmn:
-        mnc: "01"
-        mcc: "001"
-      cellId: "0x800000A"
-  ErabQosParameters:
-    type: "object"
-    required:
-    - "qci"
-    properties:
-      qci:
-        type: "integer"
-        format: "int32"
-        example: 7
-        description: "QoS Class Identifier as defined in TS 23.401"
-      qos_information:
-        $ref: "#/definitions/QosInformation"
-    example:
-      qos_information:
-        erabGbrDl: 10
-        erabGbrUl: 10
-        erabMbrUl: 10
-        erabMbrDl: 10
-      qci: 7
-  ErabReleaseInfo:
-    type: "object"
-    required:
-    - "erabId"
-    properties:
-      erabId:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "The element that uniquely identifies a S1 bearer for a specific\
-          \ UE, as defined in ETSI TS 136 413"
-    example:
-      erabId: 10
-  HoStatus:
-    type: "string"
-    description: "Description of the subscribed to event"
-    example: "COMPLETED"
-    enum:
-    - "RESERVED_HO_STATUS"
-    - "IN_PREPARATION"
-    - "IN_EXECUTION"
-    - "COMPLETED"
-    - "REJECTED"
-    - "CANCELLED"
-  Link:
-    type: "object"
-    properties:
-      self:
-        type: "string"
-        format: "uri"
-        example: "http://meAppClient.example.com/rni/v1/"
-        description: "URI referring to a resource"
-    description: "List of hyperlinks related to the resource"
-    example:
-      self: "http://meAppClient.example.com/rni/v1/"
-  Plmn:
-    type: "object"
-    required:
-    - "mcc"
-    - "mnc"
-    properties:
-      mcc:
-        type: "string"
-        format: "string"
-        example: "001"
-        description: "The Mobile Country Code part of PLMN Identity as defined in\
-          \ 3GPP TS 36.413"
-      mnc:
-        type: "string"
-        format: "string"
-        example: "01"
-        description: "The Mobile Network Code part of PLMN Identity as defined in\
-          \ 3GPP TS 36.413"
-    example:
-      mnc: "01"
-      mcc: "001"
-  QosInformation:
-    type: "object"
-    required:
-    - "erabGbrDl"
-    - "erabGbrUl"
-    - "erabMbrDl"
-    - "erabMbrUl"
-    properties:
-      erabMbrDl:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "This IE indicates the maximum downlink E-RAB Bit Rate as defined\
-          \ in TS 23.401 for this bearer."
-      erabMbrUl:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "This IE indicates the maximum uplink E-RAB Bit Rate as defined\
-          \ in TS 23.401 for this bearer."
-      erabGbrDl:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "This IE indicates the guaranteed  downlink E-RAB Bit Rate as\
-          \ defined in TS 23.401 for this bearer."
-      erabGbrUl:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "This IE indicates the guaranteed  uplink E-RAB Bit Rate as defined\
-          \ in TS 23.401 for this bearer."
-    example:
-      erabGbrDl: 10
-      erabGbrUl: 10
-      erabMbrUl: 10
-      erabMbrDl: 10
-  TempUeId:
-    type: "object"
-    required:
-    - "mmec"
-    - "mtmsi"
-    properties:
-      mmec:
-        type: "string"
-        example: "0"
-        description: "MMEC as defined in ETSI TS 136 413"
-      mtmsi:
-        type: "string"
-        example: "1234"
-        description: "M-TMSI as defined in ETSI TS 136 413"
-    example:
-      mtmsi: "1234"
-      mmec: "0"
-  TimeStamp:
-    type: "object"
-    required:
-    - "nanoSeconds"
-    - "seconds"
-    properties:
-      seconds:
-        type: "integer"
-        format: "uint32"
-        example: 1577836800
-        description: "The seconds part of the time. Time is defined as Unix-time since\
-          \ January 1, 1970, 00:00:00 UTC"
-      nanoSeconds:
-        type: "integer"
-        format: "uint32"
-        example: 0
-        description: "The nanoseconds part of the time. Time is defined as Unix-time\
-          \ since January 1, 1970, 00:00:00 UTC"
-    example:
-      seconds: 1577836800
-      nanoSeconds: 0
-  ExpiryNotification:
-    type: "object"
-    required:
-    - "_links"
-    - "expiryDeadline"
-    properties:
-      timestamp:
-        $ref: "#/definitions/TimeStamp"
-      _links:
-        $ref: "#/definitions/Link"
-      expiryDeadline:
-        $ref: "#/definitions/TimeStamp"
-    example:
-      _links:
-        self: "http://meAppClient.example.com/rni/v1/"
-      expiryDeadline:
-        seconds: 1577836800
-        nanoSeconds: 0
-      timestamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-  CellChangeNotification:
-    type: "object"
-    required:
-    - "hoStatus"
-    - "srcEcgi"
-    - "trgEcgi"
-    properties:
-      timestamp:
-        $ref: "#/definitions/TimeStamp"
-      associateId:
-        $ref: "#/definitions/AssociateId"
-      srcEcgi:
-        $ref: "#/definitions/Ecgi"
-      trgEcgi:
-        type: "array"
-        items:
-          $ref: "#/definitions/Ecgi"
-      hoStatus:
-        $ref: "#/definitions/HoStatus"
-      tempUeId:
-        $ref: "#/definitions/TempUeId"
-    example:
-      associateId:
-        type: "UE_IPV4_ADDRESS"
-        value: "192.168.10.1"
-      hoStatus: "COMPLETED"
-      srcEcgi:
+        "204":
+          description: No Content
+  /notifications/meas_rep_ue/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Measurement report Ue subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a MeasRepUeSubscription
+      operationId: postMeasRepUeNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_2'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/nr_meas_rep_ue/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: NR measurement report Ue subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a NrMeasRepUeSubscription
+      operationId: postNrMeasRepUeNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_3'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/rab_est/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Rab establishment subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a RabEstSubscription
+      operationId: postRabEstNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_4'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/rab_mod/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Rab modification subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a RabModSubscription
+      operationId: postRabModNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_5'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/rab_rel/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Rab release subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a RabRelSubscription
+      operationId: postRabRelNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_6'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/s1_bearer/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: S1 bearer subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a S1BearerSubscription
+      operationId: postS1BearerNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_7'
+        required: true
+      responses:
+        "204":
+          description: No Content
+  /notifications/ta/{subscriptionId}:
+    post:
+      tags:
+      - Notifications
+      summary: Timing Advance subscription notification
+      description: This operation is used by the RNI Service to issue a callback notification
+        of a MeasTaSubscription
+      operationId: postMeasTaNotification
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Notification body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_8'
+        required: true
+      responses:
+        "204":
+          description: No Content
+components:
+  schemas:
+    AssociateId:
+      properties:
+        type:
+          type: string
+          description: 'Numeric value (0-255) corresponding to specified type of identifier
+            as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS.
+            <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
+          enum:
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        value:
+          type: string
+          description: Value for the identifier.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+    CaReconfNotification:
+      required:
+      - ecgi
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the event for a specific UE
+            or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        carrierAggregationMeasInfo:
+          minItems: 0
+          required:
+          - cellIdNei
+          - cellIdSrv
+          type: array
+          description: This parameter can be repeated to contain information of all
+            the carriers assign for Carrier Aggregation up to M.
+          items:
+            $ref: '#/components/schemas/CaReconfNotification_carrierAggregationMeasInfo'
+          x-etsi-mec-cardinality: 0..M
+          x-etsi-mec-origin-type: Structure (inlined)
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        notificationType:
+          type: string
+          description: Shall be set to "CaReConfNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        secondaryCellAdd:
+          minItems: 0
+          required:
+          - ecgi
+          type: array
+          items:
+            $ref: '#/components/schemas/CaReconfNotification_secondaryCellAdd'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        secondaryCellRemove:
+          minItems: 0
+          required:
+          - ecgi
+          type: array
+          items:
+            $ref: '#/components/schemas/CaReconfNotification_secondaryCellAdd'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.8
+    CellChangeNotification:
+      required:
+      - hoStatus
+      - notificationType
+      - srcEcgi
+      - trgEcgi
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the event for a specific UE
+            or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        hoStatus:
+          type: string
+          description: 'Indicate the status of the UE handover procedure. Values are
+            defined as following: <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3
+            = COMPLETED. <p>4 = REJECTED. <p>5 = CANCELLED.'
+          enum:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        notificationType:
+          type: string
+          description: Shall be set to "CellChangeNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        srcEcgi:
+          $ref: '#/components/schemas/Ecgi'
+        tempUeId:
+          $ref: '#/components/schemas/CellChangeNotification_tempUeId'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+        trgEcgi:
+          minItems: 1
+          type: array
+          description: 'E-UTRAN Cell Global Identifier of the target cell. NOTE: Cardinality
+            N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED.'
+          items:
+            $ref: '#/components/schemas/Ecgi'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Ecgi
+      example:
+        notification:
+          notificationType: CellChangeNotification
+          associateId:
+          - type: "1"
+            value: 10.100.0.1
+          hoStatus: "1"
+          srcEcgi:
+            plmn:
+              mnc: "01"
+              mcc: "001"
+              cellId: ACBDEFA
+          tempUeId:
+            mmec: 1
+            mtmsi: 1011231231234
+          timeStamp:
+            seconds: 1977836800
+            nanoseconds: 0
+          trgEcgi:
+            plmn:
+              mnc: "01"
+              mcc: "001"
+              cellId: FEDCBAA
+      x-etsi-ref: 6.4.2
+    CellId:
+      type: string
+      description: String representing the E-UTRAN Cell Identity. Encoded as a bit
+        string (size (28)) as defined in ETSI TS 136 413 [i.3].
+    Ecgi:
+      required:
+      - cellId
+      - plmn
+      type: object
+      properties:
+        cellId:
+          $ref: '#/components/schemas/CellId'
         plmn:
-          mnc: "01"
-          mcc: "001"
-        cellId: "0x800000A"
-      trgEcgi:
-      - plmn:
-          mnc: "01"
-          mcc: "001"
-        cellId: "0x800000A"
-      - plmn:
-          mnc: "01"
-          mcc: "001"
-        cellId: "0x800000A"
-      timestamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-      tempUeId:
-        mtmsi: "1234"
-        mmec: "0"
-  RabEstNotification:
-    type: "object"
-    required:
-    - "ecgi"
-    - "erabId"
-    properties:
-      timestamp:
-        $ref: "#/definitions/TimeStamp"
-      associateId:
-        $ref: "#/definitions/AssociateId"
-      ecgi:
-        $ref: "#/definitions/Ecgi"
-      erabId:
-        type: "integer"
-        format: "int32"
-        example: 10
-        description: "The element that uniquely identifies a S1 bearer for a specific\
-          \ UE, as defined in ETSI TS 136 413"
-      erabQosParameters:
-        $ref: "#/definitions/ErabQosParameters"
-      tempUeId:
-        $ref: "#/definitions/TempUeId"
-    example:
-      associateId:
-        type: "UE_IPV4_ADDRESS"
-        value: "192.168.10.1"
-      erabId: 10
-      erabQosParameters:
-        qos_information:
-          erabGbrDl: 10
-          erabGbrUl: 10
-          erabMbrUl: 10
-          erabMbrDl: 10
-        qci: 7
-      timestamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-      ecgi:
+          $ref: '#/components/schemas/Plmn'
+      x-etsi-ref: 6.5.6
+    ExpiryNotification:
+      required:
+      - _links
+      - expiryDeadline
+      type: object
+      properties:
+        _links:
+          $ref: '#/components/schemas/ExpiryNotification__links'
+        expiryDeadline:
+          $ref: '#/components/schemas/TimeStamp'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.9
+    MeasQuantityResultsNr:
+      type: object
+      properties:
+        rsrp:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 138 331
+            [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrq:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 138
+            331 [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinr:
+          type: integer
+          description: Reference Signal to Interference & Noise Ratio as defined in
+            ETSI TS 138 331 [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+      x-etsi-ref: 6.5.11
+    MeasRepUeNotification:
+      required:
+      - ecgi
+      - notificationType
+      - rsrp
+      - rsrq
+      - trigger
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the event for a specific UE
+            or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        carrierAggregationMeasInfo:
+          minItems: 0
+          required:
+          - cellIdSrv
+          type: array
+          description: This parameter can be repeated to contain information of all
+            the carriers assign for Carrier Aggregation up to M.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_carrierAggregationMeasInfo'
+          x-etsi-mec-cardinality: 0..M
+          x-etsi-mec-origin-type: Structure (inlined)
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        eutranNeighbourCellMeasInfo:
+          minItems: 0
+          required:
+          - ecgi
+          type: array
+          description: This parameter can be repeated to contain information of all
+            the neighbouring cells up to N.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_eutranNeighbourCellMeasInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        heightUe:
+          type: integer
+          description: Indicates height of the UE in meters relative to the sea level
+            as defined in ETSI TS 136.331 [i.7].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Int
+        newRadioMeasInfo:
+          minItems: 0
+          required:
+          - nrCarrierFreq
+          - nrSCs
+          type: array
+          description: 5G New Radio secondary serving cells measurement information.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_newRadioMeasInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        newRadioMeasNeiInfo:
+          minItems: 0
+          required:
+          - nrNCellInfo
+          type: array
+          description: Measurement quantities concerning the 5G NR neighbours.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_newRadioMeasNeiInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        notificationType:
+          type: string
+          description: Shall be set to "MeasRepUeNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        rsrp:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        rsrpEx:
+          type: integer
+          description: Extended Reference Signal Received Power, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrq:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        rsrqEx:
+          type: integer
+          description: Extended Reference Signal Received Quality, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinr:
+          type: integer
+          description: Reference Signal "Signal to Interference plus Noise Ratio",
+            with value mapping defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+        trigger:
+          $ref: '#/components/schemas/Trigger'
+      x-etsi-ref: 6.4.6
+    MeasTaNotification:
+      required:
+      - ecgi
+      - notificationType
+      - timingAdvance
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the event for a specific UE
+            or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        notificationType:
+          type: string
+          description: Shall be set to "MeasTaNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+        timingAdvance:
+          type: integer
+          description: The timing advance as defined in ETSI TS 136 214 [i.5].
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      x-etsi-ref: 6.4.7
+    NRcgi:
+      required:
+      - nrcellId
+      - plmn
+      type: object
+      properties:
+        nrcellId:
+          $ref: '#/components/schemas/NrCellId'
         plmn:
-          mnc: "01"
-          mcc: "001"
-        cellId: "0x800000A"
-      tempUeId:
-        mtmsi: "1234"
-        mmec: "0"
-  RabRelNotification:
-    type: "object"
-    required:
-    - "ecgi"
-    - "erabReleaseInfo"
-    properties:
-      timestamp:
-        $ref: "#/definitions/TimeStamp"
-      associateId:
-        $ref: "#/definitions/AssociateId"
-      ecgi:
-        $ref: "#/definitions/Ecgi"
-      erabReleaseInfo:
-        $ref: "#/definitions/ErabReleaseInfo"
-    example:
-      erabReleaseInfo:
-        erabId: 10
-      associateId:
-        type: "UE_IPV4_ADDRESS"
-        value: "192.168.10.1"
-      timestamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-      ecgi:
-        plmn:
-          mnc: "01"
-          mcc: "001"
-        cellId: "0x800000A"
-parameters:
-  Path.SubscriptionId:
-    name: "subscriptionId"
-    in: "path"
-    description: "Identity of a notification subscription"
-    required: true
-    type: "string"
-    x-exportParamName: "SubscriptionId"
-  Body.CellChangeNotification:
-    in: "body"
-    name: "Notification"
-    description: "Cell change Notification"
-    required: true
-    schema:
-      $ref: "#/definitions/CellChangeNotification"
-    x-exportParamName: "Notification"
-  Body.ExpiryNotification:
-    in: "body"
-    name: "Notification"
-    description: "Subscription expiry Notification"
-    required: true
-    schema:
-      $ref: "#/definitions/ExpiryNotification"
-    x-exportParamName: "Notification"
-externalDocs:
-  description: "ETSI MEC012 V1.1.1 Radio Network Information Service API"
-  url: "http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/01.01.01_60/gs_MEC012v010101p.pdf"
+          $ref: '#/components/schemas/Plmn'
+      x-etsi-ref: 6.5.7
+    NrCellId:
+      type: string
+      description: String representing the NR Cell Identity. Encoded as a bit string
+        (size (36)) as defined in ETSI TS 138 423 [i.17].
+    NrMeasRepUeNotification:
+      required:
+      - notificationType
+      - triggerNr
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the event for a specific UE
+            or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        eutraNeighCellMeasInfo:
+          minItems: 0
+          required:
+          - ecgi
+          type: array
+          description: This parameter can be repeated to contain measurement information
+            of all the neighbouring cells up to N. It shall not be included if nrNeighCellMeasInfo
+            is included.
+          items:
+            $ref: '#/components/schemas/NrMeasRepUeNotification_eutraNeighCellMeasInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        notificationType:
+          type: string
+          description: Shall be set to "NrMeasRepUeNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        nrNeighCellMeasInfo:
+          minItems: 0
+          required:
+          - nrcgi
+          type: array
+          description: This parameter can be repeated to contain measurement information
+            of all the neighbouring cells up to N. It shall not be included if eutraNeighCellMeasInfo
+            is included.
+          items:
+            $ref: '#/components/schemas/NrMeasRepUeNotification_nrNeighCellMeasInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        servCellMeasInfo:
+          minItems: 0
+          required:
+          - nrcgi
+          - sCell
+          type: array
+          description: This parameter can be repeated to contain information of all
+            the serving cells up to N.
+          items:
+            $ref: '#/components/schemas/NrMeasRepUeNotification_servCellMeasInfo'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+        triggerNr:
+          $ref: '#/components/schemas/TriggerNr'
+      x-etsi-ref: 6.4.11
+    Plmn:
+      required:
+      - mcc
+      - mnc
+      type: object
+      properties:
+        mcc:
+          type: string
+          description: The Mobile Country Code part of PLMN Identity as defined in
+            ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        mnc:
+          type: string
+          description: The Mobile Network Code part of PLMN Identity as defined in
+            ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      x-etsi-ref: 6.5.5
+    RabEstNotification:
+      required:
+      - ecgi
+      - erabId
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: '0 to N identifiers to bind the event for a specific UE or
+            flow. '
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        erabId:
+          type: integer
+          description: The attribute that uniquely identifies a Radio Access bearer
+            for specific UE as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabQosParameters:
+          $ref: '#/components/schemas/RabEstNotification_erabQosParameters'
+        notificationType:
+          type: string
+          description: Shall be set to "RabEstNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        tempUeId:
+          $ref: '#/components/schemas/RabEstNotification_tempUeId'
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.3
+    RabModNotification:
+      required:
+      - ecgi
+      - erabId
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: '0 to N identifiers to bind the event for a specific UE or
+            flow. '
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        erabId:
+          type: integer
+          description: The attribute that uniquely identifies a Radio Access bearer
+            for specific UE as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabQosParameters:
+          $ref: '#/components/schemas/RabModNotification_erabQosParameters'
+        notificationType:
+          type: string
+          description: Shall be set to "RabModNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.4
+    RabRelNotification:
+      required:
+      - ecgi
+      - erabReleaseInfo
+      - notificationType
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to bind the event for a specific UE or flow
+            as defined below.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        erabReleaseInfo:
+          $ref: '#/components/schemas/RabRelNotification_erabReleaseInfo'
+        notificationType:
+          type: string
+          description: Shall be set to "RabRelNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.5
+    ResultsPerCsiRsIndex:
+      required:
+      - csiRsIndex
+      type: object
+      properties:
+        csiRsIndex:
+          type: integer
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        csiRsResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+    ResultsPerCsiRsIndexList:
+      type: object
+      properties:
+        resultsPerCsiRsIndex:
+          minItems: 0
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultsPerCsiRsIndex'
+          x-etsi-mec-cardinality: 0..P
+          x-etsi-mec-origin-type: Structure (inline)
+      x-etsi-ref: 6.5.10
+    ResultsPerSsbIndex:
+      required:
+      - ssbIndex
+      type: object
+      properties:
+        ssbIndex:
+          type: integer
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        ssbResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+    ResultsPerSsbIndexList:
+      type: object
+      properties:
+        resultsPerSsbIndex:
+          minItems: 0
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultsPerSsbIndex'
+          x-etsi-mec-cardinality: 0..P
+          x-etsi-mec-origin-type: Structure (inline)
+      x-etsi-ref: 6.5.9
+    RsIndexResults:
+      required:
+      - resultsCsiRsIndexes
+      - resultsSsbIndexes
+      type: object
+      properties:
+        resultsCsiRsIndexes:
+          $ref: '#/components/schemas/ResultsPerCsiRsIndexList'
+        resultsSsbIndexes:
+          $ref: '#/components/schemas/ResultsPerSsbIndexList'
+      x-etsi-ref: 6.5.8
+    S1BearerNotification:
+      required:
+      - notificationType
+      - s1Event
+      - s1UeInfo
+      type: object
+      properties:
+        notificationType:
+          type: string
+          description: Shall be set to "S1BearerNotification".
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        s1Event:
+          type: string
+          description: The subscribed event that triggered this notification in S1BearerSubscription.
+          enum:
+          - SEE_DESCRIPTION
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Enum
+        s1UeInfo:
+          required:
+          - ecgi
+          - s1BearerInfo
+          type: array
+          description: Information on specific UE that matches the criteria in S1BearerSubscription
+            as defined below.
+          items:
+            $ref: '#/components/schemas/S1BearerNotification_s1UeInfo'
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Structure (inlined)
+        timeStamp:
+          $ref: '#/components/schemas/TimeStamp'
+      x-etsi-ref: 6.4.10
+    TimeStamp:
+      required:
+      - nanoSeconds
+      - seconds
+      type: object
+      properties:
+        nanoSeconds:
+          type: integer
+          description: The nanoseconds part of the time. Time is defined as Unix-time
+            since January 1, 1970, 00:00:00 UTC.
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          type: integer
+          description: The seconds part of the time. Time is defined as Unixtime since
+            January 1, 1970, 00:00:00 UTC.
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+      x-etsi-ref: 6.5.3
+    Trigger:
+      type: string
+      description: As defined in Ref ETSI TS 136 331 [i.7] <p>0 = NOT_AVAILABLE <p>1
+        = PERIODICAL_REPORT_STRONGEST_CELLS <p>2 = PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON
+        <p>3 = PERIODICAL_REPORT_CGI <p>4 = INTRA_PERIODICAL_REPORT_STRONGEST_CELLS
+        <p>5 = INTRA_PERIODICAL_REPORT_CGI <p>10 = EVENT_A1 <p>11 = EVENT_A2 <p>12
+        = EVENT_A3 <p>13 = EVENT_A4 <p>14 = EVENT_A5 <p>15 = EVENT_A6 <p>20 = EVENT_B1
+        <p>21 = EVENT_B2 <p>20 = EVENT_B1-NR <p>21 = EVENT_B2-NR <p>30 = EVENT_C1
+        <p>31 = EVENT_C2 <p>40 = EVENT_W1 <p>41 = EVENT_W2 <p>42 = EVENT_W3 <p>50
+        = EVENT_V1 <p>51 = EVENT_V2 <p>60 = EVENT_H1 <p>61 = EVENT_H2
+      enum:
+      - "0"
+      - "1"
+      - "2"
+      - "3"
+      - "4"
+      - "5"
+      - "10"
+      - "11"
+      - "12"
+      - "13"
+      - "14"
+      - "15"
+      - "20"
+      - "21"
+      - "20"
+      - "21"
+      - "30"
+      - "31"
+      - "40"
+      - "41"
+      - "42"
+      - "50"
+      - "51"
+      - "60"
+      - "61"
+    TriggerNr:
+      type: string
+      description: The enumeration Trigger represents specified triggers for a 5G
+        UE Measurement Report. Full details can be found in ETSI TS 138 331 [i.13]).
+        <p>0 = NOT_AVAILABLE <p>1 = NR_PERIODICAL <p>2 = NR_CGI <p>10 = EVENT_A1 <p>11
+        = EVENT_A2 <p>12 = EVENT_A3 <p>13 = EVENT_A4 <p>14 = EVENT_A5 <p>15 = EVENT_A6
+        <p>20 = INTER_RAT_PERIODICAL <p>21 = INTER_RAT_CGI <p>30 = EVENT_B1 <p>31
+        = EVENT_B2
+      enum:
+      - "0"
+      - "1"
+      - "2"
+      - "10"
+      - "11"
+      - "12"
+      - "13"
+      - "14"
+      - "15"
+      - "20"
+      - "21"
+      - "30"
+      - "31"
+    body:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/CaReconfNotification'
+    body_1:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/CellChangeNotification'
+    body_2:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/MeasRepUeNotification'
+    body_3:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/NrMeasRepUeNotification'
+    body_4:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/RabEstNotification'
+    body_5:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/RabModNotification'
+    body_6:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/RabRelNotification'
+    body_7:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/S1BearerNotification'
+    body_8:
+      type: object
+      properties:
+        notification:
+          $ref: '#/components/schemas/MeasTaNotification'
+    CaReconfNotification_carrierAggregationMeasInfo:
+      type: object
+      properties:
+        cellIdNei:
+          $ref: '#/components/schemas/CellId'
+        cellIdSrv:
+          $ref: '#/components/schemas/CellId'
+        rsrpNei:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rsrpSrv:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rsrqNei:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rsrqSrv:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          format: uint32
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+    CaReconfNotification_secondaryCellAdd:
+      type: object
+      properties:
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+    CellChangeNotification_tempUeId:
+      required:
+      - mmec
+      - mtmsi
+      type: object
+      properties:
+        mmec:
+          type: string
+          description: MMEC as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        mtmsi:
+          type: string
+          description: M-TMSI as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      description: The temporary identifier allocated for the specific UE as defined
+        below.
+    ExpiryNotification__links:
+      required:
+      - self
+      type: object
+      properties:
+        self:
+          type: string
+          description: Self referring URI. This shall be included in the response
+            from the RNIS. The URI shall be unique within the RNI API as it acts as
+            an ID for the subscription.
+          format: uri
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: URI
+      description: List of hyperlinks related to the resource.
+    MeasRepUeNotification_carrierAggregationMeasInfo:
+      type: object
+      properties:
+        cellIdNei:
+          $ref: '#/components/schemas/CellId'
+        cellIdSrv:
+          $ref: '#/components/schemas/CellId'
+        rsrpNei:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrpNeiEx:
+          type: integer
+          description: Extended Reference Signal Received Power, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrpSrv:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrpSrvEx:
+          type: integer
+          description: Extended Reference Signal Received Power, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrqNei:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrqNeiEx:
+          type: integer
+          description: Extended Reference Signal Received Quality, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrqSrv:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrqSrvEx:
+          type: integer
+          description: Extended Reference Signal Received Quality, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinrNei:
+          type: integer
+          description: Reference Signal "Signal to Interference plus Noise Ratio",
+            with value mapping defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinrSrv:
+          type: integer
+          description: Reference Signal "Signal to Interference plus Noise Ratio",
+            with value mapping defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+    MeasRepUeNotification_eutranNeighbourCellMeasInfo:
+      type: object
+      properties:
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        rsrp:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 136 214
+            [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrpEx:
+          type: integer
+          description: Extended Reference Signal Received Power, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrq:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 136
+            214 [i.5].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrqEx:
+          type: integer
+          description: Extended Reference Signal Received Quality, with value mapping
+            defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinr:
+          type: integer
+          description: Reference Signal "Signal to Interference plus Noise Ratio",
+            with value mapping defined in ETSI TS 136 133 [i.16].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+    MeasRepUeNotification_nrBNCs_nrBNCellInfo:
+      type: object
+      properties:
+        nrBNCellGId:
+          $ref: '#/components/schemas/NrCellId'
+        nrBNCellPlmn:
+          minItems: 1
+          type: array
+          description: Public land mobile network identities
+          items:
+            $ref: '#/components/schemas/Plmn'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Plmn
+    MeasRepUeNotification_nrBNCs:
+      required:
+      - nrBNCellInfo
+      type: object
+      properties:
+        nrBNCellInfo:
+          minItems: 1
+          required:
+          - nrBNCellGId
+          - nrBNCellPlmn
+          type: array
+          description: Best neighbours of the secondary serving cell(s) info
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_nrBNCs_nrBNCellInfo'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Structure (inlined)
+        nrBNCellRsrp:
+          type: integer
+          description: Reference Signal Received Power measurement according to mapping
+            table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrBNCellRsrq:
+          type: integer
+          description: Reference Signal Received Quality measurement according to
+            mapping table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrBNCellRssi:
+          type: integer
+          description: Reference signal SINR measurement according to mapping table
+            in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+      description: Measurement quantities concerning the best neighbours of the secondary
+        serving cells
+    MeasRepUeNotification_nrSCs_nrSCellInfo:
+      type: object
+      properties:
+        nrSCellGId:
+          $ref: '#/components/schemas/NrCellId'
+        nrSCellPlmn:
+          minItems: 1
+          type: array
+          description: Public land mobile network identities.
+          items:
+            $ref: '#/components/schemas/Plmn'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Plmn
+    MeasRepUeNotification_nrSCs:
+      required:
+      - nrSCellInfo
+      type: object
+      properties:
+        nrSCellInfo:
+          minItems: 1
+          required:
+          - nrSCellGId
+          - nrSCellPlmn
+          type: array
+          description: Secondary serving cell(s) info.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_nrSCs_nrSCellInfo'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Structure (inlined)
+        nrSCellRsrp:
+          type: integer
+          description: Reference Signal Received Power measurement according to mapping
+            table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrSCellRsrq:
+          type: integer
+          description: Reference Signal Received Quality measurement according to
+            mapping table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrSCellRssi:
+          type: integer
+          description: Reference signal SINR measurement according to mapping table
+            in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+      description: Measurement quantities concerning the secondary serving cells.
+    MeasRepUeNotification_newRadioMeasInfo:
+      type: object
+      properties:
+        nrBNCs:
+          $ref: '#/components/schemas/MeasRepUeNotification_nrBNCs'
+        nrCarrierFreq:
+          type: integer
+          description: ARFCN applicable for a downlink, uplink or bi-directional (TDD)
+            NR carrier frequency, as defined in ETSI TS 138.101 [i.15].
+          format: uint32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint32
+        nrSCs:
+          $ref: '#/components/schemas/MeasRepUeNotification_nrSCs'
+    MeasRepUeNotification_nrNCellInfo:
+      type: object
+      properties:
+        nrNCellGId:
+          $ref: '#/components/schemas/NrCellId'
+        nrNCellPlmn:
+          minItems: 1
+          type: array
+          description: Public land mobile network identities.
+          items:
+            $ref: '#/components/schemas/Plmn'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Plmn
+    MeasRepUeNotification_newRadioMeasNeiInfo:
+      type: object
+      properties:
+        nrNCellInfo:
+          minItems: 1
+          required:
+          - nrNCellGId
+          - nrNCellPlmn
+          type: array
+          description: 5G NR neighbour cell info.
+          items:
+            $ref: '#/components/schemas/MeasRepUeNotification_nrNCellInfo'
+          x-etsi-mec-cardinality: 1..P
+          x-etsi-mec-origin-type: Structure (inlined)
+        nrNCellRsrp:
+          type: integer
+          description: Reference Signal Received Power measurement according to mapping
+            table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrNCellRsrq:
+          type: integer
+          description: Reference Signal Received Quality measurement according to
+            mapping table in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        nrNCellRssi:
+          type: integer
+          description: Reference signal SINR measurement according to mapping table
+            in ETSI TS 138.133 [i.14].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsIndexResults:
+          $ref: '#/components/schemas/RsIndexResults'
+    NrMeasRepUeNotification_eutraNeighCellMeasInfo:
+      type: object
+      properties:
+        ecgi:
+          $ref: '#/components/schemas/Ecgi'
+        rsrp:
+          type: integer
+          description: Reference Signal Received Power as defined in ETSI TS 138 331
+            [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        rsrq:
+          type: integer
+          description: Reference Signal Received Quality as defined in ETSI TS 138
+            331 [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        sinr:
+          type: integer
+          description: Reference Signal plus Interference Noise Ratio as defined in
+            ETSI TS 138 331 [i.13].
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+    NrMeasRepUeNotification_nrNeighCellMeasInfo:
+      type: object
+      properties:
+        measQuantityResultsCsiRsCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        measQuantityResultsSsbCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        nrcgi:
+          $ref: '#/components/schemas/NrCellId'
+        rsIndexResults:
+          $ref: '#/components/schemas/RsIndexResults'
+    NrMeasRepUeNotification_nCell:
+      type: object
+      properties:
+        measQuantityResultsCsiRsCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        measQuantityResultsSsbCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        rsIndexResults:
+          $ref: '#/components/schemas/RsIndexResults'
+      description: Measurement information relating to the best neighbour of this
+        serving cell.
+    NrMeasRepUeNotification_sCell:
+      type: object
+      properties:
+        measQuantityResultsCsiRsCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        measQuantityResultsSsbCell:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+        rsIndexResults:
+          $ref: '#/components/schemas/RsIndexResults'
+      description: Measurement information relating to this serving cell.
+    NrMeasRepUeNotification_servCellMeasInfo:
+      type: object
+      properties:
+        nCell:
+          $ref: '#/components/schemas/NrMeasRepUeNotification_nCell'
+        nrcgi:
+          $ref: '#/components/schemas/NRcgi'
+        sCell:
+          $ref: '#/components/schemas/NrMeasRepUeNotification_sCell'
+    RabEstNotification_erabQosParameters_qosInformation:
+      required:
+      - erabGbrDl
+      - erabGbrUl
+      - erabMbrDl
+      - erabMbrUl
+      type: object
+      properties:
+        erabGbrDl:
+          type: integer
+          description: This attribute indicates the guaranteed downlink E-RAB Bit
+            Rate as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabGbrUl:
+          type: integer
+          description: This attribute indicates the guaranteed uplink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabMbrDl:
+          type: integer
+          description: This attribute indicates the maximum downlink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabMbrUl:
+          type: integer
+          description: This attribute indicates the maximum uplink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+      description: The RabEstNotification QoS information for the E-RAB.
+    RabEstNotification_erabQosParameters:
+      required:
+      - qci
+      type: object
+      properties:
+        qci:
+          type: integer
+          description: QoS Class Identifier as defined in ETSI TS 123 401 [i.4].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        qosInformation:
+          $ref: '#/components/schemas/RabEstNotification_erabQosParameters_qosInformation'
+      description: QoS parameters for the E-RAB as defined below.
+    RabEstNotification_tempUeId:
+      required:
+      - mmec
+      - mtmsi
+      type: object
+      properties:
+        mmec:
+          type: string
+          description: MMEC as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        mtmsi:
+          type: string
+          description: M-TMSI as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      description: 'The temporary identifier allocated for the specific UE as defined
+        below. '
+    RabModNotification_erabQosParameters_qosInformation:
+      required:
+      - erabGbrDl
+      - erabGbrUl
+      - erabMbrDl
+      - erabMbrUl
+      type: object
+      properties:
+        erabGbrDl:
+          type: integer
+          description: This attribute indicates the guaranteed downlink E-RAB Bit
+            Rate as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabGbrUl:
+          type: integer
+          description: This attribute indicates the guaranteed uplink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabMbrDl:
+          type: integer
+          description: This attribute indicates the maximum downlink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        erabMbrUl:
+          type: integer
+          description: This attribute indicates the maximum uplink E-RAB Bit Rate
+            as defined in ETSI TS 123 401 [i.4] for this bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+      description: The QoS Information for the E-RAB as defined below.
+    RabModNotification_erabQosParameters:
+      required:
+      - qci
+      type: object
+      properties:
+        qci:
+          type: integer
+          description: QoS Class Identifier as defined in ETSI TS 123 401 [i.4].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        qosInformation:
+          $ref: '#/components/schemas/RabModNotification_erabQosParameters_qosInformation'
+      description: The QoS parameters for the E-RAB as defined below.
+    RabRelNotification_erabReleaseInfo:
+      required:
+      - erabId
+      type: object
+      properties:
+        erabId:
+          type: integer
+          description: The attribute that uniquely identifies a Radio Access bearer
+            for specific UE as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+      description: The release information for the E-RAB as defined below.
+    S1BearerNotification_enbInfo:
+      required:
+      - ipAddress
+      - tunnelId
+      type: object
+      properties:
+        ipAddress:
+          type: string
+          description: eNB transport layer address of this S1 bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        tunnelId:
+          type: string
+          description: eNB GTP-U TEID of this S1 bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      description: S1 bearer information on eNB side as defined below.
+    S1BearerNotification_sGwInfo:
+      required:
+      - ipAddress
+      - tunnelId
+      type: object
+      properties:
+        ipAddress:
+          type: string
+          description: SGW transport layer address of this S1 bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+        tunnelId:
+          type: string
+          description: SGW GTP-U TEID of this S1 bearer.
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: String
+      description: S1 bearer information on GW side as defined below.
+    S1BearerNotification_s1BearerInfo:
+      type: object
+      properties:
+        enbInfo:
+          $ref: '#/components/schemas/S1BearerNotification_enbInfo'
+        erabId:
+          type: integer
+          description: The attribute that uniquely identifies a S1 bearer for a specific
+            UE, as defined in ETSI TS 136 413 [i.3].
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Integer
+        sGwInfo:
+          $ref: '#/components/schemas/S1BearerNotification_sGwInfo'
+    S1BearerNotification_s1UeInfo:
+      type: object
+      properties:
+        associateId:
+          minItems: 0
+          type: array
+          description: 0 to N identifiers to associate the information for a specific
+            UE or flow.
+          items:
+            $ref: '#/components/schemas/AssociateId'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssociateId
+        ecgi:
+          minItems: 1
+          type: array
+          description: E-UTRAN Cell Global Identifier.
+          items:
+            $ref: '#/components/schemas/Ecgi'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Ecgi
+        s1BearerInfo:
+          required:
+          - enbInfo
+          - erabId
+          - sGwInfo
+          type: array
+          description: S1 bearer information as defined below.
+          items:
+            $ref: '#/components/schemas/S1BearerNotification_s1BearerInfo'
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: Structure (inlined)
+        tempUeId:
+          $ref: '#/components/schemas/CellChangeNotification_tempUeId'
+  responses:
+    "204":
+      description: No Content
+  parameters:
+    Path.subscrId:
+      name: subscriptionId
+      in: path
+      description: Subscription Id, specifically the "Self-referring URI" returned
+        in the subscription request
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uri
+      x-exportParamName: SubscriptionId

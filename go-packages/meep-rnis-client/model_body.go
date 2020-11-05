@@ -25,5 +25,5 @@
 package client
 
 type Body struct {
-	NotificationSubscription *OneOfbodyNotificationSubscription `json:"notificationSubscription,omitempty"`
+	NotificationSubscription *AllOfbodyNotificationSubscription `json:"notificationSubscription,omitempty"`
 }

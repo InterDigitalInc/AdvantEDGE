@@ -3085,8 +3085,8 @@ components:
       properties:
         notificationSubscription:
           discriminator:
-            propertyName: subscriptionType
-          oneOf:
+            propertyName: SubscriptionType
+          allOf:
           - $ref: '#/components/schemas/CellChangeSubscription'
           - $ref: '#/components/schemas/RabEstSubscription'
           - $ref: '#/components/schemas/RabModSubscription'

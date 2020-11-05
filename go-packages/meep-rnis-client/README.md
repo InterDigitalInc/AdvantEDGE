@@ -34,6 +34,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [AllOfbodyNotificationSubscription](docs/AllOfbodyNotificationSubscription.md)
  - [AssociateId](docs/AssociateId.md)
  - [Body](docs/Body.md)
  - [Body1](docs/Body1.md)
@@ -89,7 +90,6 @@ Class | Method | HTTP request | Description
  - [NrMeasRepUeSubscription](docs/NrMeasRepUeSubscription.md)
  - [NrMeasRepUeSubscriptionFilterCriteriaNrMrs](docs/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md)
  - [OneOfbody1NotificationSubscription](docs/OneOfbody1NotificationSubscription.md)
- - [OneOfbodyNotificationSubscription](docs/OneOfbodyNotificationSubscription.md)
  - [OneOfinlineResponse2005NotificationSubscription](docs/OneOfinlineResponse2005NotificationSubscription.md)
  - [OneOfinlineResponse2006NotificationSubscription](docs/OneOfinlineResponse2006NotificationSubscription.md)
  - [OneOfinlineResponse201NotificationSubscription](docs/OneOfinlineResponse201NotificationSubscription.md)

@@ -376,11 +376,11 @@ func checkForExpiredSubscriptions() {
 				var expiryTimeStamp clientNotif.TimeStamp
 				expiryTimeStamp.Seconds = int32(expiryTime)
 
-				link := new(clientNotif.Link)
+				link := new(clientNotif.ExpiryNotificationLinks)
 				link.Self = cbRef
 				notif.Links = link
 
-				notif.Timestamp = &timeStamp
+				notif.TimeStamp = &timeStamp
 				notif.ExpiryDeadline = &expiryTimeStamp
 
 				sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
@@ -506,6 +506,16 @@ func isMatchRabFilterCriteriaAppInsId(filterCriteria interface{}, appId string) 
 	return (appId == filter.AppInstanceId)
 }
 
+func isMatchRabRelFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AppInstanceId == "" {
+		return true
+	}
+	return (appId == filter.AppInstanceId)
+}
+
 func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
 	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
@@ -594,6 +604,32 @@ func isMatchRabFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, old
 	return false
 }
 
+func isMatchRabRelFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Ecgi == nil {
+		return true
+	}
+
+	//either of the Plmn should match the filter,
+	for _, ecgi := range filter.Ecgi {
+
+		if newPlmn != nil {
+			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
+		}
+		if oldPlmn != nil {
+			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func isMatchCcFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
 	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
@@ -635,12 +671,34 @@ func isMatchRabFilterCriteriaCellId(filterCriteria interface{}, newCellId string
 	return false
 }
 
+func isMatchRabRelFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	if filter.Ecgi == nil {
+		return true
+	}
+
+	//either the old of new cellId should match one of the cellId in the filter list
+	for _, ecgi := range filter.Ecgi {
+		if newCellId == ecgi.CellId {
+			return true
+		}
+		if oldCellId == ecgi.CellId {
+			return true
+		}
+	}
+
+	return false
+}
+
 func isMatchFilterCriteriaAppInsId(subscriptionType string, filterCriteria interface{}, appId string) bool {
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaAppInsId(filterCriteria, appId)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaAppInsId(filterCriteria, appId)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaAppInsId(filterCriteria, appId)
 	}
 	return true
 }
@@ -659,8 +717,10 @@ func isMatchFilterCriteriaPlmn(subscriptionType string, filterCriteria interface
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
 	}
 	return true
 }
@@ -669,8 +729,10 @@ func isMatchFilterCriteriaCellId(subscriptionType string, filterCriteria interfa
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
 	}
 	return true
 }
@@ -727,7 +789,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 					notifNewPlmn.Mcc = ""
 				}
 				newEcgi.Plmn = &notifNewPlmn
-				newEcgi.CellId = []string{newCellId}
+				newEcgi.CellId = newCellId
 				var oldEcgi clientNotif.Ecgi
 				var notifOldPlmn clientNotif.Plmn
 				if oldPlmn != nil {
@@ -738,7 +800,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 					notifOldPlmn.Mcc = ""
 				}
 				oldEcgi.Plmn = &notifOldPlmn
-				oldEcgi.CellId = []string{oldCellId}
+				oldEcgi.CellId = oldCellId
 
 				var notifAssociateId clientNotif.AssociateId
 				notifAssociateId.Type_ = assocId.Type_
@@ -748,12 +810,11 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				notif.Timestamp = &timeStamp
-				notifHoStatus := clientNotif.COMPLETED_HoStatus
-				notif.HoStatus = &notifHoStatus
+				notif.TimeStamp = &timeStamp
+				notif.HoStatus = "3" //only supporting 3 = COMPLETED
 				notif.SrcEcgi = &oldEcgi
 				notif.TrgEcgi = []clientNotif.Ecgi{newEcgi}
-				notif.AssociateId = &notifAssociateId
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
 				sendCcNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
@@ -812,9 +873,9 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notifNewPlmn.Mnc = newPlmn.Mnc
 				notifNewPlmn.Mcc = newPlmn.Mcc
 				newEcgi.Plmn = &notifNewPlmn
-				newEcgi.CellId = []string{newCellId}
+				newEcgi.CellId = newCellId
 
-				var erabQos clientNotif.ErabQosParameters
+				var erabQos clientNotif.RabEstNotificationErabQosParameters
 				erabQos.Qci = defaultSupportedQci
 
 				var notifAssociateId clientNotif.AssociateId
@@ -825,11 +886,11 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				notif.Timestamp = &timeStamp
+				notif.TimeStamp = &timeStamp
 				notif.ErabId = erabId
 				notif.Ecgi = &newEcgi
 				notif.ErabQosParameters = &erabQos
-				notif.AssociateId = &notifAssociateId
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
 				sendReNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
@@ -888,7 +949,7 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notifOldPlmn.Mnc = oldPlmn.Mnc
 				notifOldPlmn.Mcc = oldPlmn.Mcc
 				oldEcgi.Plmn = &notifOldPlmn
-				oldEcgi.CellId = []string{oldCellId}
+				oldEcgi.CellId = oldCellId
 
 				var notifAssociateId clientNotif.AssociateId
 				notifAssociateId.Type_ = assocId.Type_
@@ -898,12 +959,12 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				var timeStamp clientNotif.TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				var erabRelInfo clientNotif.ErabReleaseInfo
+				var erabRelInfo clientNotif.RabRelNotificationErabReleaseInfo
 				erabRelInfo.ErabId = erabId
-				notif.Timestamp = &timeStamp
+				notif.TimeStamp = &timeStamp
 				notif.Ecgi = &oldEcgi
 				notif.ErabReleaseInfo = &erabRelInfo
-				notif.AssociateId = &notifAssociateId
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
 				sendRrNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
 				log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
@@ -922,12 +983,15 @@ func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId st
 		return
 	}
 
-	jsonNotif, err := json.Marshal(notification)
+	var body clientNotif.Body1
+	body.Notification = &notification
+
+	jsonNotif, err := json.Marshal(body)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, body, subscriptionId)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -946,12 +1010,15 @@ func sendReNotification(notifyUrl string, ctx context.Context, subscriptionId st
 		return
 	}
 
-	jsonNotif, err := json.Marshal(notification)
+	var body clientNotif.Body4
+	body.Notification = &notification
+
+	jsonNotif, err := json.Marshal(body)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabEstNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostRabEstNotification(ctx, body, subscriptionId)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -970,12 +1037,15 @@ func sendRrNotification(notifyUrl string, ctx context.Context, subscriptionId st
 		return
 	}
 
-	jsonNotif, err := json.Marshal(notification)
+	var body clientNotif.Body6
+	body.Notification = &notification
+
+	jsonNotif, err := json.Marshal(body)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabRelNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostRabRelNotification(ctx, body, subscriptionId)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -999,7 +1069,7 @@ func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionI
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
+	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, notification, subscriptionId)
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
