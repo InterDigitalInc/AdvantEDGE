@@ -1,6 +1,6 @@
 # \RniApi
 
-All URIs are relative to *https://{apiRoot}/rni/v2*
+All URIs are relative to *https://localhost/rni/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

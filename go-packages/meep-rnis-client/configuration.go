@@ -75,7 +75,7 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	cfg := &Configuration{
-		BasePath:      "https://{apiRoot}/rni/v2",
+		BasePath:      "https://localhost/rni/v2",
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "Swagger-Codegen/1.0.0/go",
 	}
