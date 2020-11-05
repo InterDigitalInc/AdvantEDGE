@@ -1,17 +1,25 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 012 - Radio Network Information API
-  description: The ETSI MEC ISG MEC012 Radio Network Information API described using
-    OpenAPI.
+  title: AdvantEDGE Radio Network Information Service REST API
+  description: Radio Network Information Service is AdvantEDGE's implementation of
+    [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf)
+    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+    <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis)
+    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
+    information about radio conditions in the network <p>**Details**<br>API details
+    available at _your-AdvantEDGE-ip-address/api_
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
   license:
-    name: BSD-3-Clause
-    url: https://forge.etsi.org/legal-matters
+    name: Apache 2.0
+    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
   version: 2.1.1
 externalDocs:
   description: ETSI GS MEC 012 Radio Network Information API, V2.1.1
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf
 servers:
-- url: https://localhost/rni/v2
+- url: https://{apiRoot}/rni/v2
 tags:
 - name: rni
 paths:
