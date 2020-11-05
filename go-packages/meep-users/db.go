@@ -42,12 +42,17 @@ const (
 )
 
 const (
+	ProviderLocal = "local"
+)
+
+const (
 	RoleUser  = "user"
-	RoleSuper = "super"
+	RoleAdmin = "admin"
 )
 
 type User struct {
 	Id       string
+	Provider string
 	Username string
 	Password string
 	Role     string
@@ -164,9 +169,10 @@ func (pc *Connector) CreateTables() (err error) {
 	// users Table
 	_, err = pc.db.Exec(`CREATE TABLE IF NOT EXISTS ` + UsersTable + ` (
 		id			SERIAL			PRIMARY KEY,
-		username	varchar(36)		NOT NULL UNIQUE,
+		provider	varchar(20)		NOT NULL DEFAULT '` + ProviderLocal + `',
+		username	varchar(36)		NOT NULL,
 		password	varchar(100)	NOT NULL,
-		role		varchar(36)		NOT NULL DEFAULT 'user',
+		role		varchar(36)		NOT NULL DEFAULT '` + RoleUser + `',
 		sboxname	varchar(11)		NOT NULL DEFAULT ''
 	)`)
 	if err != nil {
@@ -196,8 +202,11 @@ func (pc *Connector) DeleteTable(tableName string) (err error) {
 }
 
 // CreateUser - Create new user
-func (pc *Connector) CreateUser(username string, password string, role string, sboxname string) (err error) {
+func (pc *Connector) CreateUser(provider string, username string, password string, role string, sboxname string) (err error) {
 	// Validate input
+	if username == "" {
+		return errors.New("Missing username")
+	}
 	if username == "" {
 		return errors.New("Missing username")
 	}
@@ -212,11 +221,14 @@ func (pc *Connector) CreateUser(username string, password string, role string, s
 			return err
 		}
 	}
+	if provider == "" {
+		provider = ProviderLocal
+	}
 
 	// Create entry
-	query := `INSERT INTO ` + UsersTable + ` (username, password, role, sboxname)
-		VALUES ($1, crypt('` + password + `', gen_salt('bf')), $2, $3)`
-	_, err = pc.db.Exec(query, username, role, sboxname)
+	query := `INSERT INTO ` + UsersTable + ` (provider, username, password, role, sboxname)
+		VALUES ($1, $2, crypt('` + password + `', gen_salt('bf')), $3, $4)`
+	_, err = pc.db.Exec(query, provider, username, role, sboxname)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -226,8 +238,11 @@ func (pc *Connector) CreateUser(username string, password string, role string, s
 }
 
 // UpdateUser - Update existing user
-func (pc *Connector) UpdateUser(username string, password string, role string, sboxname string) (err error) {
+func (pc *Connector) UpdateUser(provider string, username string, password string, role string, sboxname string) (err error) {
 	// Validate input
+	if provider == "" {
+		provider = ProviderLocal
+	}
 	if username == "" {
 		return errors.New("Missing username")
 	}
@@ -235,8 +250,8 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 	if password != "" {
 		query := `UPDATE ` + UsersTable + `
 			SET password = crypt('` + password + `', gen_salt('bf'))
-			WHERE username = ($1)`
-		_, err = pc.db.Exec(query, username)
+			WHERE provider = ($1) AND username = ($2)`
+		_, err = pc.db.Exec(query, provider, username)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -249,9 +264,9 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 			return err
 		}
 		query := `UPDATE ` + UsersTable + `
-			SET role = $2
-			WHERE username = ($1)`
-		_, err = pc.db.Exec(query, username, role)
+			SET role = $3
+			WHERE provider = ($1) AND username = ($2)`
+		_, err = pc.db.Exec(query, provider, username, role)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -260,9 +275,9 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 
 	if sboxname != "" {
 		query := `UPDATE ` + UsersTable + `
-			SET sboxname = $2
-			WHERE username = ($1)`
-		_, err = pc.db.Exec(query, username, sboxname)
+			SET sboxname = $3
+			WHERE provider = ($1) AND username = ($2)`
+		_, err = pc.db.Exec(query, provider, username, sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return err
@@ -273,8 +288,11 @@ func (pc *Connector) UpdateUser(username string, password string, role string, s
 }
 
 // GetUser - Get user information
-func (pc *Connector) GetUser(username string) (user *User, err error) {
+func (pc *Connector) GetUser(provider string, username string) (user *User, err error) {
 	// Validate input
+	if provider == "" {
+		provider = ProviderLocal
+	}
 	if username == "" {
 		err = errors.New("Missing username")
 		return nil, err
@@ -283,9 +301,9 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 	// Get user entry
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT id, username, password, role, sboxname
+		SELECT id, provider, username, password, role, sboxname
 		FROM `+UsersTable+`
-		WHERE username = ($1)`, username)
+		WHERE provider = ($1) AND username = ($2)`, provider, username)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
@@ -295,7 +313,7 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 	// Scan result
 	for rows.Next() {
 		user = new(User)
-		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
+		err = rows.Scan(&user.Id, &user.Provider, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
@@ -308,7 +326,7 @@ func (pc *Connector) GetUser(username string) (user *User, err error) {
 
 	// Return error if not found
 	if user == nil {
-		err = errors.New("user not found: " + username)
+		err = errors.New(provider + " user not found: " + username)
 		return nil, err
 	}
 	return user, nil
@@ -322,7 +340,7 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 	// Get user entries
 	var rows *sql.Rows
 	rows, err = pc.db.Query(`
-		SELECT id, username, password, role, sboxname
+		SELECT id, provider, username, password, role, sboxname
 		FROM ` + UsersTable)
 	if err != nil {
 		log.Error(err.Error())
@@ -333,14 +351,14 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 	// Scan results
 	for rows.Next() {
 		user := new(User)
-		err = rows.Scan(&user.Id, &user.Username, &user.Password, &user.Role, &user.Sboxname)
+		err = rows.Scan(&user.Id, &user.Provider, &user.Username, &user.Password, &user.Role, &user.Sboxname)
 		if err != nil {
 			log.Error(err.Error())
 			return userMap, err
 		}
 
 		// Add to map
-		userMap[user.Username] = user
+		userMap[pc.GetUserKey(user.Provider, user.Username)] = user
 	}
 	err = rows.Err()
 	if err != nil {
@@ -350,15 +368,26 @@ func (pc *Connector) GetUsers() (userMap map[string]*User, err error) {
 	return userMap, nil
 }
 
+// GetUserKey - Get provider-specific user key
+func (pc *Connector) GetUserKey(provider string, username string) (key string) {
+	if provider == "" {
+		provider = ProviderLocal
+	}
+	return provider + "-" + username
+}
+
 // DeleteUser - Delete user entry
-func (pc *Connector) DeleteUser(username string) (err error) {
+func (pc *Connector) DeleteUser(provider string, username string) (err error) {
 	// Validate input
+	if provider == "" {
+		provider = ProviderLocal
+	}
 	if username == "" {
 		err = errors.New("Missing username")
 		return err
 	}
 
-	_, err = pc.db.Exec(`DELETE FROM `+UsersTable+` WHERE username = ($1)`, username)
+	_, err = pc.db.Exec(`DELETE FROM `+UsersTable+` WHERE provider = ($1) AND username = ($2)`, provider, username)
 	if err != nil {
 		log.Error(err.Error())
 		return err
@@ -378,8 +407,11 @@ func (pc *Connector) DeleteUsers() (err error) {
 }
 
 //IsValidUser - does if user exists
-func (pc *Connector) IsValidUser(username string) (valid bool, err error) {
+func (pc *Connector) IsValidUser(provider string, username string) (valid bool, err error) {
 	// Validate input
+	if provider == "" {
+		provider = ProviderLocal
+	}
 	if username == "" {
 		err = errors.New("Missing username")
 		return false, err
@@ -388,7 +420,7 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error) {
 	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
-		WHERE username = ($1)`, username)
+		WHERE provider = ($1) AND username = ($2)`, provider, username)
 	if err != nil {
 		log.Error(err.Error())
 		return false, err
@@ -412,8 +444,11 @@ func (pc *Connector) IsValidUser(username string) (valid bool, err error) {
 }
 
 //AuthenticateUser - returns true or false if credentials are OK
-func (pc *Connector) AuthenticateUser(username string, password string) (authenticated bool, err error) {
+func (pc *Connector) AuthenticateUser(provider string, username string, password string) (authenticated bool, err error) {
 	// Validate input
+	if provider == "" {
+		provider = ProviderLocal
+	}
 	if username == "" {
 		err = errors.New("Missing username")
 		return false, err
@@ -422,8 +457,8 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 	rows, err := pc.db.Query(`
 		SELECT id
 		FROM `+UsersTable+`
-		WHERE username = ($1)
-		AND password = crypt('`+password+`', password)`, username)
+		WHERE provider = ($1) AND username = ($2)
+		AND password = crypt('`+password+`', password)`, provider, username)
 	if err != nil {
 		log.Error(err.Error())
 		return false, err
@@ -449,7 +484,7 @@ func (pc *Connector) AuthenticateUser(username string, password string) (authent
 // isValidRole - does role exist
 func isValidRole(role string) error {
 	switch role {
-	case RoleUser, RoleSuper:
+	case RoleUser, RoleAdmin:
 		return nil
 	}
 	return errors.New("Inalid role")

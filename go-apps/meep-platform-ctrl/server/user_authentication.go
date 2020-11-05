@@ -51,6 +51,7 @@ import (
 
 const OAUTH_PROVIDER_GITHUB = "github"
 const OAUTH_PROVIDER_GITLAB = "gitlab"
+const OAUTH_PROVIDER_LOCAL = "local"
 
 var mutex sync.Mutex
 
@@ -207,11 +208,12 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get provider-specific OAuth config
+	provider := request.provider
+	config := pfmCtrl.oauthConfigs[provider]
+
 	// Delete login request & timer
 	delLoginRequest(state)
-
-	// Get provider-specific OAuth config
-	config := pfmCtrl.oauthConfigs[request.provider]
 
 	// Retrieve access token
 	token, err := config.Exchange(context.Background(), code)
@@ -223,7 +225,7 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve User ID
 	var userId string
-	switch request.provider {
+	switch provider {
 	case OAUTH_PROVIDER_GITHUB:
 		oauthClient := config.Client(context.Background(), token)
 		client := github.NewClient(oauthClient)
@@ -259,7 +261,7 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start user session
-	sandboxName, err, errCode := startSession(userId, w, r)
+	sandboxName, err, errCode := startSession(provider, userId, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		http.Redirect(w, r, getErrUrl(err.Error()), errCode)
@@ -278,14 +280,14 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	// Validate user credentials
-	authenticated, err := pfmCtrl.userStore.AuthenticateUser(username, password)
+	authenticated, err := pfmCtrl.userStore.AuthenticateUser(OAUTH_PROVIDER_LOCAL, username, password)
 	if err != nil || !authenticated {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// Start user session
-	sandboxName, err, errCode := startSession(username, w, r)
+	sandboxName, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), errCode)
@@ -311,11 +313,11 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Retrieve existing user session or create a new one
-func startSession(username string, w http.ResponseWriter, r *http.Request) (sandboxName string, err error, code int) {
+func startSession(provider string, username string, w http.ResponseWriter, r *http.Request) (sandboxName string, err error, code int) {
 
 	// Get existing session by user name, if any
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
-	session, err := sessionStore.GetByName(username)
+	session, err := sessionStore.GetByName(provider, username)
 	if err != nil {
 		// Check if max session count is reached before creating a new one
 		count := sessionStore.GetCount()
@@ -326,7 +328,7 @@ func startSession(username string, w http.ResponseWriter, r *http.Request) (sand
 
 		// Get requested sandbox name & role from user profile, if any
 		role := users.RoleUser
-		user, err := pfmCtrl.userStore.GetUser(username)
+		user, err := pfmCtrl.userStore.GetUser(provider, username)
 		if err == nil {
 			sandboxName = user.Sboxname
 			role = user.Role
@@ -352,6 +354,7 @@ func startSession(username string, w http.ResponseWriter, r *http.Request) (sand
 		session = new(sm.Session)
 		session.ID = ""
 		session.Username = username
+		session.Provider = provider
 		session.Sandbox = sandboxName
 		session.Role = role
 	} else {

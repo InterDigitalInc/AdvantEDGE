@@ -40,6 +40,7 @@ const SessionDuration = 1200 // 20 minutes
 const (
 	ValSessionID = "sid"
 	ValUsername  = "user"
+	ValProvider  = "provider"
 	ValSandbox   = "sbox"
 	ValRole      = "role"
 	ValTimestamp = "timestamp"
@@ -54,6 +55,7 @@ const (
 type Session struct {
 	ID        string
 	Username  string
+	Provider  string
 	Sandbox   string
 	Role      string
 	Timestamp time.Time
@@ -131,6 +133,7 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	s = new(Session)
 	s.ID = sessionId
 	s.Username = session[ValUsername]
+	s.Provider = session[ValProvider]
 	s.Sandbox = session[ValSandbox]
 	s.Role = session[ValRole]
 	s.Timestamp, _ = time.Parse(time.RFC3339, session[ValTimestamp])
@@ -166,6 +169,7 @@ func getSessionEntryHandler(key string, fields map[string]string, userData inter
 	s := new(Session)
 	s.ID = fields[ValSessionID]
 	s.Username = fields[ValUsername]
+	s.Provider = fields[ValProvider]
 	s.Sandbox = fields[ValSandbox]
 	s.Role = fields[ValRole]
 	s.Timestamp, _ = time.Parse(time.RFC3339, fields[ValTimestamp])
@@ -174,10 +178,11 @@ func getSessionEntryHandler(key string, fields map[string]string, userData inter
 }
 
 // GetByName - Retrieve session by name
-func (ss *SessionStore) GetByName(username string) (s *Session, err error) {
+func (ss *SessionStore) GetByName(provider string, username string) (s *Session, err error) {
 	// Get existing session, if any
 	s = new(Session)
 	s.Username = username
+	s.Provider = provider
 	err = ss.rc.ForEachEntry(ss.baseKey+"*", getUserEntryHandler, s)
 	if err != nil {
 		return nil, err
@@ -199,7 +204,7 @@ func getUserEntryHandler(key string, fields map[string]string, userData interfac
 	}
 
 	// look for matching username
-	if fields[ValUsername] == s.Username {
+	if fields[ValUsername] == s.Username && fields[ValProvider] == s.Provider {
 		s.ID = fields[ValSessionID]
 		s.Sandbox = fields[ValSandbox]
 		s.Role = fields[ValRole]
@@ -229,6 +234,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	fields := make(map[string]interface{})
 	fields[ValSessionID] = sessionId
 	fields[ValUsername] = s.Username
+	fields[ValProvider] = s.Provider
 	fields[ValSandbox] = s.Sandbox
 	fields[ValRole] = s.Role
 	fields[ValTimestamp] = time.Now().Format(time.RFC3339)
