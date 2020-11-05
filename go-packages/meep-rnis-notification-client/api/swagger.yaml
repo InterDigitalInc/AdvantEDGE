@@ -20,7 +20,9 @@ externalDocs:
   description: ETSI GS MEC 012 Radio Network Information API, V2.1.1
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf
 servers:
-- url: https://{apiRoot}/rni/v2
+- url: https://localhost/rni/v2
+tags:
+- name: notifications
 paths:
   /notifications/ca_reconf/{subscriptionId}:
     post:
