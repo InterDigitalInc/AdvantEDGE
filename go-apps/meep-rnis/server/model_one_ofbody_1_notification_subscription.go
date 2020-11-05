@@ -9,6 +9,8 @@
  */
 package server
 
+//changing by adding json for compile purpose only, this would not meet the spec
+//original code in comments
 type OneOfbody1NotificationSubscription struct {
 	CellChangeSubscription  `json:"cellChangeSubscription,omitempty"`
 	RabEstSubscription      `json:"rabEstSubscription,omitempty"`
@@ -19,4 +21,15 @@ type OneOfbody1NotificationSubscription struct {
 	MeasTaSubscription      `json:"measTaSubscription,omitempty"`
 	CaReconfSubscription    `json:"caReconfSubscription,omitempty"`
 	S1BearerSubscription    `json:"s1BearerSubscription,omitempty"`
+	/*
+	   CellChangeSubscription
+	   RabEstSubscription
+	   RabModSubscription
+	   RabRelSubscription
+	   MeasRepUeSubscription
+	   NrMeasRepUeSubscription
+	   MeasTaSubscription
+	   CaReconfSubscription
+	   S1BearerSubscription
+	*/
 }

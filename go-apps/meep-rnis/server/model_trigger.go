@@ -24,33 +24,33 @@
 package server
 
 // Trigger : As defined in Ref ETSI TS 136 331 [i.7] <p>0 = NOT_AVAILABLE <p>1 = PERIODICAL_REPORT_STRONGEST_CELLS <p>2 = PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON <p>3 = PERIODICAL_REPORT_CGI <p>4 = INTRA_PERIODICAL_REPORT_STRONGEST_CELLS <p>5 = INTRA_PERIODICAL_REPORT_CGI <p>10 = EVENT_A1 <p>11 = EVENT_A2 <p>12 = EVENT_A3 <p>13 = EVENT_A4 <p>14 = EVENT_A5 <p>15 = EVENT_A6 <p>20 = EVENT_B1 <p>21 = EVENT_B2 <p>20 = EVENT_B1-NR <p>21 = EVENT_B2-NR <p>30 = EVENT_C1 <p>31 = EVENT_C2 <p>40 = EVENT_W1 <p>41 = EVENT_W2 <p>42 = EVENT_W3 <p>50 = EVENT_V1 <p>51 = EVENT_V2 <p>60 = EVENT_H1 <p>61 = EVENT_H2
-type Trigger string
+type Trigger int32
 
 // List of Trigger
 const (
-	TRIGGER_0   Trigger = "0"
-	TRIGGER_1   Trigger = "1"
-	TRIGGER_2   Trigger = "2"
-	TRIGGER_3   Trigger = "3"
-	TRIGGER_4   Trigger = "4"
-	TRIGGER_5   Trigger = "5"
-	TRIGGER_10  Trigger = "10"
-	TRIGGER_11  Trigger = "11"
-	TRIGGER_12  Trigger = "12"
-	TRIGGER_13  Trigger = "13"
-	TRIGGER_14  Trigger = "14"
-	TRIGGER_15  Trigger = "15"
-	TRIGGER_20  Trigger = "20"
-	TRIGGER_21  Trigger = "21"
-	TRIGGER_20B Trigger = "20"
-	TRIGGER_21B Trigger = "21"
-	TRIGGER_30  Trigger = "30"
-	TRIGGER_31  Trigger = "31"
-	TRIGGER_40  Trigger = "40"
-	TRIGGER_41  Trigger = "41"
-	TRIGGER_42  Trigger = "42"
-	TRIGGER_50  Trigger = "50"
-	TRIGGER_51  Trigger = "51"
-	TRIGGER_60  Trigger = "60"
-	TRIGGER_61  Trigger = "61"
+	TRIGGER_0   Trigger = 0
+	TRIGGER_1   Trigger = 1
+	TRIGGER_2   Trigger = 2
+	TRIGGER_3   Trigger = 3
+	TRIGGER_4   Trigger = 4
+	TRIGGER_5   Trigger = 5
+	TRIGGER_10  Trigger = 10
+	TRIGGER_11  Trigger = 11
+	TRIGGER_12  Trigger = 12
+	TRIGGER_13  Trigger = 13
+	TRIGGER_14  Trigger = 14
+	TRIGGER_15  Trigger = 15
+	TRIGGER_20  Trigger = 20
+	TRIGGER_21  Trigger = 21
+	TRIGGER_20B Trigger = 20
+	TRIGGER_21B Trigger = 21
+	TRIGGER_30  Trigger = 30
+	TRIGGER_31  Trigger = 31
+	TRIGGER_40  Trigger = 40
+	TRIGGER_41  Trigger = 41
+	TRIGGER_42  Trigger = 42
+	TRIGGER_50  Trigger = 50
+	TRIGGER_51  Trigger = 51
+	TRIGGER_60  Trigger = 60
+	TRIGGER_61  Trigger = 61
 )

@@ -9,6 +9,8 @@
  */
 package server
 
+//changing by adding json for compile purpose only, this would not meet the spec
+//original code in comments
 type OneOfinlineResponse2005NotificationSubscription struct {
 	CellChangeSubscription  `json:"cellChangeSubscription,omitempty"`
 	RabEstSubscription      `json:"rabEstSubscription,omitempty"`

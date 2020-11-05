@@ -1,30 +1,24 @@
 openapi: 3.0.0
 info:
-  title: AdvantEDGE Radio Network Information Service REST API
-  description: Radio Network Information Service is AdvantEDGE's implementation of
-    [ETSI MEC ISG MEC012 RNI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_MEC012v020101p.pdf)
-    <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-    <p>**Micro-service**<br>[meep-rnis](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-rnis)
-    <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
-    information about radio conditions in the network <p>**Details**<br>API details
-    available at _your-AdvantEDGE-ip-address/api_
-  contact:
-    name: InterDigital AdvantEDGE Support
-    email: AdvantEDGE@InterDigital.com
+  title: ETSI GS MEC 012 - Radio Network Information API
+  description: The ETSI MEC ISG MEC012 Radio Network Information API described using
+    OpenAPI.
   license:
-    name: Apache 2.0
-    url: https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE
+    name: BSD-3-Clause
+    url: https://forge.etsi.org/legal-matters
   version: 2.1.1
 externalDocs:
   description: ETSI GS MEC 012 Radio Network Information API, V2.1.1
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/012/02.01.01_60/gs_mec012v020101p.pdf
 servers:
-- url: https://{apiRoot}/rni/v2
+- url: https://localhost/rni/v2
+tags:
+- name: rni
 paths:
   /queries/rab_info:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve information on Radio Access Bearers
       description: Queries information about the Radio Access Bearers
       operationId: rab_infoGET
@@ -106,7 +100,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: ErabId
         x-optionalDataType: Int32
       - name: qci
@@ -117,7 +111,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: Qci
         x-optionalDataType: Int32
       - name: erab_mbr_dl
@@ -128,7 +122,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: ErabMbrDl
         x-optionalDataType: Int32
       - name: erab_mbr_ul
@@ -139,7 +133,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: ErabMbrUl
         x-optionalDataType: Int32
       - name: erab_gbr_dl
@@ -151,7 +145,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: ErabGbrDl
         x-optionalDataType: Int32
       - name: erab_gbr_ul
@@ -162,7 +156,7 @@ paths:
         explode: true
         schema:
           type: integer
-          format: uint32
+          format: int32
         x-exportParamName: ErabGbrUl
         x-optionalDataType: Int32
       responses:
@@ -216,7 +210,7 @@ paths:
   /queries/plmn_info:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve information on the underlying Mobile Network that the MEC
         application is associated to
       description: Queries information about the Mobile Network
@@ -284,7 +278,7 @@ paths:
   /queries/s1_bearer_info:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve S1-U bearer information related to specific UE(s)
       description: Queries information about the S1 bearer(s)
       operationId: s1_bearer_infoGET
@@ -370,7 +364,7 @@ paths:
           type: array
           items:
             type: integer
-            format: uint32
+            format: int32
         x-exportParamName: ErabIdArr
       responses:
         "200":
@@ -423,7 +417,7 @@ paths:
   /queries/layer2_meas:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve information on layer 2 measurements
       description: Queries information about the layer 2 measurements.
       operationId: layer2_meas_infoGET
@@ -883,17 +877,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/inline_response_400'
       x-swagger-router-controller: queries
-  /subscriptions/:
+  /subscriptions:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve information on subscriptions for notifications
       description: Queries information on subscriptions for notifications
       operationId: subscriptionLinkList_subscriptionsGET
       parameters:
       - name: subscription_type
         in: query
-        description: Subscription type filter
+        description: 'Filter on a specific subscription type. Permitted values: cell_change,
+          rab_est, rab_mod, rab_rel, meas_rep_ue, nr_meas_rep_ue, timing_advance_ue,
+          ca_reconf, s1_bearer.'
         required: false
         style: form
         explode: true
@@ -961,7 +957,7 @@ paths:
       x-swagger-router-controller: subscriptions
     post:
       tags:
-      - ""
+      - rni
       summary: Create a new subscription
       description: Creates a new subscription to Radio Network Information notifications
       operationId: subscriptionsPOST
@@ -1078,9 +1074,9 @@ paths:
                         notification:
                           notificationType: CellChangeNotification
                           associateId:
-                          - type: "1"
+                          - type: 1
                             value: 10.100.0.1
-                          hoStatus: "1"
+                          hoStatus: 1
                           srcEcgi:
                             plmn:
                               mnc: "01"
@@ -1105,7 +1101,7 @@ paths:
   /subscriptions/{subscriptionId}:
     get:
       tags:
-      - ""
+      - rni
       summary: Retrieve information on current specific subscription
       description: Queries information about an existing subscription, identified
         by its self-referring URI returned on creation (initial POST)
@@ -1172,7 +1168,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - ""
+      - rni
       summary: Modify an existing subscription
       description: Updates an existing subscription, identified by its self-referring
         URI returned on creation (initial POST)
@@ -1213,7 +1209,7 @@ paths:
                   filterCriteriaAssocHo:
                     appInstanceId: myApp
                     associateId:
-                    - type: "1"
+                    - type: 1
                       value: 10.100.0.1
                     ecgi:
                     - plmn:
@@ -1221,8 +1217,8 @@ paths:
                         mcc: "001"
                       cellId: ACBDEFA
                     hoStatus:
-                    - "1"
-                    - "2"
+                    - 1
+                    - 2
                   expiryDeadline:
                     seconds: 1977836800
                     nanoseconds: 0
@@ -1297,7 +1293,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - ""
+      - rni
       summary: Cancel an existing subscription
       description: Cancels an existing subscription, identified by its self-referring
         URI returned on creation (initial POST)
@@ -1349,16 +1345,16 @@ components:
     AssociateId:
       properties:
         type:
-          type: string
+          type: integer
           description: 'Numeric value (0-255) corresponding to specified type of identifier
             as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS.
             <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
           enum:
-          - "0"
-          - "1"
-          - "2"
-          - "3"
-          - "4"
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         value:
@@ -1367,7 +1363,7 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
       example:
-        type: "0"
+        type: 0
         value: value
     CaReconfNotification:
       required:
@@ -1469,16 +1465,16 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: AssociateId
         hoStatus:
-          type: string
+          type: integer
           description: 'Indicate the status of the UE handover procedure. Values are
             defined as following: <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3
             = COMPLETED. <p>4 = REJECTED. <p>5 = CANCELLED.'
           enum:
-          - "1"
-          - "2"
-          - "3"
-          - "4"
-          - "5"
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         notificationType:
@@ -1495,8 +1491,9 @@ components:
         trgEcgi:
           minItems: 1
           type: array
-          description: 'E-UTRAN Cell Global Identifier of the target cell. NOTE: Cardinality
-            N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED.'
+          description: |-
+            E-UTRAN Cell Global Identifier of the target cell.
+            NOTE: Cardinality N is valid only in case of statuses IN_PREPARATION, REJECTED and CANCELLED.
           items:
             $ref: '#/components/schemas/Ecgi'
           x-etsi-mec-cardinality: 1..N
@@ -1513,7 +1510,7 @@ components:
           $ref: '#/components/schemas/CaReconfSubscription__links'
         callbackReference:
           type: string
-          description: URI selected by the service consumer to receive notifications
+          description: URI selected by the service consumerto receive notifications
             on the subscribed RNIS information. This shall be included both in the
             request and in response.
           format: uri
@@ -1550,7 +1547,7 @@ components:
         cellId: cellId
       x-etsi-ref: 6.5.6
     Enum:
-      type: string
+      type: integer
     ExpiryNotification:
       required:
       - _links
@@ -1593,8 +1590,8 @@ components:
           $ref: '#/components/schemas/TimeStamp'
       example:
         timeStamp:
-          seconds: 9
-          nanoSeconds: 7
+          seconds: 3
+          nanoSeconds: 9
         cellUEInfo:
         - dl_gbr_delay_ue: 4
           ul_nongbr_data_volume_ue: 2
@@ -1608,7 +1605,7 @@ components:
           ecgi: null
           dl_gbr_data_volume_ue: 1
           associateId:
-            type: "0"
+            type: 0
             value: value
           dl_gbr_throughput_ue: 9
           dl_nongbr_pdr_ue: 8
@@ -1628,7 +1625,7 @@ components:
           ecgi: null
           dl_gbr_data_volume_ue: 1
           associateId:
-            type: "0"
+            type: 0
             value: value
           dl_gbr_throughput_ue: 9
           dl_nongbr_pdr_ue: 8
@@ -1703,18 +1700,21 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 138 331
             [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrq:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 138
             331 [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinr:
           type: integer
           description: Reference Signal to Interference & Noise Ratio as defined in
             ETSI TS 138 331 [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
       x-etsi-ref: 6.5.11
@@ -1796,30 +1796,35 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         rsrpEx:
           type: integer
           description: Extended Reference Signal Received Power, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrq:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint8
         rsrqEx:
           type: integer
           description: Extended Reference Signal Received Quality, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinr:
           type: integer
           description: Reference Signal "Signal to Interference plus Noise Ratio",
             with value mapping defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         timeStamp:
@@ -1882,7 +1887,7 @@ components:
         timingAdvance:
           type: integer
           description: The timing advance as defined in ETSI TS 136 214 [i.5].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
       x-etsi-ref: 6.4.7
@@ -2062,8 +2067,8 @@ components:
       example:
         appInstanceId: appInstanceId
         timeStamp:
-          seconds: 9
-          nanoSeconds: 7
+          seconds: 3
+          nanoSeconds: 9
         plmn:
         - mnc: mnc
           mcc: mcc
@@ -2089,7 +2094,7 @@ components:
         status:
           type: integer
           description: The HTTP status code for this occurrence of the problem
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         title:
@@ -2202,49 +2207,49 @@ components:
         cellUserInfo:
         - ueInfo:
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             erabInfo:
-            - erabId: 0
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
-            - erabId: 0
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             erabInfo:
-            - erabId: 0
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
-            - erabId: 0
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
           ecgi:
             plmn:
               mnc: mnc
@@ -2252,57 +2257,57 @@ components:
             cellId: cellId
         - ueInfo:
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             erabInfo:
-            - erabId: 0
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
-            - erabId: 0
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             erabInfo:
-            - erabId: 0
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
-            - erabId: 0
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
+            - erabId: 6
               erabQosParameters:
                 qosInformation:
-                  erabGbrDl: 1
+                  erabGbrDl: 5
                   erabGbrUl: 5
-                  erabMbrUl: 2
-                  erabMbrDl: 5
-                qci: 6
+                  erabMbrUl: 7
+                  erabMbrDl: 2
+                qci: 1
           ecgi:
             plmn:
               mnc: mnc
               mcc: mcc
             cellId: cellId
         timeStamp:
-          seconds: 9
-          nanoSeconds: 7
+          seconds: 3
+          nanoSeconds: 9
         requestId: requestId
       x-etsi-ref: 6.2.3
     RabModNotification:
@@ -2437,9 +2442,11 @@ components:
       properties:
         resultsPerCsiRsIndex:
           minItems: 0
+          required:
+          - csiRsIndex
           type: array
           items:
-            $ref: '#/components/schemas/ResultsPerCsiRsIndex'
+            $ref: '#/components/schemas/ResultsPerCsiRsIndexList_resultsPerCsiRsIndex'
           x-etsi-mec-cardinality: 0..P
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.10
@@ -2459,9 +2466,11 @@ components:
       properties:
         resultsPerSsbIndex:
           minItems: 0
+          required:
+          - ssbIndex
           type: array
           items:
-            $ref: '#/components/schemas/ResultsPerSsbIndex'
+            $ref: '#/components/schemas/ResultsPerSsbIndexList_resultsPerSsbIndex'
           x-etsi-mec-cardinality: 0..P
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.9
@@ -2497,13 +2506,13 @@ components:
           $ref: '#/components/schemas/TimeStamp'
       example:
         timeStamp:
-          seconds: 9
-          nanoSeconds: 7
+          seconds: 3
+          nanoSeconds: 9
         s1UeInfo:
         - associateId:
-          - type: "0"
+          - type: 0
             value: value
-          - type: "0"
+          - type: 0
             value: value
           s1BearerInfoDetailed:
           - erabId: 0
@@ -2533,9 +2542,9 @@ components:
             mtmsi: mtmsi
             mmec: mmec
         - associateId:
-          - type: "0"
+          - type: 0
             value: value
-          - type: "0"
+          - type: 0
             value: value
           s1BearerInfoDetailed:
           - erabId: 0
@@ -2578,10 +2587,8 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         s1Event:
-          type: string
+          type: integer
           description: The subscribed event that triggered this notification in S1BearerSubscription.
-          enum:
-          - SEE_DESCRIPTION
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         s1UeInfo:
@@ -2623,8 +2630,8 @@ components:
           type: array
           description: 'Description of the subscribed event. The event is included
             both in the request and in the response. \nFor the eventType, the following
-            values are currently defined: 0 = RESERVED. 1 = S1_BEARER_ESTABLISH. 2
-            = S1_BEARER_MODIFY. 3 = S1_BEARER_RELEASE.'
+            values are currently defined: <p>0 = RESERVED. <p>1 = S1_BEARER_ESTABLISH.
+            <p>2 = S1_BEARER_MODIFY. <p>3 = S1_BEARER_RELEASE.'
           items:
             $ref: '#/components/schemas/Enum'
           x-etsi-mec-cardinality: 1..N
@@ -2664,22 +2671,22 @@ components:
           type: integer
           description: The nanoseconds part of the time. Time is defined as Unix-time
             since January 1, 1970, 00:00:00 UTC.
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         seconds:
           type: integer
           description: The seconds part of the time. Time is defined as Unixtime since
             January 1, 1970, 00:00:00 UTC.
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
       example:
-        seconds: 9
-        nanoSeconds: 7
+        seconds: 3
+        nanoSeconds: 9
       x-etsi-ref: 6.5.3
     Trigger:
-      type: string
+      type: integer
       description: As defined in Ref ETSI TS 136 331 [i.7] <p>0 = NOT_AVAILABLE <p>1
         = PERIODICAL_REPORT_STRONGEST_CELLS <p>2 = PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON
         <p>3 = PERIODICAL_REPORT_CGI <p>4 = INTRA_PERIODICAL_REPORT_STRONGEST_CELLS
@@ -2689,33 +2696,31 @@ components:
         <p>31 = EVENT_C2 <p>40 = EVENT_W1 <p>41 = EVENT_W2 <p>42 = EVENT_W3 <p>50
         = EVENT_V1 <p>51 = EVENT_V2 <p>60 = EVENT_H1 <p>61 = EVENT_H2
       enum:
-      - "0"
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "10"
-      - "11"
-      - "12"
-      - "13"
-      - "14"
-      - "15"
-      - "20"
-      - "21"
-      - "20"
-      - "21"
-      - "30"
-      - "31"
-      - "40"
-      - "41"
-      - "42"
-      - "50"
-      - "51"
-      - "60"
-      - "61"
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 20
+      - 21
+      - 30
+      - 31
+      - 40
+      - 41
+      - 42
+      - 50
+      - 51
+      - 60
+      - 61
     TriggerNr:
-      type: string
+      type: integer
       description: The enumeration Trigger represents specified triggers for a 5G
         UE Measurement Report. Full details can be found in ETSI TS 138 331 [i.13]).
         <p>0 = NOT_AVAILABLE <p>1 = NR_PERIODICAL <p>2 = NR_CGI <p>10 = EVENT_A1 <p>11
@@ -2723,19 +2728,19 @@ components:
         <p>20 = INTER_RAT_PERIODICAL <p>21 = INTER_RAT_CGI <p>30 = EVENT_B1 <p>31
         = EVENT_B2
       enum:
-      - "0"
-      - "1"
-      - "2"
-      - "10"
-      - "11"
-      - "12"
-      - "13"
-      - "14"
-      - "15"
-      - "20"
-      - "21"
-      - "30"
-      - "31"
+      - 0
+      - 1
+      - 2
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 20
+      - 21
+      - 30
+      - 31
     inline_response_200:
       type: object
       properties:
@@ -2747,49 +2752,49 @@ components:
           cellUserInfo:
           - ueInfo:
             - associateId:
-              - type: "0"
+              - type: 0
                 value: value
-              - type: "0"
+              - type: 0
                 value: value
               erabInfo:
-              - erabId: 0
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
-              - erabId: 0
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
             - associateId:
-              - type: "0"
+              - type: 0
                 value: value
-              - type: "0"
+              - type: 0
                 value: value
               erabInfo:
-              - erabId: 0
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
-              - erabId: 0
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
             ecgi:
               plmn:
                 mnc: mnc
@@ -2797,57 +2802,57 @@ components:
               cellId: cellId
           - ueInfo:
             - associateId:
-              - type: "0"
+              - type: 0
                 value: value
-              - type: "0"
+              - type: 0
                 value: value
               erabInfo:
-              - erabId: 0
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
-              - erabId: 0
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
             - associateId:
-              - type: "0"
+              - type: 0
                 value: value
-              - type: "0"
+              - type: 0
                 value: value
               erabInfo:
-              - erabId: 0
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
-              - erabId: 0
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
+              - erabId: 6
                 erabQosParameters:
                   qosInformation:
-                    erabGbrDl: 1
+                    erabGbrDl: 5
                     erabGbrUl: 5
-                    erabMbrUl: 2
-                    erabMbrDl: 5
-                  qci: 6
+                    erabMbrUl: 7
+                    erabMbrDl: 2
+                  qci: 1
             ecgi:
               plmn:
                 mnc: mnc
                 mcc: mcc
               cellId: cellId
           timeStamp:
-            seconds: 9
-            nanoSeconds: 7
+            seconds: 3
+            nanoSeconds: 9
           requestId: requestId
     inline_response_400:
       type: object
@@ -2872,8 +2877,8 @@ components:
         plmnInfo:
         - appInstanceId: appInstanceId
           timeStamp:
-            seconds: 9
-            nanoSeconds: 7
+            seconds: 3
+            nanoSeconds: 9
           plmn:
           - mnc: mnc
             mcc: mcc
@@ -2881,8 +2886,8 @@ components:
             mcc: mcc
         - appInstanceId: appInstanceId
           timeStamp:
-            seconds: 9
-            nanoSeconds: 7
+            seconds: 3
+            nanoSeconds: 9
           plmn:
           - mnc: mnc
             mcc: mcc
@@ -2898,13 +2903,13 @@ components:
       example:
         s1BearerInfo:
           timeStamp:
-            seconds: 9
-            nanoSeconds: 7
+            seconds: 3
+            nanoSeconds: 9
           s1UeInfo:
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             s1BearerInfoDetailed:
             - erabId: 0
@@ -2934,9 +2939,9 @@ components:
               mtmsi: mtmsi
               mmec: mmec
           - associateId:
-            - type: "0"
+            - type: 0
               value: value
-            - type: "0"
+            - type: 0
               value: value
             s1BearerInfoDetailed:
             - erabId: 0
@@ -2975,8 +2980,8 @@ components:
       example:
         l2Meas:
           timeStamp:
-            seconds: 9
-            nanoSeconds: 7
+            seconds: 3
+            nanoSeconds: 9
           cellUEInfo:
           - dl_gbr_delay_ue: 4
             ul_nongbr_data_volume_ue: 2
@@ -2990,7 +2995,7 @@ components:
             ecgi: null
             dl_gbr_data_volume_ue: 1
             associateId:
-              type: "0"
+              type: 0
               value: value
             dl_gbr_throughput_ue: 9
             dl_nongbr_pdr_ue: 8
@@ -3010,7 +3015,7 @@ components:
             ecgi: null
             dl_gbr_data_volume_ue: 1
             associateId:
-              type: "0"
+              type: 0
               value: value
             dl_gbr_throughput_ue: 9
             dl_nongbr_pdr_ue: 8
@@ -3085,8 +3090,8 @@ components:
       properties:
         notificationSubscription:
           discriminator:
-            propertyName: SubscriptionType
-          allOf:
+            propertyName: subscriptionType
+          oneOf:
           - $ref: '#/components/schemas/CellChangeSubscription'
           - $ref: '#/components/schemas/RabEstSubscription'
           - $ref: '#/components/schemas/RabModSubscription'
@@ -3103,7 +3108,7 @@ components:
           filterCriteriaAssocHo:
             appInstanceId: myApp
             associateId:
-            - type: "1"
+            - type: 1
               value: 10.100.0.1
             ecgi:
             - plmn:
@@ -3111,8 +3116,8 @@ components:
                 mcc: "001"
               cellId: ACBDEFA
             hoStatus:
-            - "1"
-            - "2"
+            - 1
+            - 2
           expiryDeadline:
             seconds: 1977836800
             nanoseconds: 0
@@ -3142,7 +3147,7 @@ components:
           filterCriteriaAssocHo:
             appInstanceId: myApp
             associateId:
-            - type: "1"
+            - type: 1
               value: 10.100.0.1
             ecgi:
             - plmn:
@@ -3150,8 +3155,8 @@ components:
                 mcc: "001"
               cellId: ACBDEFA
             hoStatus:
-            - "1"
-            - "2"
+            - 1
+            - 2
           expiryDeadline:
             seconds: 1977836800
             nanoseconds: 0
@@ -3183,7 +3188,7 @@ components:
           filterCriteriaAssocHo:
             appInstanceId: myApp
             associateId:
-            - type: "1"
+            - type: 1
               value: 10.100.0.1
             ecgi:
             - plmn:
@@ -3191,8 +3196,8 @@ components:
                 mcc: "001"
               cellId: ACBDEFA
             hoStatus:
-            - "1"
-            - "2"
+            - 1
+            - 2
           expiryDeadline:
             seconds: 1977836800
             nanoseconds: 0
@@ -3222,7 +3227,7 @@ components:
           filterCriteriaAssocHo:
             appInstanceId: myApp
             associateId:
-            - type: "1"
+            - type: 1
               value: 10.100.0.1
             ecgi:
             - plmn:
@@ -3230,8 +3235,8 @@ components:
                 mcc: "001"
               cellId: ACBDEFA
             hoStatus:
-            - "1"
-            - "2"
+            - 1
+            - 2
           expiryDeadline:
             seconds: 1977836800
             nanoseconds: 0
@@ -3264,28 +3269,28 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         rsrpSrv:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         rsrqNei:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
         rsrqSrv:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint32
     CaReconfNotification_secondaryCellAdd:
@@ -3379,13 +3384,10 @@ components:
         hoStatus:
           minItems: 0
           type: array
-          description: |-
-            In case hoStatus is not included in the subscription request, the default value 3 = COMPLETED shall be used and included in the response:
-            1 = IN_PREPARATION.
-            2 = IN_EXECUTION.
-            3 = COMPLETED.
-            4 = REJECTED.
-            5 = CANCELLED.
+          description: 'In case hoStatus is not included in the subscription request,
+            the default value 3 = COMPLETED shall be used and included in the response:
+            <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3 = COMPLETED. <p>4 = REJECTED.
+            <p>5 = CANCELLED.'
           items:
             $ref: '#/components/schemas/Enum'
           x-etsi-mec-cardinality: 0..N
@@ -3653,7 +3655,7 @@ components:
         ecgi: null
         dl_gbr_data_volume_ue: 1
         associateId:
-          type: "0"
+          type: 0
           value: value
         dl_gbr_throughput_ue: 9
         dl_nongbr_pdr_ue: 8
@@ -3672,60 +3674,70 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrpNeiEx:
           type: integer
           description: Extended Reference Signal Received Power, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrpSrv:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrpSrvEx:
           type: integer
           description: Extended Reference Signal Received Power, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrqNei:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrqNeiEx:
           type: integer
           description: Extended Reference Signal Received Quality, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrqSrv:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrqSrvEx:
           type: integer
           description: Extended Reference Signal Received Quality, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinrNei:
           type: integer
           description: Reference Signal "Signal to Interference plus Noise Ratio",
             with value mapping defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinrSrv:
           type: integer
           description: Reference Signal "Signal to Interference plus Noise Ratio",
             with value mapping defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
     MeasRepUeNotification_eutranNeighbourCellMeasInfo:
@@ -3737,30 +3749,35 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 136 214
             [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrpEx:
           type: integer
           description: Extended Reference Signal Received Power, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrq:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 136
             214 [i.5].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrqEx:
           type: integer
           description: Extended Reference Signal Received Quality, with value mapping
             defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinr:
           type: integer
           description: Reference Signal "Signal to Interference plus Noise Ratio",
             with value mapping defined in ETSI TS 136 133 [i.16].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
     MeasRepUeNotification_nrBNCs_nrBNCellInfo:
@@ -3796,18 +3813,21 @@ components:
           type: integer
           description: Reference Signal Received Power measurement according to mapping
             table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrBNCellRsrq:
           type: integer
           description: Reference Signal Received Quality measurement according to
             mapping table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrBNCellRssi:
           type: integer
           description: Reference signal SINR measurement according to mapping table
             in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
       description: Measurement quantities concerning the best neighbours of the secondary
@@ -3845,18 +3865,21 @@ components:
           type: integer
           description: Reference Signal Received Power measurement according to mapping
             table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrSCellRsrq:
           type: integer
           description: Reference Signal Received Quality measurement according to
             mapping table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrSCellRssi:
           type: integer
           description: Reference signal SINR measurement according to mapping table
             in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
       description: Measurement quantities concerning the secondary serving cells.
@@ -3869,7 +3892,7 @@ components:
           type: integer
           description: ARFCN applicable for a downlink, uplink or bi-directional (TDD)
             NR carrier frequency, as defined in ETSI TS 138.101 [i.15].
-          format: uint32
+          format: int32
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Uint32
         nrSCs:
@@ -3905,18 +3928,21 @@ components:
           type: integer
           description: Reference Signal Received Power measurement according to mapping
             table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrNCellRsrq:
           type: integer
           description: Reference Signal Received Quality measurement according to
             mapping table in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         nrNCellRssi:
           type: integer
           description: Reference signal SINR measurement according to mapping table
             in ETSI TS 138.133 [i.14].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsIndexResults:
@@ -3966,18 +3992,21 @@ components:
           type: integer
           description: Reference Signal Received Power as defined in ETSI TS 138 331
             [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         rsrq:
           type: integer
           description: Reference Signal Received Quality as defined in ETSI TS 138
             331 [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
         sinr:
           type: integer
           description: Reference Signal plus Interference Noise Ratio as defined in
             ETSI TS 138 331 [i.13].
+          format: int32
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Uint8
     NrMeasRepUeNotification_nrNeighCellMeasInfo:
@@ -4089,7 +4118,12 @@ components:
             as defined in ETSI TS 123 401 [i.4] for this bearer.
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
-      description: The RabEstNotification QoS information for the E-RAB.
+      description: The QoS information for the E-RAB.
+      example:
+        erabGbrDl: 5
+        erabGbrUl: 5
+        erabMbrUl: 7
+        erabMbrDl: 2
     RabEstNotification_erabQosParameters:
       required:
       - qci
@@ -4103,6 +4137,13 @@ components:
         qosInformation:
           $ref: '#/components/schemas/RabEstNotification_erabQosParameters_qosInformation'
       description: QoS parameters for the E-RAB as defined below.
+      example:
+        qosInformation:
+          erabGbrDl: 5
+          erabGbrUl: 5
+          erabMbrUl: 7
+          erabMbrDl: 2
+        qci: 1
     RabEstNotification_tempUeId:
       required:
       - mmec
@@ -4147,64 +4188,6 @@ components:
       description: List of filtering criteria for the subscription. Any filtering
         criteria from below, which is included in the request, shall also be included
         in the response.
-    RabInfo_erabQosParameters_qosInformation:
-      required:
-      - erabGbrDl
-      - erabGbrUl
-      - erabMbrDl
-      - erabMbrUl
-      type: object
-      properties:
-        erabGbrDl:
-          type: integer
-          description: This attribute indicates the guaranteed downlink E-RAB Bit
-            Rate as defined in ETSI TS 123 401 [i.4] for this bearer.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        erabGbrUl:
-          type: integer
-          description: This attribute indicates the guaranteed uplink E-RAB Bit Rate
-            as defined in ETSI TS 123 401 [i.4] for this bearer.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        erabMbrDl:
-          type: integer
-          description: This attribute indicates the maximum downlink E-RAB Bit Rate
-            as defined in ETSI TS 123 401 [i.4] for this bearer.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        erabMbrUl:
-          type: integer
-          description: This attribute indicates the maximum uplink E-RAB Bit Rate
-            as defined in ETSI TS 123 401 [i.4] for this bearer.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-      description: The RabInfo QoS information for the E-RAB.
-      example:
-        erabGbrDl: 1
-        erabGbrUl: 5
-        erabMbrUl: 2
-        erabMbrDl: 5
-    RabInfo_erabQosParameters:
-      required:
-      - qci
-      type: object
-      properties:
-        qci:
-          type: integer
-          description: QoS Class Identifier as defined in ETSI TS 123 401 [i.4].
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Integer
-        qosInformation:
-          $ref: '#/components/schemas/RabInfo_erabQosParameters_qosInformation'
-      description: QoS parameters for the E-RAB as defined below.
-      example:
-        qosInformation:
-          erabGbrDl: 1
-          erabGbrUl: 5
-          erabMbrUl: 2
-          erabMbrDl: 5
-        qci: 6
     RabInfo_erabInfo:
       type: object
       properties:
@@ -4215,16 +4198,16 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
         erabQosParameters:
-          $ref: '#/components/schemas/RabInfo_erabQosParameters'
+          $ref: '#/components/schemas/RabEstNotification_erabQosParameters'
       example:
-        erabId: 0
+        erabId: 6
         erabQosParameters:
           qosInformation:
-            erabGbrDl: 1
+            erabGbrDl: 5
             erabGbrUl: 5
-            erabMbrUl: 2
-            erabMbrDl: 5
-          qci: 6
+            erabMbrUl: 7
+            erabMbrDl: 2
+          qci: 1
     RabInfo_ueInfo:
       type: object
       properties:
@@ -4249,27 +4232,27 @@ components:
           x-etsi-mec-origin-type: Structure (inlined)
       example:
         associateId:
-        - type: "0"
+        - type: 0
           value: value
-        - type: "0"
+        - type: 0
           value: value
         erabInfo:
-        - erabId: 0
+        - erabId: 6
           erabQosParameters:
             qosInformation:
-              erabGbrDl: 1
+              erabGbrDl: 5
               erabGbrUl: 5
-              erabMbrUl: 2
-              erabMbrDl: 5
-            qci: 6
-        - erabId: 0
+              erabMbrUl: 7
+              erabMbrDl: 2
+            qci: 1
+        - erabId: 6
           erabQosParameters:
             qosInformation:
-              erabGbrDl: 1
+              erabGbrDl: 5
               erabGbrUl: 5
-              erabMbrUl: 2
-              erabMbrDl: 5
-            qci: 6
+              erabMbrUl: 7
+              erabMbrDl: 2
+            qci: 1
     RabInfo_cellUserInfo:
       type: object
       properties:
@@ -4288,49 +4271,49 @@ components:
       example:
         ueInfo:
         - associateId:
-          - type: "0"
+          - type: 0
             value: value
-          - type: "0"
+          - type: 0
             value: value
           erabInfo:
-          - erabId: 0
+          - erabId: 6
             erabQosParameters:
               qosInformation:
-                erabGbrDl: 1
+                erabGbrDl: 5
                 erabGbrUl: 5
-                erabMbrUl: 2
-                erabMbrDl: 5
-              qci: 6
-          - erabId: 0
+                erabMbrUl: 7
+                erabMbrDl: 2
+              qci: 1
+          - erabId: 6
             erabQosParameters:
               qosInformation:
-                erabGbrDl: 1
+                erabGbrDl: 5
                 erabGbrUl: 5
-                erabMbrUl: 2
-                erabMbrDl: 5
-              qci: 6
+                erabMbrUl: 7
+                erabMbrDl: 2
+              qci: 1
         - associateId:
-          - type: "0"
+          - type: 0
             value: value
-          - type: "0"
+          - type: 0
             value: value
           erabInfo:
-          - erabId: 0
+          - erabId: 6
             erabQosParameters:
               qosInformation:
-                erabGbrDl: 1
+                erabGbrDl: 5
                 erabGbrUl: 5
-                erabMbrUl: 2
-                erabMbrDl: 5
-              qci: 6
-          - erabId: 0
+                erabMbrUl: 7
+                erabMbrDl: 2
+              qci: 1
+          - erabId: 6
             erabQosParameters:
               qosInformation:
-                erabGbrDl: 1
+                erabGbrDl: 5
                 erabGbrUl: 5
-                erabMbrUl: 2
-                erabMbrDl: 5
-              qci: 6
+                erabMbrUl: 7
+                erabMbrDl: 2
+              qci: 1
         ecgi:
           plmn:
             mnc: mnc
@@ -4427,6 +4410,26 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
       description: The release information for the E-RAB as defined below.
+    ResultsPerCsiRsIndexList_resultsPerCsiRsIndex:
+      type: object
+      properties:
+        csiRsIndex:
+          type: integer
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        csiRsResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+    ResultsPerSsbIndexList_resultsPerSsbIndex:
+      type: object
+      properties:
+        ssbIndex:
+          type: integer
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        ssbResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
     S1BearerInfo_enbInfo:
       required:
       - ipAddress
@@ -4489,7 +4492,6 @@ components:
           tunnelId: tunnelId
           ipAddress: ipAddress
     S1BearerInfo_s1UeInfo:
-      type: object
       properties:
         associateId:
           minItems: 1
@@ -4524,9 +4526,9 @@ components:
           $ref: '#/components/schemas/CellChangeNotification_tempUeId'
       example:
         associateId:
-        - type: "0"
+        - type: 0
           value: value
-        - type: "0"
+        - type: 0
           value: value
         s1BearerInfoDetailed:
         - erabId: 0
@@ -4556,7 +4558,6 @@ components:
           mtmsi: mtmsi
           mmec: mmec
     S1BearerNotification_s1UeInfo:
-      type: object
       properties:
         associateId:
           minItems: 0
@@ -4576,6 +4577,7 @@ components:
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: Ecgi
         s1BearerInfo:
+          minItems: 1
           required:
           - enbInfo
           - erabId
@@ -4862,7 +4864,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: ErabId
       x-optionalDataType: Int32
     Query.ErabIdArr:
@@ -4876,7 +4878,7 @@ components:
         type: array
         items:
           type: integer
-          format: uint32
+          format: int32
       x-exportParamName: ErabIdArr
     Query.Qci:
       name: qci
@@ -4887,7 +4889,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: Qci
       x-optionalDataType: Int32
     Query.ErabMbrDl:
@@ -4899,7 +4901,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: ErabMbrDl
       x-optionalDataType: Int32
     Query.ErabMbrUl:
@@ -4911,7 +4913,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: ErabMbrUl
       x-optionalDataType: Int32
     Query.ErabGbrDl:
@@ -4923,7 +4925,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: ErabGbrDl
       x-optionalDataType: Int32
     Query.ErabGbrUl:
@@ -4935,7 +4937,7 @@ components:
       explode: true
       schema:
         type: integer
-        format: uint32
+        format: int32
       x-exportParamName: ErabGbrUl
       x-optionalDataType: Int32
     Query.TempUeId:
@@ -5317,7 +5319,9 @@ components:
     Query.SubscriptionType:
       name: subscription_type
       in: query
-      description: Subscription type filter
+      description: 'Filter on a specific subscription type. Permitted values: cell_change,
+        rab_est, rab_mod, rab_rel, meas_rep_ue, nr_meas_rep_ue, timing_advance_ue,
+        ca_reconf, s1_bearer.'
       required: false
       style: form
       explode: true

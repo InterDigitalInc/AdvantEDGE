@@ -28,7 +28,7 @@ type S1BearerNotification struct {
 	// Shall be set to \"S1BearerNotification\".
 	NotificationType string `json:"notificationType"`
 	// The subscribed event that triggered this notification in S1BearerSubscription.
-	S1Event string `json:"s1Event"`
+	S1Event int32 `json:"s1Event"`
 	// Information on specific UE that matches the criteria in S1BearerSubscription as defined below.
 	S1UeInfo  []S1BearerNotificationS1UeInfo `json:"s1UeInfo"`
 	TimeStamp *TimeStamp                     `json:"timeStamp,omitempty"`

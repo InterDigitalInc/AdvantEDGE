@@ -26,7 +26,7 @@ package client
 
 type AssociateId struct {
 	// Numeric value (0-255) corresponding to specified type of identifier as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS. <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.
-	Type_ string `json:"type,omitempty"`
+	Type_ int32 `json:"type,omitempty"`
 	// Value for the identifier.
 	Value string `json:"value,omitempty"`
 }

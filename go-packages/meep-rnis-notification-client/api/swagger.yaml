@@ -25,7 +25,7 @@ paths:
   /notifications/ca_reconf/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Carrier aggregation reconfiguration subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a CaReconfSubscription
@@ -55,7 +55,7 @@ paths:
   /notifications/cell_change/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Cell change subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a CellChangeSubscription
@@ -85,7 +85,7 @@ paths:
   /notifications/expiry/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Subscription expiry notification
       description: This operation is used by the RNI Service to issue a notification
         with regards to expiry of an existing subscription
@@ -115,7 +115,7 @@ paths:
   /notifications/meas_rep_ue/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Measurement report Ue subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a MeasRepUeSubscription
@@ -145,7 +145,7 @@ paths:
   /notifications/nr_meas_rep_ue/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: NR measurement report Ue subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a NrMeasRepUeSubscription
@@ -175,7 +175,7 @@ paths:
   /notifications/rab_est/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Rab establishment subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a RabEstSubscription
@@ -205,7 +205,7 @@ paths:
   /notifications/rab_mod/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Rab modification subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a RabModSubscription
@@ -235,7 +235,7 @@ paths:
   /notifications/rab_rel/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Rab release subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a RabRelSubscription
@@ -265,7 +265,7 @@ paths:
   /notifications/s1_bearer/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: S1 bearer subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a S1BearerSubscription
@@ -295,7 +295,7 @@ paths:
   /notifications/ta/{subscriptionId}:
     post:
       tags:
-      - Notifications
+      - notifications
       summary: Timing Advance subscription notification
       description: This operation is used by the RNI Service to issue a callback notification
         of a MeasTaSubscription
@@ -327,16 +327,16 @@ components:
     AssociateId:
       properties:
         type:
-          type: string
+          type: integer
           description: 'Numeric value (0-255) corresponding to specified type of identifier
             as following: <p>0 = reserved. <p>1 = UE_IPv4_ADDRESS. <p>2 = UE_IPV6_ADDRESS.
             <p>3 = NATED_IP_ADDRESS. <p>4 = GTP_TEID.'
           enum:
-          - "0"
-          - "1"
-          - "2"
-          - "3"
-          - "4"
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         value:
@@ -417,16 +417,16 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: AssociateId
         hoStatus:
-          type: string
+          type: integer
           description: 'Indicate the status of the UE handover procedure. Values are
             defined as following: <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3
             = COMPLETED. <p>4 = REJECTED. <p>5 = CANCELLED.'
           enum:
-          - "1"
-          - "2"
-          - "3"
-          - "4"
-          - "5"
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         notificationType:
@@ -873,9 +873,11 @@ components:
       properties:
         resultsPerCsiRsIndex:
           minItems: 0
+          required:
+          - csiRsIndex
           type: array
           items:
-            $ref: '#/components/schemas/ResultsPerCsiRsIndex'
+            $ref: '#/components/schemas/ResultsPerCsiRsIndexList_resultsPerCsiRsIndex'
           x-etsi-mec-cardinality: 0..P
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.10
@@ -895,9 +897,11 @@ components:
       properties:
         resultsPerSsbIndex:
           minItems: 0
+          required:
+          - ssbIndex
           type: array
           items:
-            $ref: '#/components/schemas/ResultsPerSsbIndex'
+            $ref: '#/components/schemas/ResultsPerSsbIndexList_resultsPerSsbIndex'
           x-etsi-mec-cardinality: 0..P
           x-etsi-mec-origin-type: Structure (inline)
       x-etsi-ref: 6.5.9
@@ -925,10 +929,8 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
         s1Event:
-          type: string
+          type: integer
           description: The subscribed event that triggered this notification in S1BearerSubscription.
-          enum:
-          - SEE_DESCRIPTION
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         s1UeInfo:
@@ -967,7 +969,7 @@ components:
           x-etsi-mec-origin-type: Uint32
       x-etsi-ref: 6.5.3
     Trigger:
-      type: string
+      type: integer
       description: As defined in Ref ETSI TS 136 331 [i.7] <p>0 = NOT_AVAILABLE <p>1
         = PERIODICAL_REPORT_STRONGEST_CELLS <p>2 = PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON
         <p>3 = PERIODICAL_REPORT_CGI <p>4 = INTRA_PERIODICAL_REPORT_STRONGEST_CELLS
@@ -977,33 +979,31 @@ components:
         <p>31 = EVENT_C2 <p>40 = EVENT_W1 <p>41 = EVENT_W2 <p>42 = EVENT_W3 <p>50
         = EVENT_V1 <p>51 = EVENT_V2 <p>60 = EVENT_H1 <p>61 = EVENT_H2
       enum:
-      - "0"
-      - "1"
-      - "2"
-      - "3"
-      - "4"
-      - "5"
-      - "10"
-      - "11"
-      - "12"
-      - "13"
-      - "14"
-      - "15"
-      - "20"
-      - "21"
-      - "20"
-      - "21"
-      - "30"
-      - "31"
-      - "40"
-      - "41"
-      - "42"
-      - "50"
-      - "51"
-      - "60"
-      - "61"
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 20
+      - 21
+      - 30
+      - 31
+      - 40
+      - 41
+      - 42
+      - 50
+      - 51
+      - 60
+      - 61
     TriggerNr:
-      type: string
+      type: integer
       description: The enumeration Trigger represents specified triggers for a 5G
         UE Measurement Report. Full details can be found in ETSI TS 138 331 [i.13]).
         <p>0 = NOT_AVAILABLE <p>1 = NR_PERIODICAL <p>2 = NR_CGI <p>10 = EVENT_A1 <p>11
@@ -1011,19 +1011,19 @@ components:
         <p>20 = INTER_RAT_PERIODICAL <p>21 = INTER_RAT_CGI <p>30 = EVENT_B1 <p>31
         = EVENT_B2
       enum:
-      - "0"
-      - "1"
-      - "2"
-      - "10"
-      - "11"
-      - "12"
-      - "13"
-      - "14"
-      - "15"
-      - "20"
-      - "21"
-      - "30"
-      - "31"
+      - 0
+      - 1
+      - 2
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 20
+      - 21
+      - 30
+      - 31
     body:
       type: object
       properties:
@@ -1587,6 +1587,26 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Integer
       description: The release information for the E-RAB as defined below.
+    ResultsPerCsiRsIndexList_resultsPerCsiRsIndex:
+      type: object
+      properties:
+        csiRsIndex:
+          type: integer
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        csiRsResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
+    ResultsPerSsbIndexList_resultsPerSsbIndex:
+      type: object
+      properties:
+        ssbIndex:
+          type: integer
+          format: int32
+          x-etsi-mec-cardinality: "1"
+          x-etsi-mec-origin-type: Uint8
+        ssbResults:
+          $ref: '#/components/schemas/MeasQuantityResultsNr'
     S1BearerNotification_enbInfo:
       required:
       - ipAddress

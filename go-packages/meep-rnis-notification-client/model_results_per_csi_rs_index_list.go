@@ -25,5 +25,5 @@
 package client
 
 type ResultsPerCsiRsIndexList struct {
-	ResultsPerCsiRsIndex []ResultsPerCsiRsIndex `json:"resultsPerCsiRsIndex,omitempty"`
+	ResultsPerCsiRsIndex []ResultsPerCsiRsIndexListResultsPerCsiRsIndex `json:"resultsPerCsiRsIndex,omitempty"`
 }

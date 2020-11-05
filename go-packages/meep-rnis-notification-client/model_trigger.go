@@ -24,33 +24,31 @@
 
 package client
 // Trigger : As defined in Ref ETSI TS 136 331 [i.7] <p>0 = NOT_AVAILABLE <p>1 = PERIODICAL_REPORT_STRONGEST_CELLS <p>2 = PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON <p>3 = PERIODICAL_REPORT_CGI <p>4 = INTRA_PERIODICAL_REPORT_STRONGEST_CELLS <p>5 = INTRA_PERIODICAL_REPORT_CGI <p>10 = EVENT_A1 <p>11 = EVENT_A2 <p>12 = EVENT_A3 <p>13 = EVENT_A4 <p>14 = EVENT_A5 <p>15 = EVENT_A6 <p>20 = EVENT_B1 <p>21 = EVENT_B2 <p>20 = EVENT_B1-NR <p>21 = EVENT_B2-NR <p>30 = EVENT_C1 <p>31 = EVENT_C2 <p>40 = EVENT_W1 <p>41 = EVENT_W2 <p>42 = EVENT_W3 <p>50 = EVENT_V1 <p>51 = EVENT_V2 <p>60 = EVENT_H1 <p>61 = EVENT_H2
-type Trigger string
+type Trigger int32
 
 // List of Trigger
 const (
-	_0__Trigger Trigger = "0"
-	_1__Trigger Trigger = "1"
-	_2__Trigger Trigger = "2"
-	_3__Trigger Trigger = "3"
-	_4__Trigger Trigger = "4"
-	_5__Trigger Trigger = "5"
-	_10__Trigger Trigger = "10"
-	_11__Trigger Trigger = "11"
-	_12__Trigger Trigger = "12"
-	_13__Trigger Trigger = "13"
-	_14__Trigger Trigger = "14"
-	_15__Trigger Trigger = "15"
-	_20__Trigger Trigger = "20"
-	_21__Trigger Trigger = "21"
-	_20nr__Trigger Trigger = "20"
-	_21nr_Trigger Trigger = "21"
-	_30__Trigger Trigger = "30"
-	_31__Trigger Trigger = "31"
-	_40__Trigger Trigger = "40"
-	_41__Trigger Trigger = "41"
-	_42__Trigger Trigger = "42"
-	_50__Trigger Trigger = "50"
-	_51__Trigger Trigger = "51"
-	_60__Trigger Trigger = "60"
-	_61__Trigger Trigger = "61"
+	Trigger_0 Trigger = 0
+	Trigger_1 Trigger = 1
+	Trigger_2 Trigger = 2
+	Trigger_3 Trigger = 3
+	Trigger_4 Trigger = 4
+	Trigger_5 Trigger = 5
+	Trigger_10 Trigger = 10
+	Trigger_11 Trigger = 11
+	Trigger_12 Trigger = 12
+	Trigger_13 Trigger = 13
+	Trigger_14 Trigger = 14
+	Trigger_15 Trigger = 15
+	Trigger_20 Trigger = 20
+	Trigger_21 Trigger = 21
+	Trigger_30 Trigger = 30
+	Trigger_31 Trigger = 31
+	Trigger_40 Trigger = 40
+	Trigger_41 Trigger = 41
+	Trigger_42 Trigger = 42
+	Trigger_50 Trigger = 50
+	Trigger_51 Trigger = 51
+	Trigger_60 Trigger = 60
+	Trigger_61 Trigger = 61
 )

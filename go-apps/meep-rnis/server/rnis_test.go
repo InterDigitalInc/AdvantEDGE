@@ -769,9 +769,9 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	 ******************************/
 	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
 	expectedEcgi := []Ecgi{expectedEcgi1}
-	expectedAssocId1 := AssociateId{"1", "1.1.1.1"}
+	expectedAssocId1 := AssociateId{1, "1.1.1.1"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
+	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []int32{3}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
@@ -831,9 +831,9 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	 ******************************/
 	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
 	expectedEcgi := []Ecgi{expectedEcgi1}
-	expectedAssocId1 := AssociateId{"1", "2.2.2.2"}
+	expectedAssocId1 := AssociateId{1, "2.2.2.2"}
 	expectedAssocId := []AssociateId{expectedAssocId1}
-	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []string{"3"}}
+	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"myApp", expectedAssocId, expectedEcgi, []int32{3}}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
@@ -1259,14 +1259,14 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	expectedDstCellId := "3456789"
 	expectedDstEcgi := rnisNotif.Ecgi{Plmn: &expectedDstPlmnInNotif, CellId: expectedDstCellId}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocId1 := AssociateId{"1", movingUeAddr}
+	expectedAssocId1 := AssociateId{1, movingUeAddr}
         expectedAssocId := []AssociateId{expectedAssocId1}
         //expectedEcgi1 := Ecgi{"1234567", &Plmn{"123", "456"}}
         //expectedEcgi := []Ecgi{expectedEcgi1}
 
-	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: 1, Value: movingUeAddr}
 	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
-	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"", expectedAssocId, expectedEcgi, []string{"3"}}
+	expectedFilter := CellChangeSubscriptionFilterCriteriaAssocHo{"", expectedAssocId, expectedEcgi, []int32{3}}
 //FilterCriteriaAssocHo{"", &expectedAssocId, &expectedSrcPlmn, expectedSrcCellId, &hostatus}
 	expectedCallBackRef := "myCallbakRef"
 	//expectedExpiry := TimeStamp{0, 1988599770}
@@ -1439,7 +1439,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	expectedErabId := 2
 	expectedErabQosParameters := rnisNotif.RabEstNotificationErabQosParameters{Qci: qci}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: 1, Value: movingUeAddr}
 	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{Qci: qci} //"", nil, 0, qci}
 	expectedCallBackRef := "myCallbakRef"
@@ -1578,7 +1578,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	expectedEcgi := rnisNotif.Ecgi{Plmn: &expectedPlmnInNotif, CellId: expectedCellId}
 	expectedErabReleaseInfo := rnisNotif.RabRelNotificationErabReleaseInfo{ErabId: 1}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: "1", Value: movingUeAddr}
+	expectedAssocIdInNotif1 := rnisNotif.AssociateId{Type_: 1, Value: movingUeAddr}
 	expectedAssocIdInNotif := []rnisNotif.AssociateId{expectedAssocIdInNotif1}
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"", nil, 1, qci}
 	expectedCallBackRef := "myCallbakRef"
@@ -1894,10 +1894,10 @@ func TestRabInfoGet(t *testing.T) {
 	expectedPlmn := Plmn{Mcc: "123", Mnc: "456"}
 	expectedCellId := "2345678"
 	expectedEcgi := Ecgi{Plmn: &expectedPlmn, CellId: expectedCellId}
-	expectedErabQosParameters := RabInfoErabQosParameters{Qci: qci}
+	expectedErabQosParameters := RabEstNotificationErabQosParameters{Qci: qci}
 	expectedErabInfo := []RabInfoErabInfo{RabInfoErabInfo{ErabId: 1, ErabQosParameters: &expectedErabQosParameters}}
 	movingUeAddr := "ue1" //based on the scenario change
-	expectedAssocId := []AssociateId{AssociateId{"1", movingUeAddr}}
+	expectedAssocId := []AssociateId{AssociateId{1, movingUeAddr}}
 	expectedUeInfo := []RabInfoUeInfo{RabInfoUeInfo{AssociateId: expectedAssocId, ErabInfo: expectedErabInfo}}
 	expectedCellUserInfo := RabInfoCellUserInfo{Ecgi: &expectedEcgi, UeInfo: expectedUeInfo}
 

@@ -256,7 +256,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
 		assocId := new(AssociateId)
-		assocId.Type_ = "1" //UE_IPV4_ADDRESS
+		assocId.Type_ = 1 //UE_IPV4_ADDRESS
 		assocId.Value = name
 
 		//log to model for all apps on that UE
@@ -811,7 +811,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				timeStamp.Seconds = int32(seconds)
 
 				notif.TimeStamp = &timeStamp
-				notif.HoStatus = "3" //only supporting 3 = COMPLETED
+				notif.HoStatus = 3 //only supporting 3 = COMPLETED
 				notif.SrcEcgi = &oldEcgi
 				notif.TrgEcgi = []clientNotif.Ecgi{newEcgi}
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
@@ -1236,7 +1236,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
-			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, 3 /*COMPLETED*/)
 		}
 
 		//registration
@@ -1385,7 +1385,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
-			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, "3" /*COMPLETED*/)
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, 3 /*COMPLETED*/)
 		}
 
 		//registration
@@ -1865,13 +1865,13 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 	var ueInfo RabInfoUeInfo
 
 	assocId := new(AssociateId)
-	assocId.Type_ = "1" //UE_IPV4_ADDRESS
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
 	subKeys := strings.Split(key, ":")
 	assocId.Value = subKeys[len(subKeys)-1]
 
 	ueInfo.AssociateId = append(ueInfo.AssociateId, *assocId)
 
-	erabQos := new(RabInfoErabQosParameters)
+	erabQos := new(RabEstNotificationErabQosParameters)
 	erabQos.Qci = defaultSupportedQci
 	erabInfo := new(RabInfoErabInfo)
 	erabInfo.ErabId = ueData.ErabId

@@ -24,21 +24,21 @@
 package server
 
 // TriggerNr : The enumeration Trigger represents specified triggers for a 5G UE Measurement Report. Full details can be found in ETSI TS 138 331 [i.13]). <p>0 = NOT_AVAILABLE <p>1 = NR_PERIODICAL <p>2 = NR_CGI <p>10 = EVENT_A1 <p>11 = EVENT_A2 <p>12 = EVENT_A3 <p>13 = EVENT_A4 <p>14 = EVENT_A5 <p>15 = EVENT_A6 <p>20 = INTER_RAT_PERIODICAL <p>21 = INTER_RAT_CGI <p>30 = EVENT_B1 <p>31 = EVENT_B2
-type TriggerNr string
+type TriggerNr int32
 
 // List of TriggerNr
 const (
-	TRIGGER_NR_0  TriggerNr = "0"
-	TRIGGER_NR_1  TriggerNr = "1"
-	TRIGGER_NR_2  TriggerNr = "2"
-	TRIGGER_NR_10 TriggerNr = "10"
-	TRIGGER_NR_11 TriggerNr = "11"
-	TRIGGER_NR_12 TriggerNr = "12"
-	TRIGGER_NR_13 TriggerNr = "13"
-	TRIGGER_NR_14 TriggerNr = "14"
-	TRIGGER_NR_15 TriggerNr = "15"
-	TRIGGER_NR_20 TriggerNr = "20"
-	TRIGGER_NR_21 TriggerNr = "21"
-	TRIGGER_NR_30 TriggerNr = "30"
-	TRIGGER_NR_31 TriggerNr = "31"
+	TRIGGER_NR_0  TriggerNr = 0
+	TRIGGER_NR_1  TriggerNr = 1
+	TRIGGER_NR_2  TriggerNr = 2
+	TRIGGER_NR_10 TriggerNr = 10
+	TRIGGER_NR_11 TriggerNr = 11
+	TRIGGER_NR_12 TriggerNr = 12
+	TRIGGER_NR_13 TriggerNr = 13
+	TRIGGER_NR_14 TriggerNr = 14
+	TRIGGER_NR_15 TriggerNr = 15
+	TRIGGER_NR_20 TriggerNr = 20
+	TRIGGER_NR_21 TriggerNr = 21
+	TRIGGER_NR_30 TriggerNr = 30
+	TRIGGER_NR_31 TriggerNr = 31
 )

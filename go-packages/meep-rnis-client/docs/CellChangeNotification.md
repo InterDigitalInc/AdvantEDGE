@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AssociateId** | [**[]AssociateId**](AssociateId.md) | 0 to N identifiers to associate the event for a specific UE or flow. | [optional] [default to null]
-**HoStatus** | **string** | Indicate the status of the UE handover procedure. Values are defined as following: &lt;p&gt;1 &#x3D; IN_PREPARATION. &lt;p&gt;2 &#x3D; IN_EXECUTION. &lt;p&gt;3 &#x3D; COMPLETED. &lt;p&gt;4 &#x3D; REJECTED. &lt;p&gt;5 &#x3D; CANCELLED. | [default to null]
+**HoStatus** | **int32** | Indicate the status of the UE handover procedure. Values are defined as following: &lt;p&gt;1 &#x3D; IN_PREPARATION. &lt;p&gt;2 &#x3D; IN_EXECUTION. &lt;p&gt;3 &#x3D; COMPLETED. &lt;p&gt;4 &#x3D; REJECTED. &lt;p&gt;5 &#x3D; CANCELLED. | [default to null]
 **NotificationType** | **string** | Shall be set to \&quot;CellChangeNotification\&quot;. | [default to null]
 **SrcEcgi** | [***Ecgi**](Ecgi.md) |  | [default to null]
 **TempUeId** | [***CellChangeNotificationTempUeId**](CellChangeNotification_tempUeId.md) |  | [optional] [default to null]

@@ -9,6 +9,7 @@
  */
 package server
 
+//changing to an allOf kindof structure to include every possible json that are all on one level
 type OneOfbodyNotificationSubscription struct {
 	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
 	// URI selected by the service consumer, to receive notifications on the subscribed RNIS information. This shall be included in the request and response.

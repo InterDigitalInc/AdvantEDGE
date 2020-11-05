@@ -28,7 +28,7 @@ type CellChangeNotification struct {
 	// 0 to N identifiers to associate the event for a specific UE or flow.
 	AssociateId []AssociateId `json:"associateId,omitempty"`
 	// Indicate the status of the UE handover procedure. Values are defined as following: <p>1 = IN_PREPARATION. <p>2 = IN_EXECUTION. <p>3 = COMPLETED. <p>4 = REJECTED. <p>5 = CANCELLED.
-	HoStatus string `json:"hoStatus"`
+	HoStatus int32 `json:"hoStatus"`
 	// Shall be set to \"CellChangeNotification\".
 	NotificationType string                          `json:"notificationType"`
 	SrcEcgi          *Ecgi                           `json:"srcEcgi"`

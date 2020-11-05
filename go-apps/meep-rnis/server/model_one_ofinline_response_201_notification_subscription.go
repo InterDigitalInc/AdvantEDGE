@@ -9,6 +9,7 @@
  */
 package server
 
+//using allOf kindof model for having all the json on one flat level
 type OneOfinlineResponse201NotificationSubscription struct {
 	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
 	// URI selected by the service consumer, to receive notifications on the subscribed RNIS information. This shall be included in the request and response.

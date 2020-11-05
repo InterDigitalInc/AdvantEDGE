@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Links** | [***CaReconfSubscriptionLinks**](CaReconfSubscription__links.md) |  | [optional] [default to null]
-**CallbackReference** | **string** | URI selected by the service consumer to receive notifications on the subscribed RNIS information. This shall be included both in the request and in response. | [default to null]
+**CallbackReference** | **string** | URI selected by the service consumerto receive notifications on the subscribed RNIS information. This shall be included both in the request and in response. | [default to null]
 **ExpiryDeadline** | [***TimeStamp**](TimeStamp.md) |  | [optional] [default to null]
 **FilterCriteriaAssocHo** | [***CellChangeSubscriptionFilterCriteriaAssocHo**](CellChangeSubscription_filterCriteriaAssocHo.md) |  | [default to null]
 **SubscriptionType** | **string** | Shall be set to \&quot;CellChangeSubscription\&quot;. | [default to null]

@@ -9,6 +9,7 @@
  */
 package server
 
+//rediercting to another 'allOf' structure
 type OneOfinlineResponse2006NotificationSubscription struct {
 	OneOfinlineResponse201NotificationSubscription
 }
