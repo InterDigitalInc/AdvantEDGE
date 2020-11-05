@@ -992,20 +992,22 @@ definitions:
     type: "object"
     properties:
       min:
-        type: "string"
+        type: "integer"
         description: "Minimum requested memory"
       max:
-        type: "string"
+        type: "integer"
         description: "Maximum requested memory"
     description: "Memory configuration object"
   CpuConfig:
     type: "object"
     properties:
       min:
-        type: "string"
+        type: "number"
+        format: "float"
         description: "Minimum requested CPU"
       max:
-        type: "string"
+        type: "number"
+        format: "float"
         description: "Maximum requested CPU"
     description: "CPU configuration object"
   ExternalConfig:

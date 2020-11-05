@@ -26,7 +26,7 @@ package model
 // CPU configuration object
 type CpuConfig struct {
 	// Minimum requested CPU
-	Min string `json:"min,omitempty"`
+	Min float32 `json:"min,omitempty"`
 	// Maximum requested CPU
-	Max string `json:"max,omitempty"`
+	Max float32 `json:"max,omitempty"`
 }

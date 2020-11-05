@@ -27,7 +27,7 @@ package client
 // Memory configuration object
 type MemoryConfig struct {
 	// Minimum requested memory
-	Min string `json:"min,omitempty"`
+	Min int32 `json:"min,omitempty"`
 	// Maximum requested memory
-	Max string `json:"max,omitempty"`
+	Max int32 `json:"max,omitempty"`
 }

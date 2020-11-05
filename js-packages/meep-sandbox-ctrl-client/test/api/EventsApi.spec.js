@@ -121,11 +121,11 @@
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.type = "";
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.count = 0;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig = new AdvantEdgeSandboxControllerRestApi.MemoryConfig();
-          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.min = "";
-          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.max = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.min = 0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.max = 0;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig = new AdvantEdgeSandboxControllerRestApi.CpuConfig();
-          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.min = "";
-          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.max = "";
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.min = 0.0;
+          event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.max = 0.0;
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
           event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].name = "";

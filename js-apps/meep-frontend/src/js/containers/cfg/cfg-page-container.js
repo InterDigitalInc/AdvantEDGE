@@ -83,7 +83,11 @@ import {
   resetElem,
   FIELD_CELL_ID,
   FIELD_NR_CELL_ID,
-  FIELD_MAC_ID
+  FIELD_MAC_ID,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -269,6 +273,26 @@ class CfgPageContainer extends Component {
       var gpuType = getElemFieldVal(element, FIELD_GPU_TYPE);
       if (gpuType === null || gpuType === '') {
         this.props.cfgElemSetErrMsg('GPU type not selected');
+        return false;
+      }
+    }
+
+    // If CPU limitations is requested, making sure Min CPU <= Max CPU
+    var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
+    var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
+    if (cpuMin !== null && cpuMax !== null) {
+      if (parseFloat(cpuMin) > parseFloat(cpuMax)) {
+        this.props.cfgElemSetErrMsg('Min CPU > Max CPU which is not acceptable');
+        return false;
+      }
+    }
+
+    // If Memory limitations is requested, making sure Min Memory <= Max Memory
+    var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
+    var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
+    if (memoryMin !== null && memoryMax !== null) {
+      if (parseInt(memoryMin) > parseInt(memoryMax)) {
+        this.props.cfgElemSetErrMsg('Min Memory > Max Memory which is not acceptable');
         return false;
       }
     }

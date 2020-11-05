@@ -43,10 +43,10 @@ deployment:
 
   resources:
     requests:
-    {{- if .Deployment.CpuEnabled}}
+    {{- if and (.Deployment.CpuEnabled) (ne .Deployment.CpuMin "")}}
       cpu: {{.Deployment.CpuMin}}
     {{- end}}
-    {{- if .Deployment.MemoryEnabled}}
+    {{- if and (.Deployment.MemoryEnabled) (ne .Deployment.MemoryMin "")}}
       memory: {{.Deployment.MemoryMin}}
     {{- end}}
     limits:
@@ -55,10 +55,10 @@ deployment:
       nvidia.com/gpu: {{.Deployment.GpuCount}}
     {{- end}}
     {{- end}}
-    {{- if .Deployment.CpuEnabled}}
+    {{- if and (.Deployment.CpuEnabled) (ne .Deployment.CpuMax "")}}
       cpu: {{.Deployment.CpuMax}}
     {{- end}}
-    {{- if .Deployment.MemoryEnabled}}
+    {{- if and (.Deployment.MemoryEnabled) (ne .Deployment.MemoryMax "")}}
       memory: {{.Deployment.MemoryMax}}
     {{- end}}
 

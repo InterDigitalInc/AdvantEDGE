@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**min** | **String** | Minimum requested CPU | [optional] 
-**max** | **String** | Maximum requested CPU | [optional] 
+**min** | **Number** | Minimum requested CPU | [optional] 
+**max** | **Number** | Maximum requested CPU | [optional] 
 
 

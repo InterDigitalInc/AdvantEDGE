@@ -3,7 +3,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**min** | **String** | Minimum requested memory | [optional] 
-**max** | **String** | Maximum requested memory | [optional] 
+**min** | **Number** | Minimum requested memory | [optional] 
+**max** | **Number** | Maximum requested memory | [optional] 
 
 

@@ -81,6 +81,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -119,6 +121,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -304,6 +308,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -342,6 +348,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -429,6 +437,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -467,6 +477,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -524,6 +536,8 @@ deployment:
                                             environment: null
                                             serviceConfig: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -603,6 +617,8 @@ deployment:
                                             commandExe: null
                                             serviceConfig: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
@@ -739,6 +755,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -777,6 +795,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
+                                            cpuConfig: null
+                                            memoryConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null

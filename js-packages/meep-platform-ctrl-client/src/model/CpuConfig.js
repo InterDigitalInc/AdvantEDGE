@@ -71,22 +71,22 @@
     if (data) {
       obj = obj || new exports();
       if (data.hasOwnProperty('min'))
-        obj.min = ApiClient.convertToType(data['min'], 'String');
+        obj.min = ApiClient.convertToType(data['min'], 'Number');
       if (data.hasOwnProperty('max'))
-        obj.max = ApiClient.convertToType(data['max'], 'String');
+        obj.max = ApiClient.convertToType(data['max'], 'Number');
     }
     return obj;
   }
 
   /**
    * Minimum requested CPU
-   * @member {String} min
+   * @member {Number} min
    */
   exports.prototype.min = undefined;
 
   /**
    * Maximum requested CPU
-   * @member {String} max
+   * @member {Number} max
    */
   exports.prototype.max = undefined;
 
