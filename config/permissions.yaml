@@ -438,6 +438,12 @@ services:
 #       roles:
 #         admin: 'allow'
 #         user: 'block'
+#     Authorize:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
+#     LoginOAuth:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
 #     LoginUser:
 #       # access authorization mode: allow|block|verify
 #       mode: 'allow'
@@ -614,6 +620,9 @@ services:
 #     SubscriptionLinkListSubscriptionsGET:
 #       # access authorization mode: allow|block|verify
 #       mode: 'allow'
+#     SubscriptionsDELETE:
+#       # access authorization mode: allow|block|verify
+#       mode: 'allow'
 #     SubscriptionsGET:
 #       # access authorization mode: allow|block|verify
 #       mode: 'allow'
@@ -621,9 +630,6 @@ services:
 #       # access authorization mode: allow|block|verify
 #       mode: 'allow'
 #     SubscriptionsPUT:
-#       # access authorization mode: allow|block|verify
-#       mode: 'allow'
-#     SubscriptionsSubscrIdDELETE:
 #       # access authorization mode: allow|block|verify
 #       mode: 'allow'
 

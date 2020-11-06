@@ -2,7 +2,6 @@
 set -e
 
 echo "MEEP_SANDBOX_NAME: ${MEEP_SANDBOX_NAME}"
-echo "MEEP_HOST_URL: ${MEEP_HOST_URL}"
 echo "USER_SWAGGER: ${USER_SWAGGER}"
 echo "USER_SWAGGER_SANDBOX: ${USER_SWAGGER_SANDBOX}"
 
@@ -21,9 +20,6 @@ if [[ ! -z "${USER_SWAGGER}" ]]; then
         sed -i 's,basePath: \"/\?,basePath: \"/'${MEEP_SANDBOX_NAME}'/,' $file;
     done
 fi
-
-# Update spec links in index.html
-# sed -i 's,"url": "\([^"]*\)","url": "'${MEEP_HOST_URL}'/'${MEEP_SANDBOX_NAME}'/api/\1",g' /swagger/index.html
 
 # Start virt engine
 exec /meep-sandbox-ctrl

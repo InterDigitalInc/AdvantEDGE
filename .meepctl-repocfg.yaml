@@ -32,6 +32,8 @@ repo:
     ingress:
       # host name
       host: my-advantedge.com
+      # enable https only (redirect http requests to https port)
+      https-only: true
       # bind to host ports (true) or node ports (false)
       host-ports: true
       # http port number
@@ -42,6 +44,25 @@ repo:
       ca: self-signed
       # lets-encrypt production server (true) or staging server (false)
       le-server-prod: false
+      
+    auth:
+      # session encryption key
+      session-key: my-secret-key
+      # OAuth redirect URI
+      redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
+      # Github OAuth configuration
+      github:
+        # Client app identifier
+        client-id: my-client-id
+        # Oatuh app secret
+        secret: my-secret
+      # Gitlab OAuth configuration
+      gitlab:
+        # Client app identifier
+        client-id: my-client-id
+        # Oatuh app secret
+        secret: my-secret
+
 
   #------------------------------
   #  Core Subsystem

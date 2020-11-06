@@ -26,6 +26,13 @@ image:
   env:
     MEEP_SESSION_KEY: "my-secret-key"
     MEEP_MAX_SESSIONS: "10"
+    MEEP_PLATFORM_URI: "https://<my-platform-fqdn>"
+    MEEP_OAUTH_GITHUB_CLIENT_ID: "my-github-client-id"
+    MEEP_OAUTH_GITHUB_REDIRECT_URI: "https://<my-platform-fqdn>/platform-ctrl/v1/authorize"
+    MEEP_OAUTH_GITHUB_SECRET: "my-github-secret"
+    MEEP_OAUTH_GITLAB_CLIENT_ID: "my-gitlab-client-id"
+    MEEP_OAUTH_GITLAB_REDIRECT_URI: "https://<my-platform-fqdn>/platform-ctrl/v1/authorize"
+    MEEP_OAUTH_GITLAB_SECRET: "my-gitlab-secret"
 
 service:
   type: ClusterIP

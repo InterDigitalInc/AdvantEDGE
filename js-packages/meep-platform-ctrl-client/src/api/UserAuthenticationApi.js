@@ -63,6 +63,96 @@
 
 
     /**
+     * Callback function to receive the result of the authorize operation.
+     * @callback module:api/UserAuthenticationApi~authorizeCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * OAuth authorization response endpoint
+     * Redirect URI endpoint for OAuth authorization responses. Starts a user session.
+     * @param {Object} opts Optional parameters
+     * @param {String} opts.code Temporary authorization code
+     * @param {String} opts.state User-provided random state
+     * @param {module:api/UserAuthenticationApi~authorizeCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.authorize = function(opts, callback) {
+      opts = opts || {};
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+        'code': opts['code'],
+        'state': opts['state'],
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/authorize', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
+     * Callback function to receive the result of the loginOAuth operation.
+     * @callback module:api/UserAuthenticationApi~loginOAuthCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Initiate OAuth login procedure
+     * Start OAuth login procedure with provider
+     * @param {Object} opts Optional parameters
+     * @param {module:model/String} opts.provider Oauth provider
+     * @param {module:api/UserAuthenticationApi~loginOAuthCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.loginOAuth = function(opts, callback) {
+      opts = opts || {};
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+        'provider': opts['provider'],
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/login', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
      * Callback function to receive the result of the loginUser operation.
      * @callback module:api/UserAuthenticationApi~loginUserCallback
      * @param {String} error Error message, if any.

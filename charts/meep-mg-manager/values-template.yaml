@@ -24,6 +24,7 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
+    MEEP_SESSION_KEY: {{ .SessionKey }}
 
 service:
   name: meep-mg-manager
@@ -39,6 +40,7 @@ ingress:
         - /{{ .SandboxName }}/mgm
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |

@@ -29,6 +29,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/roymx/viper"
+	"golang.org/x/oauth2"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
@@ -46,6 +47,11 @@ type Scenario struct {
 	Name string `json:"name,omitempty"`
 }
 
+type LoginRequest struct {
+	provider  string
+	timestamp time.Time
+}
+
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	rc            *redis.Connector
@@ -54,6 +60,9 @@ type PlatformCtrl struct {
 	userStore     *users.Connector
 	mqGlobal      *mq.MsgQueue
 	maxSessions   int
+	uri           string
+	oauthConfigs  map[string]*oauth2.Config
+	loginRequests map[string]*LoginRequest
 }
 
 const scenarioDBName = "scenarios"
@@ -169,6 +178,9 @@ func Init() (err error) {
 
 	// Set endpoint authorization permissions
 	setPermissions()
+
+	// Initialize OAuth
+	initOAuth()
 
 	log.Info("Platform Controller initialized")
 	return nil

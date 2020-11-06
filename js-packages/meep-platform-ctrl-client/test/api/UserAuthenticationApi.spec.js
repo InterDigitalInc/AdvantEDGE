@@ -50,6 +50,47 @@
 
   describe('(package)', function() {
     describe('UserAuthenticationApi', function() {
+      describe('authorize', function() {
+        it('should call authorize successfully', function(done) {
+          // TODO: uncomment, update parameter values for authorize call
+          /*
+          var opts = {};
+          opts.code = "code_example";
+          opts.state = "state_example";
+
+          instance.authorize(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
+      describe('loginOAuth', function() {
+        it('should call loginOAuth successfully', function(done) {
+          // TODO: uncomment, update parameter values for loginOAuth call
+          /*
+          var opts = {};
+          opts.provider = "provider_example";
+
+          instance.loginOAuth(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('loginUser', function() {
         it('should call loginUser successfully', function(done) {
           // TODO: uncomment, update parameter values for loginUser call and complete the assertions

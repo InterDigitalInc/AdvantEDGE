@@ -17,4 +17,10 @@ COPY ./meep-platform-ctrl /meep-platform-ctrl
 COPY ./frontend /frontend
 COPY ./swagger /swagger
 COPY ./permissions.yaml /permissions.yaml
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates
+
+RUN update-ca-certificates
+
 ENTRYPOINT ["/meep-platform-ctrl"]
