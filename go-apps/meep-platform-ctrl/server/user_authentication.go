@@ -147,7 +147,7 @@ func delLoginRequest(state string) {
 }
 
 func getErrUrl(err string) string {
-	return pfmCtrl.uri + "?err=" + strings.ReplaceAll(err, " ", "_")
+	return pfmCtrl.uri + "?err=" + strings.ReplaceAll(err, " ", "+")
 }
 
 func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
@@ -228,6 +228,12 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	switch provider {
 	case OAUTH_PROVIDER_GITHUB:
 		oauthClient := config.Client(context.Background(), token)
+		if oauthClient == nil {
+			err = errors.New("Failed to create new GitHub oauth client")
+			log.Error(err.Error())
+			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+			return
+		}
 		client := github.NewClient(oauthClient)
 		if client == nil {
 			err = errors.New("Failed to create new GitHub client")
