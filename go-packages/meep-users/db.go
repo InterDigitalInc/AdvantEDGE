@@ -204,8 +204,8 @@ func (pc *Connector) DeleteTable(tableName string) (err error) {
 // CreateUser - Create new user
 func (pc *Connector) CreateUser(provider string, username string, password string, role string, sboxname string) (err error) {
 	// Validate input
-	if username == "" {
-		return errors.New("Missing username")
+	if provider == "" {
+		provider = ProviderLocal
 	}
 	if username == "" {
 		return errors.New("Missing username")
@@ -220,9 +220,6 @@ func (pc *Connector) CreateUser(provider string, username string, password strin
 		if err != nil {
 			return err
 		}
-	}
-	if provider == "" {
-		provider = ProviderLocal
 	}
 
 	// Create entry
@@ -487,5 +484,5 @@ func isValidRole(role string) error {
 	case RoleUser, RoleAdmin:
 		return nil
 	}
-	return errors.New("Inalid role")
+	return errors.New("Invalid role")
 }
