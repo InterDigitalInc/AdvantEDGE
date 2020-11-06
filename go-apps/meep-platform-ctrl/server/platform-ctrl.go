@@ -48,8 +48,8 @@ type Scenario struct {
 }
 
 type LoginRequest struct {
-	provider  string
-	timestamp time.Time
+	provider string
+	timer    *time.Timer
 }
 
 type PlatformCtrl struct {
