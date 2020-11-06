@@ -207,7 +207,11 @@ func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
 }
 
 func deregisterZoneStatus(subsIdStr string) {
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+        }
+
 	mutex.Lock()
 	defer mutex.Unlock()
 	zoneStatusSubscriptionMap[subsId] = nil
@@ -215,7 +219,10 @@ func deregisterZoneStatus(subsIdStr string) {
 
 func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAPThreshold int32, opStatus []OperationStatus, subsIdStr string) {
 
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+        }
 
 	var zoneStatus ZoneStatusCheck
 	if opStatus != nil {
@@ -240,7 +247,11 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 }
 
 func deregisterZonal(subsIdStr string) {
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+		log.Error(err)
+	}
+
 	mutex.Lock()
 	defer mutex.Unlock()
 	zonalSubscriptionMap[subsId] = ""
@@ -251,7 +262,10 @@ func deregisterZonal(subsIdStr string) {
 
 func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+        }
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -276,7 +290,11 @@ func registerZonal(zoneId string, event []UserEventType, subsIdStr string) {
 }
 
 func deregisterUser(subsIdStr string) {
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+        }
+
 	mutex.Lock()
 	defer mutex.Unlock()
 	userSubscriptionMap[subsId] = ""
@@ -287,7 +305,11 @@ func deregisterUser(subsIdStr string) {
 
 func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+        }
+
 	mutex.Lock()
 	defer mutex.Unlock()
 	if event != nil {
@@ -341,12 +363,22 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 			zoneWarning := false
 			apWarning := false
 			if nbUsersInZoneStr != "" {
-				nbUsersInZone, _ = strconv.Atoi(nbUsersInZoneStr)
+				nbUsersInZone, err := strconv.Atoi(nbUsersInZoneStr)
+			        if err != nil {
+					log.Error(err)
+					continue
+				}
+
 				if nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
 					zoneWarning = true
 				}
 				if nbUsersInAPStr != "" {
-					nbUsersInAP, _ = strconv.Atoi(nbUsersInAPStr)
+					nbUsersInAP, err = strconv.Atoi(nbUsersInAPStr)
+					if err != nil {
+	                                        log.Error(err)
+                                        	continue
+                                	}
+
 					if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
 						apWarning = true
 					}
@@ -960,14 +992,21 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	selfUrl := strings.Split(userTrackingSub.ResourceURL, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
+	//Body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	userTrackingSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking/" + subsIdStr
 
 	subsId, _ := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+                w.WriteHeader(http.StatusBadRequest)
+                return
+        }
+
 	if userSubscriptionMap[subsId] == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -1153,14 +1192,21 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	selfUrl := strings.Split(zonalTrafficSub.ResourceURL, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
+	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	zonalTrafficSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic/" + subsIdStr
 
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+        if err != nil {
+                log.Error(err)
+                w.WriteHeader(http.StatusBadRequest)
+                return
+        }
+
 	if zonalSubscriptionMap[subsId] == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -1337,14 +1383,21 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	selfUrl := strings.Split(zoneStatusSub.ResourceURL, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
+	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	zoneStatusSub.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus/" + subsIdStr
 
-	subsId, _ := strconv.Atoi(subsIdStr)
+	subsId, err := strconv.Atoi(subsIdStr)
+	if err != nil {
+                log.Error(err)
+	        w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	if zoneStatusSubscriptionMap[subsId] == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
