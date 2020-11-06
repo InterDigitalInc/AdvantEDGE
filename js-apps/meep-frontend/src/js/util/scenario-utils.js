@@ -958,15 +958,14 @@ export function createProcess(uniqueId, name, type, element) {
         getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
       count: gpuCount
     };
-
-    process.cpuConfig = {
-      min: cpuMin && !isNaN(cpuMin) !== null ? parseFloat(cpuMin) : null,
-      max: cpuMax && !isNaN(cpuMax) !== null ? parseFloat(cpuMax): null
-    };
-    process.memoryConfig = {
-      min: memoryMin !== null && !isNaN(memoryMin) ? parseInt(memoryMin) : null,
-      max: memoryMax !== null && !isNaN(memoryMax) ? parseInt(memoryMax) : null
-    };
+    process.cpuConfig = (cpuMin && !isNaN(cpuMin)) || (cpuMax && !isNaN(cpuMax)) ? {
+      min: cpuMin && !isNaN(cpuMin) ? parseFloat(cpuMin) : null,
+      max: cpuMax && !isNaN(cpuMax) ? parseFloat(cpuMax): null
+    } : null;
+    process.memoryConfig = (memoryMin && !isNaN(memoryMin)) || (memoryMax && !isNaN(memoryMax)) ? {
+      min: memoryMin && !isNaN(memoryMin) ? parseInt(memoryMin) : null,
+      max: memoryMax && !isNaN(memoryMax) ? parseInt(memoryMax) : null
+    } : null;
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   }
   if (process.netChar) {

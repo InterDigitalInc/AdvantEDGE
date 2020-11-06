@@ -296,7 +296,7 @@ const validateCpuValue = count => {
 
   const p = Number(count);
   if (p !== '' && p === 0) {
-    return 'count !== 0';
+    return 'Must be a float greater than 0';
   }
   return null;
 };
@@ -313,7 +313,7 @@ const validateMemoryValue = count => {
 
   const p = Number(count);
   if (p !== '' && p === 0) {
-    return 'count !== 0 ';
+    return 'Must be an integer greater than 0';
   }
   return null;
 };
@@ -689,7 +689,7 @@ const CpuGroup = ({ onUpdate, element }) => {
         element={element}
         validate={validateCpuValue}
         isNumber={true}
-        label="Min CPU"
+        label="Min CPU Count"
         fieldName={FIELD_CPU_MIN}
         cydata={CFG_ELEM_CPU_MIN}
       />
@@ -699,7 +699,7 @@ const CpuGroup = ({ onUpdate, element }) => {
         element={element}
         validate={validateCpuValue}
         isNumber={true}
-        label="Max CPU"
+        label="Max CPU Count"
         fieldName={FIELD_CPU_MAX}
         cydata={CFG_ELEM_CPU_MAX}
       />
@@ -726,7 +726,7 @@ const MemoryGroup = ({ onUpdate, element }) => {
         element={element}
         validate={validateMemoryValue}
         isNumber={true}
-        label="Max memory (MB)"
+        label="Max Memory (MB)"
         fieldName={FIELD_MEMORY_MAX}
         cydata={CFG_ELEM_MEMORY_MAX}
       />

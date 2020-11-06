@@ -282,7 +282,7 @@ class CfgPageContainer extends Component {
     var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
     if (cpuMin !== null && cpuMax !== null) {
       if (parseFloat(cpuMin) > parseFloat(cpuMax)) {
-        this.props.cfgElemSetErrMsg('Min CPU > Max CPU which is not acceptable');
+        this.props.cfgElemSetErrMsg('Min CPU > Max CPU');
         return false;
       }
     }
@@ -292,7 +292,7 @@ class CfgPageContainer extends Component {
     var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
     if (memoryMin !== null && memoryMax !== null) {
       if (parseInt(memoryMin) > parseInt(memoryMax)) {
-        this.props.cfgElemSetErrMsg('Min Memory > Max Memory which is not acceptable');
+        this.props.cfgElemSetErrMsg('Min Memory > Max Memory');
         return false;
       }
     }
