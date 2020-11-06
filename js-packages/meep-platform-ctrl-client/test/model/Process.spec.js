@@ -115,6 +115,18 @@
         // expect(instance.gpuConfig).to.be(expectedValueLiteral);
       });
 
+      it('should have the property memoryConfig (base name: "memoryConfig")', function() {
+        // TODO: update the code to test the property memoryConfig
+        expect(instance).to.have.property('memoryConfig');
+        // expect(instance.memoryConfig).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property cpuConfig (base name: "cpuConfig")', function() {
+        // TODO: update the code to test the property cpuConfig
+        expect(instance).to.have.property('cpuConfig');
+        // expect(instance.cpuConfig).to.be(expectedValueLiteral);
+      });
+
       it('should have the property externalConfig (base name: "externalConfig")', function() {
         // TODO: update the code to test the property externalConfig
         expect(instance).to.have.property('externalConfig');

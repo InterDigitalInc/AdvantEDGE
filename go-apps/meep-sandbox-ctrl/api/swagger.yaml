@@ -896,6 +896,10 @@ definitions:
         $ref: "#/definitions/ServiceConfig"
       gpuConfig:
         $ref: "#/definitions/GpuConfig"
+      memoryConfig:
+        $ref: "#/definitions/MemoryConfig"
+      cpuConfig:
+        $ref: "#/definitions/CpuConfig"
       externalConfig:
         $ref: "#/definitions/ExternalConfig"
       status:
@@ -984,6 +988,28 @@ definitions:
         type: "integer"
         description: "Number of GPUs requested"
     description: "GPU configuration object"
+  MemoryConfig:
+    type: "object"
+    properties:
+      min:
+        type: "integer"
+        description: "Minimum requested memory"
+      max:
+        type: "integer"
+        description: "Maximum requested memory"
+    description: "Memory configuration object"
+  CpuConfig:
+    type: "object"
+    properties:
+      min:
+        type: "number"
+        format: "float"
+        description: "Minimum requested CPU"
+      max:
+        type: "number"
+        format: "float"
+        description: "Maximum requested CPU"
+    description: "CPU configuration object"
   ExternalConfig:
     type: "object"
     properties:

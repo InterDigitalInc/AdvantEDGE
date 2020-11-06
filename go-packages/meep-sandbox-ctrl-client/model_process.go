@@ -44,6 +44,8 @@ type Process struct {
 	CommandExe     string          `json:"commandExe,omitempty"`
 	ServiceConfig  *ServiceConfig  `json:"serviceConfig,omitempty"`
 	GpuConfig      *GpuConfig      `json:"gpuConfig,omitempty"`
+	MemoryConfig   *MemoryConfig   `json:"memoryConfig,omitempty"`
+	CpuConfig      *CpuConfig      `json:"cpuConfig,omitempty"`
 	ExternalConfig *ExternalConfig `json:"externalConfig,omitempty"`
 	// Process status
 	Status string `json:"status,omitempty"`

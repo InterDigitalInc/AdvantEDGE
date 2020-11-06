@@ -80,6 +80,10 @@ import {
   FIELD_NR_CELL_ID,
 
   getElemFieldVal,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX,
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
@@ -555,6 +559,10 @@ describe('Scenario Configuration', function () {
   let edgeAppCmd = '/bin/bash';
   let edgeAppArgs = '-c, export;';
   let edgeAppPlacementId = 'node1';
+  let edgeAppCpuMin = '0.5';
+  let edgeAppCpuMax = '1';
+  let edgeAppMemoryMin = '100';
+  let edgeAppMemoryMax = '200';
 
   function addEdgeApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -578,6 +586,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_GROUP, edgeAppGroup);
     type(meep.CFG_ELEM_GPU_COUNT, edgeAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, edgeAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, edgeAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, edgeAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, edgeAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, edgeAppMemoryMax);
     type(meep.CFG_ELEM_ENV, edgeAppEnv);
     type(meep.CFG_ELEM_CMD, edgeAppCmd);
     type(meep.CFG_ELEM_ARGS, edgeAppArgs);
@@ -601,6 +613,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_GROUP), edgeAppGroup);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), edgeAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), edgeAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), edgeAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), edgeAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), edgeAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), edgeAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), edgeAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), edgeAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), edgeAppArgs);
@@ -853,6 +869,10 @@ describe('Scenario Configuration', function () {
   let fogAppCmd = '/bin/bash';
   let fogAppArgs = '-c, export;';
   let fogAppPlacementId = 'node2';
+  let fogAppCpuMin = '0.5';
+  let fogAppCpuMax = '1';
+  let fogAppMemoryMin = '100';
+  let fogAppMemoryMax = '200';
 
   function addFogApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -876,6 +896,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_GROUP, fogAppGroup);
     type(meep.CFG_ELEM_GPU_COUNT, fogAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, fogAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, fogAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, fogAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, fogAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, fogAppMemoryMax);
     type(meep.CFG_ELEM_ENV, fogAppEnv);
     type(meep.CFG_ELEM_CMD, fogAppCmd);
     type(meep.CFG_ELEM_ARGS, fogAppArgs);
@@ -899,6 +923,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_GROUP), fogAppGroup);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), fogAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), fogAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), fogAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), fogAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), fogAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), fogAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), fogAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), fogAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), fogAppArgs);
@@ -966,6 +994,10 @@ describe('Scenario Configuration', function () {
   let ueAppCmd = '/bin/bash';
   let ueAppArgs = '-c, export;';
   let ueAppPlacementId = 'node3';
+  let ueAppCpuMin = '0.5';
+  let ueAppCpuMax = '1';
+  let ueAppMemoryMin = '100';
+  let ueAppMemoryMax = '200';
 
   // Add new ue app element
   function addUeApp(name, parent) {
@@ -986,6 +1018,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_IMG, ueAppImg);
     type(meep.CFG_ELEM_GPU_COUNT, ueAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, ueAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, ueAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, ueAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, ueAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, ueAppMemoryMax);
     type(meep.CFG_ELEM_ENV, ueAppEnv);
     type(meep.CFG_ELEM_CMD, ueAppCmd);
     type(meep.CFG_ELEM_ARGS, ueAppArgs);
@@ -1005,6 +1041,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_IMAGE), ueAppImg);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), ueAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), ueAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), ueAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), ueAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), ueAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), ueAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), ueAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), ueAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), ueAppArgs);
@@ -1092,6 +1132,10 @@ describe('Scenario Configuration', function () {
   let cloudAppCmd = '/bin/bash';
   let cloudAppArgs = '-c, export;';
   let cloudAppPlacementId = '';
+  let cloudAppCpuMin = '0.5';
+  let cloudAppCpuMax = '1';
+  let cloudAppMemoryMin = '100';
+  let cloudAppMemoryMax = '200';
 
   function addCloudApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -1114,6 +1158,10 @@ describe('Scenario Configuration', function () {
     select(meep.CFG_ELEM_PROT, cloudAppProt);
     type(meep.CFG_ELEM_GPU_COUNT, cloudAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, cloudAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, cloudAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, cloudAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, cloudAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, cloudAppMemoryMax);
     type(meep.CFG_ELEM_ENV, cloudAppEnv);
     type(meep.CFG_ELEM_CMD, cloudAppCmd);
     type(meep.CFG_ELEM_ARGS, cloudAppArgs);
@@ -1136,6 +1184,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_PROTOCOL), cloudAppProt);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), cloudAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), cloudAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), cloudAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), cloudAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), cloudAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), cloudAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), cloudAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), cloudAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), cloudAppArgs);

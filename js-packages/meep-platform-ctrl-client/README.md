@@ -138,6 +138,7 @@ Class | Method | HTTP request | Description
 
  - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.CpuConfig](docs/CpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgePlatformControllerRestApi.EgressService](docs/EgressService.md)
@@ -146,6 +147,7 @@ Class | Method | HTTP request | Description
  - [AdvantEdgePlatformControllerRestApi.GpuConfig](docs/GpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.IngressService](docs/IngressService.md)
  - [AdvantEdgePlatformControllerRestApi.LineString](docs/LineString.md)
+ - [AdvantEdgePlatformControllerRestApi.MemoryConfig](docs/MemoryConfig.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkCharacteristics](docs/NetworkCharacteristics.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
  - [AdvantEdgePlatformControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)

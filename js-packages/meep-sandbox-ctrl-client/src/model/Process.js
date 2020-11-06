@@ -31,18 +31,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/ExternalConfig', 'model/GpuConfig', 'model/NetworkCharacteristics', 'model/ServiceConfig'], factory);
+    define(['ApiClient', 'model/CpuConfig', 'model/ExternalConfig', 'model/GpuConfig', 'model/MemoryConfig', 'model/NetworkCharacteristics', 'model/ServiceConfig'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./ExternalConfig'), require('./GpuConfig'), require('./NetworkCharacteristics'), require('./ServiceConfig'));
+    module.exports = factory(require('../ApiClient'), require('./CpuConfig'), require('./ExternalConfig'), require('./GpuConfig'), require('./MemoryConfig'), require('./NetworkCharacteristics'), require('./ServiceConfig'));
   } else {
     // Browser globals (root is window)
     if (!root.AdvantEdgeSandboxControllerRestApi) {
       root.AdvantEdgeSandboxControllerRestApi = {};
     }
-    root.AdvantEdgeSandboxControllerRestApi.Process = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.ExternalConfig, root.AdvantEdgeSandboxControllerRestApi.GpuConfig, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.ServiceConfig);
+    root.AdvantEdgeSandboxControllerRestApi.Process = factory(root.AdvantEdgeSandboxControllerRestApi.ApiClient, root.AdvantEdgeSandboxControllerRestApi.CpuConfig, root.AdvantEdgeSandboxControllerRestApi.ExternalConfig, root.AdvantEdgeSandboxControllerRestApi.GpuConfig, root.AdvantEdgeSandboxControllerRestApi.MemoryConfig, root.AdvantEdgeSandboxControllerRestApi.NetworkCharacteristics, root.AdvantEdgeSandboxControllerRestApi.ServiceConfig);
   }
-}(this, function(ApiClient, ExternalConfig, GpuConfig, NetworkCharacteristics, ServiceConfig) {
+}(this, function(ApiClient, CpuConfig, ExternalConfig, GpuConfig, MemoryConfig, NetworkCharacteristics, ServiceConfig) {
   'use strict';
 
   /**
@@ -90,6 +90,10 @@
         obj.serviceConfig = ServiceConfig.constructFromObject(data['serviceConfig']);
       if (data.hasOwnProperty('gpuConfig'))
         obj.gpuConfig = GpuConfig.constructFromObject(data['gpuConfig']);
+      if (data.hasOwnProperty('memoryConfig'))
+        obj.memoryConfig = MemoryConfig.constructFromObject(data['memoryConfig']);
+      if (data.hasOwnProperty('cpuConfig'))
+        obj.cpuConfig = CpuConfig.constructFromObject(data['cpuConfig']);
       if (data.hasOwnProperty('externalConfig'))
         obj.externalConfig = ExternalConfig.constructFromObject(data['externalConfig']);
       if (data.hasOwnProperty('status'))
@@ -177,6 +181,16 @@
    * @member {module:model/GpuConfig} gpuConfig
    */
   exports.prototype.gpuConfig = undefined;
+
+  /**
+   * @member {module:model/MemoryConfig} memoryConfig
+   */
+  exports.prototype.memoryConfig = undefined;
+
+  /**
+   * @member {module:model/CpuConfig} cpuConfig
+   */
+  exports.prototype.cpuConfig = undefined;
 
   /**
    * @member {module:model/ExternalConfig} externalConfig

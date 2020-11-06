@@ -93,7 +93,11 @@ import {
   createElem,
   getElemFieldVal,
   setElemFieldVal,
-  createUniqueName
+  createUniqueName,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from './elem-utils';
 
 import {
@@ -888,6 +892,10 @@ export function createProcess(uniqueId, name, type, element) {
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
+  var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
+  var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
+  var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
+  var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
   var process = {
     id: uniqueId,
     name: name,
@@ -902,6 +910,8 @@ export function createProcess(uniqueId, name, type, element) {
     commandExe: null,
     serviceConfig: null,
     gpuConfig: null,
+    cpuConfig: null,
+    memoryConfig: null,
     externalConfig: null,
     netChar: {
       latency: parseInt(DEFAULT_LATENCY_APP),
@@ -948,6 +958,14 @@ export function createProcess(uniqueId, name, type, element) {
         getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
       count: gpuCount
     };
+    process.cpuConfig = (cpuMin && !isNaN(cpuMin)) || (cpuMax && !isNaN(cpuMax)) ? {
+      min: cpuMin && !isNaN(cpuMin) ? parseFloat(cpuMin) : null,
+      max: cpuMax && !isNaN(cpuMax) ? parseFloat(cpuMax): null
+    } : null;
+    process.memoryConfig = (memoryMin && !isNaN(memoryMin)) || (memoryMax && !isNaN(memoryMax)) ? {
+      min: memoryMin && !isNaN(memoryMin) ? parseInt(memoryMin) : null,
+      max: memoryMax && !isNaN(memoryMax) ? parseInt(memoryMax) : null
+    } : null;
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   }
   if (process.netChar) {
@@ -1559,6 +1577,16 @@ export function getElementFromScenario(scenario, elementId) {
                 if (process.gpuConfig) {
                   setElemFieldVal(elem, FIELD_GPU_COUNT, process.gpuConfig.count || '');
                   setElemFieldVal(elem, FIELD_GPU_TYPE, process.gpuConfig.type || '');
+                }
+
+                if (process.cpuConfig) {
+                  setElemFieldVal(elem, FIELD_CPU_MIN, process.cpuConfig.min || '');
+                  setElemFieldVal(elem, FIELD_CPU_MAX, process.cpuConfig.max || '');
+                }
+
+                if (process.memoryConfig) {
+                  setElemFieldVal(elem, FIELD_MEMORY_MIN, process.memoryConfig.min || '');
+                  setElemFieldVal(elem, FIELD_MEMORY_MAX, process.memoryConfig.max || '');
                 }
               }
 

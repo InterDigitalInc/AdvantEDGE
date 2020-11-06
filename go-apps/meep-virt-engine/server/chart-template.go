@@ -55,6 +55,12 @@ type DeploymentTemplate struct {
 	GpuType                  string
 	GpuCount                 string
 	PlacementId              string
+	CpuEnabled               string
+	CpuMin                   string
+	CpuMax                   string
+	MemoryEnabled            string
+	MemoryMin                string
+	MemoryMax                string
 }
 
 // ServiceTemplate - Service Template
@@ -284,6 +290,28 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 				deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
 			}
 
+			// Enable CPU template if present
+			if proc.CpuConfig != nil {
+				deploymentTemplate.CpuEnabled = trueStr
+				if proc.CpuConfig.Min != 0 {
+					deploymentTemplate.CpuMin = strconv.FormatFloat(float64(proc.CpuConfig.Min), 'f', -1, 32)
+				}
+				if proc.CpuConfig.Max != 0 {
+					deploymentTemplate.CpuMax = strconv.FormatFloat(float64(proc.CpuConfig.Max), 'f', -1, 32)
+				}
+			}
+
+			// Enable Memory template if present
+			if proc.MemoryConfig != nil {
+				deploymentTemplate.MemoryEnabled = trueStr
+				if proc.MemoryConfig.Min != 0 {
+					deploymentTemplate.MemoryMin = strconv.Itoa(int(proc.MemoryConfig.Min)) + "Mi"
+				}
+				if proc.MemoryConfig.Max != 0 {
+					deploymentTemplate.MemoryMax = strconv.Itoa(int(proc.MemoryConfig.Max)) + "Mi"
+				}
+			}
+
 			// Enable External template if set
 			if proc.IsExternal {
 				externalTemplate.Enabled = trueStr
@@ -457,6 +485,12 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.ContainerEnvEnabled = falseStr
 	deploymentTemplate.ContainerCommandEnabled = falseStr
 	deploymentTemplate.GpuEnabled = falseStr
+	deploymentTemplate.CpuEnabled = falseStr
+	deploymentTemplate.MemoryEnabled = falseStr
+	deploymentTemplate.CpuMin = ""
+	deploymentTemplate.CpuMax = ""
+	deploymentTemplate.MemoryMin = ""
+	deploymentTemplate.MemoryMax = ""
 }
 
 func setServiceDefaults(serviceTemplate *ServiceTemplate) {

@@ -74,7 +74,11 @@ import {
   setElemFieldVal,
   getElemFieldErr,
   setElemFieldErr,
-  createUniqueName
+  createUniqueName,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from '../../util/elem-utils';
 
 import {
@@ -138,6 +142,10 @@ import {
   CFG_ELEM_PROT,
   CFG_ELEM_GPU_COUNT,
   CFG_ELEM_GPU_TYPE,
+  CFG_ELEM_CPU_MIN,
+  CFG_ELEM_CPU_MAX,
+  CFG_ELEM_MEMORY_MIN,
+  CFG_ELEM_MEMORY_MAX,
   CFG_ELEM_PLACEMENT_ID,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
@@ -264,6 +272,48 @@ const validatePath = val => {
   if (val.match(/^.*?(?=[\^#%&$\*<>\?\{\|\} ]).*$/)) {
     /*eslint-enable */
     return 'Invalid characters';
+  }
+  return null;
+};
+
+const validatePositiveFloat = val => {
+  const floatError = validateNumber(val);
+  if (floatError) {
+    return floatError;
+  }
+  return val >= 0 ? null : 'Must be a positive float';
+};
+
+const validateCpuValue = count => {
+  if (count === '') {
+    return null;
+  }
+
+  const notPosFloatError = validatePositiveFloat(count);
+  if (notPosFloatError) {
+    return notPosFloatError;
+  }
+
+  const p = Number(count);
+  if (p !== '' && p === 0) {
+    return 'Must be a float greater than 0';
+  }
+  return null;
+};
+
+const validateMemoryValue = count => {
+  if (count === '') {
+    return null;
+  }
+
+  const notPosIntError = validatePositiveInt(count);
+  if (notPosIntError) {
+    return notPosIntError;
+  }
+
+  const p = Number(count);
+  if (p !== '' && p === 0) {
+    return 'Must be an integer greater than 0';
   }
   return null;
 };
@@ -626,6 +676,60 @@ const GpuGroup = ({ onUpdate, element }) => {
           cydata={CFG_ELEM_GPU_TYPE}
         />
       </GridCell>
+    </Grid>
+  );
+};
+
+const CpuGroup = ({ onUpdate, element }) => {
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateCpuValue}
+        isNumber={true}
+        label="Min CPU Count"
+        fieldName={FIELD_CPU_MIN}
+        cydata={CFG_ELEM_CPU_MIN}
+      />
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateCpuValue}
+        isNumber={true}
+        label="Max CPU Count"
+        fieldName={FIELD_CPU_MAX}
+        cydata={CFG_ELEM_CPU_MAX}
+      />
+    </Grid>
+  );
+};
+
+const MemoryGroup = ({ onUpdate, element }) => {
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateMemoryValue}
+        isNumber={true}
+        label="Min Memory (MB)"
+        fieldName={FIELD_MEMORY_MIN}
+        cydata={CFG_ELEM_MEMORY_MIN}
+      />
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateMemoryValue}
+        isNumber={true}
+        label="Max Memory (MB)"
+        fieldName={FIELD_MEMORY_MAX}
+        cydata={CFG_ELEM_MEMORY_MAX}
+      />
     </Grid>
   );
 };
@@ -1227,6 +1331,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                         cydata={CFG_ELEM_IMG}
                       />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
@@ -1304,6 +1410,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                       />
                       <PortProtocolGroup onUpdate={onUpdate} element={element} />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
@@ -1388,6 +1496,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                         cydata={CFG_ELEM_GROUP}
                       />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
