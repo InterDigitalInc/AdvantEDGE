@@ -1,30 +1,23 @@
 openapi: 3.0.0
 info:
-  title: AdvantEDGE Location Service REST API
+  title: ETSI GS MEC 013 - Location API
   version: 2.1.1
-  contact:
-    name: InterDigital AdvantEDGE Support
-    email: AdvantEDGE@InterDigital.com
-  description: "Location Service is AdvantEDGE's implementation of
-  [ETSI MEC ISG MEC013 Location API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf)
-  <p>The API is based on the Open Mobile Alliance's specification RESTful Network API for Zonal Presence
-  <p>[Copyright (c) ETSI 2017](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
-  <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
-  <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about Users (UE) and Zone locations
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_"
+  description: The ETSI MEC ISG MEC013 WLAN Access Information API described using OpenAPI.
   license:
-    name: "Apache 2.0"
-    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+    name: BSD-3-Clause
+    url: 'https://forge.etsi.org/legal-matters'
 externalDocs:
   description: ETSI MEC013 V2.1.1 Location API
   url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf'
 servers:
-  - url: 'https://{apiRoot}/location/v2'
+  - url: 'https://localhost/location/v2'
+tags:
+- name: 'location'
 paths:
   /queries/distance:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'UE Distance Lookup of a specific UE'
       description: 'UE Distance Lookup between terminals or a terminal and a location'
       operationId: distanceGET
@@ -35,14 +28,7 @@ paths:
         - $ref: '#/components/parameters/Query.Longitude'
       responses:
         '200':
-          description: 'Successful response to a distance request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  terminalDistance:
-                    $ref: '#/components/schemas/TerminalDistance'
+          $ref: '#/components/responses/InlineResponseTerminalDistance'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -59,7 +45,7 @@ paths:
   /queries/users:
     get:
       tags: 
-      - ''
+      - 'location'
       summary: 'UE Location Lookup of a specific UE or group of UEs'
       description: 'UE Location Lookup of a specific UE or group of UEs'
       operationId: usersGET
@@ -69,14 +55,7 @@ paths:
         - $ref: '#/components/parameters/Query.Address'
       responses:
         '200':
-          description: 'Successful response to users request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userList:
-                    $ref: '#/components/schemas/UserList'
+          $ref: '#/components/responses/InlineResponseUserList'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -93,20 +72,13 @@ paths:
   /queries/zones:
     get:
       tags:
-        - ''
+        - 'location'
       summary: 'Zones information Lookup'
       description: 'Used to get a list of identifiers for zones authorized for use by the application.'
       operationId: zonesGET
       responses:
         '200':
-          description: 'Successful response to zones request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zoneList:
-                    $ref: '#/components/schemas/ZoneList'
+          $ref: '#/components/responses/InlineResponseZoneList'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -123,22 +95,15 @@ paths:
   /queries/zones/{zoneId}:
     get:
       tags:
-        - ''
+        - 'location'
       summary: 'Zones information Lookup'
       description: 'Used to get the information for an authorized zone for use by the application.'
-      operationId: zonesByIdGET
+      operationId: zonesGetById
       parameters:
         - $ref: '#/components/parameters/Path.ZoneId'
       responses:
         '200':
-          description: 'Successful response to an access point Id request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zoneInfo:
-                    $ref: '#/components/schemas/ZoneInfo'
+          $ref: '#/components/responses/InlineResponseZoneInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -155,7 +120,7 @@ paths:
   /queries/zones/{zoneId}/accessPoints:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Radio Node Location Lookup'
       description: 'Radio Node Location Lookup to retrieve a list of radio nodes associated to a zone.'
       operationId: apGET
@@ -164,14 +129,7 @@ paths:
         - $ref: '#/components/parameters/Query.InterestRealm'
       responses:
         '200':
-          description: 'Successful response to an access point Id request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessPointList:
-                    $ref: '#/components/schemas/AccessPointList'
+          $ref: '#/components/responses/InlineResponseAccessPointList'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -188,7 +146,7 @@ paths:
   /queries/zones/{zoneId}/accessPoints/{accessPointId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Radio Node Location Lookup'
       description: 'Radio Node Location Lookup to retrieve a radio node associated to a zone.'
       operationId: apByIdGET
@@ -197,14 +155,7 @@ paths:
         - $ref: '#/components/parameters/Path.AccessPointId'
       responses:
         '200':
-          description: 'Successful response to an access point Id request'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  accessPointInfo:
-                    $ref: '#/components/schemas/AccessPointInfo'
+          $ref: '#/components/responses/InlineResponseAccessPointInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -221,94 +172,24 @@ paths:
   /subscriptions/area/circle:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to area change notifications'
       description: 'This operation is used for retrieving all active subscriptions to area change notifications.'
       operationId: areaCircleSubListGET
       responses:
         '200':
-          description: 'Response to retrieve area subscriptions'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    circleNotificationSubscription:
-                    - clientCorrelator: '0123'
-                      callbackReference:
-                        callbackData: '1234'
-                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                      address: 'acr:10.0.0.1'
-                      checkImmediate: true
-                      enteringLeavingCriteria: 'Entering'
-                      frequency: 10
-                      latitude: -80.88
-                      longitude: 41.277
-                      radius: 500
-                      trackingAccuracy: 10
-                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle'
+          $ref: '#/components/responses/InlineResponseCircleNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for area change notification'
       description: 'Creates a subscription to the Location Service for an area change notification.'
       operationId: areaCircleSubPOST
       requestBody:
-        description: 'Subscription to be created'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                circleNotificationSubscription:
-                  $ref: '#/components/schemas/CircleNotificationSubscription'
-              example:
-                circleNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
-                  checkImmediate: true
-                  enteringLeavingCriteria: 'Entering'
-                  frequency: 10
-                  latitude: -80.88
-                  longitude: 41.277
-                  radius: 500
-                  trackingAccuracy: 10
+        $ref: '#/components/requestBodies/InlineRequestBodyCircleNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  circleNotificationSubscription:
-                    $ref: '#/components/schemas/CircleNotificationSubscription'
-                example:
-                  circleNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    checkImmediate: true
-                    enteringLeavingCriteria: 'Entering'
-                    frequency: 10
-                    latitude: -80.88
-                    longitude: 41.277
-                    radius: 500
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+          $ref: '#/components/responses/InlineResponseCircleNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -325,6 +206,9 @@ paths:
         notification:
           '{$request.body#/circleNotificationSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: circleNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -360,7 +244,7 @@ paths:
   /subscriptions/area/circle/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: areaCircleSubGET
@@ -368,31 +252,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - circleNotificationSubscription
-                properties:
-                  circleNotificationSubscription:
-                    $ref: '#/components/schemas/CircleNotificationSubscription'
-                example:
-                  circleNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    checkImmediate: true
-                    enteringLeavingCriteria: 'Entering'
-                    frequency: 10
-                    latitude: -80.88
-                    longitude: 41.277
-                    radius: 500
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+          $ref: '#/components/responses/InlineResponseCircleNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -408,62 +268,17 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: areaCircleSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                circleNotificationSubscription:
-                  $ref: '#/components/schemas/CircleNotificationSubscription'
-              example:
-                circleNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
-                  checkImmediate: true
-                  enteringLeavingCriteria: 'Entering'
-                  frequency: 10
-                  latitude: -80.88
-                  longitude: 41.277
-                  radius: 500
-                  trackingAccuracy: 10
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+        $ref: '#/components/requestBodies/InlineRequestBodyCircleNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  circleNotificationSubscription:
-                    $ref: '#/components/schemas/CircleNotificationSubscription'
-                example:
-                  circleNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    checkImmediate: true
-                    enteringLeavingCriteria: 'Entering'
-                    frequency: 10
-                    latitude: -80.88
-                    longitude: 41.277
-                    radius: 500
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+          $ref: '#/components/responses/InlineResponseCircleNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -483,7 +298,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: areaCircleSubDELETE
@@ -504,97 +319,24 @@ paths:
   /subscriptions/distance:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to distance change notifications'
       description: 'This operation is used for retrieving all active subscriptions to a distance change notifications.'
       operationId: distanceSubListGET
       responses:
-        '200':
-          description: 'Response to retrieve area subscriptions'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    distanceNotificationSubscription:
-                    - clientCorrelator: '0123'
-                      callbackReference:
-                        callbackData: '1234'
-                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                      monitoredAddress: 
-                      - 'acr:10.0.0.1'
-                      - 'acr:10.0.0.2'
-                      checkImmediate: true
-                      criteria: 'AllWithinDistance'
-                      distance: 100
-                      frequency: 10
-                      referenceAddress: 'acr:10.0.0.3'
-                      trackingAccuracy: 10
-                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/sub123'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance'
+        '200':          
+          $ref: '#/components/responses/InlineResponseDistanceNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for distance change notification'
       description: 'Creates a subscription to the Location Service for a distance change notification.'
       operationId: distanceSubPOST
       requestBody:
-        description: 'Subscription to be created'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                distanceNotificationSubscription:
-                  $ref: '#/components/schemas/DistanceNotificationSubscription'
-              example:
-                distanceNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  monitoredAddress: 
-                  - 'acr:10.0.0.1'
-                  - 'acr:10.0.0.2'
-                  checkImmediate: true
-                  criteria: 'AllWithinDistance'
-                  distance: 100
-                  frequency: 10
-                  referenceAddress: 'acr:10.0.0.3'
-                  trackingAccuracy: 10
+        $ref: '#/components/requestBodies/InlineRequestBodyDistanceNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  distanceNotificationSubscription:
-                    $ref: '#/components/schemas/DistanceNotificationSubscription'
-                example:
-                  distanceNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    monitoredAddress: 
-                    - 'acr:10.0.0.1'
-                    - 'acr:10.0.0.2'
-                    checkImmediate: true
-                    criteria: 'AllWithinDistance'
-                    distance: 100
-                    frequency: 10
-                    referenceAddress: 'acr:10.0.0.3'
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
+          $ref: '#/components/responses/InlineResponseDistanceNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -611,6 +353,9 @@ paths:
         notification:
           '{$request.body#/distanceNotificationSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: distanceNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -656,7 +401,7 @@ paths:
   /subscriptions/distance/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: distanceSubGET
@@ -664,32 +409,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - distanceNotificationSubscription
-                properties:
-                  distanceNotificationSubscription:
-                    $ref: '#/components/schemas/DistanceNotificationSubscription'
-                example:
-                  distanceNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    monitoredAddress: 
-                    - 'acr:10.0.0.1'
-                    - 'acr:10.0.0.2'
-                    checkImmediate: true
-                    criteria: 'AllWithinDistance'
-                    distance: 100
-                    frequency: 10
-                    referenceAddress: 'acr:10.0.0.3'
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
+          $ref: '#/components/responses/InlineResponseDistanceNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -705,64 +425,17 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: distanceSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                distanceNotificationSubscription:
-                  $ref: '#/components/schemas/DistanceNotificationSubscription'
-              example:
-                distanceNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  monitoredAddress: 
-                  - 'acr:10.0.0.1'
-                  - 'acr:10.0.0.2'
-                  checkImmediate: true
-                  criteria: 'AllWithinDistance'
-                  distance: 100
-                  frequency: 10
-                  referenceAddress: 'acr:10.0.0.3'
-                  trackingAccuracy: 10
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
+        $ref: '#/components/requestBodies/InlineRequestBodyDistanceNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  distanceNotificationSubscription:
-                    $ref: '#/components/schemas/DistanceNotificationSubscription'
-                example:
-                  distanceNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    monitoredAddress: 
-                    - 'acr:10.0.0.1'
-                    - 'acr:10.0.0.2'
-                    checkImmediate: true
-                    criteria: 'AllWithinDistance'
-                    distance: 100
-                    frequency: 10
-                    referenceAddress: 'acr:10.0.0.3'
-                    trackingAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
+          $ref: '#/components/responses/InlineResponseDistanceNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -782,7 +455,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: distanceSubDELETE
@@ -803,79 +476,24 @@ paths:
   /subscriptions/periodic:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to periodic notifications'
       description: 'This operation is used for retrieving all active subscriptions to periodic notifications.'
       operationId: periodicSubListGET
       responses:
         '200':
-          description: 'Response to retrieve area subscriptions'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    periodicNotificationSubscription:
-                    - clientCorrelator: '0123'
-                      callbackReference:
-                        callbackData: '1234'
-                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                      address: 'acr:10.0.0.1'
-                      frequency: 10
-                      requestedAccuracy: 10
-                      resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic'
+          $ref: '#/components/responses/InlineResponsePeriodicNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for periodic notification'
       description: 'Creates a subscription to the Location Service for a periodic notification.'
       operationId: periodicSubPOST
       requestBody:
-        description: Subscription to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                periodicNotificationSubscription:
-                  $ref: '#/components/schemas/PeriodicNotificationSubscription'
-              example:
-                periodicNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
-                  frequency: 10
-                  requestedAccuracy: 10
+        $ref: '#/components/requestBodies/InlineRequestBodyPeriodicNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  periodicNotificationSubscription:
-                    $ref: '#/components/schemas/PeriodicNotificationSubscription'
-                example:
-                  periodicNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    frequency: 10
-                    requestedAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+          $ref: '#/components/responses/InlineResponsePeriodicNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -892,6 +510,9 @@ paths:
         notification:
           '{$request.body#/periodicNotificationSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: periodicNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -926,7 +547,7 @@ paths:
   /subscriptions/periodic/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: periodicSubGET
@@ -934,26 +555,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - periodicNotificationSubscription
-                properties:
-                  periodicNotificationSubscription:
-                    $ref: '#/components/schemas/PeriodicNotificationSubscription'
-                example:
-                  periodicNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    frequency: 10
-                    requestedAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+          $ref: '#/components/responses/InlineResponsePeriodicNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -969,52 +571,17 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: periodicSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                periodicNotificationSubscription:
-                  $ref: '#/components/schemas/PeriodicNotificationSubscription'
-              example:
-                periodicNotificationSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    callbackData: '1234'
-                    notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                  address: 'acr:10.0.0.1'
-                  frequency: 10
-                  requestedAccuracy: 10
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+        $ref: '#/components/requestBodies/InlineRequestBodyPeriodicNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  periodicNotificationSubscription:
-                    $ref: '#/components/schemas/PeriodicNotificationSubscription'
-                example:
-                  periodicNotificationSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      callbackData: '1234'
-                      notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                    address: 'acr:10.0.0.1'
-                    frequency: 10
-                    requestedAccuracy: 10
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+          $ref: '#/components/responses/InlineResponsePeriodicNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1034,7 +601,7 @@ paths:
       x-swagger-router-controller: "subscriptions"
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: periodicSubDELETE
@@ -1055,79 +622,24 @@ paths:
   /subscriptions/userTracking:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to user tracking notifications'
       description: 'This operation is used for retrieving all active subscriptions to user tracking notifications.'
       operationId: userTrackingSubListGET
       responses:
         '200':
-          description: "Response to retrieve user tracking subscriptions"
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    userTrackingSubscription:
-                      - clientCorrelator: '0123'
-                        resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription123'
-                        callbackReference:
-                          notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                        address: 'acr:192.0.2.1'
-                        userEventCriteria: ["Transferring"]
-                      - clientCorrelator: '0124'
-                        resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription124'
-                        callbackReference:
-                          notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                        address: 'acr:192.0.2.2'
-                        userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking'
+          $ref: '#/components/responses/InlineResponseUserTrackingNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for user tracking notification'
       description: 'Creates a subscription to the Location Service for user tracking change notification.'
       operationId: userTrackingSubPOST
       requestBody:
-        description: 'Subscription to be created'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userTrackingSubscription:
-                  $ref: '#/components/schemas/UserTrackingSubscription'
-              example:
-                userTrackingSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
+        $ref: '#/components/requestBodies/InlineRequestBodyUserTrackingNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userTrackingSubscription:
-                    $ref: '#/components/schemas/UserTrackingSubscription'
-                example:
-                  userTrackingSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    address: 'acr:10.0.0.1'
-                    userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
+          $ref: '#/components/responses/InlineResponseUserTrackingNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1144,6 +656,9 @@ paths:
         notification:
           '{$request.body#/userTrackingSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: userTrackingNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -1175,7 +690,7 @@ paths:
   /subscriptions/userTracking/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: userTrackingSubGET
@@ -1183,24 +698,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - userTrackingSubscription
-                properties:
-                  userTrackingSubscription:
-                    $ref: '#/components/schemas/UserTrackingSubscription'
-                example:
-                  userTrackingSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    address: 'acr:10.0.0.1'
-                    userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
+          $ref: '#/components/responses/InlineResponseUserTrackingNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1216,48 +714,17 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: userTrackingSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userTrackingSubscription:
-                  $ref: '#/components/schemas/UserTrackingSubscription'
-              example:
-                userTrackingSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
+        $ref: '#/components/requestBodies/InlineRequestBodyUserTrackingNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userTrackingSubscription:
-                    $ref: '#/components/schemas/UserTrackingSubscription'
-              example:
-                userTrackingSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  address: 'acr:10.0.0.1'
-                  userEventCriteria: ["Transferring"]
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
+          $ref: '#/components/responses/InlineResponseUserTrackingNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1277,7 +744,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: userTrackingSubDELETE
@@ -1298,79 +765,24 @@ paths:
   /subscriptions/zonalTraffic:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to zonal traffic notifications'
       description: 'This operation is used for retrieving all active subscriptions to zonal traffic change notifications.'
       operationId: zonalTrafficSubListGET
       responses:
         '200':
-          description: 'Response to retrieve zonal traffic subscriptions'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    zonalTrafficSubscription:
-                      - clientCorrelator: '0123'
-                        resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription123'
-                        callbackReference:
-                          notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                        zoneId: 'zone01'
-                        userEventCriteria: ["Transferring"]
-                      - clientCorrelator: '0124'
-                        resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription124'
-                        callbackReference:
-                          notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                        zoneId: 'zone02'
-                        userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic'
+          $ref: '#/components/responses/InlineResponseZonalTrafficNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for zonal traffic notification'
       description: 'Creates a subscription to the Location Service for zonal traffic change notification.'
       operationId: zonalTrafficSubPOST
       requestBody:
-        description: 'Subscription to be created'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                zonalTrafficSubscription:
-                  $ref: '#/components/schemas/ZonalTrafficSubscription'
-              example:
-                zonalTrafficSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
+        $ref: '#/components/requestBodies/InlineRequestBodyZonalTrafficNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zonalTrafficSubscription:
-                    $ref: '#/components/schemas/ZonalTrafficSubscription'
-                example:
-                  zonalTrafficSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    zoneId: 'zone01'
-                    userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
+          $ref: '#/components/responses/InlineResponseZonalTrafficNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1387,6 +799,9 @@ paths:
         notification:
           '{$request.body#/zonalTrafficSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: zonalTrafficNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -1418,7 +833,7 @@ paths:
   /subscriptions/zonalTraffic/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: zonalTrafficSubGET
@@ -1426,24 +841,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - zonalTrafficSubscription
-                properties:
-                  zonalTrafficSubscription:
-                    $ref: '#/components/schemas/ZonalTrafficSubscription'
-                example:
-                  zonalTrafficSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    zoneId: 'zone01'
-                    userEventCriteria: ["Transferring"]
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
+          $ref: '#/components/responses/InlineResponseZonalTrafficNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1459,48 +857,17 @@ paths:
       x-swagger-router-controller: "subscriptions"
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: zonalTrafficSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                zonalTrafficSubscription:
-                  $ref: '#/components/schemas/ZonalTrafficSubscription'
-              example:
-                zonalTrafiicSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
+        $ref: '#/components/requestBodies/InlineRequestBodyZonalTrafficNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zonalTrafficSubscription:
-                    $ref: '#/components/schemas/ZonalTrafficSubscription'
-              example:
-                zonalTrafficSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  userEventCriteria: ["Transferring"]
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
+          $ref: '#/components/responses/InlineResponseZonalTrafficNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1520,7 +887,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: zonalTrafficSubDELETE
@@ -1541,76 +908,24 @@ paths:
   /subscriptions/zoneStatus:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieves all active subscriptions to zone status notifications'
       description: 'This operation is used for retrieving all active subscriptions to zone status change notifications.'
       operationId: zoneStatusSubListGET
       responses:
         '200':
-          description: 'Response to retrieve zone status subscriptions'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - notificationSubscriptionList
-                properties:
-                  notificationSubscriptionList:
-                    $ref: '#/components/schemas/NotificationSubscriptionList'
-                example:
-                  notificationSubscriptionList:
-                    zoneStatusSubscription:
-                    - clientCorrelator: '0123'
-                      resourceURL: 'http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123'
-                      callbackReference:
-                        notifyURL: 'http://clientApp.example.com/location_notifications/123456'
-                      zoneId: 'zone01'
-                      numberOfUsersZoneThreshold: 500
-                      operationStatus: 'Serviceable'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus'
+          $ref: '#/components/responses/InlineResponseZoneStatusNotificationSubscriptionList'
     post:
       tags:
-      - ''
+      - 'location'
       summary: 'Creates a subscription for zone status notification'
       description: 'Creates a subscription to the Location Service for zone status change notification.'
       operationId: zoneStatusSubPOST
       requestBody:
-        description: 'Subscription to be created'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                zoneStatusSubscription:
-                  $ref: '#/components/schemas/ZoneStatusSubscription'
-              example:
-                zoneStatusSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  numberOfUsersZoneThreshold: 500
-                  operationStatus: 'Serviceable'
+        $ref: '#/components/requestBodies/InlineRequestBodyZoneStatusNotificationSubscriptionPost'
       responses:
         '201':
-          description: 'Successful subscription'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zoneStatusSubscription:
-                    $ref: '#/components/schemas/ZoneStatusSubscription'
-                example:
-                  zoneStatusSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    zoneId: 'zone01'
-                    numberOfUsersZoneThreshold: 500
-                    operationStatus: 'Serviceable'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123'
+          $ref: '#/components/responses/InlineResponseZoneStatusNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1627,6 +942,9 @@ paths:
         notification:
           '{$request.body#/zoneStatusSubscription.callbackReference.notifyURL}':
             post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from Location service, content based on subscription type'
+              operationId: zoneStatusNotificationPOST
               requestBody: 
                 description: 'Subscription notification'
                 required: true
@@ -1658,7 +976,7 @@ paths:
   /subscriptions/zoneStatus/{subscriptionId}:
     get:
       tags:
-      - ''
+      - 'location'
       summary: 'Retrieve subscription information'
       description: 'Get subscription information.'
       operationId: zoneStatusSubGET
@@ -1666,25 +984,7 @@ paths:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Subscription information regarding subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - zoneStatusSubscription
-                properties:
-                  zoneStatusSubscription:
-                    $ref: '#/components/schemas/ZoneStatusSubscription'
-                example:
-                  zoneStatusSubscription:
-                    clientCorrelator: '0123'
-                    callbackReference:
-                      notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                    zoneId: 'zone01'
-                    numberOfUsersZoneThreshold: 500
-                    operationStatus: 'Serviceable'
-                    resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123'
+          $ref: '#/components/responses/InlineResponseZoneStatusNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1700,50 +1000,17 @@ paths:
       x-swagger-router-controller: "subscriptions"
     put:
       tags:
-      - ''
+      - 'location'
       summary: 'Updates a subscription information'
       description: 'Updates a subscription.'
       operationId: zoneStatusSubPUT
       requestBody:
-        description: 'Subscription to be modified'
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                zoneStatusSubscription:
-                  $ref: '#/components/schemas/ZoneStatusSubscription'
-              example:
-                zoneStatusSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  numberOfUsersZoneThreshold: 500
-                  operationStatus: 'Serviceable'
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123'
+        $ref: '#/components/requestBodies/InlineRequestBodyZoneStatusNotificationSubscriptionPut'
       parameters:
         - $ref: '#/components/parameters/Path.SubscrId'
       responses:
         '200':
-          description: 'Successful subscription to response to subscription notifications'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  zoneStatusSubscription:
-                    $ref: '#/components/schemas/ZoneStatusSubscription'
-              example:
-                zoneStatusSubscription:
-                  clientCorrelator: '0123'
-                  callbackReference:
-                    notifyURL: 'http://my.callback.com/location_notifications/some-id'
-                  zoneId: 'zone01'
-                  numberOfUsersZoneThreshold: 500
-                  operationStatus: 'Serviceable'
-                  resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123'
+          $ref: '#/components/responses/InlineResponseZoneStatusNotificationSubscription'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1763,7 +1030,7 @@ paths:
       x-swagger-router-controller: 'subscriptions'
     delete:
       tags:
-      - ''
+      - 'location'
       summary: 'Cancel a subscription'
       description: 'Method to delete a subscription.'
       operationId: zoneStatusSubDELETE
@@ -1782,7 +1049,518 @@ paths:
           $ref: '#/components/responses/429'
       x-swagger-router-controller: 'subscriptions'
 components:
+  requestBodies:
+    InlineRequestBodyCircleNotificationSubscriptionPost:
+      description: 'Request body to an area subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              circleNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyCircleNotificationSubscription'
+            example:
+              circleNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                checkImmediate: true
+                enteringLeavingCriteria: 'Entering'
+                frequency: 10
+                latitude: -80.88
+                longitude: 41.277
+                radius: 500
+                trackingAccuracy: 10
+    InlineRequestBodyCircleNotificationSubscriptionPut:
+      description: 'Request body to an area subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              circleNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyCircleNotificationSubscription'
+            example:
+              circleNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                checkImmediate: true
+                enteringLeavingCriteria: 'Entering'
+                frequency: 10
+                latitude: -80.88
+                longitude: 41.277
+                radius: 500
+                trackingAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+    InlineRequestBodyDistanceNotificationSubscriptionPost:
+      description: 'Request body to a distance subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              distanceNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyDistanceNotificationSubscription'
+            example:
+              distanceNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                monitoredAddress: 
+                - 'acr:10.0.0.1'
+                - 'acr:10.0.0.2'
+                checkImmediate: true
+                criteria: 'AllWithinDistance'
+                distance: 100
+                frequency: 10
+                referenceAddress: 'acr:10.0.0.3'
+                trackingAccuracy: 10
+    InlineRequestBodyDistanceNotificationSubscriptionPut:
+      description: 'Request body to a distance subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              distanceNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyDistanceNotificationSubscription'
+            example:
+              distanceNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                monitoredAddress: 
+                - 'acr:10.0.0.1'
+                - 'acr:10.0.0.2'
+                checkImmediate: true
+                criteria: 'AllWithinDistance'
+                distance: 100
+                frequency: 10
+                referenceAddress: 'acr:10.0.0.3'
+                trackingAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'                  
+    InlineRequestBodyPeriodicNotificationSubscriptionPost:
+      description: 'Request body to a periodic subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              periodicNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyPeriodicNotificationSubscription'
+            example:
+              periodicNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                frequency: 10
+                requestedAccuracy: 10
+    InlineRequestBodyPeriodicNotificationSubscriptionPut:
+      description: 'Request body to a periodic subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              periodicNotificationSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyPeriodicNotificationSubscription'
+            example:
+              periodicNotificationSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                frequency: 10
+                requestedAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+    InlineRequestBodyUserTrackingNotificationSubscriptionPost:
+      description: 'Request body to a user tracking subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userTrackingSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyUserTrackingNotificationSubscription'
+            example:
+              userTrackingSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                address: 'acr:10.0.0.1'
+                userEventCriteria: ["Transferring"]
+    InlineRequestBodyUserTrackingNotificationSubscriptionPut:
+      description: 'Request body to a user tracking subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userTrackingSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyUserTrackingNotificationSubscription'
+            example:
+              userTrackingSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                address: 'acr:10.0.0.1'
+                userEventCriteria: ["Transferring"]
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'                  
+    InlineRequestBodyZonalTrafficNotificationSubscriptionPost:
+      description: 'Request body to a zonal traffic subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyZonalTrafficNotificationSubscription'
+            example:
+              zonalTrafficSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                zoneId: 'zone01'
+                userEventCriteria: ["Transferring"]
+    InlineRequestBodyZonalTrafficNotificationSubscriptionPut:
+      description: 'Request body to a zonal traffic subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              zonalTrafficSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyZonalTrafficNotificationSubscription'
+            example:
+              zonalTrafficSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                zoneId: 'zone01'
+                userEventCriteria: ["Transferring"]
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'                  
+    InlineRequestBodyZoneStatusNotificationSubscriptionPost:
+      description: 'Request body to a zone status subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              zoneStatusSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyZoneStatusNotificationSubscription'
+            example:
+              zoneStatusSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                zoneId: 'zone01'
+                numberOfUsersZoneThreshold: 500
+                operationStatus: ['Serviceable']
+    InlineRequestBodyZoneStatusNotificationSubscriptionPut:
+      description: 'Request body to a zone status subscription request'
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              zoneStatusSubscription:
+                $ref: '#/components/schemas/InlineRequestBodyZoneStatusNotificationSubscription'
+            example:
+              zoneStatusSubscription:
+                clientCorrelator: '0123'
+                callbackReference:
+                  notifyURL: 'http://my.callback.com/location_notifications/some-id'
+                zoneId: 'zone01'
+                numberOfUsersZoneThreshold: 500
+                operationStatus: ['Serviceable']
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123'
   responses:
+    InlineResponseTerminalDistance:
+      description: 'Successful response to a distance request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseTerminalDistance'                    
+    InlineResponseUserList:
+      description: 'Successful response to users request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseUserList'
+    InlineResponseZoneList:
+      description: 'Successful response to zones request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseZoneList'
+    InlineResponseZoneInfo:
+      description: 'Successful response to a zone Id request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseZoneInfo'
+    InlineResponseAccessPointList:
+      description: 'Successful response to an access point Id request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseAccessPointList'
+    InlineResponseAccessPointInfo:
+      description: 'Successful response to an access point Id request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseAccessPointInfo'
+    InlineResponseCircleNotificationSubscriptionList:
+      description: 'Response to retrieve area subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              circleNotificationSubscription:
+              - clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                checkImmediate: true
+                enteringLeavingCriteria: 'Entering'
+                frequency: 10
+                latitude: -80.88
+                longitude: 41.277
+                radius: 500
+                trackingAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle'
+    InlineResponseCircleNotificationSubscription:
+      description: 'Response to an area subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseCircleNotificationSubscription'
+          example:
+            circleNotificationSubscription:
+              clientCorrelator: '0123'
+              callbackReference:
+                callbackData: '1234'
+                notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+              address: 'acr:10.0.0.1'
+              checkImmediate: true
+              enteringLeavingCriteria: 'Entering'
+              frequency: 10
+              latitude: -80.88
+              longitude: 41.277
+              radius: 500
+              trackingAccuracy: 10
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123'
+    InlineResponseDistanceNotificationSubscriptionList:
+      description: 'Response to retrieve distance subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              distanceNotificationSubscription:
+              - clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                monitoredAddress: 
+                - 'acr:10.0.0.1'
+                - 'acr:10.0.0.2'
+                checkImmediate: true
+                criteria: 'AllWithinDistance'
+                distance: 100
+                frequency: 10
+                referenceAddress: 'acr:10.0.0.3'
+                trackingAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/sub123'
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance'
+    InlineResponseDistanceNotificationSubscription:
+      description: 'Response to a distance subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseDistanceNotificationSubscription'
+          example:
+            distanceNotificationSubscription:
+              clientCorrelator: '0123'
+              callbackReference:
+                callbackData: '1234'
+                notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+              monitoredAddress: 
+              - 'acr:10.0.0.1'
+              - 'acr:10.0.0.2'
+              checkImmediate: true
+              criteria: 'AllWithinDistance'
+              distance: 100
+              frequency: 10
+              referenceAddress: 'acr:10.0.0.3'
+              trackingAccuracy: 10
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123'
+    InlineResponsePeriodicNotificationSubscriptionList:
+      description: 'Response to retrieve periodic subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              periodicNotificationSubscription:
+              - clientCorrelator: '0123'
+                callbackReference:
+                  callbackData: '1234'
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:10.0.0.1'
+                frequency: 10
+                requestedAccuracy: 10
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic'
+    InlineResponsePeriodicNotificationSubscription:
+      description: 'Response to a periodic subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponsePeriodicNotificationSubscription'
+          example:
+            periodicNotificationSubscription:
+              clientCorrelator: '0123'
+              callbackReference:
+                callbackData: '1234'
+                notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+              address: 'acr:10.0.0.1'
+              frequency: 10
+              requestedAccuracy: 10
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123'
+    InlineResponseUserTrackingNotificationSubscriptionList:
+      description: 'Response to retrieve user tracking subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              userTrackingSubscription:
+              - clientCorrelator: '0123'
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription123'
+                callbackReference:
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:192.0.2.1'
+                userEventCriteria: ["Transferring"]
+              - clientCorrelator: '0124'
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription124'
+                callbackReference:
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                address: 'acr:192.0.2.2'
+                userEventCriteria: ["Transferring"]
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking'
+    InlineResponseUserTrackingNotificationSubscription:
+      description: 'Response to a user tracking subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseUserTrackingNotificationSubscription'
+          example:
+            userTrackingSubscription:
+              clientCorrelator: '0123'
+              callbackReference:
+                notifyURL: 'http://my.callback.com/location_notifications/some-id'
+              address: 'acr:10.0.0.1'
+              userEventCriteria: ["Transferring"]
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123'
+    InlineResponseZonalTrafficNotificationSubscriptionList:
+      description: 'Response to retrieve zonal traffic subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              zonalTrafficSubscription:
+              - clientCorrelator: '0123'
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription123'
+                callbackReference:
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                zoneId: 'zone01'
+                userEventCriteria: ["Transferring"]
+              - clientCorrelator: '0124'
+                resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/suubscription124'
+                callbackReference:
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                zoneId: 'zone02'
+                userEventCriteria: ["Transferring"]
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic'
+    InlineResponseZonalTrafficNotificationSubscription:
+      description: 'Response to a zonal traffic subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseZonalTrafficNotificationSubscription'
+          example:
+            zonalTrafficSubscription:
+              clientCorrelator: '0123'
+              callbackReference:
+                notifyURL: 'http://my.callback.com/location_notifications/some-id'
+              zoneId: 'zone01'
+              userEventCriteria: ["Transferring"]
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123'
+    InlineResponseZoneStatusNotificationSubscriptionList:
+      description: 'Response to retrieve zone status subscriptions'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+          example:
+            notificationSubscriptionList:
+              zoneStatusSubscription:
+              - clientCorrelator: '0123'
+                resourceURL: 'http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123'
+                callbackReference:
+                  notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+                zoneId: 'zone01'
+                numberOfUsersZoneThreshold: 500
+                operationStatus: ['Serviceable']
+              resourceURL: 'http://meAppServer.example.com/location/v2/subscriptions/zoneStatus'
+    InlineResponseZoneStatusNotificationSubscription:
+      description: 'Response to a zone status subscription operation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InlineResponseZoneStatusNotificationSubscription'
+          example:
+            zoneStatusSubscription:
+              clientCorrelator: '0123'
+              resourceURL: 'http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123'
+              callbackReference:
+                notifyURL: 'http://clientApp.example.com/location_notifications/123456'
+              zoneId: 'zone01'
+              numberOfUsersZoneThreshold: 500
+              operationStatus: ['Serviceable']
     200:
       description: 'OK'
     204:
@@ -2003,9 +1781,6 @@ components:
           x-etsi-mec-origin-type: string
         connectionType:
           $ref: '#/components/schemas/ConnectionType'
-          # description: Connection type of access point.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: ConnectionType
         interestRealm:
           description: Interest realm of access point.
           type: string
@@ -2013,9 +1788,6 @@ components:
           x-etsi-mec-origin-type: string
         locationInfo:
           $ref: '#/components/schemas/LocationInfo'
-          # description: The coordinates of the access point.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: LocationInfo
         numberOfUsers:
           description: Number of users currently on the access point.
           type: integer
@@ -2023,9 +1795,6 @@ components:
           x-etsi-mec-origin-type: integer
         operationStatus:
           $ref: '#/components/schemas/OperationStatus'
-          # description: Operation status of access point.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: OperationStatus
         resourceURL:
           description: Self referring URL
           type: string
@@ -2070,20 +1839,12 @@ components:
     CallbackReference:
       properties:
         callbackData:
-          description: Data the application can register with the server when subscribing
-            to notifications, and that are passed back unchanged in each of the related
-            notifications. These data can be used by the application in the processing
-            of the notification, e.g. for correlation purposes.
+          description: Data the application can register with the server when subscribing to notifications, and that are passed back unchanged in each of the related notifications. These data can be used by the application in the processing of the notification, e.g. for correlation purposes.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         notificationFormat:
           $ref: '#/components/schemas/NotificationFormat'
-          # description: Application can specify format of the resource representation
-          #   in notifications that are related to this subscription. The choice is
-          #   between {XML, JSON}
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: string
         notifyURL:
           description: Notify Callback URL
           type: string
@@ -2093,12 +1854,10 @@ components:
       - notifyURL
       type: object
     CircleNotificationSubscription:
-      description: A type containing data for notifications, when the area is defined
-        as a circle.
+      description: A type containing data for notifications, when the area is defined as a circle.
       properties:
         address:
-          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI,
-            "acr" URI)
+          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI, "acr" URI)
           items:
             type: string
           type: array
@@ -2106,46 +1865,30 @@ components:
           x-etsi-mec-origin-type: anyURI
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: string
         checkImmediate:
           description: Check location immediately after establishing notification.
           type: boolean
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: boolean
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         count:
-          description: Maximum number of notifications per individual address. For
-            no maximum, either do not include this element or specify a value of zero.
-            Default value is 0.
+          description: Maximum number of notifications per individual address. For no maximum, either do not include this element or specify a value of zero. Default value is 0.
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         duration:
-          description: "Period of time (in seconds) notifications are provided for.\
-            \ If set to \u201C0\u201D (zero), a default duration time, which is specified\
-            \ by the service policy, will be used. If the parameter is omitted, the\
-            \ notifications will continue until the maximum duration time, which is\
-            \ specified by the service policy, unless the notifications are stopped\
-            \ by deletion of subscription for notifications."
+          description: "Period of time (in seconds) notifications are provided for. If set to \u201C0\u201D (zero), a default duration time, which is specified by the service policy, will be used. If the parameter is omitted, the notifications will continue until the maximum duration time, which is specified by the service policy, unless the notifications are stopped by deletion of subscription for notifications."
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         enteringLeavingCriteria:
           $ref: '#/components/schemas/EnteringLeavingCriteria'
-          # description: Indicates whether the notification should occur when the
-          #  terminal enters or leaves the target area.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: EnteringLeavingCriteria
         frequency:
-          description: Maximum frequency (in seconds) of notifications per subscription
-            (can also be considered minimum time between notifications).
+          description: Maximum frequency (in seconds) of notifications per subscription (can also be considered minimum time between notifications).
           type: integer
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: int
@@ -2175,8 +1918,7 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
         requester:
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: Identifies the entity that is requesting the information (e.g. "sip" URI, "tel" URI, "acr" URI)
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
@@ -2224,38 +1966,27 @@ components:
       - AnyBeyondDistance
       type: string
     DistanceNotificationSubscription:
-      description: A type containing data for distance subscription, with reference
-        to other devices.
+      description: A type containing data for distance subscription, with reference to other devices.
       properties:
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: string
         checkImmediate:
           description: Check location immediately after establishing notification.
           type: boolean
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: boolean
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         count:
-          description: Maximum number of notifications per individual address. For
-            no maximum, either do not include this element or specify a value of zero.
-            Default value is 0.
+          description: Maximum number of notifications per individual address. For no maximum, either do not include this element or specify a value of zero. Default value is 0.
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         criteria:
           $ref: '#/components/schemas/DistanceCriteria'
-          # description: Indicates whether the notification should occur when the
-          #   geographical relationship between monitored and referenced devices changes.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: DistanceCriteria
         distance:
           description: Distance between devices that shall be monitored.
           format: float
@@ -2263,18 +1994,12 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: float
         duration:
-          description: "Period of time (in seconds) notifications are provided for.\
-            \ If set to \u201C0\u201D (zero), a default duration time, which is specified\
-            \ by the service policy, will be used. If the parameter is omitted, the\
-            \ notifications will continue until the maximum duration time, which is\
-            \ specified by the service policy, unless the notifications are stopped\
-            \ by deletion of subscription for notifications."
+          description: "Period of time (in seconds) notifications are provided for. If set to \u201C0\u201D (zero), a default duration time, which is specified by the service policy, will be used. If the parameter is omitted, the notifications will continue until the maximum duration time, which is specified by the service policy, unless the notifications are stopped by deletion of subscription for notifications."
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         frequency:
-          description: Maximum frequency (in seconds) of notifications per subscription
-            (can also be considered minimum time between notifications).
+          description: Maximum frequency (in seconds) of notifications per subscription (can also be considered minimum time between notifications).
           type: integer
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: int
@@ -2286,25 +2011,21 @@ components:
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Link
         monitoredAddress:
-          description: Contains addresses of devices to monitor (e.g., 'sip' URI,
-            'tel' URI, 'acr' URI)
+          description: Contains addresses of devices to monitor (e.g., 'sip' URI, 'tel' URI, 'acr' URI)
           items:
             type: string
           type: array
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: anyURI
         referenceAddress:
-          description: Indicates address of each device that will be used as reference
-            devices from which the distances towards monitored devices indicated in
-            the Addresses will be monitored (e.g., 'sip' URI, 'tel' URI, 'acr' URI)
+          description: Indicates address of each device that will be used as reference devices from which the distances towards monitored devices indicated in the Addresses will be monitored (e.g., 'sip' URI, 'tel' URI, 'acr' URI)
           items:
             type: string
           type: array
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: anyURI
         requester:
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: Identifies the entity that is requesting the information (e.g. "sip" URI, "tel" URI, "acr" URI)
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
@@ -2350,22 +2071,17 @@ components:
     LocationInfo:
       properties:
         accuracy:
-          description: Horizontal accuracy / (semi-major) uncertainty of location
-            provided in meters, as defined in [14]. Present only if "shape" equals
-            4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracyAltitude:
-          description: Altitude accuracy / uncertainty of location provided in meters,
-            as defined in [14]. Present only if "shape" equals 3 or 4
+          description: Altitude accuracy / uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 3 or 4
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         accuracySemiMinor:
-          description: Horizontal accuracy / (semi-major) uncertainty of location
-            provided in meters, as defined in [14]. Present only if "shape" equals
-            4, 5 or 6
+          description: Horizontal accuracy / (semi-major) uncertainty of location provided in meters, as defined in [14]. Present only if "shape" equals 4, 5 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2376,9 +2092,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Float
         confidence:
-          description: Confidence by which the position of a target entity is known
-            to be within the shape description, expressed as a percentage and defined
-            in [14]. Present only if "shape" equals 1, 4 or 6
+          description: Confidence by which the position of a target entity is known to be within the shape description, expressed as a percentage and defined in [14]. Present only if "shape" equals 1, 4 or 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
@@ -2393,8 +2107,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         latitude:
-          description: "Location latitude, expressed in the range -90\xB0 to +90\xB0\
-            . Cardinality greater than one only if \"shape\" equals 7."
+          description: "Location latitude, expressed in the range -90\xB0 to +90\xB0. Cardinality greater than one only if \"shape\" equals 7."
           items:
             format: float
             type: number
@@ -2403,8 +2116,7 @@ components:
           x-etsi-mec-cardinality: 1..N
           x-etsi-mec-origin-type: Float
         longitude:
-          description: "Location longitude, expressed in the range -180\xB0 to +180\xB0\
-            . Cardinality greater than one only if \"shape\" equals 7."
+          description: "Location longitude, expressed in the range -180\xB0 to +180\xB0. Cardinality greater than one only if \"shape\" equals 7."
           items:
             format: float
             type: number
@@ -2418,49 +2130,27 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         orientationMajorAxis:
-          description: "Angle of orientation of the major axis, expressed in the range\
-            \ 0\xB0 to 180\xB0, as defined in [14]. Present only if \"shape\" equals\
-            \ 4 or 6"
+          description: "Angle of orientation of the major axis, expressed in the range 0\xB0 to 180\xB0, as defined in [14]. Present only if \"shape\" equals 4 or 6"
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         shape:
-          description: 'Shape information, as detailed in [14], associated with the
-            reported location coordinate:
-
-            1 = ELLIPSOID_ARC
-
-            2 = ELLIPSOID_POINT
-
-            3 = ELLIPSOID_POINT_ALTITUDE
-
-            4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID
-
-            5 = ELLIPSOID_POINT_UNCERT_CIRCLE
-
-            6 = ELLIPSOID_POINT_UNCERT_ELLIPSE
-
-            7 = POLYGON'
-          type: string
+          description: 'Shape information, as detailed in [14], associated with the reported location coordinate: <p>1 = ELLIPSOID_ARC <p>2 = ELLIPSOID_POINT <p>3 = ELLIPSOID_POINT_ALTITUDE <p>4 = ELLIPSOID_POINT_ALTITUDE_UNCERT_ELLIPSOID <p>5 = ELLIPSOID_POINT_UNCERT_CIRCLE <p>6 = ELLIPSOID_POINT_UNCERT_ELLIPSE <p>7 = POLYGON'
+          type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Enum_inlined
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-          # description: Date and time that location was collected.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: TimeStamp
         uncertaintyRadius:
           description: Present only if "shape" equals 6
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: UnsignedInt
         velocity:
-          description: "Structure with attributes relating to the target entity\u2019\
-            s velocity, as defined in [14]."
+          description: "Structure with attributes relating to the target entity\u2019s velocity, as defined in [14]."
           properties:
             bearing:
-              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined\
-                \ in [14]."
+              description: "Bearing, expressed in the range 0\xB0 to 360\xB0, as defined in [14]."
               type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
@@ -2470,34 +2160,22 @@ components:
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: UnsignedInt
             uncertainty:
-              description: Horizontal uncertainty, as defined in [14]. Present only
-                if "velocityType" equals 3 or 4
+              description: Horizontal uncertainty, as defined in [14]. Present only if "velocityType" equals 3 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
             velocityType:
-              description: 'Velocity information, as detailed in [14], associated
-                with the reported location coordinate:
-
-                1 = HORIZONTAL
-
-                2 = HORIZONTAL_VERTICAL
-
-                3 = HORIZONTAL_UNCERT
-
-                4 = HORIZONTAL_VERTICAL_UNCERT'
-              type: string
+              description: 'Velocity information, as detailed in [14], associated with the reported location coordinate: <p>1 = HORIZONTAL <p>2 = HORIZONTAL_VERTICAL <p>3 = HORIZONTAL_UNCERT <p>4 = HORIZONTAL_VERTICAL_UNCERT'
+              type: integer
               x-etsi-mec-cardinality: '1'
               x-etsi-mec-origin-type: Enum_inlined
             verticalSpeed:
-              description: Vertical speed, expressed in km/h and defined in [14].
-                Present only if "velocityType" equals 2 or 4
+              description: Vertical speed, expressed in km/h and defined in [14]. Present only if "velocityType" equals 2 or 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: Int
             verticalUncertainty:
-              description: Vertical uncertainty, as defined in [14]. Present only
-                if "velocityType" equals 4
+              description: Vertical uncertainty, as defined in [14]. Present only if "velocityType" equals 4
               type: integer
               x-etsi-mec-cardinality: 0..1
               x-etsi-mec-origin-type: UnsignedInt
@@ -2512,7 +2190,6 @@ components:
       - latitude
       - longitude
       - shape
-      - timestamp
       type: object
       x-etsi-ref: 6.5.3
     NotificationFormat:
@@ -2523,8 +2200,7 @@ components:
     NotificationSubscriptionList:
       properties:
         circleNotificationSubscription:
-          description: Collection of CircleNotificationSubscription elements, see
-            note 2.
+          description: Collection of CircleNotificationSubscription elements, see note 2.
           items:
             $ref: '#/components/schemas/CircleNotificationSubscription'
           minItems: 0
@@ -2532,8 +2208,7 @@ components:
           x-etsi-mec-cardinality: 0.. N
           x-etsi-mec-origin-type: CircleNotificationSubscription
         distanceNotificationSubscription:
-          description: Collection of DistanceNotificationSubscription elements, see
-            note 2.
+          description: Collection of DistanceNotificationSubscription elements, see note 2.
           items:
             $ref: '#/components/schemas/DistanceNotificationSubscription'
           minItems: 0
@@ -2541,8 +2216,7 @@ components:
           x-etsi-mec-cardinality: 0.. N
           x-etsi-mec-origin-type: DistanceNotificationSubscription
         periodicNotificationSubscription:
-          description: Collection of PeriodicNotificationSubscription elements, see
-            note 2.
+          description: Collection of PeriodicNotificationSubscription elements, see note 2.
           items:
             $ref: '#/components/schemas/PeriodicNotificationSubscription'
           minItems: 0
@@ -2582,8 +2256,7 @@ components:
       required:
       - resourceURL
       type: object
-      x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.8.\nNOTE 2: \tAs specified\
-        \ in [6], clause 5.2.2.7."
+      x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.8.\nNOTE 2: \tAs specified in [6], clause 5.2.2.7."
       x-etsi-ref: 6.3.3
     OperationStatus:
       enum:
@@ -2595,8 +2268,7 @@ components:
       description: A type containing data for periodic subscription.
       properties:
         address:
-          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI,
-            "acr" URI)
+          description: Address of terminals to monitor (e.g. "sip" URI, "tel" URI, "acr" URI)
           items:
             type: string
           type: array
@@ -2604,28 +2276,18 @@ components:
           x-etsi-mec-origin-type: anyURI
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: string
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         duration:
-          description: "Period of time (in seconds) notifications are provided for.\
-            \ If set to \u201C0\u201D (zero), a default duration time, which is specified\
-            \ by the service policy, will be used. If the parameter is omitted, the\
-            \ notifications will continue until the maximum duration time, which is\
-            \ specified by the service policy, unless the notifications are stopped\
-            \ by deletion of subscription for notifications."
+          description: "Period of time (in seconds) notifications are provided for. If set to \u201C0\u201D (zero), a default duration time, which is specified by the service policy, will be used. If the parameter is omitted, the notifications will continue until the maximum duration time, which is specified by the service policy, unless the notifications are stopped by deletion of subscription for notifications."
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: int
         frequency:
-          description: Maximum frequency (in seconds) of notifications (can also be
-            considered minimum time between notifications) per subscription.
+          description: Maximum frequency (in seconds) of notifications (can also be considered minimum time between notifications) per subscription.
           type: integer
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: int
@@ -2642,8 +2304,7 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: int
         requester:
-          description: Identifies the entity that is requesting the information (e.g.
-            "sip" URI, "tel" URI, "acr" URI)
+          description: Identifies the entity that is requesting the information (e.g. "sip" URI, "tel" URI, "acr" URI)
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
@@ -2661,14 +2322,12 @@ components:
     ProblemDetails:
       properties:
         detail:
-          description: A human-readable explanation specific to this occurrence of
-            the problem
+          description: A human-readable explanation specific to this occurrence of the problem
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         instance:
-          description: A URI reference that identifies the specific occurrence of
-            the problem
+          description: A URI reference that identifies the specific occurrence of the problem
           format: uri
           type: string
           x-etsi-mec-cardinality: 0..1
@@ -2685,8 +2344,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         type:
-          description: A URI reference according to IETF RFC 3986 that identifies
-            the problem type
+          description: A URI reference according to IETF RFC 3986 that identifies the problem type
           format: uri
           type: string
           x-etsi-mec-cardinality: 0..1
@@ -2698,8 +2356,6 @@ components:
       - NotRetrieved
       - Error
       type: string
-    SerializerTypes:
-      type: string
     ServiceError:
       description: used to indicate a notification termination or cancellation.
       properties:
@@ -2709,8 +2365,7 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
         text:
-          description: Message text, with replacement variables marked with %n, where
-            n is an index into the list of <variables> elements, starting at 1
+          description: Message text, with replacement variables marked with %n, where n is an index into the list of <variables> elements, starting at 1
           type: string
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
@@ -2734,8 +2389,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         callbackData:
-          description: CallbackData if passed by the application in the receiptRequest
-            element during the associated subscription operation
+          description: CallbackData if passed by the application in the receiptRequest element during the associated subscription operation
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
@@ -2748,9 +2402,6 @@ components:
           x-etsi-mec-origin-type: Link
         reason:
           $ref: '#/components/schemas/ServiceError'
-          # description: Reason notification is being discontinued.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: ServiceError
       required:
       - terminalLocation
       type: object
@@ -2758,22 +2409,14 @@ components:
       description: A type containing the notification subscription.
       properties:
         callbackData:
-          description: CallbackData if passed by the application in the receiptRequest
-            element during the associated subscription operation
+          description: CallbackData if passed by the application in the receiptRequest element during the associated subscription operation
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         distanceCriteria:
           $ref: '#/components/schemas/DistanceCriteria'
-          # description: Indicates which distance criteria that caused the notification.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: DistanceCriteria
         enteringLeavingCriteria:
           $ref: '#/components/schemas/EnteringLeavingCriteria'
-          # description: Indicates whether the notification was caused by the terminal
-          #   entering or leaving the target area.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: EnteringLeavingCriteria
         isFinalNotification:
           description: Set to true if it is a final notification about location change.
           type: boolean
@@ -2797,9 +2440,7 @@ components:
       - terminalLocation
       type: object
     TerminalDistance:
-      description: A type containing information about the distance from a terminal
-        to a location or between two terminals, in addition the accuracy and a timestamp
-        of the information are provided.
+      description: A type containing information about the distance from a terminal to a location or between two terminals, in addition the accuracy and a timestamp of the information are provided.
       properties:
         accuracy:
           description: Accuracy of the provided distance in meters
@@ -2807,45 +2448,29 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: integer
         distance:
-          description: Distance from terminal to a location or between two terminals
-            specified in meters
+          description: Distance from terminal to a location or between two terminals specified in meters
           type: integer
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: integer
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-          # description: Date and time that location from which distance is calculated
-          #   was collected.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: TimeStamp
       required:
       - distance
       type: object
     TerminalLocation:
-      description: A type containing device address, retrieval status and location
-        information.
+      description: A type containing device address, retrieval status and location information.
       properties:
         address:
-          description: Address of the terminal to which the location information applies
-            (e.g., 'sip' URI, 'tel' URI, 'acr' URI).
+          description: Address of the terminal to which the location information applies (e.g., 'sip' URI, 'tel' URI, 'acr' URI).
           type: string
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: anyURI
         currentLocation:
           $ref: '#/components/schemas/LocationInfo'
-          # description: Location of terminal.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: LocationInfo
         errorInformation:
           $ref: '#/components/schemas/ServiceError'
-          # description: This is the reason for error.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: ServiceError
         locationRetrievalStatus:
           $ref: '#/components/schemas/RetrievalStatus'
-          # description: Status of retrieval for this terminal address.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: RetrievalStatus
       required:
       - address
       - locationRetrievalStatus
@@ -2860,17 +2485,17 @@ components:
     TimeStamp:
       properties:
         nanoSeconds:
-          type: integer
-          format: uint32
           description: 'The nanoseconds part of the time. Time is defined as
             Unix-time since January 1, 1970, 00:00:00 UTC.'
+          format: int32
+          type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Uint32
         seconds:
-          type: integer
-          format: uint32
           description: 'The seconds part of the time. Time is defined as
             Unix-time since January 1, 1970, 00:00:00 UTC.'
+          format: int32
+          type: integer
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: Uint32
       required:
@@ -2887,14 +2512,12 @@ components:
     UserInfo:
       properties:
         accessPointId:
-          description: The identity of the access point the user is currently on,
-            see note 1.
+          description: The identity of the access point the user is currently on, see note 1.
           type: string
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: String
         address:
-          description: Address of user (e.g. 'sip' URI, 'tel' URI, 'acr' URI) currently
-            on the access point, see note 1.
+          description: Address of user (e.g. 'sip' URI, 'tel' URI, 'acr' URI) currently on the access point, see note 1.
           format: uri
           type: string
           x-etsi-mec-cardinality: '1'
@@ -2905,16 +2528,12 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         contextLocationInfo:
-          description: Contextual information of a user location (e.g. aisle, floor,
-            room number, etc.).
+          description: Contextual information of a user location (e.g. aisle, floor, room number, etc.).
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: String
         locationInfo:
           $ref: '#/components/schemas/LocationInfo'
-          # description: The geographical coordinates where the user is, see note 2.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: LocationInfo
         resourceURL:
           description: Self-referring URL, see note 1.
           type: string
@@ -2922,12 +2541,8 @@ components:
           x-etsi-mec-origin-type: String
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-          # description: Date and time that location was collected.
-          # x-etsi-mec-cardinality: '1'
-          # x-etsi-mec-origin-type: TimeStamp
         zoneId:
-          description: The identity of the zone the user is currently within, see
-            note 1.
+          description: The identity of the zone the user is currently within, see note 1.
           type: string
           x-etsi-mec-cardinality: '1'
           x-etsi-mec-origin-type: String
@@ -2936,10 +2551,9 @@ components:
       - accessPointId
       - zoneId
       - resourceURL
-      - timeStamp
+      - timestamp
       type: object
-      x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.7.\nNOTE 2: \tAs specified\
-        \ in [5], clause 5.2.2.5."
+      x-etsi-notes: "NOTE 1:\tAs specified in [5], clause 5.2.2.7.\nNOTE 2: \tAs specified in [5], clause 5.2.2.5."
       x-etsi-ref: 6.2.2
     UserList:
       description: A type containing list of users.
@@ -2969,12 +2583,8 @@ components:
           x-etsi-mec-origin-type: anyURI
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: CallbackReference
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
@@ -2984,9 +2594,7 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         userEventCriteria:
-          description: List of user event values to generate notifications for (these
-            apply to address specified). If this element is missing, a notification
-            is requested to be generated for any change in user event.
+          description: List of user event values to generate notifications for (these apply to address specified). If this element is missing, a notification is requested to be generated for any change in user event.
           items:
             $ref: '#/components/schemas/UserEventType'
           type: array
@@ -2996,8 +2604,6 @@ components:
       - callbackReference
       - address
       type: object
-    VirtualNetworkInterfaceRequirements:
-      type: string
     ZonalPresenceNotification:
       description: A type containing zonal presence notification
       properties:
@@ -3007,8 +2613,7 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: anyURI
         callbackData:
-          description: CallBackData if passed by the application during the associated
-            ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
+          description: CallBackData if passed by the application during the associated ZonalTrafficSubscription and UserTrackingSubscription operation. See [REST_NetAPI_Common].
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
@@ -3018,15 +2623,12 @@ components:
           x-etsi-mec-cardinality: 1
           x-etsi-mec-origin-type: string
         interestRealm:
-          description: Interest realm of access point (e.g. geographical area, a type
-            of industry etc.).
+          description: Interest realm of access point (e.g. geographical area, a type of industry etc.).
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         link:
-          description: Link to other resources that are in relationship with this
-            notification. The server SHOULD include a link to the related subscription.
-            No other links are required or suggested by this specification
+          description: Link to other resources that are in relationship with this notification. The server SHOULD include a link to the related subscription. No other links are required or suggested by this specification
           items:
             $ref: '#/components/schemas/Link'
           type: array
@@ -3039,14 +2641,8 @@ components:
           x-etsi-mec-origin-type: string
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-          # description: Indicates the time of the day for zonal presence notification.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: TimeStamp
         userEventType:
           $ref: '#/components/schemas/UserEventType'
-          # description: User Event.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: UserEventType
         zoneId:
           description: Identifier of zone
           type: string
@@ -3064,31 +2660,18 @@ components:
       properties:
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: CallbackReference
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         duration:
-          description: Period (in seconds) of time notifications are provided for.
-            If set to "0" (zero), a default duration time, which is specified by the
-            service policy, will be used. If the parameter is omitted, the notifications
-            will continue until the maximum duration time, which is specified by the
-            service policy, unless the notifications are stopped by deletion of subscription
-            for notifications. This element MAY be given by the client during resource
-            creation in order to signal the desired lifetime of the subscription.
-            The server MUST return in this element the   period of time for which
-            the subscription will still be valid.
+          description: Period (in seconds) of time notifications are provided for. If set to "0" (zero), a default duration time, which is specified by the service policy, will be used. If the parameter is omitted, the notifications will continue until the maximum duration time, which is specified by the service policy, unless the notifications are stopped by deletion of subscription for notifications. This element MAY be given by the client during resource creation in order to signal the desired lifetime of the subscription. The server MUST return in this element the   period of time for which the subscription will still be valid.
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         interestRealm:
-          description: Interest realm of access point (e.g. geographical area, a type
-            of industry etc.).
+          description: Interest realm of access point (e.g. geographical area, a type of industry etc.).
           items:
             type: string
           type: array
@@ -3100,14 +2683,12 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: anyURI
         userEventCriteria:
-          type: array
+          description: List of user event values to generate notifications for (these apply to zone identifier or all interest realms within zone identifier specified). If this element is missing, a notification is requested to be generated for any change in user event.
           items:
             $ref: '#/components/schemas/UserEventType'
-          # description: List of user event values to generate notifications for (these
-          #   apply to address specified). If this element is missing, a notification
-          #   is requested to be generated for any change in user event.
-          # x-etsi-mec-cardinality: 0..N
-          # x-etsi-mec-origin-type: UserEventType
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: UserEventType
         zoneId:
           description: Identifier of zone
           type: string
@@ -3177,47 +2758,31 @@ components:
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         callbackData:
-          description: CallBackData if passed by the application during the associated
-            ZoneStatusSubscription operation. See [REST_NetAPI_Common].
+          description: CallBackData if passed by the application during the associated ZoneStatusSubscription operation. See [REST_NetAPI_Common].
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         link:
-          description: Link to other resources that are in relationship with this
-            notification. The server SHOULD include a link to the related subscription.
-            No other links are required or suggested by this specification
+          description: Link to other resources that are in relationship with this notification. The server SHOULD include a link to the related subscription. No other links are required or suggested by this specification
           items:
             $ref: '#/components/schemas/Link'
           type: array
           x-etsi-mec-cardinality: 0..N
           x-etsi-mec-origin-type: Link
         numberOfUsersInAP:
-          description: This element shall be present when ZoneStatusSubscription includes
-            numberOfUsersAPThreshold element and the number of users in an access
-            point exceeds the threshold defined in the subscription.
+          description: This element shall be present when ZoneStatusSubscription includes numberOfUsersAPThreshold element and the number of users in an access point exceeds the threshold defined in the subscription.
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         numberOfUsersInZone:
-          description: This element shall be present when ZoneStatusSubscription includes
-            numberOfUsersZoneThreshold element and the number of users in a zone exceeds
-            the threshold defined in this subscription.
+          description: This element shall be present when ZoneStatusSubscription includes numberOfUsersZoneThreshold element and the number of users in a zone exceeds the threshold defined in this subscription.
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         operationStatus:
           $ref: '#/components/schemas/OperationStatus'
-          # description: This element shall be present when ZoneStatusSubscription
-          #   includes operationStatus element and the operation status value of an
-          #   access point meets Serviceable or Unserviceable or Unknown defined in
-          #   the subscription.
-          # x-etsi-mec-cardinality: 0..1
-          # x-etsi-mec-origin-type: OperationStatus
         timestamp:
           $ref: '#/components/schemas/TimeStamp'
-          # description: Indicates the timeof day for zone status notification.
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: TimeStamp
         zoneId:
           description: Identifier of zone
           type: string
@@ -3232,30 +2797,23 @@ components:
       properties:
         callbackReference:
           $ref: '#/components/schemas/CallbackReference'
-          # description: Notification callback definition
-          # x-etsi-mec-cardinality: 1
-          # x-etsi-mec-origin-type: string
         clientCorrelator:
-          description: A correlator that the client can use to tag this particular
-            resource representation during a request to create a resource on the server.
+          description: A correlator that the client can use to tag this particular resource representation during a request to create a resource on the server.
           type: string
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: string
         numberOfUsersAPThreshold:
-          description: Threshold number of users in an access point which if crossed
-            shall cause a notification
+          description: Threshold number of users in an access point which if crossed shall cause a notification
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         numberOfUsersZoneThreshold:
-          description: Threshold number of users in a zone which if crossed shall
-            cause a notification
+          description: Threshold number of users in a zone which if crossed shall cause a notification
           type: integer
           x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: unsignedInt
         operationStatus:
-          description: List of operation status values to generate notifications for
-            (these apply to all access points within a zone).
+          description: List of operation status values to generate notifications for (these apply to all access points within a zone).
           items:
             $ref: '#/components/schemas/OperationStatus'
           type: array
@@ -3275,4 +2833,119 @@ components:
       - callbackReference
       - zoneId
       type: object
-    
+    InlineResponseTerminalDistance:
+      description: 'Successful response to a distance request'
+      type: object
+      properties:
+        terminalDistance:
+          $ref: '#/components/schemas/TerminalDistance'       
+    InlineResponseUserList:
+      description: 'Successful response to users request'
+      type: object
+      properties:
+        userList:
+          $ref: '#/components/schemas/UserList'                    
+    InlineResponseZoneList:
+      description: 'Successful response to zones request'
+      type: object
+      properties:
+        zoneList:
+          $ref: '#/components/schemas/ZoneList'                    
+    InlineResponseZoneInfo:
+      description: 'Successful response to zone id request'
+      type: object
+      properties:
+        zoneInfo:
+          $ref: '#/components/schemas/ZoneInfo'                    
+    InlineResponseAccessPointList:
+      description: 'Successful response to access points request'
+      type: object
+      properties:
+        accessPointList:
+          $ref: '#/components/schemas/AccessPointList'                    
+    InlineResponseAccessPointInfo:
+      description: 'Successful response to an access point id request'
+      type: object
+      properties:
+        accessPointInfo:
+          $ref: '#/components/schemas/AccessPointInfo'                    
+    InlineResponseNotificationSubscriptionList:
+      description: 'Response to retrieve subscriptions'
+      type: object
+      required:
+        - notificationSubscriptionList
+      properties:
+        notificationSubscriptionList:
+          $ref: '#/components/schemas/NotificationSubscriptionList'
+    InlineResponseCircleNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        circleNotificationSubscription:
+          $ref: '#/components/schemas/CircleNotificationSubscription'
+    InlineResponseDistanceNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        distanceNotificationSubscription:
+          $ref: '#/components/schemas/DistanceNotificationSubscription'
+    InlineResponsePeriodicNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        periodicNotificationSubscription:
+          $ref: '#/components/schemas/PeriodicNotificationSubscription'
+    InlineResponseUserTrackingNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        userTrackingNotificationSubscription:
+          $ref: '#/components/schemas/UserTrackingSubscription'
+    InlineResponseZonalTrafficNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        zonalTrafficNotificationSubscription:
+          $ref: '#/components/schemas/ZonalTrafficSubscription'
+    InlineResponseZoneStatusNotificationSubscription:
+      description: 'Subscription information regarding subscription notifications'
+      type: object
+      properties:
+        zoneStatusNotificationSubscription:
+          $ref: '#/components/schemas/ZoneStatusSubscription'
+    InlineRequestBodyCircleNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        circleNotificationSubscription:
+          $ref: '#/components/schemas/CircleNotificationSubscription'
+    InlineRequestBodyDistanceNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        distanceNotificationSubscription:
+          $ref: '#/components/schemas/DistanceNotificationSubscription'
+    InlineRequestBodyPeriodicNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        periodicNotificationSubscription:
+          $ref: '#/components/schemas/PeriodicNotificationSubscription'
+    InlineRequestBodyUserTrackingNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        userTrackingSubscription:
+          $ref: '#/components/schemas/UserTrackingSubscription'
+    InlineRequestBodyZonalTrafficNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        zonalTrafficSubscription:
+          $ref: '#/components/schemas/ZonalTrafficSubscription'
+    InlineRequestBodyZoneStatusNotificationSubscription:
+      description: 'Subscription request body'
+      type: object
+      properties:
+        zoneStatusSubscription:
+          $ref: '#/components/schemas/ZoneStatusSubscription'

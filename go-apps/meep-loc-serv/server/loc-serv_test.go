@@ -576,7 +576,7 @@ func testZonalSubscriptionList(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse20015
+	var respBody InlineResponseNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -602,7 +602,7 @@ func testZonalSubscriptionPost(t *testing.T) string {
 
 	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := InlineResponse2014{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineResponseZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -615,7 +615,7 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	expectedBody := InlineRequestBodyZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -634,7 +634,7 @@ func testZonalSubscriptionPost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse20014
+	var respBody InlineResponseZonalTrafficNotificationSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -659,7 +659,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 
 	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := InlineResponse20017{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineResponseZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -674,7 +674,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	expectedBody := InlineRequestBodyZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -694,7 +694,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse20017
+		var respBody InlineResponseZonalTrafficNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -749,7 +749,7 @@ func testZonalSubscriptionGet(t *testing.T, subscriptionId string, expectedRespo
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2003
+		var respBody InlineResponseZonalTrafficNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -913,7 +913,7 @@ func testUserSubscriptionList(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse20012
+	var respBody InlineResponseNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -938,7 +938,7 @@ func testUserSubscriptionPost(t *testing.T) string {
 
 	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := InlineResponse2013{&expectedUserTrackingSubscription}
+	expectedResponse := InlineResponseUserTrackingNotificationSubscription{&expectedUserTrackingSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -951,7 +951,7 @@ func testUserSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body6{&expectedUserTrackingSubscription}
+	expectedBody := InlineRequestBodyUserTrackingNotificationSubscription{&expectedUserTrackingSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -969,7 +969,7 @@ func testUserSubscriptionPost(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	var respBody InlineResponse2013
+	var respBody InlineResponseUserTrackingNotificationSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -993,7 +993,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 
 	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := InlineResponse20014{&expectedUserTrackingSubscription}
+	expectedResponse := InlineResponseUserTrackingNotificationSubscription{&expectedUserTrackingSubscription}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1009,7 +1009,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body6{&expectedUserTrackingSubscription}
+	expectedBody := InlineRequestBodyUserTrackingNotificationSubscription{&expectedUserTrackingSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1029,7 +1029,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse20014
+		var respBody InlineResponseUserTrackingNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1084,7 +1084,7 @@ func testUserSubscriptionGet(t *testing.T, subscriptionId string, expectedRespon
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse20013
+		var respBody InlineResponseUserTrackingNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1248,7 +1248,7 @@ func testZoneStatusSubscriptionList(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse20018
+	var respBody InlineResponseNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1275,7 +1275,7 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 
 	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := InlineResponse2015{&expectedZoneStatusSubscription}
+	expectedResponse := InlineResponseZoneStatusNotificationSubscription{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1288,7 +1288,7 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body10{&expectedZoneStatusSubscription}
+	expectedBody := InlineRequestBodyZoneStatusNotificationSubscription{&expectedZoneStatusSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1306,7 +1306,7 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse2015
+	var respBody InlineResponseZoneStatusNotificationSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1332,7 +1332,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 
 	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := InlineResponse20020{&expectedZoneStatusSubscription}
+	expectedResponse := InlineResponseZoneStatusNotificationSubscription{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1347,7 +1347,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body10{&expectedZoneStatusSubscription}
+	expectedBody := InlineRequestBodyZoneStatusNotificationSubscription{&expectedZoneStatusSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1367,7 +1367,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse20020
+		var respBody InlineResponseZoneStatusNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1422,7 +1422,7 @@ func testZoneStatusSubscriptionGet(t *testing.T, subscriptionId string, expected
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse20019
+		var respBody InlineResponseZoneStatusNotificationSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1543,7 +1543,7 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse2001
+	var respBody InlineResponseUserList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1634,7 +1634,7 @@ func testZoneInfo(t *testing.T, zoneId string, expectedResponse string) {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2003
+		var respBody InlineResponseZoneInfo
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1731,7 +1731,7 @@ func testAPInfo(t *testing.T, zoneId string, apId string, expectedResponse strin
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2005
+		var respBody InlineResponseAccessPointInfo
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1798,7 +1798,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body6{&expectedUserTrackingSubscription}
+	expectedBody := InlineRequestBodyUserTrackingNotificationSubscription{&expectedUserTrackingSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1909,13 +1909,13 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	expectedBody := Body8{&expectedZonalTrafficSubscription}
+	expectedBody := InlineRequestBodyZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription}
 	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	expectedBody2 := Body8{&expectedZonalTrafficSubscription2}
+	expectedBody2 := InlineRequestBodyZonalTrafficNotificationSubscription{&expectedZonalTrafficSubscription2}
 	body2, err := json.Marshal(expectedBody2)
 	if err != nil {
 		t.Fatalf(err.Error())
