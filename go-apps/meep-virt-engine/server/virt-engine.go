@@ -107,15 +107,6 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
 
-	// Retrieve Session Encryption Key from environment variable
-	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
-	if ve.sessionKey == "" {
-		err = errors.New("MEEP_SESSION_KEY variable not set")
-		log.Error(err.Error())
-		return err
-	}
-	log.Info("MEEP_SESSION_KEY found")
-
 	// Retrieve HTTPS only mode from environment variable
 	httpsOnlyStr := strings.TrimSpace(os.Getenv("MEEP_HTTPS_ONLY"))
 	httpsOnly, err := strconv.ParseBool(httpsOnlyStr)
@@ -123,6 +114,12 @@ func Init() (err error) {
 		ve.httpsOnly = httpsOnly
 	}
 	log.Info("MEEP_HTTPS_ONLY: ", httpsOnlyStr)
+
+	// Retrieve Session Encryption Key from environment variable
+	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
+	if ve.sessionKey == "" {
+		log.Warn("MEEP_SESSION_KEY not found")
+	}
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)
@@ -135,7 +132,7 @@ func Init() (err error) {
 	// Setup for liveness monitoring
 	ve.wdPinger, err = wd.NewPinger(moduleName, moduleNamespace, redisAddr)
 	if err != nil {
-		log.Error("Failed to initialize pigner. Error: ", err)
+		log.Error("Failed to initialize pinger. Error: ", err)
 		return err
 	}
 	err = ve.wdPinger.Start()
