@@ -168,7 +168,7 @@ func Init() (err error) {
 	log.Info("Connected to Sandbox Store")
 
 	// Connect to Session Manager
-	sbxCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, redisDBAddr, redisDBAddr)
+	sbxCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, sbxCtrl.sandboxName, redisDBAddr, redisDBAddr)
 	if err != nil {
 		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err

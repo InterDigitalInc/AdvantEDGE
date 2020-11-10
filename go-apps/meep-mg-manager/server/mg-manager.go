@@ -213,7 +213,7 @@ func Init() (err error) {
 	_ = mgm.lbRulesStore.rc.DBFlush(mgm.baseKey)
 
 	// Connect to Session Manager
-	mgm.sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	mgm.sessionMgr, err = sm.NewSessionMgr(moduleName, mgm.sandboxName, redisAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err

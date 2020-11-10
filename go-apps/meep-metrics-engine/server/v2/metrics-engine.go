@@ -155,7 +155,7 @@ func Init() (err error) {
 	log.Info("Connected to Redis DB")
 
 	// Connect to Session Manager
-	SessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	SessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err

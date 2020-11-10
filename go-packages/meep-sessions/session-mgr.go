@@ -30,6 +30,7 @@ type SessionTimeoutHandler func(*Session)
 
 type SessionMgr struct {
 	service   string
+	sboxName  string
 	ss        *SessionStore
 	ps        *PermissionStore
 	wdTicker  *time.Ticker
@@ -40,12 +41,13 @@ type SessionMgr struct {
 const wathdogInterval = 60 // 1 minute
 
 // NewSessionStore - Create and initialize a Session Store instance
-func NewSessionMgr(service string, ssAddr string, psAddr string) (sm *SessionMgr, err error) {
+func NewSessionMgr(service string, sboxName string, ssAddr string, psAddr string) (sm *SessionMgr, err error) {
 
 	// Create new Session Manager instance
 	log.Info("Creating new Session Manager")
 	sm = new(SessionMgr)
 	sm.service = service
+	sm.sboxName = sboxName
 	sm.wdTicker = nil
 	sm.wdHandler = nil
 	sm.wdStarted = false
@@ -99,21 +101,27 @@ func (sm *SessionMgr) Authorizer(inner http.Handler) http.Handler {
 			inner.ServeHTTP(w, r)
 			return
 		case ModeVerify:
-			// Retrieve user role from session, if any
+			// Retrieve user session, if any
 			session, err := sm.ss.Get(r)
 			if err != nil || session == nil {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
+
+			// Verify role permissions
 			role := session.Role
 			if role == "" {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
-
-			// Verify role permissions
 			access := permission.RolePermissions[role]
 			if access != AccessGranted {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// For non-admin users, verify session sandbox matches service sandbox, if any
+			if session.Role != RoleAdmin && sm.sboxName != "" && sm.sboxName != session.Sandbox {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
