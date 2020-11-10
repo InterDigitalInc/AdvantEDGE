@@ -199,7 +199,7 @@ Creates a subscription to the Location Service for an area change notification.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to an area subscription request | 
+  **body** | [**InlineRequestBodyCircleNotificationSubscription**](InlineRequestBodyCircleNotificationSubscription.md)| Request body to an area subscription request | 
 
 ### Return type
 
@@ -227,7 +227,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to an area subscription request | 
+  **body** | [**InlineRequestBodyCircleNotificationSubscription**](InlineRequestBodyCircleNotificationSubscription.md)| Request body to an area subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
@@ -375,7 +375,7 @@ Creates a subscription to the Location Service for a distance change notificatio
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a distance subscription request | 
+  **body** | [**InlineRequestBodyDistanceNotificationSubscription**](InlineRequestBodyDistanceNotificationSubscription.md)| Request body to a distance subscription request | 
 
 ### Return type
 
@@ -403,7 +403,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a distance subscription request | 
+  **body** | [**InlineRequestBodyDistanceNotificationSubscription**](InlineRequestBodyDistanceNotificationSubscription.md)| Request body to a distance subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
@@ -512,7 +512,7 @@ Creates a subscription to the Location Service for a periodic notification.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a periodic subscription request | 
+  **body** | [**InlineRequestBodyPeriodicNotificationSubscription**](InlineRequestBodyPeriodicNotificationSubscription.md)| Request body to a periodic subscription request | 
 
 ### Return type
 
@@ -540,7 +540,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a periodic subscription request | 
+  **body** | [**InlineRequestBodyPeriodicNotificationSubscription**](InlineRequestBodyPeriodicNotificationSubscription.md)| Request body to a periodic subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
@@ -649,7 +649,7 @@ Creates a subscription to the Location Service for user tracking change notifica
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a user tracking subscription request | 
+  **body** | [**InlineRequestBodyUserTrackingNotificationSubscription**](InlineRequestBodyUserTrackingNotificationSubscription.md)| Request body to a user tracking subscription request | 
 
 ### Return type
 
@@ -677,7 +677,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a user tracking subscription request | 
+  **body** | [**InlineRequestBodyUserTrackingNotificationSubscription**](InlineRequestBodyUserTrackingNotificationSubscription.md)| Request body to a user tracking subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
@@ -823,7 +823,7 @@ Creates a subscription to the Location Service for zonal traffic change notifica
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a zonal traffic subscription request | 
+  **body** | [**InlineRequestBodyZonalTrafficNotificationSubscription**](InlineRequestBodyZonalTrafficNotificationSubscription.md)| Request body to a zonal traffic subscription request | 
 
 ### Return type
 
@@ -851,7 +851,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a zonal traffic subscription request | 
+  **body** | [**InlineRequestBodyZonalTrafficNotificationSubscription**](InlineRequestBodyZonalTrafficNotificationSubscription.md)| Request body to a zonal traffic subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
@@ -960,7 +960,7 @@ Creates a subscription to the Location Service for zone status change notificati
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a zone status subscription request | 
+  **body** | [**InlineRequestBodyZoneStatusNotificationSubscription**](InlineRequestBodyZoneStatusNotificationSubscription.md)| Request body to a zone status subscription request | 
 
 ### Return type
 
@@ -988,7 +988,7 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**interface{}**](interface{}.md)| Request body to a zone status subscription request | 
+  **body** | [**InlineRequestBodyZoneStatusNotificationSubscription**](InlineRequestBodyZoneStatusNotificationSubscription.md)| Request body to a zone status subscription request | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type

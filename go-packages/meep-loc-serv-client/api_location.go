@@ -727,7 +727,7 @@ Creates a subscription to the Location Service for an area change notification.
 
 @return InlineResponseCircleNotificationSubscription
 */
-func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body interface{}) (InlineResponseCircleNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineRequestBodyCircleNotificationSubscription) (InlineResponseCircleNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -884,7 +884,7 @@ Updates a subscription.
 
 @return InlineResponseCircleNotificationSubscription
 */
-func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponseCircleNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineRequestBodyCircleNotificationSubscription, subscriptionId string) (InlineResponseCircleNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -1593,7 +1593,7 @@ Creates a subscription to the Location Service for a distance change notificatio
 
 @return InlineResponseDistanceNotificationSubscription
 */
-func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body interface{}) (InlineResponseDistanceNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineRequestBodyDistanceNotificationSubscription) (InlineResponseDistanceNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -1750,7 +1750,7 @@ Updates a subscription.
 
 @return InlineResponseDistanceNotificationSubscription
 */
-func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponseDistanceNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineRequestBodyDistanceNotificationSubscription, subscriptionId string) (InlineResponseDistanceNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -2284,7 +2284,7 @@ Creates a subscription to the Location Service for a periodic notification.
 
 @return InlineResponsePeriodicNotificationSubscription
 */
-func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body interface{}) (InlineResponsePeriodicNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlineRequestBodyPeriodicNotificationSubscription) (InlineResponsePeriodicNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -2441,7 +2441,7 @@ Updates a subscription.
 
 @return InlineResponsePeriodicNotificationSubscription
 */
-func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponsePeriodicNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlineRequestBodyPeriodicNotificationSubscription, subscriptionId string) (InlineResponsePeriodicNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -2975,7 +2975,7 @@ Creates a subscription to the Location Service for user tracking change notifica
 
 @return InlineResponseUserTrackingNotificationSubscription
 */
-func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body interface{}) (InlineResponseUserTrackingNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body InlineRequestBodyUserTrackingNotificationSubscription) (InlineResponseUserTrackingNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -3132,7 +3132,7 @@ Updates a subscription.
 
 @return InlineResponseUserTrackingNotificationSubscription
 */
-func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponseUserTrackingNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body InlineRequestBodyUserTrackingNotificationSubscription, subscriptionId string) (InlineResponseUserTrackingNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -3839,7 +3839,7 @@ Creates a subscription to the Location Service for zonal traffic change notifica
 
 @return InlineResponseZonalTrafficNotificationSubscription
 */
-func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body interface{}) (InlineResponseZonalTrafficNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body InlineRequestBodyZonalTrafficNotificationSubscription) (InlineResponseZonalTrafficNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -3996,7 +3996,7 @@ Updates a subscription.
 
 @return InlineResponseZonalTrafficNotificationSubscription
 */
-func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponseZonalTrafficNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body InlineRequestBodyZonalTrafficNotificationSubscription, subscriptionId string) (InlineResponseZonalTrafficNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
@@ -4530,7 +4530,7 @@ Creates a subscription to the Location Service for zone status change notificati
 
 @return InlineResponseZoneStatusNotificationSubscription
 */
-func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body interface{}) (InlineResponseZoneStatusNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineRequestBodyZoneStatusNotificationSubscription) (InlineResponseZoneStatusNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
@@ -4687,7 +4687,7 @@ Updates a subscription.
 
 @return InlineResponseZoneStatusNotificationSubscription
 */
-func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body interface{}, subscriptionId string) (InlineResponseZoneStatusNotificationSubscription, *http.Response, error) {
+func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineRequestBodyZoneStatusNotificationSubscription, subscriptionId string) (InlineResponseZoneStatusNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
