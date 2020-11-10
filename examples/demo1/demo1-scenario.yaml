@@ -1,4 +1,4 @@
-version: 1.5.3
+version: 1.5.6
 name: demo1
 deployment:
     netChar:
@@ -81,8 +81,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -121,8 +121,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -154,6 +154,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
@@ -308,8 +309,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -348,8 +349,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -381,6 +382,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
@@ -437,8 +439,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -477,8 +479,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -510,6 +512,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                                 -
                                     id: a95c7d87-1086-419b-9525-cf74807492e4
                                     name: ue1
@@ -536,8 +539,8 @@ deployment:
                                             environment: null
                                             serviceConfig: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -568,6 +571,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                                 -
                                     id: a4bff832-de45-4cbb-a54c-17b6b26735ef
                                     name: ue2-ext
@@ -617,8 +621,8 @@ deployment:
                                             commandExe: null
                                             serviceConfig: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             status: null
                                             userChartLocation: null
                                             userChartAlternateValues: null
@@ -648,6 +652,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
@@ -755,8 +760,8 @@ deployment:
                                             isExternal: null
                                             environment: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -795,8 +800,8 @@ deployment:
                                             commandArguments: null
                                             commandExe: null
                                             gpuConfig: null
-                                            cpuConfig: null
                                             memoryConfig: null
+                                            cpuConfig: null
                                             externalConfig: null
                                             status: null
                                             userChartLocation: null
@@ -828,6 +833,7 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                    macId: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
