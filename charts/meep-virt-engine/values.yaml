@@ -28,8 +28,11 @@ image:
     MEEP_HOST_URL: "http://www.example.com"
     MEEP_USER_SWAGGER: "false"
     MEEP_USER_SWAGGER_DIR: "/path/to/user/swagger"
-    MEEP_SESSION_KEY: "my-session-key"
     MEEP_HTTPS_ONLY: "false"
+  envSecret:
+    MEEP_SESSION_KEY:
+      name: meep-session
+      key: encryption-key
 
 service:
   type: ClusterIP

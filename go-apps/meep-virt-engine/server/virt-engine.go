@@ -107,7 +107,7 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
 
-	// Retrieve User Swagger Dir from environment variable
+	// Retrieve Session Encryption Key from environment variable
 	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
 	if ve.sessionKey == "" {
 		err = errors.New("MEEP_SESSION_KEY variable not set")
@@ -300,7 +300,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 	}
 
 	// Get chart prefix & path
-	path := "/data/" + sandboxName
+	path := "/charts/" + sandboxName
 	releasePrefix := "meep-" + sandboxName + "-"
 	if scenarioName != "" {
 		path += "/scenario/"
