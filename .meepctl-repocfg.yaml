@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.5.7
+version: 1.5.8
 repo:
   name: AdvantEDGE
 
@@ -55,7 +55,7 @@ repo:
       gitlab-secret: meep-oauth-gitlab
       # OAuth redirect URI
       redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
-      
+
 
   #------------------------------
   #  Core Subsystem
