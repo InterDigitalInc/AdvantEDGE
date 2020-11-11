@@ -621,7 +621,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	userData.queryAddress = q.Get("address")
 
 	// Get user list from DB
-	var response InlineResponseUserList
+	var response InlineUserList
 	var userList UserList
 	userList.ResourceURL = hostUrl.String() + basePath + "users"
 	response.UserList = &userList
@@ -694,7 +694,7 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	userData.queryInterestRealm = q.Get("interestRealm")
 
 	// Get user list from DB
-	var response InlineResponseAccessPointList
+	var response InlineAccessPointList
 	var apList AccessPointList
 	apList.ZoneId = vars["zoneId"]
 	apList.ResourceURL = hostUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
@@ -724,7 +724,7 @@ func apByIdGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseAccessPointInfo
+	var response InlineAccessPointInfo
 	var apInfo AccessPointInfo
 	response.AccessPointInfo = &apInfo
 
@@ -754,7 +754,7 @@ func apByIdGet(w http.ResponseWriter, r *http.Request) {
 func zonesGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseZoneList
+	var response InlineZoneList
 	var zoneList ZoneList
 	zoneList.ResourceURL = hostUrl.String() + basePath + "zones"
 	response.ZoneList = &zoneList
@@ -781,7 +781,7 @@ func zonesByIdGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseZoneInfo
+	var response InlineZoneInfo
 	var zoneInfo ZoneInfo
 	response.ZoneInfo = &zoneInfo
 
@@ -870,7 +870,7 @@ func userTrackingSubDelete(w http.ResponseWriter, r *http.Request) {
 func userTrackingSubListGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseNotificationSubscriptionList
+	var response InlineNotificationSubscriptionList
 	var userTrackingSubList NotificationSubscriptionList
 	userTrackingSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/userTracking"
 	response.NotificationSubscriptionList = &userTrackingSubList
@@ -897,9 +897,9 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseUserTrackingNotificationSubscription
+	var response InlineUserTrackingSubscription
 	var userTrackingSub UserTrackingSubscription
-	response.UserTrackingNotificationSubscription = &userTrackingSub
+	response.UserTrackingSubscription = &userTrackingSub
 
 	jsonUserTrackingSub, _ := rc.JSONGetEntry(baseKey+typeUserSubscription+":"+vars["subscriptionId"], ".")
 	if jsonUserTrackingSub == "" {
@@ -927,9 +927,9 @@ func userTrackingSubGet(w http.ResponseWriter, r *http.Request) {
 func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseUserTrackingNotificationSubscription
+	var response InlineUserTrackingSubscription
 
-	var body InlineRequestBodyUserTrackingNotificationSubscription
+	var body InlineUserTrackingSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -953,7 +953,7 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 
 	_ = rc.JSONSetEntry(baseKey+typeUserSubscription+":"+subsIdStr, ".", convertUserSubscriptionToJson(userTrackingSub))
 
-	response.UserTrackingNotificationSubscription = userTrackingSub
+	response.UserTrackingSubscription = userTrackingSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -969,9 +969,9 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseUserTrackingNotificationSubscription
+	var response InlineUserTrackingSubscription
 
-	var body InlineRequestBodyUserTrackingNotificationSubscription
+	var body InlineUserTrackingSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -1021,7 +1021,7 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	deregisterUser(subsIdStr)
 	registerUser(userTrackingSub.Address, userTrackingSub.UserEventCriteria, subsIdStr)
 
-	response.UserTrackingNotificationSubscription = userTrackingSub
+	response.UserTrackingSubscription = userTrackingSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1064,7 +1064,7 @@ func zonalTrafficSubDelete(w http.ResponseWriter, r *http.Request) {
 func zonalTrafficSubListGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseNotificationSubscriptionList
+	var response InlineNotificationSubscriptionList
 	var zonalTrafficSubList NotificationSubscriptionList
 	zonalTrafficSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/zonalTraffic"
 	response.NotificationSubscriptionList = &zonalTrafficSubList
@@ -1091,9 +1091,9 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseZonalTrafficNotificationSubscription
+	var response InlineZonalTrafficSubscription
 	var zonalTrafficSub ZonalTrafficSubscription
-	response.ZonalTrafficNotificationSubscription = &zonalTrafficSub
+	response.ZonalTrafficSubscription = &zonalTrafficSub
 	jsonZonalTrafficSub, _ := rc.JSONGetEntry(baseKey+typeZonalSubscription+":"+vars["subscriptionId"], ".")
 	if jsonZonalTrafficSub == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -1120,9 +1120,9 @@ func zonalTrafficSubGet(w http.ResponseWriter, r *http.Request) {
 func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseZonalTrafficNotificationSubscription
+	var response InlineZonalTrafficSubscription
 
-	var body InlineRequestBodyZonalTrafficNotificationSubscription
+	var body InlineZonalTrafficSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -1158,7 +1158,7 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
 
-	response.ZonalTrafficNotificationSubscription = zonalTrafficSub
+	response.ZonalTrafficSubscription = zonalTrafficSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1174,9 +1174,9 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseZonalTrafficNotificationSubscription
+	var response InlineZonalTrafficSubscription
 
-	var body InlineRequestBodyZonalTrafficNotificationSubscription
+	var body InlineZonalTrafficSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -1226,7 +1226,7 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	deregisterZonal(subsIdStr)
 	registerZonal(zonalTrafficSub.ZoneId, zonalTrafficSub.UserEventCriteria, subsIdStr)
 
-	response.ZonalTrafficNotificationSubscription = zonalTrafficSub
+	response.ZonalTrafficSubscription = zonalTrafficSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1269,7 +1269,7 @@ func zoneStatusSubDelete(w http.ResponseWriter, r *http.Request) {
 func zoneStatusSubListGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseNotificationSubscriptionList
+	var response InlineNotificationSubscriptionList
 	var zoneStatusSubList NotificationSubscriptionList
 	zoneStatusSubList.ResourceURL = hostUrl.String() + basePath + "subscriptions/zoneStatus"
 	response.NotificationSubscriptionList = &zoneStatusSubList
@@ -1296,9 +1296,9 @@ func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseZoneStatusNotificationSubscription
+	var response InlineZoneStatusSubscription
 	var zoneStatusSub ZoneStatusSubscription
-	response.ZoneStatusNotificationSubscription = &zoneStatusSub
+	response.ZoneStatusSubscription = &zoneStatusSub
 
 	jsonZoneStatusSub, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+vars["subscriptionId"], ".")
 	if jsonZoneStatusSub == "" {
@@ -1326,9 +1326,9 @@ func zoneStatusSubGet(w http.ResponseWriter, r *http.Request) {
 func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponseZoneStatusNotificationSubscription
+	var response InlineZoneStatusSubscription
 
-	var body InlineRequestBodyZoneStatusNotificationSubscription
+	var body InlineZoneStatusSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -1354,7 +1354,7 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
 		zoneStatusSub.OperationStatus, subsIdStr)
 
-	response.ZoneStatusNotificationSubscription = zoneStatusSub
+	response.ZoneStatusSubscription = zoneStatusSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -1370,9 +1370,9 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	var response InlineResponseZoneStatusNotificationSubscription
+	var response InlineZoneStatusSubscription
 
-	var body InlineRequestBodyZoneStatusNotificationSubscription
+	var body InlineZoneStatusSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&body)
 	if err != nil {
@@ -1423,7 +1423,7 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	registerZoneStatus(zoneStatusSub.ZoneId, zoneStatusSub.NumberOfUsersZoneThreshold, zoneStatusSub.NumberOfUsersAPThreshold,
 		zoneStatusSub.OperationStatus, subsIdStr)
 
-	response.ZoneStatusNotificationSubscription = zoneStatusSub
+	response.ZoneStatusSubscription = zoneStatusSub
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {

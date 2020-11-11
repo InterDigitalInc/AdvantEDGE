@@ -43,7 +43,7 @@ Method | HTTP request | Description
 
 
 # **ApByIdGET**
-> InlineResponseAccessPointInfo ApByIdGET(ctx, zoneId, accessPointId)
+> InlineAccessPointInfo ApByIdGET(ctx, zoneId, accessPointId)
 Radio Node Location Lookup
 
 Radio Node Location Lookup to retrieve a radio node associated to a zone.
@@ -58,7 +58,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseAccessPointInfo**](InlineResponseAccessPointInfo.md)
+[**InlineAccessPointInfo**](InlineAccessPointInfo.md)
 
 ### Authorization
 
@@ -72,7 +72,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ApGET**
-> InlineResponseAccessPointList ApGET(ctx, zoneId, optional)
+> InlineAccessPointList ApGET(ctx, zoneId, optional)
 Radio Node Location Lookup
 
 Radio Node Location Lookup to retrieve a list of radio nodes associated to a zone.
@@ -95,7 +95,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseAccessPointList**](InlineResponseAccessPointList.md)
+[**InlineAccessPointList**](InlineAccessPointList.md)
 
 ### Authorization
 
@@ -137,7 +137,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **AreaCircleSubGET**
-> InlineResponseCircleNotificationSubscription AreaCircleSubGET(ctx, subscriptionId)
+> InlineCircleNotificationSubscription AreaCircleSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -151,7 +151,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseCircleNotificationSubscription**](InlineResponseCircleNotificationSubscription.md)
+[**InlineCircleNotificationSubscription**](InlineCircleNotificationSubscription.md)
 
 ### Authorization
 
@@ -165,7 +165,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **AreaCircleSubListGET**
-> InlineResponseNotificationSubscriptionList AreaCircleSubListGET(ctx, )
+> InlineNotificationSubscriptionList AreaCircleSubListGET(ctx, )
 Retrieves all active subscriptions to area change notifications
 
 This operation is used for retrieving all active subscriptions to area change notifications.
@@ -175,7 +175,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -189,7 +189,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **AreaCircleSubPOST**
-> InlineResponseCircleNotificationSubscription AreaCircleSubPOST(ctx, body)
+> InlineCircleNotificationSubscription AreaCircleSubPOST(ctx, body)
 Creates a subscription for area change notification
 
 Creates a subscription to the Location Service for an area change notification.
@@ -199,11 +199,11 @@ Creates a subscription to the Location Service for an area change notification.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyCircleNotificationSubscription**](InlineRequestBodyCircleNotificationSubscription.md)| Request body to an area subscription request | 
+  **body** | [**InlineCircleNotificationSubscription**](InlineCircleNotificationSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponseCircleNotificationSubscription**](InlineResponseCircleNotificationSubscription.md)
+[**InlineCircleNotificationSubscription**](InlineCircleNotificationSubscription.md)
 
 ### Authorization
 
@@ -217,7 +217,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **AreaCircleSubPUT**
-> InlineResponseCircleNotificationSubscription AreaCircleSubPUT(ctx, body, subscriptionId)
+> InlineCircleNotificationSubscription AreaCircleSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -227,12 +227,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyCircleNotificationSubscription**](InlineRequestBodyCircleNotificationSubscription.md)| Request body to an area subscription request | 
+  **body** | [**InlineCircleNotificationSubscription**](InlineCircleNotificationSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponseCircleNotificationSubscription**](InlineResponseCircleNotificationSubscription.md)
+[**InlineCircleNotificationSubscription**](InlineCircleNotificationSubscription.md)
 
 ### Authorization
 
@@ -246,7 +246,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DistanceGET**
-> InlineResponseTerminalDistance DistanceGET(ctx, address, optional)
+> InlineTerminalDistance DistanceGET(ctx, address, optional)
 UE Distance Lookup of a specific UE
 
 UE Distance Lookup between terminals or a terminal and a location
@@ -271,7 +271,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseTerminalDistance**](InlineResponseTerminalDistance.md)
+[**InlineTerminalDistance**](InlineTerminalDistance.md)
 
 ### Authorization
 
@@ -313,7 +313,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DistanceSubGET**
-> InlineResponseDistanceNotificationSubscription DistanceSubGET(ctx, subscriptionId)
+> InlineDistanceNotificationSubscription DistanceSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -327,7 +327,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseDistanceNotificationSubscription**](InlineResponseDistanceNotificationSubscription.md)
+[**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)
 
 ### Authorization
 
@@ -341,7 +341,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DistanceSubListGET**
-> InlineResponseNotificationSubscriptionList DistanceSubListGET(ctx, )
+> InlineNotificationSubscriptionList DistanceSubListGET(ctx, )
 Retrieves all active subscriptions to distance change notifications
 
 This operation is used for retrieving all active subscriptions to a distance change notifications.
@@ -351,7 +351,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -365,7 +365,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DistanceSubPOST**
-> InlineResponseDistanceNotificationSubscription DistanceSubPOST(ctx, body)
+> InlineDistanceNotificationSubscription DistanceSubPOST(ctx, body)
 Creates a subscription for distance change notification
 
 Creates a subscription to the Location Service for a distance change notification.
@@ -375,11 +375,11 @@ Creates a subscription to the Location Service for a distance change notificatio
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyDistanceNotificationSubscription**](InlineRequestBodyDistanceNotificationSubscription.md)| Request body to a distance subscription request | 
+  **body** | [**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponseDistanceNotificationSubscription**](InlineResponseDistanceNotificationSubscription.md)
+[**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)
 
 ### Authorization
 
@@ -393,7 +393,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **DistanceSubPUT**
-> InlineResponseDistanceNotificationSubscription DistanceSubPUT(ctx, body, subscriptionId)
+> InlineDistanceNotificationSubscription DistanceSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -403,12 +403,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyDistanceNotificationSubscription**](InlineRequestBodyDistanceNotificationSubscription.md)| Request body to a distance subscription request | 
+  **body** | [**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponseDistanceNotificationSubscription**](InlineResponseDistanceNotificationSubscription.md)
+[**InlineDistanceNotificationSubscription**](InlineDistanceNotificationSubscription.md)
 
 ### Authorization
 
@@ -450,7 +450,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PeriodicSubGET**
-> InlineResponsePeriodicNotificationSubscription PeriodicSubGET(ctx, subscriptionId)
+> InlinePeriodicNotificationSubscription PeriodicSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -464,7 +464,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponsePeriodicNotificationSubscription**](InlineResponsePeriodicNotificationSubscription.md)
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
 
 ### Authorization
 
@@ -478,7 +478,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PeriodicSubListGET**
-> InlineResponseNotificationSubscriptionList PeriodicSubListGET(ctx, )
+> InlineNotificationSubscriptionList PeriodicSubListGET(ctx, )
 Retrieves all active subscriptions to periodic notifications
 
 This operation is used for retrieving all active subscriptions to periodic notifications.
@@ -488,7 +488,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -502,7 +502,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PeriodicSubPOST**
-> InlineResponsePeriodicNotificationSubscription PeriodicSubPOST(ctx, body)
+> InlinePeriodicNotificationSubscription PeriodicSubPOST(ctx, body)
 Creates a subscription for periodic notification
 
 Creates a subscription to the Location Service for a periodic notification.
@@ -512,11 +512,11 @@ Creates a subscription to the Location Service for a periodic notification.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyPeriodicNotificationSubscription**](InlineRequestBodyPeriodicNotificationSubscription.md)| Request body to a periodic subscription request | 
+  **body** | [**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponsePeriodicNotificationSubscription**](InlineResponsePeriodicNotificationSubscription.md)
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
 
 ### Authorization
 
@@ -530,7 +530,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PeriodicSubPUT**
-> InlineResponsePeriodicNotificationSubscription PeriodicSubPUT(ctx, body, subscriptionId)
+> InlinePeriodicNotificationSubscription PeriodicSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -540,12 +540,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyPeriodicNotificationSubscription**](InlineRequestBodyPeriodicNotificationSubscription.md)| Request body to a periodic subscription request | 
+  **body** | [**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponsePeriodicNotificationSubscription**](InlineResponsePeriodicNotificationSubscription.md)
+[**InlinePeriodicNotificationSubscription**](InlinePeriodicNotificationSubscription.md)
 
 ### Authorization
 
@@ -587,7 +587,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubGET**
-> InlineResponseUserTrackingNotificationSubscription UserTrackingSubGET(ctx, subscriptionId)
+> InlineUserTrackingSubscription UserTrackingSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -601,7 +601,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseUserTrackingNotificationSubscription**](InlineResponseUserTrackingNotificationSubscription.md)
+[**InlineUserTrackingSubscription**](InlineUserTrackingSubscription.md)
 
 ### Authorization
 
@@ -615,7 +615,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubListGET**
-> InlineResponseNotificationSubscriptionList UserTrackingSubListGET(ctx, )
+> InlineNotificationSubscriptionList UserTrackingSubListGET(ctx, )
 Retrieves all active subscriptions to user tracking notifications
 
 This operation is used for retrieving all active subscriptions to user tracking notifications.
@@ -625,7 +625,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -639,7 +639,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubPOST**
-> InlineResponseUserTrackingNotificationSubscription UserTrackingSubPOST(ctx, body)
+> InlineUserTrackingSubscription UserTrackingSubPOST(ctx, body)
 Creates a subscription for user tracking notification
 
 Creates a subscription to the Location Service for user tracking change notification.
@@ -649,11 +649,11 @@ Creates a subscription to the Location Service for user tracking change notifica
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyUserTrackingNotificationSubscription**](InlineRequestBodyUserTrackingNotificationSubscription.md)| Request body to a user tracking subscription request | 
+  **body** | [**InlineUserTrackingSubscription**](InlineUserTrackingSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponseUserTrackingNotificationSubscription**](InlineResponseUserTrackingNotificationSubscription.md)
+[**InlineUserTrackingSubscription**](InlineUserTrackingSubscription.md)
 
 ### Authorization
 
@@ -667,7 +667,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UserTrackingSubPUT**
-> InlineResponseUserTrackingNotificationSubscription UserTrackingSubPUT(ctx, body, subscriptionId)
+> InlineUserTrackingSubscription UserTrackingSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -677,12 +677,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyUserTrackingNotificationSubscription**](InlineRequestBodyUserTrackingNotificationSubscription.md)| Request body to a user tracking subscription request | 
+  **body** | [**InlineUserTrackingSubscription**](InlineUserTrackingSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponseUserTrackingNotificationSubscription**](InlineResponseUserTrackingNotificationSubscription.md)
+[**InlineUserTrackingSubscription**](InlineUserTrackingSubscription.md)
 
 ### Authorization
 
@@ -696,7 +696,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **UsersGET**
-> InlineResponseUserList UsersGET(ctx, optional)
+> InlineUserList UsersGET(ctx, optional)
 UE Location Lookup of a specific UE or group of UEs
 
 UE Location Lookup of a specific UE or group of UEs
@@ -719,7 +719,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseUserList**](InlineResponseUserList.md)
+[**InlineUserList**](InlineUserList.md)
 
 ### Authorization
 
@@ -761,7 +761,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubGET**
-> InlineResponseZonalTrafficNotificationSubscription ZonalTrafficSubGET(ctx, subscriptionId)
+> InlineZonalTrafficSubscription ZonalTrafficSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -775,7 +775,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseZonalTrafficNotificationSubscription**](InlineResponseZonalTrafficNotificationSubscription.md)
+[**InlineZonalTrafficSubscription**](InlineZonalTrafficSubscription.md)
 
 ### Authorization
 
@@ -789,7 +789,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubListGET**
-> InlineResponseNotificationSubscriptionList ZonalTrafficSubListGET(ctx, )
+> InlineNotificationSubscriptionList ZonalTrafficSubListGET(ctx, )
 Retrieves all active subscriptions to zonal traffic notifications
 
 This operation is used for retrieving all active subscriptions to zonal traffic change notifications.
@@ -799,7 +799,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -813,7 +813,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubPOST**
-> InlineResponseZonalTrafficNotificationSubscription ZonalTrafficSubPOST(ctx, body)
+> InlineZonalTrafficSubscription ZonalTrafficSubPOST(ctx, body)
 Creates a subscription for zonal traffic notification
 
 Creates a subscription to the Location Service for zonal traffic change notification.
@@ -823,11 +823,11 @@ Creates a subscription to the Location Service for zonal traffic change notifica
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyZonalTrafficNotificationSubscription**](InlineRequestBodyZonalTrafficNotificationSubscription.md)| Request body to a zonal traffic subscription request | 
+  **body** | [**InlineZonalTrafficSubscription**](InlineZonalTrafficSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponseZonalTrafficNotificationSubscription**](InlineResponseZonalTrafficNotificationSubscription.md)
+[**InlineZonalTrafficSubscription**](InlineZonalTrafficSubscription.md)
 
 ### Authorization
 
@@ -841,7 +841,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonalTrafficSubPUT**
-> InlineResponseZonalTrafficNotificationSubscription ZonalTrafficSubPUT(ctx, body, subscriptionId)
+> InlineZonalTrafficSubscription ZonalTrafficSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -851,12 +851,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyZonalTrafficNotificationSubscription**](InlineRequestBodyZonalTrafficNotificationSubscription.md)| Request body to a zonal traffic subscription request | 
+  **body** | [**InlineZonalTrafficSubscription**](InlineZonalTrafficSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponseZonalTrafficNotificationSubscription**](InlineResponseZonalTrafficNotificationSubscription.md)
+[**InlineZonalTrafficSubscription**](InlineZonalTrafficSubscription.md)
 
 ### Authorization
 
@@ -898,7 +898,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusSubGET**
-> InlineResponseZoneStatusNotificationSubscription ZoneStatusSubGET(ctx, subscriptionId)
+> InlineZoneStatusSubscription ZoneStatusSubGET(ctx, subscriptionId)
 Retrieve subscription information
 
 Get subscription information.
@@ -912,7 +912,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseZoneStatusNotificationSubscription**](InlineResponseZoneStatusNotificationSubscription.md)
+[**InlineZoneStatusSubscription**](InlineZoneStatusSubscription.md)
 
 ### Authorization
 
@@ -926,7 +926,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusSubListGET**
-> InlineResponseNotificationSubscriptionList ZoneStatusSubListGET(ctx, )
+> InlineNotificationSubscriptionList ZoneStatusSubListGET(ctx, )
 Retrieves all active subscriptions to zone status notifications
 
 This operation is used for retrieving all active subscriptions to zone status change notifications.
@@ -936,7 +936,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseNotificationSubscriptionList**](InlineResponseNotificationSubscriptionList.md)
+[**InlineNotificationSubscriptionList**](InlineNotificationSubscriptionList.md)
 
 ### Authorization
 
@@ -950,7 +950,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusSubPOST**
-> InlineResponseZoneStatusNotificationSubscription ZoneStatusSubPOST(ctx, body)
+> InlineZoneStatusSubscription ZoneStatusSubPOST(ctx, body)
 Creates a subscription for zone status notification
 
 Creates a subscription to the Location Service for zone status change notification.
@@ -960,11 +960,11 @@ Creates a subscription to the Location Service for zone status change notificati
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyZoneStatusNotificationSubscription**](InlineRequestBodyZoneStatusNotificationSubscription.md)| Request body to a zone status subscription request | 
+  **body** | [**InlineZoneStatusSubscription**](InlineZoneStatusSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponseZoneStatusNotificationSubscription**](InlineResponseZoneStatusNotificationSubscription.md)
+[**InlineZoneStatusSubscription**](InlineZoneStatusSubscription.md)
 
 ### Authorization
 
@@ -978,7 +978,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZoneStatusSubPUT**
-> InlineResponseZoneStatusNotificationSubscription ZoneStatusSubPUT(ctx, body, subscriptionId)
+> InlineZoneStatusSubscription ZoneStatusSubPUT(ctx, body, subscriptionId)
 Updates a subscription information
 
 Updates a subscription.
@@ -988,12 +988,12 @@ Updates a subscription.
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineRequestBodyZoneStatusNotificationSubscription**](InlineRequestBodyZoneStatusNotificationSubscription.md)| Request body to a zone status subscription request | 
+  **body** | [**InlineZoneStatusSubscription**](InlineZoneStatusSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Identifier, specifically the \&quot;self\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponseZoneStatusNotificationSubscription**](InlineResponseZoneStatusNotificationSubscription.md)
+[**InlineZoneStatusSubscription**](InlineZoneStatusSubscription.md)
 
 ### Authorization
 
@@ -1007,7 +1007,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonesGET**
-> InlineResponseZoneList ZonesGET(ctx, )
+> InlineZoneList ZonesGET(ctx, )
 Zones information Lookup
 
 Used to get a list of identifiers for zones authorized for use by the application.
@@ -1017,7 +1017,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**InlineResponseZoneList**](InlineResponseZoneList.md)
+[**InlineZoneList**](InlineZoneList.md)
 
 ### Authorization
 
@@ -1031,7 +1031,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **ZonesGetById**
-> InlineResponseZoneInfo ZonesGetById(ctx, zoneId)
+> InlineZoneInfo ZonesGetById(ctx, zoneId)
 Zones information Lookup
 
 Used to get the information for an authorized zone for use by the application.
@@ -1045,7 +1045,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponseZoneInfo**](InlineResponseZoneInfo.md)
+[**InlineZoneInfo**](InlineZoneInfo.md)
 
 ### Authorization
 

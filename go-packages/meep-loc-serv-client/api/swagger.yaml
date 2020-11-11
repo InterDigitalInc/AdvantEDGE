@@ -78,47 +78,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseTerminalDistance'
+                $ref: '#/components/schemas/InlineTerminalDistance'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/users:
     get:
@@ -167,47 +167,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseUserList'
+                $ref: '#/components/schemas/InlineUserList'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones:
     get:
@@ -223,47 +223,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZoneList'
+                $ref: '#/components/schemas/InlineZoneList'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}:
     get:
@@ -285,51 +285,51 @@ paths:
         x-exportParamName: ZoneId
       responses:
         "200":
-          description: Successful response to a zone Id request
+          description: Successful response to an access point Id request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZoneInfo'
+                $ref: '#/components/schemas/InlineZoneInfo'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}/accessPoints:
     get:
@@ -365,47 +365,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseAccessPointList'
+                $ref: '#/components/schemas/InlineAccessPointList'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}/accessPoints/{accessPointId}:
     get:
@@ -440,47 +440,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseAccessPointInfo'
+                $ref: '#/components/schemas/InlineAccessPointInfo'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /subscriptions/area/circle:
     get:
@@ -496,7 +496,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   circleNotificationSubscription:
@@ -522,14 +522,33 @@ paths:
         notification.
       operationId: areaCircleSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyCircleNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineCircleNotificationSubscription'
+            example:
+              circleNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:10.0.0.1
+                checkImmediate: true
+                enteringLeavingCriteria: Entering
+                frequency: 10
+                latitude: -80.88
+                longitude: 41.277
+                radius: 500
+                trackingAccuracy: 10
+        required: true
       responses:
         "201":
-          description: Response to an area subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseCircleNotificationSubscription'
+                $ref: '#/components/schemas/InlineCircleNotificationSubscription'
               example:
                 circleNotificationSubscription:
                   clientCorrelator: "0123"
@@ -551,40 +570,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/circleNotificationSubscription.callbackReference.notifyURL}':
@@ -598,28 +617,25 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        subscriptionNotification:
-                          $ref: '#/components/schemas/SubscriptionNotification'
-                      example:
-                        subscriptionNotification:
-                          enteringLeavingCriteria: Entering
-                          isFinalNotification: false,
-                          link:
-                            rel: CircleNotificationSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/area/circle/sub123
-                          terminalLocation:
-                            address: acr:10.0.0.1
-                            currentLocation:
-                              accuracy: 100
-                              altitude: 1001.0
-                              latitude: -80.86302
-                              longitude: 41.277306
-                              timestamp:
-                                seconds: 1483231138
-                                nanoSeconds": 0
-                            locationRetrievalStatus: Retrieved
+                      $ref: '#/components/schemas/InlineSubscriptionNotification'
+                    example:
+                      subscriptionNotification:
+                        enteringLeavingCriteria: Entering
+                        isFinalNotification: false,
+                        link:
+                          rel: CircleNotificationSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/area/circle/sub123
+                        terminalLocation:
+                          address: acr:10.0.0.1
+                          currentLocation:
+                            accuracy: 100
+                            altitude: 1001.0
+                            latitude: -80.86302
+                            longitude: 41.277306
+                            timestamp:
+                              seconds: 1483231138
+                              nanoSeconds": 0
+                          locationRetrievalStatus: Retrieved
                 required: true
               responses:
                 "204":
@@ -646,11 +662,11 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to an area subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseCircleNotificationSubscription'
+                $ref: '#/components/schemas/InlineCircleNotificationSubscription'
               example:
                 circleNotificationSubscription:
                   clientCorrelator: "0123"
@@ -672,40 +688,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -726,14 +742,34 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyCircleNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineCircleNotificationSubscription'
+            example:
+              circleNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:10.0.0.1
+                checkImmediate: true
+                enteringLeavingCriteria: Entering
+                frequency: 10
+                latitude: -80.88
+                longitude: 41.277
+                radius: 500
+                trackingAccuracy: 10
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
+        required: true
       responses:
         "200":
-          description: Response to an area subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseCircleNotificationSubscription'
+                $ref: '#/components/schemas/InlineCircleNotificationSubscription'
               example:
                 circleNotificationSubscription:
                   clientCorrelator: "0123"
@@ -755,34 +791,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -790,7 +826,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -802,7 +838,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -816,7 +852,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -844,27 +880,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/distance:
     get:
@@ -876,11 +912,11 @@ paths:
       operationId: distanceSubListGET
       responses:
         "200":
-          description: Response to retrieve distance subscriptions
+          description: Response to retrieve area subscriptions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   distanceNotificationSubscription:
@@ -907,14 +943,34 @@ paths:
         notification.
       operationId: distanceSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyDistanceNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineDistanceNotificationSubscription'
+            example:
+              distanceNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                monitoredAddress:
+                - acr:10.0.0.1
+                - acr:10.0.0.2
+                checkImmediate: true
+                criteria: AllWithinDistance
+                distance: 100
+                frequency: 10
+                referenceAddress: acr:10.0.0.3
+                trackingAccuracy: 10
+        required: true
       responses:
         "201":
-          description: Response to a distance subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseDistanceNotificationSubscription'
+                $ref: '#/components/schemas/InlineDistanceNotificationSubscription'
               example:
                 distanceNotificationSubscription:
                   clientCorrelator: "0123"
@@ -937,40 +993,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/distanceNotificationSubscription.callbackReference.notifyURL}':
@@ -984,38 +1040,35 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        subscriptionNotification:
-                          $ref: '#/components/schemas/SubscriptionNotification'
-                      example:
-                        subscriptionNotification:
-                          distanceCriteria: AllWithinDistance
-                          isFinalNotification: false,
-                          link:
-                            rel: DistanceNotificationSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/distance/sub123
-                          terminalLocation:
-                          - address: acr:10.0.0.1
-                            currentLocation:
-                              accuracy: 100
-                              altitude: 1001.0
-                              latitude: -80.86302
-                              longitude: 41.277306
-                              timestamp:
-                                seconds: 1483231138
-                                nanoSeconds": 0
-                            locationRetrievalStatus: Retrieved
-                          - address: acr:10.0.0.2
-                            currentLocation:
-                              accuracy: 100
-                              altitude: 1001.0
-                              latitude: -80.86301
-                              longitude: 41.277306
-                              timestamp:
-                                seconds: 1483231138
-                                nanoSeconds": 0
-                            locationRetrievalStatus: Retrieved
+                      $ref: '#/components/schemas/InlineSubscriptionNotification'
+                    example:
+                      subscriptionNotification:
+                        distanceCriteria: AllWithinDistance
+                        isFinalNotification: false,
+                        link:
+                          rel: DistanceNotificationSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/distance/sub123
+                        terminalLocation:
+                        - address: acr:10.0.0.1
+                          currentLocation:
+                            accuracy: 100
+                            altitude: 1001.0
+                            latitude: -80.86302
+                            longitude: 41.277306
+                            timestamp:
+                              seconds: 1483231138
+                              nanoSeconds": 0
+                          locationRetrievalStatus: Retrieved
+                        - address: acr:10.0.0.2
+                          currentLocation:
+                            accuracy: 100
+                            altitude: 1001.0
+                            latitude: -80.86301
+                            longitude: 41.277306
+                            timestamp:
+                              seconds: 1483231138
+                              nanoSeconds": 0
+                          locationRetrievalStatus: Retrieved
                 required: true
               responses:
                 "204":
@@ -1042,11 +1095,11 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to a distance subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseDistanceNotificationSubscription'
+                $ref: '#/components/schemas/InlineDistanceNotificationSubscription'
               example:
                 distanceNotificationSubscription:
                   clientCorrelator: "0123"
@@ -1069,40 +1122,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -1123,14 +1176,35 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyDistanceNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineDistanceNotificationSubscription'
+            example:
+              distanceNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                monitoredAddress:
+                - acr:10.0.0.1
+                - acr:10.0.0.2
+                checkImmediate: true
+                criteria: AllWithinDistance
+                distance: 100
+                frequency: 10
+                referenceAddress: acr:10.0.0.3
+                trackingAccuracy: 10
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
+        required: true
       responses:
         "200":
-          description: Response to a distance subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseDistanceNotificationSubscription'
+                $ref: '#/components/schemas/InlineDistanceNotificationSubscription'
               example:
                 distanceNotificationSubscription:
                   clientCorrelator: "0123"
@@ -1153,34 +1227,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1188,7 +1262,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1200,7 +1274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -1214,7 +1288,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1242,27 +1316,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/periodic:
     get:
@@ -1274,11 +1348,11 @@ paths:
       operationId: periodicSubListGET
       responses:
         "200":
-          description: Response to retrieve periodic subscriptions
+          description: Response to retrieve area subscriptions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   periodicNotificationSubscription:
@@ -1298,14 +1372,28 @@ paths:
       description: Creates a subscription to the Location Service for a periodic notification.
       operationId: periodicSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyPeriodicNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlinePeriodicNotificationSubscription'
+            example:
+              periodicNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:10.0.0.1
+                frequency: 10
+                requestedAccuracy: 10
+        required: true
       responses:
         "201":
-          description: Response to a periodic subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponsePeriodicNotificationSubscription'
+                $ref: '#/components/schemas/InlinePeriodicNotificationSubscription'
               example:
                 periodicNotificationSubscription:
                   clientCorrelator: "0123"
@@ -1322,40 +1410,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/periodicNotificationSubscription.callbackReference.notifyURL}':
@@ -1369,27 +1457,24 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        subscriptionNotification:
-                          $ref: '#/components/schemas/SubscriptionNotification'
-                      example:
-                        subscriptionNotification:
-                          isFinalNotification: false,
-                          link:
-                            rel: PeriodicNotificationSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/periodic/sub123
-                          terminalLocation:
-                            address: acr:10.0.0.1
-                            currentLocation:
-                              accuracy: 100
-                              altitude: 1001.0
-                              latitude: -80.86302
-                              longitude: 41.277306
-                              timestamp:
-                                seconds: 1483231138
-                                nanoSeconds": 0
-                            locationRetrievalStatus: Retrieved
+                      $ref: '#/components/schemas/InlineSubscriptionNotification'
+                    example:
+                      subscriptionNotification:
+                        isFinalNotification: false,
+                        link:
+                          rel: PeriodicNotificationSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/periodic/sub123
+                        terminalLocation:
+                          address: acr:10.0.0.1
+                          currentLocation:
+                            accuracy: 100
+                            altitude: 1001.0
+                            latitude: -80.86302
+                            longitude: 41.277306
+                            timestamp:
+                              seconds: 1483231138
+                              nanoSeconds": 0
+                          locationRetrievalStatus: Retrieved
                 required: true
               responses:
                 "204":
@@ -1416,11 +1501,11 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to a periodic subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponsePeriodicNotificationSubscription'
+                $ref: '#/components/schemas/InlinePeriodicNotificationSubscription'
               example:
                 periodicNotificationSubscription:
                   clientCorrelator: "0123"
@@ -1437,40 +1522,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -1491,14 +1576,29 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyPeriodicNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlinePeriodicNotificationSubscription'
+            example:
+              periodicNotificationSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  callbackData: "1234"
+                  notifyURL: http://clientApp.example.com/location_notifications/123456
+                address: acr:10.0.0.1
+                frequency: 10
+                requestedAccuracy: 10
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
+        required: true
       responses:
         "200":
-          description: Response to a periodic subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponsePeriodicNotificationSubscription'
+                $ref: '#/components/schemas/InlinePeriodicNotificationSubscription'
               example:
                 periodicNotificationSubscription:
                   clientCorrelator: "0123"
@@ -1515,34 +1615,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1550,7 +1650,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1562,7 +1662,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -1576,7 +1676,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1604,27 +1704,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/userTracking:
     get:
@@ -1640,7 +1740,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   userTrackingSubscription:
@@ -1667,14 +1767,27 @@ paths:
         change notification.
       operationId: userTrackingSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyUserTrackingNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineUserTrackingSubscription'
+            example:
+              userTrackingSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                address: acr:10.0.0.1
+                userEventCriteria:
+                - Transferring
+        required: true
       responses:
         "201":
-          description: Response to a user tracking subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseUserTrackingNotificationSubscription'
+                $ref: '#/components/schemas/InlineUserTrackingSubscription'
               example:
                 userTrackingSubscription:
                   clientCorrelator: "0123"
@@ -1690,40 +1803,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/userTrackingSubscription.callbackReference.notifyURL}':
@@ -1737,24 +1850,21 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        zonalPresenceNotification:
-                          $ref: '#/components/schemas/ZonalPresenceNotification'
-                      example:
-                        zonalPresenceNotification:
-                          clientCorrelator: "0123"
-                          zoneId: zone01
-                          address: acr:10.0.0.1
-                          userEventType: Transferring
-                          currentAccessPointId: ap2
-                          previousAccessPointId: ap1
-                          timestamp:
-                            seconds: 1483231138
-                            nanoseconds: 0
-                          link:
-                            rel: UserTrackingSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
+                      $ref: '#/components/schemas/InlineZonalPresenceNotification'
+                    example:
+                      zonalPresenceNotification:
+                        clientCorrelator: "0123"
+                        zoneId: zone01
+                        address: acr:10.0.0.1
+                        userEventType: Transferring
+                        currentAccessPointId: ap2
+                        previousAccessPointId: ap1
+                        timestamp:
+                          seconds: 1483231138
+                          nanoseconds: 0
+                        link:
+                          rel: UserTrackingSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
                 required: true
               responses:
                 "204":
@@ -1781,11 +1891,11 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to a user tracking subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseUserTrackingNotificationSubscription'
+                $ref: '#/components/schemas/InlineUserTrackingSubscription'
               example:
                 userTrackingSubscription:
                   clientCorrelator: "0123"
@@ -1801,40 +1911,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -1855,14 +1965,28 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyUserTrackingNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineUserTrackingSubscription'
+            example:
+              userTrackingSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                address: acr:10.0.0.1
+                userEventCriteria:
+                - Transferring
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
+        required: true
       responses:
         "200":
-          description: Response to a user tracking subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseUserTrackingNotificationSubscription'
+                $ref: '#/components/schemas/InlineUserTrackingSubscription'
               example:
                 userTrackingSubscription:
                   clientCorrelator: "0123"
@@ -1878,34 +2002,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1913,7 +2037,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1925,7 +2049,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -1939,7 +2063,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1967,27 +2091,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/zonalTraffic:
     get:
@@ -2003,7 +2127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   zonalTrafficSubscription:
@@ -2015,7 +2139,7 @@ paths:
                     userEventCriteria:
                     - Transferring
                   - clientCorrelator: "0124"
-                    resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/suubscription124
+                    resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription124
                     callbackReference:
                       notifyURL: http://clientApp.example.com/location_notifications/123456
                     zoneId: zone02
@@ -2030,14 +2154,27 @@ paths:
         change notification.
       operationId: zonalTrafficSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyZonalTrafficNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineZonalTrafficSubscription'
+            example:
+              zonalTrafficSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                zoneId: zone01
+                userEventCriteria:
+                - Transferring
+        required: true
       responses:
         "201":
-          description: Response to a zonal traffic subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZonalTrafficNotificationSubscription'
+                $ref: '#/components/schemas/InlineZonalTrafficSubscription'
               example:
                 zonalTrafficSubscription:
                   clientCorrelator: "0123"
@@ -2053,40 +2190,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/zonalTrafficSubscription.callbackReference.notifyURL}':
@@ -2100,24 +2237,21 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        zonalPresenceNotification:
-                          $ref: '#/components/schemas/ZonalPresenceNotification'
-                      example:
-                        zonalPresenceNotification:
-                          clientCorrelator: "0123"
-                          zoneId: zone01
-                          address: acr:10.0.0.1
-                          userEventType: Transferring
-                          currentAccessPointId: ap2
-                          previousAccessPointId: ap1
-                          timestamp:
-                            seconds: 1483231138
-                            nanoseconds: 0
-                          link:
-                            rel: ZonalTrafficSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
+                      $ref: '#/components/schemas/InlineZonalPresenceNotification'
+                    example:
+                      zonalPresenceNotification:
+                        clientCorrelator: "0123"
+                        zoneId: zone01
+                        address: acr:10.0.0.1
+                        userEventType: Transferring
+                        currentAccessPointId: ap2
+                        previousAccessPointId: ap1
+                        timestamp:
+                          seconds: 1483231138
+                          nanoseconds: 0
+                        link:
+                          rel: ZonalTrafficSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
                 required: true
               responses:
                 "204":
@@ -2144,11 +2278,11 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to a zonal traffic subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZonalTrafficNotificationSubscription'
+                $ref: '#/components/schemas/InlineZonalTrafficSubscription'
               example:
                 zonalTrafficSubscription:
                   clientCorrelator: "0123"
@@ -2164,40 +2298,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -2218,14 +2352,28 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyZonalTrafficNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineZonalTrafficSubscription'
+            example:
+              zonalTrafiicSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                zoneId: zone01
+                userEventCriteria:
+                - Transferring
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
+        required: true
       responses:
         "200":
-          description: Response to a zonal traffic subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZonalTrafficNotificationSubscription'
+                $ref: '#/components/schemas/InlineZonalTrafficSubscription'
               example:
                 zonalTrafficSubscription:
                   clientCorrelator: "0123"
@@ -2241,34 +2389,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -2276,7 +2424,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -2288,7 +2436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -2302,7 +2450,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -2330,27 +2478,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/zoneStatus:
     get:
@@ -2366,7 +2514,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
+                $ref: '#/components/schemas/InlineNotificationSubscriptionList'
               example:
                 notificationSubscriptionList:
                   zoneStatusSubscription:
@@ -2387,64 +2535,78 @@ paths:
         change notification.
       operationId: zoneStatusSubPOST
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyZoneStatusNotificationSubscriptionPost'
+        description: Subscription to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineZoneStatusSubscription'
+            example:
+              zoneStatusSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                zoneId: zone01
+                numberOfUsersZoneThreshold: 500
+                operationStatus:
+                - Serviceable
+        required: true
       responses:
         "201":
-          description: Response to a zone status subscription operation
+          description: Successful subscription
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZoneStatusNotificationSubscription'
+                $ref: '#/components/schemas/InlineZoneStatusSubscription'
               example:
                 zoneStatusSubscription:
                   clientCorrelator: "0123"
-                  resourceURL: http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123
                   callbackReference:
-                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                    notifyURL: http://my.callback.com/location_notifications/some-id
                   zoneId: zone01
                   numberOfUsersZoneThreshold: 500
                   operationStatus:
                   - Serviceable
+                  resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/zoneStatusSubscription.callbackReference.notifyURL}':
@@ -2458,24 +2620,21 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        zoneStatusNotification:
-                          $ref: '#/components/schemas/ZoneStatusNotification'
-                      example:
-                        zoneStatusNotification:
-                          clientCorrelator: "0123"
-                          zoneId: zone01
-                          accessPointId: poa1
-                          operationStatus: Serviceable
-                          numberOfUsersInZone: "20"
-                          numberOfUsersInAP: "12"
-                          timestamp:
-                            seconds: 1483231138
-                            nanoseconds: 0
-                          link:
-                            rel: ZoneStatusSubscription
-                            href: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
+                      $ref: '#/components/schemas/InlineZoneStatusNotification'
+                    example:
+                      zoneStatusNotification:
+                        clientCorrelator: "0123"
+                        zoneId: zone01
+                        accessPointId: poa1
+                        operationStatus: Serviceable
+                        numberOfUsersInZone: "20"
+                        numberOfUsersInAP: "12"
+                        timestamp:
+                          seconds: 1483231138
+                          nanoseconds: 0
+                        link:
+                          rel: ZoneStatusSubscription
+                          href: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
                 required: true
               responses:
                 "204":
@@ -2502,61 +2661,61 @@ paths:
         x-exportParamName: SubscriptionId
       responses:
         "200":
-          description: Response to a zone status subscription operation
+          description: Subscription information regarding subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZoneStatusNotificationSubscription'
+                $ref: '#/components/schemas/InlineZoneStatusSubscription'
               example:
                 zoneStatusSubscription:
                   clientCorrelator: "0123"
-                  resourceURL: http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123
                   callbackReference:
-                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                    notifyURL: http://my.callback.com/location_notifications/some-id
                   zoneId: zone01
                   numberOfUsersZoneThreshold: 500
                   operationStatus:
                   - Serviceable
+                  resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -2577,58 +2736,73 @@ paths:
           format: uri
         x-exportParamName: SubscriptionId
       requestBody:
-        $ref: '#/components/requestBodies/InlineRequestBodyZoneStatusNotificationSubscriptionPut'
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineZoneStatusSubscription'
+            example:
+              zoneStatusSubscription:
+                clientCorrelator: "0123"
+                callbackReference:
+                  notifyURL: http://my.callback.com/location_notifications/some-id
+                zoneId: zone01
+                numberOfUsersZoneThreshold: 500
+                operationStatus:
+                - Serviceable
+                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
+        required: true
       responses:
         "200":
-          description: Response to a zone status subscription operation
+          description: Successful subscription to response to subscription notifications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineResponseZoneStatusNotificationSubscription'
+                $ref: '#/components/schemas/InlineZoneStatusSubscription'
               example:
                 zoneStatusSubscription:
                   clientCorrelator: "0123"
-                  resourceURL: http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123
                   callbackReference:
-                    notifyURL: http://clientApp.example.com/location_notifications/123456
+                    notifyURL: http://my.callback.com/location_notifications/some-id
                   zoneId: zone01
                   numberOfUsersZoneThreshold: 500
                   operationStatus:
                   - Serviceable
+                  resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -2636,7 +2810,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -2648,7 +2822,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -2662,7 +2836,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -2690,27 +2864,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
 components:
   schemas:
@@ -4389,138 +4563,53 @@ components:
         clientCorrelator: clientCorrelator
         zoneId: zoneId
         numberOfUsersZoneThreshold: 1
-    InlineResponseTerminalDistance:
+    InlineAccessPointInfo:
       type: object
       properties:
-        terminalDistance:
-          $ref: '#/components/schemas/TerminalDistance'
-      description: Successful response to a distance request
+        accessPointInfo:
+          $ref: '#/components/schemas/AccessPointInfo'
       example:
-        terminalDistance:
-          distance: 6
-          accuracy: 0
-          timestamp:
-            seconds: 5
-            nanoSeconds: 1
-    InlineResponseUserList:
-      type: object
-      properties:
-        userList:
-          $ref: '#/components/schemas/UserList'
-      description: Successful response to users request
-      example:
-        userList:
+        accessPointInfo:
+          locationInfo:
+            altitude: 5.962134
+            orientationMajorAxis: 4
+            shape: 7
+            confidence: 5
+            latitude:
+            - 9.301444
+            - 9.301444
+            offsetAngle: 2
+            accuracy: 0
+            includedAngle: 2
+            velocity:
+              verticalUncertainty: 4
+              horizontalSpeed: 1
+              bearing: 1
+              uncertainty: 6
+              verticalSpeed: 1
+              velocityType: 7
+            accuracySemiMinor: 1
+            innerRadius: 7
+            accuracyAltitude: 6
+            uncertaintyRadius: 1
+            longitude:
+            - 3.6160767
+            - 3.6160767
+            timestamp:
+              seconds: 5
+              nanoSeconds: 1
+          operationStatus: Serviceable
           resourceURL: resourceURL
-          user:
-          - locationInfo:
-              altitude: 5.962134
-              orientationMajorAxis: 4
-              shape: 7
-              confidence: 5
-              latitude:
-              - 9.301444
-              - 9.301444
-              offsetAngle: 2
-              accuracy: 0
-              includedAngle: 2
-              velocity:
-                verticalUncertainty: 4
-                horizontalSpeed: 1
-                bearing: 1
-                uncertainty: 6
-                verticalSpeed: 1
-                velocityType: 7
-              accuracySemiMinor: 1
-              innerRadius: 7
-              accuracyAltitude: 6
-              uncertaintyRadius: 1
-              longitude:
-              - 3.6160767
-              - 3.6160767
-              timestamp:
-                seconds: 5
-                nanoSeconds: 1
-            address: http://example.com/aeiou
-            resourceURL: resourceURL
-            accessPointId: accessPointId
-            zoneId: zoneId
-            ancillaryInfo: ancillaryInfo
-            contextLocationInfo: contextLocationInfo
-            timestamp: null
-          - locationInfo:
-              altitude: 5.962134
-              orientationMajorAxis: 4
-              shape: 7
-              confidence: 5
-              latitude:
-              - 9.301444
-              - 9.301444
-              offsetAngle: 2
-              accuracy: 0
-              includedAngle: 2
-              velocity:
-                verticalUncertainty: 4
-                horizontalSpeed: 1
-                bearing: 1
-                uncertainty: 6
-                verticalSpeed: 1
-                velocityType: 7
-              accuracySemiMinor: 1
-              innerRadius: 7
-              accuracyAltitude: 6
-              uncertaintyRadius: 1
-              longitude:
-              - 3.6160767
-              - 3.6160767
-              timestamp:
-                seconds: 5
-                nanoSeconds: 1
-            address: http://example.com/aeiou
-            resourceURL: resourceURL
-            accessPointId: accessPointId
-            zoneId: zoneId
-            ancillaryInfo: ancillaryInfo
-            contextLocationInfo: contextLocationInfo
-            timestamp: null
-    InlineResponseZoneList:
-      type: object
-      properties:
-        zoneList:
-          $ref: '#/components/schemas/ZoneList'
-      description: Successful response to zones request
-      example:
-        zoneList:
-          resourceURL: resourceURL
-          zone:
-          - resourceURL: resourceURL
-            numberOfUsers: 1
-            zoneId: zoneId
-            numberOfAccessPoints: 0
-            numberOfUnserviceableAccessPoints: 6
-          - resourceURL: resourceURL
-            numberOfUsers: 1
-            zoneId: zoneId
-            numberOfAccessPoints: 0
-            numberOfUnserviceableAccessPoints: 6
-    InlineResponseZoneInfo:
-      type: object
-      properties:
-        zoneInfo:
-          $ref: '#/components/schemas/ZoneInfo'
-      description: Successful response to zone id request
-      example:
-        zoneInfo:
-          resourceURL: resourceURL
-          numberOfUsers: 1
-          zoneId: zoneId
-          numberOfAccessPoints: 0
-          numberOfUnserviceableAccessPoints: 6
-    InlineResponseAccessPointList:
+          numberOfUsers: 0
+          timezone: timezone
+          accessPointId: accessPointId
+          interestRealm: interestRealm
+          connectionType: Femto
+    InlineAccessPointList:
       type: object
       properties:
         accessPointList:
           $ref: '#/components/schemas/AccessPointList'
-      description: Successful response to access points request
       example:
         accessPointList:
           resourceURL: resourceURL
@@ -4596,57 +4685,261 @@ components:
             accessPointId: accessPointId
             interestRealm: interestRealm
             connectionType: Femto
-    InlineResponseAccessPointInfo:
+    InlineTerminalDistance:
       type: object
       properties:
-        accessPointInfo:
-          $ref: '#/components/schemas/AccessPointInfo'
-      description: Successful response to an access point id request
+        terminalDistance:
+          $ref: '#/components/schemas/TerminalDistance'
       example:
-        accessPointInfo:
-          locationInfo:
-            altitude: 5.962134
-            orientationMajorAxis: 4
-            shape: 7
-            confidence: 5
-            latitude:
-            - 9.301444
-            - 9.301444
-            offsetAngle: 2
-            accuracy: 0
-            includedAngle: 2
-            velocity:
-              verticalUncertainty: 4
-              horizontalSpeed: 1
-              bearing: 1
-              uncertainty: 6
-              verticalSpeed: 1
-              velocityType: 7
-            accuracySemiMinor: 1
-            innerRadius: 7
-            accuracyAltitude: 6
-            uncertaintyRadius: 1
-            longitude:
-            - 3.6160767
-            - 3.6160767
-            timestamp:
-              seconds: 5
-              nanoSeconds: 1
-          operationStatus: Serviceable
+        terminalDistance:
+          distance: 6
+          accuracy: 0
+          timestamp:
+            seconds: 5
+            nanoSeconds: 1
+    InlineUserList:
+      type: object
+      properties:
+        userList:
+          $ref: '#/components/schemas/UserList'
+      example:
+        userList:
           resourceURL: resourceURL
-          numberOfUsers: 0
-          timezone: timezone
-          accessPointId: accessPointId
-          interestRealm: interestRealm
-          connectionType: Femto
-    InlineResponseNotificationSubscriptionList:
+          user:
+          - locationInfo:
+              altitude: 5.962134
+              orientationMajorAxis: 4
+              shape: 7
+              confidence: 5
+              latitude:
+              - 9.301444
+              - 9.301444
+              offsetAngle: 2
+              accuracy: 0
+              includedAngle: 2
+              velocity:
+                verticalUncertainty: 4
+                horizontalSpeed: 1
+                bearing: 1
+                uncertainty: 6
+                verticalSpeed: 1
+                velocityType: 7
+              accuracySemiMinor: 1
+              innerRadius: 7
+              accuracyAltitude: 6
+              uncertaintyRadius: 1
+              longitude:
+              - 3.6160767
+              - 3.6160767
+              timestamp:
+                seconds: 5
+                nanoSeconds: 1
+            address: http://example.com/aeiou
+            resourceURL: resourceURL
+            accessPointId: accessPointId
+            zoneId: zoneId
+            ancillaryInfo: ancillaryInfo
+            contextLocationInfo: contextLocationInfo
+            timestamp: null
+          - locationInfo:
+              altitude: 5.962134
+              orientationMajorAxis: 4
+              shape: 7
+              confidence: 5
+              latitude:
+              - 9.301444
+              - 9.301444
+              offsetAngle: 2
+              accuracy: 0
+              includedAngle: 2
+              velocity:
+                verticalUncertainty: 4
+                horizontalSpeed: 1
+                bearing: 1
+                uncertainty: 6
+                verticalSpeed: 1
+                velocityType: 7
+              accuracySemiMinor: 1
+              innerRadius: 7
+              accuracyAltitude: 6
+              uncertaintyRadius: 1
+              longitude:
+              - 3.6160767
+              - 3.6160767
+              timestamp:
+                seconds: 5
+                nanoSeconds: 1
+            address: http://example.com/aeiou
+            resourceURL: resourceURL
+            accessPointId: accessPointId
+            zoneId: zoneId
+            ancillaryInfo: ancillaryInfo
+            contextLocationInfo: contextLocationInfo
+            timestamp: null
+    InlineZoneInfo:
+      type: object
+      properties:
+        zoneInfo:
+          $ref: '#/components/schemas/ZoneInfo'
+      example:
+        zoneInfo:
+          resourceURL: resourceURL
+          numberOfUsers: 1
+          zoneId: zoneId
+          numberOfAccessPoints: 0
+          numberOfUnserviceableAccessPoints: 6
+    InlineZoneList:
+      type: object
+      properties:
+        zoneList:
+          $ref: '#/components/schemas/ZoneList'
+      example:
+        zoneList:
+          resourceURL: resourceURL
+          zone:
+          - resourceURL: resourceURL
+            numberOfUsers: 1
+            zoneId: zoneId
+            numberOfAccessPoints: 0
+            numberOfUnserviceableAccessPoints: 6
+          - resourceURL: resourceURL
+            numberOfUsers: 1
+            zoneId: zoneId
+            numberOfAccessPoints: 0
+            numberOfUnserviceableAccessPoints: 6
+    InlineCircleNotificationSubscription:
+      type: object
+      properties:
+        circleNotificationSubscription:
+          $ref: '#/components/schemas/CircleNotificationSubscription'
+      example:
+        circleNotificationSubscription:
+          requester: requester
+          trackingAccuracy: 7.0614014
+          address:
+          - address
+          - address
+          callbackReference:
+            notificationFormat: XML
+            callbackData: callbackData
+            notifyURL: notifyURL
+          latitude: 5.962134
+          count: 0
+          link:
+          - rel: rel
+            href: href
+          - rel: rel
+            href: href
+          frequency: 1
+          duration: 6
+          enteringLeavingCriteria: Entering
+          resourceURL: resourceURL
+          clientCorrelator: clientCorrelator
+          checkImmediate: true
+          radius: 2.302136
+          longitude: 5.637377
+    InlineDistanceNotificationSubscription:
+      type: object
+      properties:
+        distanceNotificationSubscription:
+          $ref: '#/components/schemas/DistanceNotificationSubscription'
+      example:
+        distanceNotificationSubscription:
+          requester: requester
+          trackingAccuracy: 7.386282
+          distance: 3.6160767
+          callbackReference: null
+          criteria: AllWithinDistance
+          count: 9
+          link:
+          - null
+          - null
+          frequency: 4
+          duration: 2
+          monitoredAddress:
+          - monitoredAddress
+          - monitoredAddress
+          referenceAddress:
+          - referenceAddress
+          - referenceAddress
+          resourceURL: resourceURL
+          clientCorrelator: clientCorrelator
+          checkImmediate: true
+    InlinePeriodicNotificationSubscription:
+      type: object
+      properties:
+        periodicNotificationSubscription:
+          $ref: '#/components/schemas/PeriodicNotificationSubscription'
+      example:
+        periodicNotificationSubscription:
+          duration: 1
+          requester: requester
+          address:
+          - address
+          - address
+          resourceURL: resourceURL
+          callbackReference: null
+          clientCorrelator: clientCorrelator
+          link:
+          - null
+          - null
+          frequency: 1
+          requestedAccuracy: 1
+    InlineUserTrackingSubscription:
+      type: object
+      properties:
+        userTrackingSubscription:
+          $ref: '#/components/schemas/UserTrackingSubscription'
+      example:
+        userTrackingSubscription:
+          address: address
+          resourceURL: resourceURL
+          callbackReference: null
+          clientCorrelator: clientCorrelator
+          userEventCriteria:
+          - Entering
+          - Entering
+    InlineZonalTrafficSubscription:
+      type: object
+      properties:
+        zonalTrafficSubscription:
+          $ref: '#/components/schemas/ZonalTrafficSubscription'
+      example:
+        zonalTrafficSubscription:
+          duration: 6
+          resourceURL: resourceURL
+          callbackReference: null
+          clientCorrelator: clientCorrelator
+          zoneId: zoneId
+          interestRealm:
+          - interestRealm
+          - interestRealm
+          userEventCriteria:
+          - null
+          - null
+    InlineZoneStatusSubscription:
+      type: object
+      properties:
+        zoneStatusSubscription:
+          $ref: '#/components/schemas/ZoneStatusSubscription'
+      example:
+        zoneStatusSubscription:
+          operationStatus:
+          - Serviceable
+          - Serviceable
+          numberOfUsersAPThreshold: 7
+          resourceURL: resourceURL
+          callbackReference: null
+          clientCorrelator: clientCorrelator
+          zoneId: zoneId
+          numberOfUsersZoneThreshold: 1
+    InlineNotificationSubscriptionList:
       required:
       - notificationSubscriptionList
       type: object
       properties:
         notificationSubscriptionList:
           $ref: '#/components/schemas/NotificationSubscriptionList'
-      description: Response to retrieve subscriptions
       example:
         notificationSubscriptionList:
           distanceNotificationSubscription:
@@ -4824,180 +5117,27 @@ components:
             - null
             frequency: 1
             requestedAccuracy: 1
-    InlineResponseCircleNotificationSubscription:
+    InlineSubscriptionNotification:
       type: object
       properties:
-        circleNotificationSubscription:
-          $ref: '#/components/schemas/CircleNotificationSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        circleNotificationSubscription:
-          requester: requester
-          trackingAccuracy: 7.0614014
-          address:
-          - address
-          - address
-          callbackReference:
-            notificationFormat: XML
-            callbackData: callbackData
-            notifyURL: notifyURL
-          latitude: 5.962134
-          count: 0
-          link:
-          - rel: rel
-            href: href
-          - rel: rel
-            href: href
-          frequency: 1
-          duration: 6
-          enteringLeavingCriteria: Entering
-          resourceURL: resourceURL
-          clientCorrelator: clientCorrelator
-          checkImmediate: true
-          radius: 2.302136
-          longitude: 5.637377
-    InlineResponseDistanceNotificationSubscription:
+        subscriptionNotification:
+          $ref: '#/components/schemas/SubscriptionNotification'
+    InlineZonalPresenceNotification:
       type: object
       properties:
-        distanceNotificationSubscription:
-          $ref: '#/components/schemas/DistanceNotificationSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        distanceNotificationSubscription:
-          requester: requester
-          trackingAccuracy: 7.386282
-          distance: 3.6160767
-          callbackReference: null
-          criteria: AllWithinDistance
-          count: 9
-          link:
-          - null
-          - null
-          frequency: 4
-          duration: 2
-          monitoredAddress:
-          - monitoredAddress
-          - monitoredAddress
-          referenceAddress:
-          - referenceAddress
-          - referenceAddress
-          resourceURL: resourceURL
-          clientCorrelator: clientCorrelator
-          checkImmediate: true
-    InlineResponsePeriodicNotificationSubscription:
+        zonalPresenceNotification:
+          $ref: '#/components/schemas/ZonalPresenceNotification'
+    InlineZoneStatusNotification:
       type: object
       properties:
-        periodicNotificationSubscription:
-          $ref: '#/components/schemas/PeriodicNotificationSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        periodicNotificationSubscription:
-          duration: 1
-          requester: requester
-          address:
-          - address
-          - address
-          resourceURL: resourceURL
-          callbackReference: null
-          clientCorrelator: clientCorrelator
-          link:
-          - null
-          - null
-          frequency: 1
-          requestedAccuracy: 1
-    InlineResponseUserTrackingNotificationSubscription:
-      type: object
-      properties:
-        userTrackingNotificationSubscription:
-          $ref: '#/components/schemas/UserTrackingSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        userTrackingNotificationSubscription:
-          address: address
-          resourceURL: resourceURL
-          callbackReference: null
-          clientCorrelator: clientCorrelator
-          userEventCriteria:
-          - Entering
-          - Entering
-    InlineResponseZonalTrafficNotificationSubscription:
-      type: object
-      properties:
-        zonalTrafficNotificationSubscription:
-          $ref: '#/components/schemas/ZonalTrafficSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        zonalTrafficNotificationSubscription:
-          duration: 6
-          resourceURL: resourceURL
-          callbackReference: null
-          clientCorrelator: clientCorrelator
-          zoneId: zoneId
-          interestRealm:
-          - interestRealm
-          - interestRealm
-          userEventCriteria:
-          - null
-          - null
-    InlineResponseZoneStatusNotificationSubscription:
-      type: object
-      properties:
-        zoneStatusNotificationSubscription:
-          $ref: '#/components/schemas/ZoneStatusSubscription'
-      description: Subscription information regarding subscription notifications
-      example:
-        zoneStatusNotificationSubscription:
-          operationStatus:
-          - Serviceable
-          - Serviceable
-          numberOfUsersAPThreshold: 7
-          resourceURL: resourceURL
-          callbackReference: null
-          clientCorrelator: clientCorrelator
-          zoneId: zoneId
-          numberOfUsersZoneThreshold: 1
-    InlineRequestBodyCircleNotificationSubscription:
-      type: object
-      properties:
-        circleNotificationSubscription:
-          $ref: '#/components/schemas/CircleNotificationSubscription'
-      description: Subscription request body
-    InlineRequestBodyDistanceNotificationSubscription:
-      type: object
-      properties:
-        distanceNotificationSubscription:
-          $ref: '#/components/schemas/DistanceNotificationSubscription'
-      description: Subscription request body
-    InlineRequestBodyPeriodicNotificationSubscription:
-      type: object
-      properties:
-        periodicNotificationSubscription:
-          $ref: '#/components/schemas/PeriodicNotificationSubscription'
-      description: Subscription request body
-    InlineRequestBodyUserTrackingNotificationSubscription:
-      type: object
-      properties:
-        userTrackingSubscription:
-          $ref: '#/components/schemas/UserTrackingSubscription'
-      description: Subscription request body
-    InlineRequestBodyZonalTrafficNotificationSubscription:
-      type: object
-      properties:
-        zonalTrafficSubscription:
-          $ref: '#/components/schemas/ZonalTrafficSubscription'
-      description: Subscription request body
-    InlineRequestBodyZoneStatusNotificationSubscription:
-      type: object
-      properties:
-        zoneStatusSubscription:
-          $ref: '#/components/schemas/ZoneStatusSubscription'
-      description: Subscription request body
-    inline_response_400:
+        zoneStatusNotification:
+          $ref: '#/components/schemas/ZoneStatusNotification'
+    InlineProblemDetails:
       type: object
       properties:
         problemDetails:
           $ref: '#/components/schemas/ProblemDetails'
-    inline_response_403:
+    InlineProblemDetailsRequired:
       required:
       - problemDetails
       type: object
@@ -5056,278 +5196,6 @@ components:
         verticalSpeed: 1
         velocityType: 7
   responses:
-    InlineResponseTerminalDistance:
-      description: Successful response to a distance request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseTerminalDistance'
-    InlineResponseUserList:
-      description: Successful response to users request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseUserList'
-    InlineResponseZoneList:
-      description: Successful response to zones request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseZoneList'
-    InlineResponseZoneInfo:
-      description: Successful response to a zone Id request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseZoneInfo'
-    InlineResponseAccessPointList:
-      description: Successful response to an access point Id request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseAccessPointList'
-    InlineResponseAccessPointInfo:
-      description: Successful response to an access point Id request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseAccessPointInfo'
-    InlineResponseCircleNotificationSubscriptionList:
-      description: Response to retrieve area subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              circleNotificationSubscription:
-              - clientCorrelator: "0123"
-                callbackReference:
-                  callbackData: "1234"
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
-                checkImmediate: true
-                enteringLeavingCriteria: Entering
-                frequency: 10
-                latitude: -80.88
-                longitude: 41.277
-                radius: 500
-                trackingAccuracy: 10
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle
-    InlineResponseCircleNotificationSubscription:
-      description: Response to an area subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseCircleNotificationSubscription'
-          example:
-            circleNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              checkImmediate: true
-              enteringLeavingCriteria: Entering
-              frequency: 10
-              latitude: -80.88
-              longitude: 41.277
-              radius: 500
-              trackingAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
-    InlineResponseDistanceNotificationSubscriptionList:
-      description: Response to retrieve distance subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              distanceNotificationSubscription:
-              - clientCorrelator: "0123"
-                callbackReference:
-                  callbackData: "1234"
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                monitoredAddress:
-                - acr:10.0.0.1
-                - acr:10.0.0.2
-                checkImmediate: true
-                criteria: AllWithinDistance
-                distance: 100
-                frequency: 10
-                referenceAddress: acr:10.0.0.3
-                trackingAccuracy: 10
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/sub123
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance
-    InlineResponseDistanceNotificationSubscription:
-      description: Response to a distance subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseDistanceNotificationSubscription'
-          example:
-            distanceNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              monitoredAddress:
-              - acr:10.0.0.1
-              - acr:10.0.0.2
-              checkImmediate: true
-              criteria: AllWithinDistance
-              distance: 100
-              frequency: 10
-              referenceAddress: acr:10.0.0.3
-              trackingAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
-    InlineResponsePeriodicNotificationSubscriptionList:
-      description: Response to retrieve periodic subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              periodicNotificationSubscription:
-              - clientCorrelator: "0123"
-                callbackReference:
-                  callbackData: "1234"
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:10.0.0.1
-                frequency: 10
-                requestedAccuracy: 10
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic
-    InlineResponsePeriodicNotificationSubscription:
-      description: Response to a periodic subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponsePeriodicNotificationSubscription'
-          example:
-            periodicNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              frequency: 10
-              requestedAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
-    InlineResponseUserTrackingNotificationSubscriptionList:
-      description: Response to retrieve user tracking subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              userTrackingSubscription:
-              - clientCorrelator: "0123"
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription123
-                callbackReference:
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:192.0.2.1
-                userEventCriteria:
-                - Transferring
-              - clientCorrelator: "0124"
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/subscription124
-                callbackReference:
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                address: acr:192.0.2.2
-                userEventCriteria:
-                - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking
-    InlineResponseUserTrackingNotificationSubscription:
-      description: Response to a user tracking subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseUserTrackingNotificationSubscription'
-          example:
-            userTrackingSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              address: acr:10.0.0.1
-              userEventCriteria:
-              - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
-    InlineResponseZonalTrafficNotificationSubscriptionList:
-      description: Response to retrieve zonal traffic subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              zonalTrafficSubscription:
-              - clientCorrelator: "0123"
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/subscription123
-                callbackReference:
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                zoneId: zone01
-                userEventCriteria:
-                - Transferring
-              - clientCorrelator: "0124"
-                resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/suubscription124
-                callbackReference:
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                zoneId: zone02
-                userEventCriteria:
-                - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic
-    InlineResponseZonalTrafficNotificationSubscription:
-      description: Response to a zonal traffic subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseZonalTrafficNotificationSubscription'
-          example:
-            zonalTrafficSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              zoneId: zone01
-              userEventCriteria:
-              - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
-    InlineResponseZoneStatusNotificationSubscriptionList:
-      description: Response to retrieve zone status subscriptions
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseNotificationSubscriptionList'
-          example:
-            notificationSubscriptionList:
-              zoneStatusSubscription:
-              - clientCorrelator: "0123"
-                resourceURL: http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123
-                callbackReference:
-                  notifyURL: http://clientApp.example.com/location_notifications/123456
-                zoneId: zone01
-                numberOfUsersZoneThreshold: 500
-                operationStatus:
-                - Serviceable
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus
-    InlineResponseZoneStatusNotificationSubscription:
-      description: Response to a zone status subscription operation
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineResponseZoneStatusNotificationSubscription'
-          example:
-            zoneStatusSubscription:
-              clientCorrelator: "0123"
-              resourceURL: http://example.com/exampleAPI/location/v2/subscriptions/zoneStatus/subscription123
-              callbackReference:
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              zoneId: zone01
-              numberOfUsersZoneThreshold: 500
-              operationStatus:
-              - Serviceable
     "200":
       description: OK
     "204":
@@ -5338,34 +5206,34 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "401":
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "403":
       description: 'Forbidden :  operation is not allowed given the current status
         of the resource.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_403'
+            $ref: '#/components/schemas/InlineProblemDetailsRequired'
     "404":
       description: 'Not Found :  used when a client provided a URI that cannot be
         mapped to a valid resource URI.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "406":
       description: 'Not Acceptable : used to indicate that the server cannot provide
         the any of the content formats supported by the client.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "412":
       description: 'Precondition failed :  used when a condition has failed during
         conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -5373,7 +5241,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "414":
       description: 'URI Too Long : used to indicate that the server is refusing to
         process the request because the request URI is longer than the server is willing
@@ -5381,20 +5249,14 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "415":
       description: 'Unsupported Media Type :  used to indicate that the server or
         the client does not support the content type of the entity body.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "422":
       description: 'Unprocessable Entity : used to indicate that the server understands
         the content type of the request entity and that the syntax of the request
@@ -5406,7 +5268,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
           example:
             application/problem+json:
               ProblemDetails:
@@ -5420,7 +5282,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
   parameters:
     Path.AccessPointId:
       name: accessPointId
@@ -5545,220 +5407,3 @@ components:
         items:
           type: string
       x-exportParamName: ZoneId
-  requestBodies:
-    InlineRequestBodyCircleNotificationSubscriptionPost:
-      description: Request body to an area subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyCircleNotificationSubscription'
-          example:
-            circleNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              checkImmediate: true
-              enteringLeavingCriteria: Entering
-              frequency: 10
-              latitude: -80.88
-              longitude: 41.277
-              radius: 500
-              trackingAccuracy: 10
-      required: true
-    InlineRequestBodyCircleNotificationSubscriptionPut:
-      description: Request body to an area subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyCircleNotificationSubscription'
-          example:
-            circleNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              checkImmediate: true
-              enteringLeavingCriteria: Entering
-              frequency: 10
-              latitude: -80.88
-              longitude: 41.277
-              radius: 500
-              trackingAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle/subscription123
-      required: true
-    InlineRequestBodyDistanceNotificationSubscriptionPost:
-      description: Request body to a distance subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyDistanceNotificationSubscription'
-          example:
-            distanceNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              monitoredAddress:
-              - acr:10.0.0.1
-              - acr:10.0.0.2
-              checkImmediate: true
-              criteria: AllWithinDistance
-              distance: 100
-              frequency: 10
-              referenceAddress: acr:10.0.0.3
-              trackingAccuracy: 10
-      required: true
-    InlineRequestBodyDistanceNotificationSubscriptionPut:
-      description: Request body to a distance subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyDistanceNotificationSubscription'
-          example:
-            distanceNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              monitoredAddress:
-              - acr:10.0.0.1
-              - acr:10.0.0.2
-              checkImmediate: true
-              criteria: AllWithinDistance
-              distance: 100
-              frequency: 10
-              referenceAddress: acr:10.0.0.3
-              trackingAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance/subscription123
-      required: true
-    InlineRequestBodyPeriodicNotificationSubscriptionPost:
-      description: Request body to a periodic subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyPeriodicNotificationSubscription'
-          example:
-            periodicNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              frequency: 10
-              requestedAccuracy: 10
-      required: true
-    InlineRequestBodyPeriodicNotificationSubscriptionPut:
-      description: Request body to a periodic subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyPeriodicNotificationSubscription'
-          example:
-            periodicNotificationSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                callbackData: "1234"
-                notifyURL: http://clientApp.example.com/location_notifications/123456
-              address: acr:10.0.0.1
-              frequency: 10
-              requestedAccuracy: 10
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic/subscription123
-      required: true
-    InlineRequestBodyUserTrackingNotificationSubscriptionPost:
-      description: Request body to a user tracking subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyUserTrackingNotificationSubscription'
-          example:
-            userTrackingSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              address: acr:10.0.0.1
-              userEventCriteria:
-              - Transferring
-      required: true
-    InlineRequestBodyUserTrackingNotificationSubscriptionPut:
-      description: Request body to a user tracking subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyUserTrackingNotificationSubscription'
-          example:
-            userTrackingSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              address: acr:10.0.0.1
-              userEventCriteria:
-              - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/userTracking/sub123
-      required: true
-    InlineRequestBodyZonalTrafficNotificationSubscriptionPost:
-      description: Request body to a zonal traffic subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyZonalTrafficNotificationSubscription'
-          example:
-            zonalTrafficSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              zoneId: zone01
-              userEventCriteria:
-              - Transferring
-      required: true
-    InlineRequestBodyZonalTrafficNotificationSubscriptionPut:
-      description: Request body to a zonal traffic subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyZonalTrafficNotificationSubscription'
-          example:
-            zonalTrafficSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              zoneId: zone01
-              userEventCriteria:
-              - Transferring
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zonalTraffic/sub123
-      required: true
-    InlineRequestBodyZoneStatusNotificationSubscriptionPost:
-      description: Request body to a zone status subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyZoneStatusNotificationSubscription'
-          example:
-            zoneStatusSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              zoneId: zone01
-              numberOfUsersZoneThreshold: 500
-              operationStatus:
-              - Serviceable
-      required: true
-    InlineRequestBodyZoneStatusNotificationSubscriptionPut:
-      description: Request body to a zone status subscription request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/InlineRequestBodyZoneStatusNotificationSubscription'
-          example:
-            zoneStatusSubscription:
-              clientCorrelator: "0123"
-              callbackReference:
-                notifyURL: http://my.callback.com/location_notifications/some-id
-              zoneId: zone01
-              numberOfUsersZoneThreshold: 500
-              operationStatus:
-              - Serviceable
-              resourceURL: http://meAppServer.example.com/location/v2/subscriptions/zoneStatus/sub123
-      required: true
