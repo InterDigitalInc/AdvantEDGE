@@ -2358,7 +2358,7 @@ paths:
             schema:
               $ref: '#/components/schemas/InlineZonalTrafficSubscription'
             example:
-              zonalTrafiicSubscription:
+              zonalTrafficSubscription:
                 clientCorrelator: "0123"
                 callbackReference:
                   notifyURL: http://my.callback.com/location_notifications/some-id
