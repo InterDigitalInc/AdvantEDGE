@@ -17,7 +17,7 @@
 package server
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,7 +32,6 @@ import (
 	sbi "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-loc-serv/sbi"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
-	clientNotifOMA "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
@@ -191,19 +190,6 @@ func Run() (err error) {
 // Stop - Stop RNIS
 func Stop() (err error) {
 	return sbi.Stop()
-}
-
-func createClient(notifyPath string) (*clientNotifOMA.APIClient, error) {
-	// Create & store client for App REST API
-	subsAppClientCfg := clientNotifOMA.NewConfiguration()
-	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := clientNotifOMA.NewAPIClient(subsAppClientCfg)
-	if subsAppClient == nil {
-		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
-		err := errors.New("Failed to create Subscription App REST API client")
-		return nil, err
-	}
-	return subsAppClient, nil
 }
 
 func deregisterZoneStatus(subsIdStr string) {
@@ -392,7 +378,7 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 
 					subscription := convertJsonToZoneStatusSubscription(jsonInfo)
 
-					var zoneStatusNotif clientNotifOMA.ZoneStatusNotification
+					var zoneStatusNotif ZoneStatusNotification
 					zoneStatusNotif.ZoneId = zoneId
 					if apWarning {
 						zoneStatusNotif.AccessPointId = apId
@@ -401,8 +387,13 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 					if zoneWarning {
 						zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
 					}
-					zoneStatusNotif.Timestamp = time.Now()
-					sendStatusNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zoneStatusNotif)
+					seconds := time.Now().Unix()
+					var timestamp TimeStamp
+					timestamp.Seconds = int32(seconds)
+					zoneStatusNotif.Timestamp = &timestamp
+					var inlineZoneStatusNotification InlineZoneStatusNotification
+					inlineZoneStatusNotification.ZoneStatusNotification = &zoneStatusNotif
+					sendStatusNotification(subscription.CallbackReference.NotifyURL, inlineZoneStatusNotification)
 					if apWarning {
 						log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
 					} else {
@@ -430,9 +421,12 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 
 			subscription := convertJsonToUserSubscription(jsonInfo)
 
-			var zonal clientNotifOMA.TrackingNotification
+			var zonal ZonalPresenceNotification
 			zonal.Address = userId
-			zonal.Timestamp = time.Now()
+			seconds := time.Now().Unix()
+			var timestamp TimeStamp
+			timestamp.Seconds = int32(seconds)
+			zonal.Timestamp = &timestamp
 
 			zonal.CallbackData = subscription.ClientCorrelator
 
@@ -442,20 +436,24 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 					if userSubscriptionLeavingMap[subsId] != "" {
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
-						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.LEAVING_UserEventType
+						event := new(UserEventType)
+						*event = LEAVING_EVENT
 						zonal.UserEventType = event
-						sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						var inlineZonal InlineZonalPresenceNotification
+						inlineZonal.ZonalPresenceNotification = &zonal
+						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 						log.Info("User Notification" + "(" + subsIdStr + "): " + "Leaving event in zone " + oldZoneId + " for user " + userId)
 					}
 				}
 				if userSubscriptionEnteringMap[subsId] != "" && newZoneId != "" {
 					zonal.ZoneId = newZoneId
 					zonal.CurrentAccessPointId = newApId
-					event := new(clientNotifOMA.UserEventType)
-					*event = clientNotifOMA.ENTERING_UserEventType
+					event := new(UserEventType)
+					*event = ENTERING_EVENT
 					zonal.UserEventType = event
-					sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+					var inlineZonal InlineZonalPresenceNotification
+					inlineZonal.ZonalPresenceNotification = &zonal
+					sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 					log.Info("User Notification" + "(" + subsIdStr + "): " + "Entering event in zone " + newZoneId + " for user " + userId)
 				}
 
@@ -465,10 +463,12 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 						zonal.ZoneId = newZoneId
 						zonal.CurrentAccessPointId = newApId
 						zonal.PreviousAccessPointId = oldApId
-						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.TRANSFERRING_UserEventType
+						event := new(UserEventType)
+						*event = TRANSFERRING_EVENT
 						zonal.UserEventType = event
-						sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						var inlineZonal InlineZonalPresenceNotification
+						inlineZonal.ZonalPresenceNotification = &zonal
+						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 						log.Info("User Notification" + "(" + subsIdStr + "): " + " Transferring event within zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
 					}
 				}
@@ -477,21 +477,15 @@ func checkNotificationRegisteredUsers(oldZoneId string, newZoneId string, oldApI
 	}
 }
 
-func sendNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.TrackingNotification) {
+func sendZonalPresenceNotification(notifyUrl string, notification InlineZonalPresenceNotification) {
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
+	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-
-	jsonNotif, err := json.Marshal(notification)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	resp, err := client.NotificationsApi.PostTrackingNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -500,21 +494,15 @@ func sendNotification(notifyUrl string, ctx context.Context, subscriptionId stri
 	defer resp.Body.Close()
 }
 
-func sendStatusNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotifOMA.ZoneStatusNotification) {
+func sendStatusNotification(notifyUrl string, notification InlineZoneStatusNotification) {
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
+	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-
-	jsonNotif, err := json.Marshal(notification)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	resp, err := client.NotificationsApi.PostZoneStatusNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -542,16 +530,21 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 					if jsonInfo != "" {
 						subscription := convertJsonToZonalSubscription(jsonInfo)
 
-						var zonal clientNotifOMA.TrackingNotification
+						var zonal ZonalPresenceNotification
 						zonal.ZoneId = newZoneId
 						zonal.CurrentAccessPointId = newApId
 						zonal.Address = userId
-						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.ENTERING_UserEventType
+						event := new(UserEventType)
+						*event = ENTERING_EVENT
 						zonal.UserEventType = event
-						zonal.Timestamp = time.Now()
+						seconds := time.Now().Unix()
+						var timestamp TimeStamp
+						timestamp.Seconds = int32(seconds)
+						zonal.Timestamp = &timestamp
 						zonal.CallbackData = subscription.ClientCorrelator
-						sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						var inlineZonal InlineZonalPresenceNotification
+						inlineZonal.ZonalPresenceNotification = &zonal
+						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 						log.Info("Zonal Notify Entering event in zone " + newZoneId + " for user " + userId)
 					}
 				}
@@ -564,17 +557,22 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 						if jsonInfo != "" {
 							subscription := convertJsonToZonalSubscription(jsonInfo)
 
-							var zonal clientNotifOMA.TrackingNotification
+							var zonal ZonalPresenceNotification
 							zonal.ZoneId = newZoneId
 							zonal.CurrentAccessPointId = newApId
 							zonal.PreviousAccessPointId = oldApId
 							zonal.Address = userId
-							event := new(clientNotifOMA.UserEventType)
-							*event = clientNotifOMA.TRANSFERRING_UserEventType
+							event := new(UserEventType)
+							*event = TRANSFERRING_EVENT
 							zonal.UserEventType = event
-							zonal.Timestamp = time.Now()
+							seconds := time.Now().Unix()
+							var timestamp TimeStamp
+							timestamp.Seconds = int32(seconds)
+							zonal.Timestamp = &timestamp
 							zonal.CallbackData = subscription.ClientCorrelator
-							sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+							var inlineZonal InlineZonalPresenceNotification
+							inlineZonal.ZonalPresenceNotification = &zonal
+							sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 							log.Info("Zonal Notify Transferring event in zone " + newZoneId + " for user " + userId + " from Ap " + oldApId + " to " + newApId)
 						}
 					}
@@ -590,16 +588,21 @@ func checkNotificationRegisteredZones(oldZoneId string, newZoneId string, oldApI
 
 						subscription := convertJsonToZonalSubscription(jsonInfo)
 
-						var zonal clientNotifOMA.TrackingNotification
+						var zonal ZonalPresenceNotification
 						zonal.ZoneId = oldZoneId
 						zonal.CurrentAccessPointId = oldApId
 						zonal.Address = userId
-						event := new(clientNotifOMA.UserEventType)
-						*event = clientNotifOMA.LEAVING_UserEventType
+						event := new(UserEventType)
+						*event = LEAVING_EVENT
 						zonal.UserEventType = event
-						zonal.Timestamp = time.Now()
+						seconds := time.Now().Unix()
+						var timestamp TimeStamp
+						timestamp.Seconds = int32(seconds)
+						zonal.Timestamp = &timestamp
 						zonal.CallbackData = subscription.ClientCorrelator
-						sendNotification(subscription.CallbackReference.NotifyURL, context.TODO(), subsIdStr, zonal)
+						var inlineZonal InlineZonalPresenceNotification
+						inlineZonal.ZonalPresenceNotification = &zonal
+						sendZonalPresenceNotification(subscription.CallbackReference.NotifyURL, inlineZonal)
 						log.Info("Zonal Notify Leaving event in zone " + oldZoneId + " for user " + userId)
 					}
 				}

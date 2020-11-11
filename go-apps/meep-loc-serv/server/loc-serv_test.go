@@ -28,7 +28,6 @@ import (
 	"testing"
 	"time"
 
-	locNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -1829,12 +1828,12 @@ func TestUserSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification locNotif.TrackingNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var inlineZonalPresenceNotification InlineZonalPresenceNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification := inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1951,12 +1950,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification locNotif.TrackingNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var inlineZonalPresenceNotification InlineZonalPresenceNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification := inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1968,11 +1967,11 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification = inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1984,11 +1983,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
+	notification = inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId2 != notification.ZoneId || expectedPoa2 != notification.CurrentAccessPointId || expectedAddr2 != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
