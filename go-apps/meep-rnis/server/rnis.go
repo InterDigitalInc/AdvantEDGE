@@ -17,7 +17,7 @@
 package server
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,7 +34,6 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	"github.com/gorilla/mux"
 )
@@ -60,6 +59,9 @@ var currentStoreName = ""
 var CELL_CHANGE_SUBSCRIPTION = "CellChangeSubscription"
 var RAB_EST_SUBSCRIPTION = "RabEstSubscription"
 var RAB_REL_SUBSCRIPTION = "RabRelSubscription"
+var CELL_CHANGE_NOTIFICATION = "CellChangeNotification"
+var RAB_EST_NOTIFICATION = "RabEstNotification"
+var RAB_REL_NOTIFICATION = "RabRelNotification"
 
 var RNIS_DB = 5
 
@@ -332,19 +334,6 @@ func updateDomainData(name string, mnc string, mcc string, cellId string) {
 	}
 }
 
-func createClient(notifyPath string) (*clientNotif.APIClient, error) {
-	// Create & store client for App REST API
-	subsAppClientCfg := clientNotif.NewConfiguration()
-	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := clientNotif.NewAPIClient(subsAppClientCfg)
-	if subsAppClient == nil {
-		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
-		err := errors.New("Failed to create Subscription App REST API client")
-		return nil, err
-	}
-	return subsAppClient, nil
-}
-
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
@@ -367,23 +356,23 @@ func checkForExpiredSubscriptions() {
 
 				subsIdStr := strconv.Itoa(subsId)
 
-				var notif clientNotif.ExpiryNotification
+				var notif ExpiryNotification
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				var expiryTimeStamp clientNotif.TimeStamp
+				var expiryTimeStamp TimeStamp
 				expiryTimeStamp.Seconds = int32(expiryTime)
 
-				link := new(clientNotif.ExpiryNotificationLinks)
+				link := new(ExpiryNotificationLinks)
 				link.Self = cbRef
 				notif.Links = link
 
 				notif.TimeStamp = &timeStamp
 				notif.ExpiryDeadline = &expiryTimeStamp
 
-				sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
+				sendExpiryNotification(link.Self, notif)
 				_ = delSubscription(baseKey, subsIdStr, true)
 			}
 		}
@@ -777,10 +766,10 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToCellChangeSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.CellChangeNotification
-
-				var newEcgi clientNotif.Ecgi
-				var notifNewPlmn clientNotif.Plmn
+				var notif CellChangeNotification
+				notif.NotificationType = CELL_CHANGE_NOTIFICATION
+				var newEcgi Ecgi
+				var notifNewPlmn Plmn
 				if newPlmn != nil {
 					notifNewPlmn.Mnc = newPlmn.Mnc
 					notifNewPlmn.Mcc = newPlmn.Mcc
@@ -790,8 +779,8 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				}
 				newEcgi.Plmn = &notifNewPlmn
 				newEcgi.CellId = newCellId
-				var oldEcgi clientNotif.Ecgi
-				var notifOldPlmn clientNotif.Plmn
+				var oldEcgi Ecgi
+				var notifOldPlmn Plmn
 				if oldPlmn != nil {
 					notifOldPlmn.Mnc = oldPlmn.Mnc
 					notifOldPlmn.Mcc = oldPlmn.Mcc
@@ -802,21 +791,21 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = oldCellId
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
 				notif.TimeStamp = &timeStamp
 				notif.HoStatus = 3 //only supporting 3 = COMPLETED
 				notif.SrcEcgi = &oldEcgi
-				notif.TrgEcgi = []clientNotif.Ecgi{newEcgi}
+				notif.TrgEcgi = []Ecgi{newEcgi}
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendCcNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendCcNotification(subscription.CallbackReference, notif)
 				log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -865,25 +854,26 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToRabEstSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.RabEstNotification
+				var notif RabEstNotification
+				notif.NotificationType = RAB_EST_NOTIFICATION
 
-				var newEcgi clientNotif.Ecgi
+				var newEcgi Ecgi
 
-				var notifNewPlmn clientNotif.Plmn
+				var notifNewPlmn Plmn
 				notifNewPlmn.Mnc = newPlmn.Mnc
 				notifNewPlmn.Mcc = newPlmn.Mcc
 				newEcgi.Plmn = &notifNewPlmn
 				newEcgi.CellId = newCellId
 
-				var erabQos clientNotif.RabEstNotificationErabQosParameters
+				var erabQos RabEstNotificationErabQosParameters
 				erabQos.Qci = defaultSupportedQci
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
 				notif.TimeStamp = &timeStamp
@@ -892,7 +882,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				notif.ErabQosParameters = &erabQos
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendReNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendReNotification(subscription.CallbackReference, notif)
 				log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -941,57 +931,51 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToRabRelSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.RabRelNotification
+				var notif RabRelNotification
+				notif.NotificationType = RAB_REL_NOTIFICATION
 
-				var oldEcgi clientNotif.Ecgi
+				var oldEcgi Ecgi
 
-				var notifOldPlmn clientNotif.Plmn
+				var notifOldPlmn Plmn
 				notifOldPlmn.Mnc = oldPlmn.Mnc
 				notifOldPlmn.Mcc = oldPlmn.Mcc
 				oldEcgi.Plmn = &notifOldPlmn
 				oldEcgi.CellId = oldCellId
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				var erabRelInfo clientNotif.RabRelNotificationErabReleaseInfo
+				var erabRelInfo RabRelNotificationErabReleaseInfo
 				erabRelInfo.ErabId = erabId
 				notif.TimeStamp = &timeStamp
 				notif.Ecgi = &oldEcgi
 				notif.ErabReleaseInfo = &erabRelInfo
 				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendRrNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendRrNotification(subscription.CallbackReference, notif)
 				log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
 			}
 		}
 	}
 }
 
-func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.CellChangeNotification) {
+func sendCcNotification(notifyUrl string, notification CellChangeNotification) {
 
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	var body clientNotif.Body1
-	body.Notification = &notification
-
-	jsonNotif, err := json.Marshal(body)
+	var inlineNotification InlineCcNotification
+	inlineNotification.Notification = &notification
+	jsonNotif, err := json.Marshal(inlineNotification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, body, subscriptionId)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -1000,25 +984,18 @@ func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendReNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.RabEstNotification) {
+func sendReNotification(notifyUrl string, notification RabEstNotification) {
 
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	var body clientNotif.Body4
-	body.Notification = &notification
-
-	jsonNotif, err := json.Marshal(body)
+	var inlineNotification InlineReNotification
+	inlineNotification.Notification = &notification
+	jsonNotif, err := json.Marshal(inlineNotification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabEstNotification(ctx, body, subscriptionId)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -1027,25 +1004,18 @@ func sendReNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendRrNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.RabRelNotification) {
+func sendRrNotification(notifyUrl string, notification RabRelNotification) {
 
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	var body clientNotif.Body6
-	body.Notification = &notification
-
-	jsonNotif, err := json.Marshal(body)
+	var inlineNotification InlineRrNotification
+	inlineNotification.Notification = &notification
+	jsonNotif, err := json.Marshal(inlineNotification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabRelNotification(ctx, body, subscriptionId)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -1054,22 +1024,18 @@ func sendRrNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
+func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
 
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	jsonNotif, err := json.Marshal(notification)
+	var inlineNotification InlineExpiryNotification
+	inlineNotification.Notification = &notification
+	jsonNotif, err := json.Marshal(inlineNotification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, notification, subscriptionId)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -1084,7 +1050,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	subIdParamStr := vars["subscriptionId"]
 
 	//using 2006
-	var response InlineResponse2006
+	var response InlineNotificationSubscription
 
 	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 
@@ -1101,7 +1067,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var responseNotificationSubscription OneOfinlineResponse2006NotificationSubscription
+	var responseNotificationSubscription OneOfInlineNotificationSubscriptionNotificationSubscription
 	responseNotificationSubscription.SubscriptionType = subscriptionDiscriminator.SubscriptionType
 	response.NotificationSubscription = &responseNotificationSubscription
 
@@ -1175,9 +1141,9 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse201
+	var response InlineNotificationSubscription
 
-	var subscriptionBody Body // OneOfbodyNotificationSubscription
+	var subscriptionBody InlineNotificationSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&subscriptionBody)
 	if err != nil {
@@ -1210,7 +1176,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	link.Self = self
 
 	//prepare the common response part
-	var responseNotificationSubscription OneOfinlineResponse201NotificationSubscription
+	var responseNotificationSubscription OneOfInlineNotificationSubscriptionNotificationSubscription
 	responseNotificationSubscription.SubscriptionType = subscriptionType
 	responseNotificationSubscription.CallbackReference = callbackReference
 	responseNotificationSubscription.ExpiryDeadline = expiryDeadline
@@ -1315,9 +1281,9 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var response InlineResponse2006
+	var response InlineNotificationSubscription
 
-	var subscriptionBody Body // OneOfbodyNotificationSubscription
+	var subscriptionBody InlineNotificationSubscription
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&subscriptionBody)
 	if err != nil {
@@ -1358,7 +1324,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//prepare the common response part
-	var responseNotificationSubscription OneOfinlineResponse2006NotificationSubscription
+	var responseNotificationSubscription OneOfInlineNotificationSubscriptionNotificationSubscription
 	responseNotificationSubscription.SubscriptionType = subscriptionType
 	responseNotificationSubscription.CallbackReference = callbackReference
 	responseNotificationSubscription.ExpiryDeadline = expiryDeadline
@@ -1674,7 +1640,7 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 	//appInsId := q.Get("app_ins_id")
 	//appInsIdArray := strings.Split(appInsId, ",")
 
-	var response InlineResponse2001
+	var response InlinePlmnInfo
 	atLeastOne := false
 
 	//same for all plmnInfo
@@ -1739,7 +1705,7 @@ func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
-	resp := response.(*InlineResponse2001)
+	resp := response.(*InlinePlmnInfo)
 	if resp == nil {
 		return errors.New("Response not defined")
 	}
@@ -1785,7 +1751,7 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 
 	rabInfoData.queryCellIds = cellIds
 
-	var response InlineResponse200
+	var response InlineRabInfo
 
 	//same for all plmnInfo
 	seconds := time.Now().Unix()
@@ -1918,10 +1884,6 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	self := new(LinkType)
 	self.Href = hostUrl.String() + basePath + "subscriptions"
 
-	if subType != "" {
-		self.Href = self.Href + "/" + subType
-	}
-
 	link.Self = self
 	subscriptionLinkList.Links = link
 
@@ -1930,30 +1892,40 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	mutex.Lock()
 	defer mutex.Unlock()
 
+	log.Info("SIMON in", subType)
 	//loop through cell_change map
-	for _, ccSubscription := range ccSubscriptionMap {
-		if ccSubscription != nil {
-			var subscription SubscriptionLinkListLinksSubscription
-			subscription.Href = ccSubscription.Links.Self.Href
-			subscription.SubscriptionType = CELL_CHANGE_SUBSCRIPTION
-			subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+	if subType == "" || subType == "cell_change" {
+		for _, ccSubscription := range ccSubscriptionMap {
+			if ccSubscription != nil {
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = ccSubscription.Links.Self.Href
+				subscription.SubscriptionType = CELL_CHANGE_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+			}
 		}
 	}
-	//loop through cell_change map
-	for _, reSubscription := range reSubscriptionMap {
-		if reSubscription != nil {
-			var subscription SubscriptionLinkListLinksSubscription
-			subscription.Href = reSubscription.Links.Self.Href
-			subscription.SubscriptionType = RAB_EST_SUBSCRIPTION
-			subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+
+	//loop through rab_est map
+	if subType == "" || subType == "rab_est" {
+		for _, reSubscription := range reSubscriptionMap {
+			if reSubscription != nil {
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = reSubscription.Links.Self.Href
+				subscription.SubscriptionType = RAB_EST_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+			}
 		}
 	}
-	for _, rrSubscription := range rrSubscriptionMap {
-		if rrSubscription != nil {
-			var subscription SubscriptionLinkListLinksSubscription
-			subscription.Href = rrSubscription.Links.Self.Href
-			subscription.SubscriptionType = RAB_REL_SUBSCRIPTION
-			subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+
+	//loop through rab_rel map
+	if subType == "" || subType == "rab_rel" {
+		for _, rrSubscription := range rrSubscriptionMap {
+			if rrSubscription != nil {
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = rrSubscription.Links.Self.Href
+				subscription.SubscriptionType = RAB_REL_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+			}
 		}
 	}
 
@@ -1965,28 +1937,15 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2004
+	u, _ := url.Parse(r.URL.String())
+	log.Info("url: ", u.RequestURI())
+	q := u.Query()
+	subType := q.Get("subscription_type")
 
-	subscriptionLinkList := createSubscriptionLinkList("")
+	var response InlineSubscriptionLinkList
 
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-
-/*
-func subscriptionLinkListSubscriptionsCcGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2004
-
-	subscriptionLinkList := createSubscriptionLinkList(cellChangeSubscriptionType)
+	log.Info("SIMON type ", subType)
+	subscriptionLinkList := createSubscriptionLinkList(subType)
 
 	response.SubscriptionLinkList = subscriptionLinkList
 	jsonResponse, err := json.Marshal(response)
@@ -1998,43 +1957,6 @@ func subscriptionLinkListSubscriptionsCcGET(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 }
-
-func subscriptionLinkListSubscriptionsReGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2004
-
-	subscriptionLinkList := createSubscriptionLinkList(rabEstSubscriptionType)
-
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-
-func subscriptionLinkListSubscriptionsRrGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2004
-
-	subscriptionLinkList := createSubscriptionLinkList(rabRelSubscriptionType)
-
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-*/
 
 func cleanUp() {
 	log.Info("Terminate all")

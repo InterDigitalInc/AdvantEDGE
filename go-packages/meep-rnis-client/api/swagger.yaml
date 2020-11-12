@@ -173,47 +173,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200'
+                $ref: '#/components/schemas/InlineRabInfo'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/plmn_info:
     get:
@@ -241,47 +241,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
+                $ref: '#/components/schemas/InlinePlmnInfo'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/s1_bearer_info:
     get:
@@ -380,47 +380,47 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/InlineS1BearerInfo'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /queries/layer2_meas:
     get:
@@ -835,41 +835,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_3'
+                $ref: '#/components/schemas/InlineL2Meas'
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "414":
           description: 'URI Too Long : used to indicate that the server is refusing
             to process the request because the request URI is longer than the server
@@ -877,13 +877,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: queries
   /subscriptions:
     get:
@@ -910,7 +910,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_4'
+                $ref: '#/components/schemas/InlineSubscriptionLinkList'
               example:
                 subscriptionLinkList:
                   _links:
@@ -928,40 +928,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     post:
       tags:
@@ -974,7 +974,27 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body'
+              $ref: '#/components/schemas/InlineNotificationSubscription'
+            example:
+              notificationSubscription:
+                subscriptionType: CellChangeSubscription
+                callbackReference: http://my.callback.com/rni-cell-change/some-id
+                filterCriteriaAssocHo:
+                  appInstanceId: myApp
+                  associateId:
+                  - type: 1
+                    value: 10.100.0.1
+                  ecgi:
+                  - plmn:
+                      mnc: "01"
+                      mcc: "001"
+                    cellId: ACBDEFA
+                  hoStatus:
+                  - 1
+                  - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
         required: true
       responses:
         "201":
@@ -982,41 +1002,64 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_201'
+                $ref: '#/components/schemas/InlineNotificationSubscription'
+              example:
+                notificationSubscription:
+                  subscriptionType: CellChangeSubscription
+                  callbackReference: http://my.callback.com/rni-cell-change/some-id
+                  _links:
+                    self:
+                      href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
+                  filterCriteriaAssocHo:
+                    appInstanceId: myApp
+                    associateId:
+                    - type: 1
+                      value: 10.100.0.1
+                    ecgi:
+                    - plmn:
+                        mnc: "01"
+                        mcc: "001"
+                      cellId: ACBDEFA
+                    hoStatus:
+                    - 1
+                    - 2
+                  expiryDeadline:
+                    seconds: 1977836800
+                    nanoseconds: 0
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "415":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1024,7 +1067,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1036,7 +1079,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   problemDetails:
@@ -1050,7 +1093,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       callbacks:
         notification:
           '{$request.body#/notificationSubscription.callbackReference}':
@@ -1063,44 +1106,30 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        notification:
-                          discriminator:
-                            propertyName: notificationType
-                          oneOf:
-                          - $ref: '#/components/schemas/CellChangeNotification'
-                          - $ref: '#/components/schemas/RabEstNotification'
-                          - $ref: '#/components/schemas/RabModNotification'
-                          - $ref: '#/components/schemas/RabRelNotification'
-                          - $ref: '#/components/schemas/MeasRepUeNotification'
-                          - $ref: '#/components/schemas/NrMeasRepUeNotification'
-                          - $ref: '#/components/schemas/MeasTaNotification'
-                          - $ref: '#/components/schemas/CaReconfNotification'
-                          - $ref: '#/components/schemas/S1BearerNotification'
-                      example:
-                        notification:
-                          notificationType: CellChangeNotification
-                          associateId:
-                          - type: 1
-                            value: 10.100.0.1
-                          hoStatus: 1
-                          srcEcgi:
-                            plmn:
-                              mnc: "01"
-                              mcc: "001"
-                            cellId: ACBDEFA
-                          tempUeId:
-                            mmec: 1
-                            mtmsi: 1011231231234
-                          timeStamp:
-                            seconds: 1977836800
-                            nanoseconds: 0
-                          trgEcgi:
-                            plmn:
-                              mnc: "01"
-                              mcc: "001"
-                            cellId: FEDCBAA
+                      $ref: '#/components/schemas/InlineNotification'
+                    example:
+                      notification:
+                        notificationType: CellChangeNotification
+                        associateId:
+                        - type: 1
+                          value: 10.100.0.1
+                        hoStatus: 1
+                        srcEcgi:
+                          plmn:
+                            mnc: "01"
+                            mcc: "001"
+                          cellId: ACBDEFA
+                        tempUeId:
+                          mmec: 1
+                          mtmsi: 1011231231234
+                        timeStamp:
+                          seconds: 1977836800
+                          nanoseconds: 0
+                        trgEcgi:
+                          plmn:
+                            mnc: "01"
+                            mcc: "001"
+                          cellId: FEDCBAA
                 required: true
               responses:
                 "204":
@@ -1132,81 +1161,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_5'
-        "400":
-          description: 'Bad Request : used to indicate that incorrect parameters were
-            passed to the request.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_400'
-        "401":
-          description: 'Unauthorized :  used when the client did not submit credentials.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_400'
-        "403":
-          description: 'Forbidden :  operation is not allowed given the current status
-            of the resource.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_403'
-        "404":
-          description: 'Not Found :  used when a client provided a URI that cannot
-            be mapped to a valid resource URI.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_400'
-        "406":
-          description: 'Not Acceptable : used to indicate that the server cannot provide
-            the any of the content formats supported by the client.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_400'
-        "429":
-          description: 'Too Many Requests : used when a rate limiter has triggered.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_400'
-      x-swagger-router-controller: subscriptions
-    put:
-      tags:
-      - rni
-      summary: Modify an existing subscription
-      description: Updates an existing subscription, identified by its self-referring
-        URI returned on creation (initial POST)
-      operationId: subscriptionsPUT
-      parameters:
-      - name: subscriptionId
-        in: path
-        description: Subscription Id, specifically the "Self-referring URI" returned
-          in the subscription request
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          format: uri
-        x-exportParamName: SubscriptionId
-      requestBody:
-        description: Subscription to be modified
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/body_1'
-        required: true
-      responses:
-        "200":
-          description: Successful subscription to response to subscription notifications
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/inline_response_200_6'
+                $ref: '#/components/schemas/InlineNotificationSubscription'
               example:
                 notificationSubscription:
                   subscriptionType: CellChangeSubscription
@@ -1236,34 +1191,154 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
+        "429":
+          description: 'Too Many Requests : used when a rate limiter has triggered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetails'
+      x-swagger-router-controller: subscriptions
+    put:
+      tags:
+      - rni
+      summary: Modify an existing subscription
+      description: Updates an existing subscription, identified by its self-referring
+        URI returned on creation (initial POST)
+      operationId: subscriptionsPUT
+      parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription Id, specifically the "Self-referring URI" returned
+          in the subscription request
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uri
+        x-exportParamName: SubscriptionId
+      requestBody:
+        description: Subscription to be modified
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineNotificationSubscription'
+            example:
+              notificationSubscription:
+                subscriptionType: CellChangeSubscription
+                callbackReference: http://my.callback.com/rni-cell-change/some-id
+                _links:
+                  self:
+                    href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
+                filterCriteriaAssocHo:
+                  appInstanceId: myApp
+                  associateId:
+                  - type: 1
+                    value: 10.100.0.1
+                  ecgi:
+                  - plmn:
+                      mnc: "01"
+                      mcc: "001"
+                    cellId: ACBDEFA
+                  hoStatus:
+                  - 1
+                  - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
+        required: true
+      responses:
+        "200":
+          description: Successful subscription to response to subscription notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineNotificationSubscription'
+              example:
+                notificationSubscription:
+                  subscriptionType: CellChangeSubscription
+                  callbackReference: http://my.callback.com/rni-cell-change/some-id
+                  _links:
+                    self:
+                      href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
+                  filterCriteriaAssocHo:
+                    appInstanceId: myApp
+                    associateId:
+                    - type: 1
+                      value: 10.100.0.1
+                    ecgi:
+                    - plmn:
+                        mnc: "01"
+                        mcc: "001"
+                      cellId: ACBDEFA
+                    hoStatus:
+                    - 1
+                    - 2
+                  expiryDeadline:
+                    seconds: 1977836800
+                    nanoseconds: 0
+        "400":
+          description: 'Bad Request : used to indicate that incorrect parameters were
+            passed to the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetails'
+        "401":
+          description: 'Unauthorized :  used when the client did not submit credentials.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetails'
+        "403":
+          description: 'Forbidden :  operation is not allowed given the current status
+            of the resource.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+        "404":
+          description: 'Not Found :  used when a client provided a URI that cannot
+            be mapped to a valid resource URI.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetails'
+        "406":
+          description: 'Not Acceptable : used to indicate that the server cannot provide
+            the any of the content formats supported by the client.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1271,7 +1346,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1283,7 +1358,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
               example:
                 application/problem+json:
                   problemDetails:
@@ -1297,7 +1372,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1326,27 +1401,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_403'
+                $ref: '#/components/schemas/InlineProblemDetailsRequired'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_400'
+                $ref: '#/components/schemas/InlineProblemDetails'
       x-swagger-router-controller: subscriptions
 components:
   schemas:
@@ -2600,16 +2675,7 @@ components:
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: Enum
         s1UeInfo:
-          required:
-          - ecgi
-          - s1BearerInfo
-          type: array
-          description: Information on specific UE that matches the criteria in S1BearerSubscription
-            as defined below.
-          items:
-            $ref: '#/components/schemas/S1BearerNotification_s1UeInfo'
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: Structure (inlined)
+          $ref: '#/components/schemas/S1BearerNotification_s1UeInfo'
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       x-etsi-ref: 6.4.10
@@ -2749,7 +2815,7 @@ components:
       - 21
       - 30
       - 31
-    inline_response_200:
+    InlineRabInfo:
       type: object
       properties:
         rabInfo:
@@ -2862,19 +2928,7 @@ components:
             seconds: 3
             nanoSeconds: 9
           requestId: requestId
-    inline_response_400:
-      type: object
-      properties:
-        problemDetails:
-          $ref: '#/components/schemas/ProblemDetails'
-    inline_response_403:
-      required:
-      - problemDetails
-      type: object
-      properties:
-        problemDetails:
-          $ref: '#/components/schemas/ProblemDetails'
-    inline_response_200_1:
+    InlinePlmnInfo:
       type: object
       properties:
         plmnInfo:
@@ -2901,7 +2955,7 @@ components:
             mcc: mcc
           - mnc: mnc
             mcc: mcc
-    inline_response_200_2:
+    InlineS1BearerInfo:
       required:
       - s1BearerInfo
       type: object
@@ -2978,7 +3032,7 @@ components:
             tempUeId:
               mtmsi: mtmsi
               mmec: mmec
-    inline_response_200_3:
+    InlineL2Meas:
       required:
       - l2Meas
       type: object
@@ -3076,13 +3130,14 @@ components:
             received_randomly_selected_preambles_high_range_cell: 4
             dl_nongbr_prb_usage_cell: 5
             dl_gbr_prb_usage_cell: 6
-    inline_response_200_4:
+    InlineSubscriptionLinkList:
       required:
       - subscriptionLinkList
       type: object
       properties:
         subscriptionLinkList:
           $ref: '#/components/schemas/SubscriptionLinkList'
+      description: Response body contains the list of links to requestors subscriptions.
       example:
         subscriptionLinkList:
           _links:
@@ -3093,162 +3148,7 @@ components:
               href: http://example.com/aeiou
             - subscriptionType: subscriptionType
               href: http://example.com/aeiou
-    body:
-      type: object
-      properties:
-        notificationSubscription:
-          discriminator:
-            propertyName: subscriptionType
-          oneOf:
-          - $ref: '#/components/schemas/CellChangeSubscription'
-          - $ref: '#/components/schemas/RabEstSubscription'
-          - $ref: '#/components/schemas/RabModSubscription'
-          - $ref: '#/components/schemas/RabRelSubscription'
-          - $ref: '#/components/schemas/MeasRepUeSubscription'
-          - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-          - $ref: '#/components/schemas/MeasTaSubscription'
-          - $ref: '#/components/schemas/CaReconfSubscription'
-          - $ref: '#/components/schemas/S1BearerSubscription'
-      example:
-        notificationSubscription:
-          subscriptionType: CellChangeSubscription
-          callbackReference: http://my.callback.com/rni-cell-change/some-id
-          filterCriteriaAssocHo:
-            appInstanceId: myApp
-            associateId:
-            - type: 1
-              value: 10.100.0.1
-            ecgi:
-            - plmn:
-                mnc: "01"
-                mcc: "001"
-              cellId: ACBDEFA
-            hoStatus:
-            - 1
-            - 2
-          expiryDeadline:
-            seconds: 1977836800
-            nanoseconds: 0
-    inline_response_201:
-      type: object
-      properties:
-        notificationSubscription:
-          discriminator:
-            propertyName: subscriptionType
-          oneOf:
-          - $ref: '#/components/schemas/CellChangeSubscription'
-          - $ref: '#/components/schemas/RabEstSubscription'
-          - $ref: '#/components/schemas/RabModSubscription'
-          - $ref: '#/components/schemas/RabRelSubscription'
-          - $ref: '#/components/schemas/MeasRepUeSubscription'
-          - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-          - $ref: '#/components/schemas/MeasTaSubscription'
-          - $ref: '#/components/schemas/CaReconfSubscription'
-          - $ref: '#/components/schemas/S1BearerSubscription'
-      example:
-        notificationSubscription:
-          subscriptionType: CellChangeSubscription
-          callbackReference: http://my.callback.com/rni-cell-change/some-id
-          _links:
-            self:
-              href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
-          filterCriteriaAssocHo:
-            appInstanceId: myApp
-            associateId:
-            - type: 1
-              value: 10.100.0.1
-            ecgi:
-            - plmn:
-                mnc: "01"
-                mcc: "001"
-              cellId: ACBDEFA
-            hoStatus:
-            - 1
-            - 2
-          expiryDeadline:
-            seconds: 1977836800
-            nanoseconds: 0
-    inline_response_200_5:
-      required:
-      - notificationSubscription
-      type: object
-      properties:
-        notificationSubscription:
-          discriminator:
-            propertyName: subscriptionType
-          oneOf:
-          - $ref: '#/components/schemas/CellChangeSubscription'
-          - $ref: '#/components/schemas/RabEstSubscription'
-          - $ref: '#/components/schemas/RabModSubscription'
-          - $ref: '#/components/schemas/RabRelSubscription'
-          - $ref: '#/components/schemas/MeasRepUeSubscription'
-          - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-          - $ref: '#/components/schemas/MeasTaSubscription'
-          - $ref: '#/components/schemas/CaReconfSubscription'
-          - $ref: '#/components/schemas/S1BearerSubscription'
-      example:
-        notificationSubscription:
-          subscriptionType: CellChangeSubscription
-          callbackReference: http://my.callback.com/rni-cell-change/some-id
-          _links:
-            self:
-              href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
-          filterCriteriaAssocHo:
-            appInstanceId: myApp
-            associateId:
-            - type: 1
-              value: 10.100.0.1
-            ecgi:
-            - plmn:
-                mnc: "01"
-                mcc: "001"
-              cellId: ACBDEFA
-            hoStatus:
-            - 1
-            - 2
-          expiryDeadline:
-            seconds: 1977836800
-            nanoseconds: 0
-    body_1:
-      type: object
-      properties:
-        notificationSubscription:
-          discriminator:
-            propertyName: subscriptionType
-          oneOf:
-          - $ref: '#/components/schemas/CellChangeSubscription'
-          - $ref: '#/components/schemas/RabEstSubscription'
-          - $ref: '#/components/schemas/RabModSubscription'
-          - $ref: '#/components/schemas/RabRelSubscription'
-          - $ref: '#/components/schemas/MeasRepUeSubscription'
-          - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-          - $ref: '#/components/schemas/MeasTaSubscription'
-          - $ref: '#/components/schemas/CaReconfSubscription'
-          - $ref: '#/components/schemas/S1BearerSubscription'
-      example:
-        notificationSubscription:
-          subscriptionType: CellChangeSubscription
-          callbackReference: http://my.callback.com/rni-cell-change/some-id
-          _links:
-            self:
-              href: http://meAppServer.example.com/rni/v2/subscriptions/sub123
-          filterCriteriaAssocHo:
-            appInstanceId: myApp
-            associateId:
-            - type: 1
-              value: 10.100.0.1
-            ecgi:
-            - plmn:
-                mnc: "01"
-                mcc: "001"
-              cellId: ACBDEFA
-            hoStatus:
-            - 1
-            - 2
-          expiryDeadline:
-            seconds: 1977836800
-            nanoseconds: 0
-    inline_response_200_6:
+    InlineNotificationSubscription:
       type: object
       properties:
         notificationSubscription:
@@ -3266,6 +3166,34 @@ components:
           - $ref: '#/components/schemas/S1BearerSubscription'
       example:
         notificationSubscription: ""
+    InlineNotification:
+      type: object
+      properties:
+        notification:
+          discriminator:
+            propertyName: notificationType
+          oneOf:
+          - $ref: '#/components/schemas/CellChangeNotification'
+          - $ref: '#/components/schemas/RabEstNotification'
+          - $ref: '#/components/schemas/RabModNotification'
+          - $ref: '#/components/schemas/RabRelNotification'
+          - $ref: '#/components/schemas/MeasRepUeNotification'
+          - $ref: '#/components/schemas/NrMeasRepUeNotification'
+          - $ref: '#/components/schemas/MeasTaNotification'
+          - $ref: '#/components/schemas/CaReconfNotification'
+          - $ref: '#/components/schemas/S1BearerNotification'
+    InlineProblemDetails:
+      type: object
+      properties:
+        problemDetails:
+          $ref: '#/components/schemas/ProblemDetails'
+    InlineProblemDetailsRequired:
+      required:
+      - problemDetails
+      type: object
+      properties:
+        problemDetails:
+          $ref: '#/components/schemas/ProblemDetails'
     CaReconfNotification_carrierAggregationMeasInfo:
       type: object
       properties:
@@ -4500,6 +4428,7 @@ components:
           tunnelId: tunnelId
           ipAddress: ipAddress
     S1BearerInfo_s1UeInfo:
+      type: object
       properties:
         associateId:
           minItems: 1
@@ -4566,6 +4495,10 @@ components:
           mtmsi: mtmsi
           mmec: mmec
     S1BearerNotification_s1UeInfo:
+      required:
+      - ecgi
+      - s1BearerInfo
+      type: object
       properties:
         associateId:
           minItems: 0
@@ -4598,6 +4531,8 @@ components:
           x-etsi-mec-origin-type: Structure (inlined)
         tempUeId:
           $ref: '#/components/schemas/CellChangeNotification_tempUeId'
+      description: Information on specific UE that matches the criteria in S1BearerSubscription
+        as defined below.
     S1BearerSubscription_S1BearerSubscriptionCriteria:
       type: object
       properties:
@@ -4683,34 +4618,34 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "401":
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "403":
       description: 'Forbidden :  operation is not allowed given the current status
         of the resource.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_403'
+            $ref: '#/components/schemas/InlineProblemDetailsRequired'
     "404":
       description: 'Not Found :  used when a client provided a URI that cannot be
         mapped to a valid resource URI.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "406":
       description: 'Not Acceptable : used to indicate that the server cannot provide
         the any of the content formats supported by the client.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "412":
       description: 'Precondition failed :  used when a condition has failed during
         conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -4718,7 +4653,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "414":
       description: 'URI Too Long : used to indicate that the server is refusing to
         process the request because the request URI is longer than the server is willing
@@ -4726,17 +4661,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "415":
       description: 'Unsupported Media Type :  used to indicate that the server or
         the client does not support the content type of the entity body.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     "422":
       description: 'Unprocessable Entity : used to indicate that the server understands
         the content type of the request entity and that the syntax of the request
@@ -4748,7 +4680,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
           example:
             application/problem+json:
               problemDetails:
@@ -4762,7 +4694,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/inline_response_400'
+            $ref: '#/components/schemas/InlineProblemDetails'
   parameters:
     Path.subscrId:
       name: subscriptionId

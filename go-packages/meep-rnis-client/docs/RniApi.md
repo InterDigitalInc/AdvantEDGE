@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 
 # **Layer2MeasInfoGET**
-> InlineResponse2003 Layer2MeasInfoGET(ctx, optional)
+> InlineL2Meas Layer2MeasInfoGET(ctx, optional)
 Retrieve information on layer 2 measurements
 
 Queries information about the layer 2 measurements.
@@ -75,7 +75,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2003**](inline_response_200_3.md)
+[**InlineL2Meas**](InlineL2Meas.md)
 
 ### Authorization
 
@@ -89,7 +89,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PlmnInfoGET**
-> InlineResponse2001 PlmnInfoGET(ctx, appInsId)
+> InlinePlmnInfo PlmnInfoGET(ctx, appInsId)
 Retrieve information on the underlying Mobile Network that the MEC application is associated to
 
 Queries information about the Mobile Network
@@ -103,7 +103,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2001**](inline_response_200_1.md)
+[**InlinePlmnInfo**](InlinePlmnInfo.md)
 
 ### Authorization
 
@@ -117,7 +117,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **RabInfoGET**
-> InlineResponse200 RabInfoGET(ctx, optional)
+> InlineRabInfo RabInfoGET(ctx, optional)
 Retrieve information on Radio Access Bearers
 
 Queries information about the Radio Access Bearers
@@ -149,7 +149,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse200**](inline_response_200.md)
+[**InlineRabInfo**](InlineRabInfo.md)
 
 ### Authorization
 
@@ -163,7 +163,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **S1BearerInfoGET**
-> InlineResponse2002 S1BearerInfoGET(ctx, optional)
+> InlineS1BearerInfo S1BearerInfoGET(ctx, optional)
 Retrieve S1-U bearer information related to specific UE(s)
 
 Queries information about the S1 bearer(s)
@@ -190,7 +190,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2002**](inline_response_200_2.md)
+[**InlineS1BearerInfo**](InlineS1BearerInfo.md)
 
 ### Authorization
 
@@ -204,7 +204,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionLinkListSubscriptionsGET**
-> InlineResponse2004 SubscriptionLinkListSubscriptionsGET(ctx, optional)
+> InlineSubscriptionLinkList SubscriptionLinkListSubscriptionsGET(ctx, optional)
 Retrieve information on subscriptions for notifications
 
 Queries information on subscriptions for notifications
@@ -225,7 +225,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2004**](inline_response_200_4.md)
+[**InlineSubscriptionLinkList**](InlineSubscriptionLinkList.md)
 
 ### Authorization
 
@@ -267,7 +267,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsGET**
-> InlineResponse2005 SubscriptionsGET(ctx, subscriptionId)
+> InlineNotificationSubscription SubscriptionsGET(ctx, subscriptionId)
 Retrieve information on current specific subscription
 
 Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -281,7 +281,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineResponse2005**](inline_response_200_5.md)
+[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
 
 ### Authorization
 
@@ -295,7 +295,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPOST**
-> InlineResponse201 SubscriptionsPOST(ctx, body)
+> InlineNotificationSubscription SubscriptionsPOST(ctx, body)
 Create a new subscription
 
 Creates a new subscription to Radio Network Information notifications
@@ -305,11 +305,11 @@ Creates a new subscription to Radio Network Information notifications
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body**](Body.md)| Subscription to be created | 
+  **body** | [**InlineNotificationSubscription**](InlineNotificationSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineResponse201**](inline_response_201.md)
+[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
 
 ### Authorization
 
@@ -323,7 +323,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPUT**
-> InlineResponse2006 SubscriptionsPUT(ctx, body, subscriptionId)
+> InlineNotificationSubscription SubscriptionsPUT(ctx, body, subscriptionId)
 Modify an existing subscription
 
 Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -333,12 +333,12 @@ Updates an existing subscription, identified by its self-referring URI returned 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body1**](Body1.md)| Subscription to be modified | 
+  **body** | [**InlineNotificationSubscription**](InlineNotificationSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineResponse2006**](inline_response_200_6.md)
+[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
 
 ### Authorization
 

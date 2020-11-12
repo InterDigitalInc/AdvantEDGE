@@ -9,7 +9,7 @@
  */
 package server
 
-type OneOfNotificationSubscription struct {
+type OneOfInlineNotificationSubscriptionNotificationSubscription struct {
 	SubscriptionType string `json:"subscriptionType"`
 
 	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
@@ -28,4 +28,16 @@ type OneOfNotificationSubscription struct {
 	FilterCriteriaNrMrs          *NrMeasRepUeSubscriptionFilterCriteriaNrMrs       `json:"filterCriteriaNrMrs,omitempty"`
 	FilterCriteriaQci            *RabModSubscriptionFilterCriteriaQci              `json:"filterCriteriaQci,omitempty"`
 	S1BearerSubscriptionCriteria *S1BearerSubscriptionS1BearerSubscriptionCriteria `json:"S1BearerSubscriptionCriteria,omitempty"`
+
+	/*
+	   CellChangeSubscription
+	   RabEstSubscription
+	   RabModSubscription
+	   RabRelSubscription
+	   MeasRepUeSubscription
+	   NrMeasRepUeSubscription
+	   MeasTaSubscription
+	   CaReconfSubscription
+	   S1BearerSubscription
+	*/
 }

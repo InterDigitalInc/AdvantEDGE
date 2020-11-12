@@ -16,7 +16,7 @@ type RabModSubscriptionFilterCriteriaQci struct {
 	// E-UTRAN Cell Global Identifier.
 	Ecgi []Ecgi `json:"ecgi,omitempty"`
 	// The attribute that uniquely identifies a Radio Access bearer for specific UE as defined in ETSI TS 136 413 [i.3].
-	ErabId int32 `json:"erabId"`
+	ErabId int32 `json:"erabId,omitempty"`
 	// QoS Class Identifier as defined in ETSI TS 123 401 [i.4].
 	Qci int32 `json:"qci"`
 }

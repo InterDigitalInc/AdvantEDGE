@@ -24,13 +24,7 @@
 
 package client
 
-// Information on specific UE that matches the criteria in S1BearerSubscription as defined below.
-type S1BearerNotificationS1UeInfo struct {
-	// 0 to N identifiers to associate the information for a specific UE or flow.
-	AssociateId []AssociateId `json:"associateId,omitempty"`
-	// E-UTRAN Cell Global Identifier.
-	Ecgi []Ecgi `json:"ecgi"`
-	// S1 bearer information as defined below.
-	S1BearerInfo []S1BearerInfoS1BearerInfoDetailed `json:"s1BearerInfo"`
-	TempUeId     *CellChangeNotificationTempUeId    `json:"tempUeId,omitempty"`
+// Response body contains the list of links to requestors subscriptions.
+type InlineSubscriptionLinkList struct {
+	SubscriptionLinkList *SubscriptionLinkList `json:"subscriptionLinkList"`
 }

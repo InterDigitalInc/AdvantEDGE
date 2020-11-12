@@ -48,10 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  rabInfo:
-                    $ref: '#/components/schemas/RabInfo'
+                $ref: '#/components/schemas/InlineRabInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -80,12 +77,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
-                properties:
-                  plmnInfo:
-                    type: "array"
-                    items:
-                      $ref: '#/components/schemas/PlmnInfo'
+                $ref: '#/components/schemas/InlinePlmnInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -120,12 +112,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
-                required:
-                  - "s1BearerInfo"
-                properties:
-                  s1BearerInfo:
-                    $ref: '#/components/schemas/S1BearerInfo'
+                $ref: '#/components/schemas/InlineS1BearerInfo'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -192,12 +179,7 @@ paths:
           content:
             application/json:
               schema:
-                type: "object"
-                required:
-                  - "l2Meas"
-                properties:
-                  l2Meas:
-                    $ref: '#/components/schemas/L2Meas'
+                $ref: '#/components/schemas/InlineL2Meas'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -228,12 +210,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - subscriptionLinkList
-                properties:
-                  subscriptionLinkList:
-                    $ref: '#/components/schemas/SubscriptionLinkList'
+                $ref: '#/components/schemas/InlineSubscriptionLinkList'
               example:
                 subscriptionLinkList:
                   _links:
@@ -270,25 +247,41 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                notificationSubscription:
-                  oneOf:
-                    - $ref: '#/components/schemas/CellChangeSubscription'
-                    - $ref: '#/components/schemas/RabEstSubscription'
-                    - $ref: '#/components/schemas/RabModSubscription'
-                    - $ref: '#/components/schemas/RabRelSubscription'
-                    - $ref: '#/components/schemas/MeasRepUeSubscription'
-                    - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                    - $ref: '#/components/schemas/MeasTaSubscription'
-                    - $ref: '#/components/schemas/CaReconfSubscription'
-                    - $ref: '#/components/schemas/S1BearerSubscription'
-                  discriminator:
-                    propertyName: subscriptionType
+              $ref: '#/components/schemas/InlineNotificationSubscription'
+            example:
+              notificationSubscription:
+                subscriptionType: CellChangeSubscription
+                callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
+                filterCriteriaAssocHo:
+                  appInstanceId: 'myApp'
+                  associateId:
+                  - type: 1
+                    value: '10.100.0.1'
+                  ecgi:
+                  - plmn:
+                      mnc: '01'
+                      mcc: '001'
+                    cellId: 'ACBDEFA'
+                  hoStatus:
+                  - 1
+                  - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
+      responses:
+        '201':
+          description: Successful subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InlineNotificationSubscription'
               example:
                 notificationSubscription:
                   subscriptionType: CellChangeSubscription
                   callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
+                  _links:
+                    self:
+                      href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
                   filterCriteriaAssocHo:
                     appInstanceId: 'myApp'
                     associateId:
@@ -305,50 +298,6 @@ paths:
                   expiryDeadline:
                     seconds: 1977836800
                     nanoseconds: 0
-      responses:
-        '201':
-          description: Successful subscription
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  notificationSubscription:
-                    oneOf:
-                      - $ref: '#/components/schemas/CellChangeSubscription'
-                      - $ref: '#/components/schemas/RabEstSubscription'
-                      - $ref: '#/components/schemas/RabModSubscription'
-                      - $ref: '#/components/schemas/RabRelSubscription'
-                      - $ref: '#/components/schemas/MeasRepUeSubscription'
-                      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                      - $ref: '#/components/schemas/MeasTaSubscription'
-                      - $ref: '#/components/schemas/CaReconfSubscription'
-                      - $ref: '#/components/schemas/S1BearerSubscription'
-                    discriminator:
-                      propertyName: subscriptionType
-                example:
-                  notificationSubscription:
-                    subscriptionType: CellChangeSubscription
-                    callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
-                    _links:
-                      self:
-                        href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
-                    filterCriteriaAssocHo:
-                      appInstanceId: 'myApp'
-                      associateId:
-                      - type: 1
-                        value: '10.100.0.1'
-                      ecgi:
-                      - plmn:
-                          mnc: '01'
-                          mcc: '001'
-                        cellId: 'ACBDEFA'
-                      hoStatus:
-                      - 1
-                      - 2
-                    expiryDeadline:
-                      seconds: 1977836800
-                      nanoseconds: 0
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -378,44 +327,30 @@ paths:
                 content:
                   application/json:
                     schema:
-                      type: object
-                      properties:
-                        notification:
-                          oneOf:
-                            - $ref: '#/components/schemas/CellChangeNotification'
-                            - $ref: '#/components/schemas/RabEstNotification'
-                            - $ref: '#/components/schemas/RabModNotification'
-                            - $ref: '#/components/schemas/RabRelNotification'
-                            - $ref: '#/components/schemas/MeasRepUeNotification'
-                            - $ref: '#/components/schemas/NrMeasRepUeNotification'
-                            - $ref: '#/components/schemas/MeasTaNotification'
-                            - $ref: '#/components/schemas/CaReconfNotification'
-                            - $ref: '#/components/schemas/S1BearerNotification'
-                          discriminator:
-                            propertyName: notificationType
-                      example:
-                        notification:
-                          notificationType: CellChangeNotification
-                          associateId:
-                          - type: 1
-                            value: '10.100.0.1'
-                          hoStatus: 1
-                          srcEcgi:
-                            plmn:
-                              mnc: '01'
-                              mcc: '001'
-                            cellId: 'ACBDEFA'
-                          tempUeId:
-                            mmec: 1
-                            mtmsi: 001011231231234
-                          timeStamp:
-                            seconds: 1977836800
-                            nanoseconds: 0
-                          trgEcgi:
-                            plmn:
-                              mnc: '01'
-                              mcc: '001'
-                            cellId: 'FEDCBAA'
+                      $ref: '#/components/schemas/InlineNotification'
+                    example:
+                      notification:
+                        notificationType: CellChangeNotification
+                        associateId:
+                        - type: 1
+                          value: '10.100.0.1'
+                        hoStatus: 1
+                        srcEcgi:
+                          plmn:
+                            mnc: '01'
+                            mcc: '001'
+                          cellId: 'ACBDEFA'
+                        tempUeId:
+                          mmec: 1
+                          mtmsi: 001011231231234
+                        timeStamp:
+                          seconds: 1977836800
+                          nanoseconds: 0
+                        trgEcgi:
+                          plmn:
+                            mnc: '01'
+                            mcc: '001'
+                          cellId: 'FEDCBAA'
               responses:
                 '204':
                   $ref: '#/components/responses/204'
@@ -435,46 +370,30 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - notificationSubscription
-                properties:
-                  notificationSubscription:
-                    oneOf:
-                      - $ref: '#/components/schemas/CellChangeSubscription'
-                      - $ref: '#/components/schemas/RabEstSubscription'
-                      - $ref: '#/components/schemas/RabModSubscription'
-                      - $ref: '#/components/schemas/RabRelSubscription'
-                      - $ref: '#/components/schemas/MeasRepUeSubscription'
-                      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                      - $ref: '#/components/schemas/MeasTaSubscription'
-                      - $ref: '#/components/schemas/CaReconfSubscription'
-                      - $ref: '#/components/schemas/S1BearerSubscription'
-                    discriminator:
-                      propertyName: subscriptionType
-                example:
-                  notificationSubscription:
-                    subscriptionType: CellChangeSubscription
-                    callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
-                    _links:
-                      self:
-                        href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
-                    filterCriteriaAssocHo:
-                      appInstanceId: 'myApp'
-                      associateId:
-                      - type: 1
-                        value: '10.100.0.1'
-                      ecgi:
-                      - plmn:
-                          mnc: '01'
-                          mcc: '001'
-                        cellId: 'ACBDEFA'
-                      hoStatus:
-                      - 1
-                      - 2
-                    expiryDeadline:
-                      seconds: 1977836800
-                      nanoseconds: 0
+                $ref: '#/components/schemas/InlineNotificationSubscription'
+              example:
+                notificationSubscription:
+                  subscriptionType: CellChangeSubscription
+                  callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
+                  _links:
+                    self:
+                      href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
+                  filterCriteriaAssocHo:
+                    appInstanceId: 'myApp'
+                    associateId:
+                    - type: 1
+                      value: '10.100.0.1'
+                    ecgi:
+                    - plmn:
+                        mnc: '01'
+                        mcc: '001'
+                      cellId: 'ACBDEFA'
+                    hoStatus:
+                    - 1
+                    - 2
+                  expiryDeadline:
+                    seconds: 1977836800
+                    nanoseconds: 0
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -500,44 +419,30 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                notificationSubscription:
-                  oneOf:
-                      - $ref: '#/components/schemas/CellChangeSubscription'
-                      - $ref: '#/components/schemas/RabEstSubscription'
-                      - $ref: '#/components/schemas/RabModSubscription'
-                      - $ref: '#/components/schemas/RabRelSubscription'
-                      - $ref: '#/components/schemas/MeasRepUeSubscription'
-                      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                      - $ref: '#/components/schemas/MeasTaSubscription'
-                      - $ref: '#/components/schemas/CaReconfSubscription'
-                      - $ref: '#/components/schemas/S1BearerSubscription'
-                  discriminator:
-                    propertyName: subscriptionType
-              example:
-                notificationSubscription:
-                  subscriptionType: CellChangeSubscription
-                  callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
-                  _links:
-                    self:
-                      href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
-                  filterCriteriaAssocHo:
-                    appInstanceId: 'myApp'
-                    associateId:
-                    - type: 1
-                      value: '10.100.0.1'
-                    ecgi:
-                    - plmn:
-                        mnc: '01'
-                        mcc: '001'
-                      cellId: 'ACBDEFA'
-                    hoStatus:
-                    - 1
-                    - 2
-                  expiryDeadline:
-                    seconds: 1977836800
-                    nanoseconds: 0
+              $ref: '#/components/schemas/InlineNotificationSubscription'
+            example:
+              notificationSubscription:
+                subscriptionType: CellChangeSubscription
+                callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
+                _links:
+                  self:
+                    href: 'http://meAppServer.example.com/rni/v2/subscriptions/sub123'
+                filterCriteriaAssocHo:
+                  appInstanceId: 'myApp'
+                  associateId:
+                  - type: 1
+                    value: '10.100.0.1'
+                  ecgi:
+                  - plmn:
+                      mnc: '01'
+                      mcc: '001'
+                    cellId: 'ACBDEFA'
+                  hoStatus:
+                  - 1
+                  - 2
+                expiryDeadline:
+                  seconds: 1977836800
+                  nanoseconds: 0
       parameters:
         - $ref: '#/components/parameters/Path.subscrId'
       responses:
@@ -546,21 +451,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  notificationSubscription:
-                    oneOf:
-                      - $ref: '#/components/schemas/CellChangeSubscription'
-                      - $ref: '#/components/schemas/RabEstSubscription'
-                      - $ref: '#/components/schemas/RabModSubscription'
-                      - $ref: '#/components/schemas/RabRelSubscription'
-                      - $ref: '#/components/schemas/MeasRepUeSubscription'
-                      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                      - $ref: '#/components/schemas/MeasTaSubscription'
-                      - $ref: '#/components/schemas/CaReconfSubscription'
-                      - $ref: '#/components/schemas/S1BearerSubscription'
-                    discriminator:
-                      propertyName: subscriptionType
+                $ref: '#/components/schemas/InlineNotificationSubscription'
               example:
                 notificationSubscription:
                   subscriptionType: CellChangeSubscription
@@ -630,77 +521,51 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     401:
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     403:
       description: 'Forbidden :  operation is not allowed given the current status of the resource.'
       content:
         application/json:
           schema:
-            type: object
-            required:
-              - problemDetails
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetailsRequired'
     404:
       description: 'Not Found :  used when a client provided a URI that cannot be mapped to a valid resource URI.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     406:
       description: 'Not Acceptable : used to indicate that the server cannot provide the any of the content formats supported by the client.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     412:
       description: 'Precondition failed :  used when a condition has failed during conditional requests, e.g. when
         using ETags to avoid write conflicts when using PUT'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     414:
       description: 'URI Too Long : used to indicate that the server is refusing to process the request because the request URI is
         longer than the server is willing or able to process.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     415:
       description: 'Unsupported Media Type :  used to indicate that the server or the client does not support the content type of the entity body.'
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
     422:
       description: 'Unprocessable Entity : used to indicate that the server understands the content type of the request entity and that the
         syntax of the request entity is correct but that the server is unable to process the contained instructions. This error condition can occur if an
@@ -709,10 +574,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
           example:
             application/problem+json:
               problemDetails:
@@ -726,10 +588,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              problemDetails:
-                $ref: '#/components/schemas/ProblemDetails'
+            $ref: '#/components/schemas/InlineProblemDetails'
   parameters:
     Path.subscrId:
       name: subscriptionId
@@ -3399,6 +3258,7 @@ components:
                 type: object
                 x-etsi-mec-cardinality: 0..1
                 x-etsi-mec-origin-type: Structure (inlined)
+            type: object
           minItems: 1
           required:
           - associateId
@@ -3430,99 +3290,98 @@ components:
           x-etsi-mec-origin-type: Enum
         s1UeInfo:
           description: Information on specific UE that matches the criteria in S1BearerSubscription as defined below.
-          items:
-            properties:
-              associateId:
-                description: 0 to N identifiers to associate the information for a specific UE or flow.
-                items:
-                  $ref: '#/components/schemas/AssociateId'
-                minItems: 0
-                type: array
-                x-etsi-mec-cardinality: 0..N
-                x-etsi-mec-origin-type: AssociateId
-              ecgi:
-                description: E-UTRAN Cell Global Identifier.
-                items:
-                  $ref: '#/components/schemas/Ecgi'
-                minItems: 1
-                type: array
-                x-etsi-mec-cardinality: 1..N
-                x-etsi-mec-origin-type: Ecgi
-              s1BearerInfo:
-                description: S1 bearer information as defined below.
-                items:
-                  type: object
-                  properties:
-                    enbInfo:
-                      description: S1 bearer information on eNB side as defined below.
-                      properties:
-                        ipAddress:
-                          description: eNB transport layer address of this S1 bearer.
-                          type: string
-                          x-etsi-mec-cardinality: '1'
-                          x-etsi-mec-origin-type: String
-                        tunnelId:
-                          description: eNB GTP-U TEID of this S1 bearer.
-                          type: string
-                          x-etsi-mec-cardinality: '1'
-                          x-etsi-mec-origin-type: String
-                      required:
-                      - ipAddress
-                      - tunnelId
-                      type: object
-                      x-etsi-mec-cardinality: '1'
-                      x-etsi-mec-origin-type: Structure (inlined)
-                    erabId:
-                      description: The attribute that uniquely identifies a S1 bearer for a specific UE, as defined in ETSI TS 136 413 [i.3].
-                      type: integer
-                      x-etsi-mec-cardinality: '1'
-                      x-etsi-mec-origin-type: Integer
-                    sGwInfo:
-                      description: S1 bearer information on GW side as defined below.
-                      properties:
-                        ipAddress:
-                          description: SGW transport layer address of this S1 bearer.
-                          type: string
-                          x-etsi-mec-cardinality: '1'
-                          x-etsi-mec-origin-type: String
-                        tunnelId:
-                          description: SGW GTP-U TEID of this S1 bearer.
-                          type: string
-                          x-etsi-mec-cardinality: '1'
-                          x-etsi-mec-origin-type: String
-                      required:
-                      - ipAddress
-                      - tunnelId
-                      type: object
-                      x-etsi-mec-cardinality: '1'
-                      x-etsi-mec-origin-type: Structure (inlined)
-                minItems: 1
-                required:
-                - erabId
-                - enbInfo
-                - sGwInfo
-                type: array
-                x-etsi-mec-cardinality: 1..N
-                x-etsi-mec-origin-type: Structure (inlined)
-              tempUeId:
-                description: The temporary identifier allocated for the specific UE as defined below.
-                properties:
-                  mmec:
-                    description: MMEC as defined in ETSI TS 136 413 [i.3].
-                    type: string
-                    x-etsi-mec-cardinality: '1'
-                    x-etsi-mec-origin-type: String
-                  mtmsi:
-                    description: M-TMSI as defined in ETSI TS 136 413 [i.3].
-                    type: string
-                    x-etsi-mec-cardinality: '1'
-                    x-etsi-mec-origin-type: String
-                required:
-                - mmec
-                - mtmsi
+          properties:
+            associateId:
+              description: 0 to N identifiers to associate the information for a specific UE or flow.
+              items:
+                $ref: '#/components/schemas/AssociateId'
+              minItems: 0
+              type: array
+              x-etsi-mec-cardinality: 0..N
+              x-etsi-mec-origin-type: AssociateId
+            ecgi:
+              description: E-UTRAN Cell Global Identifier.
+              items:
+                $ref: '#/components/schemas/Ecgi'
+              minItems: 1
+              type: array
+              x-etsi-mec-cardinality: 1..N
+              x-etsi-mec-origin-type: Ecgi
+            s1BearerInfo:
+              description: S1 bearer information as defined below.
+              items:
                 type: object
-                x-etsi-mec-cardinality: 0..1
-                x-etsi-mec-origin-type: Structure (inlined)
+                properties:
+                  enbInfo:
+                    description: S1 bearer information on eNB side as defined below.
+                    properties:
+                      ipAddress:
+                        description: eNB transport layer address of this S1 bearer.
+                        type: string
+                        x-etsi-mec-cardinality: '1'
+                        x-etsi-mec-origin-type: String
+                      tunnelId:
+                        description: eNB GTP-U TEID of this S1 bearer.
+                        type: string
+                        x-etsi-mec-cardinality: '1'
+                        x-etsi-mec-origin-type: String
+                    required:
+                    - ipAddress
+                    - tunnelId
+                    type: object
+                    x-etsi-mec-cardinality: '1'
+                    x-etsi-mec-origin-type: Structure (inlined)
+                  erabId:
+                    description: The attribute that uniquely identifies a S1 bearer for a specific UE, as defined in ETSI TS 136 413 [i.3].
+                    type: integer
+                    x-etsi-mec-cardinality: '1'
+                    x-etsi-mec-origin-type: Integer
+                  sGwInfo:
+                    description: S1 bearer information on GW side as defined below.
+                    properties:
+                      ipAddress:
+                        description: SGW transport layer address of this S1 bearer.
+                        type: string
+                        x-etsi-mec-cardinality: '1'
+                        x-etsi-mec-origin-type: String
+                      tunnelId:
+                        description: SGW GTP-U TEID of this S1 bearer.
+                        type: string
+                        x-etsi-mec-cardinality: '1'
+                        x-etsi-mec-origin-type: String
+                    required:
+                    - ipAddress
+                    - tunnelId
+                    type: object
+                    x-etsi-mec-cardinality: '1'
+                    x-etsi-mec-origin-type: Structure (inlined)
+              minItems: 1
+              required:
+              - erabId
+              - enbInfo
+              - sGwInfo
+              type: array
+              x-etsi-mec-cardinality: 1..N
+              x-etsi-mec-origin-type: Structure (inlined)
+            tempUeId:
+              description: The temporary identifier allocated for the specific UE as defined below.
+              properties:
+                mmec:
+                  description: MMEC as defined in ETSI TS 136 413 [i.3].
+                  type: string
+                  x-etsi-mec-cardinality: '1'
+                  x-etsi-mec-origin-type: String
+                mtmsi:
+                  description: M-TMSI as defined in ETSI TS 136 413 [i.3].
+                  type: string
+                  x-etsi-mec-cardinality: '1'
+                  x-etsi-mec-origin-type: String
+              required:
+              - mmec
+              - mtmsi
+              type: object
+              x-etsi-mec-cardinality: 0..1
+              x-etsi-mec-origin-type: Structure (inlined)
           required:
           - ecgi
           - s1BearerInfo
@@ -3721,4 +3580,82 @@ components:
       - 30
       - 31
       type: integer
+    InlineRabInfo:
+      type: object
+      properties:
+        rabInfo:
+          $ref: '#/components/schemas/RabInfo'
+    InlinePlmnInfo:
+      type: "object"
+      properties:
+        plmnInfo:
+          type: "array"
+          items:
+            $ref: '#/components/schemas/PlmnInfo'
+    InlineS1BearerInfo:
+      type: "object"
+      required:
+        - "s1BearerInfo"
+      properties:
+        s1BearerInfo:
+          $ref: '#/components/schemas/S1BearerInfo'
+    InlineL2Meas:
+      type: "object"
+      required:
+        - "l2Meas"
+      properties:
+        l2Meas:
+          $ref: '#/components/schemas/L2Meas'
+    InlineSubscriptionLinkList:
+      description: Response body contains the list of links to requestors subscriptions.
+      type: object
+      required:
+        - subscriptionLinkList
+      properties:
+        subscriptionLinkList:
+          $ref: '#/components/schemas/SubscriptionLinkList'
+    InlineNotificationSubscription:
+      type: object
+      properties:
+        notificationSubscription:
+          oneOf:
+            - $ref: '#/components/schemas/CellChangeSubscription'
+            - $ref: '#/components/schemas/RabEstSubscription'
+            - $ref: '#/components/schemas/RabModSubscription'
+            - $ref: '#/components/schemas/RabRelSubscription'
+            - $ref: '#/components/schemas/MeasRepUeSubscription'
+            - $ref: '#/components/schemas/NrMeasRepUeSubscription'
+            - $ref: '#/components/schemas/MeasTaSubscription'
+            - $ref: '#/components/schemas/CaReconfSubscription'
+            - $ref: '#/components/schemas/S1BearerSubscription'
+          discriminator:
+            propertyName: subscriptionType
+    InlineNotification:
+      type: object
+      properties:
+        notification:
+          oneOf:
+            - $ref: '#/components/schemas/CellChangeNotification'
+            - $ref: '#/components/schemas/RabEstNotification'
+            - $ref: '#/components/schemas/RabModNotification'
+            - $ref: '#/components/schemas/RabRelNotification'
+            - $ref: '#/components/schemas/MeasRepUeNotification'
+            - $ref: '#/components/schemas/NrMeasRepUeNotification'
+            - $ref: '#/components/schemas/MeasTaNotification'
+            - $ref: '#/components/schemas/CaReconfNotification'
+            - $ref: '#/components/schemas/S1BearerNotification'
+          discriminator:
+            propertyName: notificationType
+    InlineProblemDetails:
+      type: object
+      properties:
+        problemDetails:
+          $ref: '#/components/schemas/ProblemDetails'
+    InlineProblemDetailsRequired:
+      type: object
+      required:
+        - problemDetails
+      properties:
+        problemDetails:
+          $ref: '#/components/schemas/ProblemDetails'
 

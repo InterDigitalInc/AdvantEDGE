@@ -102,7 +102,7 @@ var routes = Routes{
 	Route{
 		"SubscriptionLinkListSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/rni/v2/subscriptions/",
+		"/rni/v2/subscriptions",
 		SubscriptionLinkListSubscriptionsGET,
 	},
 
@@ -123,7 +123,7 @@ var routes = Routes{
 	Route{
 		"SubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/rni/v2/subscriptions/",
+		"/rni/v2/subscriptions",
 		SubscriptionsPOST,
 	},
 

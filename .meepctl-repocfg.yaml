@@ -31,7 +31,7 @@ repo:
     # platform ingress configuration
     ingress:
       # host name
-      host: my-advantedge.com
+      host: 10.3.16.150
       # enable https only (redirect http requests to https port)
       https-only: true
       # bind to host ports (true) or node ports (false)
@@ -290,7 +290,6 @@ repo:
           - sandbox.go-apps.meep-gis-engine
           - sandbox.go-apps.meep-loc-serv
           - sandbox.go-apps.meep-rnis
-          - packages.go-packages.meep-rnis-notification-client
           - sandbox.go-apps.meep-wais
           - packages.go-packages.meep-wais-notification-client
           - sandbox.go-apps.meep-metrics-engine
@@ -723,13 +722,6 @@ repo:
         src: go-packages/meep-rnis-client
         # supports linting
         lint: false
-      meep-rnis-notification-client:
-        # location of source code
-        src: go-packages/meep-rnis-notification-client
-        # supports linting
-        lint: false
-        # location of API specification
-        api: go-packages/meep-rnis-notification-client/api/swagger.yaml
       meep-sandbox-ctrl-client:
         # location of source code
         src: go-packages/meep-sandbox-ctrl-client

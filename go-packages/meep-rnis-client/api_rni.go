@@ -87,7 +87,7 @@ Queries information about the layer 2 measurements.
      * @param "DlNongbrDataVolumeUe" (optional.Int32) -  Data volume of downlink non-GBR traffic of a UE as defined in ETSI TS 136 314
      * @param "UlNongbrDataVolumeUe" (optional.Int32) -  Data volume of uplink non-GBR traffic of a UE as defined in ETSI TS 136 314
 
-@return InlineResponse2003
+@return InlineL2Meas
 */
 
 type Layer2MeasInfoGETOpts struct {
@@ -132,13 +132,13 @@ type Layer2MeasInfoGETOpts struct {
 	UlNongbrDataVolumeUe                           optional.Int32
 }
 
-func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals *Layer2MeasInfoGETOpts) (InlineResponse2003, *http.Response, error) {
+func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals *Layer2MeasInfoGETOpts) (InlineL2Meas, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2003
+		localVarReturnValue InlineL2Meas
 	)
 
 	// create path and map variables
@@ -313,7 +313,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2003
+			var v InlineL2Meas
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -324,7 +324,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -335,7 +335,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -346,7 +346,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -357,7 +357,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -368,7 +368,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -379,7 +379,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 414 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -390,7 +390,7 @@ func (a *RniApiService) Layer2MeasInfoGET(ctx context.Context, localVarOptionals
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -412,15 +412,15 @@ Queries information about the Mobile Network
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param appInsId Comma separated list of Application instance identifiers
 
-@return InlineResponse2001
+@return InlinePlmnInfo
 */
-func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (InlineResponse2001, *http.Response, error) {
+func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (InlinePlmnInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2001
+		localVarReturnValue InlinePlmnInfo
 	)
 
 	// create path and map variables
@@ -479,7 +479,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2001
+			var v InlinePlmnInfo
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -490,7 +490,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -501,7 +501,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -512,7 +512,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -523,7 +523,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -534,7 +534,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -545,7 +545,7 @@ func (a *RniApiService) PlmnInfoGET(ctx context.Context, appInsId []string) (Inl
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -579,7 +579,7 @@ Queries information about the Radio Access Bearers
      * @param "ErabGbrDl" (optional.Int32) -  Guaranteed downlink E-RAB Bit Rate as defined in ETSI TS 123 401
      * @param "ErabGbrUl" (optional.Int32) -  Guaranteed uplink E-RAB Bit Rate as defined in ETSI TS 123 401
 
-@return InlineResponse200
+@return InlineRabInfo
 */
 
 type RabInfoGETOpts struct {
@@ -597,13 +597,13 @@ type RabInfoGETOpts struct {
 	ErabGbrUl      optional.Int32
 }
 
-func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabInfoGETOpts) (InlineResponse200, *http.Response, error) {
+func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabInfoGETOpts) (InlineRabInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse200
+		localVarReturnValue InlineRabInfo
 	)
 
 	// create path and map variables
@@ -697,7 +697,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse200
+			var v InlineRabInfo
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -708,7 +708,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -719,7 +719,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -730,7 +730,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -741,7 +741,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -752,7 +752,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -763,7 +763,7 @@ func (a *RniApiService) RabInfoGET(ctx context.Context, localVarOptionals *RabIn
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -792,7 +792,7 @@ Queries information about the S1 bearer(s)
      * @param "CellId" (optional.Interface of []string) -  Comma separated list of E-UTRAN Cell Identities
      * @param "ErabId" (optional.Interface of []int32) -  Comma separated list of E-RAB identifiers
 
-@return InlineResponse2002
+@return InlineS1BearerInfo
 */
 
 type S1BearerInfoGETOpts struct {
@@ -805,13 +805,13 @@ type S1BearerInfoGETOpts struct {
 	ErabId         optional.Interface
 }
 
-func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *S1BearerInfoGETOpts) (InlineResponse2002, *http.Response, error) {
+func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *S1BearerInfoGETOpts) (InlineS1BearerInfo, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2002
+		localVarReturnValue InlineS1BearerInfo
 	)
 
 	// create path and map variables
@@ -890,7 +890,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2002
+			var v InlineS1BearerInfo
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -901,7 +901,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -912,7 +912,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -923,7 +923,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -934,7 +934,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -945,7 +945,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -956,7 +956,7 @@ func (a *RniApiService) S1BearerInfoGET(ctx context.Context, localVarOptionals *
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -979,20 +979,20 @@ Queries information on subscriptions for notifications
  * @param optional nil or *SubscriptionLinkListSubscriptionsGETOpts - Optional Parameters:
      * @param "SubscriptionType" (optional.String) -  Filter on a specific subscription type. Permitted values: cell_change, rab_est, rab_mod, rab_rel, meas_rep_ue, nr_meas_rep_ue, timing_advance_ue, ca_reconf, s1_bearer.
 
-@return InlineResponse2004
+@return InlineSubscriptionLinkList
 */
 
 type SubscriptionLinkListSubscriptionsGETOpts struct {
 	SubscriptionType optional.String
 }
 
-func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context, localVarOptionals *SubscriptionLinkListSubscriptionsGETOpts) (InlineResponse2004, *http.Response, error) {
+func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context, localVarOptionals *SubscriptionLinkListSubscriptionsGETOpts) (InlineSubscriptionLinkList, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2004
+		localVarReturnValue InlineSubscriptionLinkList
 	)
 
 	// create path and map variables
@@ -1053,7 +1053,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2004
+			var v InlineSubscriptionLinkList
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1064,7 +1064,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1075,7 +1075,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1086,7 +1086,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1097,7 +1097,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1108,7 +1108,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1119,7 +1119,7 @@ func (a *RniApiService) SubscriptionLinkListSubscriptionsGET(ctx context.Context
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1199,7 +1199,7 @@ func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1210,7 +1210,7 @@ func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1221,7 +1221,7 @@ func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1232,7 +1232,7 @@ func (a *RniApiService) SubscriptionsDELETE(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1254,15 +1254,15 @@ Queries information about an existing subscription, identified by its self-refer
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
-@return InlineResponse2005
+@return InlineNotificationSubscription
 */
-func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId string) (InlineResponse2005, *http.Response, error) {
+func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId string) (InlineNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2005
+		localVarReturnValue InlineNotificationSubscription
 	)
 
 	// create path and map variables
@@ -1321,7 +1321,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2005
+			var v InlineNotificationSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1332,7 +1332,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1343,7 +1343,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1354,7 +1354,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1365,7 +1365,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1376,7 +1376,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1387,7 +1387,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1409,15 +1409,15 @@ Creates a new subscription to Radio Network Information notifications
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param body Subscription to be created
 
-@return InlineResponse201
+@return InlineNotificationSubscription
 */
-func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (InlineResponse201, *http.Response, error) {
+func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body InlineNotificationSubscription) (InlineNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse201
+		localVarReturnValue InlineNotificationSubscription
 	)
 
 	// create path and map variables
@@ -1477,7 +1477,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 201 {
-			var v InlineResponse201
+			var v InlineNotificationSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1488,7 +1488,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1499,7 +1499,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1510,7 +1510,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1521,7 +1521,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1532,7 +1532,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1543,7 +1543,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 415 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1554,7 +1554,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1565,7 +1565,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1588,15 +1588,15 @@ Updates an existing subscription, identified by its self-referring URI returned 
  * @param body Subscription to be modified
  * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
-@return InlineResponse2006
+@return InlineNotificationSubscription
 */
-func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscriptionId string) (InlineResponse2006, *http.Response, error) {
+func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body InlineNotificationSubscription, subscriptionId string) (InlineNotificationSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue InlineResponse2006
+		localVarReturnValue InlineNotificationSubscription
 	)
 
 	// create path and map variables
@@ -1657,7 +1657,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v InlineResponse2006
+			var v InlineNotificationSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1668,7 +1668,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1679,7 +1679,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1690,7 +1690,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineResponse403
+			var v InlineProblemDetailsRequired
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1701,7 +1701,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1712,7 +1712,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1723,7 +1723,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1734,7 +1734,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1745,7 +1745,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineResponse400
+			var v InlineProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
