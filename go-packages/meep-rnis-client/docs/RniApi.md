@@ -16,7 +16,7 @@ Method | HTTP request | Description
 
 
 # **Layer2MeasInfoGET**
-> InlineL2Meas Layer2MeasInfoGET(ctx, optional)
+> L2Meas Layer2MeasInfoGET(ctx, optional)
 Retrieve information on layer 2 measurements
 
 Queries information about the layer 2 measurements.
@@ -75,7 +75,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineL2Meas**](InlineL2Meas.md)
+[**L2Meas**](L2Meas.md)
 
 ### Authorization
 
@@ -84,12 +84,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **PlmnInfoGET**
-> InlinePlmnInfo PlmnInfoGET(ctx, appInsId)
+> PlmnInfo PlmnInfoGET(ctx, appInsId)
 Retrieve information on the underlying Mobile Network that the MEC application is associated to
 
 Queries information about the Mobile Network
@@ -103,7 +103,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlinePlmnInfo**](InlinePlmnInfo.md)
+[**PlmnInfo**](PlmnInfo.md)
 
 ### Authorization
 
@@ -112,12 +112,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **RabInfoGET**
-> InlineRabInfo RabInfoGET(ctx, optional)
+> RabInfo RabInfoGET(ctx, optional)
 Retrieve information on Radio Access Bearers
 
 Queries information about the Radio Access Bearers
@@ -149,7 +149,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineRabInfo**](InlineRabInfo.md)
+[**RabInfo**](RabInfo.md)
 
 ### Authorization
 
@@ -158,12 +158,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **S1BearerInfoGET**
-> InlineS1BearerInfo S1BearerInfoGET(ctx, optional)
+> S1BearerInfo S1BearerInfoGET(ctx, optional)
 Retrieve S1-U bearer information related to specific UE(s)
 
 Queries information about the S1 bearer(s)
@@ -190,7 +190,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineS1BearerInfo**](InlineS1BearerInfo.md)
+[**S1BearerInfo**](S1BearerInfo.md)
 
 ### Authorization
 
@@ -199,12 +199,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionLinkListSubscriptionsGET**
-> InlineSubscriptionLinkList SubscriptionLinkListSubscriptionsGET(ctx, optional)
+> SubscriptionLinkList SubscriptionLinkListSubscriptionsGET(ctx, optional)
 Retrieve information on subscriptions for notifications
 
 Queries information on subscriptions for notifications
@@ -225,7 +225,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineSubscriptionLinkList**](InlineSubscriptionLinkList.md)
+[**SubscriptionLinkList**](SubscriptionLinkList.md)
 
 ### Authorization
 
@@ -234,7 +234,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -262,12 +262,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsGET**
-> InlineNotificationSubscription SubscriptionsGET(ctx, subscriptionId)
+> Body SubscriptionsGET(ctx, subscriptionId)
 Retrieve information on current specific subscription
 
 Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -281,7 +281,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
+[**Body**](body.md)
 
 ### Authorization
 
@@ -290,12 +290,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPOST**
-> InlineNotificationSubscription SubscriptionsPOST(ctx, body)
+> Body SubscriptionsPOST(ctx, body)
 Create a new subscription
 
 Creates a new subscription to Radio Network Information notifications
@@ -305,11 +305,11 @@ Creates a new subscription to Radio Network Information notifications
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineNotificationSubscription**](InlineNotificationSubscription.md)| Subscription to be created | 
+  **body** | [**Body**](Body.md)| Subscription to be created | 
 
 ### Return type
 
-[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
+[**Body**](body.md)
 
 ### Authorization
 
@@ -318,12 +318,12 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPUT**
-> InlineNotificationSubscription SubscriptionsPUT(ctx, body, subscriptionId)
+> Body1 SubscriptionsPUT(ctx, body, subscriptionId)
 Modify an existing subscription
 
 Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -333,12 +333,12 @@ Updates an existing subscription, identified by its self-referring URI returned 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**InlineNotificationSubscription**](InlineNotificationSubscription.md)| Subscription to be modified | 
+  **body** | [**Body1**](Body1.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**InlineNotificationSubscription**](InlineNotificationSubscription.md)
+[**Body1**](body_1.md)
 
 ### Authorization
 
@@ -347,7 +347,7 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: application/json
+ - **Accept**: application/json, application/problem+json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

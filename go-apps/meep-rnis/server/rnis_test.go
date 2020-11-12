@@ -747,13 +747,13 @@ func testSubscriptionListGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineSubscriptionLinkList
+	var respBody SubscriptionLinkList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 	nb := 0
-	for range respBody.SubscriptionLinkList.Links.Subscription {
+	for range respBody.Links.Subscription {
 		nb++
 	}
 	if nb != expectedSubscriptionNb {
@@ -774,7 +774,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{CELL_CHANGE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, &expectedFilter, nil, nil, nil, nil}}
+	expectedResponse := CellChangeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -792,7 +792,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 	//filter is not exactly the same in response and request
 	filterCriteria := expectedFilter
 	filterCriteria.HoStatus = nil
-	cellChangeSubscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{CELL_CHANGE_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, &expectedFilter, nil, nil, nil, nil}}
+	cellChangeSubscriptionPost1 := CellChangeSubscription{nil, expectedCallBackRef, nil, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscriptionPost1)
 	if err != nil {
@@ -812,7 +812,7 @@ func testSubscriptionCellChangePost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineNotificationSubscription
+	var respBody CellChangeSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -836,7 +836,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{CELL_CHANGE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, &expectedFilter, nil, nil, nil, nil}}
+	expectedResponse := CellChangeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -852,7 +852,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-	cellChangeSubscription1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{CELL_CHANGE_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, &expectedFilter, nil, nil, nil, nil}}
+	cellChangeSubscription1 := CellChangeSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscription1)
 	if err != nil {
@@ -873,7 +873,7 @@ func testSubscriptionCellChangePut(t *testing.T, subscriptionId string, expectSu
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineNotificationSubscription
+		var respBody CellChangeSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -927,11 +927,6 @@ func testSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse s
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineNotificationSubscription
-		err = json.Unmarshal([]byte(rr), &respBody)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
 		if rr != expectedResponse {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -982,11 +977,11 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 	 ******************************/
 	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
 	expectedEcgi := []Ecgi{expectedEcgi1}
-	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 80}
+	expectedFilter := RabEstSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 80}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	expectedResponse := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1002,7 +997,7 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_EST_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	subscriptionPost1 := RabEstSubscription{nil, expectedCallBackRef, nil, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1022,7 +1017,7 @@ func testSubscriptionRabEstPost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineNotificationSubscription
+	var respBody RabEstSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1040,11 +1035,11 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	 ******************************/
 	expectedEcgi1 := Ecgi{"1234567", &Plmn{"111", "222"}}
 	expectedEcgi := []Ecgi{expectedEcgi1}
-	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 0, 88}
+	expectedFilter := RabEstSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 88}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
 	//expectedExpiry := TimeStamp{0, 1998599770}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	expectedResponse := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1061,7 +1056,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-	subscription1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_EST_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	subscription1 := RabEstSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1082,7 +1077,7 @@ func testSubscriptionRabEstPut(t *testing.T, subscriptionId string, expectSucces
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineNotificationSubscription
+		var respBody RabEstSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1111,7 +1106,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
 	//expectedExpiry := TimeStamp{0, 1988599770}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	expectedResponse := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1127,7 +1122,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 	 ******************************/
 
 	//filter is not exactly the same in response and request
-	subscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_REL_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	subscriptionPost1 := RabRelSubscription{nil, expectedCallBackRef, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -1147,7 +1142,7 @@ func testSubscriptionRabRelPost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineNotificationSubscription
+	var respBody RabRelSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1168,7 +1163,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	expectedFilter := RabModSubscriptionFilterCriteriaQci{"myApp", expectedEcgi, 1, 88}
 	expectedCallBackRef := "myCallbakRef"
 	expectedLinkType := LinkType{"/" + testScenarioName + "/rni/v2/subscriptions/" + subscriptionId}
-	expectedResponse := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	expectedResponse := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1185,7 +1180,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 	 * request body section
 	 ******************************/
 
-	subscription1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_REL_SUBSCRIPTION, &CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	subscription1 := RabRelSubscription{&CaReconfSubscriptionLinks{&expectedLinkType}, expectedCallBackRef, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -1206,7 +1201,7 @@ func testSubscriptionRabRelPut(t *testing.T, subscriptionId string, expectSucces
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineNotificationSubscription
+		var respBody RabRelSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1280,7 +1275,7 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	//filter is not exactly the same in response and request
 	filterCriteria := expectedFilter
 	filterCriteria.HoStatus = nil
-	cellChangeSubscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{CELL_CHANGE_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, &expectedFilter, nil, nil, nil, nil}}
+	cellChangeSubscriptionPost1 := CellChangeSubscription{nil, expectedCallBackRef, nil, &expectedFilter, CELL_CHANGE_SUBSCRIPTION}
 
 	body, err := json.Marshal(cellChangeSubscriptionPost1)
 	if err != nil {
@@ -1309,18 +1304,17 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to create a store")
 	}
 
-	var notificationBody InlineCcNotification
+	var notification CellChangeNotification
 
 	httpLog, err := metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	notification := notificationBody.Notification
 
 	//transform the src and target ecgi in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.SrcEcgi)
@@ -1329,7 +1323,6 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 	}
 	notificationSrcEcgiNullStr := string(jsonResult)
 	if notificationSrcEcgiNullStr != "null" {
-		//fmt.Println("TEST FAILED but commented out, TODO")
 		t.Fatalf("Failed to get null notification")
 	}
 
@@ -1343,11 +1336,10 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	notification = notificationBody.Notification
 
 	//transform the assocId in string for comparison purpose
 	jsonResult, err = json.Marshal(notification.AssociateId)
@@ -1435,7 +1427,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	movingUeAddr := "ue1" //based on the scenario change
 	expectedAssocIdInNotif1 := AssociateId{Type_: 1, Value: movingUeAddr}
 	expectedAssocIdInNotif := []AssociateId{expectedAssocIdInNotif1}
-	expectedFilter := RabModSubscriptionFilterCriteriaQci{Qci: qci} //"", nil, 0, qci}
+	expectedFilter := RabEstSubscriptionFilterCriteriaQci{Qci: qci}
 	expectedCallBackRef := "myCallbakRef"
 	//expectedExpiry := TimeStamp{0, 1988599770}
 
@@ -1447,7 +1439,7 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabEstSubscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_EST_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	rabEstSubscriptionPost1 := RabEstSubscription{nil, expectedCallBackRef, nil, &expectedFilter, RAB_EST_SUBSCRIPTION}
 
 	body, err := json.Marshal(rabEstSubscriptionPost1)
 	if err != nil {
@@ -1481,12 +1473,11 @@ func TestSubscriptionRabEstNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notificationBody InlineReNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
+	var notification RabEstNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	notification := notificationBody.Notification
 
 	//transform the assocId in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.AssociateId)
@@ -1586,7 +1577,7 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 	// * request body section
 	// ****************************** /
 
-	rabRelSubscriptionPost1 := InlineNotificationSubscription{&OneOfInlineNotificationSubscriptionNotificationSubscription{RAB_REL_SUBSCRIPTION, nil, expectedCallBackRef, nil, nil, nil, nil, nil, nil, &expectedFilter, nil}}
+	rabRelSubscriptionPost1 := RabRelSubscription{nil, expectedCallBackRef, nil, &expectedFilter, RAB_REL_SUBSCRIPTION}
 
 	body, err := json.Marshal(rabRelSubscriptionPost1)
 	if err != nil {
@@ -1618,12 +1609,11 @@ func TestSubscriptionRabRelNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notificationBody InlineRrNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notificationBody)
+	var notification RabRelNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	notification := notificationBody.Notification
 
 	//transform the assocId in string for comparison purpose
 	jsonResult, err := json.Marshal(notification.AssociateId)
@@ -1823,14 +1813,16 @@ func TestPlmnInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlinePlmnInfo
-	err = json.Unmarshal([]byte(rr), &respBody)
+	var plmnInfoList []PlmnInfo
+	err = json.Unmarshal([]byte(rr), &plmnInfoList)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	if respBody.PlmnInfo != nil {
-		if respBody.PlmnInfo[0].Plmn[0].Mcc != expectedMcc[INITIAL] {
+	log.Info("SIMON ", string(rr), "---", err)
+
+	if len(plmnInfoList) != 0 {
+		if plmnInfoList[0].Plmn[0].Mcc != expectedMcc[INITIAL] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -1843,12 +1835,12 @@ func TestPlmnInfoGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	err = json.Unmarshal([]byte(rr), &respBody)
+	err = json.Unmarshal([]byte(rr), &plmnInfoList)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	if respBody.PlmnInfo != nil {
-		if respBody.PlmnInfo[0].Plmn[0].Mcc != expectedMcc[UPDATED] {
+	if len(plmnInfoList) != 0 {
+		if plmnInfoList[0].Plmn[0].Mcc != expectedMcc[UPDATED] {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
@@ -1925,24 +1917,19 @@ func TestRabInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineRabInfo
+	var respBody RabInfo
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	if respBody.RabInfo != nil {
+	j, err = json.Marshal(respBody.CellUserInfo[0])
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	cellUserInfoStr := string(j)
 
-		j, err = json.Marshal(respBody.RabInfo.CellUserInfo[0])
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		cellUserInfoStr := string(j)
-
-		if cellUserInfoStr != expectedCellUserInfoStr {
-			t.Fatalf("Failed to get expected response")
-		}
-	} else {
+	if cellUserInfoStr != expectedCellUserInfoStr {
 		t.Fatalf("Failed to get expected response")
 	}
 

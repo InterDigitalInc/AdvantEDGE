@@ -9,6 +9,5 @@
  */
 package server
 
-type InlineNotificationSubscription struct {
-	NotificationSubscription *OneOfInlineNotificationSubscriptionNotificationSubscription `json:"notificationSubscription,omitempty"`
+type Body struct {
 }

@@ -9,6 +9,5 @@
  */
 package server
 
-type InlineReNotification struct {
-	Notification *RabEstNotification `json:"notification,omitempty"`
+type Body1 struct {
 }

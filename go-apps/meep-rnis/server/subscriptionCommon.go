@@ -23,6 +23,10 @@
  */
 package server
 
-type SubscriptionDiscriminator struct {
-	SubscriptionType string `json:"subscriptionType"`
+type SubscriptionCommon struct {
+	Links *CaReconfSubscriptionLinks `json:"_links,omitempty"`
+	// URI selected by the service consumer, to receive notifications on the subscribed RNIS information. This shall be included in the request and response.
+	CallbackReference string     `json:"callbackReference,omitempty"`
+	ExpiryDeadline    *TimeStamp `json:"expiryDeadline,omitempty"`
+	SubscriptionType  string     `json:"subscriptionType"`
 }
