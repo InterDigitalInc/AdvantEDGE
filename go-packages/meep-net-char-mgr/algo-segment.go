@@ -387,7 +387,7 @@ func (algo *SegmentAlgorithm) createMetricsEntry(srcElem string, dstElem string)
 	creationTime["creationTime"] = time.Now()
 
 	// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":"+srcElem, creationTime)
+	// _ = algo.rc.SetEntry(algo.BaseKey+dstElem+":"+srcElem, creationTime)
 	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":throughput", creationTime)
 }
 
@@ -395,7 +395,7 @@ func (algo *SegmentAlgorithm) createMetricsEntry(srcElem string, dstElem string)
 func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 	for _, flow := range algo.FlowMap {
 		// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":" + flow.SrcNetElem)
+		// _ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":" + flow.SrcNetElem)
 		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":throughput")
 	}
 }
