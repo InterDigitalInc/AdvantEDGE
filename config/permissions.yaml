@@ -214,7 +214,7 @@ services:
   #   ZonesGET:
   #     # access authorization mode: allow|block|verify
   #     mode: 'allow'
-  #   ZonesByIdGET:
+  #   ZonesGetById:
   #     # access authorization mode: allow|block|verify
   #     mode: 'allow'
 
