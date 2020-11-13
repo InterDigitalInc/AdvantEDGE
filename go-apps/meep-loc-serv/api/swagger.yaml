@@ -1644,51 +1644,51 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     401:
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     403:
       description: 'Forbidden :  operation is not allowed given the current status of the resource.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetailsRequired'
+            $ref: '#/components/schemas/ProblemDetails'
     404:
       description: 'Not Found :  used when a client provided a URI that cannot be mapped to a valid resource URI.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     406:
       description: 'Not Acceptable : used to indicate that the server cannot provide the any of the content formats supported by the client.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     412:
       description: 'Precondition failed :  used when a condition has failed during conditional requests, e.g. when
         using ETags to avoid write conflicts when using PUT'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     414:
       description: 'URI Too Long : used to indicate that the server is refusing to process the request because the request URI is
         longer than the server is willing or able to process.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     415:
       description: 'Unsupported Media Type :  used to indicate that the server or the client does not support the content type of the entity body.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     422:
       description: 'Unprocessable Entity : used to indicate that the server understands the content type of the request entity and that the
         syntax of the request entity is correct but that the server is unable to process the contained instructions. This error condition can occur if an
@@ -1697,7 +1697,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
           example:
             application/problem+json:
               ProblemDetails:
@@ -1711,7 +1711,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
   parameters:
     Path.AccessPointId:
       name: accessPointId
