@@ -267,7 +267,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsGET**
-> Body SubscriptionsGET(ctx, subscriptionId)
+> InlineSubscription SubscriptionsGET(ctx, subscriptionId)
 Retrieve information on current specific subscription
 
 Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -281,7 +281,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Body**](body.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 
@@ -295,7 +295,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPOST**
-> Body SubscriptionsPOST(ctx, body)
+> InlineSubscription SubscriptionsPOST(ctx, body)
 Create a new subscription
 
 Creates a new subscription to Radio Network Information notifications
@@ -305,11 +305,11 @@ Creates a new subscription to Radio Network Information notifications
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body**](Body.md)| Subscription to be created | 
+  **body** | [**InlineSubscription**](InlineSubscription.md)| Subscription to be created | 
 
 ### Return type
 
-[**Body**](body.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 
@@ -323,7 +323,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **SubscriptionsPUT**
-> Body1 SubscriptionsPUT(ctx, body, subscriptionId)
+> InlineSubscription SubscriptionsPUT(ctx, body, subscriptionId)
 Modify an existing subscription
 
 Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)
@@ -333,12 +333,12 @@ Updates an existing subscription, identified by its self-referring URI returned 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-  **body** | [**Body1**](Body1.md)| Subscription to be modified | 
+  **body** | [**InlineSubscription**](InlineSubscription.md)| Subscription to be modified | 
   **subscriptionId** | **string**| Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request | 
 
 ### Return type
 
-[**Body1**](body_1.md)
+[**InlineSubscription**](InlineSubscription.md)
 
 ### Authorization
 

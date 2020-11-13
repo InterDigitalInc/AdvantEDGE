@@ -35,8 +35,6 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [AssociateId](docs/AssociateId.md)
- - [Body](docs/Body.md)
- - [Body1](docs/Body1.md)
  - [CaReconfNotification](docs/CaReconfNotification.md)
  - [CaReconfNotificationCarrierAggregationMeasInfo](docs/CaReconfNotificationCarrierAggregationMeasInfo.md)
  - [CaReconfNotificationSecondaryCellAdd](docs/CaReconfNotificationSecondaryCellAdd.md)
@@ -50,6 +48,8 @@ Class | Method | HTTP request | Description
  - [Ecgi](docs/Ecgi.md)
  - [ExpiryNotification](docs/ExpiryNotification.md)
  - [ExpiryNotificationLinks](docs/ExpiryNotificationLinks.md)
+ - [InlineNotification](docs/InlineNotification.md)
+ - [InlineSubscription](docs/InlineSubscription.md)
  - [L2Meas](docs/L2Meas.md)
  - [L2MeasCellInfo](docs/L2MeasCellInfo.md)
  - [L2MeasCellUeInfo](docs/L2MeasCellUeInfo.md)
@@ -78,8 +78,8 @@ Class | Method | HTTP request | Description
  - [NrMeasRepUeNotificationServCellMeasInfo](docs/NrMeasRepUeNotificationServCellMeasInfo.md)
  - [NrMeasRepUeSubscription](docs/NrMeasRepUeSubscription.md)
  - [NrMeasRepUeSubscriptionFilterCriteriaNrMrs](docs/NrMeasRepUeSubscriptionFilterCriteriaNrMrs.md)
- - [OneOfbody](docs/OneOfbody.md)
- - [OneOfbody1](docs/OneOfbody1.md)
+ - [OneOfInlineNotification](docs/OneOfInlineNotification.md)
+ - [OneOfInlineSubscription](docs/OneOfInlineSubscription.md)
  - [Plmn](docs/Plmn.md)
  - [PlmnInfo](docs/PlmnInfo.md)
  - [ProblemDetails](docs/ProblemDetails.md)

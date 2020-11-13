@@ -24,6 +24,5 @@
 
 package client
 
-type InlineProblemDetails struct {
-	ProblemDetails *ProblemDetails `json:"problemDetails,omitempty"`
+type OneOfInlineSubscription struct {
 }

@@ -246,18 +246,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - $ref: '#/components/schemas/CellChangeSubscription'
-              - $ref: '#/components/schemas/RabEstSubscription'
-              - $ref: '#/components/schemas/RabModSubscription'
-              - $ref: '#/components/schemas/RabRelSubscription'
-              - $ref: '#/components/schemas/MeasRepUeSubscription'
-              - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-              - $ref: '#/components/schemas/MeasTaSubscription'
-              - $ref: '#/components/schemas/CaReconfSubscription'
-              - $ref: '#/components/schemas/S1BearerSubscription'
-              discriminator:
-                propertyName: subscriptionType
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: CellChangeSubscription
               callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
@@ -283,18 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/CellChangeSubscription'
-                - $ref: '#/components/schemas/RabEstSubscription'
-                - $ref: '#/components/schemas/RabModSubscription'
-                - $ref: '#/components/schemas/RabRelSubscription'
-                - $ref: '#/components/schemas/MeasRepUeSubscription'
-                - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                - $ref: '#/components/schemas/MeasTaSubscription'
-                - $ref: '#/components/schemas/CaReconfSubscription'
-                - $ref: '#/components/schemas/S1BearerSubscription'
-                discriminator:
-                  propertyName: subscriptionType
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
@@ -346,18 +324,7 @@ paths:
                 content:
                   application/json:
                     schema:
-                      oneOf:
-                      - $ref: '#/components/schemas/CellChangeNotification'
-                      - $ref: '#/components/schemas/RabEstNotification'
-                      - $ref: '#/components/schemas/RabModNotification'
-                      - $ref: '#/components/schemas/RabRelNotification'
-                      - $ref: '#/components/schemas/MeasRepUeNotification'
-                      - $ref: '#/components/schemas/NrMeasRepUeNotification'
-                      - $ref: '#/components/schemas/MeasTaNotification'
-                      - $ref: '#/components/schemas/CaReconfNotification'
-                      - $ref: '#/components/schemas/S1BearerNotification'
-                      discriminator:
-                        propertyName: notificationType
+                      $ref: '#/components/schemas/InlineNotification'
                     example:
                       notificationType: CellChangeNotification
                       associateId:
@@ -399,18 +366,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/CellChangeSubscription'
-                - $ref: '#/components/schemas/RabEstSubscription'
-                - $ref: '#/components/schemas/RabModSubscription'
-                - $ref: '#/components/schemas/RabRelSubscription'
-                - $ref: '#/components/schemas/MeasRepUeSubscription'
-                - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                - $ref: '#/components/schemas/MeasTaSubscription'
-                - $ref: '#/components/schemas/CaReconfSubscription'
-                - $ref: '#/components/schemas/S1BearerSubscription'
-                discriminator:
-                  propertyName: subscriptionType
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
@@ -458,18 +414,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - $ref: '#/components/schemas/CellChangeSubscription'
-              - $ref: '#/components/schemas/RabEstSubscription'
-              - $ref: '#/components/schemas/RabModSubscription'
-              - $ref: '#/components/schemas/RabRelSubscription'
-              - $ref: '#/components/schemas/MeasRepUeSubscription'
-              - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-              - $ref: '#/components/schemas/MeasTaSubscription'
-              - $ref: '#/components/schemas/CaReconfSubscription'
-              - $ref: '#/components/schemas/S1BearerSubscription'
-              discriminator:
-                propertyName: subscriptionType
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: CellChangeSubscription
               callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
@@ -500,18 +445,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                - $ref: '#/components/schemas/CellChangeSubscription'
-                - $ref: '#/components/schemas/RabEstSubscription'
-                - $ref: '#/components/schemas/RabModSubscription'
-                - $ref: '#/components/schemas/RabRelSubscription'
-                - $ref: '#/components/schemas/MeasRepUeSubscription'
-                - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-                - $ref: '#/components/schemas/MeasTaSubscription'
-                - $ref: '#/components/schemas/CaReconfSubscription'
-                - $ref: '#/components/schemas/S1BearerSubscription'
-                discriminator:
-                  propertyName: subscriptionType
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: 'http://my.callback.com/rni-cell-change/some-id'
@@ -1477,6 +1411,32 @@ components:
       - expiryDeadline
       type: object
       x-etsi-ref: 6.4.9
+    InlineNotification:
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeNotification'
+      - $ref: '#/components/schemas/RabEstNotification'
+      - $ref: '#/components/schemas/RabModNotification'
+      - $ref: '#/components/schemas/RabRelNotification'
+      - $ref: '#/components/schemas/MeasRepUeNotification'
+      - $ref: '#/components/schemas/NrMeasRepUeNotification'
+      - $ref: '#/components/schemas/MeasTaNotification'
+      - $ref: '#/components/schemas/CaReconfNotification'
+      - $ref: '#/components/schemas/S1BearerNotification'
+      discriminator:
+        propertyName: notificationType
+    InlineSubscription:
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeSubscription'
+      - $ref: '#/components/schemas/RabEstSubscription'
+      - $ref: '#/components/schemas/RabModSubscription'
+      - $ref: '#/components/schemas/RabRelSubscription'
+      - $ref: '#/components/schemas/MeasRepUeSubscription'
+      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
+      - $ref: '#/components/schemas/MeasTaSubscription'
+      - $ref: '#/components/schemas/CaReconfSubscription'
+      - $ref: '#/components/schemas/S1BearerSubscription'
+      discriminator:
+        propertyName: subscriptionType
     L2Meas:
       properties:
         cellInfo:

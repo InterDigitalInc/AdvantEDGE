@@ -25,5 +25,4 @@
 package client
 
 type InlineNotification struct {
-	Notification *OneOfInlineNotificationNotification `json:"notification,omitempty"`
 }

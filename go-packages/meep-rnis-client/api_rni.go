@@ -1254,15 +1254,15 @@ Queries information about an existing subscription, identified by its self-refer
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
-@return Body
+@return InlineSubscription
 */
-func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId string) (Body, *http.Response, error) {
+func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId string) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Get")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1321,7 +1321,7 @@ func (a *RniApiService) SubscriptionsGET(ctx context.Context, subscriptionId str
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Body
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1409,15 +1409,15 @@ Creates a new subscription to Radio Network Information notifications
  * @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param body Subscription to be created
 
-@return Body
+@return InlineSubscription
 */
-func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Body, *http.Response, error) {
+func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body InlineSubscription) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Post")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1477,7 +1477,7 @@ func (a *RniApiService) SubscriptionsPOST(ctx context.Context, body Body) (Body,
 		}
 
 		if localVarHttpResponse.StatusCode == 201 {
-			var v Body
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1588,15 +1588,15 @@ Updates an existing subscription, identified by its self-referring URI returned 
  * @param body Subscription to be modified
  * @param subscriptionId Subscription Id, specifically the \&quot;Self-referring URI\&quot; returned in the subscription request
 
-@return Body1
+@return InlineSubscription
 */
-func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscriptionId string) (Body1, *http.Response, error) {
+func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body InlineSubscription, subscriptionId string) (InlineSubscription, *http.Response, error) {
 	var (
 		localVarHttpMethod  = strings.ToUpper("Put")
 		localVarPostBody    interface{}
 		localVarFileName    string
 		localVarFileBytes   []byte
-		localVarReturnValue Body1
+		localVarReturnValue InlineSubscription
 	)
 
 	// create path and map variables
@@ -1657,7 +1657,7 @@ func (a *RniApiService) SubscriptionsPUT(ctx context.Context, body Body1, subscr
 		}
 
 		if localVarHttpResponse.StatusCode == 200 {
-			var v Body1
+			var v InlineSubscription
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()

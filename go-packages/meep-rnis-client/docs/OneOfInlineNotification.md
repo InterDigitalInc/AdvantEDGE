@@ -1,4 +1,4 @@
-# InlineNotification
+# OneOfInlineNotification
 
 ## Properties
 Name | Type | Description | Notes

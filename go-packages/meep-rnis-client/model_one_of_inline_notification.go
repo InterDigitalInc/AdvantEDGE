@@ -24,5 +24,5 @@
 
 package client
 
-type OneOfInlineNotificationSubscriptionNotificationSubscription struct {
+type OneOfInlineNotification struct {
 }

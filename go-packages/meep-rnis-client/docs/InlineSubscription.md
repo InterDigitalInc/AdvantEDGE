@@ -1,4 +1,4 @@
-# InlineNotification
+# InlineSubscription
 
 ## Properties
 Name | Type | Description | Notes

@@ -24,6 +24,5 @@
 
 package client
 
-type InlineL2Meas struct {
-	L2Meas *L2Meas `json:"l2Meas"`
+type InlineSubscription struct {
 }

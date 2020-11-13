@@ -9,5 +9,5 @@
  */
 package server
 
-type Body struct {
+type InlineNotification struct {
 }

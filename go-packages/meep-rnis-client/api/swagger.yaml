@@ -973,7 +973,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body'
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: CellChangeSubscription
               callbackReference: http://my.callback.com/rni-cell-change/some-id
@@ -1000,7 +1000,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: http://my.callback.com/rni-cell-change/some-id
@@ -1102,18 +1102,7 @@ paths:
                 content:
                   application/json:
                     schema:
-                      discriminator:
-                        propertyName: notificationType
-                      oneOf:
-                      - $ref: '#/components/schemas/CellChangeNotification'
-                      - $ref: '#/components/schemas/RabEstNotification'
-                      - $ref: '#/components/schemas/RabModNotification'
-                      - $ref: '#/components/schemas/RabRelNotification'
-                      - $ref: '#/components/schemas/MeasRepUeNotification'
-                      - $ref: '#/components/schemas/NrMeasRepUeNotification'
-                      - $ref: '#/components/schemas/MeasTaNotification'
-                      - $ref: '#/components/schemas/CaReconfNotification'
-                      - $ref: '#/components/schemas/S1BearerNotification'
+                      $ref: '#/components/schemas/InlineNotification'
                     example:
                       notificationType: CellChangeNotification
                       associateId:
@@ -1167,7 +1156,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body'
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: http://my.callback.com/rni-cell-change/some-id
@@ -1255,7 +1244,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/body_1'
+              $ref: '#/components/schemas/InlineSubscription'
             example:
               subscriptionType: CellChangeSubscription
               callbackReference: http://my.callback.com/rni-cell-change/some-id
@@ -1285,7 +1274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/body_1'
+                $ref: '#/components/schemas/InlineSubscription'
               example:
                 subscriptionType: CellChangeSubscription
                 callbackReference: http://my.callback.com/rni-cell-change/some-id
@@ -1646,6 +1635,32 @@ components:
         timeStamp:
           $ref: '#/components/schemas/TimeStamp'
       x-etsi-ref: 6.4.9
+    InlineNotification:
+      discriminator:
+        propertyName: NotificationType
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeNotification'
+      - $ref: '#/components/schemas/RabEstNotification'
+      - $ref: '#/components/schemas/RabModNotification'
+      - $ref: '#/components/schemas/RabRelNotification'
+      - $ref: '#/components/schemas/MeasRepUeNotification'
+      - $ref: '#/components/schemas/NrMeasRepUeNotification'
+      - $ref: '#/components/schemas/MeasTaNotification'
+      - $ref: '#/components/schemas/CaReconfNotification'
+      - $ref: '#/components/schemas/S1BearerNotification'
+    InlineSubscription:
+      discriminator:
+        propertyName: SubscriptionType
+      oneOf:
+      - $ref: '#/components/schemas/CellChangeSubscription'
+      - $ref: '#/components/schemas/RabEstSubscription'
+      - $ref: '#/components/schemas/RabModSubscription'
+      - $ref: '#/components/schemas/RabRelSubscription'
+      - $ref: '#/components/schemas/MeasRepUeSubscription'
+      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
+      - $ref: '#/components/schemas/MeasTaSubscription'
+      - $ref: '#/components/schemas/CaReconfSubscription'
+      - $ref: '#/components/schemas/S1BearerSubscription'
     L2Meas:
       type: object
       properties:
@@ -2817,32 +2832,6 @@ components:
       - 21
       - 30
       - 31
-    body:
-      discriminator:
-        propertyName: SubscriptionType
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeSubscription'
-      - $ref: '#/components/schemas/RabEstSubscription'
-      - $ref: '#/components/schemas/RabModSubscription'
-      - $ref: '#/components/schemas/RabRelSubscription'
-      - $ref: '#/components/schemas/MeasRepUeSubscription'
-      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-      - $ref: '#/components/schemas/MeasTaSubscription'
-      - $ref: '#/components/schemas/CaReconfSubscription'
-      - $ref: '#/components/schemas/S1BearerSubscription'
-    body_1:
-      discriminator:
-        propertyName: SubscriptionType
-      oneOf:
-      - $ref: '#/components/schemas/CellChangeSubscription'
-      - $ref: '#/components/schemas/RabEstSubscription'
-      - $ref: '#/components/schemas/RabModSubscription'
-      - $ref: '#/components/schemas/RabRelSubscription'
-      - $ref: '#/components/schemas/MeasRepUeSubscription'
-      - $ref: '#/components/schemas/NrMeasRepUeSubscription'
-      - $ref: '#/components/schemas/MeasTaSubscription'
-      - $ref: '#/components/schemas/CaReconfSubscription'
-      - $ref: '#/components/schemas/S1BearerSubscription'
     CaReconfNotification_carrierAggregationMeasInfo:
       type: object
       properties:
