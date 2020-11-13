@@ -9,6 +9,8 @@
 package server
 
 type OneOfInlineNotification struct {
-	AssocStaNotification
-	StaDataRateNotification
+	/*
+		AssocStaNotification
+		StaDataRateNotification
+	*/
 }

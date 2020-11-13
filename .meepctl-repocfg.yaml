@@ -284,7 +284,6 @@ repo:
           - sandbox.go-apps.meep-loc-serv
           - sandbox.go-apps.meep-rnis
           - sandbox.go-apps.meep-wais
-          - packages.go-packages.meep-wais-notification-client
           - sandbox.go-apps.meep-metrics-engine
           - packages.go-packages.meep-metrics-engine-notification-client
           - sandbox.go-apps.meep-mg-manager
@@ -740,13 +739,6 @@ repo:
         src: go-packages/meep-wais-client
         # supports linting
         lint: false
-      meep-wais-notification-client:
-        # location of source code
-        src: go-packages/meep-wais-notification-client
-        # supports linting
-        lint: false
-        # location of API specification
-        api: go-packages/meep-wais-notification-client/api/swagger.yaml
       meep-watchdog:
         # location of source code
         src: go-packages/meep-watchdog

@@ -9,6 +9,8 @@
 package server
 
 type OneOfInlineSubscription struct {
-	AssocStaSubscription
-	StaDataRateSubscription
+	/*
+		AssocStaSubscription
+		StaDataRateSubscription
+	*/
 }
