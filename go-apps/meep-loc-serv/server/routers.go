@@ -318,9 +318,9 @@ var routes = Routes{
 	},
 
 	Route{
-		"ZonesByIdGET",
+		"ZonesGetById",
 		strings.ToUpper("Get"),
 		"/location/v2/queries/zones/{zoneId}",
-		ZonesByIdGET,
+		ZonesGetById,
 	},
 }

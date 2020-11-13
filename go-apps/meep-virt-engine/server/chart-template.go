@@ -383,10 +383,10 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 	var outChart string
 	if scenarioName == "" {
 		templateChart = "/templates/sandbox/" + chartName
-		outChart = "/data/" + sandboxName + "/sandbox/" + chartName
+		outChart = "/charts/" + sandboxName + "/sandbox/" + chartName
 	} else {
 		templateChart = "/templates/scenario/meep-virt-chart-templates"
-		outChart = "/data/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
+		outChart = "/charts/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
 	}
 	templateValues := templateChart + "/values-template.yaml"
 	outValues := outChart + "/values.yaml"

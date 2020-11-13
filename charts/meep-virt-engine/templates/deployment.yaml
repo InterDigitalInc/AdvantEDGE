@@ -54,6 +54,14 @@ spec:
             - name: {{ $key }}
               value: {{ $value }}
             {{- end }}
+            {{- range $key, $value := .Values.image.envSecret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $value.name }}
+                  key: {{ $value.key }}
+                  optional: true
+            {{- end }}
           volumeMounts:
             - name: data
               mountPath: /data/

@@ -1623,12 +1623,12 @@ func testZoneInfo(t *testing.T, zoneId string, expectedResponse string) {
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesByIdGET)
+		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesByIdGET)
+		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}

@@ -64,31 +64,36 @@ func initOAuth() {
 	pfmCtrl.oauthConfigs = make(map[string]*oauth2.Config)
 	pfmCtrl.loginRequests = make(map[string]*LoginRequest)
 
+	// Get OAuth redirect URI
+	redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_REDIRECT_URI"))
+
 	// Initialize Github config
 	githubClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
 	githubSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
-	githubRedirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_REDIRECT_URI"))
-	githubOauthConfig := &oauth2.Config{
-		ClientID:     githubClientId,
-		ClientSecret: githubSecret,
-		RedirectURL:  githubRedirectUri,
-		Scopes:       []string{},
-		Endpoint:     githuboauth.Endpoint,
+	if githubClientId != "" && githubSecret != "" {
+		githubOauthConfig := &oauth2.Config{
+			ClientID:     githubClientId,
+			ClientSecret: githubSecret,
+			RedirectURL:  redirectUri,
+			Scopes:       []string{},
+			Endpoint:     githuboauth.Endpoint,
+		}
+		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
 	}
-	pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
 
 	// Initialize Gitlab config
 	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
 	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
-	gitlabRedirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_REDIRECT_URI"))
-	gitlabOauthConfig := &oauth2.Config{
-		ClientID:     gitlabClientId,
-		ClientSecret: gitlabSecret,
-		RedirectURL:  gitlabRedirectUri,
-		Scopes:       []string{"read_user"},
-		Endpoint:     gitlaboauth.Endpoint,
+	if gitlabClientId != "" && gitlabSecret != "" {
+		gitlabOauthConfig := &oauth2.Config{
+			ClientID:     gitlabClientId,
+			ClientSecret: gitlabSecret,
+			RedirectURL:  redirectUri,
+			Scopes:       []string{"read_user"},
+			Endpoint:     gitlaboauth.Endpoint,
+		}
+		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 	}
-	pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 }
 
 // Generate a random state string
@@ -210,7 +215,13 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 
 	// Get provider-specific OAuth config
 	provider := request.provider
-	config := pfmCtrl.oauthConfigs[provider]
+	config, found := pfmCtrl.oauthConfigs[provider]
+	if !found {
+		err := errors.New("Provider config not found for: " + provider)
+		log.Error(err.Error())
+		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		return
+	}
 
 	// Delete login request & timer
 	delLoginRequest(state)

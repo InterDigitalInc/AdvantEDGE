@@ -54,6 +54,14 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+            {{- range $key, $value := .Values.image.envSecret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $value.name }}
+                  key: {{ $value.key }}
+                  optional: true
+            {{- end }}
             {{- if .Values.user.frontend.enabled}}
             - name: USER_FRONTEND
               value: {{ .Values.user.frontend.mountpath }}

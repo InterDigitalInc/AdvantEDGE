@@ -149,7 +149,7 @@ func Init() (err error) {
 	}
 
 	// Connect to Session Manager
-	ge.sessionMgr, err = sm.NewSessionMgr(moduleName, redisAddr, redisAddr)
+	ge.sessionMgr, err = sm.NewSessionMgr(moduleName, ge.sandboxName, redisAddr, redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Session Manager: ", err.Error())
 		return err

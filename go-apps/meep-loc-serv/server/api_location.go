@@ -167,6 +167,6 @@ func ZonesGET(w http.ResponseWriter, r *http.Request) {
 	zonesGet(w, r)
 }
 
-func ZonesByIdGET(w http.ResponseWriter, r *http.Request) {
+func ZonesGetById(w http.ResponseWriter, r *http.Request) {
 	zonesByIdGet(w, r)
 }
