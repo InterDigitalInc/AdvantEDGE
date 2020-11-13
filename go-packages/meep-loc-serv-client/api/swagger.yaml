@@ -85,40 +85,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /queries/users:
     get:
@@ -174,40 +174,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones:
     get:
@@ -230,40 +230,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}:
     get:
@@ -296,40 +296,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}/accessPoints:
     get:
@@ -372,40 +372,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /queries/zones/{zoneId}/accessPoints/{accessPointId}:
     get:
@@ -447,40 +447,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: queries
   /subscriptions/area/circle:
     get:
@@ -570,40 +570,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/circleNotificationSubscription.callbackReference.notifyURL}':
@@ -688,40 +688,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -791,34 +791,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -826,7 +826,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -838,7 +838,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -852,7 +852,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -880,27 +880,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/distance:
     get:
@@ -993,40 +993,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/distanceNotificationSubscription.callbackReference.notifyURL}':
@@ -1122,40 +1122,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -1227,34 +1227,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1262,7 +1262,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1274,7 +1274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -1288,7 +1288,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1316,27 +1316,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/periodic:
     get:
@@ -1410,40 +1410,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/periodicNotificationSubscription.callbackReference.notifyURL}':
@@ -1522,40 +1522,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -1615,34 +1615,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -1650,7 +1650,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -1662,7 +1662,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -1676,7 +1676,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -1704,27 +1704,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/userTracking:
     get:
@@ -1803,40 +1803,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/userTrackingSubscription.callbackReference.notifyURL}':
@@ -1911,40 +1911,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -2002,34 +2002,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -2037,7 +2037,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -2049,7 +2049,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -2063,7 +2063,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -2091,27 +2091,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/zonalTraffic:
     get:
@@ -2190,40 +2190,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/zonalTrafficSubscription.callbackReference.notifyURL}':
@@ -2298,40 +2298,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -2389,34 +2389,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -2424,7 +2424,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -2436,7 +2436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -2450,7 +2450,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -2478,27 +2478,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
   /subscriptions/zoneStatus:
     get:
@@ -2573,40 +2573,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       callbacks:
         notification:
           '{$request.body#/zoneStatusSubscription.callbackReference.notifyURL}':
@@ -2682,40 +2682,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     put:
       tags:
@@ -2775,34 +2775,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "401":
           description: 'Unauthorized :  used when the client did not submit credentials.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "406":
           description: 'Not Acceptable : used to indicate that the server cannot provide
             the any of the content formats supported by the client.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "412":
           description: 'Precondition failed :  used when a condition has failed during
             conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -2810,7 +2810,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "422":
           description: 'Unprocessable Entity : used to indicate that the server understands
             the content type of the request entity and that the syntax of the request
@@ -2822,7 +2822,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
               example:
                 application/problem+json:
                   ProblemDetails:
@@ -2836,7 +2836,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
     delete:
       tags:
@@ -2864,27 +2864,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "403":
           description: 'Forbidden :  operation is not allowed given the current status
             of the resource.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetailsRequired'
+                $ref: '#/components/schemas/ProblemDetails'
         "404":
           description: 'Not Found :  used when a client provided a URI that cannot
             be mapped to a valid resource URI.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
         "429":
           description: 'Too Many Requests : used when a rate limiter has triggered.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InlineProblemDetails'
+                $ref: '#/components/schemas/ProblemDetails'
       x-swagger-router-controller: subscriptions
 components:
   schemas:
@@ -5206,34 +5206,34 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "401":
       description: 'Unauthorized :  used when the client did not submit credentials.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "403":
       description: 'Forbidden :  operation is not allowed given the current status
         of the resource.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetailsRequired'
+            $ref: '#/components/schemas/ProblemDetails'
     "404":
       description: 'Not Found :  used when a client provided a URI that cannot be
         mapped to a valid resource URI.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "406":
       description: 'Not Acceptable : used to indicate that the server cannot provide
         the any of the content formats supported by the client.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "412":
       description: 'Precondition failed :  used when a condition has failed during
         conditional requests, e.g. when using ETags to avoid write conflicts when
@@ -5241,7 +5241,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "414":
       description: 'URI Too Long : used to indicate that the server is refusing to
         process the request because the request URI is longer than the server is willing
@@ -5249,14 +5249,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "415":
       description: 'Unsupported Media Type :  used to indicate that the server or
         the client does not support the content type of the entity body.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
     "422":
       description: 'Unprocessable Entity : used to indicate that the server understands
         the content type of the request entity and that the syntax of the request
@@ -5268,7 +5268,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
           example:
             application/problem+json:
               ProblemDetails:
@@ -5282,7 +5282,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InlineProblemDetails'
+            $ref: '#/components/schemas/ProblemDetails'
   parameters:
     Path.AccessPointId:
       name: accessPointId

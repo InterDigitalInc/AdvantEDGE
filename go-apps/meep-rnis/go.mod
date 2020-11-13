@@ -13,7 +13,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0 // indirect
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
@@ -33,6 +32,5 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client => ../../go-packages/meep-rnis-client
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client => ../../go-packages/meep-rnis-notification-client
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions => ../../go-packages/meep-sessions
 )

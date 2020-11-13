@@ -88,6 +88,29 @@ func convertDomainDataToJson(obj *DomainData) string {
 	return string(jsonData)
 }
 
+/*
+func convertJsonToOneOfNotificationSubscription(jsonInfo string) *OneOfNotificationSubscription {
+
+        var obj OneOfNotificationSubscription
+        err := json.Unmarshal([]byte(jsonInfo), &obj)
+        if err != nil {
+                log.Error(err.Error())
+                return nil
+        }
+        return &obj
+}
+
+func convertOneOfNotificationSubscriptionToJson(obj *OneOfNotificationSubscription) string {
+
+        jsonInfo, err := json.Marshal(*obj)
+        if err != nil {
+                log.Error(err.Error())
+                return ""
+        }
+
+        return string(jsonInfo)
+}
+*/
 func convertJsonToCellChangeSubscription(jsonInfo string) *CellChangeSubscription {
 
 	var obj CellChangeSubscription

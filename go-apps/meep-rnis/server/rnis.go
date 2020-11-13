@@ -17,10 +17,11 @@
 package server
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -34,14 +35,12 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-notification-client"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
-
 	"github.com/gorilla/mux"
 )
 
 const moduleName = "meep-rnis"
-const rnisBasePath = "/rni/v1/"
+const rnisBasePath = "/rni/v2/"
 const rnisKey string = "rnis:"
 const logModuleRNIS string = "meep-rnis"
 
@@ -58,6 +57,13 @@ var reSubscriptionMap = map[int]*RabEstSubscription{}
 var rrSubscriptionMap = map[int]*RabRelSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
 var currentStoreName = ""
+
+const CELL_CHANGE_SUBSCRIPTION = "CellChangeSubscription"
+const RAB_EST_SUBSCRIPTION = "RabEstSubscription"
+const RAB_REL_SUBSCRIPTION = "RabRelSubscription"
+const CELL_CHANGE_NOTIFICATION = "CellChangeNotification"
+const RAB_EST_NOTIFICATION = "RabEstNotification"
+const RAB_REL_NOTIFICATION = "RabRelNotification"
 
 var RNIS_DB = 5
 
@@ -91,6 +97,10 @@ type DomainData struct {
 	Mcc    string `json:"mcc"`
 	Mnc    string `json:"mnc"`
 	CellId string `json:"cellId"`
+}
+
+type PlmnInfoResp struct {
+	PlmnInfoList []PlmnInfo
 }
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
@@ -182,11 +192,9 @@ func reInit() {
 	nextSubscriptionIdAvailable = 1
 	nextAvailableErabId = 1
 
-	keyName := baseKey + cellChangeSubscriptionType + "*"
+	keyName := baseKey + "subscriptions:" + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateCcSubscriptionMap, nil)
-	keyName = baseKey + rabEstSubscriptionType + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateReSubscriptionMap, nil)
-	keyName = baseKey + rabRelSubscriptionType + "*"
 	_ = rc.ForEachJSONEntry(keyName, repopulateRrSubscriptionMap, nil)
 }
 
@@ -256,7 +264,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
 		assocId := new(AssociateId)
-		assocId.Type_ = "UE_IPV4_ADDRESS"
+		assocId.Type_ = 1 //UE_IPV4_ADDRESS
 		assocId.Value = name
 
 		//log to model for all apps on that UE
@@ -332,19 +340,6 @@ func updateDomainData(name string, mnc string, mcc string, cellId string) {
 	}
 }
 
-func createClient(notifyPath string) (*clientNotif.APIClient, error) {
-	// Create & store client for App REST API
-	subsAppClientCfg := clientNotif.NewConfiguration()
-	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := clientNotif.NewAPIClient(subsAppClientCfg)
-	if subsAppClient == nil {
-		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
-		err := errors.New("Failed to create Subscription App REST API client")
-		return nil, err
-	}
-	return subsAppClient, nil
-}
-
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
@@ -354,29 +349,37 @@ func checkForExpiredSubscriptions() {
 		if expiryTime <= nowTime {
 			subscriptionExpiryMap[expiryTime] = nil
 			for _, subsId := range subsIndexList {
+				cbRef := ""
 				if ccSubscriptionMap[subsId] != nil {
-
-					subsIdStr := strconv.Itoa(subsId)
-
-					var notif clientNotif.ExpiryNotification
-
-					seconds := time.Now().Unix()
-					var timeStamp clientNotif.TimeStamp
-					timeStamp.Seconds = int32(seconds)
-
-					var expiryTimeStamp clientNotif.TimeStamp
-					expiryTimeStamp.Seconds = int32(expiryTime)
-
-					link := new(clientNotif.Link)
-					link.Self = ccSubscriptionMap[subsId].CallbackReference
-					notif.Links = link
-
-					notif.Timestamp = &timeStamp
-					notif.ExpiryDeadline = &expiryTimeStamp
-
-					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
-					_ = delSubscription(baseKey+cellChangeSubscriptionType, subsIdStr, true)
+					cbRef = ccSubscriptionMap[subsId].CallbackReference
+				} else if reSubscriptionMap[subsId] != nil {
+					cbRef = reSubscriptionMap[subsId].CallbackReference
+				} else if rrSubscriptionMap[subsId] != nil {
+					cbRef = rrSubscriptionMap[subsId].CallbackReference
+				} else {
+					continue
 				}
+
+				subsIdStr := strconv.Itoa(subsId)
+
+				var notif ExpiryNotification
+
+				seconds := time.Now().Unix()
+				var timeStamp TimeStamp
+				timeStamp.Seconds = int32(seconds)
+
+				var expiryTimeStamp TimeStamp
+				expiryTimeStamp.Seconds = int32(expiryTime)
+
+				link := new(ExpiryNotificationLinks)
+				link.Self = cbRef
+				notif.Links = link
+
+				notif.TimeStamp = &timeStamp
+				notif.ExpiryDeadline = &expiryTimeStamp
+
+				sendExpiryNotification(link.Self, notif)
+				_ = delSubscription(baseKey, subsIdStr, true)
 			}
 		}
 	}
@@ -392,7 +395,7 @@ func repopulateCcSubscriptionMap(key string, jsonInfo string, userData interface
 		return err
 	}
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
@@ -424,7 +427,7 @@ func repopulateReSubscriptionMap(key string, jsonInfo string, userData interface
 		return err
 	}
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
@@ -456,7 +459,7 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 		return err
 	}
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
@@ -479,27 +482,37 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 }
 
 func isMatchCcFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocHo)
+	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
-	if filter.AppInsId == "" {
+	if filter.AppInstanceId == "" {
 		return true
 	}
-	return (appId == filter.AppInsId)
+	return (appId == filter.AppInstanceId)
 }
 
 func isMatchRabFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocQci)
+	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
-	if filter.AppInsId == "" {
+	if filter.AppInstanceId == "" {
 		return true
 	}
-	return (appId == filter.AppInsId)
+	return (appId == filter.AppInstanceId)
+}
+
+func isMatchRabRelFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AppInstanceId == "" {
+		return true
+	}
+	return (appId == filter.AppInstanceId)
 }
 
 func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocHo)
+	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
 	if filter.AssociateId == nil {
@@ -509,11 +522,18 @@ func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *Ass
 	if assocId == nil {
 		return false
 	}
-	return (assocId.Value == filter.AssociateId.Value)
+	for _, filterAssocId := range filter.AssociateId {
+		if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+			return true
+		}
+	}
+
+	return false
 }
 
+/* in v2, AssociateId is not part of the filterCriteria
 func isMatchRabFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocQci)
+	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
 	if filter.AssociateId == nil {
@@ -525,69 +545,100 @@ func isMatchRabFilterCriteriaAssociateId(filterCriteria interface{}, assocId *As
 	}
 	return (assocId.Value == filter.AssociateId.Value)
 }
+*/
 
 func isMatchCcFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocHo)
+	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
-	if filter.Plmn == nil {
+	if filter.Ecgi == nil {
 		return true
 	}
+
 	//either of the Plmn should match the filter,
-	match := false
+	for _, ecgi := range filter.Ecgi {
 
-	if newPlmn != nil {
-		if newPlmn.Mnc == filter.Plmn.Mnc && newPlmn.Mcc == filter.Plmn.Mcc {
-			match = true
+		if newPlmn != nil {
+			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
+		}
+		if oldPlmn != nil {
+			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
 		}
 	}
-	if oldPlmn != nil {
-		if oldPlmn.Mnc == filter.Plmn.Mnc && oldPlmn.Mcc == filter.Plmn.Mcc {
-			match = true
-		}
-	}
 
-	return match
+	return false
 }
 
 func isMatchRabFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocQci)
+	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
-	if filter.Plmn == nil {
+	if filter.Ecgi == nil {
 		return true
 	}
+
 	//either of the Plmn should match the filter,
-	match := false
+	for _, ecgi := range filter.Ecgi {
 
-	if newPlmn != nil {
-		if newPlmn.Mnc == filter.Plmn.Mnc && newPlmn.Mcc == filter.Plmn.Mcc {
-			match = true
+		if newPlmn != nil {
+			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
+		}
+		if oldPlmn != nil {
+			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
 		}
 	}
-	if oldPlmn != nil {
-		if oldPlmn.Mnc == filter.Plmn.Mnc && oldPlmn.Mcc == filter.Plmn.Mcc {
-			match = true
+
+	return false
+}
+
+func isMatchRabRelFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Ecgi == nil {
+		return true
+	}
+
+	//either of the Plmn should match the filter,
+	for _, ecgi := range filter.Ecgi {
+
+		if newPlmn != nil {
+			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
+		}
+		if oldPlmn != nil {
+			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+				return true
+			}
 		}
 	}
 
-	return match
+	return false
 }
 
 func isMatchCcFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocHo)
+	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
-	if filter.CellId == nil {
+	if filter.Ecgi == nil {
 		return true
 	}
 
 	//either the old of new cellId should match one of the cellId in the filter list
-	for _, cellId := range filter.CellId {
+	for _, ecgi := range filter.Ecgi {
 
-		if newCellId == cellId {
+		if newCellId == ecgi.CellId {
 			return true
 		}
-		if oldCellId == cellId {
+		if oldCellId == ecgi.CellId {
 			return true
 		}
 	}
@@ -596,18 +647,38 @@ func isMatchCcFilterCriteriaCellId(filterCriteria interface{}, newCellId string,
 }
 
 func isMatchRabFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	filter := filterCriteria.(*FilterCriteriaAssocQci)
+	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
 
-	if filter.CellId == nil {
+	if filter.Ecgi == nil {
 		return true
 	}
 
 	//either the old of new cellId should match one of the cellId in the filter list
-	for _, cellId := range filter.CellId {
-		if newCellId == cellId {
+	for _, ecgi := range filter.Ecgi {
+		if newCellId == ecgi.CellId {
 			return true
 		}
-		if oldCellId == cellId {
+		if oldCellId == ecgi.CellId {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchRabRelFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	if filter.Ecgi == nil {
+		return true
+	}
+
+	//either the old of new cellId should match one of the cellId in the filter list
+	for _, ecgi := range filter.Ecgi {
+		if newCellId == ecgi.CellId {
+			return true
+		}
+		if oldCellId == ecgi.CellId {
 			return true
 		}
 	}
@@ -619,8 +690,10 @@ func isMatchFilterCriteriaAppInsId(subscriptionType string, filterCriteria inter
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaAppInsId(filterCriteria, appId)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaAppInsId(filterCriteria, appId)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaAppInsId(filterCriteria, appId)
 	}
 	return true
 }
@@ -630,7 +703,7 @@ func isMatchFilterCriteriaAssociateId(subscriptionType string, filterCriteria in
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaAssociateId(filterCriteria, assocId)
 	case rabEstSubscriptionType, rabRelSubscriptionType:
-		return isMatchRabFilterCriteriaAssociateId(filterCriteria, assocId)
+		return true //not part of filter anymore in v2
 	}
 	return true
 }
@@ -639,8 +712,10 @@ func isMatchFilterCriteriaPlmn(subscriptionType string, filterCriteria interface
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
 	}
 	return true
 }
@@ -649,8 +724,10 @@ func isMatchFilterCriteriaCellId(subscriptionType string, filterCriteria interfa
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
 		return isMatchCcFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabEstSubscriptionType, rabRelSubscriptionType:
+	case rabEstSubscriptionType:
 		return isMatchRabFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
+	case rabRelSubscriptionType:
+		return isMatchRabRelFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
 	}
 	return true
 }
@@ -670,24 +747,24 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 		if sub != nil {
 
 			//verifying every criteria of the filter
-			match := isMatchFilterCriteriaAppInsId(cellChangeSubscriptionType, sub.FilterCriteria, appId)
+			match := isMatchFilterCriteriaAppInsId(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, appId)
 			if match {
-				match = isMatchFilterCriteriaAssociateId(cellChangeSubscriptionType, sub.FilterCriteria, assocId)
+				match = isMatchFilterCriteriaAssociateId(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, assocId)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(cellChangeSubscriptionType, sub.FilterCriteria, newPlmn, oldPlmn)
+				match = isMatchFilterCriteriaPlmn(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, newPlmn, oldPlmn)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaCellId(cellChangeSubscriptionType, sub.FilterCriteria, newCellId, oldCellId)
+				match = isMatchFilterCriteriaCellId(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, newCellId, oldCellId)
 			}
 
 			//we ignore hoStatus
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".")
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -695,10 +772,10 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToCellChangeSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.CellChangeNotification
-
-				var newEcgi clientNotif.Ecgi
-				var notifNewPlmn clientNotif.Plmn
+				var notif CellChangeNotification
+				notif.NotificationType = CELL_CHANGE_NOTIFICATION
+				var newEcgi Ecgi
+				var notifNewPlmn Plmn
 				if newPlmn != nil {
 					notifNewPlmn.Mnc = newPlmn.Mnc
 					notifNewPlmn.Mcc = newPlmn.Mcc
@@ -707,9 +784,9 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 					notifNewPlmn.Mcc = ""
 				}
 				newEcgi.Plmn = &notifNewPlmn
-				newEcgi.CellId = []string{newCellId}
-				var oldEcgi clientNotif.Ecgi
-				var notifOldPlmn clientNotif.Plmn
+				newEcgi.CellId = newCellId
+				var oldEcgi Ecgi
+				var notifOldPlmn Plmn
 				if oldPlmn != nil {
 					notifOldPlmn.Mnc = oldPlmn.Mnc
 					notifOldPlmn.Mcc = oldPlmn.Mcc
@@ -718,24 +795,23 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 					notifOldPlmn.Mcc = ""
 				}
 				oldEcgi.Plmn = &notifOldPlmn
-				oldEcgi.CellId = []string{oldCellId}
+				oldEcgi.CellId = oldCellId
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				notif.Timestamp = &timeStamp
-				notifHoStatus := clientNotif.COMPLETED_HoStatus
-				notif.HoStatus = &notifHoStatus
+				notif.TimeStamp = &timeStamp
+				notif.HoStatus = 3 //only supporting 3 = COMPLETED
 				notif.SrcEcgi = &oldEcgi
-				notif.TrgEcgi = []clientNotif.Ecgi{newEcgi}
-				notif.AssociateId = &notifAssociateId
+				notif.TrgEcgi = []Ecgi{newEcgi}
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendCcNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendCcNotification(subscription.CallbackReference, notif)
 				log.Info("Cell_change Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -758,25 +834,25 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 		if sub != nil {
 
 			//verifying every criteria of the filter
-			match := isMatchFilterCriteriaAppInsId(rabEstSubscriptionType, sub.FilterCriteria, appId)
+			match := isMatchFilterCriteriaAppInsId(rabEstSubscriptionType, sub.FilterCriteriaQci, appId)
 
 			if match {
-				match = isMatchFilterCriteriaAssociateId(rabEstSubscriptionType, sub.FilterCriteria, assocId)
+				match = isMatchFilterCriteriaAssociateId(rabEstSubscriptionType, sub.FilterCriteriaQci, assocId)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(rabEstSubscriptionType, sub.FilterCriteria, newPlmn, nil)
+				match = isMatchFilterCriteriaPlmn(rabEstSubscriptionType, sub.FilterCriteriaQci, newPlmn, nil)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaCellId(rabEstSubscriptionType, sub.FilterCriteria, newCellId, oldCellId)
+				match = isMatchFilterCriteriaCellId(rabEstSubscriptionType, sub.FilterCriteriaQci, newCellId, oldCellId)
 			}
 
 			//we ignore qci
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+rabEstSubscriptionType+":"+subsIdStr, ".")
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -784,34 +860,35 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToRabEstSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.RabEstNotification
+				var notif RabEstNotification
+				notif.NotificationType = RAB_EST_NOTIFICATION
 
-				var newEcgi clientNotif.Ecgi
+				var newEcgi Ecgi
 
-				var notifNewPlmn clientNotif.Plmn
+				var notifNewPlmn Plmn
 				notifNewPlmn.Mnc = newPlmn.Mnc
 				notifNewPlmn.Mcc = newPlmn.Mcc
 				newEcgi.Plmn = &notifNewPlmn
-				newEcgi.CellId = []string{newCellId}
+				newEcgi.CellId = newCellId
 
-				var erabQos clientNotif.ErabQosParameters
+				var erabQos RabEstNotificationErabQosParameters
 				erabQos.Qci = defaultSupportedQci
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				notif.Timestamp = &timeStamp
+				notif.TimeStamp = &timeStamp
 				notif.ErabId = erabId
 				notif.Ecgi = &newEcgi
 				notif.ErabQosParameters = &erabQos
-				notif.AssociateId = &notifAssociateId
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendReNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendReNotification(subscription.CallbackReference, notif)
 				log.Info("Rab_establishment Notification" + "(" + subsIdStr + ")")
 			}
 		}
@@ -834,25 +911,25 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 		if sub != nil {
 
 			//verifying every criteria of the filter
-			match := isMatchFilterCriteriaAppInsId(rabRelSubscriptionType, sub.FilterCriteria, appId)
+			match := isMatchFilterCriteriaAppInsId(rabRelSubscriptionType, sub.FilterCriteriaQci, appId)
 
 			if match {
-				match = isMatchFilterCriteriaAssociateId(rabRelSubscriptionType, sub.FilterCriteria, assocId)
+				match = isMatchFilterCriteriaAssociateId(rabRelSubscriptionType, sub.FilterCriteriaQci, assocId)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(rabRelSubscriptionType, sub.FilterCriteria, nil, oldPlmn)
+				match = isMatchFilterCriteriaPlmn(rabRelSubscriptionType, sub.FilterCriteriaQci, nil, oldPlmn)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaCellId(rabRelSubscriptionType, sub.FilterCriteria, "", oldCellId)
+				match = isMatchFilterCriteriaCellId(rabRelSubscriptionType, sub.FilterCriteriaQci, "", oldCellId)
 			}
 
 			//we ignore qci
 
 			if match {
 				subsIdStr := strconv.Itoa(subsId)
-				jsonInfo, _ := rc.JSONGetEntry(baseKey+rabRelSubscriptionType+":"+subsIdStr, ".")
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
 				if jsonInfo == "" {
 					return
 				}
@@ -860,54 +937,49 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 				subscription := convertJsonToRabRelSubscription(jsonInfo)
 				log.Info("Sending RNIS notification ", subscription.CallbackReference)
 
-				var notif clientNotif.RabRelNotification
+				var notif RabRelNotification
+				notif.NotificationType = RAB_REL_NOTIFICATION
 
-				var oldEcgi clientNotif.Ecgi
+				var oldEcgi Ecgi
 
-				var notifOldPlmn clientNotif.Plmn
+				var notifOldPlmn Plmn
 				notifOldPlmn.Mnc = oldPlmn.Mnc
 				notifOldPlmn.Mcc = oldPlmn.Mcc
 				oldEcgi.Plmn = &notifOldPlmn
-				oldEcgi.CellId = []string{oldCellId}
+				oldEcgi.CellId = oldCellId
 
-				var notifAssociateId clientNotif.AssociateId
+				var notifAssociateId AssociateId
 				notifAssociateId.Type_ = assocId.Type_
 				notifAssociateId.Value = assocId.Value
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				var erabRelInfo clientNotif.ErabReleaseInfo
+				var erabRelInfo RabRelNotificationErabReleaseInfo
 				erabRelInfo.ErabId = erabId
-				notif.Timestamp = &timeStamp
+				notif.TimeStamp = &timeStamp
 				notif.Ecgi = &oldEcgi
 				notif.ErabReleaseInfo = &erabRelInfo
-				notif.AssociateId = &notifAssociateId
+				notif.AssociateId = append(notif.AssociateId, notifAssociateId)
 
-				sendRrNotification(subscription.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendRrNotification(subscription.CallbackReference, notif)
 				log.Info("Rab_release Notification" + "(" + subsIdStr + ")")
 			}
 		}
 	}
 }
 
-func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.CellChangeNotification) {
+func sendCcNotification(notifyUrl string, notification CellChangeNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostCellChangeNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -916,22 +988,16 @@ func sendCcNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendReNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.RabEstNotification) {
+func sendReNotification(notifyUrl string, notification RabEstNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabEstNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -940,22 +1006,16 @@ func sendReNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendRrNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.RabRelNotification) {
+func sendRrNotification(notifyUrl string, notification RabRelNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostRabRelNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -964,22 +1024,16 @@ func sendRrNotification(notifyUrl string, ctx context.Context, subscriptionId st
 	defer resp.Body.Close()
 }
 
-func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
+func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -988,30 +1042,67 @@ func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionI
 	defer resp.Body.Close()
 }
 
-func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
+func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var response InlineResponse2004
-	var cellChangeSubscription CellChangeSubscription
-	response.CellChangeSubscription = &cellChangeSubscription
-
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+cellChangeSubscriptionType+":"+subIdParamStr, ".")
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 
 	if jsonRespDB == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	err := json.Unmarshal([]byte(jsonRespDB), &cellChangeSubscription)
+	var subscriptionCommon SubscriptionCommon
+	err := json.Unmarshal([]byte(jsonRespDB), &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(response)
+	var jsonResponse []byte
+	switch subscriptionCommon.SubscriptionType {
+	case CELL_CHANGE_SUBSCRIPTION:
+		var subscription CellChangeSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case RAB_EST_SUBSCRIPTION:
+		var subscription RabEstSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case RAB_REL_SUBSCRIPTION:
+		var subscription RabRelSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	default:
+		log.Error("Unknown subscription type")
+		http.Error(w, "Unknown subscription type", http.StatusInternalServerError)
+		return
+	}
+
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1020,6 +1111,262 @@ func cellChangeSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
 
+}
+
+func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var subscriptionCommon SubscriptionCommon
+	bodyBytes, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//extract common body part
+	subscriptionType := subscriptionCommon.SubscriptionType
+
+	//new subscription id
+	newSubsId := nextSubscriptionIdAvailable
+	nextSubscriptionIdAvailable++
+	subsIdStr := strconv.Itoa(newSubsId)
+	link := new(CaReconfSubscriptionLinks)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
+	link.Self = self
+
+	var jsonResponse []byte
+
+	switch subscriptionType {
+	case CELL_CHANGE_SUBSCRIPTION:
+		var subscription CellChangeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		if subscription.FilterCriteriaAssocHo == nil {
+			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, 3 /*COMPLETED*/)
+		}
+
+		//registration
+		registerCc(&subscription, subsIdStr)
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case RAB_EST_SUBSCRIPTION:
+		var subscription RabEstSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		//registration
+		registerRe(&subscription, subsIdStr)
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case RAB_REL_SUBSCRIPTION:
+		var subscription RabRelSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		//registration
+		registerRr(&subscription, subsIdStr)
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	default:
+	}
+
+	//processing the error of the jsonResponse
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, string(jsonResponse))
+
+}
+
+func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	vars := mux.Vars(r)
+	subIdParamStr := vars["subscriptionId"]
+
+	var subscriptionCommon SubscriptionCommon
+	bodyBytes, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	//extract common body part
+	subscriptionType := subscriptionCommon.SubscriptionType
+
+	link := subscriptionCommon.Links
+	if link == nil || link.Self == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory Link parameter not present")
+		return
+	}
+
+	selfUrl := strings.Split(link.Self.Href, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+
+	if subsIdStr != subIdParamStr {
+		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		return
+	}
+
+	alreadyRegistered := false
+	var jsonResponse []byte
+
+	switch subscriptionType {
+	case CELL_CHANGE_SUBSCRIPTION:
+		var subscription CellChangeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaAssocHo == nil {
+			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
+			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, 3 /*COMPLETED*/)
+		}
+
+		//registration
+		if isSubscriptionIdRegisteredCc(subsIdStr) {
+			registerCc(&subscription, subsIdStr)
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertCellChangeSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
+	case RAB_EST_SUBSCRIPTION:
+		var subscription RabEstSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		//registration
+		if isSubscriptionIdRegisteredRe(subsIdStr) {
+			registerRe(&subscription, subsIdStr)
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabEstSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
+	case RAB_REL_SUBSCRIPTION:
+		var subscription RabRelSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaQci == nil {
+			log.Error("FilterCriteriaQci should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			return
+		}
+
+		//registration
+		if isSubscriptionIdRegisteredRr(subsIdStr) {
+			registerRr(&subscription, subsIdStr)
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertRabRelSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
+	default:
+	}
+
+	if alreadyRegistered {
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, string(jsonResponse))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func subscriptionsDelete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	vars := mux.Vars(r)
+
+	subIdParamStr := vars["subscriptionId"]
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+	if jsonRespDB == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func isSubscriptionIdRegisteredCc(subsIdStr string) bool {
@@ -1141,100 +1488,6 @@ func deregisterRr(subsIdStr string, mutexTaken bool) {
 	log.Info("Deregistration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
-func cellChangeSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse201
-	cellChangeSubscription := new(CellChangeSubscription)
-	response.CellChangeSubscription = cellChangeSubscription
-
-	cellChangeSubscriptionPost1 := new(CellChangeSubscriptionPost1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&cellChangeSubscriptionPost1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	cellChangeSubscriptionPost := cellChangeSubscriptionPost1.CellChangeSubscription
-	newSubsId := nextSubscriptionIdAvailable
-	nextSubscriptionIdAvailable++
-	subsIdStr := strconv.Itoa(newSubsId)
-
-	cellChangeSubscription.CallbackReference = cellChangeSubscriptionPost.CallbackReference
-	cellChangeSubscription.FilterCriteria = cellChangeSubscriptionPost.FilterCriteria
-	if cellChangeSubscription.FilterCriteria.HoStatus == nil {
-		hoStatus := COMPLETED
-		cellChangeSubscription.FilterCriteria.HoStatus = &hoStatus
-	}
-
-	cellChangeSubscription.ExpiryDeadline = cellChangeSubscriptionPost.ExpiryDeadline
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions/" + cellChangeSubscriptionType + "/" + subsIdStr
-	cellChangeSubscription.Links = link
-
-	_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
-	registerCc(cellChangeSubscription, subsIdStr)
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
-
-}
-
-func cellChangeSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2004
-	//cellChangeSubscription := new(CellChangeSubscription)
-	cellChangeSubscription1 := new(CellChangeSubscription1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&cellChangeSubscription1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	cellChangeSubscription := cellChangeSubscription1.CellChangeSubscription
-
-	selfUrl := strings.Split(cellChangeSubscription.Links.Self, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-
-	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
-		return
-	}
-
-	if isSubscriptionIdRegisteredCc(subsIdStr) {
-		registerCc(cellChangeSubscription, subsIdStr)
-
-		_ = rc.JSONSetEntry(baseKey+cellChangeSubscriptionType+":"+subsIdStr, ".", convertCellChangeSubscriptionToJson(cellChangeSubscription))
-
-		response.CellChangeSubscription = cellChangeSubscription
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
-
 func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
@@ -1244,308 +1497,7 @@ func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 	return err
 }
 
-func cellChangeSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	vars := mux.Vars(r)
-
-	err := delSubscription(baseKey+cellChangeSubscriptionType, vars["subscriptionId"], false)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func rabEstSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-
-	var response InlineResponse2007
-	var rabEstSubscription RabEstSubscription
-	response.RabEstSubscription = &rabEstSubscription
-
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+rabEstSubscriptionType+":"+subIdParamStr, ".")
-
-	if jsonRespDB == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	err := json.Unmarshal([]byte(jsonRespDB), &rabEstSubscription)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-
-}
-
-func rabEstSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2014
-	rabEstSubscription := new(RabEstSubscription)
-	response.RabEstSubscription = rabEstSubscription
-
-	rabEstSubscriptionPost1 := new(RabEstSubscriptionPost1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&rabEstSubscriptionPost1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	rabEstSubscriptionPost := rabEstSubscriptionPost1.RabEstSubscription
-	newSubsId := nextSubscriptionIdAvailable
-	nextSubscriptionIdAvailable++
-	subsIdStr := strconv.Itoa(newSubsId)
-
-	rabEstSubscription.CallbackReference = rabEstSubscriptionPost.CallbackReference
-	rabEstSubscription.FilterCriteria = rabEstSubscriptionPost.FilterCriteria
-
-	rabEstSubscription.ExpiryDeadline = rabEstSubscriptionPost.ExpiryDeadline
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions/" + rabEstSubscriptionType + "/" + subsIdStr
-	rabEstSubscription.Links = link
-
-	_ = rc.JSONSetEntry(baseKey+rabEstSubscriptionType+":"+subsIdStr, ".", convertRabEstSubscriptionToJson(rabEstSubscription))
-	registerRe(rabEstSubscription, subsIdStr)
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
-
-}
-
-func rabEstSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2007
-	rabEstSubscription1 := new(RabEstSubscription1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&rabEstSubscription1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	rabEstSubscription := rabEstSubscription1.RabEstSubscription
-
-	selfUrl := strings.Split(rabEstSubscription.Links.Self, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-
-	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
-		return
-	}
-
-	if isSubscriptionIdRegisteredRe(subsIdStr) {
-		registerRe(rabEstSubscription, subsIdStr)
-
-		_ = rc.JSONSetEntry(baseKey+rabEstSubscriptionType+":"+subsIdStr, ".", convertRabEstSubscriptionToJson(rabEstSubscription))
-
-		response.RabEstSubscription = rabEstSubscription
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
-
-func rabEstSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	vars := mux.Vars(r)
-
-	err := delSubscription(baseKey+rabEstSubscriptionType, vars["subscriptionId"], false)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func rabRelSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-
-	var response InlineResponse2009
-	var rabRelSubscription RabRelSubscription
-	response.RabRelSubscription = &rabRelSubscription
-
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+rabRelSubscriptionType+":"+subIdParamStr, ".")
-
-	if jsonRespDB == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	err := json.Unmarshal([]byte(jsonRespDB), &rabRelSubscription)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-
-}
-
-func rabRelSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2016
-	rabRelSubscription := new(RabRelSubscription)
-	response.RabRelSubscription = rabRelSubscription
-
-	rabRelSubscriptionPost1 := new(RabRelSubscriptionPost1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&rabRelSubscriptionPost1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	rabRelSubscriptionPost := rabRelSubscriptionPost1.RabRelSubscription
-	newSubsId := nextSubscriptionIdAvailable
-	nextSubscriptionIdAvailable++
-	subsIdStr := strconv.Itoa(newSubsId)
-
-	rabRelSubscription.CallbackReference = rabRelSubscriptionPost.CallbackReference
-	rabRelSubscription.FilterCriteria = rabRelSubscriptionPost.FilterCriteria
-
-	rabRelSubscription.ExpiryDeadline = rabRelSubscriptionPost.ExpiryDeadline
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions/" + rabRelSubscriptionType + "/" + subsIdStr
-	rabRelSubscription.Links = link
-
-	_ = rc.JSONSetEntry(baseKey+rabRelSubscriptionType+":"+subsIdStr, ".", convertRabRelSubscriptionToJson(rabRelSubscription))
-	registerRr(rabRelSubscription, subsIdStr)
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, string(jsonResponse))
-
-}
-
-func rabRelSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	vars := mux.Vars(r)
-	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2009
-	rabRelSubscription1 := new(RabRelSubscription1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&rabRelSubscription1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	rabRelSubscription := rabRelSubscription1.RabRelSubscription
-
-	selfUrl := strings.Split(rabRelSubscription.Links.Self, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
-
-	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
-		return
-	}
-
-	if isSubscriptionIdRegisteredRr(subsIdStr) {
-		registerRr(rabRelSubscription, subsIdStr)
-
-		_ = rc.JSONSetEntry(baseKey+rabRelSubscriptionType+":"+subsIdStr, ".", convertRabRelSubscriptionToJson(rabRelSubscription))
-
-		response.RabRelSubscription = rabRelSubscription
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
-}
-
-func rabRelSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	vars := mux.Vars(r)
-
-	err := delSubscription(baseKey+rabRelSubscriptionType, vars["subscriptionId"], false)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func measRepUeReportSubscriptionsPUT(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func measRepUeReportSubscriptionsPOST(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func measRepUeReportSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func measRepUeReportSubscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
-}
-
-func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
+func plmnInfoGet(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	//u, _ := url.Parse(r.URL.String())
@@ -1554,7 +1506,7 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 	//appInsId := q.Get("app_ins_id")
 	//appInsIdArray := strings.Split(appInsId, ",")
 
-	var response InlineResponse2001
+	var response PlmnInfoResp
 	atLeastOne := false
 
 	//same for all plmnInfo
@@ -1598,13 +1550,13 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if len(response.PlmnInfo) > 0 {
+	//check if more than one plmnInfo in the array
+	if len(response.PlmnInfoList) > 0 {
 		atLeastOne = true
 	}
 	//}
-
 	if atLeastOne {
-		jsonResponse, err := json.Marshal(response)
+		jsonResponse, err := json.Marshal(response.PlmnInfoList)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1619,7 +1571,7 @@ func plmnInfoGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
-	resp := response.(*InlineResponse2001)
+	resp := response.(*PlmnInfoResp)
 	if resp == nil {
 		return errors.New("Response not defined")
 	}
@@ -1634,12 +1586,12 @@ func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
 	var plmn Plmn
 	plmn.Mnc = domainData.Mnc
 	plmn.Mcc = domainData.Mcc
-	plmnInfo.Plmn = &plmn
-	resp.PlmnInfo = append(resp.PlmnInfo, plmnInfo)
+	plmnInfo.Plmn = append(plmnInfo.Plmn, plmn)
+	resp.PlmnInfoList = append(resp.PlmnInfoList, plmnInfo)
 	return nil
 }
 
-func rabInfoGET(w http.ResponseWriter, r *http.Request) {
+func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -1665,8 +1617,6 @@ func rabInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	rabInfoData.queryCellIds = cellIds
 
-	var response InlineResponse200
-
 	//same for all plmnInfo
 	seconds := time.Now().Unix()
 	var timeStamp TimeStamp
@@ -1676,7 +1626,6 @@ func rabInfoGET(w http.ResponseWriter, r *http.Request) {
 	//meApp is ignored, we use the whole network
 
 	var rabInfo RabInfo
-	response.RabInfo = &rabInfo
 	rabInfoData.rabInfo = &rabInfo
 
 	//get from DB
@@ -1690,11 +1639,11 @@ func rabInfoGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rabInfo.RequestId = "1"
-	rabInfo.AppInsId = meAppName
+	rabInfo.AppInstanceId = meAppName
 	rabInfo.TimeStamp = &timeStamp
 
 	// Send response
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(rabInfo)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1742,18 +1691,18 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 		return nil
 	}
 
-	var ueInfo UeInfo
+	var ueInfo RabInfoUeInfo
 
 	assocId := new(AssociateId)
-	assocId.Type_ = "UE_IPV4_ADDRESS"
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
 	subKeys := strings.Split(key, ":")
 	assocId.Value = subKeys[len(subKeys)-1]
 
 	ueInfo.AssociateId = append(ueInfo.AssociateId, *assocId)
 
-	erabQos := new(ErabQosParameters)
+	erabQos := new(RabEstNotificationErabQosParameters)
 	erabQos.Qci = defaultSupportedQci
-	erabInfo := new(ErabInfo)
+	erabInfo := new(RabInfoErabInfo)
 	erabInfo.ErabId = ueData.ErabId
 	erabInfo.ErabQosParameters = erabQos
 	ueInfo.ErabInfo = append(ueInfo.ErabInfo, *erabInfo)
@@ -1773,7 +1722,7 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 		}
 	}
 	if !found {
-		newCellUserInfo := new(CellUserInfo)
+		newCellUserInfo := new(RabInfoCellUserInfo)
 		newEcgi := new(Ecgi)
 		newPlmn := new(Plmn)
 		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
@@ -1794,13 +1743,11 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 
 	subscriptionLinkList := new(SubscriptionLinkList)
 
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions"
+	link := new(SubscriptionLinkListLinks)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "subscriptions"
 
-	if subType != "" {
-		link.Self = link.Self + "/" + subType
-	}
-
+	link.Self = self
 	subscriptionLinkList.Links = link
 
 	//loop through all different types of subscription
@@ -1808,39 +1755,38 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if subType == "" || subType == cellChangeSubscriptionType {
-		//loop through cell_change map
+	//loop through cell_change map
+	if subType == "" || subType == "cell_change" {
 		for _, ccSubscription := range ccSubscriptionMap {
 			if ccSubscription != nil {
-				var subscription Subscription
-				subscription.Href = ccSubscription.Links.Self
-				subscriptionTypeStr := CELL_CHANGE
-				subscription.SubscriptionType = &subscriptionTypeStr
-				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = ccSubscription.Links.Self.Href
+				subscription.SubscriptionType = CELL_CHANGE_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
 			}
 		}
 	}
-	if subType == "" || subType == rabEstSubscriptionType {
-		//loop through cell_change map
+
+	//loop through rab_est map
+	if subType == "" || subType == "rab_est" {
 		for _, reSubscription := range reSubscriptionMap {
 			if reSubscription != nil {
-				var subscription Subscription
-				subscription.Href = reSubscription.Links.Self
-				subscriptionTypeStr := RAB_ESTABLISHMENT
-				subscription.SubscriptionType = &subscriptionTypeStr
-				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = reSubscription.Links.Self.Href
+				subscription.SubscriptionType = RAB_EST_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
 			}
 		}
 	}
-	if subType == "" || subType == rabRelSubscriptionType {
-		//loop through cell_change map
+
+	//loop through rab_rel map
+	if subType == "" || subType == "rab_rel" {
 		for _, rrSubscription := range rrSubscriptionMap {
 			if rrSubscription != nil {
-				var subscription Subscription
-				subscription.Href = rrSubscription.Links.Self
-				subscriptionTypeStr := RAB_RELEASE
-				subscription.SubscriptionType = &subscriptionTypeStr
-				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = rrSubscription.Links.Self.Href
+				subscription.SubscriptionType = RAB_REL_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
 			}
 		}
 	}
@@ -1850,14 +1796,18 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 	return subscriptionLinkList
 }
 
-func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
+func subscriptionLinkListSubscriptionsGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2003
+	u, _ := url.Parse(r.URL.String())
+	log.Info("url: ", u.RequestURI())
+	q := u.Query()
+	subType := q.Get("subscription_type")
 
-	subscriptionLinkList := createSubscriptionLinkList("")
+	//var response SubscriptionLinkList
 
-	response.SubscriptionLinkList = subscriptionLinkList
+	response := createSubscriptionLinkList(subType)
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -1866,64 +1816,6 @@ func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
-}
-
-func subscriptionLinkListSubscriptionsCcGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2003
-
-	subscriptionLinkList := createSubscriptionLinkList(cellChangeSubscriptionType)
-
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-
-func subscriptionLinkListSubscriptionsReGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2003
-
-	subscriptionLinkList := createSubscriptionLinkList(rabEstSubscriptionType)
-
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-
-func subscriptionLinkListSubscriptionsRrGET(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	var response InlineResponse2003
-
-	subscriptionLinkList := createSubscriptionLinkList(rabRelSubscriptionType)
-
-	response.SubscriptionLinkList = subscriptionLinkList
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
-}
-
-func subscriptionLinkListSubscriptionsMrGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
 }
 
 func cleanUp() {

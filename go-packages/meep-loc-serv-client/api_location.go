@@ -128,7 +128,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -139,7 +139,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -150,7 +150,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -161,7 +161,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -172,7 +172,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -183,7 +183,7 @@ func (a *LocationApiService) ApByIdGET(ctx context.Context, zoneId string, acces
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -293,7 +293,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -304,7 +304,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -315,7 +315,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -326,7 +326,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -337,7 +337,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -348,7 +348,7 @@ func (a *LocationApiService) ApGET(ctx context.Context, zoneId string, localVarO
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -428,7 +428,7 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -439,7 +439,7 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -450,7 +450,7 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -461,7 +461,7 @@ func (a *LocationApiService) AreaCircleSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -561,7 +561,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -572,7 +572,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -583,7 +583,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -594,7 +594,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -605,7 +605,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -616,7 +616,7 @@ func (a *LocationApiService) AreaCircleSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -804,7 +804,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -815,7 +815,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -826,7 +826,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -837,7 +837,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -848,7 +848,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -859,7 +859,7 @@ func (a *LocationApiService) AreaCircleSubPOST(ctx context.Context, body InlineC
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -962,7 +962,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -973,7 +973,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -984,7 +984,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -995,7 +995,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1006,7 +1006,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1017,7 +1017,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1028,7 +1028,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1039,7 +1039,7 @@ func (a *LocationApiService) AreaCircleSubPUT(ctx context.Context, body InlineCi
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1159,7 +1159,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1170,7 +1170,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1181,7 +1181,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1192,7 +1192,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1203,7 +1203,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1214,7 +1214,7 @@ func (a *LocationApiService) DistanceGET(ctx context.Context, address []string, 
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1294,7 +1294,7 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1305,7 +1305,7 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1316,7 +1316,7 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1327,7 +1327,7 @@ func (a *LocationApiService) DistanceSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1427,7 +1427,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1438,7 +1438,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1449,7 +1449,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1460,7 +1460,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1471,7 +1471,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1482,7 +1482,7 @@ func (a *LocationApiService) DistanceSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1670,7 +1670,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1681,7 +1681,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1692,7 +1692,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1703,7 +1703,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1714,7 +1714,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1725,7 +1725,7 @@ func (a *LocationApiService) DistanceSubPOST(ctx context.Context, body InlineDis
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1828,7 +1828,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1839,7 +1839,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1850,7 +1850,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1861,7 +1861,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1872,7 +1872,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1883,7 +1883,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1894,7 +1894,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1905,7 +1905,7 @@ func (a *LocationApiService) DistanceSubPUT(ctx context.Context, body InlineDist
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1985,7 +1985,7 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -1996,7 +1996,7 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2007,7 +2007,7 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2018,7 +2018,7 @@ func (a *LocationApiService) PeriodicSubDELETE(ctx context.Context, subscription
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2118,7 +2118,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2129,7 +2129,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2140,7 +2140,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2151,7 +2151,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2162,7 +2162,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2173,7 +2173,7 @@ func (a *LocationApiService) PeriodicSubGET(ctx context.Context, subscriptionId 
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2361,7 +2361,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2372,7 +2372,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2383,7 +2383,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2394,7 +2394,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2405,7 +2405,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2416,7 +2416,7 @@ func (a *LocationApiService) PeriodicSubPOST(ctx context.Context, body InlinePer
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2519,7 +2519,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2530,7 +2530,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2541,7 +2541,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2552,7 +2552,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2563,7 +2563,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2574,7 +2574,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2585,7 +2585,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2596,7 +2596,7 @@ func (a *LocationApiService) PeriodicSubPUT(ctx context.Context, body InlinePeri
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2676,7 +2676,7 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2687,7 +2687,7 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2698,7 +2698,7 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2709,7 +2709,7 @@ func (a *LocationApiService) UserTrackingSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2809,7 +2809,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2820,7 +2820,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2831,7 +2831,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2842,7 +2842,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2853,7 +2853,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -2864,7 +2864,7 @@ func (a *LocationApiService) UserTrackingSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3052,7 +3052,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3063,7 +3063,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3074,7 +3074,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3085,7 +3085,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3096,7 +3096,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3107,7 +3107,7 @@ func (a *LocationApiService) UserTrackingSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3210,7 +3210,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3221,7 +3221,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3232,7 +3232,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3243,7 +3243,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3254,7 +3254,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3265,7 +3265,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3276,7 +3276,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3287,7 +3287,7 @@ func (a *LocationApiService) UserTrackingSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3405,7 +3405,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3416,7 +3416,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3427,7 +3427,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3438,7 +3438,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3449,7 +3449,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3460,7 +3460,7 @@ func (a *LocationApiService) UsersGET(ctx context.Context, localVarOptionals *Us
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3540,7 +3540,7 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3551,7 +3551,7 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3562,7 +3562,7 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3573,7 +3573,7 @@ func (a *LocationApiService) ZonalTrafficSubDELETE(ctx context.Context, subscrip
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3673,7 +3673,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3684,7 +3684,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3695,7 +3695,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3706,7 +3706,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3717,7 +3717,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3728,7 +3728,7 @@ func (a *LocationApiService) ZonalTrafficSubGET(ctx context.Context, subscriptio
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3916,7 +3916,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3927,7 +3927,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3938,7 +3938,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3949,7 +3949,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3960,7 +3960,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -3971,7 +3971,7 @@ func (a *LocationApiService) ZonalTrafficSubPOST(ctx context.Context, body Inlin
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4074,7 +4074,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4085,7 +4085,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4096,7 +4096,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4107,7 +4107,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4118,7 +4118,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4129,7 +4129,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4140,7 +4140,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4151,7 +4151,7 @@ func (a *LocationApiService) ZonalTrafficSubPUT(ctx context.Context, body Inline
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4231,7 +4231,7 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4242,7 +4242,7 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4253,7 +4253,7 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4264,7 +4264,7 @@ func (a *LocationApiService) ZoneStatusSubDELETE(ctx context.Context, subscripti
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4364,7 +4364,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4375,7 +4375,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4386,7 +4386,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4397,7 +4397,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4408,7 +4408,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4419,7 +4419,7 @@ func (a *LocationApiService) ZoneStatusSubGET(ctx context.Context, subscriptionI
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4607,7 +4607,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4618,7 +4618,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4629,7 +4629,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4640,7 +4640,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4651,7 +4651,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4662,7 +4662,7 @@ func (a *LocationApiService) ZoneStatusSubPOST(ctx context.Context, body InlineZ
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4765,7 +4765,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4776,7 +4776,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4787,7 +4787,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4798,7 +4798,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4809,7 +4809,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4820,7 +4820,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 412 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4831,7 +4831,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 422 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4842,7 +4842,7 @@ func (a *LocationApiService) ZoneStatusSubPUT(ctx context.Context, body InlineZo
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4940,7 +4940,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4951,7 +4951,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4962,7 +4962,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4973,7 +4973,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4984,7 +4984,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -4995,7 +4995,7 @@ func (a *LocationApiService) ZonesGET(ctx context.Context) (InlineZoneList, *htt
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5095,7 +5095,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 400 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5106,7 +5106,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 401 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5117,7 +5117,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 403 {
-			var v InlineProblemDetailsRequired
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5128,7 +5128,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 404 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5139,7 +5139,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 406 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
@@ -5150,7 +5150,7 @@ func (a *LocationApiService) ZonesGetById(ctx context.Context, zoneId string) (I
 		}
 
 		if localVarHttpResponse.StatusCode == 429 {
-			var v InlineProblemDetails
+			var v ProblemDetails
 			err = a.client.decode(&v, localVarBody, localVarHttpResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.error = err.Error()
