@@ -239,8 +239,9 @@ func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, 
 		return true
 	}
 	// Compare RSSI
-	if (rssi == nil && staInfo.Rssi.Rssi != 0) ||
-		(rssi != nil && *rssi != staInfo.Rssi.Rssi) {
+	if (rssi == nil && staInfo.Rssi != nil) ||
+		(rssi != nil && staInfo.Rssi == nil) ||
+		(rssi != nil && staInfo.Rssi != nil && *rssi != staInfo.Rssi.Rssi) {
 		return true
 	}
 	return false

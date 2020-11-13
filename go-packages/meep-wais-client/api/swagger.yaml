@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 028 - WLAN Access Information API
+  title: AdvantEDGE WLAN Access Information API
   description: WLAN Access Information Service is AdvantEDGE's implementation of [ETSI
     MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf)
     <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
@@ -341,8 +341,10 @@ paths:
                 nanoSeconds: 0
               apId:
                 macId: 005C0A0A0A0A
-                ssid: myNetworkSsid
-                ipAddress: 10.10.100.1
+                ssid:
+                - myNetworkSsid
+                ipAddress:
+                - 10.10.100.1
         required: true
       responses:
         "201":
@@ -362,8 +364,10 @@ paths:
                   nanoSeconds: 0
                 apId:
                   macId: 005C0A0A0A0A
-                  ssid: myNetworkSsid
-                  ipAddress: 10.10.100.1
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -450,15 +454,18 @@ paths:
                         nanoseconds: 0
                       apId:
                         macId: 005C0A0A0A0A
-                        ssid: myNetworkSsid
-                        ipAddress: 10.10.100.1
+                        ssid:
+                        - myNetworkSsid
+                        ipAddress:
+                        - 10.10.100.1
                       staId:
                         macId: 005C01111111
                         ssid:
                         - myNetworkSsid
                         - myOtherNetworkSsid
                         aid: "1122"
-                        ipAddress: 10.10.1.255
+                        ipAddress:
+                        - 10.10.1.255
                 required: true
               responses:
                 "204":
@@ -500,8 +507,10 @@ paths:
                   nanoSeconds: 0
                 apId:
                   macId: 005C0A0A0A0A
-                  ssid: myNetworkSsid
-                  ipAddress: 10.10.100.1
+                  ssid:
+                  - myNetworkSsid
+                  ipAddress:
+                  - 10.10.100.1
         "400":
           description: 'Bad Request : used to indicate that incorrect parameters were
             passed to the request.'
@@ -577,8 +586,10 @@ paths:
                 nanoSeconds: 0
               apId:
                 macId: 005C0A0A0A0A
-                ssid: myNetworkSsid
-                ipAddress: 10.10.100.1
+                ssid:
+                - myNetworkSsid
+                ipAddress:
+                - 10.10.100.1
         required: true
       responses:
         "200":

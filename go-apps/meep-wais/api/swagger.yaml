@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: ETSI GS MEC 028 - WLAN Access Information API
+  title: AdvantEDGE WLAN Access Information API
   version: 2.1.1
   contact:
     name: InterDigital AdvantEDGE Support
@@ -149,8 +149,10 @@ paths:
                 nanoSeconds: 0
               apId:
                 macId: 005C0A0A0A0A
-                ssid: 'myNetworkSsid'
-                ipAddress: 10.10.100.1
+                ssid:
+                - 'myNetworkSsid'
+                ipAddress:
+                - 10.10.100.1
       responses:
         '201':
           description: Successful subscription response
@@ -169,8 +171,10 @@ paths:
                   nanoSeconds: 0
                 apId:
                   macId: 005C0A0A0A0A
-                  ssid: 'myNetworkSsid'
-                  ipAddress: 10.10.100.1
+                  ssid:
+                  - 'myNetworkSsid'
+                  ipAddress:
+                  - 10.10.100.1
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -208,15 +212,18 @@ paths:
                         nanoseconds: 0
                       apId:
                         macId: 005C0A0A0A0A
-                        ssid: 'myNetworkSsid'
-                        ipAddress: 10.10.100.1
+                        ssid:
+                        - 'myNetworkSsid'
+                        ipAddress: 
+                        - 10.10.100.1
                       staId:
                         macId: 005C01111111
                         ssid:
                         - 'myNetworkSsid'
                         - 'myOtherNetworkSsid'
                         aid: '1122'
-                        ipAddress: 10.10.1.255
+                        ipAddress:
+                        - 10.10.1.255
               responses:
                 '204':
                   $ref: '#/components/responses/204'
@@ -247,8 +254,10 @@ paths:
                   nanoSeconds: 0
                 apId:
                   macId: 005C0A0A0A0A
-                  ssid: 'myNetworkSsid'
-                  ipAddress: 10.10.100.1
+                  ssid:
+                  - 'myNetworkSsid'
+                  ipAddress:
+                  - 10.10.100.1
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -285,8 +294,10 @@ paths:
                 nanoSeconds: 0
               apId:
                 macId: 005C0A0A0A0A
-                ssid: 'myNetworkSsid'
-                ipAddress: 10.10.100.1
+                ssid:
+                - 'myNetworkSsid'
+                ipAddress:
+                - 10.10.100.1
       parameters:
         - $ref: '#/components/parameters/Path.subscrId'
       responses:
