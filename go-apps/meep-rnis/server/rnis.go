@@ -1099,7 +1099,7 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		log.Error("Unknown subscription type")
-		http.Error(w, "Unknown subscription type", http.StatusInternalServerError)
+                w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -1214,6 +1214,9 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		jsonResponse, err = json.Marshal(subscription)
 
 	default:
+                nextSubscriptionIdAvailable--
+                w.WriteHeader(http.StatusBadRequest)
+                return
 	}
 
 	//processing the error of the jsonResponse
@@ -1334,6 +1337,8 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 			jsonResponse, err = json.Marshal(subscription)
 		}
 	default:
+                w.WriteHeader(http.StatusBadRequest)
+                return
 	}
 
 	if alreadyRegistered {

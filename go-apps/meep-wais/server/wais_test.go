@@ -33,7 +33,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	waisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-notification-client"
 
 	"github.com/gorilla/mux"
 )

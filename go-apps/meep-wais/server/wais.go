@@ -17,7 +17,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -36,7 +35,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
-	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-notification-client"
 
 	"github.com/gorilla/mux"
 )
@@ -51,7 +49,8 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 const assocStaSubscriptionType = "AssocStaSubscription"
 
-// const staDataRateSubscriptionType = "StaDataRateSubscription" //no used at the moment
+const ASSOC_STA_SUBSCRIPTION = "AssocStaSubscription"
+const ASSOC_STA_NOTIFICATION = "AssocStaNotification"
 
 var assocStaSubscriptionMap = map[int]*Subscription{}
 var subscriptionExpiryMap = map[int][]int{}
@@ -320,19 +319,6 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 	}
 }
 
-func createClient(notifyPath string) (*clientNotif.APIClient, error) {
-	// Create & store client for App REST API
-	subsAppClientCfg := clientNotif.NewConfiguration()
-	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := clientNotif.NewAPIClient(subsAppClientCfg)
-	if subsAppClient == nil {
-		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
-		err := errors.New("Failed to create Subscription App REST API client")
-		return nil, err
-	}
-	return subsAppClient, nil
-}
-
 func checkForExpiredSubscriptions() {
 
 	nowTime := int(time.Now().Unix())
@@ -346,23 +332,23 @@ func checkForExpiredSubscriptions() {
 
 					subsIdStr := strconv.Itoa(subsId)
 
-					var notif clientNotif.ExpiryNotification
+					var notif ExpiryNotification
 
 					seconds := time.Now().Unix()
-					var timeStamp clientNotif.TimeStamp
+					var timeStamp TimeStamp
 					timeStamp.Seconds = int32(seconds)
 
-					var expiryTimeStamp clientNotif.TimeStamp
+					var expiryTimeStamp TimeStamp
 					expiryTimeStamp.Seconds = int32(expiryTime)
 
-					link := new(clientNotif.Link)
+					link := new(ExpiryNotificationLinks)
 					link.Self = assocStaSubscriptionMap[subsId].CallbackReference
 					notif.Links = link
 
 					notif.Timestamp = &timeStamp
 					notif.ExpiryDeadline = &expiryTimeStamp
 
-					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
+					sendExpiryNotification(link.Self, notif)
 					_ = delSubscription(baseKey+"subscription", subsIdStr, true)
 				}
 			}
@@ -421,78 +407,66 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 				subsIdStr := strconv.Itoa(subsId)
 				log.Info("Sending WAIS notification ", sub.CallbackReference)
 
-				var notif clientNotif.Notification
+				var notif AssocStaNotification
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
 				notif.Timestamp = &timeStamp
-				notif.NotificationType = assocStaSubscriptionType
+				notif.NotificationType = ASSOC_STA_NOTIFICATION
 
-				var apId clientNotif.ApIdentity
+				var apId ApIdentity
 				apId.MacId = apMacId
 				notif.ApId = &apId
 
 				for _, staMacId := range staMacIds {
-					var staId clientNotif.StaIdentity
+					var staId StaIdentity
 					staId.MacId = staMacId
 					notif.StaId = append(notif.StaId, staId)
 				}
 
-				sendAssocStaNotification(sub.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendAssocStaNotification(sub.CallbackReference, notif)
 				log.Info("Assoc Sta Notification" + "(" + subsIdStr + ")")
 			}
 		}
 	}
 }
 
-func sendAssocStaNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.Notification) {
+func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
 
 	startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+        jsonNotif, err := json.Marshal(notification)
+        if err != nil {
+                log.Error(err.Error())
+        }
 
-	jsonNotif, err := json.Marshal(notification)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	resp, err := client.NotificationsApi.PostNotification(ctx, subscriptionId, notification)
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
+        resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+        _ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+        if err != nil {
+                log.Error(err)
+                return
+        }
+        defer resp.Body.Close()
 }
 
-func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
+func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
 
-	startTime := time.Now()
+        startTime := time.Now()
 
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+        jsonNotif, err := json.Marshal(notification)
+        if err != nil {
+                log.Error(err.Error())
+        }
 
-	jsonNotif, err := json.Marshal(notification)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
-	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	defer resp.Body.Close()
+        resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+        _ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+        if err != nil {
+                log.Error(err)
+                return
+        }
+        defer resp.Body.Close()
 }
 
 func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
@@ -500,33 +474,46 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var response InlineResponse2003
-	var subscription Subscription
-	response.Subscription = &subscription
+        jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscription:"+subIdParamStr, ".")
+        if jsonRespDB == "" {
+                w.WriteHeader(http.StatusNotFound)
+                return
+        }
 
-	if jsonRespDB == "" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+        var subscriptionCommon SubscriptionCommon
+        err := json.Unmarshal([]byte(jsonRespDB), &subscriptionCommon)
+        if err != nil {
+                log.Error(err.Error())
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
 
-	err := json.Unmarshal([]byte(jsonRespDB), &subscription)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+        var jsonResponse []byte
+        switch subscriptionCommon.SubscriptionType {
+        case ASSOC_STA_SUBSCRIPTION:
+                var subscription AssocStaSubscription
+                err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+                if err != nil {
+                        log.Error(err.Error())
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
 
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, string(jsonResponse))
+                jsonResponse, err = json.Marshal(subscription)
+        default:
+                log.Error("Unknown subscription type")
+                w.WriteHeader(http.StatusBadRequest)
+                return
+        }
 
+        if err != nil {
+                log.Error(err.Error())
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprintf(w, string(jsonResponse))
 }
 
 func isSubscriptionIdRegistered(subsIdStr string) bool {
@@ -569,37 +556,52 @@ func deregister(subsIdStr string, mutexTaken bool) {
 func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse201
-	subscription := new(Subscription)
-	response.Subscription = subscription
+        var subscriptionCommon SubscriptionCommon
+        bodyBytes, _ := ioutil.ReadAll(r.Body)
+        err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+        if err != nil {
+                log.Error(err.Error())
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
 
-	subscriptionPost1 := new(SubscriptionPost1)
+        //extract common body part
+        subscriptionType := subscriptionCommon.SubscriptionType
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&subscriptionPost1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	subscriptionPost := subscriptionPost1.Subscription
+        //new subscription id
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)
-
-	subscription.CallbackReference = subscriptionPost.CallbackReference
-	subscription.SubscriptionType = subscriptionPost.SubscriptionType
-	subscription.ApId = subscriptionPost.ApId
-	subscription.ExpiryDeadline = subscriptionPost.ExpiryDeadline
 	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
-	subscription.Links = link
+        self := new(LinkType)
+        self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
+        link.Self = self
 
-	_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertSubscriptionToJson(subscription))
-	register(subscription, subsIdStr)
+        var jsonResponse []byte
 
-	jsonResponse, err := json.Marshal(response)
+        switch subscriptionType {
+        case ASSOC_STA_SUBSCRIPTION:
+                var subscription AssocStaSubscription
+                err = json.Unmarshal(bodyBytes, &subscription)
+                if err != nil {
+                        log.Error(err.Error())
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+
+                subscription.Links = link
+
+                //registration
+		_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(&subscription))
+		register(&subscription, subsIdStr)
+
+                jsonResponse, err = json.Marshal(subscription)
+	default:
+		nextSubscriptionIdAvailable--
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -615,44 +617,70 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2003
-	subscription1 := new(Subscription1)
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&subscription1)
-	if err != nil {
-		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+        var subscriptionCommon SubscriptionCommon
+        bodyBytes, _ := ioutil.ReadAll(r.Body)
+        err := json.Unmarshal(bodyBytes, &subscriptionCommon)
+        if err != nil {
+                log.Error(err.Error())
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+        //extract common body part
+        subscriptionType := subscriptionCommon.SubscriptionType
 
-	subscription := subscription1.Subscription
+        link := subscriptionCommon.Links
+        if link == nil || link.Self == nil {
+                w.WriteHeader(http.StatusBadRequest)
+                log.Error("Mandatory Link parameter not present")
+                return
+        }
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
-	subsIdStr := selfUrl[len(selfUrl)-1]
+        selfUrl := strings.Split(link.Self.Href, "/")
+        subsIdStr := selfUrl[len(selfUrl)-1]
 
-	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
-		return
-	}
+        if subsIdStr != subIdParamStr {
+                http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+                return
+        }
 
-	if isSubscriptionIdRegistered(subsIdStr) {
-		register(subscription, subsIdStr)
+        alreadyRegistered := false
+        var jsonResponse []byte
 
-		_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertSubscriptionToJson(subscription))
+        switch subscriptionType {
+        case ASSOC_STA_SUBSCRIPTION:
+                var subscription AssocStaSubscription
+                err = json.Unmarshal(bodyBytes, &subscription)
+                if err != nil {
+                        log.Error(err.Error())
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
 
-		response.Subscription = subscription
-		jsonResponse, err := json.Marshal(response)
-		if err != nil {
-			log.Error(err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		//only support one subscription
+		if isSubscriptionIdRegistered(subsIdStr) {
+			register(subscription, subsIdStr)
+
+			_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(subscription))
+                        alreadyRegistered = true
+                        jsonResponse, err = json.Marshal(subscription)
 		}
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, string(jsonResponse))
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
+        default:
+                w.WriteHeader(http.StatusBadRequest)
+                return
+        }
+
+        if alreadyRegistered {
+                if err != nil {
+                        log.Error(err.Error())
+                        http.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+                w.WriteHeader(http.StatusOK)
+                fmt.Fprintf(w, string(jsonResponse))
+        } else {
+                w.WriteHeader(http.StatusNotFound)
+        }
 }
 
 func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
@@ -666,13 +694,18 @@ func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+"subscription:", vars["subscriptionId"], false)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+        subIdParamStr := vars["subscriptionId"]
+        jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+        if jsonRespDB == "" {
+                w.WriteHeader(http.StatusNotFound)
+                return
+        }
 
-	w.WriteHeader(http.StatusNoContent)
+        err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
+        if err != nil {
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
 }
 
 func populateApInfo(key string, jsonInfo string, response interface{}) error {
