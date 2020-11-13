@@ -352,16 +352,12 @@ func checkForExpiredSubscriptions() {
 				cbRef := ""
 				if ccSubscriptionMap[subsId] != nil {
 					cbRef = ccSubscriptionMap[subsId].CallbackReference
+				} else if reSubscriptionMap[subsId] != nil {
+				        cbRef = reSubscriptionMap[subsId].CallbackReference
+				} else if rrSubscriptionMap[subsId] != nil {
+					cbRef = rrSubscriptionMap[subsId].CallbackReference
 				} else {
-					if reSubscriptionMap[subsId] != nil {
-						cbRef = reSubscriptionMap[subsId].CallbackReference
-					} else {
-						if rrSubscriptionMap[subsId] != nil {
-							cbRef = rrSubscriptionMap[subsId].CallbackReference
-						} else {
-							continue
-						}
-					}
+					continue
 				}
 
 				subsIdStr := strconv.Itoa(subsId)
