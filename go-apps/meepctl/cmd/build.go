@@ -327,13 +327,13 @@ func buildSwaggerUi(targetName string, repo string, cobraCmd *cobra.Command) {
 			}
 
 			//update urls for swagger-ui index file
-			urls = urls + `{"name": "` + title + `", "url": "` + name + `-api.yaml"},`
+			urls = urls + `{"name": "` + title + `", "url": rootUrl + "` + name + `-api.yaml"},`
 		}
 	}
 
 	//update swagger-ui index file
 	urls = urls + " ],"
-	sedString := "s/" + urlStringToReplace + "/urls: " + urls + "/g"
+	sedString := "s@" + urlStringToReplace + "@urls: " + urls + "@g"
 	cmd = exec.Command("sed", "-i", sedString, binDir+"/index.html")
 	_, err = utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
