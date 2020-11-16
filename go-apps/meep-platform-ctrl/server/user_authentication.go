@@ -85,12 +85,18 @@ func initOAuth() {
 	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
 	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
 	if gitlabClientId != "" && gitlabSecret != "" {
+		// var etsiGitlabEndpoint = oauth2.Endpoint{
+		// 	AuthURL:  "https://forge.etsi.org/rep/oauth/authorize",
+		// 	TokenURL: "https://forge.etsi.org/rep/oauth/token",
+		// }
+
 		gitlabOauthConfig := &oauth2.Config{
 			ClientID:     gitlabClientId,
 			ClientSecret: gitlabSecret,
 			RedirectURL:  redirectUri,
 			Scopes:       []string{"read_user"},
 			Endpoint:     gitlaboauth.Endpoint,
+			// Endpoint:     etsiGitlabEndpoint,
 		}
 		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 	}
@@ -261,6 +267,7 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		userId = *user.Login
 	case OAUTH_PROVIDER_GITLAB:
 		client, err := gitlab.NewOAuthClient(token.AccessToken)
+		// client, err := gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL("https://forge.etsi.org/rep/api/v4"))
 		if err != nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
