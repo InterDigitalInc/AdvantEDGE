@@ -316,6 +316,7 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\"true\"")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
 		} else {
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\"false\"")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
 		}
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
