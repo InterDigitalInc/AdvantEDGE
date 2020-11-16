@@ -6017,7 +6017,7 @@ func testSubscriptionListGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 	nb := 0
-	for range respBody.Links.Subscription {
+	for range respBody.AssocStaSubscription {
 		nb++
 	}
 	if nb != expectedSubscriptionNb {

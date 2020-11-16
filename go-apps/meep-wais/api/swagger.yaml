@@ -2037,45 +2037,28 @@ components:
     SubscriptionLinkList:
       properties:
         _links:
-          description: List of hyperlinks related to the resource.
+          description: Hyperlink related to the resource. This shall be only included in the HTTP responses and in HTTP PUT requests.
           properties:
             self:
-              # description': ''
-              # x-etsi-mec-cardinality': '1'
-              # x-etsi-mec-origin-type': LinkType
               $ref: '#/components/schemas/LinkType'
-            subscription:
-              description: A link to a subscription.
-              items:
-                type: object
-                properties:
-                  href:
-                    description: The URI referring to the subscription.
-                    format: uri
-                    type: string
-                    x-etsi-mec-cardinality: '1'
-                    x-etsi-mec-origin-type: URI
-                  subscriptionType:
-                    description: "Type of the subscription. The string shall be set according to the \"subscriptionType\" attribute of the associated subscription data type event."
-                    type: string
-                    x-etsi-mec-cardinality: '1'
-                    x-etsi-mec-origin-type: String
-              minItems: 0
-              required:
-              - href
-              - subscriptionType
-              type: array
-              x-etsi-mec-cardinality: 0..N
-              x-etsi-mec-origin-type: Structure (inlined)
-          required:
-          - self
           type: object
-          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-cardinality: 0..1
           x-etsi-mec-origin-type: Structure (inlined)
+        assocStaSubscription:
+          items:
+            $ref: '#/components/schemas/AssocStaSubscription'
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssocStaSubscription
+        staDataRateSubscription:
+          items:
+            $ref: '#/components/schemas/StaDataRateSubscription'
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaDataRateSubscription
       required:
       - _links
       type: object
-      x-etsi-ref: not defined
     TimeStamp:
       properties:
         nanoSeconds:

@@ -25,4 +25,8 @@ package server
 
 type SubscriptionLinkList struct {
 	Links *SubscriptionLinkListLinks `json:"_links"`
+
+	AssocStaSubscription []AssocStaSubscription `json:"assocStaSubscription,omitempty"`
+
+	StaDataRateSubscription []StaDataRateSubscription `json:"staDataRateSubscription,omitempty"`
 }
