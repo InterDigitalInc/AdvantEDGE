@@ -60,7 +60,7 @@ func convertStaInfoToJson(obj *StaInfo) string {
 	return string(jsonData)
 }
 
-func convertSubscriptionToJson(obj *Subscription) string {
+func convertAssocStaSubscriptionToJson(obj *AssocStaSubscription) string {
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {
 		log.Error(err.Error())

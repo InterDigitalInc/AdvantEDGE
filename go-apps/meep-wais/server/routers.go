@@ -88,7 +88,7 @@ var routes = Routes{
 	Route{
 		"SubscriptionLinkListSubscriptionsGET",
 		strings.ToUpper("Get"),
-		"/wai/v2/subscriptions/",
+		"/wai/v2/subscriptions",
 		SubscriptionLinkListSubscriptionsGET,
 	},
 
@@ -109,7 +109,7 @@ var routes = Routes{
 	Route{
 		"SubscriptionsPOST",
 		strings.ToUpper("Post"),
-		"/wai/v2/subscriptions/",
+		"/wai/v2/subscriptions",
 		SubscriptionsPOST,
 	},
 

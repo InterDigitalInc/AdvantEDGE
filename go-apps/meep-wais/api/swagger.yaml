@@ -1,2715 +1,2192 @@
----
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: "WLAN Access Information Service is AdvantEDGE's implementation of\
-    \ [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf)\
-    \ <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)\
-    \ <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais)\
-    \ <p>**Type & Usage**<br>Edge Service used by edge applications that want to get\
-    \ information about WLAN access information in the network <p>**Details**<br>API\
-    \ details available at _your-AdvantEDGE-ip-address/api_"
-  version: "2.1.1"
-  title: "AdvantEDGE WLAN Access Information Service REST API"
+  title: AdvantEDGE WLAN Access Information API
+  version: 2.1.1
+  contact:
+    name: InterDigital AdvantEDGE Support
+    email: AdvantEDGE@InterDigital.com
+  description: "WLAN Access Information Service is AdvantEDGE's implementation of
+  [ETSI MEC ISG MEC028 WAI API](http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf)
+  <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
+  <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais)
+  <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about WLAN access information in the network
+  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_"
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/wai/v2"
-schemes:
-- "http"
-- "https"
-consumes:
-- "application/json"
-produces:
-- "application/json"
-security:
-- OauthSecurity:
-  - "all"
+externalDocs:
+  description: ETSI MEC028 V2.1.1 WLAN Information API
+  url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_mec028v020101p.pdf'
+servers:
+  - url: 'https://localhost/wai/v2'
+tags:
+- name: "wai"
 paths:
   /queries/ap/ap_information:
     get:
-      description: "Gets information on existing WLAN Access Points"
-      operationId: "ap_infoGET"
-      produces:
-      - "application/json"
+      tags:
+      - 'wai'
+      summary: 'Retrieve information on existing Access Points'
+      description: 'Queries information about existing WLAN Access Points'
+      operationId: apInfoGET
       parameters:
-      - name: "filter"
-        in: "query"
-        description: "Attribute-based filtering expression"
-        required: false
-        type: "string"
-        x-exportParamName: "Filter"
-        x-optionalDataType: "String"
-      - name: "all_fields"
-        in: "query"
-        description: "Include all complex attributes in response."
-        required: false
-        type: "string"
-        x-exportParamName: "AllFields"
-        x-optionalDataType: "String"
-      - name: "fields"
-        in: "query"
-        description: "Complex attributes to be included in the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "Fields"
-      - name: "exclude_fields"
-        in: "query"
-        description: "Complex attributes to be excluded from the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "ExcludeFields"
-      - name: "exclude_default"
-        in: "query"
-        description: "Complex attributes to be excluded from the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "ExcludeDefault"
+        - $ref: '#/components/parameters/Query.Filter'
+        - $ref: '#/components/parameters/Query.AllFields'
+        - $ref: '#/components/parameters/Query.Fields'
+        - $ref: '#/components/parameters/Query.ExcludeFields'
+        - $ref: '#/components/parameters/Query.ExcludeDefault'
       responses:
-        200:
-          description: "Successful response to ap_info request"
-          schema:
-            $ref: "#/definitions/inline_response_200"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
+        '200':
+          description: Successful response to ap_info request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApInfo'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
   /queries/sta/sta_information:
     get:
-      description: "Gets information on existing WLAN stations"
-      operationId: "sta_infoGET"
-      produces:
-      - "application/json"
+      tags:
+      - 'wai'
+      summary: 'Retrieve information on existing Stations'
+      description: 'Queries information about existing WLAN stations'
+      operationId: staInfoGET
       parameters:
-      - name: "filter"
-        in: "query"
-        description: "Attribute-based filtering expression"
-        required: false
-        type: "string"
-        x-exportParamName: "Filter"
-        x-optionalDataType: "String"
-      - name: "all_fields"
-        in: "query"
-        description: "Include all complex attributes in response."
-        required: false
-        type: "string"
-        x-exportParamName: "AllFields"
-        x-optionalDataType: "String"
-      - name: "fields"
-        in: "query"
-        description: "Complex attributes to be included in the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "Fields"
-      - name: "exclude_fields"
-        in: "query"
-        description: "Complex attributes to be excluded from the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "ExcludeFields"
-      - name: "exclude_default"
-        in: "query"
-        description: "Complex attributes to be excluded from the response."
-        required: false
-        type: "array"
-        items:
-          type: "string"
-        x-exportParamName: "ExcludeDefault"
+        - $ref: '#/components/parameters/Query.Filter'
+        - $ref: '#/components/parameters/Query.AllFields'
+        - $ref: '#/components/parameters/Query.Fields'
+        - $ref: '#/components/parameters/Query.ExcludeFields'
+        - $ref: '#/components/parameters/Query.ExcludeDefault'
       responses:
-        200:
-          description: "Successful response to sta_info request"
-          schema:
-            $ref: "#/definitions/inline_response_200_1"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
-  /subscriptions/:
-    get:
-      description: "The GET method can be used to request information about the subscriptions\
-        \ for this requestor"
-      operationId: "SubscriptionLinkList_subscriptionsGET"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters: []
-      responses:
-        200:
-          description: "Response body contains the list of links to requestors subscriptions."
-          examples:
+        '200':
+          description: Successful response to sta_info request
+          content:
             application/json:
-              SubscriptionLinkList:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaInfo'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
+  /subscriptions:
+    get:
+      tags:
+      - 'wai'
+      summary: 'Retrieve information on subscriptions for notifications'
+      description: 'Queries information on subscriptions for notifications'
+      operationId: subscriptionLinkList_subscriptionsGET
+      parameters:
+        - $ref: '#/components/parameters/Query.SubscriptionType'
+      responses:
+        '200':
+          description: 'Response body contains the list of links to requestors subscriptions.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionLinkList'
+              example:
                 _links:
-                  self: "http://meAppServer.example.com/wai/v2/subscriptions"
-                  subscription:
-                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/1"
-                    subscriptionType: "AssocStaSubscription"
-                  - href: "http://meAppServer.example.com/wai/v2/subscriptions/2"
-                    subscriptionType: "StaDataRateSubscription"
-          schema:
-            $ref: "#/definitions/inline_response_200_2"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
+                  self:
+                    href: 'http://meAppServer.example.com/wai/v2/subscriptions'
+                subscription:
+                  - _links:
+                      self:
+                        href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
+                    callbackReference: 'http://my.callback.com/wai/assocStaSubscription/some-id'
+                    subscriptionType: AssocStaSubscription
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
     post:
-      description: "Creates a subscription to the WLAN Access Information Service."
-      operationId: "subscriptionsPOST"
-      produces:
-      - "application/json"
-      - "application/problem+json"
-      parameters:
-      - in: "body"
-        name: "SubscriptionPost"
-        description: "Use to creates a subscription."
+      tags:
+      - 'wai'
+      summary: 'Create a new subscription'
+      description: 'Creates a new subscription to WLAN Access Information notifications'
+      operationId: subscriptionsPOST
+      requestBody:
+        description: Subscription to be created
         required: true
-        schema:
-          $ref: "#/definitions/SubscriptionPost_1"
-        x-exportParamName: "SubscriptionPost"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineSubscription'
+            example:
+              subscriptionType: AssocStaSubscription
+              callbackReference: 'http://meAppClient.example.com/wai/v2/notifications/1'
+              expiryDeadline:
+                seconds: 1977836800
+                nanoSeconds: 0
+              apId:
+                macId: 005C0A0A0A0A
+                ssid:
+                - 'myNetworkSsid'
+                ipAddress:
+                - 10.10.100.1
       responses:
-        201:
-          description: "Successful subscription to response to notifications"
-          examples:
+        '201':
+          description: Successful subscription response
+          content:
             application/json:
-              Subscription:
-                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+              schema:
+                $ref: '#/components/schemas/InlineSubscription'
+              example:
+                subscriptionType: AssocStaSubscription
+                callbackReference: 'http://meAppClient.example.com/wai/v2/notifications/1'
                 _links:
-                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
-                apId:
-                  macId: "11:22:33:44:55:66"
-                  ssid: "mySsid"
-                  ipAddress: "1.2.3.4"
+                  self:
+                    href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
                 expiryDeadline:
-                  seconds: 1577836800
+                  seconds: 1977836800
                   nanoSeconds: 0
-          schema:
-            $ref: "#/definitions/inline_response_201"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        415:
-          description: "Unsupported Media Type"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        422:
-          description: "Unprocessable Entity"
-          examples:
-            application/problem+json:
-              ProblemDetails:
-                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
-                title: "Too many targets"
-                status: "422"
-                detail: "The target area for the request is considered too large"
-                instance: "/meAppClient.example.com/77777/msgs/abc"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-      x-swagger-router-controller: "Default"
-  /subscriptions/{subscriptionId}:
+                apId:
+                  macId: 005C0A0A0A0A
+                  ssid:
+                  - 'myNetworkSsid'
+                  ipAddress:
+                  - 10.10.100.1
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '415':
+          $ref: '#/components/responses/415'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+      callbacks:
+        notification:
+          '{$request.body#/callbackReference}':
+            post:
+              summary: 'Callback POST used to send a notification'
+              description: 'Notification from WAIS, content based on subscription type'
+              operationId: notificationPOST
+              requestBody:
+                description: Subscription notification
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/InlineNotification'
+                    example:
+                      notificationType: AssocStaNotification
+                      timeStamp:
+                        seconds: 1977836800
+                        nanoseconds: 0
+                      apId:
+                        macId: 005C0A0A0A0A
+                        ssid:
+                        - 'myNetworkSsid'
+                        ipAddress: 
+                        - 10.10.100.1
+                      staId:
+                        macId: 005C01111111
+                        ssid:
+                        - 'myNetworkSsid'
+                        - 'myOtherNetworkSsid'
+                        aid: '1122'
+                        ipAddress:
+                        - 10.10.1.255
+              responses:
+                '204':
+                  $ref: '#/components/responses/204'
+  '/subscriptions/{subscriptionId}':
     get:
-      description: "Get cell change subscription information"
-      operationId: "SubscriptionsGET"
-      produces:
-      - "application/json"
-      - "application/problem+json"
+      tags:
+      - 'wai'
+      summary: 'Retrieve information on current specific subscription'
+      description: 'Queries information about an existing subscription, identified by its self-referring URI returned on creation (initial POST)'
+      operationId: subscriptionsGET
       parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Subscription Id, specifically the \"self\" returned in the subscription\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "SubscriptionId"
+        - $ref: '#/components/parameters/Path.subscrId'
       responses:
-        200:
-          description: "Subscription information regarding subscription notifications"
-          examples:
+        '200':
+          description: Subscription information regarding subscription notifications
+          content:
             application/json:
-              Subscription:
-                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+              schema:
+                $ref: '#/components/schemas/InlineSubscription'
+              example:
+                subscriptionType: AssocStaSubscription
+                callbackReference: 'http://meAppClient.example.com/wai/v2/notifications/1'
                 _links:
-                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
-                apId:
-                  macId: "11:22:33:44:55:66"
-                  ssid: "mySsid"
-                  ipAddress: "1.2.3.4"
+                  self:
+                    href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
                 expiryDeadline:
-                  seconds: 1577836800
+                  seconds: 1977836800
                   nanoSeconds: 0
-          schema:
-            $ref: "#/definitions/inline_response_200_3"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
+                apId:
+                  macId: 005C0A0A0A0A
+                  ssid:
+                  - 'myNetworkSsid'
+                  ipAddress:
+                  - 10.10.100.1
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '429':
+          $ref: '#/components/responses/429'
     put:
-      description: "Updates a subscription from WLAN Access Information Service"
-      operationId: "SubscriptionsPUT"
-      produces:
-      - "application/json"
-      - "application/problem+json"
+      tags:
+      - 'wai'
+      summary: 'Modify an existing subscription'
+      description: 'Updates an existing subscription, identified by its self-referring URI returned on creation (initial POST)'
+      operationId: subscriptionsPUT
+      requestBody:
+        description: Subscription to be modified
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InlineSubscription'
+            example:
+              subscriptionType: AssocStaSubscription
+              callbackReference: 'http://meAppClient.example.com/wai/v2/notifications/1'
+              _links:
+                self:
+                  href: 'http://meAppServer.example.com/wai/v2/subscriptions/sub123'
+              expiryDeadline:
+                seconds: 1977836800
+                nanoSeconds: 0
+              apId:
+                macId: 005C0A0A0A0A
+                ssid:
+                - 'myNetworkSsid'
+                ipAddress:
+                - 10.10.100.1
       parameters:
-      - in: "body"
-        name: "Subscription"
-        description: "Use to creates a subscription."
-        required: true
-        schema:
-          $ref: "#/definitions/Subscription_1"
-        x-exportParamName: "Subscription"
-      - name: "subscriptionId"
-        in: "path"
-        description: "Subscription Id, specifically the \"self\" returned in the subscription\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "SubscriptionId"
+        - $ref: '#/components/parameters/Path.subscrId'
       responses:
-        200:
-          description: "Successful subscription to response to subscription notifications"
-          examples:
+        '200':
+          description: Successful subscription modification
+          content:
             application/json:
-              Subscription:
-                callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
+              schema:
+                $ref: '#/components/schemas/InlineSubscription'
+              example:
                 _links:
-                  self: "http://meAppServer.example.com/wai/v2/subscriptions/sub123"
+                  self:
+                    href: 'http://[hostIP]/sbox-xyz123/wai/v2/subscriptions/sub123'
+                callbackReference: 'http://my.callback.com/wai/some-id'
                 apId:
-                  macId: "11:22:33:44:55:66"
-                  ssid: "mySsid"
-                  ipAddress: "1.2.3.4"
-                expiryDeadline:
-                  seconds: 1577836800
-                  nanoSeconds: 0
-          schema:
-            $ref: "#/definitions/Subscription_1"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/inline_response_403"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        406:
-          description: "Not Acceptable"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        412:
-          description: "Precondition failed"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        422:
-          description: "Unprocessable Entity"
-          examples:
-            application/problem+json:
-              ProblemDetails:
-                type: "https://meAppServer.example.com/wai/v2/probs/too-many-targets"
-                title: "Too many targets"
-                status: "422"
-                detail: "The target area for the request is considered too large"
-                instance: "/meAppClient.example.com/77777/msgs/abc"
-          schema:
-            $ref: "#/definitions/inline_response_400"
-        429:
-          description: "Too Many Requests"
-          schema:
-            $ref: "#/definitions/inline_response_400"
+                  macId: 005C0A0A0A0A
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '412':
+          $ref: '#/components/responses/412'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
     delete:
-      description: "Method to delete a subscription"
-      operationId: "SubscriptionsDELETE"
-      produces:
-      - "application/json"
+      tags:
+      - 'wai'
+      summary: 'Cancel an existing subscription'
+      description: 'Cancels an existing subscription, identified by its self-referring URI returned on creation (initial POST)'
+      operationId: subscriptionsDELETE
       parameters:
-      - name: "subscriptionId"
-        in: "path"
-        description: "Subscription Id, specifically the \"self\" returned in the subscription\
-          \ request"
-        required: true
-        type: "string"
-        format: "uri"
-        x-exportParamName: "SubscriptionId"
+        - $ref: '#/components/parameters/Path.subscrId'
       responses:
-        204:
-          description: "No Content"
-      x-swagger-router-controller: "Default"
-securityDefinitions:
-  OauthSecurity:
-    type: "oauth2"
-    tokenUrl: "https://oauth.exampleAPI/token"
-    flow: "application"
-    scopes:
-      all: "Single oauth2 scope for API"
-definitions:
-  ProblemDetails:
-    type: "object"
-    properties:
-      type:
-        type: "string"
-        format: "uri"
-        description: "A URI reference according to IETF RFC 3986 that identifies the\
-          \ problem type"
-      title:
-        type: "string"
-        description: "A short, human-readable summary of the problem type"
-      status:
-        type: "integer"
-        format: "uint32"
-        description: "The HTTP status code for this occurrence of the problem"
-      detail:
-        type: "string"
-        description: "A human-readable explanation specific to this occurrence of\
-          \ the problem"
-      instance:
-        type: "string"
-        format: "uri"
-        description: "A URI reference that identifies the specific occurrence of the\
-          \ problem"
-  ApIdentity:
-    type: "object"
-    required:
-    - "macId"
-    properties:
-      macId:
-        type: "string"
-        example: "11:22:33:44:55:66"
-        description: "Identifier assigned to an Access Point for communications at\
-          \ the data link layer of a network segment."
-      ssid:
-        type: "string"
-        example: "mySsid"
-        description: "Service set identifier to identify logical networks."
-      ipAddress:
-        type: "string"
-        example: "1.2.3.4"
-        description: "IPv4 or IPv6 address allocated to the Access Point."
-    example:
-      macId: "11:22:33:44:55:66"
-      ipAddress: "1.2.3.4"
-      ssid: "mySsid"
-  HtCapabilities:
-    type: "object"
-    required:
-    - "ampduParameters"
-    - "aselCap"
-    - "htCapabilityInfo"
-    - "htExtendedCap"
-    - "supportedMcsSet"
-    - "txBeamFormCap"
-    properties:
-      htCapabilityInfo:
-        example: "1"
-        description: "HT Capability Information."
-      ampduParameters:
-        type: "integer"
-        example: 1
-        description: "A-MPDU parameters."
-      supportedMcsSet:
-        type: "integer"
-        format: "uint64"
-        example: 1
-        description: "SupportedMCS set (128 bytes)."
-      htExtendedCap:
-        type: "integer"
-        example: 1
-        description: "Extended HT Capabilities."
-      txBeamFormCap:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Transmit Beamforming Capabilities."
-      aselCap:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "ASEL capabilities."
-    example:
-      txBeamFormCap: 1
-      aselCap: 1
-      ampduParameters: 1
-      htCapabilityInfo: "1"
-      htExtendedCap: 1
-      supportedMcsSet: 1
-  VhtCapabilities:
-    type: "object"
-    required:
-    - "vhtCapInfo"
-    - "vhtMcsNss"
-    properties:
-      vhtCapInfo:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "VHT Capabilities."
-      vhtMcsNss:
-        type: "integer"
-        format: "uint64"
-        example: 1
-        description: "Supported VHT-MCS and NSS Set."
-    example:
-      vhtMcsNss: 1
-      vhtCapInfo: 1
-  HeCapabilities:
-    type: "object"
-    required:
-    - "heMacCapInfo"
-    - "hePhyCapInfo"
-    properties:
-      heMacCapInfo:
-        type: "integer"
-        example: 1
-        description: "MAC capabilities of an Access Point."
-      hePhyCapInfo:
-        type: "integer"
-        example: 1
-        description: "PHY capabilities of an Access Point."
-      supportedHeMcsNss:
-        type: "integer"
-        example: 1
-        description: "Supported MCS and NSS Set."
-      ppeThresholds:
-        type: "integer"
-        example: 0
-        description: "Nominal packet padding value for a HE PPDU."
-    example:
-      supportedHeMcsNss: 1
-      hePhyCapInfo: 1
-      heMacCapInfo: 1
-      ppeThresholds: 0
-  DmgCapabilities:
-    type: "object"
-    required:
-    - "dmgApOrPcpCapInfo"
-    - "dmgStaBeamTrackTimeLimit"
-    - "dmgStaCapInfo"
-    - "extScMcsCap"
-    - "maxNrBasicAmsduSubframes"
-    - "maxNrShortAmsduSubframes"
-    - "sarCap"
-    - "tddCap"
-    properties:
-      dmgStaCapInfo:
-        type: "integer"
-        format: "uint64"
-        example: 1
-        description: "DMG station capabilities information."
-      dmgApOrPcpCapInfo:
-        type: "integer"
-        example: 1
-        description: "DMG AP or PCP capabilities information."
-      dmgStaBeamTrackTimeLimit:
-        type: "integer"
-        example: 1
-        description: "DMG station beam tracking time limit."
-      extScMcsCap:
-        type: "integer"
-        example: 0
-        description: "Extended SC MCS capabilities."
-      maxNrBasicAmsduSubframes:
-        type: "integer"
-        example: 1
-        description: "Number of basic A-MSDU subframes in A-MSDU."
-      maxNrShortAmsduSubframes:
-        type: "integer"
-        example: 1
-        description: "Number of short A-MSDU subframes in A-MSDU."
-      tddCap:
-        type: "integer"
-        example: 1
-        description: "TDD capabilities."
-      sarCap:
-        type: "integer"
-        example: 1
-        description: "SAR capabilities."
-    example:
-      dmgStaCapInfo: 1
-      maxNrShortAmsduSubframes: 1
-      extScMcsCap: 0
-      sarCap: 1
-      maxNrBasicAmsduSubframes: 1
-      dmgStaBeamTrackTimeLimit: 1
-      dmgApOrPcpCapInfo: 1
-      tddCap: 1
-  EdmgCapabilities:
-    type: "object"
-    required:
-    - "ampduParameters"
-    - "supportedMcs"
-    - "tmParameters"
-    properties:
-      ampduParameters:
-        type: "integer"
-        example: 1
-        description: "A-MPDU parameters."
-      tmParameters:
-        type: "integer"
-        example: 1
-        description: "Training parameters."
-      supportedMcs:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Supported MCS."
-      reserved:
-        type: "integer"
-        example: 0
-        description: "Reserved field."
-    example:
-      supportedMcs: 1
-      reserved: 0
-      ampduParameters: 1
-      tmParameters: 1
-  WlanCapabilities:
-    type: "object"
-    properties:
-      ht:
-        $ref: "#/definitions/HtCapabilities"
-      vht:
-        $ref: "#/definitions/VhtCapabilities"
-      he:
-        $ref: "#/definitions/HeCapabilities"
-      dmg:
-        $ref: "#/definitions/DmgCapabilities"
-      edmg:
-        $ref: "#/definitions/EdmgCapabilities"
-    example:
-      vht:
-        vhtMcsNss: 1
-        vhtCapInfo: 1
-      edmg:
-        supportedMcs: 1
-        reserved: 0
-        ampduParameters: 1
-        tmParameters: 1
-      ht:
-        txBeamFormCap: 1
-        aselCap: 1
-        ampduParameters: 1
-        htCapabilityInfo: "1"
-        htExtendedCap: 1
-        supportedMcsSet: 1
-      he:
-        supportedHeMcsNss: 1
-        hePhyCapInfo: 1
-        heMacCapInfo: 1
-        ppeThresholds: 0
-      dmg:
-        dmgStaCapInfo: 1
-        maxNrShortAmsduSubframes: 1
-        extScMcsCap: 0
-        sarCap: 1
-        maxNrBasicAmsduSubframes: 1
-        dmgStaBeamTrackTimeLimit: 1
-        dmgApOrPcpCapInfo: 1
-        tddCap: 1
-  WanMetrics:
-    type: "object"
-    required:
-    - "downlinkLoad"
-    - "downlinkSpeed"
-    - "lmd"
-    - "uplinkLoad"
-    - "uplinkSpeed"
-    - "wanInfo"
-    properties:
-      wanInfo:
-        type: "integer"
-        example: 1
-        description: "Info about WAN link status, link symmetricity and capacity currently\
-          \ used."
-      downlinkSpeed:
-        type: "integer"
-        format: "uint32"
-        example: 1000
-        description: "Estimate of the WAN Backhaul link current downlink speed in\
-          \ kbps."
-      uplinkSpeed:
-        type: "integer"
-        format: "uint32"
-        example: 1000
-        description: "Estimate of the WAN Backhaul link current downlink speed in\
-          \ kbps."
-      downlinkLoad:
-        type: "integer"
-        example: 1
-        description: "Current scaled percentage loading of the downlink WAN connection."
-      uplinkLoad:
-        type: "integer"
-        example: 1
-        description: "Current scaled percentage loading of the downlink WAN connection."
-      lmd:
-        type: "integer"
-        example: 10
-        description: "Duration over which the Downlink Load and Uplink Load have been\
-          \ measured, in tenths of a second."
-    example:
-      uplinkLoad: 1
-      downlinkLoad: 1
-      lmd: 10
-      uplinkSpeed: 1000
-      downlinkSpeed: 1000
-      wanInfo: 1
-  BssLoad:
-    type: "object"
-    required:
-    - "availAdmCap"
-    - "channelUtilization"
-    - "staCount"
-    properties:
-      staCount:
-        type: "integer"
-        example: 1
-        description: "Total number of STAs currently associated with this BSS."
-      channelUtilization:
-        type: "integer"
-        example: 1
-        description: "Scaled percentage of time the AP sensed the medium was busy."
-      availAdmCap:
-        type: "integer"
-        example: 1000
-        description: "Remaining amount of medium time available via explicit admission\
-          \ control, in units of 32us/s."
-    example:
-      channelUtilization: 1
-      staCount: 1
-      availAdmCap: 1000
-  ExtBssLoad:
-    type: "object"
-    required:
-    - "muMimoStaCount"
-    - "obsSec20MhzUtil"
-    - "obsSec40MhzUtil"
-    - "obsSec80MhzUtil"
-    - "spatStreamUnderUtil"
-    properties:
-      muMimoStaCount:
-        type: "integer"
-        example: 1
-        description: "Total number of STAs currently associated with this BSS that\
-          \ have a 1 in the MU Beamforme Capable field of their VHT Capabilities."
-      spatStreamUnderUtil:
-        type: "integer"
-        example: 1
-        description: "Scaled percentage of time the AP has underutilized spatial dom,ain\
-          \ resources for given busy time of the medium."
-      obsSec20MhzUtil:
-        type: "integer"
-        example: 1
-        description: "Observable loading on each of the secondary 20 MHz channel."
-      obsSec40MhzUtil:
-        type: "integer"
-        example: 1
-        description: "Observable loading on each of the secondary 40 MHz channel."
-      obsSec80MhzUtil:
-        type: "integer"
-        example: 1
-        description: "Observable loading on each of the secondary 80 MHz channel."
-    example:
-      obsSec80MhzUtil: 1
-      obsSec40MhzUtil: 1
-      muMimoStaCount: 1
-      spatStreamUnderUtil: 1
-      obsSec20MhzUtil: 1
-  GeoLocation:
-    type: "object"
-    required:
-    - "datum"
-    - "lat"
-    - "latUncertainty"
-    - "long"
-    - "longUncertainty"
-    properties:
-      latUncertainty:
-        type: "integer"
-        example: 1
-        description: "Uncertainty for Latitude information."
-      lat:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Latitude value of the location."
-      longUncertainty:
-        type: "integer"
-        example: 1
-        description: "Uncertainty for Longitude information."
-      long:
-        type: "integer"
-        format: "uint64"
-        example: 1
-        description: "Longitude value of the location."
-      altitudeType:
-        type: "integer"
-        example: 1
-        description: "Type description for altitude information."
-      altitudeUncertainty:
-        type: "integer"
-        example: 1
-        description: "Uncertainty for altitude information."
-      altitude:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Altitude value of the location."
-      datum:
-        type: "integer"
-        example: 1
-        description: "Datum value to express how coordinates are organized."
-    example:
-      datum: 1
-      altitude: 1
-      longUncertainty: 1
-      altitudeType: 1
-      altitudeUncertainty: 1
-      latUncertainty: 1
-      lat: 1
-      long: 1
-  CivicLocation:
-    type: "object"
-    required:
-    - "country"
-    properties:
-      country:
-        type: "string"
-        example: "US"
-        description: "ISO 3166 country code in capital ASCII letters."
-      ca0:
-        type: "string"
-        description: "Language."
-      ca1:
-        type: "string"
-        description: "National subdivisions (state, canton, region, province, prefecture)."
-      ca2:
-        type: "string"
-        description: "Country, parish, gun(JP), district (IN)"
-      ca3:
-        type: "string"
-        description: "City, township, shi (JP)"
-      ca4:
-        type: "string"
-        description: "City division, borough, city district, ward, chou (JP)."
-      ca5:
-        type: "string"
-        description: "Neighborhood, block."
-      ca6:
-        type: "string"
-        description: "Group of streets below the neighborhood level."
-      ca16:
-        type: "string"
-        description: "Leading street direction."
-      ca17:
-        type: "string"
-        description: "Trailing street suffix."
-      ca18:
-        type: "string"
-        description: "Street suffix or type."
-      ca19:
-        type: "string"
-        description: "House number."
-      ca20:
-        type: "string"
-        description: "House number suffix."
-      ca21:
-        type: "string"
-        description: "Landmark of vanity address."
-      ca22:
-        type: "string"
-        description: "Additional location information."
-      ca23:
-        type: "string"
-        description: "Name (residence and office occupant)."
-      ca24:
-        type: "string"
-        description: "Postal/Zip code."
-      ca25:
-        type: "string"
-        description: "Building (structure)."
-      ca26:
-        type: "string"
-        description: "Unit (apartment/suite)."
-      ca27:
-        type: "string"
-        description: "Floor."
-      ca28:
-        type: "string"
-        description: "Room."
-      ca29:
-        type: "string"
-        description: "Type of place."
-      ca30:
-        type: "string"
-        description: "Postal community name."
-      ca31:
-        type: "string"
-        description: "Post office box."
-      ca32:
-        type: "string"
-        description: "Additional code."
-      ca33:
-        type: "string"
-        description: "Seat (desk, cubicle, workstation)."
-      ca34:
-        type: "string"
-        description: "Primary road name."
-      ca35:
-        type: "string"
-        description: "Road section."
-      ca36:
-        type: "string"
-        description: "Branch road name."
-      ca37:
-        type: "string"
-        description: "Sub-branch road name."
-      ca38:
-        type: "string"
-        description: "Street name pre-modifier."
-      ca39:
-        type: "string"
-        description: "Street name post-modifier."
-      ca128:
-        type: "string"
-        description: "Script."
-    example:
-      country: "US"
-      ca128: "ca128"
-      ca28: "ca28"
-      ca29: "ca29"
-      ca26: "ca26"
-      ca27: "ca27"
-      ca24: "ca24"
-      ca25: "ca25"
-      ca33: "ca33"
-      ca34: "ca34"
-      ca1: "ca1"
-      ca31: "ca31"
-      ca0: "ca0"
-      ca32: "ca32"
-      ca3: "ca3"
-      ca2: "ca2"
-      ca30: "ca30"
-      ca5: "ca5"
-      ca4: "ca4"
-      ca6: "ca6"
-      ca19: "ca19"
-      ca17: "ca17"
-      ca39: "ca39"
-      ca18: "ca18"
-      ca37: "ca37"
-      ca16: "ca16"
-      ca38: "ca38"
-      ca35: "ca35"
-      ca36: "ca36"
-      ca22: "ca22"
-      ca23: "ca23"
-      ca20: "ca20"
-      ca21: "ca21"
-  ApLocation:
-    type: "object"
-    properties:
-      geoLocation:
-        $ref: "#/definitions/GeoLocation"
-      civiLocation:
-        $ref: "#/definitions/CivicLocation"
-    example:
-      geoLocation:
-        datum: 1
-        altitude: 1
-        longUncertainty: 1
-        altitudeType: 1
-        altitudeUncertainty: 1
-        latUncertainty: 1
-        lat: 1
-        long: 1
-      civiLocation:
-        country: "US"
-        ca128: "ca128"
-        ca28: "ca28"
-        ca29: "ca29"
-        ca26: "ca26"
-        ca27: "ca27"
-        ca24: "ca24"
-        ca25: "ca25"
-        ca33: "ca33"
-        ca34: "ca34"
-        ca1: "ca1"
-        ca31: "ca31"
-        ca0: "ca0"
-        ca32: "ca32"
-        ca3: "ca3"
-        ca2: "ca2"
-        ca30: "ca30"
-        ca5: "ca5"
-        ca4: "ca4"
-        ca6: "ca6"
-        ca19: "ca19"
-        ca17: "ca17"
-        ca39: "ca39"
-        ca18: "ca18"
-        ca37: "ca37"
-        ca16: "ca16"
-        ca38: "ca38"
-        ca35: "ca35"
-        ca36: "ca36"
-        ca22: "ca22"
-        ca23: "ca23"
-        ca20: "ca20"
-        ca21: "ca21"
-  NeighborReport:
-    type: "object"
-    required:
-    - "bssid"
-    - "bssidInfo"
-    - "channel"
-    - "operatingClass"
-    - "phyType"
-    properties:
-      bssid:
-        type: "string"
-        example: "1"
-        description: "BSS Id of the Access Point that is being reported."
-      bssidInfo:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Additional information related to Access Point being reported."
-      operatingClass:
-        type: "integer"
-        example: 1
-        description: "Channel set of the AP."
-      channel:
-        type: "integer"
-        example: 1
-        description: "Channel currently used by this Access Point."
-      phyType:
-        type: "integer"
-        example: 1
-        description: "PHY type of the AP indicated by this BSSID."
-      optionalSubelement:
-        $ref: "#/definitions/OptionalSubelement"
-    example:
-      optionalSubelement:
-        optionalSubelement: ""
-      bssid: "1"
-      operatingClass: 1
-      channel: 1
-      phyType: 1
-      bssidInfo: 1
-  ApInfo:
-    type: "object"
-    required:
-    - "apId"
-    properties:
-      timeStamp:
-        $ref: "#/definitions/TimeStamp"
-      apId:
-        $ref: "#/definitions/ApIdentity"
-      channel:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Channel configured for the Access Point."
-      wlanCap:
-        $ref: "#/definitions/WlanCapabilities"
-      wanMetrics:
-        $ref: "#/definitions/WanMetrics"
-      bssLoad:
-        $ref: "#/definitions/BssLoad"
-      extBssLoad:
-        $ref: "#/definitions/ExtBssLoad"
-      apLocation:
-        $ref: "#/definitions/ApLocation"
-      apNeighbor:
-        $ref: "#/definitions/NeighborReport"
-    example:
-      timeStamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-      bssLoad:
-        channelUtilization: 1
-        staCount: 1
-        availAdmCap: 1000
-      extBssLoad:
-        obsSec80MhzUtil: 1
-        obsSec40MhzUtil: 1
-        muMimoStaCount: 1
-        spatStreamUnderUtil: 1
-        obsSec20MhzUtil: 1
-      apId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-      channel: 1
-      wlanCap:
-        vht:
-          vhtMcsNss: 1
-          vhtCapInfo: 1
-        edmg:
-          supportedMcs: 1
-          reserved: 0
-          ampduParameters: 1
-          tmParameters: 1
-        ht:
-          txBeamFormCap: 1
-          aselCap: 1
-          ampduParameters: 1
-          htCapabilityInfo: "1"
-          htExtendedCap: 1
-          supportedMcsSet: 1
-        he:
-          supportedHeMcsNss: 1
-          hePhyCapInfo: 1
-          heMacCapInfo: 1
-          ppeThresholds: 0
-        dmg:
-          dmgStaCapInfo: 1
-          maxNrShortAmsduSubframes: 1
-          extScMcsCap: 0
-          sarCap: 1
-          maxNrBasicAmsduSubframes: 1
-          dmgStaBeamTrackTimeLimit: 1
-          dmgApOrPcpCapInfo: 1
-          tddCap: 1
-      apLocation:
-        geoLocation:
-          datum: 1
-          altitude: 1
-          longUncertainty: 1
-          altitudeType: 1
-          altitudeUncertainty: 1
-          latUncertainty: 1
-          lat: 1
-          long: 1
-        civiLocation:
-          country: "US"
-          ca128: "ca128"
-          ca28: "ca28"
-          ca29: "ca29"
-          ca26: "ca26"
-          ca27: "ca27"
-          ca24: "ca24"
-          ca25: "ca25"
-          ca33: "ca33"
-          ca34: "ca34"
-          ca1: "ca1"
-          ca31: "ca31"
-          ca0: "ca0"
-          ca32: "ca32"
-          ca3: "ca3"
-          ca2: "ca2"
-          ca30: "ca30"
-          ca5: "ca5"
-          ca4: "ca4"
-          ca6: "ca6"
-          ca19: "ca19"
-          ca17: "ca17"
-          ca39: "ca39"
-          ca18: "ca18"
-          ca37: "ca37"
-          ca16: "ca16"
-          ca38: "ca38"
-          ca35: "ca35"
-          ca36: "ca36"
-          ca22: "ca22"
-          ca23: "ca23"
-          ca20: "ca20"
-          ca21: "ca21"
-      wanMetrics:
-        uplinkLoad: 1
-        downlinkLoad: 1
-        lmd: 10
-        uplinkSpeed: 1000
-        downlinkSpeed: 1000
-        wanInfo: 1
-      apNeighbor:
-        optionalSubelement:
-          optionalSubelement: ""
-        bssid: "1"
-        operatingClass: 1
-        channel: 1
-        phyType: 1
-        bssidInfo: 1
-  ApAssociated:
-    type: "object"
-    required:
-    - "macId"
-    properties:
-      macId:
-        type: "string"
-        example: "11:22:33:44:55:66"
-        description: "Identifier assigned to Access Point for communications at the\
-          \ data link layer of a network segment."
-      ssid:
-        type: "string"
-        example: "mySsid"
-        description: "Service set identifier to identify logical networks."
-      assocId:
-        type: "string"
-        example: "1234"
-        description: "Number which identifies a particular association between a station\
-          \ and Access Point."
-      ipAddress:
-        type: "string"
-        example: "1.2.3.4"
-        description: "IPv4 or IPv6 address allocated to Access Point."
-    example:
-      assocId: "1234"
-      macId: "11:22:33:44:55:66"
-      ipAddress: "1.2.3.4"
-      ssid: "mySsid"
-  StaIdentity:
-    type: "object"
-    required:
-    - "macId"
-    properties:
-      macId:
-        type: "string"
-        example: "11:22:33:44:55:66"
-        description: "Identifier assigned to station for communications at the data\
-          \ link layer of a network segment."
-      ssid:
-        type: "string"
-        example: "mySsid"
-        description: "Service set identifier to identify logical networks."
-      aid:
-        type: "string"
-        example: "1234"
-        description: "Number which identifies a particular association between a station\
-          \ and Access Point."
-      ipAddress:
-        type: "string"
-        example: "1.2.3.4"
-        description: "IPv4 or IPv6 address allocated to a station."
-    example:
-      macId: "11:22:33:44:55:66"
-      ipAddress: "1.2.3.4"
-      ssid: "mySsid"
-      aid: "1234"
-  StaDataRate:
-    type: "object"
-    properties:
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      staLastDataDownlinkRate:
-        type: "integer"
-        format: "uint32"
-        example: 1000
-        description: "The data transmit rate in kbps that was most recently used for\
-          \ transmission of data PPDUs from the access point to the station."
-      staLastDataUplinkRate:
-        type: "integer"
-        format: "uint32"
-        example: 1000
-        description: "The data transmit rate in kbps that was most recently used for\
-          \ transmission of data PPDUs from the associated station to the access point."
-    example:
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      staLastDataDownlinkRate: 1000
-      staLastDataUplinkRate: 1000
-  StatisticsGroupData:
-    type: "object"
-    properties:
-      dot11TransmittedFragmentCount:
-        type: "integer"
-        format: "uint32"
-      dot11GroupTransmittedFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11FailedCount:
-        type: "integer"
-        format: "uint32"
-      dot11ReceivedFragmentCount:
-        type: "integer"
-        format: "uint32"
-      dot11GroupReceivedFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11FCSErrorCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11RetryCount:
-        type: "integer"
-        format: "uint32"
-      dot11MultipleRetryCount:
-        type: "integer"
-        format: "uint32"
-      dot11FrameDuplicateCount:
-        type: "integer"
-        format: "uint32"
-      dot11RTSSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11RTSFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11AckFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosTransmittedFragmentCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosFailedCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosRetryCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosMultipleRetryCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosFrameDuplicateCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosRTSSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosRTSFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosAckFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosReceivedFragmentCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosTransmittedFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosDiscardedFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosMPDUsReceivedCount:
-        type: "integer"
-        format: "uint32"
-      dot11QosRetriesReceivedCount:
-        type: "integer"
-        format: "uint32"
-      dot11STAStatisticsAPAverageAccessDelay:
-        type: "integer"
-      dot11STAStatisticsAverageAccessDelayBestEffort:
-        type: "integer"
-      dot11STAStatisticsAverageAccessDelayBackGround:
-        type: "integer"
-      dot11STAStatisticsAverageAccessDelayVideo:
-        type: "integer"
-      dot11STAStatisticsAverageAccessDelayVoice:
-        type: "integer"
-      dot11STAStatisticsStationCount:
-        type: "integer"
-      dot11STAStatisticsChannelUtilization:
-        type: "integer"
-      dot11TransmittedAMSDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11FailedAMSDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11RetryAMSDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11MultipleRetryAMSDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedOctetsInAMSDUCount:
-        type: "integer"
-        format: "uint64"
-      dot11AMSDUAckFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11ReceivedAMSDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11ReceivedOctetsInAMSDUCount:
-        type: "integer"
-        format: "uint64"
-      dot11TransmittedAMPDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedMPDUsInAMPDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedOctetsInAMPDUCount:
-        type: "integer"
-        format: "uint64"
-      dot11AMPDUReceivedCount:
-        type: "integer"
-        format: "uint32"
-      dot11MPDUInReceivedAMPDUCount:
-        type: "integer"
-        format: "uint32"
-      dot11ReceivedOctetsInAMPDUCount:
-        type: "integer"
-        format: "uint64"
-      dot11AMPDUDelimiterCRCErrorCount:
-        type: "integer"
-        format: "uint32"
-      dot11ImplicitBARFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11ExplicitBARFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11ChannelWidthSwitchCount:
-        type: "integer"
-        format: "uint32"
-      dot11TwentyMHzFrameTransmittedCount:
-        type: "integer"
-        format: "uint32"
-      dot11FortyMHzFrameTransmittedCount:
-        type: "integer"
-        format: "uint32"
-      dot11TwentyMHzFrameReceivedCount:
-        type: "integer"
-        format: "uint32"
-      dot11FortyMHzFrameReceivedCount:
-        type: "integer"
-        format: "uint32"
-      dot11PSMPUTTGrantDuration:
-        type: "integer"
-        format: "uint32"
-      dot11PSMPUTTUsedDuration:
-        type: "integer"
-        format: "uint32"
-      dot11GrantedRDGUsedCount:
-        type: "integer"
-        format: "uint32"
-      dot11GrantedRDGUnusedCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedFramesInGrantedRDGCount:
-        type: "integer"
-        format: "uint32"
-      dot11TransmittedOctetsInGrantedRDGCount:
-        type: "integer"
-        format: "uint32"
-      dot11DualCTSSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11DualCTSFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11RTSLSIGSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11RTSLSIGFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11BeamformingFrameCount:
-        type: "integer"
-        format: "uint32"
-      dot11STBCCTSSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11STBCCTSFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11nonSTBCCTSSuccessCount:
-        type: "integer"
-        format: "uint32"
-      dot11nonSTBCCTSFailureCount:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsBIPMICErrors:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsCMACReplays:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsRobustMgmtCCMPReplays:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsTKIPICVErrors:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsTKIPReplays:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsCCMPDecryptErrors:
-        type: "integer"
-        format: "uint32"
-      dot11RSNAStatsCCMPReplays:
-        type: "integer"
-        format: "uint32"
-    example:
-      dot11STAStatisticsStationCount: 6
-      dot11DualCTSFailureCount: 4
-      dot11RSNAStatsTKIPICVErrors: 8
-      dot11TransmittedOctetsInGrantedRDGCount: 7
-      dot11BeamformingFrameCount: 4
-      dot11RSNAStatsCMACReplays: 6
-      dot11RSNAStatsCCMPReplays: 3
-      dot11QosRTSSuccessCount: 4
-      dot11FailedCount: 1
-      dot11STBCCTSSuccessCount: 3
-      dot11RSNAStatsBIPMICErrors: 8
-      dot11RSNAStatsRobustMgmtCCMPReplays: 4
-      dot11ImplicitBARFailureCount: 3
-      dot11AckFailureCount: 1
-      dot11MultipleRetryCount: 3
-      dot11TwentyMHzFrameReceivedCount: 1
-      dot11FailedAMSDUCount: 3
-      dot11RetryCount: 9
-      dot11STAStatisticsAverageAccessDelayVoice: 6
-      dot11QosDiscardedFrameCount: 8
-      dot11GroupTransmittedFrameCount: 6
-      dot11FrameDuplicateCount: 2
-      dot11nonSTBCCTSFailureCount: 1
-      dot11AMPDUDelimiterCRCErrorCount: 5
-      dot11ReceivedAMSDUCount: 6
-      dot11QosReceivedFragmentCount: 9
-      dot11QosMPDUsReceivedCount: 9
-      dot11RTSLSIGSuccessCount: 6
-      dot11QosFrameDuplicateCount: 1
-      dot11STAStatisticsAverageAccessDelayBackGround: 1
-      dot11QosAckFailureCount: 9
-      dot11TransmittedMPDUsInAMPDUCount: 8
-      dot11nonSTBCCTSSuccessCount: 2
-      dot11GroupReceivedFrameCount: 5
-      dot11FCSErrorCount: 2
-      dot11TransmittedFrameCount: 7
-      dot11STAStatisticsChannelUtilization: 5
-      dot11QosRetryCount: 6
-      dot11TwentyMHzFrameTransmittedCount: 6
-      dot11TransmittedOctetsInAMSDUCount: 0
-      dot11QosTransmittedFrameCount: 6
-      dot11QosFailedCount: 1
-      dot11TransmittedOctetsInAMPDUCount: 7
-      dot11TransmittedAMPDUCount: 4
-      dot11DualCTSSuccessCount: 5
-      dot11MultipleRetryAMSDUCount: 7
-      dot11ReceivedOctetsInAMPDUCount: 7
-      dot11ReceivedOctetsInAMSDUCount: 0
-      dot11TransmittedAMSDUCount: 6
-      dot11GrantedRDGUsedCount: 0
-      dot11RTSLSIGFailureCount: 8
-      dot11ChannelWidthSwitchCount: 0
-      dot11RTSFailureCount: 7
-      dot11TransmittedFramesInGrantedRDGCount: 0
-      dot11STAStatisticsAPAverageAccessDelay: 3
-      dot11TransmittedFragmentCount: 0
-      dot11QosRTSFailureCount: 5
-      dot11PSMPUTTGrantDuration: 7
-      dot11QosMultipleRetryCount: 7
-      dot11STAStatisticsAverageAccessDelayVideo: 2
-      dot11AMSDUAckFailureCount: 7
-      dot11RetryAMSDUCount: 3
-      dot11QosTransmittedFragmentCount: 1
-      dot11GrantedRDGUnusedCount: 9
-      dot11RSNAStatsCCMPDecryptErrors: 1
-      dot11QosRetriesReceivedCount: 6
-      dot11PSMPUTTUsedDuration: 9
-      dot11STAStatisticsAverageAccessDelayBestEffort: 6
-      dot11RSNAStatsTKIPReplays: 9
-      dot11FortyMHzFrameReceivedCount: 4
-      dot11ExplicitBARFailureCount: 4
-      dot11FortyMHzFrameTransmittedCount: 4
-      dot11AMPDUReceivedCount: 3
-      dot11ReceivedFragmentCount: 5
-      dot11STBCCTSFailureCount: 0
-      dot11MPDUInReceivedAMPDUCount: 3
-      dot11RTSSuccessCount: 4
-  OptionalSubelement:
-    type: "object"
-    properties:
-      optionalSubelement:
-        type: "string"
-        example: ""
-        description: "Optional Sub Elements"
-    example:
-      optionalSubelement: ""
-  StaStatistics:
-    type: "object"
-    required:
-    - "groupIdentity"
-    - "md"
-    - "statisticsGroupData"
-    properties:
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      md:
-        type: "integer"
-        example: 1000
-        description: "Measurement Duration."
-      groupIdentity:
-        type: "integer"
-        example: 1
-        description: "Indicates the requested statistics group describing the Statistics\
-          \ Group Data."
-      statisticsGroupData:
-        $ref: "#/definitions/StatisticsGroupData"
-      optionalSubelement:
-        $ref: "#/definitions/OptionalSubelement"
-    example:
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      optionalSubelement:
-        optionalSubelement: ""
-      md: 1000
-      groupIdentity: 1
-      statisticsGroupData:
-        dot11STAStatisticsStationCount: 6
-        dot11DualCTSFailureCount: 4
-        dot11RSNAStatsTKIPICVErrors: 8
-        dot11TransmittedOctetsInGrantedRDGCount: 7
-        dot11BeamformingFrameCount: 4
-        dot11RSNAStatsCMACReplays: 6
-        dot11RSNAStatsCCMPReplays: 3
-        dot11QosRTSSuccessCount: 4
-        dot11FailedCount: 1
-        dot11STBCCTSSuccessCount: 3
-        dot11RSNAStatsBIPMICErrors: 8
-        dot11RSNAStatsRobustMgmtCCMPReplays: 4
-        dot11ImplicitBARFailureCount: 3
-        dot11AckFailureCount: 1
-        dot11MultipleRetryCount: 3
-        dot11TwentyMHzFrameReceivedCount: 1
-        dot11FailedAMSDUCount: 3
-        dot11RetryCount: 9
-        dot11STAStatisticsAverageAccessDelayVoice: 6
-        dot11QosDiscardedFrameCount: 8
-        dot11GroupTransmittedFrameCount: 6
-        dot11FrameDuplicateCount: 2
-        dot11nonSTBCCTSFailureCount: 1
-        dot11AMPDUDelimiterCRCErrorCount: 5
-        dot11ReceivedAMSDUCount: 6
-        dot11QosReceivedFragmentCount: 9
-        dot11QosMPDUsReceivedCount: 9
-        dot11RTSLSIGSuccessCount: 6
-        dot11QosFrameDuplicateCount: 1
-        dot11STAStatisticsAverageAccessDelayBackGround: 1
-        dot11QosAckFailureCount: 9
-        dot11TransmittedMPDUsInAMPDUCount: 8
-        dot11nonSTBCCTSSuccessCount: 2
-        dot11GroupReceivedFrameCount: 5
-        dot11FCSErrorCount: 2
-        dot11TransmittedFrameCount: 7
-        dot11STAStatisticsChannelUtilization: 5
-        dot11QosRetryCount: 6
-        dot11TwentyMHzFrameTransmittedCount: 6
-        dot11TransmittedOctetsInAMSDUCount: 0
-        dot11QosTransmittedFrameCount: 6
-        dot11QosFailedCount: 1
-        dot11TransmittedOctetsInAMPDUCount: 7
-        dot11TransmittedAMPDUCount: 4
-        dot11DualCTSSuccessCount: 5
-        dot11MultipleRetryAMSDUCount: 7
-        dot11ReceivedOctetsInAMPDUCount: 7
-        dot11ReceivedOctetsInAMSDUCount: 0
-        dot11TransmittedAMSDUCount: 6
-        dot11GrantedRDGUsedCount: 0
-        dot11RTSLSIGFailureCount: 8
-        dot11ChannelWidthSwitchCount: 0
-        dot11RTSFailureCount: 7
-        dot11TransmittedFramesInGrantedRDGCount: 0
-        dot11STAStatisticsAPAverageAccessDelay: 3
-        dot11TransmittedFragmentCount: 0
-        dot11QosRTSFailureCount: 5
-        dot11PSMPUTTGrantDuration: 7
-        dot11QosMultipleRetryCount: 7
-        dot11STAStatisticsAverageAccessDelayVideo: 2
-        dot11AMSDUAckFailureCount: 7
-        dot11RetryAMSDUCount: 3
-        dot11QosTransmittedFragmentCount: 1
-        dot11GrantedRDGUnusedCount: 9
-        dot11RSNAStatsCCMPDecryptErrors: 1
-        dot11QosRetriesReceivedCount: 6
-        dot11PSMPUTTUsedDuration: 9
-        dot11STAStatisticsAverageAccessDelayBestEffort: 6
-        dot11RSNAStatsTKIPReplays: 9
-        dot11FortyMHzFrameReceivedCount: 4
-        dot11ExplicitBARFailureCount: 4
-        dot11FortyMHzFrameTransmittedCount: 4
-        dot11AMPDUReceivedCount: 3
-        dot11ReceivedFragmentCount: 5
-        dot11STBCCTSFailureCount: 0
-        dot11MPDUInReceivedAMPDUCount: 3
-        dot11RTSSuccessCount: 4
-  BeaconReport:
-    type: "object"
-    required:
-    - "bssId"
-    - "channelId"
-    - "measurementId"
-    - "staId"
-    properties:
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      measurementId:
-        type: "string"
-        example: "myId"
-        description: "Measurement ID of the Measurement configuration applied to this\
-          \ Beacon Report."
-      channelId:
-        type: "integer"
-        example: 1
-        description: "Channel number where the beacon was received."
-      bssId:
-        type: "array"
-        example: "myBssId"
-        description: "BssId of the BSS for which a beacon report has been received."
+        '204':
+          $ref: '#/components/responses/204'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '429':
+          $ref: '#/components/responses/429'
+components:
+  responses:
+    200:
+      description: OK
+    204:
+      description: No Content
+    400:
+      description: 'Bad Request : used to indicate that incorrect parameters were passed to the request.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    401:
+      description: 'Unauthorized :  used when the client did not submit credentials.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    403:
+      description: 'Forbidden :  operation is not allowed given the current status of the resource.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    404:
+      description: 'Not Found :  used when a client provided a URI that cannot be mapped to a valid resource URI.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    406:
+      description: 'Not Acceptable : used to indicate that the server cannot provide the any of the content formats supported by the client.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    412:
+      description: 'Precondition failed :  used when a condition has failed during conditional requests, e.g. when
+        using ETags to avoid write conflicts when using PUT'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    415:
+      description: 'Unsupported Media Type :  used to indicate that the server or the client does not support the content type of the entity body.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    422:
+      description: 'Unprocessable Entity : used to indicate that the server understands the content type of the request entity and that the
+        syntax of the request entity is correct but that the server is unable to process the contained instructions. This error condition can occur if an
+        JSON request body is syntactically correct but semantically incorrect, for example if the target area for the request is considered too large. This
+        error condition can also occur if the capabilities required by the request are not supported.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            application/problem+json:
+              type: 'https://meAppServer.example.com/wai/v2/probs/too-many targets'
+              title: Too many targets
+              status: '422'
+              detail: The target area for the request is considered too large
+              instance: /meAppClient.example.com/77777/msgs/abc
+    429:
+      description: 'Too Many Requests : used when a rate limiter has triggered.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+  parameters:
+    Path.subscrId:
+      name: subscriptionId
+      in: path
+      description: 'Subscription Id, specifically the "self" returned in the subscription request'
+      required: true
+      schema:
+        type: string
+        format: uri
+    Query.Filter:
+      name: filter
+      in: query
+      description: Attribute-based filtering expression according to clause 6.19 of ETSI GS MEC 009. .
+      required: false
+      schema:
+        type: string
+    Query.AllFields:
+      name: all_fields
+      in: query
+      description: Include all complex attributes in the response. See clause 6.18 of ETSI GS MEC 009 for details.
+      required: false
+      schema:
+        type: string
+    Query.Fields:
+      name: fields
+      in: query
+      description: Complex attributes to be included into the response. See clause 6.18 of ETSI GS MEC 009 for details.
+      required: false
+      schema:
+        type: array
         items:
-          type: "string"
-      ssId:
-        type: "array"
-        example: "myIBSS"
-        description: "ESS or IBSS for which a beacon report is received."
+          type: string
+    Query.ExcludeFields:
+      name: exclude_fields
+      in: query
+      description: Complex attributes to be excluded from the response. See clause 6.18 of ETSI GS MEC 009 for details.
+      required: false
+      schema:
+        type: array
         items:
-          type: "string"
-      reportingCondition:
-        type: "integer"
-        example: 1
-        description: "."
-    example:
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      reportingCondition: 1
-      bssId: "myBssId"
-      measurementId: "myId"
-      channelId: 1
-      ssId: "myIBSS"
-  StaInfo:
-    type: "object"
-    required:
-    - "staId"
-    properties:
-      timeStamp:
-        $ref: "#/definitions/TimeStamp"
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      channel:
-        type: "integer"
-        format: "uint32"
-        example: 1
-        description: "Channel currently used by the station."
-      apAssociated:
-        $ref: "#/definitions/ApAssociated"
-      rssi:
-        type: "integer"
-        example: 44
-        description: "Received Signal Strength Indicator from a station."
-      staDataRate:
-        $ref: "#/definitions/StaDataRate"
-      staStatistics:
-        $ref: "#/definitions/StaStatistics"
-      beaconReport:
-        $ref: "#/definitions/BeaconReport"
-    example:
-      timeStamp:
-        seconds: 1577836800
-        nanoSeconds: 0
-      staId:
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-        aid: "1234"
-      rssi: 44
-      staStatistics:
+          type: string
+    Query.ExcludeDefault:
+      name: exclude_default
+      in: query
+      description: 'Indicates to exclude the following complex attributes from the response. See clause 6.18 of ETSI GS MEC 009 for details.
+        The following attributes shall be excluded from the structure in the response body if this parameter is provided, or none of the parameters
+        "all_fields", "fields", "exclude_fields", "exclude_default" are provided: Not applicable'
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+    Query.SubscriptionType:
+      name: subscription_type
+      in: query
+      description: 'Filter on a specific subscription type. Permitted values: assoc_sta, sta_data_rate.'
+      required: false
+      schema:
+        type: string
+  schemas:
+    ApAssociated:
+      properties:
+        assocId:
+          description: Unique number which identifies a particular association between the station and Access Point.
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: string
+        ipAddress:
+          description: IPv4 or IPv6 address allocated for the Access Point.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: string
+        macId:
+          description: Unique identifier assigned to the Access Point (as network interface controller) for communications at the data link layer of a network segment.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: string
+        ssid:
+          description: Service Set Identifier to identify logical networks.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: String
+      required:
+      - macId
+      type: object
+      x-etsi-ref: 6.5.12
+    ApIdentity:
+      properties:
+        ipAddress:
+          description: IPv4 or IPv6 address allocated for the Access Point.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: String
+        macId:
+          description: Unique Identifier assigned to an Access Point (as network interface controller) for communications at the data link layer of a network segment.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        ssid:
+          description: Service Set Identifier to identify logical networks including Basic Service Set and Extended Service Set.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: String
+      required:
+      - macId
+      type: object
+      x-etsi-ref: 6.5.3
+    ApInfo:
+      properties:
+        apId:
+          # description': Identifier(s) to uniquely specify the Access Point whose information is exposed within this data type.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': ApIdentity
+          $ref: '#/components/schemas/ApIdentity'
+        apLocation:
+          # description': The location on the Access Point.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': ApLocation
+          $ref: '#/components/schemas/ApLocation'
+        apNeighbor:
+          # description': Information about neighbor Access Points.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': NeighborReport
+          $ref: '#/components/schemas/NeighborReport'
+        bssLoad:
+          # description': BSS Load attribute contains information on the current STA population and traffic levels in the BSS as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': BssLoad
+          $ref: '#/components/schemas/BssLoad'
+        channel:
+          description: Channel configured for the Access Point.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        extBssLoad:
+          # description': Extended BSS Load attribute contains more detailed information on the current STA population and traffic levels in the BSS as per ETSI GS MEC 002 [i.4].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': ExtBssLoad
+          $ref: '#/components/schemas/ExtBssLoad'
+        timeStamp:
+          # description': Time stamp.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+        wanMetrics:
+          # description': WAN Metrics element provides information about the WAN link connecting an IEEE 802.11 Access Node and the Internet. Transmission characteristics such as the speed of the WAN connection to the Internet are included in Hotspot 2.0 Technical Specification v1.0.0 [i.3].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': WanMetrics
+          $ref: '#/components/schemas/WanMetrics'
+        wlanCap:
+          # description': WLAN capabilities of Access Point.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': WlanCapabilities
+          $ref: '#/components/schemas/WlanCapabilities'
+      required:
+      - apId
+      type: object
+      x-etsi-ref: 6.2.2
+    ApLocation:
+      properties:
+        civicLocation:
+          # description': Civic Location of the AP as described in IETF RFC 4776 [7].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': CivicLocation
+          $ref: '#/components/schemas/CivicLocation'
+        geolocation:
+          # description': Geospatial Location of the AP as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': GeoLocation
+          $ref: '#/components/schemas/GeoLocation'
+      type: object
+      x-etsi-ref: 6.5.9
+    AssocStaNotification:
+      properties:
+        apId:
+          # description': Identifier(s) to uniquely specify the Access Point to which the client stations are associated.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': ApIdentity
+          $ref: '#/components/schemas/ApIdentity'
+        notificationType:
+          description: Shall be set to "AssocStaNotification".
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
         staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        optionalSubelement:
-          optionalSubelement: ""
-        md: 1000
-        groupIdentity: 1
+          description: Identifier(s) to uniquely specify the client station(s) associated.
+          items:
+            $ref: '#/components/schemas/StaIdentity'
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaIdentity
+        timeStamp:
+          # description': Time stamp.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+      required:
+      - notificationType
+      - apId
+      type: object
+      x-etsi-ref: 6.4.2
+    AssocStaSubscription:
+      properties:
+        _links:
+          description: Hyperlink related to the resource. This shall be only included in the HTTP responses and in HTTP PUT requests.
+          properties:
+            self:
+              # description': Self referring URI. The URI shall be unique within the WLAN information API as it acts as an ID for the subscription.
+              # x-etsi-mec-cardinality': '1'
+              # x-etsi-mec-origin-type': LinkType
+              $ref: '#/components/schemas/LinkType'
+          required:
+          - self
+          type: object
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Structure (inlined)
+        apId:
+          # description': Identifier(s) to uniquely specify the target Access Point for the subscription
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': ApIdentity
+          $ref: '#/components/schemas/ApIdentity'
+        callbackReference:
+          description: URI selected by the service consumer to receive notifications on the subscribed WLAN information. This shall be included both in the request and in response.
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: URI
+        expiryDeadline:
+          # description': The expiration time of the subscription determined by the WLAN Access Information Service.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+        subscriptionType:
+          description: Shall be set to "AssocStaSubscription".
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+      required:
+      - subscriptionType
+      - callbackReference
+      - apId
+      type: object
+      x-etsi-ref: 6.3.2
+    AssociatedStations:
+      properties:
+        assocId:
+          description: Unique number which identifies a particular association between an Access Point and a station.
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: string
+        ipAddress:
+          description: IPv4 or IPv6 address allocated for the station associated with the Access Point.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: string
+        macId:
+          description: Unique identifier assigned to a station (as network interface controller) for communications at the data link layer of a network segment.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: string
+      required:
+      - macId
+      type: object
+      x-etsi-ref: 6.5.5
+    BeaconReport:
+      properties:
+        bssId:
+          description: The BSSID field indicates the BSSID of the BSS(s) for which a beacon report has been received.
+          items:
+            type: string
+          minItems: 1
+          type: array
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: String
+        channelId:
+          description: Channel number where the beacon was received.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        measurementId:
+          description: Measurement ID of the Measurement configuration applied to this Beacon Report.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        reportingCondition:
+          description: As in table T9-89 of IEEE 802.11-2012 [8].
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        ssId:
+          description: (Optional) The SSID subelement indicates the ESS(s) or IBSS(s) for which a beacon report is received.
+          items:
+            type: string
+          minItems: 1
+          type: array
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: String
+        staId:
+          # description': Identifier to uniquely specify the station whose information is exposed within this data type.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': StaIdentity
+          $ref: '#/components/schemas/StaIdentity'
+      required:
+      - staId
+      - measurementId
+      - channelId
+      - bssId
+      - ssId
+      - reportingCondition
+      type: object
+      x-etsi-ref: 6.5.27
+    BeaconRequestConfig:
+      properties:
+        bssId:
+          description: The BSSID field indicates the BSSID of the BSS(s) for which a beacon report is requested. When requesting beacon reports for all BSSs on the channel, the BSSID field contains the wildcard BSSID.
+          items:
+            type: string
+          minItems: 1
+          type: array
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: String
+        channelId:
+          description: Channel number to scan. A Channel Number of 0 indicates a request to make iterative measurements for all supported channels in the Operating Class where the measurement is permitted on the channel and the channel is valid for the current regulatory domain. A Channel Number of 255 indicates a request to make iterative measurements for all supported channels in the current Operating Class listed in the latest AP Channel Report received from the serving AP.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        measurementMode:
+          description: '0 for passive.
+
+            1 for active.
+
+            2 for beacon table.'
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        reportingCondition:
+          description: As in table T9-89 of IEEE 802.11-2012 [8].
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        ssId:
+          description: (Optional) The SSID subelement indicates the ESS(s) or IBSS(s) for which a beacon report is requested.
+          items:
+            type: string
+          minItems: 1
+          type: array
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: String
+        staId:
+          # description': Identifier to uniquely specify the station whose information is exposed within this data type.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': StaIdentity
+          $ref: '#/components/schemas/StaIdentity'
+      required:
+      - staId
+      - channelId
+      - measurementMode
+      - bssId
+      - ssId
+      - reportingCondition
+      type: object
+      x-etsi-ref: 6.5.25
+    BssLoad:
+      properties:
+        availAdmCap:
+          description: Available Admission Capacity that specifies the remaining amount of medium time available via explicit admission control, in units of 32 s/s.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+        channelUtilization:
+          description: "The percentage of time, linearly scaled with 255 representing 100\_%, that the AP sensed the medium was busy, as indicated by either the physical or virtual Carrier Sense (CS) mechanism."
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+        staCount:
+          description: An unsigned integer that indicates the total number of STAs currently associated with this BSS.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt16
+      required:
+      - staCount
+      - channelUtilization
+      - availAdmCap
+      type: object
+      x-etsi-ref: 6.5.7
+    ChannelLoadConfig:
+      properties:
+        apId:
+          # description': Identifier(s) to uniquely specify the target Access Point
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': ApIdentity
+          $ref: '#/components/schemas/ApIdentity'
+        cChannelId:
+          description: Channel number which load is reported
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        channelLoad:
+          description: Channel load as per IEEE 802.11-2012 [8], section 11.11.9.3
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+      required:
+      - apId
+      - cChannelId
+      - channelLoad
+      type: object
+      x-etsi-ref: 6.5.24
+    CivicLocation:
+      properties:
+        ca0:
+          description: Language
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca1:
+          description: 'National subdivisions (state, canton, region,province, prefecture) '
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca128:
+          description: Script
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca16:
+          description: Leading street direction
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca17:
+          description: Trailing street suffix
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca18:
+          description: Street suffix or type
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca19:
+          description: House number
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca2:
+          description: County, parish, gun (JP), district (IN)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca20:
+          description: House number suffix
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca21:
+          description: Landmark of vanity address
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca22:
+          description: Additional location information
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca23:
+          description: Name (residence and office occupant)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca24:
+          description: Postal/zip code
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca25:
+          description: Building (structure)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca26:
+          description: Unit (apartment/suite)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca27:
+          description: Floor
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca28:
+          description: Room
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca29:
+          description: Type of place
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca3:
+          description: City, township, shi (JP)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca30:
+          description: Postal community name
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca31:
+          description: Post office box
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca32:
+          description: Additional code
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca33:
+          description: Seat (desk.cubicle, workstation)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca34:
+          description: Primary road name
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca35:
+          description: Road section
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca36:
+          description: Branch road name
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca37:
+          description: Sub-branch road name
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca38:
+          description: Street name pre-modifier
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca39:
+          description: Street name post-modifier
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca4:
+          description: City division, borough, city district, ward, chou (JP)
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca5:
+          description: Neighborhood, block
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ca6:
+          description: 'Group of streets below the neighborhood level '
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        country:
+          description: The two-letter ISO 3166 [i.9] country code in capital ASCII letters, e.g. DE or US, as per ISO 3166 [i.9]
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+      required:
+      - country
+      type: object
+      x-etsi-ref: 6.5.20
+    DmgCapabilities:
+      properties:
+        ExtScMcsCap:
+          description: Extended SC MCS capabilities as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        dmgApOrPcpCapInfo:
+          description: DMG AP or PCP capabilities information as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+        dmgStaBeamTrackTimeLimit:
+          description: DMG station beam tracking time limit as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+        dmgStaCapInfo:
+          description: DMG station capabilities information as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint64
+        maxNrBasicAmsduSubframes:
+          description: Number of basic A-MSDU subframes in A-MSDU as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        maxNrShortAmsduSubframes:
+          description: Number of short A-MSDU subframes in A-MSDU as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        sarCap:
+          description: SAR capabilities as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        tddCap:
+          description: TDD capabilities as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+      required:
+      - dmgStaCapInfo
+      - dmgApOrPcpCapInfo
+      - dmgStaBeamTrackTimeLimit
+      - ExtScMcsCap
+      - maxNrBasicAmsduSubframes
+      - maxNrShortAmsduSubframes
+      - tddCap
+      - sarCap
+      type: object
+      x-etsi-ref: 6.5.17
+    EdmgCapabilities:
+      properties:
+        ampduParameters:
+          description: A-MPDU parameters as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: Uint8
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        reserved:
+          description: ''
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        supportedMcs:
+          description: Supported MCS as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint32
+        trnParameters:
+          description: Training parameters as defined in draft IEEE P802.11/D4.0 [i.11]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+      required:
+      - ampduParameters
+      - trnParameters
+      - supportedMcs
+      type: object
+      x-etsi-ref: 6.5.18
+    ExtBssLoad:
+      properties:
+        muMimoStaCount:
+          description: Indicates the total number of STAs currently associated with this BSS that have a 1 in the MU Beamformee Capable field of their VHT Capabilities element.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt16
+        obsSec20MhzUtil:
+          description: Observable loading on each of the secondary 20 MHz channel.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        obsSec40MhzUtil:
+          description: Observable loading on each of the secondary 40 MHz channel.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        obsSec80MhzUtil:
+          description: Observable loading on each of the secondary 80 MHz channel.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        spatStreamUnderUtil:
+          description: "The percentage of time, linearly scaled with 255 representing 100\_%, that the AP has underutilized spatial domain resources for given busy time of the medium."
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+      required:
+      - muMimoStaCount
+      - spatStreamUnderUtil
+      - obsSec20MhzUtil
+      - obsSec40MhzUtil
+      - obsSec80MhzUtil
+      type: object
+      x-etsi-ref: 6.5.8
+    GeoLocation:
+      properties:
+        altitude:
+          description: "The altitude value of location as defined in IETF RFC\_6225 [6]"
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        altitudeType:
+          description: The type description for altitude information e.g. floors or meters as defined in IETF RFC 6225 [6]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        altitudeUncertainty:
+          description: The uncertainty for altitude information as defined in IETF RFC 6225 [6]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        datum:
+          description: The datum value to express how coordinates are organized and related to real world as defined in IETF RFC 6225 [6]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        lat:
+          description: "The latitude value of location as defined in IETF RFC\_6225 [6]"
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint64
+        latUncertainty:
+          description: The uncertainty for Latitude information as defined in IETF RFC 6225 [6]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        long:
+          description: "The longitude value of location as defined in IETF RFC\_6225 [6]"
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint64
+        longUncertainty:
+          description: The uncertainty for Longitude information as defined in IETF RFC 6225 [6]
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+      required:
+      - latUncertainty
+      - lat
+      - longUncertainty
+      - long
+      - datum
+      type: object
+      x-etsi-ref: 6.5.19
+    HeCapabilities:
+      properties:
+        heMacCapInfo:
+          description: MAC capabilities of an Access Point.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        hePhyCapinfo:
+          description: PHY capabilities of an Access Point.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        ppeThresholds:
+          description: PPE Threshold determines the nominal packet padding value for a HE PPDU.
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: not defined
+        supportedHeMcsNssSet:
+          description: Supported MCS and NSS Set.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+      required:
+      - heMacCapInfo
+      - hePhyCapinfo
+      - supportedHeMcsNssSet
+      type: object
+      x-etsi-ref: 6.5.16
+    HtCapabilities:
+      properties:
+        ampduParameters:
+          description: A-MPDU parameters as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+        aselCap:
+          description: ASEL capabilities as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+        htCapabilityInfo:
+          description: HT Capability Information as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt16
+        htExtendedCap:
+          description: Extended HT Capabilities as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt16
+        supportedMcsSet:
+          description: Supported MCS set as defined in IEEE 802.11-2016 [8].
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint128
+        txBeamFormCap:
+          description: Transmit Beamforming Capabilities as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt32
+      required:
+      - htCapabilityInfo
+      - ampduParameters
+      - supportedMcsSet
+      - htExtendedCap
+      - txBeamFormCap
+      - aselCap
+      type: object
+      x-etsi-ref: 6.5.1
+    InlineNotification:
+      oneOf:
+        - $ref: '#/components/schemas/AssocStaNotification'
+        - $ref: '#/components/schemas/StaDataRateNotification'
+      discriminator:
+        propertyName: notificationType
+    InlineSubscription:
+      oneOf:
+        - $ref: '#/components/schemas/AssocStaSubscription'
+        - $ref: '#/components/schemas/StaDataRateSubscription'
+      discriminator:
+        propertyName: subscriptionType
+    LinkType:
+      properties:
+        href:
+          description: URI referring to a resource
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+      required:
+      - href
+      type: object
+      x-etsi-ref: 6.5.23
+    MeasurementConfig:
+      properties:
+        beaconRequest:
+          # description': Configuration related to Beacon Request.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': BeaconRequestConfig
+          $ref: '#/components/schemas/BeaconRequestConfig'
+        channelLoad:
+          # description': Configuration related to the Channel Load.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': ChannelLoadConfig
+          $ref: '#/components/schemas/ChannelLoadConfig'
+        measurementDuration:
+          description: Duration of the measurement, shall be lower than Maximum Measurement Duration in TU as defined in section 11.11.4 of IEEE 802.11 [8].
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        measurementId:
+          description: Identifier of this measurement configuration.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        randomnInterval:
+          description: "Random interval to be used for starting the measurement. In units of TU as specifed in section\_11.11.3 of IEEE 802.11 [8]."
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        staStatistics:
+          # description': Configuration related to the statistics provided by STAs.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': StaStatisticsConfig
+          $ref: '#/components/schemas/StaStatisticsConfig'
+      required:
+      - measurementId
+      - measurementDuration
+      - randomnInterval
+      type: object
+      x-etsi-notes: "NOTE:\tThis element enables the configuration of the channelLoad, beaconRequest and staStatistics in a single resource data type, although only one of each measurement. Multiple measurement configurations of each kind are not allowed."
+      x-etsi-ref: 6.2.4
+    NeighborReport:
+      properties:
+        bssid:
+          description: BSS Id of the Access Point that is being reported.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        bssidInfo:
+          description: Additional information related to Access Point that is being reported such as AP reachability, security, key scope, Mobility Domain, HT/VHT capability and Fine Time Measurements.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt32
+        channel:
+          description: The channel currently used by this Access Point.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        operatingClass:
+          description: The channel set of the AP indicated by this BSSID.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        phyType:
+          description: PHY type of the AP indicated by this BSSID. It is an integer value coded according to the value of the dot11PHYType.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+      required:
+      - bssid
+      - bssidInfo
+      - operatingClass
+      - channel
+      - phyType
+      type: object
+      x-etsi-ref: 6.5.10
+    ProblemDetails:
+      properties:
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        instance:
+          description: A URI reference that identifies the specific occurrence of the problem
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+        status:
+          description: The HTTP status code for this occurrence of the problem
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        title:
+          description: A short, human-readable summary of the problem type
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        type:
+          description: A URI reference according to IETF RFC 3986 that identifies the problem type
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: URI
+      type: object
+    Rssi:
+      properties:
+        rssi:
+          description: The Received Signal Strength Indicator from a station
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+      required:
+      - rssi
+      type: object
+      x-etsi-ref: 6.5.21
+    StaDataRate:
+      properties:
+        staId:
+          # description': Identifier(s) to uniquely specify the client station(s) associated.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': StaIdentity
+          $ref: '#/components/schemas/StaIdentity'
+        staLastDataDownlinkRate:
+          description: The data transmit rate in kbps that was most recently used for transmission of data PPDUs from the access point to the station.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        staLastDataUplinkRate:
+          description: The data transmit rate in Kbps that was most recently used for transmission of data PPDUs from the associated station to the access point.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      type: object
+      x-etsi-ref: 6.5.22
+    StaDataRateNotification:
+      properties:
+        notificationType:
+          description: Shall be set to "StaDataRateNotification".
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        staDataRate:
+          description: Data rates of a client station.
+          items:
+            $ref: '#/components/schemas/StaDataRate'
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaDataRate
+        timeStamp:
+          # description': Time stamp.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+      required:
+      - notificationType
+      type: object
+      x-etsi-ref: 6.4.3
+    StaDataRateSubscription:
+      properties:
+        _links:
+          description: Hyperlink related to the resource. This shall be only included in the HTTP responses and in HTTP PUT requests.
+          properties:
+            self:
+              # description': Self referring URI. The URI shall be unique within the WLAN Access Information API as it acts as an ID for the subscription.
+              # x-etsi-mec-cardinality': '1'
+              # x-etsi-mec-origin-type': LinkType
+              $ref: '#/components/schemas/LinkType'
+          required:
+          - self
+          type: object
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Structure (inlined)
+        callbackReference:
+          description: URI selected by the service consumer to receive notifications on the subscribed WLAN Access Information Service. This shall be included both in the request and in response.
+          format: uri
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: URI
+        expiryDeadline:
+          # description': The expiration time of the subscription determined by the WLAN Access Information Service.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+        staId:
+          description: Identifier(s) to uniquely specify the target client station(s) for the subscription
+          items:
+            $ref: '#/components/schemas/StaIdentity'
+          minItems: 1
+          type: array
+          x-etsi-mec-cardinality: 1..N
+          x-etsi-mec-origin-type: StaIdentity
+        subscriptionType:
+          description: Shall be set to "StaDataRateSubscription".
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+      required:
+      - subscriptionType
+      - callbackReference
+      - staId
+      type: object
+      x-etsi-ref: 6.3.3
+    StaIdentity:
+      properties:
+        aid:
+          description: 'Number which identifies a particular association between a station and an Access Point '
+          type: string
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: String
+        ipAddress:
+          description: IPv4 or IPv6 address allocated for the station.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: String
+        macId:
+          description: Unique identifier assigned to station (as network interface controller) for communications at the data link layer of a network segment.
+          type: string
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: String
+        ssid:
+          description: Service Set Identifier to identify logical networks.
+          items:
+            type: string
+          minItems: 0
+          type: array
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: String
+      required:
+      - macId
+      type: object
+      x-etsi-ref: 6.5.11
+    StaInfo:
+      properties:
+        apAssociated:
+          # description': Information about the Access Point that this Client Station is associated to.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': ApAssociated
+          $ref: '#/components/schemas/ApAssociated'
+        beaconReport:
+          # description': Beacon Report as defined in Wi-Fi Agile Multiband Specification [9].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': BeaconReport
+          $ref: '#/components/schemas/BeaconReport'
+        channel:
+          description: Channel currently used by the station.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        rssi:
+          # description': Receive Signal Strength Indicator.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': Rssi
+          $ref: '#/components/schemas/Rssi'
+        staDataRate:
+          # description': Station Data Rate as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': StaDataRate
+          $ref: '#/components/schemas/StaDataRate'
+        staId:
+          # description': 0 to N identifiers to uniquely specify the station whose information is exposed within this data type.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': StaIdentity
+          $ref: '#/components/schemas/StaIdentity'
+        staStatistics:
+          # description': Statistics as defined in IEEE 802.11-2016 [8] for the client station collected over measurement duration.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': StaStatistics
+          $ref: '#/components/schemas/StaStatistics'
+        timeStamp:
+          # description': Time stamp.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': TimeStamp
+          $ref: '#/components/schemas/TimeStamp'
+      required:
+      - staId
+      type: object
+      x-etsi-ref: 6.2.3
+    StaStatistics:
+      properties:
+        groupIdentity:
+          description: Indicates the requested statistics group describing the Statistics Group Data according to table 9-114 of IEEE 802.11-2016 [8].
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+        md:
+          description: Measurement Duration.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt16
         statisticsGroupData:
-          dot11STAStatisticsStationCount: 6
-          dot11DualCTSFailureCount: 4
-          dot11RSNAStatsTKIPICVErrors: 8
-          dot11TransmittedOctetsInGrantedRDGCount: 7
-          dot11BeamformingFrameCount: 4
-          dot11RSNAStatsCMACReplays: 6
-          dot11RSNAStatsCCMPReplays: 3
-          dot11QosRTSSuccessCount: 4
-          dot11FailedCount: 1
-          dot11STBCCTSSuccessCount: 3
-          dot11RSNAStatsBIPMICErrors: 8
-          dot11RSNAStatsRobustMgmtCCMPReplays: 4
-          dot11ImplicitBARFailureCount: 3
-          dot11AckFailureCount: 1
-          dot11MultipleRetryCount: 3
-          dot11TwentyMHzFrameReceivedCount: 1
-          dot11FailedAMSDUCount: 3
-          dot11RetryCount: 9
-          dot11STAStatisticsAverageAccessDelayVoice: 6
-          dot11QosDiscardedFrameCount: 8
-          dot11GroupTransmittedFrameCount: 6
-          dot11FrameDuplicateCount: 2
-          dot11nonSTBCCTSFailureCount: 1
-          dot11AMPDUDelimiterCRCErrorCount: 5
-          dot11ReceivedAMSDUCount: 6
-          dot11QosReceivedFragmentCount: 9
-          dot11QosMPDUsReceivedCount: 9
-          dot11RTSLSIGSuccessCount: 6
-          dot11QosFrameDuplicateCount: 1
-          dot11STAStatisticsAverageAccessDelayBackGround: 1
-          dot11QosAckFailureCount: 9
-          dot11TransmittedMPDUsInAMPDUCount: 8
-          dot11nonSTBCCTSSuccessCount: 2
-          dot11GroupReceivedFrameCount: 5
-          dot11FCSErrorCount: 2
-          dot11TransmittedFrameCount: 7
-          dot11STAStatisticsChannelUtilization: 5
-          dot11QosRetryCount: 6
-          dot11TwentyMHzFrameTransmittedCount: 6
-          dot11TransmittedOctetsInAMSDUCount: 0
-          dot11QosTransmittedFrameCount: 6
-          dot11QosFailedCount: 1
-          dot11TransmittedOctetsInAMPDUCount: 7
-          dot11TransmittedAMPDUCount: 4
-          dot11DualCTSSuccessCount: 5
-          dot11MultipleRetryAMSDUCount: 7
-          dot11ReceivedOctetsInAMPDUCount: 7
-          dot11ReceivedOctetsInAMSDUCount: 0
-          dot11TransmittedAMSDUCount: 6
-          dot11GrantedRDGUsedCount: 0
-          dot11RTSLSIGFailureCount: 8
-          dot11ChannelWidthSwitchCount: 0
-          dot11RTSFailureCount: 7
-          dot11TransmittedFramesInGrantedRDGCount: 0
-          dot11STAStatisticsAPAverageAccessDelay: 3
-          dot11TransmittedFragmentCount: 0
-          dot11QosRTSFailureCount: 5
-          dot11PSMPUTTGrantDuration: 7
-          dot11QosMultipleRetryCount: 7
-          dot11STAStatisticsAverageAccessDelayVideo: 2
-          dot11AMSDUAckFailureCount: 7
-          dot11RetryAMSDUCount: 3
-          dot11QosTransmittedFragmentCount: 1
-          dot11GrantedRDGUnusedCount: 9
-          dot11RSNAStatsCCMPDecryptErrors: 1
-          dot11QosRetriesReceivedCount: 6
-          dot11PSMPUTTUsedDuration: 9
-          dot11STAStatisticsAverageAccessDelayBestEffort: 6
-          dot11RSNAStatsTKIPReplays: 9
-          dot11FortyMHzFrameReceivedCount: 4
-          dot11ExplicitBARFailureCount: 4
-          dot11FortyMHzFrameTransmittedCount: 4
-          dot11AMPDUReceivedCount: 3
-          dot11ReceivedFragmentCount: 5
-          dot11STBCCTSFailureCount: 0
-          dot11MPDUInReceivedAMPDUCount: 3
-          dot11RTSSuccessCount: 4
-      apAssociated:
-        assocId: "1234"
-        macId: "11:22:33:44:55:66"
-        ipAddress: "1.2.3.4"
-        ssid: "mySsid"
-      staDataRate:
+          $ref: '#/components/schemas/StatisticsGroupData'
+          description: "Statistics Group Data as defined in Annex C of IEEE 802.112016\_[8]."
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: not specified
+      required:
+      - md
+      - groupIdentity
+      - statisticsGroupData
+      type: object
+      x-etsi-ref: 6.5.13
+    StaStatisticsConfig:
+      properties:
+        groupIdentity:
+          description: As per table T 9-114 of IEEE 802.11-2012 [8].
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
         staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        staLastDataDownlinkRate: 1000
-        staLastDataUplinkRate: 1000
-      channel: 1
-      beaconReport:
-        staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        reportingCondition: 1
-        bssId: "myBssId"
-        measurementId: "myId"
-        channelId: 1
-        ssId: "myIBSS"
-  TimeStamp:
-    type: "object"
-    required:
-    - "nanoSeconds"
-    - "seconds"
-    properties:
-      seconds:
-        type: "integer"
-        format: "uint32"
-        example: 1577836800
-        description: "The seconds part of the time. Time is defined as Unix-time since\
-          \ January 1, 1970, 00:00:00 UTC"
-      nanoSeconds:
-        type: "integer"
-        format: "uint32"
-        example: 0
-        description: "The nanoseconds part of the time. Time is defined as Unix-time\
-          \ since January 1, 1970, 00:00:00 UTC"
-    example:
-      seconds: 1577836800
-      nanoSeconds: 0
-  SubscriptionLinkList:
-    type: "object"
-    required:
-    - "_links"
-    properties:
-      _links:
-        $ref: "#/definitions/Link"
-      subscription:
-        type: "array"
-        items:
-          $ref: "#/definitions/Subscription"
-  Link:
-    type: "object"
-    properties:
-      self:
-        type: "string"
-        format: "uri"
-        example: "http://meAppClient.example.com/wai/v2/"
-        description: "URI referring to a resource"
-    description: "List of hyperlinks related to the resource"
-  Subscription:
-    type: "object"
-    required:
-    - "callbackReference"
-    - "subscriptionType"
-    properties:
-      subscriptionType:
-        type: "string"
-        description: "Subscription type"
-        enum:
-        - "StaDataRateSubscription"
-        - "AssocStaSubscription"
-      callbackReference:
-        type: "string"
-        format: "uri"
-        example: "http://meAppClient.example.com/wai/v2/"
-        description: "URL selected by the Mobile Edge application to receive notifications\
-          \ on the subscribed WAIS information."
-      _links:
-        $ref: "#/definitions/Link"
-      expiryDeadline:
-        $ref: "#/definitions/TimeStamp"
-      apId:
-        $ref: "#/definitions/ApIdentity"
-      staId:
-        $ref: "#/definitions/StaIdentity"
-    description: "Subscription object"
-  SubscriptionPost:
-    type: "object"
-    required:
-    - "callbackReference"
-    - "subscriptionType"
-    properties:
-      subscriptionType:
-        type: "string"
-        description: "Subscription type"
-        enum:
-        - "StaDataRateSubscription"
-        - "AssocStaSubscription"
-      callbackReference:
-        type: "string"
-        format: "uri"
-        example: "http://meAppClient.example.com/wai/v2/"
-        description: "URL selected by the Mobile Edge application to receive notifications\
-          \ on the subscribed WAIS information."
-      expiryDeadline:
-        $ref: "#/definitions/TimeStamp"
-      apId:
-        $ref: "#/definitions/ApIdentity"
-      staId:
-        $ref: "#/definitions/StaIdentity"
-    description: "Subscription object"
-    example:
-      subscriptionType: "AssocStaSubscription"
-      callbackReference: "http://meAppClient.example.com/wai/v2/notifications/1"
-      expiryDeadline:
-        seconds: 1977836800
-        nanoSeconds: 0
-      apId:
-        macId: "11:22:33:44:55:66"
-        ssid: "mySsid"
-        ipAddress: "1.2.3.4"
-  ChannelLoadConfig:
-    type: "object"
-    required:
-    - "apId"
-    - "channelId"
-    - "channelLoad"
-    properties:
-      channelId:
-        type: "integer"
-        description: "Channel number which load is reported"
-      channelLoad:
-        type: "integer"
-        description: "Channel load."
-      apId:
-        $ref: "#/definitions/ApIdentity"
-  BeaconRequestConfig:
-    type: "object"
-    required:
-    - "bssId"
-    - "channelId"
-    - "measurementMode"
-    - "staId"
-    properties:
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      measurementMode:
-        type: "integer"
-        example: 0
-        description: "Measurement mode (0-passive, 1-active, 2-beacon table)."
-      channelId:
-        type: "integer"
-        example: 1
-        description: "Channel number where the beacon was received."
-      bssId:
-        type: "array"
-        example: "myBssId"
-        description: "BssId of the BSS for which a beacon report has been received."
-        items:
-          type: "string"
-      ssId:
-        type: "array"
-        example: "myIBSS"
-        description: "ESS or IBSS for which a beacon report is received."
-        items:
-          type: "string"
-      reportingCondition:
-        type: "integer"
-        example: 1
-        description: "."
-  StaStatisticsConfig:
-    type: "object"
-    required:
-    - "groupIdentity"
-    - "staId"
-    - "triggerCondition"
-    - "triggerTimeout"
-    - "triggeredReport"
-    properties:
-      staId:
-        $ref: "#/definitions/StaIdentity"
-      groupIdentity:
-        type: "integer"
-        example: 0
-        description: "Group Identity."
-      triggeredReport:
-        type: "boolean"
-        description: "Use triggered report ot not."
-      triggerTimeout:
-        type: "integer"
-        description: "Trigger timeout during which a measuring STA does not generate\
-          \ further triggered STA Statistics Reports."
-      triggerCondition:
-        type: "integer"
-        description: "Bitmap defining the metrics returned by the STA Statistics Report."
-  inline_response_200:
-    type: "object"
-    properties:
-      ApInfo:
-        type: "array"
-        items:
-          $ref: "#/definitions/ApInfo"
-    example:
-      ApInfo:
-      - timeStamp:
-          seconds: 1577836800
-          nanoSeconds: 0
-        bssLoad:
-          channelUtilization: 1
-          staCount: 1
-          availAdmCap: 1000
-        extBssLoad:
-          obsSec80MhzUtil: 1
-          obsSec40MhzUtil: 1
-          muMimoStaCount: 1
-          spatStreamUnderUtil: 1
-          obsSec20MhzUtil: 1
-        apId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-        channel: 1
-        wlanCap:
-          vht:
-            vhtMcsNss: 1
-            vhtCapInfo: 1
-          edmg:
-            supportedMcs: 1
-            reserved: 0
-            ampduParameters: 1
-            tmParameters: 1
-          ht:
-            txBeamFormCap: 1
-            aselCap: 1
-            ampduParameters: 1
-            htCapabilityInfo: "1"
-            htExtendedCap: 1
-            supportedMcsSet: 1
-          he:
-            supportedHeMcsNss: 1
-            hePhyCapInfo: 1
-            heMacCapInfo: 1
-            ppeThresholds: 0
-          dmg:
-            dmgStaCapInfo: 1
-            maxNrShortAmsduSubframes: 1
-            extScMcsCap: 0
-            sarCap: 1
-            maxNrBasicAmsduSubframes: 1
-            dmgStaBeamTrackTimeLimit: 1
-            dmgApOrPcpCapInfo: 1
-            tddCap: 1
-        apLocation:
-          geoLocation:
-            datum: 1
-            altitude: 1
-            longUncertainty: 1
-            altitudeType: 1
-            altitudeUncertainty: 1
-            latUncertainty: 1
-            lat: 1
-            long: 1
-          civiLocation:
-            country: "US"
-            ca128: "ca128"
-            ca28: "ca28"
-            ca29: "ca29"
-            ca26: "ca26"
-            ca27: "ca27"
-            ca24: "ca24"
-            ca25: "ca25"
-            ca33: "ca33"
-            ca34: "ca34"
-            ca1: "ca1"
-            ca31: "ca31"
-            ca0: "ca0"
-            ca32: "ca32"
-            ca3: "ca3"
-            ca2: "ca2"
-            ca30: "ca30"
-            ca5: "ca5"
-            ca4: "ca4"
-            ca6: "ca6"
-            ca19: "ca19"
-            ca17: "ca17"
-            ca39: "ca39"
-            ca18: "ca18"
-            ca37: "ca37"
-            ca16: "ca16"
-            ca38: "ca38"
-            ca35: "ca35"
-            ca36: "ca36"
-            ca22: "ca22"
-            ca23: "ca23"
-            ca20: "ca20"
-            ca21: "ca21"
-        wanMetrics:
-          uplinkLoad: 1
-          downlinkLoad: 1
-          lmd: 10
-          uplinkSpeed: 1000
-          downlinkSpeed: 1000
-          wanInfo: 1
-        apNeighbor:
-          optionalSubelement:
-            optionalSubelement: ""
-          bssid: "1"
-          operatingClass: 1
-          channel: 1
-          phyType: 1
-          bssidInfo: 1
-      - timeStamp:
-          seconds: 1577836800
-          nanoSeconds: 0
-        bssLoad:
-          channelUtilization: 1
-          staCount: 1
-          availAdmCap: 1000
-        extBssLoad:
-          obsSec80MhzUtil: 1
-          obsSec40MhzUtil: 1
-          muMimoStaCount: 1
-          spatStreamUnderUtil: 1
-          obsSec20MhzUtil: 1
-        apId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-        channel: 1
-        wlanCap:
-          vht:
-            vhtMcsNss: 1
-            vhtCapInfo: 1
-          edmg:
-            supportedMcs: 1
-            reserved: 0
-            ampduParameters: 1
-            tmParameters: 1
-          ht:
-            txBeamFormCap: 1
-            aselCap: 1
-            ampduParameters: 1
-            htCapabilityInfo: "1"
-            htExtendedCap: 1
-            supportedMcsSet: 1
-          he:
-            supportedHeMcsNss: 1
-            hePhyCapInfo: 1
-            heMacCapInfo: 1
-            ppeThresholds: 0
-          dmg:
-            dmgStaCapInfo: 1
-            maxNrShortAmsduSubframes: 1
-            extScMcsCap: 0
-            sarCap: 1
-            maxNrBasicAmsduSubframes: 1
-            dmgStaBeamTrackTimeLimit: 1
-            dmgApOrPcpCapInfo: 1
-            tddCap: 1
-        apLocation:
-          geoLocation:
-            datum: 1
-            altitude: 1
-            longUncertainty: 1
-            altitudeType: 1
-            altitudeUncertainty: 1
-            latUncertainty: 1
-            lat: 1
-            long: 1
-          civiLocation:
-            country: "US"
-            ca128: "ca128"
-            ca28: "ca28"
-            ca29: "ca29"
-            ca26: "ca26"
-            ca27: "ca27"
-            ca24: "ca24"
-            ca25: "ca25"
-            ca33: "ca33"
-            ca34: "ca34"
-            ca1: "ca1"
-            ca31: "ca31"
-            ca0: "ca0"
-            ca32: "ca32"
-            ca3: "ca3"
-            ca2: "ca2"
-            ca30: "ca30"
-            ca5: "ca5"
-            ca4: "ca4"
-            ca6: "ca6"
-            ca19: "ca19"
-            ca17: "ca17"
-            ca39: "ca39"
-            ca18: "ca18"
-            ca37: "ca37"
-            ca16: "ca16"
-            ca38: "ca38"
-            ca35: "ca35"
-            ca36: "ca36"
-            ca22: "ca22"
-            ca23: "ca23"
-            ca20: "ca20"
-            ca21: "ca21"
-        wanMetrics:
-          uplinkLoad: 1
-          downlinkLoad: 1
-          lmd: 10
-          uplinkSpeed: 1000
-          downlinkSpeed: 1000
-          wanInfo: 1
-        apNeighbor:
-          optionalSubelement:
-            optionalSubelement: ""
-          bssid: "1"
-          operatingClass: 1
-          channel: 1
-          phyType: 1
-          bssidInfo: 1
-  inline_response_400:
-    type: "object"
-    properties:
-      ProblemDetails:
-        $ref: "#/definitions/ProblemDetails"
-  inline_response_403:
-    type: "object"
-    required:
-    - "ProblemDetails"
-    properties:
-      ProblemDetails:
-        $ref: "#/definitions/ProblemDetails"
-  inline_response_200_1:
-    type: "object"
-    properties:
-      StaInfo:
-        type: "array"
-        items:
-          $ref: "#/definitions/StaInfo"
-    example:
-      StaInfo:
-      - timeStamp:
-          seconds: 1577836800
-          nanoSeconds: 0
-        staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        rssi: 44
-        staStatistics:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          optionalSubelement:
-            optionalSubelement: ""
-          md: 1000
-          groupIdentity: 1
-          statisticsGroupData:
-            dot11STAStatisticsStationCount: 6
-            dot11DualCTSFailureCount: 4
-            dot11RSNAStatsTKIPICVErrors: 8
-            dot11TransmittedOctetsInGrantedRDGCount: 7
-            dot11BeamformingFrameCount: 4
-            dot11RSNAStatsCMACReplays: 6
-            dot11RSNAStatsCCMPReplays: 3
-            dot11QosRTSSuccessCount: 4
-            dot11FailedCount: 1
-            dot11STBCCTSSuccessCount: 3
-            dot11RSNAStatsBIPMICErrors: 8
-            dot11RSNAStatsRobustMgmtCCMPReplays: 4
-            dot11ImplicitBARFailureCount: 3
-            dot11AckFailureCount: 1
-            dot11MultipleRetryCount: 3
-            dot11TwentyMHzFrameReceivedCount: 1
-            dot11FailedAMSDUCount: 3
-            dot11RetryCount: 9
-            dot11STAStatisticsAverageAccessDelayVoice: 6
-            dot11QosDiscardedFrameCount: 8
-            dot11GroupTransmittedFrameCount: 6
-            dot11FrameDuplicateCount: 2
-            dot11nonSTBCCTSFailureCount: 1
-            dot11AMPDUDelimiterCRCErrorCount: 5
-            dot11ReceivedAMSDUCount: 6
-            dot11QosReceivedFragmentCount: 9
-            dot11QosMPDUsReceivedCount: 9
-            dot11RTSLSIGSuccessCount: 6
-            dot11QosFrameDuplicateCount: 1
-            dot11STAStatisticsAverageAccessDelayBackGround: 1
-            dot11QosAckFailureCount: 9
-            dot11TransmittedMPDUsInAMPDUCount: 8
-            dot11nonSTBCCTSSuccessCount: 2
-            dot11GroupReceivedFrameCount: 5
-            dot11FCSErrorCount: 2
-            dot11TransmittedFrameCount: 7
-            dot11STAStatisticsChannelUtilization: 5
-            dot11QosRetryCount: 6
-            dot11TwentyMHzFrameTransmittedCount: 6
-            dot11TransmittedOctetsInAMSDUCount: 0
-            dot11QosTransmittedFrameCount: 6
-            dot11QosFailedCount: 1
-            dot11TransmittedOctetsInAMPDUCount: 7
-            dot11TransmittedAMPDUCount: 4
-            dot11DualCTSSuccessCount: 5
-            dot11MultipleRetryAMSDUCount: 7
-            dot11ReceivedOctetsInAMPDUCount: 7
-            dot11ReceivedOctetsInAMSDUCount: 0
-            dot11TransmittedAMSDUCount: 6
-            dot11GrantedRDGUsedCount: 0
-            dot11RTSLSIGFailureCount: 8
-            dot11ChannelWidthSwitchCount: 0
-            dot11RTSFailureCount: 7
-            dot11TransmittedFramesInGrantedRDGCount: 0
-            dot11STAStatisticsAPAverageAccessDelay: 3
-            dot11TransmittedFragmentCount: 0
-            dot11QosRTSFailureCount: 5
-            dot11PSMPUTTGrantDuration: 7
-            dot11QosMultipleRetryCount: 7
-            dot11STAStatisticsAverageAccessDelayVideo: 2
-            dot11AMSDUAckFailureCount: 7
-            dot11RetryAMSDUCount: 3
-            dot11QosTransmittedFragmentCount: 1
-            dot11GrantedRDGUnusedCount: 9
-            dot11RSNAStatsCCMPDecryptErrors: 1
-            dot11QosRetriesReceivedCount: 6
-            dot11PSMPUTTUsedDuration: 9
-            dot11STAStatisticsAverageAccessDelayBestEffort: 6
-            dot11RSNAStatsTKIPReplays: 9
-            dot11FortyMHzFrameReceivedCount: 4
-            dot11ExplicitBARFailureCount: 4
-            dot11FortyMHzFrameTransmittedCount: 4
-            dot11AMPDUReceivedCount: 3
-            dot11ReceivedFragmentCount: 5
-            dot11STBCCTSFailureCount: 0
-            dot11MPDUInReceivedAMPDUCount: 3
-            dot11RTSSuccessCount: 4
-        apAssociated:
-          assocId: "1234"
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-        staDataRate:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          staLastDataDownlinkRate: 1000
-          staLastDataUplinkRate: 1000
-        channel: 1
-        beaconReport:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          reportingCondition: 1
-          bssId: "myBssId"
-          measurementId: "myId"
-          channelId: 1
-          ssId: "myIBSS"
-      - timeStamp:
-          seconds: 1577836800
-          nanoSeconds: 0
-        staId:
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-          aid: "1234"
-        rssi: 44
-        staStatistics:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          optionalSubelement:
-            optionalSubelement: ""
-          md: 1000
-          groupIdentity: 1
-          statisticsGroupData:
-            dot11STAStatisticsStationCount: 6
-            dot11DualCTSFailureCount: 4
-            dot11RSNAStatsTKIPICVErrors: 8
-            dot11TransmittedOctetsInGrantedRDGCount: 7
-            dot11BeamformingFrameCount: 4
-            dot11RSNAStatsCMACReplays: 6
-            dot11RSNAStatsCCMPReplays: 3
-            dot11QosRTSSuccessCount: 4
-            dot11FailedCount: 1
-            dot11STBCCTSSuccessCount: 3
-            dot11RSNAStatsBIPMICErrors: 8
-            dot11RSNAStatsRobustMgmtCCMPReplays: 4
-            dot11ImplicitBARFailureCount: 3
-            dot11AckFailureCount: 1
-            dot11MultipleRetryCount: 3
-            dot11TwentyMHzFrameReceivedCount: 1
-            dot11FailedAMSDUCount: 3
-            dot11RetryCount: 9
-            dot11STAStatisticsAverageAccessDelayVoice: 6
-            dot11QosDiscardedFrameCount: 8
-            dot11GroupTransmittedFrameCount: 6
-            dot11FrameDuplicateCount: 2
-            dot11nonSTBCCTSFailureCount: 1
-            dot11AMPDUDelimiterCRCErrorCount: 5
-            dot11ReceivedAMSDUCount: 6
-            dot11QosReceivedFragmentCount: 9
-            dot11QosMPDUsReceivedCount: 9
-            dot11RTSLSIGSuccessCount: 6
-            dot11QosFrameDuplicateCount: 1
-            dot11STAStatisticsAverageAccessDelayBackGround: 1
-            dot11QosAckFailureCount: 9
-            dot11TransmittedMPDUsInAMPDUCount: 8
-            dot11nonSTBCCTSSuccessCount: 2
-            dot11GroupReceivedFrameCount: 5
-            dot11FCSErrorCount: 2
-            dot11TransmittedFrameCount: 7
-            dot11STAStatisticsChannelUtilization: 5
-            dot11QosRetryCount: 6
-            dot11TwentyMHzFrameTransmittedCount: 6
-            dot11TransmittedOctetsInAMSDUCount: 0
-            dot11QosTransmittedFrameCount: 6
-            dot11QosFailedCount: 1
-            dot11TransmittedOctetsInAMPDUCount: 7
-            dot11TransmittedAMPDUCount: 4
-            dot11DualCTSSuccessCount: 5
-            dot11MultipleRetryAMSDUCount: 7
-            dot11ReceivedOctetsInAMPDUCount: 7
-            dot11ReceivedOctetsInAMSDUCount: 0
-            dot11TransmittedAMSDUCount: 6
-            dot11GrantedRDGUsedCount: 0
-            dot11RTSLSIGFailureCount: 8
-            dot11ChannelWidthSwitchCount: 0
-            dot11RTSFailureCount: 7
-            dot11TransmittedFramesInGrantedRDGCount: 0
-            dot11STAStatisticsAPAverageAccessDelay: 3
-            dot11TransmittedFragmentCount: 0
-            dot11QosRTSFailureCount: 5
-            dot11PSMPUTTGrantDuration: 7
-            dot11QosMultipleRetryCount: 7
-            dot11STAStatisticsAverageAccessDelayVideo: 2
-            dot11AMSDUAckFailureCount: 7
-            dot11RetryAMSDUCount: 3
-            dot11QosTransmittedFragmentCount: 1
-            dot11GrantedRDGUnusedCount: 9
-            dot11RSNAStatsCCMPDecryptErrors: 1
-            dot11QosRetriesReceivedCount: 6
-            dot11PSMPUTTUsedDuration: 9
-            dot11STAStatisticsAverageAccessDelayBestEffort: 6
-            dot11RSNAStatsTKIPReplays: 9
-            dot11FortyMHzFrameReceivedCount: 4
-            dot11ExplicitBARFailureCount: 4
-            dot11FortyMHzFrameTransmittedCount: 4
-            dot11AMPDUReceivedCount: 3
-            dot11ReceivedFragmentCount: 5
-            dot11STBCCTSFailureCount: 0
-            dot11MPDUInReceivedAMPDUCount: 3
-            dot11RTSSuccessCount: 4
-        apAssociated:
-          assocId: "1234"
-          macId: "11:22:33:44:55:66"
-          ipAddress: "1.2.3.4"
-          ssid: "mySsid"
-        staDataRate:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          staLastDataDownlinkRate: 1000
-          staLastDataUplinkRate: 1000
-        channel: 1
-        beaconReport:
-          staId:
-            macId: "11:22:33:44:55:66"
-            ipAddress: "1.2.3.4"
-            ssid: "mySsid"
-            aid: "1234"
-          reportingCondition: 1
-          bssId: "myBssId"
-          measurementId: "myId"
-          channelId: 1
-          ssId: "myIBSS"
-  inline_response_200_2:
-    type: "object"
-    required:
-    - "SubscriptionLinkList"
-    properties:
-      SubscriptionLinkList:
-        $ref: "#/definitions/SubscriptionLinkList"
-  SubscriptionPost_1:
-    type: "object"
-    properties:
-      Subscription:
-        $ref: "#/definitions/SubscriptionPost"
-  inline_response_201:
-    type: "object"
-    properties:
-      Subscription:
-        $ref: "#/definitions/Subscription"
-  inline_response_200_3:
-    type: "object"
-    required:
-    - "Subscription"
-    properties:
-      Subscription:
-        $ref: "#/definitions/Subscription"
-  Subscription_1:
-    type: "object"
-    properties:
-      Subscription:
-        $ref: "#/definitions/Subscription"
-parameters:
-  Body.SubscriptionPost:
-    in: "body"
-    name: "SubscriptionPost"
-    description: "Use to creates a subscription."
-    required: true
-    schema:
-      $ref: "#/definitions/SubscriptionPost_1"
-    x-exportParamName: "SubscriptionPost"
-  Body.Subscription:
-    in: "body"
-    name: "Subscription"
-    description: "Use to creates a subscription."
-    required: true
-    schema:
-      $ref: "#/definitions/Subscription_1"
-    x-exportParamName: "Subscription"
-  Path.subscrId:
-    name: "subscriptionId"
-    in: "path"
-    description: "Subscription Id, specifically the \"self\" returned in the subscription\
-      \ request"
-    required: true
-    type: "string"
-    format: "uri"
-    x-exportParamName: "SubscriptionId"
-  Query.Filter:
-    name: "filter"
-    in: "query"
-    description: "Attribute-based filtering expression"
-    required: false
-    type: "string"
-    x-exportParamName: "Filter"
-    x-optionalDataType: "String"
-  Query.AllFields:
-    name: "all_fields"
-    in: "query"
-    description: "Include all complex attributes in response."
-    required: false
-    type: "string"
-    x-exportParamName: "AllFields"
-    x-optionalDataType: "String"
-  Query.Fields:
-    name: "fields"
-    in: "query"
-    description: "Complex attributes to be included in the response."
-    required: false
-    type: "array"
-    items:
-      type: "string"
-    x-exportParamName: "Fields"
-  Query.ExcludeFields:
-    name: "exclude_fields"
-    in: "query"
-    description: "Complex attributes to be excluded from the response."
-    required: false
-    type: "array"
-    items:
-      type: "string"
-    x-exportParamName: "ExcludeFields"
-  Query.ExcludeDefault:
-    name: "exclude_default"
-    in: "query"
-    description: "Complex attributes to be excluded from the response."
-    required: false
-    type: "array"
-    items:
-      type: "string"
-    x-exportParamName: "ExcludeDefault"
-externalDocs:
-  description: "ETSI MEC028 V2.1.1 WLAN Access Information Service API"
-  url: "http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_MEC028v020101p.pdf"
+          # description': Identifier to uniquely specify the station whose information is exposed within this data type.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': StaIdentity
+          $ref: '#/components/schemas/StaIdentity'
+        triggerCondition:
+          # description': As per Figure 9-161 of IEEE 802.11. This bitmap defines what are the metrics returned by the STA Statistics Report.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': 16bits bitmap
+          type: integer
+        triggerTimeout:
+          description: The Trigger Timeout field contains a value in units of 100 TUs during which a measuring STA does not generate further triggered STA Statistics Reports after a trigger condition has been met.
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Integer
+        triggeredReport:
+          # description': Yes, use triggered report.
+          # x-etsi-mec-cardinality': '1'
+          # x-etsi-mec-origin-type': Bool
+          type: boolean
+      required:
+      - staId
+      - groupIdentity
+      - triggeredReport
+      - triggerTimeout
+      - triggerCondition
+      type: object
+      x-etsi-ref: 6.5.26
+    StatisticsGroupData:
+      properties:
+        dot11AMPDUDelimiterCRCErrorCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11AMPDUReceivedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11AMSDUAckFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11AckFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11BeamformingFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ChannelWidthSwitchCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11DualCTSFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11DualCTSSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ExplicitBARFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FCSErrorCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FailedAMSDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FailedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FortyMHzFrameReceivedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FortyMHzFrameTransmittedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11FrameDuplicateCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11GrantedRDGUnusedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11GrantedRDGUsedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11GroupReceivedFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11GroupTransmittedFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ImplicitBARFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11MPDUInReceivedAMPDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11MultipleRetryAMSDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11MultipleRetryCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11PSMPUTTGrantDuration:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11PSMPUTTUsedDuration:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosAckFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosDiscardedFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosFailedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosFrameDuplicateCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosMPDUsReceivedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosMultipleRetryCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosRTSFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosRTSSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosReceivedFragmentCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosRetriesReceivedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosRetryCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosTransmittedFragmentCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11QosTransmittedFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsBIPMICErrors:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsCCMPDecryptErrors:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsCCMPReplays:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsCMACReplays:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsRobustMgmtCCMPReplays:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsTKIPICVErrors:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RSNAStatsTKIPReplays:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RTSFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RTSLSIGFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RTSLSIGSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RTSSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ReceivedAMSDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ReceivedFragmentCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11ReceivedOctetsInAMPDUCount:
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint64
+        dot11ReceivedOctetsInAMSDUCount:
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint64
+        dot11RetryAMSDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11RetryCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11STAStatisticsAPAverageAccessDelay:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsAverageAccessDelayBackGround:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsAverageAccessDelayBestEffort:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsAverageAccessDelayVideo:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsAverageAccessDelayVoice:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsChannelUtilization:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STAStatisticsStationCount:
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint8
+        dot11STBCCTSFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11STBCCTSSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedAMPDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedAMSDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedFragmentCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedFrameCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedFramesInGrantedRDGCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedMPDUsInAMPDUCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedOctetsInAMPDUCount:
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint64
+        dot11TransmittedOctetsInAMSDUCount:
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TransmittedOctetsInGrantedRDGCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TwentyMHzFrameReceivedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11TwentyMHzFrameTransmittedCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11nonSTBCCTSFailureCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+        dot11nonSTBCCTSSuccessCount:
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: 0..1
+          x-etsi-mec-origin-type: Uint32
+      type: object
+    SubscriptionLinkList:
+      properties:
+        _links:
+          description: List of hyperlinks related to the resource.
+          properties:
+            self:
+              # description': ''
+              # x-etsi-mec-cardinality': '1'
+              # x-etsi-mec-origin-type': LinkType
+              $ref: '#/components/schemas/LinkType'
+            subscription:
+              description: A link to a subscription.
+              items:
+                type: object
+                properties:
+                  href:
+                    description: The URI referring to the subscription.
+                    format: uri
+                    type: string
+                    x-etsi-mec-cardinality: '1'
+                    x-etsi-mec-origin-type: URI
+                  subscriptionType:
+                    description: "Type of the subscription. The string shall be set according to the \"subscriptionType\" attribute of the associated subscription data type event."
+                    type: string
+                    x-etsi-mec-cardinality: '1'
+                    x-etsi-mec-origin-type: String
+              minItems: 0
+              required:
+              - href
+              - subscriptionType
+              type: array
+              x-etsi-mec-cardinality: 0..N
+              x-etsi-mec-origin-type: Structure (inlined)
+          required:
+          - self
+          type: object
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Structure (inlined)
+      required:
+      - _links
+      type: object
+      x-etsi-ref: not defined
+    TimeStamp:
+      properties:
+        nanoSeconds:
+          description: The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint32
+        seconds:
+          description: The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint32
+      required:
+      - seconds
+      - nanoSeconds
+      type: object
+      x-etsi-ref: 6.5.2
+    VhtCapabilities:
+      properties:
+        vhtCapInfo:
+          description: VHT capabilities Info as defined in IEEE 802.11-2016 [8].
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt32
+        vhtMcsNss:
+          description: Supported VHT-MCS and NSS Set as defined in IEEE 802.11-2016 [8].
+          format: int64
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt64
+      required:
+      - vhtCapInfo
+      - vhtMcsNss
+      type: object
+      x-etsi-ref: 6.5.15
+    WanMetrics:
+      properties:
+        downlinkLoad:
+          description: 1-octet positive integer representing the current percentage loading of the downlink WAN connection, scaled linearly with 255 representing 100 %, as measured over an interval the duration of which is reported in Load Measurement Duration. In cases where the downlink load is unknown to the AP, the value is set to zero.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt8
+        downlinkSpeed:
+          description: 4-octet positive integer whose value is an estimate of the WAN Backhaul link current downlink speed in kilobits per second.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint32
+        lmd:
+          description: The LMD (Load Measurement Duration) field is a 2-octet positive integer representing the duration over which the Downlink Load and Uplink Load have been measured, in tenths of a second. When the actual load measurement duration is greater than the maximum value, the maximum value will be reported. The value of the LMD field is set to 0 when neither the uplink nor downlink load can be computed. When the uplink and downlink loads are computed over different intervals, the maximum interval is reported.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint16
+        uplinkLoad:
+          description: 1-octet positive integer representing the current percentage loading of the uplink WAN connection, scaled linearly with 255 representing 100 %, as measured over an interval, the duration of which is reported in Load Measurement Duration. In cases where the uplink load is unknown to the AP, the value is set to zero.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+        uplinkSpeed:
+          description: 4-octet positive integer whose value is an estimate of the WAN Backhaul link's current uplink speed in kilobits per second.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: UInt32
+        wanInfo:
+          description: Info about WAN link status, link symmetricity and capacity currently used.
+          format: int32
+          type: integer
+          x-etsi-mec-cardinality: '1'
+          x-etsi-mec-origin-type: Uint8
+      required:
+      - wanInfo
+      - downlinkSpeed
+      - uplinkSpeed
+      - downlinkLoad
+      - uplinkLoad
+      - lmd
+      type: object
+      x-etsi-ref: 6.5.6
+    WlanCapabilities:
+      properties:
+        dmg:
+          # description': Information about Access Point DMG capabilities as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': DmgCapabilities
+          $ref: '#/components/schemas/DmgCapabilities'
+        edmg:
+          # description': Information about Access Point EDMG capabilities as defined in draft IEEE P802.11/D4.0 [i.11].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': EdmgCapabilities
+          $ref: '#/components/schemas/EdmgCapabilities'
+        he:
+          # description': Information about Access Point HE capabilities as defined in FFS.
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': HeCapabilities
+          $ref: '#/components/schemas/HeCapabilities'
+        ht:
+          # description': Information about Access Point HT capabilities as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': HtCapabilities
+          $ref: '#/components/schemas/HtCapabilities'
+        vht:
+          # description': Information about Access Point VHT capabilities as defined in IEEE 802.11-2016 [8].
+          # x-etsi-mec-cardinality': 0..1
+          # x-etsi-mec-origin-type': VhtCapabilities
+          $ref: '#/components/schemas/VhtCapabilities'
+      type: object
+      x-etsi-ref: 6.5.4

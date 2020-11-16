@@ -33,7 +33,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	waisNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-notification-client"
 
 	"github.com/gorilla/mux"
 )
@@ -5913,13 +5912,13 @@ func TestSuccessSubscriptionAssocSta(t *testing.T) {
 	//post
 	expectedGetResp := testSubscriptionAssocStaPost(t)
 	//get
-	testSubscriptionAssocStaGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
 	//put
 	expectedGetResp = testSubscriptionAssocStaPut(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 	//get
-	testSubscriptionAssocStaGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable-1), expectedGetResp)
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 	terminateScenario()
 }
 
@@ -5942,13 +5941,13 @@ func TestFailSubscriptionAssocSta(t *testing.T) {
 	initialiseScenario(testScenario)
 
 	//get
-	testSubscriptionAssocStaGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
+	testSubscriptionGet(t, strconv.Itoa(nextSubscriptionIdAvailable), "")
 
 	//put
 	_ = testSubscriptionAssocStaPut(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable), false)
 
 	terminateScenario()
 }
@@ -5979,8 +5978,8 @@ func TestSubscriptionsListGet(t *testing.T) {
 	testSubscriptionListGet(t)
 
 	//delete
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2))
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-2), true)
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 
 	terminateScenario()
 }
@@ -6012,13 +6011,13 @@ func testSubscriptionListGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse2002
+	var respBody SubscriptionLinkList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 	nb := 0
-	for range respBody.SubscriptionLinkList.Subscription {
+	for range respBody.Links.Subscription {
 		nb++
 	}
 	if nb != expectedSubscriptionNb {
@@ -6031,12 +6030,11 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{"myMacId", "mySSid", "myIp"}
+	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedSubscriptionType := assocStaSubscriptionType
-	expectedLink := Link{"/" + testScenarioName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
-	expectedExpiry := TimeStamp{1988599770, 0}
-	expectedResponse := InlineResponse201{&Subscription{expectedSubscriptionType, expectedCallBackRef, &expectedLink, &expectedExpiry, &expectedApId, nil}}
+	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + strconv.Itoa(nextSubscriptionIdAvailable)}
+	//expectedExpiry := TimeStamp{0, 1988599770}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, ASSOC_STA_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6051,7 +6049,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := SubscriptionPost1{&SubscriptionPost{expectedSubscriptionType, expectedCallBackRef, &expectedExpiry, &expectedApId, nil}}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, nil /*&expectedExpiry*/, ASSOC_STA_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6071,7 +6069,7 @@ func testSubscriptionAssocStaPost(t *testing.T) string {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse201
+	var respBody AssocStaSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -6087,12 +6085,11 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{"myMacId", "mySSid", "myIp"}
-	expectedSubscriptionType := assocStaSubscriptionType
+	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedLink := Link{"/" + testScenarioName + "/wai/v2/subscriptions/" + subscriptionId}
-	expectedExpiry := TimeStamp{1988599770, 0}
-	expectedResponse := InlineResponse2003{&Subscription{expectedSubscriptionType, expectedCallBackRef, &expectedLink, &expectedExpiry, &expectedApId, nil}}
+	expectedLinkType := LinkType{"/" + testScenarioName + "/wai/v2/subscriptions/" + subscriptionId}
+	expectedExpiry := TimeStamp{0, 1988599770}
+	expectedResponse := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -6108,7 +6105,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	/******************************
 	 * request body section
 	 ******************************/
-	subscription1 := Subscription1{&Subscription{expectedSubscriptionType, expectedCallBackRef, &expectedLink, &expectedExpiry, &expectedApId, nil}}
+	subscription1 := AssocStaSubscription{&AssocStaSubscriptionLinks{&expectedLinkType}, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscription1)
 	if err != nil {
@@ -6129,7 +6126,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2003
+		var respBody AssocStaSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -6147,7 +6144,7 @@ func testSubscriptionAssocStaPut(t *testing.T, subscriptionId string, expectSucc
 	}
 }
 
-func testSubscriptionAssocStaGet(t *testing.T, subscriptionId string, expectedResponse string) {
+func testSubscriptionGet(t *testing.T, subscriptionId string, expectedResponse string) {
 
 	/******************************
 	 * expected response section
@@ -6183,18 +6180,13 @@ func testSubscriptionAssocStaGet(t *testing.T, subscriptionId string, expectedRe
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody InlineResponse2003
-		err = json.Unmarshal([]byte(rr), &respBody)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
 		if rr != expectedResponse {
 			t.Fatalf("Failed to get expected response")
 		}
 	}
 }
 
-func testSubscriptionDelete(t *testing.T, subscriptionId string) {
+func testSubscriptionDelete(t *testing.T, subscriptionId string, expectSuccess bool) {
 
 	/******************************
 	 * expected response section
@@ -6218,9 +6210,16 @@ func testSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNoContent, SubscriptionsDELETE)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
+	if expectSuccess {
+		_, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNoContent, SubscriptionsDELETE)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
+	} else {
+		_, err := sendRequest(http.MethodDelete, "/subscriptions", nil, vars, nil, http.StatusNotFound, SubscriptionsDELETE)
+		if err != nil {
+			t.Fatalf("Failed to get expected response")
+		}
 	}
 }
 
@@ -6246,10 +6245,9 @@ func TestExpiryNotification(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedApId := ApIdentity{"myMacId", "mySSid", "myIp"}
-	expectedSubscriptionType := assocStaSubscriptionType
+	expectedApId := ApIdentity{[]string{"myIp"}, "myMacId", []string{"mySSid"}}
 	expectedCallBackRef := "myCallbakRef"
-	expectedExpiry := TimeStamp{12321, 0}
+	expectedExpiry := TimeStamp{0, 12321}
 
 	/******************************
 	 * request vars section
@@ -6259,7 +6257,7 @@ func TestExpiryNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := SubscriptionPost1{&SubscriptionPost{expectedSubscriptionType, expectedCallBackRef, &expectedExpiry, &expectedApId, nil}}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6292,7 +6290,7 @@ func TestExpiryNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var expiryNotification waisNotif.ExpiryNotification
+	var expiryNotification ExpiryNotification
 	err = json.Unmarshal([]byte(httpLog[0].Body), &expiryNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -6334,9 +6332,8 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	 ******************************/
 	//movingUeAddr := "ue1" //based on the scenario change
 	expectedCallBackRef := "myCallbakRef"
-	expectedExpiry := TimeStamp{1988599770, 0}
-	expectedApId := ApIdentity{"0050C272800A", "", ""}
-	expectedSubscriptionType := assocStaSubscriptionType
+	expectedExpiry := TimeStamp{0, 1988599770}
+	expectedApId := ApIdentity{nil, "0050C272800A", nil}
 	expectedApIdMacIdStr := "{\"macId\":\"0050C272800A\"}"
 	expectedStaIdMacIdStr := "[{\"macId\":\"101002000000\"}]"
 
@@ -6348,7 +6345,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	 * request body section
 	 ******************************/
 
-	subscriptionPost1 := SubscriptionPost1{&SubscriptionPost{expectedSubscriptionType, expectedCallBackRef, &expectedExpiry, &expectedApId, nil}}
+	subscriptionPost1 := AssocStaSubscription{nil, &expectedApId, expectedCallBackRef, &expectedExpiry, ASSOC_STA_SUBSCRIPTION}
 
 	body, err := json.Marshal(subscriptionPost1)
 	if err != nil {
@@ -6382,7 +6379,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification waisNotif.Notification
+	var notification AssocStaNotification
 	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -6407,7 +6404,7 @@ func TestSubscriptionAssocStaNotification(t *testing.T) {
 	}
 
 	//cleanup allocated subscription
-	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1))
+	testSubscriptionDelete(t, strconv.Itoa(nextSubscriptionIdAvailable-1), true)
 
 	/******************************
 	 * back to initial state section
@@ -6554,18 +6551,14 @@ func TestApInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse200
-	err = json.Unmarshal([]byte(rr), &respBody)
+	var apInfoList []ApInfo
+	err = json.Unmarshal([]byte(rr), &apInfoList)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	if respBody.ApInfo != nil {
-		if len(respBody.ApInfo) != nbExpectedApInfo {
-			t.Fatalf("Failed to get number of expected responses")
-		}
-	} else {
-		t.Fatalf("Failed to get expected response")
+	if len(apInfoList) != nbExpectedApInfo {
+		t.Fatalf("Failed to get expected response, expected none")
 	}
 
 	/******************************
@@ -6621,13 +6614,13 @@ func TestStaInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody InlineResponse2001
-	err = json.Unmarshal([]byte(rr), &respBody)
+	var staInfoList []StaInfo
+	err = json.Unmarshal([]byte(rr), &staInfoList)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	if respBody.StaInfo != nil {
+	if len(staInfoList) != 0 {
 		t.Fatalf("Failed to get expected response, expected none")
 	}
 
@@ -6638,20 +6631,16 @@ func TestStaInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	err = json.Unmarshal([]byte(rr), &respBody)
+	err = json.Unmarshal([]byte(rr), &staInfoList)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
-	if respBody.StaInfo != nil {
-		if len(respBody.StaInfo) != nbExpectedStaInfo {
-			t.Fatalf("Failed to get number of expected responses")
-		}
-		if respBody.StaInfo[0].StaId.MacId != expectedStaIdMacId {
+	if len(staInfoList) == nbExpectedStaInfo {
+		if staInfoList[0].StaId.MacId != expectedStaIdMacId {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		t.Fatalf("Failed to get expected response")
+		t.Fatalf("Failed to get number of expected responses")
 	}
 
 	/******************************

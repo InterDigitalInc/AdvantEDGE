@@ -1819,8 +1819,6 @@ func TestPlmnInfoGet(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	log.Info("SIMON ", string(rr), "---", err)
-
 	if len(plmnInfoList) != 0 {
 		if plmnInfoList[0].Plmn[0].Mcc != expectedMcc[INITIAL] {
 			t.Fatalf("Failed to get expected response")

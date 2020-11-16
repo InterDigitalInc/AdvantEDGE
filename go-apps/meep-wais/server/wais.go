@@ -17,10 +17,11 @@
 package server
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -36,7 +37,6 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
-	clientNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-notification-client"
 
 	"github.com/gorilla/mux"
 )
@@ -51,9 +51,10 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 const assocStaSubscriptionType = "AssocStaSubscription"
 
-// const staDataRateSubscriptionType = "StaDataRateSubscription" //no used at the moment
+const ASSOC_STA_SUBSCRIPTION = "AssocStaSubscription"
+const ASSOC_STA_NOTIFICATION = "AssocStaNotification"
 
-var assocStaSubscriptionMap = map[int]*Subscription{}
+var assocStaSubscriptionMap = map[int]*AssocStaSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
 var currentStoreName = ""
 
@@ -77,7 +78,14 @@ type ApInfoComplete struct {
 	StaMacIds  []string
 }
 
-// Init - WAI Service initialization
+type StaInfoResp struct {
+	StaInfoList []StaInfo
+}
+
+type ApInfoResp struct {
+	ApInfoList []ApInfo
+}
+
 func Init() (err error) {
 
 	// Retrieve Sandbox name from environment variable
@@ -161,7 +169,7 @@ func reInit() {
 	nextSubscriptionIdAvailable = 1
 
 	keyName := baseKey + "subscription:" + "*"
-	_ = rc.ForEachJSONEntry(keyName, repopulateSubscriptionMap, nil)
+	_ = rc.ForEachJSONEntry(keyName, repopulateAssocStaSubscriptionMap, nil)
 }
 
 // Run - Start WAIS
@@ -204,12 +212,13 @@ func updateStaInfo(name string, ownMacId string, apMacId string, rssi *int32) {
 		}
 
 		// Set RSSI
-		if rssi == nil {
-			staInfo.Rssi = 0
+		if rssi != nil {
+			var rssiObj Rssi
+			rssiObj.Rssi = *rssi
+			staInfo.Rssi = &rssiObj
 		} else {
-			staInfo.Rssi = *rssi
+			staInfo.Rssi = nil
 		}
-
 		// Update DB
 		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertStaInfoToJson(staInfo))
 	}
@@ -230,8 +239,9 @@ func isStaInfoUpdateRequired(staInfo *StaInfo, ownMacId string, apMacId string, 
 		return true
 	}
 	// Compare RSSI
-	if (rssi == nil && staInfo.Rssi != 0) ||
-		(rssi != nil && *rssi != staInfo.Rssi) {
+	if (rssi == nil && staInfo.Rssi != nil) ||
+		(rssi != nil && staInfo.Rssi == nil) ||
+		(rssi != nil && staInfo.Rssi != nil && *rssi != staInfo.Rssi.Rssi) {
 		return true
 	}
 	return false
@@ -272,9 +282,9 @@ func isUpdateApInfoNeeded(jsonApInfoComplete string, newLong int32, newLat int32
 		apInfoComplete := convertJsonToApInfoComplete(jsonApInfoComplete)
 		oldStaMacIds = apInfoComplete.StaMacIds
 
-		if apInfoComplete.ApLocation.GeoLocation != nil {
-			oldLat = apInfoComplete.ApLocation.GeoLocation.Lat
-			oldLong = apInfoComplete.ApLocation.GeoLocation.Long
+		if apInfoComplete.ApLocation.Geolocation != nil {
+			oldLat = int32(apInfoComplete.ApLocation.Geolocation.Lat)
+			oldLong = int32(apInfoComplete.ApLocation.Geolocation.Long)
 		}
 	}
 
@@ -306,10 +316,10 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		var apLocation ApLocation
 		var geoLocation GeoLocation
 		var apId ApIdentity
-		geoLocation.Lat = newLat
-		geoLocation.Long = newLong
+		geoLocation.Lat = int64(newLat)
+		geoLocation.Long = int64(newLong)
 
-		apLocation.GeoLocation = &geoLocation
+		apLocation.Geolocation = &geoLocation
 		apInfoComplete.ApLocation = apLocation
 
 		apInfoComplete.StaMacIds = staMacIds
@@ -318,19 +328,6 @@ func updateApInfo(name string, apMacId string, longitude *float32, latitude *flo
 		_ = rc.JSONSetEntry(baseKey+"AP:"+name, ".", convertApInfoCompleteToJson(&apInfoComplete))
 		checkAssocStaNotificationRegisteredSubscriptions(staMacIds, apMacId)
 	}
-}
-
-func createClient(notifyPath string) (*clientNotif.APIClient, error) {
-	// Create & store client for App REST API
-	subsAppClientCfg := clientNotif.NewConfiguration()
-	subsAppClientCfg.BasePath = notifyPath
-	subsAppClient := clientNotif.NewAPIClient(subsAppClientCfg)
-	if subsAppClient == nil {
-		log.Error("Failed to create Subscription App REST API client: ", subsAppClientCfg.BasePath)
-		err := errors.New("Failed to create Subscription App REST API client")
-		return nil, err
-	}
-	return subsAppClient, nil
 }
 
 func checkForExpiredSubscriptions() {
@@ -346,24 +343,24 @@ func checkForExpiredSubscriptions() {
 
 					subsIdStr := strconv.Itoa(subsId)
 
-					var notif clientNotif.ExpiryNotification
+					var notif ExpiryNotification
 
 					seconds := time.Now().Unix()
-					var timeStamp clientNotif.TimeStamp
+					var timeStamp TimeStamp
 					timeStamp.Seconds = int32(seconds)
 
-					var expiryTimeStamp clientNotif.TimeStamp
+					var expiryTimeStamp TimeStamp
 					expiryTimeStamp.Seconds = int32(expiryTime)
 
-					link := new(clientNotif.Link)
+					link := new(ExpiryNotificationLinks)
 					link.Self = assocStaSubscriptionMap[subsId].CallbackReference
 					notif.Links = link
 
-					notif.Timestamp = &timeStamp
+					notif.TimeStamp = &timeStamp
 					notif.ExpiryDeadline = &expiryTimeStamp
 
-					sendExpiryNotification(link.Self, context.TODO(), subsIdStr, notif)
-					_ = delSubscription(baseKey+"subscription", subsIdStr, true)
+					sendExpiryNotification(link.Self, notif)
+					_ = delSubscription(baseKey+"subscriptions", subsIdStr, true)
 				}
 			}
 		}
@@ -371,9 +368,9 @@ func checkForExpiredSubscriptions() {
 
 }
 
-func repopulateSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
+func repopulateAssocStaSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
 
-	var subscription Subscription
+	var subscription AssocStaSubscription
 
 	// Format response
 	err := json.Unmarshal([]byte(jsonInfo), &subscription)
@@ -381,7 +378,7 @@ func repopulateSubscriptionMap(key string, jsonInfo string, userData interface{}
 		return err
 	}
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 	subsId, _ := strconv.Atoi(subsIdStr)
 
@@ -421,48 +418,42 @@ func checkAssocStaNotificationRegisteredSubscriptions(staMacIds []string, apMacI
 				subsIdStr := strconv.Itoa(subsId)
 				log.Info("Sending WAIS notification ", sub.CallbackReference)
 
-				var notif clientNotif.Notification
+				var notif AssocStaNotification
 
 				seconds := time.Now().Unix()
-				var timeStamp clientNotif.TimeStamp
+				var timeStamp TimeStamp
 				timeStamp.Seconds = int32(seconds)
 
-				notif.Timestamp = &timeStamp
-				notif.NotificationType = assocStaSubscriptionType
+				notif.TimeStamp = &timeStamp
+				notif.NotificationType = ASSOC_STA_NOTIFICATION
 
-				var apId clientNotif.ApIdentity
+				var apId ApIdentity
 				apId.MacId = apMacId
 				notif.ApId = &apId
 
 				for _, staMacId := range staMacIds {
-					var staId clientNotif.StaIdentity
+					var staId StaIdentity
 					staId.MacId = staMacId
 					notif.StaId = append(notif.StaId, staId)
 				}
 
-				sendAssocStaNotification(sub.CallbackReference, context.TODO(), subsIdStr, notif)
+				sendAssocStaNotification(sub.CallbackReference, notif)
 				log.Info("Assoc Sta Notification" + "(" + subsIdStr + ")")
 			}
 		}
 	}
 }
 
-func sendAssocStaNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.Notification) {
+func sendAssocStaNotification(notifyUrl string, notification AssocStaNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -471,22 +462,16 @@ func sendAssocStaNotification(notifyUrl string, ctx context.Context, subscriptio
 	defer resp.Body.Close()
 }
 
-func sendExpiryNotification(notifyUrl string, ctx context.Context, subscriptionId string, notification clientNotif.ExpiryNotification) {
+func sendExpiryNotification(notifyUrl string, notification ExpiryNotification) {
 
 	startTime := time.Now()
-
-	client, err := createClient(notifyUrl)
-	if err != nil {
-		log.Error(err)
-		return
-	}
 
 	jsonNotif, err := json.Marshal(notification)
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	resp, err := client.NotificationsApi.PostExpiryNotification(ctx, subscriptionId, notification)
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
 	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
 	if err != nil {
 		log.Error(err)
@@ -500,25 +485,39 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
 
-	var response InlineResponse2003
-	var subscription Subscription
-	response.Subscription = &subscription
-
-	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscription:"+subIdParamStr, ".")
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
 
 	if jsonRespDB == "" {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	err := json.Unmarshal([]byte(jsonRespDB), &subscription)
+	var subscriptionCommon SubscriptionCommon
+	err := json.Unmarshal([]byte(jsonRespDB), &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(response)
+	var jsonResponse []byte
+	switch subscriptionCommon.SubscriptionType {
+	case ASSOC_STA_SUBSCRIPTION:
+		var subscription AssocStaSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+	default:
+		log.Error("Unknown subscription type")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -526,10 +525,9 @@ func subscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
-
 }
 
-func isSubscriptionIdRegistered(subsIdStr string) bool {
+func isSubscriptionIdRegisteredAssocSta(subsIdStr string) bool {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -540,7 +538,7 @@ func isSubscriptionIdRegistered(subsIdStr string) bool {
 	}
 }
 
-func register(subscription *Subscription, subsIdStr string) {
+func registerAssocSta(subscription *AssocStaSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -556,7 +554,7 @@ func register(subscription *Subscription, subsIdStr string) {
 	log.Info("New registration: ", subsId, " type: ", subscription.SubscriptionType)
 }
 
-func deregister(subsIdStr string, mutexTaken bool) {
+func deregisterAssocSta(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	if !mutexTaken {
 		mutex.Lock()
@@ -569,37 +567,52 @@ func deregister(subsIdStr string, mutexTaken bool) {
 func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse201
-	subscription := new(Subscription)
-	response.Subscription = subscription
-
-	subscriptionPost1 := new(SubscriptionPost1)
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&subscriptionPost1)
+	var subscriptionCommon SubscriptionCommon
+	bodyBytes, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	subscriptionPost := subscriptionPost1.Subscription
+	//extract common body part
+	subscriptionType := subscriptionCommon.SubscriptionType
+
+	//new subscription id
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
 	subsIdStr := strconv.Itoa(newSubsId)
+	link := new(AssocStaSubscriptionLinks)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
+	link.Self = self
 
-	subscription.CallbackReference = subscriptionPost.CallbackReference
-	subscription.SubscriptionType = subscriptionPost.SubscriptionType
-	subscription.ApId = subscriptionPost.ApId
-	subscription.ExpiryDeadline = subscriptionPost.ExpiryDeadline
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions/" + subsIdStr
-	subscription.Links = link
+	var jsonResponse []byte
 
-	_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertSubscriptionToJson(subscription))
-	register(subscription, subsIdStr)
+	switch subscriptionType {
+	case ASSOC_STA_SUBSCRIPTION:
+		var subscription AssocStaSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	jsonResponse, err := json.Marshal(response)
+		subscription.Links = link
+
+		//registration
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(&subscription))
+		registerAssocSta(&subscription, subsIdStr)
+
+		jsonResponse, err = json.Marshal(subscription)
+	default:
+		nextSubscriptionIdAvailable--
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -615,20 +628,26 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	subIdParamStr := vars["subscriptionId"]
-	var response InlineResponse2003
-	subscription1 := new(Subscription1)
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&subscription1)
+	var subscriptionCommon SubscriptionCommon
+	bodyBytes, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &subscriptionCommon)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	//extract common body part
+	subscriptionType := subscriptionCommon.SubscriptionType
 
-	subscription := subscription1.Subscription
+	link := subscriptionCommon.Links
+	if link == nil || link.Self == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory Link parameter not present")
+		return
+	}
 
-	selfUrl := strings.Split(subscription.Links.Self, "/")
+	selfUrl := strings.Split(link.Self.Href, "/")
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
 	if subsIdStr != subIdParamStr {
@@ -636,13 +655,33 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isSubscriptionIdRegistered(subsIdStr) {
-		register(subscription, subsIdStr)
+	alreadyRegistered := false
+	var jsonResponse []byte
 
-		_ = rc.JSONSetEntry(baseKey+"subscription:"+subsIdStr, ".", convertSubscriptionToJson(subscription))
+	switch subscriptionType {
+	case ASSOC_STA_SUBSCRIPTION:
+		var subscription AssocStaSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		response.Subscription = subscription
-		jsonResponse, err := json.Marshal(response)
+		//only support one subscription
+		if isSubscriptionIdRegisteredAssocSta(subsIdStr) {
+			registerAssocSta(&subscription, subsIdStr)
+
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertAssocStaSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if alreadyRegistered {
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -658,7 +697,7 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
-	deregister(subsId, mutexTaken)
+	deregisterAssocSta(subsId, mutexTaken)
 	return err
 }
 
@@ -666,7 +705,14 @@ func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	vars := mux.Vars(r)
 
-	err := delSubscription(baseKey+"subscription:", vars["subscriptionId"], false)
+	subIdParamStr := vars["subscriptionId"]
+	jsonRespDB, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subIdParamStr, ".")
+	if jsonRespDB == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := delSubscription(baseKey+"subscriptions", subIdParamStr, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -676,7 +722,7 @@ func subscriptionsDELETE(w http.ResponseWriter, r *http.Request) {
 }
 
 func populateApInfo(key string, jsonInfo string, response interface{}) error {
-	resp := response.(*InlineResponse200)
+	resp := response.(*ApInfoResp)
 	if resp == nil {
 		return errors.New("Response not defined")
 	}
@@ -706,15 +752,15 @@ func populateApInfo(key string, jsonInfo string, response interface{}) error {
 
 	var apLocation ApLocation
 	var geoLocation GeoLocation
-	if apInfoComplete.ApLocation.GeoLocation != nil {
-		geoLocation.Lat = apInfoComplete.ApLocation.GeoLocation.Lat
-		geoLocation.Long = apInfoComplete.ApLocation.GeoLocation.Long
+	if apInfoComplete.ApLocation.Geolocation != nil {
+		geoLocation.Lat = apInfoComplete.ApLocation.Geolocation.Lat
+		geoLocation.Long = apInfoComplete.ApLocation.Geolocation.Long
 		geoLocation.Datum = 1
-		apLocation.GeoLocation = &geoLocation
+		apLocation.Geolocation = &geoLocation
 		apInfo.ApLocation = &apLocation
 	}
 
-	resp.ApInfo = append(resp.ApInfo, apInfo)
+	resp.ApInfoList = append(resp.ApInfoList, apInfo)
 
 	return nil
 }
@@ -723,7 +769,7 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse200
+	var response ApInfoResp
 
 	//loop through each AP
 	keyName := baseKey + "AP:*"
@@ -734,7 +780,7 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(response.ApInfoList)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -745,7 +791,7 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func populateStaInfo(key string, jsonInfo string, response interface{}) error {
-	resp := response.(*InlineResponse2001)
+	resp := response.(*StaInfoResp)
 	if resp == nil {
 		return errors.New("Response not defined")
 	}
@@ -759,14 +805,15 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 		//timeStamp.Seconds = int32(seconds)
 		//staInfo.TimeStamp = &timeStamp
 
-		resp.StaInfo = append(resp.StaInfo, *staInfo)
+		resp.StaInfoList = append(resp.StaInfoList, *staInfo)
 	}
 	return nil
+
 }
 
 func staInfoGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	var response InlineResponse2001
+	var response StaInfoResp
 
 	// Loop through each STA
 	keyName := baseKey + "UE:*"
@@ -777,7 +824,7 @@ func staInfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(response.StaInfoList)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -791,13 +838,11 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 
 	subscriptionLinkList := new(SubscriptionLinkList)
 
-	link := new(Link)
-	link.Self = hostUrl.String() + basePath + "subscriptions"
+	link := new(SubscriptionLinkListLinks)
+	self := new(LinkType)
+	self.Href = hostUrl.String() + basePath + "subscriptions"
 
-	if subType != "" {
-		link.Self = link.Self + "/" + subType
-	}
-
+	link.Self = self
 	subscriptionLinkList.Links = link
 
 	//loop through all different types of subscription
@@ -809,11 +854,10 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 		//loop through assocSta map
 		for _, assocStaSubscription := range assocStaSubscriptionMap {
 			if assocStaSubscription != nil {
-				var subscription Subscription
-				subscription.Links = assocStaSubscription.Links
-				subscription.CallbackReference = assocStaSubscription.CallbackReference
-				subscription.SubscriptionType = assocStaSubscription.SubscriptionType
-				subscriptionLinkList.Subscription = append(subscriptionLinkList.Subscription, subscription)
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = assocStaSubscription.Links.Self.Href
+				subscription.SubscriptionType = ASSOC_STA_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
 			}
 		}
 	}
@@ -825,11 +869,9 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 func subscriptionLinkListSubscriptionsGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var response InlineResponse2002
+	//for now we return anything, was not defined in spec so not sure if subscription_type is a query param like in MEC012
+	response := createSubscriptionLinkList("")
 
-	subscriptionLinkList := createSubscriptionLinkList("")
-
-	response.SubscriptionLinkList = subscriptionLinkList
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Error(err.Error())
@@ -848,7 +890,7 @@ func cleanUp() {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	assocStaSubscriptionMap = map[int]*Subscription{}
+	assocStaSubscriptionMap = map[int]*AssocStaSubscription{}
 
 	subscriptionExpiryMap = map[int][]int{}
 	updateStoreName("")
