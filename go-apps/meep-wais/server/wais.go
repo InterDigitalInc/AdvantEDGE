@@ -854,10 +854,7 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 		//loop through assocSta map
 		for _, assocStaSubscription := range assocStaSubscriptionMap {
 			if assocStaSubscription != nil {
-				var subscription SubscriptionLinkListLinksSubscription
-				subscription.Href = assocStaSubscription.Links.Self.Href
-				subscription.SubscriptionType = ASSOC_STA_SUBSCRIPTION
-				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+				subscriptionLinkList.AssocStaSubscription = append(subscriptionLinkList.AssocStaSubscription, *assocStaSubscription)
 			}
 		}
 	}

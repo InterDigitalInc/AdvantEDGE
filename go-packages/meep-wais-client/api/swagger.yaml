@@ -1042,6 +1042,22 @@ components:
           description: Shall be set to "AssocStaSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      example:
+        _links:
+          self: null
+        subscriptionType: subscriptionType
+        callbackReference: http://example.com/aeiou
+        expiryDeadline:
+          seconds: 6
+          nanoSeconds: 9
+        apId:
+          macId: macId
+          ipAddress:
+          - ipAddress
+          - ipAddress
+          ssid:
+          - ssid
+          - ssid
       x-etsi-ref: 6.3.2
     AssociatedStations:
       required:
@@ -2011,6 +2027,28 @@ components:
           description: Shall be set to "StaDataRateSubscription".
           x-etsi-mec-cardinality: "1"
           x-etsi-mec-origin-type: String
+      example:
+        staId:
+        - macId: macId
+          ipAddress:
+          - ipAddress
+          - ipAddress
+          aid: aid
+          ssid:
+          - ssid
+          - ssid
+        - macId: macId
+          ipAddress:
+          - ipAddress
+          - ipAddress
+          aid: aid
+          ssid:
+          - ssid
+          - ssid
+        _links: null
+        subscriptionType: subscriptionType
+        callbackReference: http://example.com/aeiou
+        expiryDeadline: null
       x-etsi-ref: 6.3.3
     StaIdentity:
       required:
@@ -2798,16 +2836,96 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/SubscriptionLinkList__links'
+        assocStaSubscription:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssocStaSubscription'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: AssocStaSubscription
+        staDataRateSubscription:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaDataRateSubscription'
+          x-etsi-mec-cardinality: 0..N
+          x-etsi-mec-origin-type: StaDataRateSubscription
       example:
+        staDataRateSubscription:
+        - staId:
+          - macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            aid: aid
+            ssid:
+            - ssid
+            - ssid
+          - macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            aid: aid
+            ssid:
+            - ssid
+            - ssid
+          _links: null
+          subscriptionType: subscriptionType
+          callbackReference: http://example.com/aeiou
+          expiryDeadline: null
+        - staId:
+          - macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            aid: aid
+            ssid:
+            - ssid
+            - ssid
+          - macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            aid: aid
+            ssid:
+            - ssid
+            - ssid
+          _links: null
+          subscriptionType: subscriptionType
+          callbackReference: http://example.com/aeiou
+          expiryDeadline: null
         _links:
           self:
             href: href
-          subscription:
-          - subscriptionType: subscriptionType
-            href: http://example.com/aeiou
-          - subscriptionType: subscriptionType
-            href: http://example.com/aeiou
-      x-etsi-ref: not defined
+        assocStaSubscription:
+        - _links:
+            self: null
+          subscriptionType: subscriptionType
+          callbackReference: http://example.com/aeiou
+          expiryDeadline:
+            seconds: 6
+            nanoSeconds: 9
+          apId:
+            macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            ssid:
+            - ssid
+            - ssid
+        - _links:
+            self: null
+          subscriptionType: subscriptionType
+          callbackReference: http://example.com/aeiou
+          expiryDeadline:
+            seconds: 6
+            nanoSeconds: 9
+          apId:
+            macId: macId
+            ipAddress:
+            - ipAddress
+            - ipAddress
+            ssid:
+            - ssid
+            - ssid
     TimeStamp:
       required:
       - nanoSeconds
@@ -2979,52 +3097,18 @@ components:
           $ref: '#/components/schemas/LinkType'
       description: Hyperlink related to the resource. This shall be only included
         in the HTTP responses and in HTTP PUT requests.
-    SubscriptionLinkList__links_subscription:
-      type: object
-      properties:
-        href:
-          type: string
-          description: The URI referring to the subscription.
-          format: uri
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: URI
-        subscriptionType:
-          type: string
-          description: Type of the subscription. The string shall be set according
-            to the "subscriptionType" attribute of the associated subscription data
-            type event.
-          x-etsi-mec-cardinality: "1"
-          x-etsi-mec-origin-type: String
       example:
-        subscriptionType: subscriptionType
-        href: http://example.com/aeiou
+        self: null
     SubscriptionLinkList__links:
-      required:
-      - self
       type: object
       properties:
         self:
           $ref: '#/components/schemas/LinkType'
-        subscription:
-          minItems: 0
-          required:
-          - href
-          - subscriptionType
-          type: array
-          description: A link to a subscription.
-          items:
-            $ref: '#/components/schemas/SubscriptionLinkList__links_subscription'
-          x-etsi-mec-cardinality: 0..N
-          x-etsi-mec-origin-type: Structure (inlined)
-      description: List of hyperlinks related to the resource.
+      description: Hyperlink related to the resource. This shall be only included
+        in the HTTP responses and in HTTP PUT requests.
       example:
         self:
           href: href
-        subscription:
-        - subscriptionType: subscriptionType
-          href: http://example.com/aeiou
-        - subscriptionType: subscriptionType
-          href: http://example.com/aeiou
   responses:
     "200":
       description: OK

@@ -24,9 +24,7 @@
 
 package client
 
-// List of hyperlinks related to the resource.
+// Hyperlink related to the resource. This shall be only included in the HTTP responses and in HTTP PUT requests.
 type SubscriptionLinkListLinks struct {
-	Self *LinkType `json:"self"`
-	// A link to a subscription.
-	Subscription []SubscriptionLinkListLinksSubscription `json:"subscription,omitempty"`
+	Self *LinkType `json:"self,omitempty"`
 }

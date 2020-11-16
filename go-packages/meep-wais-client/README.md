@@ -70,7 +70,6 @@ Class | Method | HTTP request | Description
  - [StatisticsGroupData](docs/StatisticsGroupData.md)
  - [SubscriptionLinkList](docs/SubscriptionLinkList.md)
  - [SubscriptionLinkListLinks](docs/SubscriptionLinkListLinks.md)
- - [SubscriptionLinkListLinksSubscription](docs/SubscriptionLinkListLinksSubscription.md)
  - [TimeStamp](docs/TimeStamp.md)
  - [VhtCapabilities](docs/VhtCapabilities.md)
  - [WanMetrics](docs/WanMetrics.md)
