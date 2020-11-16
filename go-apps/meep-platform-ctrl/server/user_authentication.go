@@ -46,12 +46,15 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 	githuboauth "golang.org/x/oauth2/github"
-	gitlaboauth "golang.org/x/oauth2/gitlab"
 )
 
 const OAUTH_PROVIDER_GITHUB = "github"
 const OAUTH_PROVIDER_GITLAB = "gitlab"
 const OAUTH_PROVIDER_LOCAL = "local"
+
+const OAUTH_ETSI_GITLAB_AUTH_URL = "https://forge.etsi.org/rep/oauth/authorize"
+const OAUTH_ETSI_GITLAB_TOKEN_URL = "https://forge.etsi.org/rep/oauth/token"
+const OAUTH_ETSI_GITLAB_API_URL = "https://forge.etsi.org/rep/api/v4"
 
 var mutex sync.Mutex
 
@@ -81,22 +84,19 @@ func initOAuth() {
 		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
 	}
 
-	// Initialize Gitlab config
+	// Initialize ETSI Gitlab config
 	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
 	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
 	if gitlabClientId != "" && gitlabSecret != "" {
-		// var etsiGitlabEndpoint = oauth2.Endpoint{
-		// 	AuthURL:  "https://forge.etsi.org/rep/oauth/authorize",
-		// 	TokenURL: "https://forge.etsi.org/rep/oauth/token",
-		// }
-
 		gitlabOauthConfig := &oauth2.Config{
 			ClientID:     gitlabClientId,
 			ClientSecret: gitlabSecret,
 			RedirectURL:  redirectUri,
 			Scopes:       []string{"read_user"},
-			Endpoint:     gitlaboauth.Endpoint,
-			// Endpoint:     etsiGitlabEndpoint,
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  OAUTH_ETSI_GITLAB_AUTH_URL,
+				TokenURL: OAUTH_ETSI_GITLAB_TOKEN_URL,
+			},
 		}
 		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 	}
@@ -266,8 +266,7 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		}
 		userId = *user.Login
 	case OAUTH_PROVIDER_GITLAB:
-		client, err := gitlab.NewOAuthClient(token.AccessToken)
-		// client, err := gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL("https://forge.etsi.org/rep/api/v4"))
+		client, err := gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL(OAUTH_ETSI_GITLAB_API_URL))
 		if err != nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
