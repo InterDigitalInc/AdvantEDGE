@@ -31,7 +31,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const configVersion = "1.5.8"
+const configVersion = "1.5.9"
 
 const defaultNotSet = "not set"
 
