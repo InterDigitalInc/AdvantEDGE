@@ -34,19 +34,20 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
+	"github.com/roymx/viper"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
-	githuboauth "golang.org/x/oauth2/github"
-	gitlaboauth "golang.org/x/oauth2/gitlab"
 )
 
 const OAUTH_PROVIDER_GITHUB = "github"
@@ -54,8 +55,43 @@ const OAUTH_PROVIDER_GITLAB = "gitlab"
 const OAUTH_PROVIDER_LOCAL = "local"
 
 var mutex sync.Mutex
+var gitlabApiUrl = ""
+var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
-func initOAuth() {
+func initOAuth() (err error) {
+
+	// Connect to Session Manager
+	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, "", redisDBAddr, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
+
+	// Connect to User Store
+	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed connection to User Store: ", err.Error())
+		return err
+	}
+	_ = pfmCtrl.userStore.CreateTables()
+	log.Info("Connected to User Store")
+
+	// Set endpoint authorization permissions
+	setPermissions()
+
+	// Connect to Metric Store
+	pfmCtrl.metricStore, err = ms.NewMetricStore("session-metrics", "global", influxDBAddr, ms.MetricsDbDisabled)
+	if err != nil {
+		log.Error("Failed connection to Metric Store: ", err)
+		return err
+	}
+
+	// Retrieve maximum session count from environment variable
+	if maxSessions, err := strconv.ParseInt(os.Getenv("MEEP_MAX_SESSIONS"), 10, 0); err == nil {
+		pfmCtrl.maxSessions = int(maxSessions)
+	}
+	log.Info("MEEP_MAX_SESSIONS: ", pfmCtrl.maxSessions)
 
 	// Get default platform URI
 	pfmCtrl.uri = strings.TrimSpace(os.Getenv("MEEP_HOST_URL"))
@@ -64,36 +100,127 @@ func initOAuth() {
 	pfmCtrl.oauthConfigs = make(map[string]*oauth2.Config)
 	pfmCtrl.loginRequests = make(map[string]*LoginRequest)
 
-	// Get OAuth redirect URI
-	redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_REDIRECT_URI"))
-
 	// Initialize Github config
-	githubClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
-	githubSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
-	if githubClientId != "" && githubSecret != "" {
-		githubOauthConfig := &oauth2.Config{
-			ClientID:     githubClientId,
-			ClientSecret: githubSecret,
-			RedirectURL:  redirectUri,
-			Scopes:       []string{},
-			Endpoint:     githuboauth.Endpoint,
+	githubEnabledStr := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_ENABLED"))
+	githubEnabled, err := strconv.ParseBool(githubEnabledStr)
+	if err == nil && githubEnabled {
+		clientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
+		secret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
+		redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_REDIRECT_URI"))
+		authUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_AUTH_URL"))
+		tokenUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_TOKEN_URL"))
+		if clientId != "" && secret != "" && redirectUri != "" && authUrl != "" && tokenUrl != "" {
+			oauthConfig := &oauth2.Config{
+				ClientID:     clientId,
+				ClientSecret: secret,
+				RedirectURL:  redirectUri,
+				Scopes:       []string{},
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  authUrl,
+					TokenURL: tokenUrl,
+				},
+			}
+			pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = oauthConfig
+			log.Info("GitHub OAuth provider enabled")
 		}
-		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
 	}
 
-	// Initialize Gitlab config
-	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
-	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
-	if gitlabClientId != "" && gitlabSecret != "" {
-		gitlabOauthConfig := &oauth2.Config{
-			ClientID:     gitlabClientId,
-			ClientSecret: gitlabSecret,
-			RedirectURL:  redirectUri,
-			Scopes:       []string{"read_user"},
-			Endpoint:     gitlaboauth.Endpoint,
+	// Initialize GitLab config
+	gitlabEnabledStr := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_ENABLED"))
+	gitlabEnabled, err := strconv.ParseBool(gitlabEnabledStr)
+	if err == nil && gitlabEnabled {
+		gitlabApiUrl = strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_API_URL"))
+		clientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
+		secret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
+		redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_REDIRECT_URI"))
+		authUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_AUTH_URL"))
+		tokenUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_TOKEN_URL"))
+		if clientId != "" && secret != "" && redirectUri != "" && authUrl != "" && tokenUrl != "" {
+			oauthConfig := &oauth2.Config{
+				ClientID:     clientId,
+				ClientSecret: secret,
+				RedirectURL:  redirectUri,
+				Scopes:       []string{"read_user"},
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  authUrl,
+					TokenURL: tokenUrl,
+				},
+			}
+			pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = oauthConfig
+			log.Info("GitLab OAuth provider enabled")
 		}
-		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 	}
+
+	return nil
+}
+
+func runOAuth() (err error) {
+	// Start Session Watchdog
+	err = pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	if err != nil {
+		log.Error("Failed start Session Watchdog: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+func setPermissions() {
+
+	// Flush old permissions
+	ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	ps.Flush()
+
+	// Read & apply API permissions from file
+	permissionsFile := "/permissions.yaml"
+	permissions := viper.New()
+	permissions.SetConfigFile(permissionsFile)
+	err := permissions.ReadInConfig()
+	if err != nil {
+		log.Warn("Failed to read permissions from file")
+		log.Warn("Granting full API access for all roles by default")
+		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
+		return
+	}
+
+	// Loop through services
+	for service := range permissions.GetStringMap(permissionsRoot) {
+		// Default permissions
+		if service == "default" {
+			permissionsRoute := permissionsRoot + ".default"
+			permission := new(sm.Permission)
+			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+			permission.RolePermissions = make(map[string]string)
+			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+				permission.RolePermissions[role] = access
+			}
+			_ = ps.SetDefaultPermission(permission)
+		} else {
+			// Service route names
+			permissionsService := permissionsRoot + "." + service
+			for name := range permissions.GetStringMap(permissionsService) {
+				permissionsRoute := permissionsService + "." + name
+				permission := new(sm.Permission)
+				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+				permission.RolePermissions = make(map[string]string)
+				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+					permission.RolePermissions[role] = access
+				}
+				_ = ps.Set(service, name, permission)
+			}
+		}
+	}
+}
+
+func sessionTimeoutCb(session *sm.Session) {
+	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
+	var metric ms.SessionMetric
+	metric.Provider = session.Provider
+	metric.User = session.Username
+	metric.Sandbox = session.Sandbox
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeTimeout, metric)
+
+	// Destroy session sandbox
+	deleteSandbox(session.Sandbox)
 }
 
 // Generate a random state string
@@ -157,16 +284,20 @@ func getErrUrl(err string) string {
 
 func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- OAUTH LOGIN -----")
+	var metric ms.SessionMetric
 
 	// Retrieve query parameters
 	query := r.URL.Query()
 	provider := query.Get("provider")
+	metric.Provider = provider
 
 	// Get provider-specific OAuth config
 	config, found := pfmCtrl.oauthConfigs[provider]
 	if !found {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -175,6 +306,8 @@ func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 	state, err := getUniqueState()
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -198,6 +331,7 @@ func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func uaAuthorize(w http.ResponseWriter, r *http.Request) {
+	var metric ms.SessionMetric
 
 	// Retrieve query parameters
 	query := r.URL.Query()
@@ -209,6 +343,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	if request == nil {
 		err := errors.New("Invalid OAuth state")
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -219,9 +355,12 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
+	metric.Provider = provider
 
 	// Delete login request & timer
 	delLoginRequest(state)
@@ -230,6 +369,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	token, err := config.Exchange(context.Background(), code)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -242,6 +383,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		if oauthClient == nil {
 			err = errors.New("Failed to create new GitHub oauth client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
@@ -249,41 +392,60 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		if client == nil {
 			err = errors.New("Failed to create new GitHub client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
 		user, _, err := client.Users.Get(context.Background(), "")
 		if err != nil {
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitHub user ID"), http.StatusFound)
 			return
 		}
 		userId = *user.Login
 	case OAUTH_PROVIDER_GITLAB:
-		client, err := gitlab.NewOAuthClient(token.AccessToken)
+		var client *gitlab.Client
+		if gitlabApiUrl != "" {
+			client, err = gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL(gitlabApiUrl))
+		} else {
+			client, err = gitlab.NewOAuthClient(token.AccessToken)
+		}
 		if err != nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
 		user, _, err := client.Users.CurrentUser()
 		if err != nil {
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitLab user ID"), http.StatusFound)
 			return
 		}
 		userId = user.Username
 	default:
 	}
+	metric.User = userId
 
 	// Start user session
 	sandboxName, err, errCode := startSession(provider, userId, w, r)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), errCode)
 		return
 	}
+
+	metric.Sandbox = sandboxName
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
 	http.Redirect(w, r, pfmCtrl.uri+"?sbox="+sandboxName+"&user="+userId, http.StatusFound)
@@ -291,14 +453,24 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
+	var metric ms.SessionMetric
 
 	// Get form data
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
+	metric.Provider = OAUTH_PROVIDER_LOCAL
+	metric.User = username
+
 	// Validate user credentials
 	authenticated, err := pfmCtrl.userStore.AuthenticateUser(OAUTH_PROVIDER_LOCAL, username, password)
 	if err != nil || !authenticated {
+		if err != nil {
+			metric.Description = err.Error()
+		} else {
+			metric.Description = "Unauthorized"
+		}
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -307,9 +479,14 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	sandboxName, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Error(w, err.Error(), errCode)
 		return
 	}
+
+	metric.Sandbox = sandboxName
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Prepare response
 	var sandbox dataModel.Sandbox
@@ -393,11 +570,15 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
+	var metric ms.SessionMetric
 
 	// Get existing session
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
 	session, err := sessionStore.Get(r)
 	if err == nil {
+		metric.Provider = session.Provider
+		metric.User = session.Username
+		metric.Sandbox = session.Sandbox
 		// Delete sandbox
 		deleteSandbox(session.Sandbox)
 	}
@@ -409,6 +590,8 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), code)
 		return
 	}
+
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogout, metric)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

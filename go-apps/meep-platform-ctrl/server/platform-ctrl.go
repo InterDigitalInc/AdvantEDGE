@@ -23,18 +23,16 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/roymx/viper"
 	"golang.org/x/oauth2"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -58,6 +56,7 @@ type PlatformCtrl struct {
 	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
 	userStore     *users.Connector
+	metricStore   *ms.MetricStore
 	mqGlobal      *mq.MsgQueue
 	maxSessions   int
 	uri           string
@@ -93,12 +92,6 @@ func Init() (err error) {
 
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
-
-	// Retrieve maximum session count from environment variable
-	if maxSessions, err := strconv.ParseInt(os.Getenv("MEEP_MAX_SESSIONS"), 10, 0); err == nil {
-		pfmCtrl.maxSessions = int(maxSessions)
-	}
-	log.Info("MEEP_MAX_SESSIONS: ", pfmCtrl.maxSessions)
 
 	// Create message queue
 	pfmCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisDBAddr)
@@ -159,28 +152,12 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Connect to Session Manager
-	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, "", redisDBAddr, redisDBAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
-
-	// Connect to User Store
-	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
-	if err != nil {
-		log.Error("Failed connection to User Store: ", err.Error())
-		return err
-	}
-	_ = pfmCtrl.userStore.CreateTables()
-	log.Info("Connected to User Store")
-
-	// Set endpoint authorization permissions
-	setPermissions()
-
 	// Initialize OAuth
-	initOAuth()
+	err = initOAuth()
+	if err != nil {
+		log.Error("Failed OAuth Init: ", err.Error())
+		return err
+	}
 
 	log.Info("Platform Controller initialized")
 	return nil
@@ -189,69 +166,15 @@ func Init() (err error) {
 // Run Starts the Platform Controller
 func Run() (err error) {
 
-	// Start Session Watchdog
-	err = pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	// Start OAuth
+	err = runOAuth()
 	if err != nil {
-		log.Error("Failed start Session Watchdog: ", err.Error())
+		log.Error("Failed to start OAuth: ", err.Error())
 		return err
 	}
 
 	log.Info("Platform Controller started")
 	return nil
-}
-
-func setPermissions() {
-
-	// Flush old permissions
-	ps := pfmCtrl.sessionMgr.GetPermissionStore()
-	ps.Flush()
-
-	// Read & apply API permissions from file
-	permissionsFile := "/permissions.yaml"
-	permissions := viper.New()
-	permissions.SetConfigFile(permissionsFile)
-	err := permissions.ReadInConfig()
-	if err != nil {
-		log.Warn("Failed to read permissions from file")
-		log.Warn("Granting full API access for all roles by default")
-		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
-		return
-	}
-
-	// Loop through services
-	for service := range permissions.GetStringMap(permissionsRoot) {
-		// Default permissions
-		if service == "default" {
-			permissionsRoute := permissionsRoot + ".default"
-			permission := new(sm.Permission)
-			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
-			permission.RolePermissions = make(map[string]string)
-			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
-				permission.RolePermissions[role] = access
-			}
-			_ = ps.SetDefaultPermission(permission)
-		} else {
-			// Service route names
-			permissionsService := permissionsRoot + "." + service
-			for name := range permissions.GetStringMap(permissionsService) {
-				permissionsRoute := permissionsService + "." + name
-				permission := new(sm.Permission)
-				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
-				permission.RolePermissions = make(map[string]string)
-				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
-					permission.RolePermissions[role] = access
-				}
-				_ = ps.Set(service, name, permission)
-			}
-		}
-	}
-}
-
-func sessionTimeoutCb(session *sm.Session) {
-	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
-
-	// Destroy session sandbox
-	deleteSandbox(session.Sandbox)
 }
 
 // Create a new scenario in the scenario store
