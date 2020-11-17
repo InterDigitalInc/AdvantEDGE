@@ -1306,6 +1306,11 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 
 	var notification CellChangeNotification
 
+	updateScenario("mobility2")
+	time.Sleep(100 * time.Millisecond)
+	updateScenario("mobility3")
+	time.Sleep(100 * time.Millisecond)
+
 	httpLog, err := metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
 	if err != nil || len(httpLog) != 1 {
 		t.Fatalf("Failed to get metric")
@@ -1316,33 +1321,8 @@ func TestSubscriptionCellChangeNotification(t *testing.T) {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	//transform the src and target ecgi in string for comparison purpose
-	jsonResult, err := json.Marshal(notification.SrcEcgi)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	notificationSrcEcgiNullStr := string(jsonResult)
-	if notificationSrcEcgiNullStr != "null" {
-		t.Fatalf("Failed to get null notification")
-	}
-
-	updateScenario("mobility2")
-	time.Sleep(100 * time.Millisecond)
-	updateScenario("mobility3")
-	time.Sleep(100 * time.Millisecond)
-
-	httpLog, err = metricStore.GetHttpMetric(logModuleRNIS, "TX", "", 1)
-	if err != nil || len(httpLog) != 1 {
-		t.Fatalf("Failed to get metric")
-	}
-
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
-	if err != nil {
-		t.Fatalf("Failed to get expected response")
-	}
-
 	//transform the assocId in string for comparison purpose
-	jsonResult, err = json.Marshal(notification.AssociateId)
+	jsonResult, err := json.Marshal(notification.AssociateId)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

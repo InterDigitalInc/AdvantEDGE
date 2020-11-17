@@ -78,7 +78,7 @@ func main() {
 
 func registerLocServ(ue string) {
 	locServCfg := locServClient.NewConfiguration()
-	locServCfg.BasePath = "http://meep-loc-serv/location/v1"
+	locServCfg.BasePath = "http://meep-loc-serv/location/v2"
 
 	locServ := locServClient.NewAPIClient(locServCfg)
 	log.Printf("Created Location Service client before")
@@ -102,11 +102,14 @@ func registerLocServ(ue string) {
 	newString = strings.Replace(newString, "-", "_", -1)
 
 	myPodIp := os.Getenv(newString)
-	var cb locServClient.UserTrackingSubscriptionCallbackReference
-	cb.NotifyURL = "http://" + myPodIp + "/v1"
+	var cb locServClient.CallbackReference
+	//using the current server implementation, but with new loc-serv api which returns exaclty the notifyURL
+	cb.NotifyURL = "http://" + myPodIp + "/v1/location_notifications/1"
 	subscription.CallbackReference = &cb
 
-	_, resp, err := locServ.SubscriptionsApi.UserTrackingSubPost(nil, subscription)
+	var subscriptionBody locServClient.InlineUserTrackingSubscription
+	subscriptionBody.UserTrackingSubscription = &subscription
+	_, resp, err := locServ.LocationApi.UserTrackingSubPOST(nil, subscriptionBody)
 	if err != nil {
 		log.Printf(err.Error())
 	}

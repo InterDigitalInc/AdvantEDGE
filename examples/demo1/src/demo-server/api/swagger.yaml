@@ -354,9 +354,7 @@ definitions:
       userInfo:
         $ref: "#/definitions/UserInfo"
       timeStamp:
-        type: "string"
-        format: "date-time"
-        description: "Indicates the time of day for zonal presence notification."
+        $ref: "#/definitions/TimeStamp"
       userEventType:
         $ref: "#/definitions/UserEventType"
     description: "User tracking notification - callback generated toward an ME app\
@@ -384,6 +382,27 @@ definitions:
         example: 7
         description: "The number of users currently on the access point"
     description: "A type containing zone information."
+  TimeStamp:
+    properties:
+      nanoSeconds:
+        description: The nanoseconds part of the time. Time is defined as Unix-time since January 1, 1970, 00:00:00 UTC.
+        format: int32
+        type: integer
+      seconds:
+        description: The seconds part of the time. Time is defined as Unixtime since January 1, 1970, 00:00:00 UTC.
+        format: int32
+        type: integer
+    required:
+    - seconds
+    - nanoSeconds
+    type: object
+  InlineTrackingNotification:
+    type: "object"
+    required:
+    - "zonalPresenceNotification"
+    properties:
+      zonalPresenceNotification:
+        $ref: "#/definitions/TrackingNotification"
   TrackingNotification:
     type: "object"
     required:
@@ -419,9 +438,7 @@ definitions:
         example: "001010000000000000000000000000001 or poa001"
         description: "Unique identifier of a point of access"
       timestamp:
-        type: "string"
-        format: "date-time"
-        description: "Indicates the time of day for zonal presence notification."
+        $ref: "#/definitions/TimeStamp"
     description: "Zonal or User tracking notification - callback generated toward\
       \ an ME app with a zonal or user tracking subscription"
     example:
@@ -432,7 +449,6 @@ definitions:
       zoneId: "zone001"
       interestRealma: "NY"
       currentAccessPointId: "001010000000000000000000000000001 or poa001"
-      timestamp: "2017-01-01T02:51:43Z"
 parameters:
   Path.UeId:
     name: "ueId"
