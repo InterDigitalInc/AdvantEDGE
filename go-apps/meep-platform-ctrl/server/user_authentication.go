@@ -453,14 +453,24 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 
 func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGIN -----")
+	var metric ms.SessionMetric
 
 	// Get form data
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
+	metric.Provider = OAUTH_PROVIDER_LOCAL
+	metric.User = username
+
 	// Validate user credentials
 	authenticated, err := pfmCtrl.userStore.AuthenticateUser(OAUTH_PROVIDER_LOCAL, username, password)
 	if err != nil || !authenticated {
+		if err != nil {
+			metric.Description = err.Error()
+		} else {
+			metric.Description = "Unauthorized"
+		}
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -469,9 +479,14 @@ func uaLoginUser(w http.ResponseWriter, r *http.Request) {
 	sandboxName, err, errCode := startSession(OAUTH_PROVIDER_LOCAL, username, w, r)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Error(w, err.Error(), errCode)
 		return
 	}
+
+	metric.Sandbox = sandboxName
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Prepare response
 	var sandbox dataModel.Sandbox
