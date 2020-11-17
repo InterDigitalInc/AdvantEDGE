@@ -511,6 +511,12 @@ func isMatchRabRelFilterCriteriaAppInsId(filterCriteria interface{}, appId strin
 	return (appId == filter.AppInstanceId)
 }
 
+func isMatchRabRelFilterCriteriaErabId(filterCriteria interface{}, erabId int32) bool {
+	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
+
+	return (erabId == filter.ErabId)
+}
+
 func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
 	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
@@ -547,7 +553,7 @@ func isMatchRabFilterCriteriaAssociateId(filterCriteria interface{}, assocId *As
 }
 */
 
-func isMatchCcFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+func isMatchCcFilterCriteriaEcgi(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
 	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
@@ -555,25 +561,41 @@ func isMatchCcFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldP
 		return true
 	}
 
-	//either of the Plmn should match the filter,
+	var matchingPlmn bool
 	for _, ecgi := range filter.Ecgi {
+		matchingPlmn = false
+		if ecgi.Plmn == nil {
+			matchingPlmn = true
+		} else {
+			if newPlmn != nil {
+				if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+			if oldPlmn != nil {
+				if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+		}
+		if matchingPlmn {
+			if ecgi.CellId == "" {
+				return true
+			}
+			if newCellId == ecgi.CellId {
+				return true
+			}
+			if oldCellId == ecgi.CellId {
+				return true
+			}
+		}
 
-		if newPlmn != nil {
-			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
-				return true
-			}
-		}
-		if oldPlmn != nil {
-			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
-				return true
-			}
-		}
 	}
 
 	return false
 }
 
-func isMatchRabFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+func isMatchRabFilterCriteriaEcgi(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
 	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
@@ -581,25 +603,41 @@ func isMatchRabFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, old
 		return true
 	}
 
-	//either of the Plmn should match the filter,
+	var matchingPlmn bool
 	for _, ecgi := range filter.Ecgi {
+		matchingPlmn = false
+		if ecgi.Plmn == nil {
+			matchingPlmn = true
+		} else {
+			if newPlmn != nil {
+				if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+			if oldPlmn != nil {
+				if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+		}
+		if matchingPlmn {
+			if ecgi.CellId == "" {
+				return true
+			}
+			if newCellId == ecgi.CellId {
+				return true
+			}
+			if oldCellId == ecgi.CellId {
+				return true
+			}
+		}
 
-		if newPlmn != nil {
-			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
-				return true
-			}
-		}
-		if oldPlmn != nil {
-			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
-				return true
-			}
-		}
 	}
 
 	return false
 }
 
-func isMatchRabRelFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+func isMatchRabRelFilterCriteriaEcgi(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
 	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
 
 	//if filter criteria is not set, it acts as a wildcard and accepts all
@@ -607,80 +645,35 @@ func isMatchRabRelFilterCriteriaPlmn(filterCriteria interface{}, newPlmn *Plmn, 
 		return true
 	}
 
-	//either of the Plmn should match the filter,
+	var matchingPlmn bool
 	for _, ecgi := range filter.Ecgi {
-
-		if newPlmn != nil {
-			if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+		matchingPlmn = false
+		if ecgi.Plmn == nil {
+			matchingPlmn = true
+		} else {
+			if newPlmn != nil {
+				if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+			if oldPlmn != nil {
+				if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+		}
+		if matchingPlmn {
+			if ecgi.CellId == "" {
+				return true
+			}
+			if newCellId == ecgi.CellId {
+				return true
+			}
+			if oldCellId == ecgi.CellId {
 				return true
 			}
 		}
-		if oldPlmn != nil {
-			if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
-				return true
-			}
-		}
-	}
 
-	return false
-}
-
-func isMatchCcFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
-
-	if filter.Ecgi == nil {
-		return true
-	}
-
-	//either the old of new cellId should match one of the cellId in the filter list
-	for _, ecgi := range filter.Ecgi {
-
-		if newCellId == ecgi.CellId {
-			return true
-		}
-		if oldCellId == ecgi.CellId {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isMatchRabFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	filter := filterCriteria.(*RabEstSubscriptionFilterCriteriaQci)
-
-	if filter.Ecgi == nil {
-		return true
-	}
-
-	//either the old of new cellId should match one of the cellId in the filter list
-	for _, ecgi := range filter.Ecgi {
-		if newCellId == ecgi.CellId {
-			return true
-		}
-		if oldCellId == ecgi.CellId {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isMatchRabRelFilterCriteriaCellId(filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	filter := filterCriteria.(*RabModSubscriptionFilterCriteriaQci)
-
-	if filter.Ecgi == nil {
-		return true
-	}
-
-	//either the old of new cellId should match one of the cellId in the filter list
-	for _, ecgi := range filter.Ecgi {
-		if newCellId == ecgi.CellId {
-			return true
-		}
-		if oldCellId == ecgi.CellId {
-			return true
-		}
 	}
 
 	return false
@@ -708,26 +701,14 @@ func isMatchFilterCriteriaAssociateId(subscriptionType string, filterCriteria in
 	return true
 }
 
-func isMatchFilterCriteriaPlmn(subscriptionType string, filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
+func isMatchFilterCriteriaEcgi(subscriptionType string, filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
-		return isMatchCcFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+		return isMatchCcFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
 	case rabEstSubscriptionType:
-		return isMatchRabFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
+		return isMatchRabFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
 	case rabRelSubscriptionType:
-		return isMatchRabRelFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	}
-	return true
-}
-
-func isMatchFilterCriteriaCellId(subscriptionType string, filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	switch subscriptionType {
-	case cellChangeSubscriptionType:
-		return isMatchCcFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabEstSubscriptionType:
-		return isMatchRabFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabRelSubscriptionType:
-		return isMatchRabRelFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
+		return isMatchRabRelFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
 	}
 	return true
 }
@@ -753,11 +734,7 @@ func checkCcNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, newPlmn, oldPlmn)
-			}
-
-			if match {
-				match = isMatchFilterCriteriaCellId(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, newCellId, oldCellId)
+				match = isMatchFilterCriteriaEcgi(cellChangeSubscriptionType, sub.FilterCriteriaAssocHo, newPlmn, oldPlmn, newCellId, oldCellId)
 			}
 
 			//we ignore hoStatus
@@ -841,11 +818,7 @@ func checkReNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(rabEstSubscriptionType, sub.FilterCriteriaQci, newPlmn, nil)
-			}
-
-			if match {
-				match = isMatchFilterCriteriaCellId(rabEstSubscriptionType, sub.FilterCriteriaQci, newCellId, oldCellId)
+				match = isMatchFilterCriteriaEcgi(rabEstSubscriptionType, sub.FilterCriteriaQci, newPlmn, nil, newCellId, oldCellId)
 			}
 
 			//we ignore qci
@@ -918,13 +891,12 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 			}
 
 			if match {
-				match = isMatchFilterCriteriaPlmn(rabRelSubscriptionType, sub.FilterCriteriaQci, nil, oldPlmn)
+				match = isMatchFilterCriteriaEcgi(rabRelSubscriptionType, sub.FilterCriteriaQci, nil, oldPlmn, newCellId, oldCellId)
 			}
 
 			if match {
-				match = isMatchFilterCriteriaCellId(rabRelSubscriptionType, sub.FilterCriteriaQci, "", oldCellId)
+				match = isMatchRabRelFilterCriteriaErabId(sub.FilterCriteriaQci, erabId)
 			}
-
 			//we ignore qci
 
 			if match {
@@ -1153,12 +1125,20 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		if subscription.FilterCriteriaAssocHo.HoStatus == nil {
 			subscription.FilterCriteriaAssocHo.HoStatus = append(subscription.FilterCriteriaAssocHo.HoStatus, 3 /*COMPLETED*/)
+		}
+
+		for _, ecgi := range subscription.FilterCriteriaAssocHo.Ecgi {
+			if ecgi.Plmn == nil || ecgi.CellId == "" {
+				log.Error("For non null ecgi, plmn and cellId are mandatory")
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				return
+			}
 		}
 
 		//registration
@@ -1180,8 +1160,16 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
+		}
+
+		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
+			if ecgi.Plmn == nil || ecgi.CellId == "" {
+				log.Error("For non null ecgi, plmn and cellId are mandatory")
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				return
+			}
 		}
 
 		//registration
@@ -1203,8 +1191,16 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
+		}
+
+		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
+			if ecgi.Plmn == nil || ecgi.CellId == "" {
+				log.Error("For non null ecgi, plmn and cellId are mandatory")
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				return
+			}
 		}
 
 		//registration

@@ -55,9 +55,9 @@ const USER_TRACKING_AND_ZONAL_TRAFFIC = 1
 const ZONE_STATUS = 2
 
 type UeUserData struct {
-	queryZoneId  string
-	queryApId    string
-	queryAddress string
+	queryZoneId  []string
+	queryApId    []string
+	queryAddress []string
 	userList     *UserList
 }
 
@@ -619,9 +619,9 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	u, _ := url.Parse(r.URL.String())
 	log.Info("url: ", u.RequestURI())
 	q := u.Query()
-	userData.queryZoneId = q.Get("zoneId")
-	userData.queryApId = q.Get("accessPointId")
-	userData.queryAddress = q.Get("address")
+	userData.queryZoneId = q["zoneId"]
+	userData.queryApId = q["accessPointId"]
+	userData.queryAddress = q["address"]
 
 	// Get user list from DB
 	var response InlineUserList
@@ -668,16 +668,44 @@ func populateUserList(key string, jsonInfo string, userData interface{}) error {
 		return nil
 	}
 
+	//query parameters looked through using OR within same query parameter and AND between different query parameters
+	//example returning users matching zoneId : (zone01 OR zone02) AND accessPointId : (ap1 OR ap2 OR ap3) AND address: (ipAddress1 OR ipAddress2)
+	foundAMatch := false
 	// Filter using query params
-	if data.queryZoneId != "" && userInfo.ZoneId != data.queryZoneId {
-		return nil
-	}
-	if data.queryApId != "" && userInfo.AccessPointId != data.queryApId {
-		return nil
+	if len(data.queryZoneId) > 0 {
+		foundAMatch = false
+		for _, queryZoneId := range data.queryZoneId {
+			if userInfo.ZoneId == queryZoneId {
+				foundAMatch = true
+			}
+		}
+		if !foundAMatch {
+			return nil
+		}
 	}
 
-	if data.queryAddress != "" && userInfo.Address != data.queryAddress {
-		return nil
+	if len(data.queryApId) > 0 {
+		foundAMatch = false
+		for _, queryApId := range data.queryApId {
+			if userInfo.AccessPointId == queryApId {
+				foundAMatch = true
+			}
+		}
+		if !foundAMatch {
+			return nil
+		}
+	}
+
+	if len(data.queryAddress) > 0 {
+		foundAMatch = false
+		for _, queryAddress := range data.queryAddress {
+			if userInfo.Address == queryAddress {
+				foundAMatch = true
+			}
+		}
+		if !foundAMatch {
+			return nil
+		}
 	}
 
 	// Add user info to list
@@ -1510,9 +1538,8 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	} else {
 		if userInfo.LocationInfo == nil {
 			userInfo.LocationInfo = new(LocationInfo)
-			userInfo.LocationInfo.Accuracy = 1
 		}
-		//we only support shape != 7 in locationInfo
+		//we only support shape == 2 in locationInfo, so we ignore any conditional parameters based on shape
 		userInfo.LocationInfo.Shape = 2
 		userInfo.LocationInfo.Longitude = nil
 		userInfo.LocationInfo.Longitude = append(userInfo.LocationInfo.Longitude, *longitude)
