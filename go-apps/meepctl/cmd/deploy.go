@@ -173,7 +173,7 @@ func deployCore(cobraCmd *cobra.Command) {
 
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
-		sessionKeySecret := utils.RepoCfg.GetString("repo.deployment.auth.session-key-secret")
+		sessionKeySecret := utils.RepoCfg.GetString("repo.deployment.auth.session.key-secret")
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
@@ -293,17 +293,43 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 	case "meep-platform-ctrl":
 		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
-		redirectUri := utils.RepoCfg.GetString("repo.deployment.auth.redirect-uri")
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_REDIRECT_URI="+redirectUri)
-		githubSecret := utils.RepoCfg.GetString("repo.deployment.auth.github-secret")
-		if githubSecret != "" {
-			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_CLIENT_ID.name="+githubSecret)
-			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_SECRET.name="+githubSecret)
+		maxSessions := utils.RepoCfg.GetString("repo.deployment.auth.session.max-sessions")
+		if maxSessions != "" {
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_MAX_SESSIONS="+maxSessions)
 		}
-		gitlabSecret := utils.RepoCfg.GetString("repo.deployment.auth.gitlab-secret")
-		if gitlabSecret != "" {
-			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITLAB_CLIENT_ID.name="+gitlabSecret)
-			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITLAB_SECRET.name="+gitlabSecret)
+		// GitHub
+		githubEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.github.enabled")
+		if githubEnabled {
+			authUrl := utils.RepoCfg.GetString("repo.deployment.auth.github.auth-url")
+			tokenUrl := utils.RepoCfg.GetString("repo.deployment.auth.github.token-url")
+			redirectUri := utils.RepoCfg.GetString("repo.deployment.auth.github.redirect-uri")
+			secret := utils.RepoCfg.GetString("repo.deployment.auth.github.secret")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_ENABLED=true")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_AUTH_URL="+authUrl)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_TOKEN_URL="+tokenUrl)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITHUB_REDIRECT_URI="+redirectUri)
+			if secret != "" {
+				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_CLIENT_ID.name="+secret)
+				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITHUB_SECRET.name="+secret)
+			}
+		}
+		// GitLab
+		gitlabEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.gitlab.enabled")
+		if gitlabEnabled {
+			authUrl := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.auth-url")
+			tokenUrl := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.token-url")
+			redirectUri := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.redirect-uri")
+			apiUrl := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.api-url")
+			secret := utils.RepoCfg.GetString("repo.deployment.auth.gitlab.secret")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_ENABLED=true")
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_AUTH_URL="+authUrl)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_TOKEN_URL="+tokenUrl)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_REDIRECT_URI="+redirectUri)
+			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_OAUTH_GITLAB_API_URL="+apiUrl)
+			if secret != "" {
+				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITLAB_CLIENT_ID.name="+secret)
+				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITLAB_SECRET.name="+secret)
+			}
 		}
 	case "meep-virt-engine":
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"

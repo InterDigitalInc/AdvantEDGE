@@ -34,6 +34,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -45,18 +46,14 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
-	githuboauth "golang.org/x/oauth2/github"
 )
 
 const OAUTH_PROVIDER_GITHUB = "github"
 const OAUTH_PROVIDER_GITLAB = "gitlab"
 const OAUTH_PROVIDER_LOCAL = "local"
 
-const OAUTH_ETSI_GITLAB_AUTH_URL = "https://forge.etsi.org/rep/oauth/authorize"
-const OAUTH_ETSI_GITLAB_TOKEN_URL = "https://forge.etsi.org/rep/oauth/token"
-const OAUTH_ETSI_GITLAB_API_URL = "https://forge.etsi.org/rep/api/v4"
-
 var mutex sync.Mutex
+var gitlabApiUrl = ""
 
 func initOAuth() {
 
@@ -67,38 +64,55 @@ func initOAuth() {
 	pfmCtrl.oauthConfigs = make(map[string]*oauth2.Config)
 	pfmCtrl.loginRequests = make(map[string]*LoginRequest)
 
-	// Get OAuth redirect URI
-	redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_REDIRECT_URI"))
-
 	// Initialize Github config
-	githubClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
-	githubSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
-	if githubClientId != "" && githubSecret != "" {
-		githubOauthConfig := &oauth2.Config{
-			ClientID:     githubClientId,
-			ClientSecret: githubSecret,
-			RedirectURL:  redirectUri,
-			Scopes:       []string{},
-			Endpoint:     githuboauth.Endpoint,
+	githubEnabledStr := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_ENABLED"))
+	githubEnabled, err := strconv.ParseBool(githubEnabledStr)
+	if err == nil && githubEnabled {
+		clientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_CLIENT_ID"))
+		secret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_SECRET"))
+		redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_REDIRECT_URI"))
+		authUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_AUTH_URL"))
+		tokenUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITHUB_TOKEN_URL"))
+		if clientId != "" && secret != "" && redirectUri != "" && authUrl != "" && tokenUrl != "" {
+			oauthConfig := &oauth2.Config{
+				ClientID:     clientId,
+				ClientSecret: secret,
+				RedirectURL:  redirectUri,
+				Scopes:       []string{},
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  authUrl,
+					TokenURL: tokenUrl,
+				},
+			}
+			pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = oauthConfig
+			log.Info("GitHub OAuth provider enabled")
 		}
-		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITHUB] = githubOauthConfig
 	}
 
-	// Initialize ETSI Gitlab config
-	gitlabClientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
-	gitlabSecret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
-	if gitlabClientId != "" && gitlabSecret != "" {
-		gitlabOauthConfig := &oauth2.Config{
-			ClientID:     gitlabClientId,
-			ClientSecret: gitlabSecret,
-			RedirectURL:  redirectUri,
-			Scopes:       []string{"read_user"},
-			Endpoint: oauth2.Endpoint{
-				AuthURL:  OAUTH_ETSI_GITLAB_AUTH_URL,
-				TokenURL: OAUTH_ETSI_GITLAB_TOKEN_URL,
-			},
+	// Initialize GitLab config
+	gitlabEnabledStr := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_ENABLED"))
+	gitlabEnabled, err := strconv.ParseBool(gitlabEnabledStr)
+	if err == nil && gitlabEnabled {
+		gitlabApiUrl = strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_API_URL"))
+		clientId := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_CLIENT_ID"))
+		secret := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_SECRET"))
+		redirectUri := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_REDIRECT_URI"))
+		authUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_AUTH_URL"))
+		tokenUrl := strings.TrimSpace(os.Getenv("MEEP_OAUTH_GITLAB_TOKEN_URL"))
+		if clientId != "" && secret != "" && redirectUri != "" && authUrl != "" && tokenUrl != "" {
+			oauthConfig := &oauth2.Config{
+				ClientID:     clientId,
+				ClientSecret: secret,
+				RedirectURL:  redirectUri,
+				Scopes:       []string{"read_user"},
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  authUrl,
+					TokenURL: tokenUrl,
+				},
+			}
+			pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = oauthConfig
+			log.Info("GitLab OAuth provider enabled")
 		}
-		pfmCtrl.oauthConfigs[OAUTH_PROVIDER_GITLAB] = gitlabOauthConfig
 	}
 }
 
@@ -266,7 +280,12 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		}
 		userId = *user.Login
 	case OAUTH_PROVIDER_GITLAB:
-		client, err := gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL(OAUTH_ETSI_GITLAB_API_URL))
+		var client *gitlab.Client
+		if gitlabApiUrl != "" {
+			client, err = gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL(gitlabApiUrl))
+		} else {
+			client, err = gitlab.NewOAuthClient(token.AccessToken)
+		}
 		if err != nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())

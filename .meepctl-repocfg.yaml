@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.5.9
+version: 1.5.10
 repo:
   name: AdvantEDGE
 
@@ -33,7 +33,7 @@ repo:
       # host name
       host: my-platform-fqdn
       # enable https only (redirect http requests to https port)
-      https-only: true
+      https-only: false
       # bind to host ports (true) or node ports (false)
       host-ports: true
       # http port number
@@ -47,15 +47,37 @@ repo:
 
     # authentication & authorization config
     auth:
-      # session encryption key k8s secret (data: encryption-key)
-      session-key-secret: meep-session
-      # Github OAuth k8s secret (data: client-id, secret)
-      github-secret: meep-oauth-github
-      # Github OAuth k8s secret (data: client-id, secret)
-      gitlab-secret: meep-oauth-gitlab
-      # OAuth redirect URI
-      redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
-
+      session:
+        # session encryption key k8s secret (data: encryption-key)
+        key-secret: meep-session
+        # maximum simultaneous sessions
+        max-sessions: 10
+      # GitHub OAuth provider config
+      github:
+        # enable GitHub OAuth
+        enabled: true
+        # authorization url
+        auth-url: https://github.com/login/oauth/authorize
+        # access token url
+        token-url: https://github.com/login/oauth/access_token
+        # OAuth redirect URI
+        redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
+        # OAuth k8s secret (data: client-id, secret)
+        secret: meep-oauth-github
+      # GitLab OAuth provider config
+      gitlab:
+        # enable GitLab OAuth
+        enabled: true
+        # authorization url
+        auth-url: https://gitlab.com/oauth/authorize
+        # access token url
+        token-url: https://gitlab.com/oauth/token
+        # OAuth redirect URI
+        redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
+        # GitLab api url
+        # api-url: https://gitlab.com
+        # OAuth k8s secret (data: client-id, secret)
+        secret: meep-oauth-gitlab
 
   #------------------------------
   #  Core Subsystem
