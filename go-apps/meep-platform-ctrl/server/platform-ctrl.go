@@ -23,8 +23,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -35,6 +33,7 @@ import (
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
@@ -58,6 +57,7 @@ type PlatformCtrl struct {
 	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
 	userStore     *users.Connector
+	metricStore   *ms.MetricStore
 	mqGlobal      *mq.MsgQueue
 	maxSessions   int
 	uri           string
@@ -93,12 +93,6 @@ func Init() (err error) {
 
 	// Create new Platform Controller
 	pfmCtrl = new(PlatformCtrl)
-
-	// Retrieve maximum session count from environment variable
-	if maxSessions, err := strconv.ParseInt(os.Getenv("MEEP_MAX_SESSIONS"), 10, 0); err == nil {
-		pfmCtrl.maxSessions = int(maxSessions)
-	}
-	log.Info("MEEP_MAX_SESSIONS: ", pfmCtrl.maxSessions)
 
 	// Create message queue
 	pfmCtrl.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisDBAddr)
@@ -180,7 +174,11 @@ func Init() (err error) {
 	setPermissions()
 
 	// Initialize OAuth
-	initOAuth()
+	err = initOAuth()
+	if err != nil {
+		log.Error("Failed OAuth Init: ", err.Error())
+		return err
+	}
 
 	log.Info("Platform Controller initialized")
 	return nil

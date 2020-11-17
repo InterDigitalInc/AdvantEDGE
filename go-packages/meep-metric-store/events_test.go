@@ -26,7 +26,7 @@ import (
 const eventStoreName string = "event-store"
 const eventStoreNamespace string = "event-ns"
 const eventStoreInfluxAddr string = "http://localhost:30986"
-const eventStoreRedisAddr string = "localhost:30380"
+const eventStoreRedisAddr string = MetricsDbDisabled
 
 func TestEventsMetricsGetSet(t *testing.T) {
 	fmt.Println("--- ", t.Name())

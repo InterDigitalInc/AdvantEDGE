@@ -41,6 +41,7 @@ import (
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
@@ -54,8 +55,22 @@ const OAUTH_PROVIDER_LOCAL = "local"
 
 var mutex sync.Mutex
 var gitlabApiUrl = ""
+var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
-func initOAuth() {
+func initOAuth() (err error) {
+
+	// Connect to Metric Store
+	pfmCtrl.metricStore, err = ms.NewMetricStore("session-metrics", "global", influxDBAddr, ms.MetricsDbDisabled)
+	if err != nil {
+		log.Error("Failed connection to Metric Store: ", err)
+		return err
+	}
+
+	// Retrieve maximum session count from environment variable
+	if maxSessions, err := strconv.ParseInt(os.Getenv("MEEP_MAX_SESSIONS"), 10, 0); err == nil {
+		pfmCtrl.maxSessions = int(maxSessions)
+	}
+	log.Info("MEEP_MAX_SESSIONS: ", pfmCtrl.maxSessions)
 
 	// Get default platform URI
 	pfmCtrl.uri = strings.TrimSpace(os.Getenv("MEEP_HOST_URL"))
@@ -114,6 +129,8 @@ func initOAuth() {
 			log.Info("GitLab OAuth provider enabled")
 		}
 	}
+
+	return nil
 }
 
 // Generate a random state string
@@ -177,16 +194,20 @@ func getErrUrl(err string) string {
 
 func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- OAUTH LOGIN -----")
+	var metric ms.SessionMetric
 
 	// Retrieve query parameters
 	query := r.URL.Query()
 	provider := query.Get("provider")
+	metric.Provider = provider
 
 	// Get provider-specific OAuth config
 	config, found := pfmCtrl.oauthConfigs[provider]
 	if !found {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -195,6 +216,8 @@ func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 	state, err := getUniqueState()
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -218,6 +241,7 @@ func uaLoginOAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func uaAuthorize(w http.ResponseWriter, r *http.Request) {
+	var metric ms.SessionMetric
 
 	// Retrieve query parameters
 	query := r.URL.Query()
@@ -229,6 +253,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	if request == nil {
 		err := errors.New("Invalid OAuth state")
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -239,9 +265,12 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		err := errors.New("Provider config not found for: " + provider)
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
+	metric.Provider = provider
 
 	// Delete login request & timer
 	delLoginRequest(state)
@@ -250,6 +279,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 	token, err := config.Exchange(context.Background(), code)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 		return
 	}
@@ -262,6 +293,8 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		if oauthClient == nil {
 			err = errors.New("Failed to create new GitHub oauth client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
@@ -269,12 +302,16 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		if client == nil {
 			err = errors.New("Failed to create new GitHub client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
 		user, _, err := client.Users.Get(context.Background(), "")
 		if err != nil {
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitHub user ID"), http.StatusFound)
 			return
 		}
@@ -289,26 +326,36 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
 		user, _, err := client.Users.CurrentUser()
 		if err != nil {
 			log.Error(err.Error())
+			metric.Description = err.Error()
+			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 			http.Redirect(w, r, getErrUrl("Failed to retrieve GitLab user ID"), http.StatusFound)
 			return
 		}
 		userId = user.Username
 	default:
 	}
+	metric.User = userId
 
 	// Start user session
 	sandboxName, err, errCode := startSession(provider, userId, w, r)
 	if err != nil {
 		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
 		http.Redirect(w, r, getErrUrl(err.Error()), errCode)
 		return
 	}
+
+	metric.Sandbox = sandboxName
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogin, metric)
 
 	// Redirect user to sandbox
 	http.Redirect(w, r, pfmCtrl.uri+"?sbox="+sandboxName+"&user="+userId, http.StatusFound)
@@ -418,11 +465,15 @@ func startSession(provider string, username string, w http.ResponseWriter, r *ht
 
 func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 	log.Info("----- LOGOUT -----")
+	var metric ms.SessionMetric
 
 	// Get existing session
 	sessionStore := pfmCtrl.sessionMgr.GetSessionStore()
 	session, err := sessionStore.Get(r)
 	if err == nil {
+		metric.Provider = session.Provider
+		metric.User = session.Username
+		metric.Sandbox = session.Sandbox
 		// Delete sandbox
 		deleteSandbox(session.Sandbox)
 	}
@@ -434,6 +485,8 @@ func uaLogoutUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), code)
 		return
 	}
+
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeLogout, metric)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

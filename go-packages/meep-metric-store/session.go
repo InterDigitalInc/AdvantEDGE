@@ -24,12 +24,12 @@ import (
 
 const SesMetName = "session"
 const SesMetProvider = "provider"
-const SesMetUser = "user"
+const SesMetUser = "userid"
 const SesMetType = "type"
 const SesMetSid = "sid"
 const SesMetSbox = "sbox"
 const SesMetErrType = "errtype"
-const SesMetDesc = "desc"
+const SesMetDesc = "description"
 
 // Session metric types
 const (
@@ -91,7 +91,6 @@ func (ms *MetricStore) GetSessionMetric(typ string, duration string, count int) 
 		log.Error("Failed to retrieve metrics with error: ", err.Error())
 		return
 	}
-
 	// Format event metrics
 	metrics = make([]SessionMetric, len(valuesArray))
 	for index, values := range valuesArray {

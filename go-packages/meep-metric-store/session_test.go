@@ -76,37 +76,37 @@ func TestSessionMetricsGetSet(t *testing.T) {
 	if err != nil || len(sml) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateSessionMetric(sml[0], "provider1", "user1", "sid1", "sbox1", "", "session1 description") {
+	if !validateSessionMetric(sml[0], "provider4", "user4", "sid4", "sbox4", "", "session4 description") {
 		t.Fatalf("Invalid event metric")
 	}
 	sml, err = ms.GetSessionMetric(SesMetTypeLogin, "", 0)
 	if err != nil || len(sml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateSessionMetric(sml[0], "provider1", "user1", "sid1", "sbox1", "", "session1 description") {
+	if !validateSessionMetric(sml[0], "provider4", "user4", "sid4", "sbox4", "", "session4 description") {
 		t.Fatalf("Invalid event metric")
 	}
-	if !validateSessionMetric(sml[1], "provider4", "user4", "sid4", "sbox4", "", "session4 description") {
+	if !validateSessionMetric(sml[1], "provider1", "user1", "sid1", "sbox1", "", "session1 description") {
 		t.Fatalf("Invalid event metric")
 	}
 	sml, err = ms.GetSessionMetric(SesMetTypeLogout, "", 0)
 	if err != nil || len(sml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateSessionMetric(sml[0], "provider1", "user1", "sid1", "sbox1", "", "session1 description") {
+	if !validateSessionMetric(sml[0], "provider4", "user4", "sid4", "sbox4", "", "session4 description") {
 		t.Fatalf("Invalid event metric")
 	}
-	if !validateSessionMetric(sml[1], "provider4", "user4", "sid4", "sbox4", "", "session4 description") {
+	if !validateSessionMetric(sml[1], "provider1", "user1", "sid1", "sbox1", "", "session1 description") {
 		t.Fatalf("Invalid event metric")
 	}
 	sml, err = ms.GetSessionMetric(SesMetTypeError, "", 0)
 	if err != nil || len(sml) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
-	if !validateSessionMetric(sml[0], "provider2", "2.2.2.2", "", "", SesMetErrTypeOauth, "session2 error description") {
+	if !validateSessionMetric(sml[0], "provider3", "3.3.3.3", "", "", SesMetErrTypeMaxSessions, "session3 error description") {
 		t.Fatalf("Invalid event metric")
 	}
-	if !validateSessionMetric(sml[1], "provider3", "3.3.3.3", "", "", SesMetErrTypeMaxSessions, "session3 error description") {
+	if !validateSessionMetric(sml[1], "provider2", "2.2.2.2", "", "", SesMetErrTypeOauth, "session2 error description") {
 		t.Fatalf("Invalid event metric")
 	}
 
