@@ -713,31 +713,6 @@ func isMatchFilterCriteriaEcgi(subscriptionType string, filterCriteria interface
 	return true
 }
 
-/*
-func isMatchFilterCriteriaPlmn(subscriptionType string, filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn) bool {
-	switch subscriptionType {
-	case cellChangeSubscriptionType:
-		return isMatchCcFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	case rabEstSubscriptionType:
-		return isMatchRabFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	case rabRelSubscriptionType:
-		return isMatchRabRelFilterCriteriaPlmn(filterCriteria, newPlmn, oldPlmn)
-	}
-	return true
-}
-
-func isMatchFilterCriteriaCellId(subscriptionType string, filterCriteria interface{}, newCellId string, oldCellId string) bool {
-	switch subscriptionType {
-	case cellChangeSubscriptionType:
-		return isMatchCcFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabEstSubscriptionType:
-		return isMatchRabFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	case rabRelSubscriptionType:
-		return isMatchRabRelFilterCriteriaCellId(filterCriteria, newCellId, oldCellId)
-	}
-	return true
-}
-*/
 func checkCcNotificationRegisteredSubscriptions(appId string, assocId *AssociateId, newPlmn *Plmn, oldPlmn *Plmn, hoStatus string, newCellId string, oldCellId string) {
 
 	//no cell change if no cellIds present (cell change within 3gpp elements only)
@@ -1150,7 +1125,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1161,7 +1136,7 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 		for _, ecgi := range subscription.FilterCriteriaAssocHo.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusInternalServerError)
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -1185,14 +1160,14 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusInternalServerError)
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
@@ -1216,14 +1191,14 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
 		for _, ecgi := range subscription.FilterCriteriaQci.Ecgi {
 			if ecgi.Plmn == nil || ecgi.CellId == "" {
 				log.Error("For non null ecgi, plmn and cellId are mandatory")
-				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusInternalServerError)
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
 				return
 			}
 		}
