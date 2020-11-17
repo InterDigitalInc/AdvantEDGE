@@ -23,10 +23,6 @@
 
 package server
 
-import (
-	"time"
-)
-
 // Zonal or User tracking notification - callback generated toward an ME app with a zonal or user tracking subscription
 type TrackingNotification struct {
 
@@ -51,5 +47,5 @@ type TrackingNotification struct {
 	PreviousAccessPointId string `json:"previousAccessPointId,omitempty"`
 
 	// Indicates the time of day for zonal presence notification.
-	Timestamp time.Time `json:"timestamp,omitempty"`
+	Timestamp TimeStamp `json:"timestamp,omitempty"`
 }
