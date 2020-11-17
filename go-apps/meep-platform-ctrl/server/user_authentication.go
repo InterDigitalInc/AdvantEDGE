@@ -45,6 +45,7 @@ import (
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
+	"github.com/roymx/viper"
 	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
@@ -58,6 +59,26 @@ var gitlabApiUrl = ""
 var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 func initOAuth() (err error) {
+
+	// Connect to Session Manager
+	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, "", redisDBAddr, redisDBAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
+
+	// Connect to User Store
+	pfmCtrl.userStore, err = users.NewConnector(moduleName, postgisUser, postgisPwd, "", "")
+	if err != nil {
+		log.Error("Failed connection to User Store: ", err.Error())
+		return err
+	}
+	_ = pfmCtrl.userStore.CreateTables()
+	log.Info("Connected to User Store")
+
+	// Set endpoint authorization permissions
+	setPermissions()
 
 	// Connect to Metric Store
 	pfmCtrl.metricStore, err = ms.NewMetricStore("session-metrics", "global", influxDBAddr, ms.MetricsDbDisabled)
@@ -131,6 +152,75 @@ func initOAuth() (err error) {
 	}
 
 	return nil
+}
+
+func runOAuth() (err error) {
+	// Start Session Watchdog
+	err = pfmCtrl.sessionMgr.StartSessionWatchdog(sessionTimeoutCb)
+	if err != nil {
+		log.Error("Failed start Session Watchdog: ", err.Error())
+		return err
+	}
+	return nil
+}
+
+func setPermissions() {
+
+	// Flush old permissions
+	ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	ps.Flush()
+
+	// Read & apply API permissions from file
+	permissionsFile := "/permissions.yaml"
+	permissions := viper.New()
+	permissions.SetConfigFile(permissionsFile)
+	err := permissions.ReadInConfig()
+	if err != nil {
+		log.Warn("Failed to read permissions from file")
+		log.Warn("Granting full API access for all roles by default")
+		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
+		return
+	}
+
+	// Loop through services
+	for service := range permissions.GetStringMap(permissionsRoot) {
+		// Default permissions
+		if service == "default" {
+			permissionsRoute := permissionsRoot + ".default"
+			permission := new(sm.Permission)
+			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+			permission.RolePermissions = make(map[string]string)
+			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+				permission.RolePermissions[role] = access
+			}
+			_ = ps.SetDefaultPermission(permission)
+		} else {
+			// Service route names
+			permissionsService := permissionsRoot + "." + service
+			for name := range permissions.GetStringMap(permissionsService) {
+				permissionsRoute := permissionsService + "." + name
+				permission := new(sm.Permission)
+				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
+				permission.RolePermissions = make(map[string]string)
+				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
+					permission.RolePermissions[role] = access
+				}
+				_ = ps.Set(service, name, permission)
+			}
+		}
+	}
+}
+
+func sessionTimeoutCb(session *sm.Session) {
+	log.Info("Session timed out. ID[", session.ID, "] Username[", session.Username, "]")
+	var metric ms.SessionMetric
+	metric.Provider = session.Provider
+	metric.User = session.Username
+	metric.Sandbox = session.Sandbox
+	_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeTimeout, metric)
+
+	// Destroy session sandbox
+	deleteSandbox(session.Sandbox)
 }
 
 // Generate a random state string

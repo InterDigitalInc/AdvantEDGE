@@ -33,9 +33,10 @@ const SesMetDesc = "description"
 
 // Session metric types
 const (
-	SesMetTypeLogin  = "login"
-	SesMetTypeLogout = "logout"
-	SesMetTypeError  = "error"
+	SesMetTypeLogin   = "login"
+	SesMetTypeLogout  = "logout"
+	SesMetTypeTimeout = "timeout"
+	SesMetTypeError   = "error"
 )
 
 // Session metric error types
