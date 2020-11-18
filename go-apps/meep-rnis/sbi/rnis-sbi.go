@@ -248,12 +248,14 @@ func processActiveScenarioUpdate() {
 							}
 						}
 						erabIdValid = true
+					/*no support for RNIS on 5G elements anymore
 					case mod.NodeTypePoa5G:
 						if poa.Poa5GConfig != nil {
 							if poa.Poa5GConfig.CellId != "" {
 								cellId = poa.Poa5GConfig.CellId
 							}
 						}
+					*/
 					default:
 						//empty cells for POAs not supporting RNIS
 						cellId = ""
@@ -319,12 +321,14 @@ func processActiveScenarioUpdate() {
 									cellId = nl.Poa4GConfig.CellId
 								}
 							}
+						/*no support for RNIS on 5G elements anymore
 						case mod.NodeTypePoa5G:
 							if nl.Poa5GConfig != nil {
 								if nl.Poa5GConfig.CellId != "" {
 									cellId = nl.Poa5GConfig.CellId
 								}
 							}
+						*/
 						default:
 							//empty cells for POAs not supporting RNIS
 							cellId = ""
