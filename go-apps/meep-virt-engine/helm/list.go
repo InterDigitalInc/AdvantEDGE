@@ -25,8 +25,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func getReleasesName() ([]Release, error) {
-	out, err := getList()
+func getReleasesName(sandboxName string) ([]Release, error) {
+	out, err := getList(sandboxName)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +38,8 @@ func getReleasesName() ([]Release, error) {
 	return release, nil
 }
 
-func getReleases() ([]Release, error) {
-	out, err := getList()
+func getReleases(sandboxName string) ([]Release, error) {
+	out, err := getList(sandboxName)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func getReleases() ([]Release, error) {
 	return release, nil
 }
 
-func getList() ([]byte, error) {
-	var cmd = exec.Command("helm", "ls", "-A")
+func getList(sandboxName string) ([]byte, error) {
+	var cmd = exec.Command("helm", "ls", "-n", sandboxName)
 	out, err := cmd.Output()
 	if err != nil {
 		err = errors.New("Unable to list Releases")

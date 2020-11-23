@@ -108,7 +108,7 @@ func loadConfig(configFile string) (*Config, error) {
 
 // Determine if resource is part of the active scenario
 func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
-	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+scenarioName+"-")
+	return name != "" && strings.HasPrefix(name, "meep-"+scenarioName+"-")
 }
 
 func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {

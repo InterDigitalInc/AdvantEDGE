@@ -298,7 +298,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 
 	// Get chart prefix & path
 	path := "/charts/" + sandboxName
-	releasePrefix := "meep-" + sandboxName + "-"
+	releasePrefix := "meep-"
 	if scenarioName != "" {
 		path += "/scenario/"
 		releasePrefix += scenarioName + "-"
@@ -306,7 +306,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 
 	// Retrieve list of releases
 	chartsToDelete := 0
-	rels, err := helm.GetReleasesName()
+	rels, err := helm.GetReleasesName(sandboxName)
 	if err == nil {
 		// Filter charts by sandbox & scenario names
 		var toDelete []helm.Chart
@@ -323,7 +323,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 		chartsToDelete = len(toDelete)
 		if chartsToDelete > 0 {
 			log.Debug("Deleting [", chartsToDelete, "] charts with release prefix: ", releasePrefix)
-			err := helm.DeleteReleases(toDelete)
+			err := helm.DeleteReleases(toDelete, sandboxName)
 			chartsToDelete = len(toDelete)
 			if err != nil {
 				log.Debug("Releases deletion failure:", err)

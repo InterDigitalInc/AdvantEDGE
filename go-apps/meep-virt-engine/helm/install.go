@@ -24,8 +24,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func installCharts(charts []Chart) error {
-	err := ensureReleases(charts)
+func installCharts(charts []Chart, sandboxName string) error {
+	err := ensureReleases(charts, sandboxName)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func installCharts(charts []Chart) error {
 		err := install(chart)
 		if err != nil {
 			log.Info("Cleaning installed releases")
-			cleanReleases(charts)
+			cleanReleases(charts, sandboxName)
 			return err
 		}
 	}
@@ -42,9 +42,9 @@ func installCharts(charts []Chart) error {
 	return nil
 }
 
-func ensureReleases(charts []Chart) error {
+func ensureReleases(charts []Chart, sandboxName string) error {
 	// ensure that releases do not already exist
-	releases, _ := GetReleasesName()
+	releases, _ := GetReleasesName(sandboxName)
 	for _, c := range charts {
 		for _, r := range releases {
 			if c.ReleaseName == r.Name {
@@ -83,10 +83,10 @@ func install(chart Chart) error {
 	return nil
 }
 
-func cleanReleases(charts []Chart) {
+func cleanReleases(charts []Chart, sandboxName string) {
 	var toClean []Chart
 	var cnt int
-	releases, _ := GetReleasesName()
+	releases, _ := GetReleasesName(sandboxName)
 
 	for _, c := range charts {
 		for _, r := range releases {

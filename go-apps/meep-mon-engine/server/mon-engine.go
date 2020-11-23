@@ -610,7 +610,7 @@ func addExpectedPods(sandboxName string) {
 		// Get sandbox-specific pod name
 		var podName string
 		prefix := "meep-"
-		sandboxPrefix := prefix + sandboxName + "-"
+		sandboxPrefix := prefix
 		if strings.HasPrefix(pod, prefix) {
 			podName = sandboxPrefix + pod[len(prefix):]
 		} else {
@@ -632,7 +632,7 @@ func removeExpectedPods(sandboxName string) {
 		// Get sandbox-specific pod name
 		var podName string
 		prefix := "meep-"
-		sandboxPrefix := prefix + sandboxName + "-"
+		sandboxPrefix := prefix
 		if strings.HasPrefix(pod, prefix) {
 			podName = sandboxPrefix + pod[len(prefix):]
 		} else {
