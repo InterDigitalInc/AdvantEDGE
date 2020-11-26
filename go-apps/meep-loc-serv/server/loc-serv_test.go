@@ -1484,8 +1484,8 @@ func TestUserInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedListResourceURL := "/" + testScenarioName + "/location/v2/users"
-	expectedResourceURL := expectedListResourceURL + "/ue1"
+	expectedListResourceURL := "/" + testScenarioName + "/location/v2/queries/users"
+	expectedResourceURL := expectedListResourceURL + "?address=ue1"
 	//expectedListResourceURL := ""
 	//expectedResourceURL := ""
 	expectedUserInfo := UserInfo{"zone1-poa-cell1", "ue1", "", "", nil, expectedResourceURL, nil, "zone1"}
@@ -1537,7 +1537,7 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/users", nil, nil, query, http.StatusOK, UsersGET)
+	rr, err := sendRequest(http.MethodGet, "/queries/users", nil, nil, query, http.StatusOK, UsersGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1623,12 +1623,12 @@ func testZoneInfo(t *testing.T, zoneId string, expectedResponse string) {
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
+		_, err = sendRequest(http.MethodGet, "/queries/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
+		rr, err := sendRequest(http.MethodGet, "/queries/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1720,12 +1720,12 @@ func testAPInfo(t *testing.T, zoneId string, apId string, expectedResponse strin
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ApByIdGET)
+		_, err = sendRequest(http.MethodGet, "/queries/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ApByIdGET)
+		rr, err := sendRequest(http.MethodGet, "/queries/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
