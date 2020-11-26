@@ -596,6 +596,7 @@ class CfgPageContainer extends Component {
           title="Open Scenario"
           open={this.props.currentDialog === IDC_DIALOG_OPEN_SCENARIO}
           options={this.props.scenarios}
+          onDismiss={() => { this.closeDialog();}}
           onClose={() => {
             this.closeDialog();
           }}

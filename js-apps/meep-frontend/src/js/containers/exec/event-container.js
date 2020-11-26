@@ -28,10 +28,11 @@ import {
 } from '../../state/ui';
 
 import {
-  EXEC_BTN_MANUAL_REPLAY,
-  EXEC_BTN_AUTOMATION,
-  EXEC_BTN_AUTO_REPLAY,
-  EXEC_BTN_SAVE_REPLAY
+  EXEC_BTN_EVENT_BTN_MANUAL_REPLAY,
+  EXEC_BTN_EVENT_BTN_AUTOMATION,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY,
+  EXEC_BTN_EVENT_BTN_SAVE_REPLAY,
+  EXEC_BTN_EVENT_BTN_CLOSE
 } from '../../meep-constants';
 
 const styles = {
@@ -136,7 +137,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onCreateEvent()}
-                  data-cy={EXEC_BTN_MANUAL_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_MANUAL_REPLAY}
                 >
                   MANUAL
                 </Button>
@@ -144,7 +145,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onAutomateEvent()}
-                  data-cy={EXEC_BTN_AUTOMATION}
+                  data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION}
                 >
                   AUTOMATION
                 </Button>
@@ -152,7 +153,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onReplayEvent()}
-                  data-cy={EXEC_BTN_AUTO_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY}
                 >
                   AUTO-REPLAY
                 </Button>
@@ -160,7 +161,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={this.props.onSaveReplay}
-                  data-cy={EXEC_BTN_SAVE_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_SAVE_REPLAY}
                 >
                   SAVE EVENTS
                 </Button>
@@ -168,6 +169,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={this.props.onCloseEventCfg}
+                  data-cy={EXEC_BTN_EVENT_BTN_CLOSE}
                 >
                   Close
                 </Button>

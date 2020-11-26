@@ -28,6 +28,14 @@ import {
   uiExecChangeAutomationNetCharMode
 } from '../../state/ui';
 
+import {
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_BTN_CLOSE
+} from '../../meep-constants';
+
 const AUTO_TYPE_MOVEMENT = 'MOVEMENT';
 const AUTO_TYPE_MOBILITY = 'MOBILITY';
 const AUTO_TYPE_POAS_IN_RANGE = 'POAS-IN-RANGE';
@@ -132,6 +140,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationMovementMode}
               onChange={e => this.setMovementMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT}
             >
               Movement
             </Checkbox>
@@ -140,6 +149,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationMobilityMode}
               onChange={e => this.setMobilityMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY}
             >
               Mobility
             </Checkbox>
@@ -148,6 +158,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationPoasInRangeMode}
               onChange={e => this.setPoasInRangeMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE}
             >
               POAs in range
             </Checkbox>
@@ -156,6 +167,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationNetCharMode}
               onChange={e => this.setNetCharMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR}
             >
               Network Characteristics
             </Checkbox>
@@ -169,6 +181,7 @@ class EventAutomationPane extends Component {
                 outlined
                 style={styles.button}
                 onClick={this.props.onClose}
+                data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_BTN_CLOSE}
               >
                 Close
               </Button>

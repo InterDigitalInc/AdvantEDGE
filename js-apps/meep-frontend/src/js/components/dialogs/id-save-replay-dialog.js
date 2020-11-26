@@ -17,7 +17,11 @@
 import React, { Component } from 'react';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 import IDDialog from './id-dialog';
-import { MEEP_DLG_SAVE_REPLAY } from '../../meep-constants';
+import { 
+  MEEP_DLG_SAVE_REPLAY,
+  MEEP_DLG_SAVE_REPLAY_NAME,
+  MEEP_DLG_SAVE_REPLAY_DESCRIPTION
+} from '../../meep-constants';
 
 class IDSaveReplayDialog extends Component {
   constructor(props) {
@@ -94,6 +98,7 @@ class IDSaveReplayDialog extends Component {
           }
           onChange={e => this.changeReplayName(e.target.value)}
           value={this.replayName}
+          data-cy={MEEP_DLG_SAVE_REPLAY_NAME}
         />
         <TextFieldHelperText validationMsg={true}>
           <span>{this.state.replayErr}</span>
@@ -108,6 +113,7 @@ class IDSaveReplayDialog extends Component {
           }
           onChange={e => this.changeDescription(e.target.value)}
           value={this.description}
+          data-cy={MEEP_DLG_SAVE_REPLAY_DESCRIPTION}
         />
         <TextFieldHelperText validationMsg={true}>
           <span>{this.state.descriptionErr}</span>

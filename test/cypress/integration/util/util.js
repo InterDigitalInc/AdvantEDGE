@@ -69,3 +69,13 @@ export function verifyForm(name, enabled, options, value) {
     cy.get(selector(name)).should(options, value);
   }
 }
+
+// Verify that element with provided name is in provided state
+export function verifyChecked(name, checked) {
+  if (checked) {
+    cy.get(selector(name)).should('be.checked')
+  } else {
+    cy.get(selector(name)).should('be.not.checked')
+  }
+}
+

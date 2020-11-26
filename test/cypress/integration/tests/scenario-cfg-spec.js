@@ -84,6 +84,16 @@ import {
   FIELD_CPU_MAX,
   FIELD_MEMORY_MIN,
   FIELD_MEMORY_MAX,
+
+  FIELD_META_DISPLAY_MAP_COLOR,
+  FIELD_GEO_LOCATION,
+  FIELD_GEO_RADIUS,
+  FIELD_GEO_PATH,
+  FIELD_GEO_VELOCITY,
+  FIELD_GEO_EOP_MODE,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS_TYPE,
+
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
@@ -472,12 +482,32 @@ describe('Scenario Configuration', function () {
   // ==============================
   // ZONE
   // ==============================
+  let intraZoneLatency = '2';
+  let intraZoneLatencyVar = '3';
+  let intraZonePktLoss = '4';
+  let intraZoneThroughput = '5';
+  let zoneColor = '#123DEF'
 
   function addZone(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_ZONE);
     select(meep.CFG_ELEM_PARENT, parent);
-    type(meep.CFG_ELEM_NAME, name);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_INTRA_ZONE));
+    //error value section
+    type(meep.CFG_ELEM_META_DISPLAY_MAP_COLOR, 'red');
+    click(meep.MEEP_BTN_APPLY);
+    cy.contains('1 fields in error')
+    //valid value section
+    type(meep.CFG_ELEM_LATENCY, intraZoneLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, intraZoneLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, intraZonePktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, intraZoneThroughput);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, intraZoneThroughput-1);
+    type(meep.CFG_ELEM_META_DISPLAY_MAP_COLOR, zoneColor);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -490,6 +520,13 @@ describe('Scenario Configuration', function () {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_ZONE);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), intraZoneLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), intraZoneLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), intraZonePktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), intraZoneThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), intraZoneThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_META_DISPLAY_MAP_COLOR), zoneColor);
+
     });
   }
 
@@ -502,6 +539,7 @@ describe('Scenario Configuration', function () {
   let linkLatencyVar = '3';
   let linkPktLoss = '4';
   let linkThroughput = '5';
+  let linkLocationCoordinates = '[7.419344,43.72764]';
 
   function addEdge(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -511,11 +549,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -535,6 +576,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
@@ -638,6 +680,8 @@ describe('Scenario Configuration', function () {
   let termLinkLatencyVar = '3';
   let termLinkPktLoss = '4';
   let termLinkThroughput = '5';
+  let termLinkLocationCoordinates = '[7.419344,43.72764]';
+  let termLinkRadius = '10';
 
   function addPoa(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -652,6 +696,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -671,6 +717,8 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius);
     });
   }
 
@@ -682,7 +730,10 @@ describe('Scenario Configuration', function () {
   let termLinkLatencyVar2 = '3';
   let termLinkPktLoss2 = '4';
   let termLinkThroughput2 = '5';
+  let termLinkLocationCoordinates2 = '[7.419344,43.72764]';
+  let termLinkRadius2 = '10';
   let cellId = '1234567';
+
 
   function addPoa4G(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -697,6 +748,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss2);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput2);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput2-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates2);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius2);
     type(meep.CFG_ELEM_CELL_ID, cellId);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
@@ -717,6 +770,8 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput2-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates2);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius2);
       assert.equal(getElemFieldVal(entry, FIELD_CELL_ID), cellId);
     });
   }
@@ -729,6 +784,8 @@ describe('Scenario Configuration', function () {
   let termLinkLatencyVar3 = '3';
   let termLinkPktLoss3 = '4';
   let termLinkThroughput3 = '5';
+  let termLinkLocationCoordinates3 = '[7.419344,43.72764]';
+  let termLinkRadius3 = '10';
   let nrCellId = '3456789';
 
   function addPoa5G(name, parent) {
@@ -744,6 +801,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss3);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput3);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput3-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates3);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius3);
     type(meep.CFG_ELEM_NR_CELL_ID, nrCellId);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
@@ -764,6 +823,8 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss3);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput3);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput3-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates3);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius3);
       assert.equal(getElemFieldVal(entry, FIELD_NR_CELL_ID), nrCellId);
     });
   }
@@ -776,6 +837,8 @@ describe('Scenario Configuration', function () {
   let termLinkLatencyVar4 = '3';
   let termLinkPktLoss4 = '4';
   let termLinkThroughput4 = '5';
+  let termLinkLocationCoordinates4 = '[7.419344,43.72764]';
+  let termLinkRadius4 = '10';
   let macId = '112233445566';
 
   function addPoaWifi(name, parent) {
@@ -791,6 +854,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss4);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput4);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput4-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates4);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius4);
     type(meep.CFG_ELEM_MAC_ID, macId);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
@@ -811,6 +876,8 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss4);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput4);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput4-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates4);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius4);
       assert.equal(getElemFieldVal(entry, FIELD_MAC_ID), macId);
     });
   }
@@ -827,11 +894,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -851,6 +921,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
@@ -943,6 +1014,10 @@ describe('Scenario Configuration', function () {
   // ==============================
   // UE
   // ==============================
+  let linkWirelessType = 'wifi,4g'
+  let linkPath = '[[7.419344,43.72764],[8.419344,43.72764]]';
+  let linkPathMode = meep.GEO_EOP_MODE_REVERSE;
+  let linkVelocity = '9';
   let ueMacId = '123456123456';
 
   function addUe(name, parent) {
@@ -953,11 +1028,20 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRELESS.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    select(meep.CFG_ELEM_CONNECTED, meep.OPT_DISCONNECTED.label);
+    type(meep.CFG_ELEM_WIRELESS_TYPE, linkWirelessType);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
+    type(meep.CFG_ELEM_GEO_PATH, linkPath);
+    type(meep.CFG_ELEM_GEO_VELOCITY, linkVelocity);
+    select(meep.CFG_ELEM_GEO_EOP_MODE, linkPathMode);
+
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     type(meep.CFG_ELEM_UE_MAC_ID, ueMacId);
@@ -979,6 +1063,12 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_CONNECTED), false);
+      assert.equal(getElemFieldVal(entry, FIELD_WIRELESS_TYPE), linkWirelessType);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_PATH), linkPath);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_EOP_MODE), linkPathMode);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_VELOCITY), linkVelocity);
       assert.equal(getElemFieldVal(entry, FIELD_UE_MAC_ID), ueMacId);
     });
   }
@@ -1091,11 +1181,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -1115,6 +1208,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
