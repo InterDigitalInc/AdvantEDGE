@@ -301,16 +301,25 @@ func (m *Model) MoveNode(nodeName string, destName string) (oldLocName string, n
 		return "", "", errors.New("Mobility: " + nodeName + " not found")
 	}
 
-	if moveNode.nodeType == "EDGE-APP" {
+	switch moveNode.nodeType {
+	case "EDGE-APP":
 		oldLocName, newLocName, err = m.moveProc(moveNode, destName)
 		if err != nil {
 			return "", "", err
 		}
-	} else {
+	case "FOG", "UE":
 		oldLocName, newLocName, err = m.movePL(moveNode, destName)
 		if err != nil {
 			return "", "", err
 		}
+	case "EDGE":
+		//edge nodes are children of default network locations
+		oldLocName, newLocName, err = m.movePL(moveNode, destName+"-DEFAULT")
+		if err != nil {
+			return "", "", err
+		}
+	default:
+		return "", "", errors.New("Unsupported nodeType " + moveNode.nodeType)
 	}
 
 	err = m.refresh()

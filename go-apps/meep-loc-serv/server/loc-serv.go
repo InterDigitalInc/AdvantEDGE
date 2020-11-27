@@ -626,7 +626,7 @@ func usersGet(w http.ResponseWriter, r *http.Request) {
 	// Get user list from DB
 	var response InlineUserList
 	var userList UserList
-	userList.ResourceURL = hostUrl.String() + basePath + "users"
+	userList.ResourceURL = hostUrl.String() + basePath + "queries/users"
 	response.UserList = &userList
 	userData.userList = &userList
 
@@ -728,7 +728,7 @@ func apGet(w http.ResponseWriter, r *http.Request) {
 	var response InlineAccessPointList
 	var apList AccessPointList
 	apList.ZoneId = vars["zoneId"]
-	apList.ResourceURL = hostUrl.String() + basePath + "zones/" + vars["zoneId"] + "/accessPoints"
+	apList.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + vars["zoneId"] + "/accessPoints"
 	response.AccessPointList = &apList
 	userData.apList = &apList
 
@@ -787,7 +787,7 @@ func zonesGet(w http.ResponseWriter, r *http.Request) {
 
 	var response InlineZoneList
 	var zoneList ZoneList
-	zoneList.ResourceURL = hostUrl.String() + basePath + "zones"
+	zoneList.ResourceURL = hostUrl.String() + basePath + "queries/zones"
 	response.ZoneList = &zoneList
 
 	keyName := baseKey + typeZone + ":*"
@@ -1523,7 +1523,7 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 	if userInfo == nil {
 		userInfo = new(UserInfo)
 		userInfo.Address = address
-		userInfo.ResourceURL = hostUrl.String() + basePath + "users/" + address
+		userInfo.ResourceURL = hostUrl.String() + basePath + "queries/users?address=" + address
 	} else {
 		// Get old zone & AP IDs
 		oldZoneId = userInfo.ZoneId
@@ -1567,7 +1567,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 	if zoneInfo == nil {
 		zoneInfo = new(ZoneInfo)
 		zoneInfo.ZoneId = zoneId
-		zoneInfo.ResourceURL = hostUrl.String() + basePath + "zones/" + zoneId
+		zoneInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId
 	}
 
 	// Update info
@@ -1595,7 +1595,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 	if apInfo == nil {
 		apInfo = new(AccessPointInfo)
 		apInfo.AccessPointId = apId
-		apInfo.ResourceURL = hostUrl.String() + basePath + "zones/" + zoneId + "/accessPoints/" + apId
+		apInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId + "/accessPoints/" + apId
 	}
 
 	// Update info

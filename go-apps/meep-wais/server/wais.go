@@ -770,6 +770,8 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var response ApInfoResp
+	//initialise array to make sure Marshal processes it properly if it is empty
+	response.ApInfoList = make([]ApInfo, 0)
 
 	//loop through each AP
 	keyName := baseKey + "AP:*"
@@ -787,6 +789,7 @@ func apInfoGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+
 	fmt.Fprintf(w, string(jsonResponse))
 }
 
@@ -814,6 +817,8 @@ func populateStaInfo(key string, jsonInfo string, response interface{}) error {
 func staInfoGET(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response StaInfoResp
+	//initialise array to make sure Marshal processes it properly if it is empty
+	response.StaInfoList = make([]StaInfo, 0)
 
 	// Loop through each STA
 	keyName := baseKey + "UE:*"

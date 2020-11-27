@@ -256,7 +256,17 @@ func TestMoveNode(t *testing.T) {
 	if new != "zone1-poa1" {
 		t.Fatalf("Move Node - wrong destination Location " + new)
 	}
-
+	fmt.Println("Move edge node zone1-edge1 to a new zone")
+	old, new, err = m.MoveNode("zone1-edge1", "zone2")
+	if err != nil {
+		t.Fatalf("Error moving EDGE node")
+	}
+	if old != "zone1-DEFAULT" {
+		t.Fatalf("Move Node - wrong origin Location " + old)
+	}
+	if new != "zone2-DEFAULT" {
+		t.Fatalf("Move Node - wrong destination Location " + new)
+	}
 	fmt.Println("Move zone1-edge1-iperf")
 	_, _, err = m.MoveNode("zone1-edge1-iperf", "zone2-edge2")
 	if err == nil {
