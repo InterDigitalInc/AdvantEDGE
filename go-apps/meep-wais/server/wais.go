@@ -579,6 +579,13 @@ func subscriptionsPOST(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	//new subscription id
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
@@ -640,10 +647,17 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	link := subscriptionCommon.Links
 	if link == nil || link.Self == nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Error("Mandatory Link parameter not present")
+		http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -651,7 +665,8 @@ func subscriptionsPUT(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
 	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 

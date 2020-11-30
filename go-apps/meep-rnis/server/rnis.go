@@ -1100,6 +1100,13 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	//new subscription id
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
@@ -1243,10 +1250,17 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	link := subscriptionCommon.Links
 	if link == nil || link.Self == nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Error("Mandatory Link parameter not present")
+		http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1254,7 +1268,8 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
 	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1273,7 +1288,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1299,7 +1314,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1321,7 +1336,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 

@@ -990,17 +990,20 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.Address == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1042,21 +1045,25 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.Address == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 	if userTrackingSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1067,7 +1074,8 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//Body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1202,17 +1210,20 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ZoneId == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1266,21 +1277,25 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ZoneId == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zonalTrafficSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1291,7 +1306,8 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1427,17 +1443,20 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ZoneId == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1481,21 +1500,25 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
 	//checking for mandatory properties
 	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ZoneId == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 	if zoneStatusSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1506,7 +1529,8 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
