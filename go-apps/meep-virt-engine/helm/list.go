@@ -31,7 +31,7 @@ func getReleasesName(sandboxName string) ([]Release, error) {
 		return nil, err
 	}
 
-	release, err := parseList(out, true)
+	release, err := parseList(out, true, sandboxName)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func getReleases(sandboxName string) ([]Release, error) {
 		return nil, err
 	}
 
-	release, err := parseList(out, false)
+	release, err := parseList(out, false, sandboxName)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func getList(sandboxName string) ([]byte, error) {
 	return out, nil
 }
 
-func parseList(buf []byte, nameOnly bool) ([]Release, error) {
+func parseList(buf []byte, nameOnly bool, sandboxName string) ([]Release, error) {
 	/* Example of what needs to be parsed
 	NAME    REVISION        UPDATED                         STATUS          CHART                   NAMESPACE
 	osvc1   1               Tue Jun 12 13:02:55 2018        DEPLOYED        orientation-svc-0.1.0   default
@@ -87,7 +87,7 @@ func parseList(buf []byte, nameOnly bool) ([]Release, error) {
 		r.Name = scanWords.Text()
 		if !nameOnly {
 			// Status
-			sp, err := GetReleaseStatus(r.Name)
+			sp, err := GetReleaseStatus(r.Name, sandboxName)
 			r.Status = *sp
 			if err != nil {
 				log.Error(err)

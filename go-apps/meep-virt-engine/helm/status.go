@@ -30,8 +30,8 @@ const STATUS string = "STATUS:"
 const RESOURCE string = "==>"
 
 // Returns the status of a release
-func GetReleaseStatus(name string) (*Status, error) {
-	out, err := getStatus(name)
+func GetReleaseStatus(name string, sandboxName string) (*Status, error) {
+	out, err := getStatus(name, sandboxName)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func GetReleaseStatus(name string) (*Status, error) {
 	return status, nil
 }
 
-func getStatus(name string) ([]byte, error) {
-	var cmd = exec.Command("helm", "status", name)
+func getStatus(name string, sandboxName string) ([]byte, error) {
+	var cmd = exec.Command("helm", "status", "-n", sandboxName, name)
 	out, err := cmd.Output()
 	if err != nil {
 		err = errors.New("Error getting status for Release [" + name + "]")

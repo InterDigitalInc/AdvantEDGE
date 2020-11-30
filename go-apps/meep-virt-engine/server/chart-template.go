@@ -429,14 +429,11 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 func newChart(chartName string, sandboxName string, scenarioName string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
 
-	// Create release name by adding sandbox + scenario prefix
-	prefix := "meep-"
-	sandboxPrefix := prefix
+	// Create release name by adding scenario prefix
 	if scenarioName == "" {
-		prefix := "meep-"
-		chart.ReleaseName = sandboxPrefix + chartName[len(prefix):]
+		chart.ReleaseName = chartName
 	} else {
-		chart.ReleaseName = sandboxPrefix + scenarioName + "-" + chartName
+		chart.ReleaseName = "meep-" + scenarioName + "-" + chartName
 	}
 
 	chart.Name = chartName
