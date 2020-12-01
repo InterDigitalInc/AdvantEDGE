@@ -1667,13 +1667,16 @@ func TestSbi(t *testing.T) {
 		t.Fatalf("Error running test basic procedure")
 	}
 
+	ueName := "ue1"
+	appName := "zone1-edge1-iperf"
+
 	/******************************
 	 * expected values section
 	 ******************************/
 	var expectedUeDataStr [2]string
 	var expectedUeData [2]UeData
-	expectedUeData[INITIAL] = UeData{1, &Ecgi{"2345678", &Plmn{"123", "456"}}}
-	expectedUeData[UPDATED] = UeData{-1, &Ecgi{"", &Plmn{"123", "456"}}}
+	expectedUeData[INITIAL] = UeData{ueName, 1, &Ecgi{"2345678", &Plmn{"123", "456"}}, 80}
+	expectedUeData[UPDATED] = UeData{ueName, -1, &Ecgi{"", &Plmn{"123", "456"}}, 80}
 
 	var expectedAppEcgiStr [2]string
 	var expectedAppEcgi [2]Ecgi
@@ -1710,10 +1713,6 @@ func TestSbi(t *testing.T) {
 
 	fmt.Println("Set a scenario")
 	initialiseScenario(testScenario)
-
-	//different tests
-	ueName := "ue1"
-	appName := "zone1-edge1-iperf"
 
 	jsonEcgiInfo, _ := rc.JSONGetEntry(baseKey+"UE:"+ueName, ".")
 	if string(jsonEcgiInfo) != expectedUeDataStr[INITIAL] {
