@@ -18,9 +18,10 @@ package datakeymgr
 
 const keyRoot = "data:"
 const keyRootGlobal = keyRoot + "global:"
+const keyRootSandbox = keyRoot + "sbox:"
 
 func GetKeyRoot(namespace string) string {
-	return keyRoot + namespace + ":"
+	return keyRootSandbox + namespace + ":"
 }
 
 func GetKeyRootGlobal() string {
