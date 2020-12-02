@@ -25,34 +25,34 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func getReleasesName() ([]Release, error) {
-	out, err := getList()
+func getReleasesName(sandboxName string) ([]Release, error) {
+	out, err := getList(sandboxName)
 	if err != nil {
 		return nil, err
 	}
 
-	release, err := parseList(out, true)
-	if err != nil {
-		return nil, err
-	}
-	return release, nil
-}
-
-func getReleases() ([]Release, error) {
-	out, err := getList()
-	if err != nil {
-		return nil, err
-	}
-
-	release, err := parseList(out, false)
+	release, err := parseList(out, true, sandboxName)
 	if err != nil {
 		return nil, err
 	}
 	return release, nil
 }
 
-func getList() ([]byte, error) {
-	var cmd = exec.Command("helm", "ls", "-A")
+func getReleases(sandboxName string) ([]Release, error) {
+	out, err := getList(sandboxName)
+	if err != nil {
+		return nil, err
+	}
+
+	release, err := parseList(out, false, sandboxName)
+	if err != nil {
+		return nil, err
+	}
+	return release, nil
+}
+
+func getList(sandboxName string) ([]byte, error) {
+	var cmd = exec.Command("helm", "ls", "-n", sandboxName)
 	out, err := cmd.Output()
 	if err != nil {
 		err = errors.New("Unable to list Releases")
@@ -62,7 +62,7 @@ func getList() ([]byte, error) {
 	return out, nil
 }
 
-func parseList(buf []byte, nameOnly bool) ([]Release, error) {
+func parseList(buf []byte, nameOnly bool, sandboxName string) ([]Release, error) {
 	/* Example of what needs to be parsed
 	NAME    REVISION        UPDATED                         STATUS          CHART                   NAMESPACE
 	osvc1   1               Tue Jun 12 13:02:55 2018        DEPLOYED        orientation-svc-0.1.0   default
@@ -87,7 +87,7 @@ func parseList(buf []byte, nameOnly bool) ([]Release, error) {
 		r.Name = scanWords.Text()
 		if !nameOnly {
 			// Status
-			sp, err := GetReleaseStatus(r.Name)
+			sp, err := GetReleaseStatus(r.Name, sandboxName)
 			r.Status = *sp
 			if err != nil {
 				log.Error(err)

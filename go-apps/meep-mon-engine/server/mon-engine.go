@@ -474,9 +474,9 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if querySandbox != "" || querySandbox == "all" {
-			for k, v := range expectedSboxPods {
+			for _, v := range expectedSboxPods {
 				if v.Sandbox == querySandbox || querySandbox == "all" {
-					data.ExpectedPods[k] = v
+					data.ExpectedPods[v.Name] = v
 				}
 			}
 		}
@@ -608,13 +608,15 @@ func getPodName(app string, name string) string {
 func addExpectedPods(sandboxName string) {
 	for _, pod := range sboxPodsList {
 		// Get sandbox-specific pod name
-		var podName string
+		var podName, podKeyName string
 		prefix := "meep-"
 		sandboxPrefix := prefix + sandboxName + "-"
 		if strings.HasPrefix(pod, prefix) {
-			podName = sandboxPrefix + pod[len(prefix):]
+			podName = pod
+			podKeyName = sandboxPrefix + pod[len(prefix):]
 		} else {
-			podName = sandboxPrefix + pod
+			podName = prefix + pod
+			podKeyName = sandboxPrefix + pod
 		}
 
 		// Add to expected sandbox pods list
@@ -623,7 +625,7 @@ func addExpectedPods(sandboxName string) {
 		podStatus.Sandbox = sandboxName
 		podStatus.Name = podName
 		podStatus.LogicalState = "NotAvailable"
-		expectedSboxPods[podName] = podStatus
+		expectedSboxPods[podKeyName] = podStatus
 	}
 }
 

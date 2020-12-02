@@ -16,8 +16,8 @@
 
 package helm
 
-func GetReleasesName() ([]Release, error) {
-	return getReleasesName()
+func GetReleasesName(sandboxName string) ([]Release, error) {
+	return getReleasesName(sandboxName)
 }
 
 /*
@@ -25,14 +25,14 @@ func GetReleasesName() ([]Release, error) {
 * https://github.com/helm/helm/issues/5952
  */
 
-func GetReleases() ([]Release, error) {
-	return getReleases()
+func GetReleases(sandboxName string) ([]Release, error) {
+	return getReleases(sandboxName)
 }
 
-func InstallCharts(charts []Chart) error {
-	return runTask(Install, charts)
+func InstallCharts(charts []Chart, sandboxName string) error {
+	return runTask(Install, charts, sandboxName)
 }
 
-func DeleteReleases(charts []Chart) error {
-	return runTask(Delete, charts)
+func DeleteReleases(charts []Chart, sandboxName string) error {
+	return runTask(Delete, charts, sandboxName)
 }

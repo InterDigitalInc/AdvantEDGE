@@ -143,7 +143,7 @@ func Deploy(sandboxName string, model *mod.Model) error {
 	log.Debug("Created ", len(charts), " scenario charts")
 
 	// Deploy all charts
-	err = deployCharts(charts)
+	err = deployCharts(charts, sandboxName)
 	if err != nil {
 		log.Error("Error deploying charts: ", err)
 		return err
@@ -368,8 +368,8 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 	return charts, nil
 }
 
-func deployCharts(charts []helm.Chart) error {
-	err := helm.InstallCharts(charts)
+func deployCharts(charts []helm.Chart, sandboxName string) error {
+	err := helm.InstallCharts(charts, sandboxName)
 	if err != nil {
 		return err
 	}
@@ -429,14 +429,11 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 func newChart(chartName string, sandboxName string, scenarioName string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
 
-	// Create release name by adding sandbox + scenario prefix
-	prefix := "meep-"
-	sandboxPrefix := prefix + sandboxName + "-"
+	// Create release name by adding scenario prefix
 	if scenarioName == "" {
-		prefix := "meep-"
-		chart.ReleaseName = sandboxPrefix + chartName[len(prefix):]
+		chart.ReleaseName = chartName
 	} else {
-		chart.ReleaseName = sandboxPrefix + scenarioName + "-" + chartName
+		chart.ReleaseName = "meep-" + scenarioName + "-" + chartName
 	}
 
 	chart.Name = chartName
@@ -585,7 +582,7 @@ func deploySandbox(name string) error {
 	log.Debug("Created ", len(charts), " sandbox charts")
 
 	// Deploy all charts
-	err = deployCharts(charts)
+	err = deployCharts(charts, name)
 	if err != nil {
 		log.Error("Error deploying charts: ", err)
 		return err

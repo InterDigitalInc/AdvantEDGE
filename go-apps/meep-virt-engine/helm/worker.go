@@ -28,8 +28,9 @@ const (
 )
 
 type Job struct {
-	task   Task
-	charts []Chart
+	task        Task
+	charts      []Chart
+	sandboxName string
 }
 
 var queue *chan Job = nil
@@ -46,7 +47,7 @@ func startWorker() {
 			switch job.task {
 			case Install:
 				log.Debug("Installing ", len(job.charts), " Charts...")
-				_ = installCharts(job.charts)
+				_ = installCharts(job.charts, job.sandboxName)
 				log.Debug("Charts installed (", len(job.charts), ")")
 
 			case Delete:
@@ -59,9 +60,9 @@ func startWorker() {
 	}()
 }
 
-func runTask(task Task, charts []Chart) error {
+func runTask(task Task, charts []Chart, sandboxName string) error {
 	startWorker()
-	var job Job = Job{task: task, charts: charts}
+	var job Job = Job{task: task, charts: charts, sandboxName: sandboxName}
 	*queue <- job
 	return nil
 }

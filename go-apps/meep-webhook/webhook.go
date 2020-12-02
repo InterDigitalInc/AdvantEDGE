@@ -107,8 +107,8 @@ func loadConfig(configFile string) (*Config, error) {
 }
 
 // Determine if resource is part of the active scenario
-func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
-	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+scenarioName+"-")
+func isScenarioResource(name string, scenarioName string) bool {
+	return name != "" && strings.HasPrefix(name, "meep-"+scenarioName+"-")
 }
 
 func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
@@ -278,7 +278,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Determine if resource is part of the active scenario
-	if !isScenarioResource(releaseName, req.Namespace, activeScenarioNames[req.Namespace]) {
+	if !isScenarioResource(releaseName, activeScenarioNames[req.Namespace]) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,
