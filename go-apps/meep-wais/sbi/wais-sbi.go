@@ -91,7 +91,7 @@ func Init(cfg SbiCfg) (err error) {
 	}
 
 	// Connect to GIS cache
-	sbi.gisCache, err = gc.NewGisCache(cfg.RedisAddr)
+	sbi.gisCache, err = gc.NewGisCache(sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
 		log.Error("Failed to GIS Cache: ", err.Error())
 		return err

@@ -157,7 +157,7 @@ func Init() (err error) {
 	log.Info("Connected to Session Manager")
 
 	// Connect to GIS cache
-	ge.gisCache, err = gc.NewGisCache(redisAddr)
+	ge.gisCache, err = gc.NewGisCache(ge.sandboxName, redisAddr)
 	if err != nil {
 		log.Error("Failed to GIS Cache: ", err.Error())
 		return err

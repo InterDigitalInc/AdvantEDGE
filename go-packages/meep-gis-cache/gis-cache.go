@@ -42,10 +42,11 @@ const (
 	fieldRsrq      = "rsrq"
 )
 
-// Root key
-var keyRoot = dkm.GetKeyRootGlobal() + "gis-cache:"
-var keyPositions = keyRoot + "pos:"
-var keyMeasurements = keyRoot + "meas:"
+const (
+	gisCacheKey = "gis-cache:"
+	posKey      = "pos:"
+	measKey     = "meas:"
+)
 
 type Position struct {
 	Latitude  float32
@@ -63,11 +64,12 @@ type Measurement struct {
 }
 
 type GisCache struct {
-	rc *redis.Connector
+	rc      *redis.Connector
+	baseKey string
 }
 
 // NewGisCache - Creates and initialize a GIS Cache instance
-func NewGisCache(redisAddr string) (gc *GisCache, err error) {
+func NewGisCache(sandboxName string, redisAddr string) (gc *GisCache, err error) {
 	// Create new GIS Cache instance
 	gc = new(GisCache)
 
@@ -79,13 +81,16 @@ func NewGisCache(redisAddr string) (gc *GisCache, err error) {
 	}
 	log.Info("Connected to GIS Cache Redis DB")
 
+	// Get base storage key
+	gc.baseKey = dkm.GetKeyRoot(sandboxName) + gisCacheKey
+
 	log.Info("Created GIS Cache")
 	return gc, nil
 }
 
 // SetPosition - Create or update entry in DB
 func (gc *GisCache) SetPosition(typ string, name string, position *Position) error {
-	key := keyPositions + typ + ":" + name
+	key := gc.baseKey + posKey + typ + ":" + name
 
 	// Prepare data
 	fields := make(map[string]interface{})
@@ -103,7 +108,7 @@ func (gc *GisCache) SetPosition(typ string, name string, position *Position) err
 
 // GetAllPositions - Return positions with provided type
 func (gc *GisCache) GetAllPositions(typ string) (map[string]*Position, error) {
-	keyMatchStr := keyPositions + typ + ":*"
+	keyMatchStr := gc.baseKey + posKey + typ + ":*"
 
 	// Create position map
 	positionMap := make(map[string]*Position)
@@ -140,7 +145,7 @@ func getPosition(key string, fields map[string]string, userData interface{}) err
 
 // DelPosition - Remove position with provided name
 func (gc *GisCache) DelPosition(typ string, name string) {
-	key := keyPositions + typ + ":" + name
+	key := gc.baseKey + posKey + typ + ":" + name
 	err := gc.rc.DelEntry(key)
 	if err != nil {
 		log.Error("Failed to delete position for ", name, " with err: ", err.Error())
@@ -149,7 +154,7 @@ func (gc *GisCache) DelPosition(typ string, name string) {
 
 // SetMeasurement - Create or update entry in DB
 func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) error {
-	key := keyMeasurements + ue + ":" + poa
+	key := gc.baseKey + measKey + ue + ":" + poa
 
 	// Prepare data
 	fields := make(map[string]interface{})
@@ -168,7 +173,7 @@ func (gc *GisCache) SetMeasurement(ue string, poa string, meas *Measurement) err
 
 // GetAllMeasurements - Return all UE measurements
 func (gc *GisCache) GetAllMeasurements() (measurementMap map[string]*UeMeasurement, err error) {
-	keyMatchStr := keyMeasurements + "*"
+	keyMatchStr := gc.baseKey + measKey + "*"
 
 	// Create measurement map
 	measurementMap = make(map[string]*UeMeasurement)
@@ -224,7 +229,7 @@ func getMeasurement(key string, fields map[string]string, userData interface{}) 
 
 // DelMeasurements - Remove measurement with provided name
 func (gc *GisCache) DelMeasurement(ue string, poa string) {
-	key := keyMeasurements + ue + ":" + poa
+	key := gc.baseKey + measKey + ue + ":" + poa
 	err := gc.rc.DelEntry(key)
 	if err != nil {
 		log.Error("Failed to delete measurement for ue: ", ue, " and poa: ", poa, " with err: ", err.Error())
@@ -233,5 +238,5 @@ func (gc *GisCache) DelMeasurement(ue string, poa string) {
 
 // Flush - Remove all GIS cache entries
 func (gc *GisCache) Flush() {
-	gc.rc.DBFlush(keyRoot)
+	gc.rc.DBFlush(gc.baseKey)
 }
