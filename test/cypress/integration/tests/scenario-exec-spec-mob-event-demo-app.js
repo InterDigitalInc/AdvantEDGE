@@ -55,7 +55,7 @@ describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
-  let sandbox = 'sbox-test';
+  let sandbox = 'sbox-test3';
   let scenario = 'demo1'
 
   // ------------------------------

@@ -55,7 +55,7 @@ describe('Scenario Execution', function () {
 
   // Test Variables
   let defaultScenario = 'None';
-  let sandbox = 'sbox-test';
+  let sandbox = 'sbox-test3';
   let scenario = 'demo1';
   let scenario2 = 'demo2';
   let replayEventsName = 'replaydemo1'
@@ -108,6 +108,7 @@ describe('Scenario Execution', function () {
   });
 
   // Test Save events
+  // previous manual execution created 13 eventsn
   it('Test Event - Save button', function () {
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
@@ -119,6 +120,7 @@ describe('Scenario Execution', function () {
   });
 
   // Test Auto-Replay
+  //replay event as 13 events in it based on the file that was stored
   it('Test Event - Auto-Replay button', function () {
     openDefaultMeepUrl();
     click(meep.MEEP_TAB_EXEC);
@@ -126,7 +128,7 @@ describe('Scenario Execution', function () {
     select(meep.EXEC_SELECT_SANDBOX, sandbox);
     cy.wait(3000);
 
-    testAutoReplay(replayEventsName);
+    testAutoReplay(replayEventsName, 13);
   });
 
   // Test Automation
@@ -389,21 +391,18 @@ describe('Scenario Execution', function () {
   }
 
   // Auto Replay
-  function testAutoReplay(name) {
+  function testAutoReplay(name, nbEvents) {
     cy.log('Auto Replay');
 
-    testAutoReplayExecution(name, false)
-    cy.wait(1000);
+    testAutoReplayExecution(name, false, nbEvents)
     //confirm execution started
-    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false);
-    cy.wait(75000);
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false, 1000);
     //confirm it executed completely
-    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true, 75000);
 
-    testAutoReplayExecution(name, true)
-    cy.wait(1000);
+    testAutoReplayExecution(name, true, nbEvents)
     //confirm execution started
-    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false);
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false, 1000);
     cy.wait(75000);
     //confirm it executed completely but restarted
     verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false);
@@ -413,7 +412,7 @@ describe('Scenario Execution', function () {
     verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
   }
 
-  function testAutoReplayExecution(name, loop) {
+  function testAutoReplayExecution(name, loop, nbEvents) {
     click(meep.EXEC_BTN_EVENT);
     click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY);
     if (loop) {
@@ -426,8 +425,7 @@ describe('Scenario Execution', function () {
     verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
     click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START)
     //check right number of events will be executed
-    cy.contains("EVENT COUNT");
-    cy.contains("/ 13");
+    verify(meep.MEEP_EVENT_COUNT, 'contain', " / " + nbEvents);
   }
 
   // Event pane display

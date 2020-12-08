@@ -190,6 +190,8 @@ export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
 
+export const MEEP_EVENT_COUNT = 'meep-event-count';
+
 // Trivia
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';
 
