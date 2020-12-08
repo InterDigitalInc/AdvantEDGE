@@ -29,9 +29,11 @@ import {
 } from '../../state/ui';
 
 import {
-  EXEC_EVT_REPLAY_FILES,
-  EXEC_BTN_REPLAY_START,
-  EXEC_BTN_REPLAY_STOP
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_STOP,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY_CHKBOX_LOOP,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_CLOSE
 } from '../../meep-constants';
 
 import { PAGE_EXECUTE } from '../../meep-constants';
@@ -127,7 +129,7 @@ class EventReplayPane extends Component {
               }}
               value={this.props.replayFileSelected}
               disabled={this.replayRunning()}
-              data-cy={EXEC_EVT_REPLAY_FILES}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES}
             />
           </GridCell>
           <GridCell span={12}>
@@ -141,6 +143,7 @@ class EventReplayPane extends Component {
               checked={this.props.replayLoop}
               onChange={e => this.props.changeReplayLoop(e.target.checked)}
               disabled={this.replayRunning()}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY_CHKBOX_LOOP}
             >
               Loop
             </Checkbox>
@@ -154,7 +157,7 @@ class EventReplayPane extends Component {
                 style={styles.button}
                 onClick={() => this.playReplay(this.props.replayFileSelected, this.props.replayLoop)}
                 disabled={!this.canPlay()}
-                data-cy={EXEC_BTN_REPLAY_START}
+                data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START}
               >
                 PLAY
               </Button>
@@ -163,7 +166,7 @@ class EventReplayPane extends Component {
                 style={styles.button}
                 onClick={() => this.stopReplay(this.props.replayFileSelected)}
                 disabled={!this.replayRunning()}
-                data-cy={EXEC_BTN_REPLAY_STOP}
+                data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_STOP}
               >
                 STOP
               </Button>
@@ -171,6 +174,7 @@ class EventReplayPane extends Component {
                 outlined
                 style={styles.button}
                 onClick={this.props.onClose}
+                data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_CLOSE}
               >
                 Close
               </Button>

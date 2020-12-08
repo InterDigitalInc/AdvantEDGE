@@ -28,10 +28,12 @@ import {
 } from '../../state/ui';
 
 import {
-  EXEC_BTN_MANUAL_REPLAY,
-  EXEC_BTN_AUTOMATION,
-  EXEC_BTN_AUTO_REPLAY,
-  EXEC_BTN_SAVE_REPLAY
+  EXEC_BTN_EVENT_BTN_MANUAL_REPLAY,
+  EXEC_BTN_EVENT_BTN_AUTOMATION,
+  EXEC_BTN_EVENT_BTN_AUTO_REPLAY,
+  EXEC_BTN_EVENT_BTN_SAVE_REPLAY,
+  EXEC_BTN_EVENT_BTN_CLOSE,
+  MEEP_EVENT_COUNT
 } from '../../meep-constants';
 
 const styles = {
@@ -55,7 +57,7 @@ const StatusTable = props => {
       </GridCell>
       <GridCell align={'middle'} span={3}>
         <Typography use="subtitle2" style={{ marginRight: 10 }}>EVENT COUNT:</Typography>
-        <Typography use="body2">{props.index} / {props.maxIndex}</Typography>
+        <Typography use="body2" data-cy={MEEP_EVENT_COUNT}>{props.index} / {props.maxIndex}</Typography>
       </GridCell>
       <GridCell align={'middle'} span={4}>
         <Typography use="subtitle2" style={{ marginRight: 10 }}>NEXT/LAST EVENT (S):</Typography>
@@ -136,7 +138,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onCreateEvent()}
-                  data-cy={EXEC_BTN_MANUAL_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_MANUAL_REPLAY}
                 >
                   MANUAL
                 </Button>
@@ -144,7 +146,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onAutomateEvent()}
-                  data-cy={EXEC_BTN_AUTOMATION}
+                  data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION}
                 >
                   AUTOMATION
                 </Button>
@@ -152,7 +154,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={() => this.onReplayEvent()}
-                  data-cy={EXEC_BTN_AUTO_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_AUTO_REPLAY}
                 >
                   AUTO-REPLAY
                 </Button>
@@ -160,7 +162,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={this.props.onSaveReplay}
-                  data-cy={EXEC_BTN_SAVE_REPLAY}
+                  data-cy={EXEC_BTN_EVENT_BTN_SAVE_REPLAY}
                 >
                   SAVE EVENTS
                 </Button>
@@ -168,6 +170,7 @@ class EventContainer extends Component {
                   outlined
                   style={styles.button}
                   onClick={this.props.onCloseEventCfg}
+                  data-cy={EXEC_BTN_EVENT_BTN_CLOSE}
                 >
                   Close
                 </Button>

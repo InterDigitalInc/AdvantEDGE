@@ -171,6 +171,7 @@ import {
   CFG_ELEM_WIRELESS_TYPE,
   CFG_ELEM_INGRESS_SVC_MAP,
   CFG_ELEM_EGRESS_SVC_MAP,
+  CFG_ELEM_META_DISPLAY_MAP_COLOR,
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM,
   CFG_BTN_CLONE_ELEM,
@@ -936,6 +937,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             validate={validateColor}
             label="Zone Color"
             fieldName={FIELD_META_DISPLAY_MAP_COLOR}
+            cydata={CFG_ELEM_META_DISPLAY_MAP_COLOR}
           />
           { !element.editColor ? null :
             <div style={ styles.popover }>
@@ -1138,7 +1140,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             />
           </GridCell>
         </Grid>
-        {isWireless ?
+        {isWireless ? (
           <Grid>
             <CfgTextFieldCell
               span={12}
@@ -1149,8 +1151,10 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
-          </Grid> : <></>
-        }
+          </Grid>
+        ) : (
+          <></>
+        )}
 
         <Grid>
           <CfgTextFieldCell
@@ -1249,7 +1253,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             />
           </GridCell>
         </Grid>
-        {isWireless ?
+        {isWireless ? (
           <Grid>
             <CfgTextFieldCell
               span={12}
@@ -1260,8 +1264,10 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
               fieldName={FIELD_WIRELESS_TYPE}
               cydata={CFG_ELEM_WIRELESS_TYPE}
             />
-          </Grid> : <></>
-        }
+          </Grid> 
+        ) : ( 
+          <></>
+        )}
         
         <Grid>
           <CfgTextFieldCell

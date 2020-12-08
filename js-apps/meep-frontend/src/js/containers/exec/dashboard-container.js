@@ -44,8 +44,10 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
-  DEFAULT_DASHBOARD_OPTIONS
+  DEFAULT_DASHBOARD_OPTIONS,
+  EXEC_BTN_DASHBOARD_BTN_CLOSE
 } from '../../meep-constants';
+
 import { updateObject } from '../../util/object-util';
 
 const styles = {
@@ -251,6 +253,7 @@ const DashboardConfiguration = props => {
               outlined
               style={styles.button}
               onClick={() => props.onCloseDashCfg()}
+              data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
             >
             Close
             </Button>
