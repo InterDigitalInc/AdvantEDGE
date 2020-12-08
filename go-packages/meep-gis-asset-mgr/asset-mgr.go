@@ -139,6 +139,10 @@ type Compute struct {
 type AssetMgr struct {
 	name      string
 	namespace string
+	user      string
+	pwd       string
+	host      string
+	port      string
 	dbName    string
 	db        *sql.DB
 	connected bool
@@ -160,10 +164,14 @@ func NewAssetMgr(name, namespace, user, pwd, host, port string) (am *AssetMgr, e
 	} else {
 		am.namespace = "default"
 	}
+	am.user = user
+	am.pwd = pwd
+	am.host = host
+	am.port = port
 
 	// Connect to Postgis DB
 	for retry := 0; retry <= DbMaxRetryCount; retry++ {
-		am.db, err = am.connectDB("", user, pwd, host, port)
+		am.db, err = am.connectDB("", am.user, am.pwd, am.host, am.port)
 		if err == nil {
 			break
 		}
@@ -183,7 +191,7 @@ func NewAssetMgr(name, namespace, user, pwd, host, port string) (am *AssetMgr, e
 	_ = am.CreateDb(am.dbName)
 
 	// Close connection to postgis DB
-	am.db.Close()
+	_ = am.db.Close()
 
 	// Connect with sandbox-specific DB
 	am.db, err = am.connectDB(am.dbName, user, pwd, host, port)
@@ -239,6 +247,32 @@ func (am *AssetMgr) notifyListener(cbType string, assetName string) {
 	if am.updateCb != nil {
 		go am.updateCb(cbType, assetName)
 	}
+}
+
+// DeleteAssetMgr -
+func (am *AssetMgr) DeleteAssetMgr() (err error) {
+
+	if am.db == nil {
+		err = errors.New("Asset Manager database not initialized")
+		log.Error(err.Error())
+		return err
+	}
+
+	// Close connection to sandbox-specific DB
+	_ = am.db.Close()
+
+	// Connect to Postgis DB
+	am.db, err = am.connectDB("", am.user, am.pwd, am.host, am.port)
+	if err != nil {
+		log.Error("Failed to connect to postgis DB with err: ", err.Error())
+		return err
+	}
+	defer am.db.Close()
+
+	// Destroy sandbox database
+	_ = am.DestroyDb(am.dbName)
+
+	return nil
 }
 
 // CreateDb -- Create new DB with provided name

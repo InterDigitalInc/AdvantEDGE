@@ -189,6 +189,37 @@ func Init() (err error) {
 	return nil
 }
 
+// Uninit - GIS Engine initialization
+func Uninit() (err error) {
+
+	if ge == nil {
+		err = errors.New("GIS Engine not initialized")
+		log.Error(err.Error())
+		return err
+	}
+
+	// Deregister Message Queue handler
+	if ge.mqLocal != nil {
+		ge.mqLocal.UnregisterHandler(ge.handlerId)
+	}
+
+	// Delete GIS Asset Manager
+	if ge.assetMgr != nil {
+		err = ge.assetMgr.DeleteAssetMgr()
+		if err != nil {
+			log.Error(err.Error())
+			return err
+		}
+	}
+
+	// Flush GIS Cache
+	if ge.gisCache != nil {
+		ge.gisCache.Flush()
+	}
+
+	return nil
+}
+
 // Run - GIS Engine thread
 func Run() (err error) {
 

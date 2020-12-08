@@ -52,7 +52,7 @@ func main() {
 		// Initialize GIS Engine
 		err := server.Init()
 		if err != nil {
-			log.Error("Failed to initialize Monitoring Engine")
+			log.Error("Failed to initialize GIS Engine")
 			run = false
 			return
 		}
@@ -60,7 +60,7 @@ func main() {
 		// Start GIS Engine Event Handler thread
 		err = server.Run()
 		if err != nil {
-			log.Error("Failed to start Monitoring Engine")
+			log.Error("Failed to start GIS Engine")
 			run = false
 			return
 		}
@@ -81,5 +81,12 @@ func main() {
 		}
 		time.Sleep(time.Second)
 		count++
+	}
+
+	// Uninitialize GIS Engine
+	err := server.Uninit()
+	if err != nil {
+		log.Error("Failed to uninitialize GIS Engine")
+		return
 	}
 }
