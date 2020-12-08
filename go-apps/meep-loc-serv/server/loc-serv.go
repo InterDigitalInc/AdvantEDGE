@@ -51,9 +51,6 @@ const typeZonalSubscription = "zonalsubs"
 const typeUserSubscription = "usersubs"
 const typeZoneStatusSubscription = "zonestatus"
 
-const USER_TRACKING_AND_ZONAL_TRAFFIC = 1
-const ZONE_STATUS = 2
-
 type UeUserData struct {
 	queryZoneId  []string
 	queryApId    []string
@@ -87,8 +84,8 @@ type ZoneStatusCheck struct {
 	Serviceable            bool
 	Unserviceable          bool
 	Unknown                bool
-	NbUsersInZoneThreshold int
-	NbUsersInAPThreshold   int
+	NbUsersInZoneThreshold int32
+	NbUsersInAPThreshold   int32
 }
 
 var LOC_SERV_DB = 0
@@ -224,8 +221,8 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 			}
 		}
 	}
-	zoneStatus.NbUsersInZoneThreshold = (int)(nbOfUsersZoneThreshold)
-	zoneStatus.NbUsersInAPThreshold = (int)(nbOfUsersAPThreshold)
+	zoneStatus.NbUsersInZoneThreshold = nbOfUsersZoneThreshold
+	zoneStatus.NbUsersInAPThreshold = nbOfUsersAPThreshold
 	zoneStatus.ZoneId = zoneId
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -318,21 +315,7 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 	userSubscriptionMap[subsId] = userAddress
 }
 
-func checkNotificationRegistrations(checkType int, param1 string, param2 string, param3 string, param4 string, param5 string) {
-
-	switch checkType {
-	case USER_TRACKING_AND_ZONAL_TRAFFIC:
-		//params are the following => newZoneId:oldZoneId:newAccessPointId:oldAccessPointId:userAddress
-		checkNotificationRegisteredUsers(param1, param2, param3, param4, param5)
-		checkNotificationRegisteredZones(param1, param2, param3, param4, param5)
-	case ZONE_STATUS:
-		//params are the following => zoneId:accessPointId:nbUsersInAP:nbUsersInZone
-		checkNotificationRegisteredZoneStatus(param1, param2, param3, param4)
-	default:
-	}
-}
-
-func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAPStr string, nbUsersInZoneStr string) {
+func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAP int32, nbUsersInZone int32, previousNbUsersInAP int32, previousNbUsersInZone int32) {
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -344,61 +327,48 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 		}
 
 		if zoneStatus.ZoneId == zoneId {
-			nbUsersInAP := -1
 			zoneWarning := false
 			apWarning := false
-			if nbUsersInZoneStr != "" {
-				nbUsersInZone, err := strconv.Atoi(nbUsersInZoneStr)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				if nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
+			if nbUsersInZone != -1 {
+				if previousNbUsersInZone != nbUsersInZone && nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
 					zoneWarning = true
 				}
-				if nbUsersInAPStr != "" {
-					nbUsersInAP, err = strconv.Atoi(nbUsersInAPStr)
-					if err != nil {
-						log.Error(err)
-						continue
-					}
+			}
+			if nbUsersInAP != -1 {
+				if previousNbUsersInAP != nbUsersInAP && nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
+					apWarning = true
+				}
+			}
 
-					if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
-						apWarning = true
-					}
+			if zoneWarning || apWarning {
+				subsIdStr := strconv.Itoa(subsId)
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
+				if jsonInfo == "" {
+					return
 				}
 
-				if zoneWarning || apWarning {
-					subsIdStr := strconv.Itoa(subsId)
-					jsonInfo, _ := rc.JSONGetEntry(baseKey+typeZoneStatusSubscription+":"+subsIdStr, ".")
-					if jsonInfo == "" {
-						return
-					}
+				subscription := convertJsonToZoneStatusSubscription(jsonInfo)
 
-					subscription := convertJsonToZoneStatusSubscription(jsonInfo)
-
-					var zoneStatusNotif ZoneStatusNotification
-					zoneStatusNotif.ZoneId = zoneId
-					if apWarning {
-						zoneStatusNotif.AccessPointId = apId
-						zoneStatusNotif.NumberOfUsersInAP = (int32)(nbUsersInAP)
-					}
-					if zoneWarning {
-						zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
-					}
-					seconds := time.Now().Unix()
-					var timestamp TimeStamp
-					timestamp.Seconds = int32(seconds)
-					zoneStatusNotif.Timestamp = &timestamp
-					var inlineZoneStatusNotification InlineZoneStatusNotification
-					inlineZoneStatusNotification.ZoneStatusNotification = &zoneStatusNotif
-					sendStatusNotification(subscription.CallbackReference.NotifyURL, inlineZoneStatusNotification)
-					if apWarning {
-						log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
-					} else {
-						log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInZoneStr + " users in total")
-					}
+				var zoneStatusNotif ZoneStatusNotification
+				zoneStatusNotif.ZoneId = zoneId
+				if apWarning {
+					zoneStatusNotif.AccessPointId = apId
+					zoneStatusNotif.NumberOfUsersInAP = nbUsersInAP
+				}
+				if zoneWarning {
+					zoneStatusNotif.NumberOfUsersInZone = nbUsersInZone
+				}
+				seconds := time.Now().Unix()
+				var timestamp TimeStamp
+				timestamp.Seconds = int32(seconds)
+				zoneStatusNotif.Timestamp = &timestamp
+				var inlineZoneStatusNotification InlineZoneStatusNotification
+				inlineZoneStatusNotification.ZoneStatusNotification = &zoneStatusNotif
+				sendStatusNotification(subscription.CallbackReference.NotifyURL, inlineZoneStatusNotification)
+				if apWarning {
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + strconv.Itoa(int(nbUsersInAP)) + " users in AP " + apId)
+				} else {
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + strconv.Itoa(int(nbUsersInZone)) + " users in total")
 				}
 			}
 		}
@@ -971,7 +941,20 @@ func userTrackingSubPost(w http.ResponseWriter, r *http.Request) {
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if userTrackingSub.Address == "" {
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1013,12 +996,25 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 	userTrackingSub := body.UserTrackingSubscription
 
 	if userTrackingSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
+	//checking for mandatory properties
+	if userTrackingSub.CallbackReference == nil || userTrackingSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if userTrackingSub.Address == "" {
+		log.Error("Mandatory Address parameter not present")
+		http.Error(w, "Mandatory Address parameter not present", http.StatusBadRequest)
+		return
+	}
 	if userTrackingSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1029,7 +1025,8 @@ func userTrackingSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//Body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1164,7 +1161,20 @@ func zonalTrafficSubPost(w http.ResponseWriter, r *http.Request) {
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if zonalTrafficSub.ZoneId == "" {
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1218,12 +1228,25 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 	zonalTrafficSub := body.ZonalTrafficSubscription
 
 	if zonalTrafficSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
+	//checking for mandatory properties
+	if zonalTrafficSub.CallbackReference == nil || zonalTrafficSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if zonalTrafficSub.ZoneId == "" {
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		return
+	}
 	if zonalTrafficSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1234,7 +1257,8 @@ func zonalTrafficSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1370,7 +1394,20 @@ func zoneStatusSubPost(w http.ResponseWriter, r *http.Request) {
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
+		return
+	}
+
+	//checking for mandatory properties
+	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if zoneStatusSub.ZoneId == "" {
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1414,12 +1451,25 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 	zoneStatusSub := body.ZoneStatusSubscription
 
 	if zoneStatusSub == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Body not present")
+		http.Error(w, "Body not present", http.StatusBadRequest)
 		return
 	}
 
+	//checking for mandatory properties
+	if zoneStatusSub.CallbackReference == nil || zoneStatusSub.CallbackReference.NotifyURL == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+	if zoneStatusSub.ZoneId == "" {
+		log.Error("Mandatory ZoneId parameter not present")
+		http.Error(w, "Mandatory ZoneId parameter not present", http.StatusBadRequest)
+		return
+	}
 	if zoneStatusSub.ResourceURL == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("Mandatory ResourceURL parameter not present")
+		http.Error(w, "Mandatory ResourceURL parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1430,7 +1480,8 @@ func zoneStatusSubPut(w http.ResponseWriter, r *http.Request) {
 
 	//body content not matching parameters
 	if subsIdStr != subsIdParamStr {
-		w.WriteHeader(http.StatusBadRequest)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1555,7 +1606,9 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 
 	// Update User info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
-	checkNotificationRegistrations(USER_TRACKING_AND_ZONAL_TRAFFIC, oldZoneId, zoneId, oldApId, accessPointId, address)
+	checkNotificationRegisteredUsers(oldZoneId, zoneId, oldApId, accessPointId, address)
+	checkNotificationRegisteredZones(oldZoneId, zoneId, oldApId, accessPointId, address)
+
 }
 
 func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, nbUsers int) {
@@ -1570,6 +1623,8 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		zoneInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId
 	}
 
+	previousNbUsers := zoneInfo.NumberOfUsers
+
 	// Update info
 	if nbAccessPoints != -1 {
 		zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
@@ -1583,7 +1638,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 
 	// Update Zone info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
-	checkNotificationRegistrations(ZONE_STATUS, zoneId, "", "", strconv.Itoa(nbUsers), "")
+	checkNotificationRegisteredZoneStatus(zoneId, "", int32(-1), int32(nbUsers), int32(-1), previousNbUsers)
 }
 
 func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStatusStr string, nbUsers int, longitude *float32, latitude *float32) {
@@ -1597,6 +1652,8 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 		apInfo.AccessPointId = apId
 		apInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId + "/accessPoints/" + apId
 	}
+
+	previousNbUsers := apInfo.NumberOfUsers
 
 	// Update info
 	if opStatusStr != "" {
@@ -1636,7 +1693,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 
 	// Update AP info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
-	checkNotificationRegistrations(ZONE_STATUS, zoneId, apId, strconv.Itoa(nbUsers), "", "")
+	checkNotificationRegisteredZoneStatus(zoneId, apId, int32(nbUsers), int32(-1), previousNbUsers, int32(-1))
 }
 
 func zoneStatusReInit() {
@@ -1674,8 +1731,8 @@ func zoneStatusReInit() {
 					}
 				}
 			}
-			zoneStatus.NbUsersInZoneThreshold = (int)(zone.NumberOfUsersZoneThreshold)
-			zoneStatus.NbUsersInAPThreshold = (int)(zone.NumberOfUsersAPThreshold)
+			zoneStatus.NbUsersInZoneThreshold = zone.NumberOfUsersZoneThreshold
+			zoneStatus.NbUsersInAPThreshold = zone.NumberOfUsersAPThreshold
 			zoneStatus.ZoneId = zone.ZoneId
 			zoneStatusSubscriptionMap[subscriptionId] = &zoneStatus
 		}

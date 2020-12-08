@@ -83,14 +83,18 @@ var nextAvailableErabId int
 const defaultSupportedQci = 80
 
 type RabInfoData struct {
-	queryErabId  int32
-	queryCellIds []string
-	rabInfo      *RabInfo
+	queryErabId        int32
+	queryQci           int32
+	queryCellIds       []string
+	queryIpv4Addresses []string
+	rabInfo            *RabInfo
 }
 
 type UeData struct {
-	ErabId int32 `json:"erabId"`
-	Ecgi   *Ecgi `json:"ecgi"`
+	Name   string `json:"name"`
+	ErabId int32  `json:"erabId"`
+	Ecgi   *Ecgi  `json:"ecgi"`
+	Qci    int32  `json:"qci"`
 }
 
 type DomainData struct {
@@ -219,6 +223,8 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 
 	var ueData UeData
 	ueData.Ecgi = &newEcgi
+	ueData.Name = name
+	ueData.Qci = defaultSupportedQci //only supporting one value
 
 	oldPlmn := new(Plmn)
 	oldPlmnMnc := ""
@@ -1100,6 +1106,13 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	//new subscription id
 	newSubsId := nextSubscriptionIdAvailable
 	nextSubscriptionIdAvailable++
@@ -1243,10 +1256,17 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	//extract common body part
 	subscriptionType := subscriptionCommon.SubscriptionType
 
+	//mandatory parameter
+	if subscriptionCommon.CallbackReference == "" {
+		log.Error("Mandatory CallbackReference parameter not present")
+		http.Error(w, "Mandatory CallbackReference parameter not present", http.StatusBadRequest)
+		return
+	}
+
 	link := subscriptionCommon.Links
 	if link == nil || link.Self == nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.Error("Mandatory Link parameter not present")
+		http.Error(w, "Mandatory Link parameter not present", http.StatusBadRequest)
 		return
 	}
 
@@ -1254,7 +1274,8 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 	subsIdStr := selfUrl[len(selfUrl)-1]
 
 	if subsIdStr != subIdParamStr {
-		http.Error(w, "Body content not matching parameter", http.StatusInternalServerError)
+		log.Error("SubscriptionId in endpoint and in body not matching")
+		http.Error(w, "SubscriptionId in endpoint and in body not matching", http.StatusBadRequest)
 		return
 	}
 
@@ -1273,7 +1294,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaAssocHo == nil {
 			log.Error("FilterCriteriaAssocHo should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaAssocHo should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1299,7 +1320,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1321,7 +1342,7 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 
 		if subscription.FilterCriteriaQci == nil {
 			log.Error("FilterCriteriaQci should not be null for this subscription type")
-			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusInternalServerError)
+			http.Error(w, "FilterCriteriaQci should not be null for this subscription type", http.StatusBadRequest)
 			return
 		}
 
@@ -1613,10 +1634,22 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 		rabInfoData.queryErabId = -1
 	}
 
+	qciStr := q.Get("qci")
+	if qciStr != "" {
+		tmpQci, _ := strconv.Atoi(qciStr)
+		rabInfoData.queryQci = int32(tmpQci)
+	} else {
+		rabInfoData.queryQci = -1
+	}
+
+	/*comma separated list
 	cellIdStr := q.Get("cell_id")
 	cellIds := strings.Split(cellIdStr, ",")
 
 	rabInfoData.queryCellIds = cellIds
+	*/
+	rabInfoData.queryCellIds = q["cell_id"]
+	rabInfoData.queryIpv4Addresses = q["ue_ipv4_address"]
 
 	//same for all plmnInfo
 	seconds := time.Now().Unix()
@@ -1678,11 +1711,31 @@ func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error
 		return nil
 	}
 
+	// Filter using query params
+	if data.queryQci != -1 && ueData.Qci != data.queryQci {
+		return nil
+	}
+
 	partOfFilter := true
 	for _, cellId := range data.queryCellIds {
 		if cellId != "" {
 			partOfFilter = false
 			if cellId == ueData.Ecgi.CellId {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	//name of the element is used as the ipv4 address at the moment
+	partOfFilter = true
+	for _, address := range data.queryIpv4Addresses {
+		if address != "" {
+			partOfFilter = false
+			if address == ueData.Name {
 				partOfFilter = true
 				break
 			}
