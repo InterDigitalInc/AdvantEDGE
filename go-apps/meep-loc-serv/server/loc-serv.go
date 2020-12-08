@@ -51,9 +51,6 @@ const typeZonalSubscription = "zonalsubs"
 const typeUserSubscription = "usersubs"
 const typeZoneStatusSubscription = "zonestatus"
 
-const USER_TRACKING_AND_ZONAL_TRAFFIC = 1
-const ZONE_STATUS = 2
-
 type UeUserData struct {
 	queryZoneId  []string
 	queryApId    []string
@@ -87,8 +84,8 @@ type ZoneStatusCheck struct {
 	Serviceable            bool
 	Unserviceable          bool
 	Unknown                bool
-	NbUsersInZoneThreshold int
-	NbUsersInAPThreshold   int
+	NbUsersInZoneThreshold int32
+	NbUsersInAPThreshold   int32
 }
 
 var LOC_SERV_DB = 0
@@ -104,9 +101,6 @@ var basePath string
 var baseKey string
 var sessionMgr *sm.SessionMgr
 var mutex sync.Mutex
-
-var previousNbUsersInAp int
-var previousNbUsersInZone int
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -227,8 +221,8 @@ func registerZoneStatus(zoneId string, nbOfUsersZoneThreshold int32, nbOfUsersAP
 			}
 		}
 	}
-	zoneStatus.NbUsersInZoneThreshold = (int)(nbOfUsersZoneThreshold)
-	zoneStatus.NbUsersInAPThreshold = (int)(nbOfUsersAPThreshold)
+	zoneStatus.NbUsersInZoneThreshold = nbOfUsersZoneThreshold
+	zoneStatus.NbUsersInAPThreshold = nbOfUsersAPThreshold
 	zoneStatus.ZoneId = zoneId
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -321,21 +315,7 @@ func registerUser(userAddress string, event []UserEventType, subsIdStr string) {
 	userSubscriptionMap[subsId] = userAddress
 }
 
-func checkNotificationRegistrations(checkType int, param1 string, param2 string, param3 string, param4 string, param5 string) {
-
-	switch checkType {
-	case USER_TRACKING_AND_ZONAL_TRAFFIC:
-		//params are the following => newZoneId:oldZoneId:newAccessPointId:oldAccessPointId:userAddress
-		checkNotificationRegisteredUsers(param1, param2, param3, param4, param5)
-		checkNotificationRegisteredZones(param1, param2, param3, param4, param5)
-	case ZONE_STATUS:
-		//params are the following => zoneId:accessPointId:nbUsersInAP:nbUsersInZone
-		checkNotificationRegisteredZoneStatus(param1, param2, param3, param4)
-	default:
-	}
-}
-
-func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAPStr string, nbUsersInZoneStr string) {
+func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersInAP int32, nbUsersInZone int32, previousNbUsersInAP int32, previousNbUsersInZone int32) {
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -347,45 +327,16 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 		}
 
 		if zoneStatus.ZoneId == zoneId {
-			nbUsersInAP := -1
-			nbUsersInZone := -1
 			zoneWarning := false
 			apWarning := false
-			var err error
-			if nbUsersInZoneStr != "" {
-				nbUsersInZone, err = strconv.Atoi(nbUsersInZoneStr)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				if nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
+			if nbUsersInZone != -1 {
+				if previousNbUsersInZone != nbUsersInZone && nbUsersInZone >= zoneStatus.NbUsersInZoneThreshold {
 					zoneWarning = true
 				}
-				//always updates the current number of users if it has changed
-				//only send notification if the number of users has changed from the last time it was sent
-				if previousNbUsersInZone != nbUsersInZone {
-					previousNbUsersInZone = nbUsersInZone
-				} else {
-					zoneWarning = false
-				}
 			}
-			if nbUsersInAPStr != "" {
-				nbUsersInAP, err = strconv.Atoi(nbUsersInAPStr)
-				if err != nil {
-					log.Error(err)
-					continue
-				}
-
-				if nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
+			if nbUsersInAP != -1 {
+				if previousNbUsersInAP != nbUsersInAP && nbUsersInAP >= zoneStatus.NbUsersInAPThreshold {
 					apWarning = true
-				}
-				//always updates the current number of users if it has changed
-				//only send notification if the number of users has changed from the last time it was sent
-				if previousNbUsersInAp != nbUsersInAP {
-					previousNbUsersInAp = nbUsersInAP
-				} else {
-					apWarning = false
 				}
 			}
 
@@ -402,10 +353,10 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 				zoneStatusNotif.ZoneId = zoneId
 				if apWarning {
 					zoneStatusNotif.AccessPointId = apId
-					zoneStatusNotif.NumberOfUsersInAP = (int32)(nbUsersInAP)
+					zoneStatusNotif.NumberOfUsersInAP = nbUsersInAP
 				}
 				if zoneWarning {
-					zoneStatusNotif.NumberOfUsersInZone = (int32)(nbUsersInZone)
+					zoneStatusNotif.NumberOfUsersInZone = nbUsersInZone
 				}
 				seconds := time.Now().Unix()
 				var timestamp TimeStamp
@@ -415,9 +366,9 @@ func checkNotificationRegisteredZoneStatus(zoneId string, apId string, nbUsersIn
 				inlineZoneStatusNotification.ZoneStatusNotification = &zoneStatusNotif
 				sendStatusNotification(subscription.CallbackReference.NotifyURL, inlineZoneStatusNotification)
 				if apWarning {
-					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInAPStr + " users in AP " + apId)
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + strconv.Itoa(int(nbUsersInAP)) + " users in AP " + apId)
 				} else {
-					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + nbUsersInZoneStr + " users in total")
+					log.Info("Zone Status Notification" + "(" + subsIdStr + "): " + "For event in zone " + zoneId + " which has " + strconv.Itoa(int(nbUsersInZone)) + " users in total")
 				}
 			}
 		}
@@ -1586,8 +1537,6 @@ func cleanUp() {
 	nextZonalSubscriptionIdAvailable = 1
 	nextUserSubscriptionIdAvailable = 1
 	nextZoneStatusSubscriptionIdAvailable = 1
-	previousNbUsersInAp = 0
-	previousNbUsersInZone = 0
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -1657,7 +1606,9 @@ func updateUserInfo(address string, zoneId string, accessPointId string, longitu
 
 	// Update User info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeUser+":"+address, ".", convertUserInfoToJson(userInfo))
-	checkNotificationRegistrations(USER_TRACKING_AND_ZONAL_TRAFFIC, oldZoneId, zoneId, oldApId, accessPointId, address)
+	checkNotificationRegisteredUsers(oldZoneId, zoneId, oldApId, accessPointId, address)
+	checkNotificationRegisteredZones(oldZoneId, zoneId, oldApId, accessPointId, address)
+
 }
 
 func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, nbUsers int) {
@@ -1672,6 +1623,8 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 		zoneInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId
 	}
 
+	previousNbUsers := zoneInfo.NumberOfUsers
+
 	// Update info
 	if nbAccessPoints != -1 {
 		zoneInfo.NumberOfAccessPoints = int32(nbAccessPoints)
@@ -1685,7 +1638,7 @@ func updateZoneInfo(zoneId string, nbAccessPoints int, nbUnsrvAccessPoints int, 
 
 	// Update Zone info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId, ".", convertZoneInfoToJson(zoneInfo))
-	checkNotificationRegistrations(ZONE_STATUS, zoneId, "", "", strconv.Itoa(nbUsers), "")
+	checkNotificationRegisteredZoneStatus(zoneId, "", int32(-1), int32(nbUsers), int32(-1), previousNbUsers)
 }
 
 func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStatusStr string, nbUsers int, longitude *float32, latitude *float32) {
@@ -1699,6 +1652,8 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 		apInfo.AccessPointId = apId
 		apInfo.ResourceURL = hostUrl.String() + basePath + "queries/zones/" + zoneId + "/accessPoints/" + apId
 	}
+
+	previousNbUsers := apInfo.NumberOfUsers
 
 	// Update info
 	if opStatusStr != "" {
@@ -1738,7 +1693,7 @@ func updateAccessPointInfo(zoneId string, apId string, conTypeStr string, opStat
 
 	// Update AP info in DB & Send notifications
 	_ = rc.JSONSetEntry(baseKey+typeZone+":"+zoneId+":"+typeAccessPoint+":"+apId, ".", convertAccessPointInfoToJson(apInfo))
-	checkNotificationRegistrations(ZONE_STATUS, zoneId, apId, strconv.Itoa(nbUsers), "", "")
+	checkNotificationRegisteredZoneStatus(zoneId, apId, int32(nbUsers), int32(-1), previousNbUsers, int32(-1))
 }
 
 func zoneStatusReInit() {
@@ -1776,8 +1731,8 @@ func zoneStatusReInit() {
 					}
 				}
 			}
-			zoneStatus.NbUsersInZoneThreshold = (int)(zone.NumberOfUsersZoneThreshold)
-			zoneStatus.NbUsersInAPThreshold = (int)(zone.NumberOfUsersAPThreshold)
+			zoneStatus.NbUsersInZoneThreshold = zone.NumberOfUsersZoneThreshold
+			zoneStatus.NbUsersInAPThreshold = zone.NumberOfUsersAPThreshold
 			zoneStatus.ZoneId = zone.ZoneId
 			zoneStatusSubscriptionMap[subscriptionId] = &zoneStatus
 		}
