@@ -1648,7 +1648,7 @@ const getSuggestedName = ( type, elements ) => {
   var suggestedPrefix = '';
   switch(type) {
   case ELEMENT_TYPE_UE_APP:
-    suggestedPrefix = 'ue-app';
+    suggestedPrefix = 'term-app';
     break;
   case ELEMENT_TYPE_EDGE_APP:
     suggestedPrefix = 'edge-app';
@@ -1670,6 +1670,9 @@ const getSuggestedName = ( type, elements ) => {
     break;
   case ELEMENT_TYPE_OPERATOR_CELL:
     suggestedPrefix = 'operator-cell';
+    break;
+  case ELEMENT_TYPE_UE:
+    suggestedPrefix = 'term';
     break;
   default:
     suggestedPrefix = type.toLowerCase();

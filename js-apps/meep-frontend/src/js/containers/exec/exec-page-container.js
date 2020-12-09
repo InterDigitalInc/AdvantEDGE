@@ -204,6 +204,13 @@ class ExecPageContainer extends Component {
 
   // DEPLOY DIALOG
   onDeployScenario() {
+    // Close all open panes
+    this.props.dashCfgMode ? this.onCloseDashCfg() : '';
+    this.props.eventCfgMode ? this.onCloseEventCfg(): '';
+    this.props.eventCreationMode ? this.onQuitEventCreationMode() : '';
+    this.props.eventAutomationMode ? this.onQuitEventAutomationMode() : '';
+    this.props.eventReplayMode ? this.onQuitEventReplayMode() : '';
+
     // Retrieve list of available scenarios
     this.props.cfgApi.getScenarioList((error, data, response) => {
       this.getScenarioListDeployCb(error, data, response);
