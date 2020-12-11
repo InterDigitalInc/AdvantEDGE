@@ -157,14 +157,19 @@ func deleteSandbox(name string) error {
 
 func createScenario(name string, filepath string) error {
 
-	//get the content of the file
-	content, err := ioutil.ReadFile(filepath)
+	//get the content of the file, assuming yaml content
+	yamlContent, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		log.Error("couldn't read file: ", err)
+		log.Error("Couldn't read file: ", err)
 		return err
 	}
 
-	jsonContent, err := yaml.YAMLToJSON(content)
+	//converting to json since unmarshal with yaml directly not working well, while json does
+	jsonContent, err := yaml.YAMLToJSON(yamlContent)
+        if err != nil {
+                log.Error("Failed converting yaml to json: ", err)
+                return err
+        }
 
 	var scenario platformCtrlClient.Scenario
 	err = json.Unmarshal([]byte(jsonContent), &scenario)

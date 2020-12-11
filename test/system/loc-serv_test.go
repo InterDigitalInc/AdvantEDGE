@@ -69,7 +69,7 @@ func Test_loc_serv_load_scenarios(t *testing.T) {
 	// no override if the name is already in the DB.. security not to override something important
 	err := createScenario("loc-serv-system-test", "loc-serv-system-test.yaml")
 	if err != nil {
-		t.Fatal("cannot create scenario :", err)
+		t.Fatal("Cannot create scenario, keeping the one already there and continuing testing with it :", err)
 	}
 }
 
