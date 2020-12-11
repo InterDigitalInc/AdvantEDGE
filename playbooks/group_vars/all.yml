@@ -8,8 +8,8 @@ ansible_python_interpreter: /usr/bin/python3
 docker_version: "5:19.03"
 
 # Kubernetes
-kube_version: "1.15"
-cni_version: "0.7.5"
+kube_version: "1.19"
+cni_version: "0.8.7"
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_default_ipv4'].address | default(groups['master'][0]) }}"
 network_dir: /etc/kubernetes/network
 kubeadmin_config: /etc/kubernetes/admin.conf

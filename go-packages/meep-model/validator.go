@@ -34,7 +34,7 @@ const (
 )
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 6}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 0}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
