@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"context"
@@ -17,8 +18,10 @@ var locServServerUrl string
 
 func init() {
 
-	startSystemTest()
-
+	err := startSystemTest()
+	if err != nil {
+		log.Fatal("Cannot start system test")
+	}
 	//create client
 	locServAppClientCfg := locServClient.NewConfiguration()
 	if hostUrlStr == "" {
@@ -39,10 +42,17 @@ func init() {
 
 func initialiseTest() {
 	log.Info("activating Scenario")
-	activateScenario("system-test")
+	err := activateScenario("system-test")
+	if err != nil {
+		log.Fatal("Scenario cannot be activated: ", err)
+	}
 	time.Sleep(1000 * time.Millisecond)
 	//enable gis engine mobility, poas-in-range and netchar update
 	geAutomationUpdate(true, false, true, true)
+	if err != nil {
+		log.Fatal("GIS engine error: ", err)
+	}
+
 	time.Sleep(1000 * time.Millisecond)
 }
 
@@ -52,7 +62,6 @@ func clearUpTest() {
 	time.Sleep(1000 * time.Millisecond)
 }
 
-/*
 func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -64,7 +73,7 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -74,16 +83,17 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.415917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g2", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g2", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -99,7 +109,7 @@ func Test_4g_to_4g_diff_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -109,22 +119,23 @@ func Test_4g_to_4g_diff_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 2 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "", "Entering")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "", "Entering")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -140,7 +151,7 @@ func Test_4g_to_5g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -150,16 +161,17 @@ func Test_4g_to_5g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -175,7 +187,7 @@ func Test_4g_to_wifi_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -185,16 +197,17 @@ func Test_4g_to_wifi_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -210,7 +223,7 @@ func Test_4g_to_generic_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -220,16 +233,17 @@ func Test_4g_to_generic_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -245,7 +259,7 @@ func Test_4g_to_none_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -255,16 +269,17 @@ func Test_4g_to_none_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -280,7 +295,7 @@ func Test_5g_to_5g_same_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(1500 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -290,16 +305,17 @@ func Test_5g_to_5g_same_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.421917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g3", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g3", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -315,7 +331,7 @@ func Test_5g_to_5g_diff_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -325,22 +341,23 @@ func Test_5g_to_5g_diff_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 2 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "", "Entering")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "", "Entering")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -356,7 +373,7 @@ func Test_5g_to_4g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -366,16 +383,17 @@ func Test_5g_to_4g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -391,7 +409,7 @@ func Test_5g_to_wifi_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -401,16 +419,17 @@ func Test_5g_to_wifi_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-wifi2", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-wifi2", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -426,7 +445,7 @@ func Test_5g_to_generic_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -436,16 +455,17 @@ func Test_5g_to_generic_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa2", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa2", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -461,7 +481,7 @@ func Test_5g_to_none_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -471,16 +491,17 @@ func Test_5g_to_none_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -496,7 +517,7 @@ func Test_wifi_to_wifi_same_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -506,16 +527,17 @@ func Test_wifi_to_wifi_same_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.427917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -531,7 +553,7 @@ func Test_wifi_to_wifi_diff_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -541,22 +563,23 @@ func Test_wifi_to_wifi_diff_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 2 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "", "Entering")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "", "Entering")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -572,7 +595,7 @@ func Test_wifi_to_5g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -582,16 +605,17 @@ func Test_wifi_to_5g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -607,7 +631,7 @@ func Test_wifi_to_4g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -617,16 +641,17 @@ func Test_wifi_to_4g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-4g4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-4g4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -642,7 +667,7 @@ func Test_wifi_to_generic_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -652,16 +677,17 @@ func Test_wifi_to_generic_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa3", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa3", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -677,7 +703,7 @@ func Test_wifi_to_none_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -687,16 +713,17 @@ func Test_wifi_to_none_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -712,7 +739,7 @@ func Test_generic_to_generic_same_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -722,16 +749,17 @@ func Test_generic_to_generic_same_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.433917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -747,7 +775,7 @@ func Test_generic_to_generic_diff_zone_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -757,22 +785,23 @@ func Test_generic_to_generic_diff_zone_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.435917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 2 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone5", "poa6", "", "Entering")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone5", "poa6", "", "Entering")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -788,7 +817,7 @@ func Test_gereneric_to_wifi_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -798,16 +827,17 @@ func Test_gereneric_to_wifi_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -823,7 +853,7 @@ func Test_generic_to_4g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -833,16 +863,17 @@ func Test_generic_to_4g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-4g5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-4g5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -858,7 +889,7 @@ func Test_generic_to_5g_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -868,16 +899,17 @@ func Test_generic_to_5g_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-5g5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-5g5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -893,7 +925,7 @@ func Test_generic_to_none_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -903,16 +935,17 @@ func Test_generic_to_none_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -928,7 +961,7 @@ func Test_none_to_none_userTracking(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -938,7 +971,7 @@ func Test_none_to_none_userTracking(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 1.0, 1.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
@@ -957,7 +990,7 @@ func Test_4g_to_4g_same_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -967,16 +1000,17 @@ func Test_4g_to_4g_same_zone_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.415917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g2", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g2", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -993,7 +1027,7 @@ func Test_4g_to_4g_diff_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1003,16 +1037,17 @@ func Test_4g_to_4g_diff_zone_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1029,7 +1064,7 @@ func Test_4g_to_5g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1039,16 +1074,17 @@ func Test_4g_to_5g_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1065,7 +1101,7 @@ func Test_4g_to_wifi_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1075,16 +1111,17 @@ func Test_4g_to_wifi_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1101,7 +1138,7 @@ func Test_4g_to_generic_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1111,16 +1148,17 @@ func Test_4g_to_generic_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa1", "poa-4g1", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa1", "poa-4g1", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1137,7 +1175,7 @@ func Test_4g_to_none_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1147,16 +1185,17 @@ func Test_4g_to_none_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1173,7 +1212,7 @@ func Test_5g_to_5g_same_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1183,16 +1222,17 @@ func Test_5g_to_5g_same_zone_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.421917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g3", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g3", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1209,7 +1249,7 @@ func Test_5g_to_5g_diff_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1219,16 +1259,17 @@ func Test_5g_to_5g_diff_zone_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1245,7 +1286,7 @@ func Test_5g_to_4g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1255,16 +1296,17 @@ func Test_5g_to_4g_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.417917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g3", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g3", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1281,7 +1323,7 @@ func Test_5g_to_wifi_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1291,16 +1333,17 @@ func Test_5g_to_wifi_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi2", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi2", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1317,7 +1360,7 @@ func Test_5g_to_generic_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1327,16 +1370,17 @@ func Test_5g_to_generic_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa2", "poa-5g2", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa2", "poa-5g2", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1353,17 +1397,17 @@ func Test_5g_to_none_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
@@ -1373,6 +1417,7 @@ func Test_5g_to_none_zonalTraffic(t *testing.T) {
 		}
 		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1389,10 +1434,10 @@ func Test_wifi_to_wifi_same_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 
 	if err != nil {
 		t.Fatalf("Subscription failed")
@@ -1400,16 +1445,17 @@ func Test_wifi_to_wifi_same_zone_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.427917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1426,26 +1472,27 @@ func Test_wifi_to_wifi_diff_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1462,26 +1509,27 @@ func Test_wifi_to_5g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.423917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1498,26 +1546,27 @@ func Test_wifi_to_4g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g4", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g4", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1534,26 +1583,27 @@ func Test_wifi_to_generic_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa3", "poa-wifi3", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa3", "poa-wifi3", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1570,26 +1620,27 @@ func Test_wifi_to_none_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.425917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1606,26 +1657,27 @@ func Test_generic_to_generic_same_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.433917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1642,26 +1694,27 @@ func Test_generic_to_generic_diff_zone_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-       err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.435917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1678,26 +1731,27 @@ func Test_gereneric_to_wifi_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-      err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.429917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1714,26 +1768,27 @@ func Test_generic_to_4g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-      err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1750,26 +1805,27 @@ func Test_generic_to_5g_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-      err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g5", "poa4", "Transferring")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g5", "poa4", "Transferring")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1786,26 +1842,27 @@ func Test_generic_to_none_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.431917, 43.733505)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-        err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
 		var body locServClient.InlineZonalPresenceNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
-                if err != nil {
-                        t.Fatalf("cannot unmarshall response")
-                }
-                validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
@@ -1822,7 +1879,7 @@ func Test_none_to_none_zonalTraffic(t *testing.T) {
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
@@ -1832,13 +1889,12 @@ func Test_none_to_none_zonalTraffic(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates(testAddress, 1.0, 1.0)
-        time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
 	}
 }
-*/
 
 func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -1854,18 +1910,17 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 5)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 5)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.413917, 43.733505)
-
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
@@ -1873,7 +1928,7 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue2", 7.413917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 1 {
@@ -1884,12 +1939,13 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 7.413917, 43.733505)
-	time.Sleep(60000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater than AP threshold
 	if len(httpReqBody) == 2 {
@@ -1900,28 +1956,30 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 3 {
 		var body locServClient.InlineZoneStatusNotification
-		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
+		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue4", 7.415917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, no change to poa that has equal value to threshold
 	if len(httpReqBody) != 3 {
@@ -1931,7 +1989,7 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, values below AP threshold
 	if len(httpReqBody) != 3 {
@@ -1946,25 +2004,24 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 	initialiseTest()
 	defer clearUpTest()
 
-	testZoneId := "zone1"
+	testZoneId := "zone2"
 
 	//moving to initial position
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 5)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 5)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.419917, 43.733505)
-
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
@@ -1972,7 +2029,7 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue2", 7.419917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 1 {
@@ -1981,14 +2038,15 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 7.419917, 43.733505)
-	time.Sleep(60000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater than AP threshold
 	if len(httpReqBody) == 2 {
@@ -1997,30 +2055,32 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 3, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 3 {
 		var body locServClient.InlineZoneStatusNotification
-		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
+		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue4", 7.421917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, no change to poa that has equal value to threshold
 	if len(httpReqBody) != 3 {
@@ -2030,7 +2090,7 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, values below AP threshold
 	if len(httpReqBody) != 3 {
@@ -2045,25 +2105,24 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 	initialiseTest()
 	defer clearUpTest()
 
-	testZoneId := "zone1"
+	testZoneId := "zone3"
 
 	//moving to initial position
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 5)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 5)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.425917, 43.733505)
-
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
@@ -2071,7 +2130,7 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue2", 7.425917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 1 {
@@ -2080,14 +2139,15 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 7.425917, 43.733505)
-	time.Sleep(60000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater than AP threshold
 	if len(httpReqBody) == 2 {
@@ -2096,30 +2156,32 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 3, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 3 {
 		var body locServClient.InlineZoneStatusNotification
-		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
+		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue4", 7.427917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, no change to poa that has equal value to threshold
 	if len(httpReqBody) != 3 {
@@ -2129,7 +2191,7 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, values below AP threshold
 	if len(httpReqBody) != 3 {
@@ -2144,17 +2206,17 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 	initialiseTest()
 	defer clearUpTest()
 
-	testZoneId := "zone1"
+	testZoneId := "zone4"
 
 	//moving to initial position
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 5)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 5)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
@@ -2162,7 +2224,7 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 7.431917, 43.733505)
 
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
 		t.Fatalf("Notification received")
@@ -2170,7 +2232,7 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue2", 7.431917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 1 {
@@ -2179,14 +2241,15 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 7.431917, 43.733505)
-	time.Sleep(60000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater than AP threshold
 	if len(httpReqBody) == 2 {
@@ -2195,30 +2258,32 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 3, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to AP threshold
 	if len(httpReqBody) == 3 {
 		var body locServClient.InlineZoneStatusNotification
-		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
+		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue4", 7.433917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, no change to poa that has equal value to threshold
 	if len(httpReqBody) != 3 {
@@ -2228,7 +2293,7 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, values below AP threshold
 	if len(httpReqBody) != 3 {
@@ -2250,21 +2315,21 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 3)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 3)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
 	//moving to each different type of POA
-	geMoveAssetCoordinates("ue1", 7.413917, 43.733505)
+	geMoveAssetCoordinates("ue1", 7.415917, 43.733505)
 	geMoveAssetCoordinates("ue2", 7.419917, 43.733505)
-	geMoveAssetCoordinates("ue3", 7.425917, 43.733505)
-	geMoveAssetCoordinates("ue4", 7.431917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	geMoveAssetCoordinates("ue3", 7.413917, 43.735005)
+	geMoveAssetCoordinates("ue4", 7.413917, 43.732005)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater to zone threshold
 	if len(httpReqBody) == 1 {
@@ -2275,12 +2340,13 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 4)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being equal to zone threshold
 	if len(httpReqBody) == 2 {
@@ -2291,12 +2357,13 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 
 	log.Info("moving asset")
 	geMoveAssetCoordinates("ue1", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification not received, values below zone threshold
 	if len(httpReqBody) != 2 {
@@ -2318,51 +2385,95 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 	geMoveAssetCoordinates("ue2", 0.0, 0.0)
 	geMoveAssetCoordinates("ue3", 0.0, 0.0)
 	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
-	err := locServSubscriptionZoneStatus(testZoneId, "http://10.3.16.150:3000" /*locServServerUrl*/, 2, 3)
+	err := locServSubscriptionZoneStatus(testZoneId, locServServerUrl, 2, 3)
 	if err != nil {
 		t.Fatalf("Subscription failed")
 	}
 
 	log.Info("moving asset")
-	//moving to each different type of POA
+	//moving to one POA and triggering a AP threshold, so 1 notification for AP threshold
 	geMoveAssetCoordinates("ue1", 7.413917, 43.733505)
 	geMoveAssetCoordinates("ue2", 7.413917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+	//moving to same POA and triggering a AP and zone thresholds, so 1 notification for AP threshold, and 1 for zone threshold
 	geMoveAssetCoordinates("ue3", 7.413917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+	//moving to same POA and triggering a AP and zone thresholds, so 1 notification for AP threshold, and 1 for zone threshold
 	geMoveAssetCoordinates("ue4", 7.413917, 43.733505)
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
+	//removing one ue from same POA and triggering a AP and zone thresholds, so 1 notification for AP threshold, and 1 for zone threshold
+	geMoveAssetCoordinates("ue4", 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+	//removing one ue from same POA and triggering a AP threshold only, so 1 notification for AP threshold
+	geMoveAssetCoordinates("ue3", 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+	//removing one ue from same POA and triggering no threshold
+	geMoveAssetCoordinates("ue2", 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
 
 	//notification received for being greater to zone threshold
-	if len(httpReqBody) == 2 {
+	if len(httpReqBody) == 8 {
 		var body locServClient.InlineZoneStatusNotification
 		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 4, -1)
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+
+		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
+
+		err = json.Unmarshal([]byte(httpReqBody[3]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 4, -1)
+
+		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
 		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 4)
+
+		err = json.Unmarshal([]byte(httpReqBody[5]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+
+		err = json.Unmarshal([]byte(httpReqBody[6]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
+
+		err = json.Unmarshal([]byte(httpReqBody[7]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+
 	} else {
+		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
+}
 
-	log.Info("moving asset")
-	geMoveAssetCoordinates("ue1", 0.0, 0.0)
-	geMoveAssetCoordinates("ue2", 0.0, 0.0)
-	geMoveAssetCoordinates("ue3", 0.0, 0.0)
-	geMoveAssetCoordinates("ue4", 0.0, 0.0)
-	time.Sleep(1000 * time.Millisecond)
-
-	//notification not received, values below zone threshold
-	if len(httpReqBody) != 2 {
-		t.Fatalf("Notification received")
-	}
+//not a real test, just the last test that stops the system test environment
+func Test_stopSystemTest(t *testing.T) {
+	stopSystemTest()
 }
 
 func locServSubscriptionUserTracking(address string, callbackReference string) error {
@@ -2429,24 +2540,21 @@ func validateZonalPresenceNotification(t *testing.T, zonalPresenceNotification *
 func validateZoneStatusNotification(t *testing.T, zoneStatusNotification *locServClient.ZoneStatusNotification, expectedZoneId string, expectedApId string, expectedNbUsersInAP int32, expectedNbUsersInZone int32) {
 
 	if zoneStatusNotification.ZoneId != expectedZoneId {
-		t.Fatalf("ZoneId of notification not as expected")
+		t.Fatalf("ZoneId of notification not as expected: " + zoneStatusNotification.ZoneId + " instead of " + expectedZoneId)
 	}
 
 	if expectedNbUsersInZone != -1 {
 		if zoneStatusNotification.NumberOfUsersInZone != expectedNbUsersInZone {
-			t.Fatalf("NumberOfUsersInZone of notification not as expected")
+			t.Fatalf("NumberOfUsersInZone of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInZone)) + " instead of " + strconv.Itoa(int(expectedNbUsersInZone)))
 		}
 	}
 	if expectedNbUsersInAP != -1 {
-		if zoneStatusNotification.AccessPointId != expectedApId {
-			t.Fatalf("AccessPointId of notification not as expected")
-		}
 		if zoneStatusNotification.NumberOfUsersInAP != expectedNbUsersInAP {
-			t.Fatalf("NumberOfUsersInAP of notification not as expected")
+			t.Fatalf("NumberOfUsersInAP of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInAP)) + " instead of " + strconv.Itoa(int(expectedNbUsersInAP)))
 		}
-	} else {
-		if zoneStatusNotification.AccessPointId != "" {
-			t.Fatalf("AccessPointId of notification not as expected")
+		if zoneStatusNotification.AccessPointId != expectedApId {
+			t.Fatalf("AccessPointId of notification not as expected: " + zoneStatusNotification.AccessPointId + " instead of " + expectedApId)
 		}
+
 	}
 }
