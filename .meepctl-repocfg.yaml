@@ -31,7 +31,8 @@ repo:
     # platform ingress configuration
     ingress:
       # host name
-      host: my-platform-fqdn
+      #host: my-platform-fqdn
+      host: 10.3.16.150
       # enable https only (redirect http requests to https port)
       https-only: false
       # bind to host ports (true) or node ports (false)
