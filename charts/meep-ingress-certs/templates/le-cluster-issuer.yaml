@@ -1,0 +1,33 @@
+{{- if .Values.letsEncrypt.enabled }}
+{{- if .Values.letsEncrypt.acme.prod }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.letsEncrypt.issuer }}-prod
+spec:
+  acme:
+    server: {{ .Values.letsEncrypt.acme.prodServer }}
+    email: AdvantEDGE@InterDigital.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+{{- else }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.letsEncrypt.issuer }}-staging
+spec:
+  acme:
+    server: {{ .Values.letsEncrypt.acme.stagingServer }}
+    email: AdvantEDGE@InterDigital.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+{{- end }}
+{{- end }}

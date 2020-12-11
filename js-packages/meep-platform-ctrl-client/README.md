@@ -129,12 +129,18 @@ Class | Method | HTTP request | Description
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenario**](docs/ScenarioConfigurationApi.md#getScenario) | **GET** /scenarios/{name} | Get a specific scenario
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**getScenarioList**](docs/ScenarioConfigurationApi.md#getScenarioList) | **GET** /scenarios | Get all scenarios
 *AdvantEdgePlatformControllerRestApi.ScenarioConfigurationApi* | [**setScenario**](docs/ScenarioConfigurationApi.md#setScenario) | **PUT** /scenarios/{name} | Update a scenario
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**authorize**](docs/UserAuthenticationApi.md#authorize) | **GET** /authorize | OAuth authorization response endpoint
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginOAuth**](docs/UserAuthenticationApi.md#loginOAuth) | **GET** /login | Initiate OAuth login procedure
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**loginUser**](docs/UserAuthenticationApi.md#loginUser) | **POST** /login | Start a session
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**logoutUser**](docs/UserAuthenticationApi.md#logoutUser) | **GET** /logout | Terminate a session
+*AdvantEdgePlatformControllerRestApi.UserAuthenticationApi* | [**triggerWatchdog**](docs/UserAuthenticationApi.md#triggerWatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 ## Documentation for Models
 
  - [AdvantEdgePlatformControllerRestApi.CellularDomainConfig](docs/CellularDomainConfig.md)
  - [AdvantEdgePlatformControllerRestApi.CellularPoaConfig](docs/CellularPoaConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.CpuConfig](docs/CpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Deployment](docs/Deployment.md)
  - [AdvantEdgePlatformControllerRestApi.Domain](docs/Domain.md)
  - [AdvantEdgePlatformControllerRestApi.EgressService](docs/EgressService.md)
@@ -143,9 +149,13 @@ Class | Method | HTTP request | Description
  - [AdvantEdgePlatformControllerRestApi.GpuConfig](docs/GpuConfig.md)
  - [AdvantEdgePlatformControllerRestApi.IngressService](docs/IngressService.md)
  - [AdvantEdgePlatformControllerRestApi.LineString](docs/LineString.md)
+ - [AdvantEdgePlatformControllerRestApi.MemoryConfig](docs/MemoryConfig.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkCharacteristics](docs/NetworkCharacteristics.md)
  - [AdvantEdgePlatformControllerRestApi.NetworkLocation](docs/NetworkLocation.md)
  - [AdvantEdgePlatformControllerRestApi.PhysicalLocation](docs/PhysicalLocation.md)
+ - [AdvantEdgePlatformControllerRestApi.Poa4GConfig](docs/Poa4GConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.Poa5GConfig](docs/Poa5GConfig.md)
+ - [AdvantEdgePlatformControllerRestApi.PoaWifiConfig](docs/PoaWifiConfig.md)
  - [AdvantEdgePlatformControllerRestApi.Point](docs/Point.md)
  - [AdvantEdgePlatformControllerRestApi.Process](docs/Process.md)
  - [AdvantEdgePlatformControllerRestApi.Sandbox](docs/Sandbox.md)

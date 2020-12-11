@@ -22,11 +22,19 @@ spec:
         meepOrigin: {{ .Values.meepOrigin }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount }}
-      {{- if .Values.codecov.enabled}}
       volumes:
+      {{- if .Values.codecov.enabled}}
         - name: codecov-storage
           persistentVolumeClaim:
             claimName: meep-sandbox-ctrl-codecov-pvc
+      {{- end}}
+      {{- if .Values.user.swagger.enabled}}
+        - name: user-swagger
+          hostPath:
+            # directory location on host
+            path: {{ .Values.user.swagger.location }}
+            # this field is optional
+            type: DirectoryOrCreate
       {{- end}}
       containers:
         - name: {{ .Chart.Name }}
@@ -44,14 +52,29 @@ spec:
             - name: {{ $key }}
               value: {{ $value }}
             {{- end }}
-          {{- if .Values.codecov.enabled}}
+            {{- if .Values.user.swagger.enabled}}
+            - name: USER_SWAGGER
+              value: {{ .Values.user.swagger.mountpath }}
+            - name: USER_SWAGGER_SANDBOX
+              value: {{ .Values.user.swagger.servepath }}
+            {{- end }}
           volumeMounts:
-          - name: codecov-storage
-            mountPath: /codecov
+          {{- if .Values.codecov.enabled}}
+            - name: codecov-storage
+              mountPath: /codecov
+          {{- end}}
+          {{- if .Values.user.swagger.enabled}}
+            - name: user-swagger
+              mountPath: {{ .Values.user.swagger.mountpath }}
           {{- end}}
       terminationGracePeriodSeconds: 5
       {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
+      initContainers:
+        - name: init-{{ .Values.deployment.dependency }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }}.kube-system ; do echo waiting for {{ .Values.deployment.dependency }}; sleep 0.25; done;']
 

@@ -27,7 +27,8 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sbs "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/apimachinery/pkg/fields"
@@ -83,7 +84,8 @@ var baseKey string = dkm.GetKeyRootGlobal() + monEngineKey
 var stopChan = make(chan struct{})
 var mqGlobal *mq.MsgQueue
 var handlerId int
-var sandboxStore *ss.SandboxStore
+var sandboxStore *sbs.SandboxStore
+var sessionMgr *sm.SessionMgr
 
 var depPodsList []string
 var corePodsList []string
@@ -156,12 +158,20 @@ func Init() (err error) {
 	_ = rc.DBFlush(baseKey)
 
 	// Connect to Sandbox Store
-	sandboxStore, err = ss.NewSandboxStore(redisAddr)
+	sandboxStore, err = sbs.NewSandboxStore(redisAddr)
 	if err != nil {
 		log.Error("Failed connection to Sandbox Store: ", err.Error())
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
+
+	// Connect to Session Manager
+	sessionMgr, err = sm.NewSessionMgr(moduleName, "", redisAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	return nil
 }
@@ -464,9 +474,9 @@ func meGetStates(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if querySandbox != "" || querySandbox == "all" {
-			for k, v := range expectedSboxPods {
+			for _, v := range expectedSboxPods {
 				if v.Sandbox == querySandbox || querySandbox == "all" {
-					data.ExpectedPods[k] = v
+					data.ExpectedPods[v.Name] = v
 				}
 			}
 		}
@@ -598,13 +608,15 @@ func getPodName(app string, name string) string {
 func addExpectedPods(sandboxName string) {
 	for _, pod := range sboxPodsList {
 		// Get sandbox-specific pod name
-		var podName string
+		var podName, podKeyName string
 		prefix := "meep-"
 		sandboxPrefix := prefix + sandboxName + "-"
 		if strings.HasPrefix(pod, prefix) {
-			podName = sandboxPrefix + pod[len(prefix):]
+			podName = pod
+			podKeyName = sandboxPrefix + pod[len(prefix):]
 		} else {
-			podName = sandboxPrefix + pod
+			podName = prefix + pod
+			podKeyName = sandboxPrefix + pod
 		}
 
 		// Add to expected sandbox pods list
@@ -613,7 +625,7 @@ func addExpectedPods(sandboxName string) {
 		podStatus.Sandbox = sandboxName
 		podStatus.Name = podName
 		podStatus.LogicalState = "NotAvailable"
-		expectedSboxPods[podName] = podStatus
+		expectedSboxPods[podKeyName] = podStatus
 	}
 }
 

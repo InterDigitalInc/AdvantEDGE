@@ -86,24 +86,10 @@ func main() {
 			altSw = "./swagger/"
 		}
 
-		// Start alternate REST API Server if needed
-		altServ := os.Getenv("ALT_SERVICE_PORT")
-		if altServ != "" {
-			go func() {
-				log.Info("Starting Alt-server on port " + altServ)
-				log.Info("Alt-serving [fe:" + altFe + ", sw:" + altSw)
-				secRouter := server.NewRouter(altFe, altSw)
-				methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
-				header := handlers.AllowedHeaders([]string{"content-type"})
-				log.Fatal(http.ListenAndServe(":"+altServ, handlers.CORS(methods, header)(secRouter)))
-				run = false
-			}()
-		}
-
 		// Start primary REST API Server
-		log.Info("Starting Primary-server on port 80")
 		log.Info("Primary-serving [fe:" + priFe + ", sw:" + priSw)
-		priRouter := server.NewRouter(priFe, priSw)
+		log.Info("Alt-serving [fe:" + altFe + ", sw:" + altSw)
+		priRouter := server.NewRouter(priFe, priSw, altFe, altSw)
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(priRouter)))

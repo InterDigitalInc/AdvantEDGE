@@ -35,6 +35,7 @@ import (
 const defaultInfluxDBAddr = "http://meep-influxdb.default.svc.cluster.local:8086"
 const dbMaxRetryCount = 2
 
+const MetricsDbDisabled = "disabled"
 const metricsDb = 0
 const metricsKey = "metric-store:"
 
@@ -50,7 +51,6 @@ type MetricStore struct {
 	namespace      string
 	baseKey        string
 	addr           string
-	connected      bool
 	influxClient   *influx.Client
 	redisClient    *redis.Connector
 	snapshotTicker *time.Ticker
@@ -70,24 +70,28 @@ func NewMetricStore(name string, namespace string, influxAddr string, redisAddr 
 	ms.baseKey = dkm.GetKeyRoot(namespace) + metricsKey
 
 	// Connect to Redis DB
-	ms.redisClient, err = redis.NewConnector(redisAddr, metricsDb)
-	if err != nil {
-		log.Error("Failed connection to Metrics redis DB. Error: ", err)
-		return nil, err
+	if redisAddr != MetricsDbDisabled {
+		ms.redisClient, err = redis.NewConnector(redisAddr, metricsDb)
+		if err != nil {
+			log.Error("Failed connection to Metrics redis DB. Error: ", err)
+			return nil, err
+		}
+		log.Info("Connected to Metrics Redis DB")
 	}
-	log.Info("Connected to Metrics Redis DB")
 
 	// Connect to Influx DB
-	for retry := 0; !ms.connected && retry <= dbMaxRetryCount; retry++ {
-		err = ms.connectInfluxDB(influxAddr)
-		if err != nil {
-			log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
+	if influxAddr != MetricsDbDisabled {
+		for retry := 0; ms.influxClient == nil && retry <= dbMaxRetryCount; retry++ {
+			err = ms.connectInfluxDB(influxAddr)
+			if err != nil {
+				log.Warn("Failed to connect to InfluxDB. Retrying... Error: ", err)
+			}
 		}
+		if err != nil {
+			return nil, err
+		}
+		log.Info("Connected to Metrics Influx DB")
 	}
-	if err != nil {
-		return nil, err
-	}
-	log.Info("Connected to Metrics Influx DB")
 
 	// Set store to use
 	err = ms.SetStore(name)
@@ -96,7 +100,7 @@ func NewMetricStore(name string, namespace string, influxAddr string, redisAddr 
 		return nil, err
 	}
 
-	log.Info("Successfully connected to Influx DB")
+	log.Info("Successfully create Metric Store")
 	return ms, nil
 }
 
@@ -122,7 +126,6 @@ func (ms *MetricStore) connectInfluxDB(addr string) error {
 	}
 
 	ms.influxClient = &client
-	ms.connected = true
 	log.Info("InfluxDB Connector connected to ", ms.addr, " version: ", version)
 	return nil
 }
@@ -137,15 +140,18 @@ func (ms *MetricStore) SetStore(name string) error {
 		storeName = strings.Replace(ms.namespace+"_"+name, "-", "_", -1)
 
 		// Create new DB if necessary
-		q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
-		_, err := (*ms.influxClient).Query(q)
-		if err != nil {
-			log.Error("Query failed with error: ", err.Error())
-			return err
+		if ms.influxClient != nil {
+			q := influx.NewQuery("CREATE DATABASE "+storeName, "", "")
+			_, err := (*ms.influxClient).Query(q)
+			if err != nil {
+				log.Error("Query failed with error: ", err.Error())
+				return err
+			}
 		}
 	}
 
 	// Update store name
+	log.Info("Store name set to: ", storeName)
 	ms.name = storeName
 	return nil
 }
@@ -158,15 +164,19 @@ func (ms *MetricStore) Flush() {
 	}
 
 	// Flush Influx DB
-	q := influx.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
-	response, err := (*ms.influxClient).Query(q)
-	if err != nil {
-		log.Error("Query failed with error: ", err.Error())
+	if ms.influxClient != nil {
+		q := influx.NewQuery("DROP SERIES FROM /.*/", ms.name, "")
+		response, err := (*ms.influxClient).Query(q)
+		if err != nil {
+			log.Error("Query failed with error: ", err.Error())
+		}
+		log.Info(response.Results)
 	}
-	log.Info(response.Results)
 
 	// Flush Redis DB
-	ms.redisClient.DBFlush(ms.baseKey + NetMetName)
+	if ms.redisClient != nil {
+		ms.redisClient.DBFlush(ms.baseKey + NetMetName)
+	}
 }
 
 // Copy
@@ -174,6 +184,11 @@ func (ms *MetricStore) Copy(src string, dst string) error {
 	// Validate input params
 	if src == "" || dst == "" {
 		err := errors.New("Invalid params: " + src + ", " + dst)
+		log.Error("Error: ", err.Error())
+		return err
+	}
+	if ms.influxClient == nil {
+		err := errors.New("Not connected to Influx DB")
 		log.Error("Error: ", err.Error())
 		return err
 	}
@@ -215,6 +230,9 @@ func (ms *MetricStore) SetInfluxMetric(metricList []Metric) error {
 	if ms.name == "" {
 		return errors.New("Store name not specified")
 	}
+	if ms.influxClient == nil {
+		return errors.New("Not connected to Influx DB")
+	}
 
 	// Create a new point batch
 	bp, _ := influx.NewBatchPoints(influx.BatchPointsConfig{
@@ -246,6 +264,9 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	// Make sure we have set a store
 	if ms.name == "" {
 		return values, errors.New("Store name not specified")
+	}
+	if ms.influxClient == nil {
+		return values, errors.New("Not connected to Influx DB")
 	}
 
 	// Create query
@@ -307,20 +328,15 @@ func (ms *MetricStore) GetInfluxMetric(metric string, tags map[string]string, fi
 	}
 
 	// Process response
-	if len(response.Results) <= 0 || len(response.Results[0].Series) <= 0 {
-		err = errors.New("Query returned no results")
-		log.Error("Query failed with error: ", err.Error())
-		return values, err
-	}
-
-	// Read results
-	row := response.Results[0].Series[0]
-	for _, qValues := range row.Values {
-		rValues := make(map[string]interface{})
-		for index, qVal := range qValues {
-			rValues[row.Columns[index]] = qVal
+	if len(response.Results) > 0 && len(response.Results[0].Series) > 0 {
+		row := response.Results[0].Series[0]
+		for _, qValues := range row.Values {
+			rValues := make(map[string]interface{})
+			for index, qVal := range qValues {
+				rValues[row.Columns[index]] = qVal
+			}
+			values = append(values, rValues)
 		}
-		values = append(values, rValues)
 	}
 
 	return values, nil
@@ -331,6 +347,10 @@ func (ms *MetricStore) SetRedisMetric(metric string, tagStr string, fields map[s
 	// Make sure we have set a store
 	if ms.name == "" {
 		err = errors.New("Store name not specified")
+		return
+	}
+	if ms.redisClient == nil {
+		err = errors.New("Redis metrics DB disabled")
 		return
 	}
 
@@ -350,6 +370,10 @@ func (ms *MetricStore) GetRedisMetric(metric string, tagStr string) (values []ma
 	// Make sure we have set a store
 	if ms.name == "" {
 		err := errors.New("Store name not specified")
+		return values, err
+	}
+	if ms.redisClient == nil {
+		err = errors.New("Redis metrics DB disabled")
 		return values, err
 	}
 

@@ -15,7 +15,6 @@
  */
 
 export const HOST_PATH = location.origin;
-// export const HOST_PATH = 'http://10.3.16.105';
 
 // MEEP types
 export const TYPE_CFG = 'CFG';
@@ -49,6 +48,8 @@ export const MEEP_DLG_NEW_SCENARIO = 'meep-dlg-new-scenario';
 export const MEEP_DLG_NEW_SCENARIO_NAME = 'meep-dlg-new-scenario-name';
 export const MEEP_DLG_SAVE_SCENARIO = 'meep-dlg-save-scenario';
 export const MEEP_DLG_SAVE_REPLAY = 'meep-dlg-save-replay';
+export const MEEP_DLG_SAVE_REPLAY_NAME = 'meep-dlg-save-replay-name';
+export const MEEP_DLG_SAVE_REPLAY_DESCRIPTION = 'meep-dlg-save-replay-description';
 export const MEEP_DLG_OPEN_SCENARIO = 'meep-dlg-open-scenario';
 export const MEEP_DLG_OPEN_SCENARIO_SELECT = 'meep-dlg-open-scenario-select';
 export const MEEP_DLG_DEL_SCENARIO = 'meep-dlg-del-scenario';
@@ -114,14 +115,21 @@ export const CFG_ELEM_EXT_PORT = 'cfg-elem-ext-port';
 export const CFG_ELEM_PROT = 'cfg-elem-prot';
 export const CFG_ELEM_GPU_COUNT = 'cfg-elem-gpu-count';
 export const CFG_ELEM_GPU_TYPE = 'cfg-elem-gpu-type';
+export const CFG_ELEM_CPU_MIN = 'cfg-elem-cpu-min';
+export const CFG_ELEM_CPU_MAX = 'cfg-elem-cpu-max';
+export const CFG_ELEM_MEMORY_MIN = 'cfg-elem-memory-min';
+export const CFG_ELEM_MEMORY_MAX = 'cfg-elem-memory-max';
 export const CFG_ELEM_PLACEMENT_ID = 'cfg-elem-placement-id';
 export const CFG_ELEM_CMD = 'cfg-elem-cmd';
 export const CFG_ELEM_ARGS = 'cfg-elem-args';
 export const CFG_ELEM_EXTERNAL_CHECK = 'cfg-elem-external-check';
 export const CFG_ELEM_MNC = 'cfg-elem-mnc';
 export const CFG_ELEM_MCC = 'cfg-elem-mcc';
+export const CFG_ELEM_MAC_ID = 'cfg-elem-mac-id';
+export const CFG_ELEM_UE_MAC_ID = 'cfg-elem-ue-mac-id';
 export const CFG_ELEM_DEFAULT_CELL_ID = 'cfg-elem-default-cell-id';
 export const CFG_ELEM_CELL_ID = 'cfg-elem-cell-id';
+export const CFG_ELEM_NR_CELL_ID = 'cfg-elem-nr-cell-id';
 export const CFG_ELEM_GEO_LOCATION = 'cfg-elem-location';
 export const CFG_ELEM_GEO_RADIUS = 'cfg-elem-radius';
 export const CFG_ELEM_GEO_PATH = 'cfg-elem-path';
@@ -131,6 +139,9 @@ export const CFG_ELEM_CHART_CHECK = 'cfg-elem-chart-check';
 export const CFG_ELEM_CHART_LOC = 'cfg-elem-chart-loc';
 export const CFG_ELEM_CHART_GROUP = 'cfg-elem-chart-group';
 export const CFG_ELEM_CHART_ALT_VAL = 'cfg-elem-chart-alt-val';
+export const CFG_ELEM_CONNECTED = 'cfg-elem-connected';
+export const CFG_ELEM_WIRELESS = 'cfg-elem-wireless';
+export const CFG_ELEM_WIRELESS_TYPE = 'cfg-elem-wireless-type';
 export const CFG_ELEM_LATENCY = 'cfg-elem-latency';
 export const CFG_ELEM_LATENCY_VAR = 'cfg-elem-latency-var';
 export const CFG_ELEM_LATENCY_DIST = 'cfg-elem-latency-dist';
@@ -139,6 +150,8 @@ export const CFG_ELEM_THROUGHPUT_DL = 'cfg-elem-throughput-dl';
 export const CFG_ELEM_THROUGHPUT_UL = 'cfg-elem-throughput-ul';
 export const CFG_ELEM_INGRESS_SVC_MAP = 'cfg-elem-ingress-svc-map';
 export const CFG_ELEM_EGRESS_SVC_MAP = 'cfg-elem-egress-svc-map';
+export const CFG_ELEM_META_DISPLAY_MAP_COLOR = 'cfg-elem-meta-display-map-color';
+
 
 // Execution page states
 export const EXEC_STATE_IDLE = 'IDLE';
@@ -152,21 +165,32 @@ export const EXEC_BTN_DELETE_SANDBOX = 'exec-btn-delete-sandbox';
 export const EXEC_BTN_DEPLOY = 'exec-btn-deploy';
 export const EXEC_BTN_SAVE_SCENARIO = 'exec-btn-save-scenario';
 export const EXEC_BTN_TERMINATE = 'exec-btn-terminate';
+export const EXEC_BTN_DASHBOARD = 'exec-btn-dashboard';
+export const EXEC_BTN_DASHBOARD_BTN_CLOSE = 'exec-btn-dashboard-btn-close';
 export const EXEC_BTN_EVENT = 'exec-btn-event';
-export const EXEC_BTN_CONFIG = 'exec-btn-config';
-export const EXEC_BTN_MANUAL_REPLAY = 'exec-btn-manual-replay';
-export const EXEC_BTN_AUTOMATION = 'exec-btn-automation';
-export const EXEC_BTN_AUTO_REPLAY = 'exec-btn-auto-replay';
-export const EXEC_BTN_SAVE_REPLAY = 'exec-btn-save-replay';
-export const EXEC_BTN_REPLAY_START = 'exec-btn-replay-start';
-export const EXEC_BTN_REPLAY_STOP = 'exec-btn-replay-stop';
+export const EXEC_BTN_EVENT_BTN_MANUAL_REPLAY = 'exec-btn-event-btn-manual-replay';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION = 'exec-btn-event-btn-automation';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT = 'exec-btn-event-btn-automation-chkbox-movement';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY = 'exec-btn-event-btn-automation-chkbox-mobility';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE = 'exec-btn-event-btn-automation-chkbox-poas-in-range';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR = 'exec-btn-event-btn-automation-chkbox-netchar';
+export const EXEC_BTN_EVENT_BTN_AUTOMATION_BTN_CLOSE = 'exec-btn-event-btn-automation-btn-close';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY = 'exec-btn-event-btn-auto-replay';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START = 'exec-btn-event-btn-auto-replay-btn-replay-start';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_STOP = 'exec-btn-event-btn-auto-replay-btn-replay-stop';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_CLOSE = 'exec-btn-event-btn-auto-replay-btn-close';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_CHKBOX_LOOP = 'exec-btn-event-btn-auto-replay-chkbox-loop';
+export const EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES = 'exec-btn-event-btn-auto-replay-evt-replay-files';
+export const EXEC_BTN_EVENT_BTN_SAVE_REPLAY = 'exec-btn-event-btn-save-replay';
+export const EXEC_BTN_EVENT_BTN_CLOSE = 'exec-btn-event-btn-close';
 
 export const EXEC_EVT_TYPE = 'exec-evt-type';
 export const EXEC_EVT_MOB_TARGET = 'exec-evt-mob-target';
 export const EXEC_EVT_MOB_DEST = 'exec-evt-mob-dest';
 export const EXEC_EVT_NC_TYPE = 'exec-evt-nc-type';
 export const EXEC_EVT_NC_NAME = 'exec-evt-nc-name';
-export const EXEC_EVT_REPLAY_FILES = 'exec-evt-replay-files';
+
+export const MEEP_EVENT_COUNT = 'meep-event-count';
 
 // Trivia
 export const NO_SCENARIO_NAME = 'NO_SCENARIO_NAME_12Q(*&HGHG___--9098';
@@ -178,7 +202,9 @@ export const ZONE_TYPE_STR = 'ZONE';
 export const COMMON_ZONE_TYPE_STR = 'COMMON';
 export const NL_TYPE_STR = 'POA';
 export const POA_TYPE_STR = 'POA';
-export const POA_CELL_TYPE_STR = 'POA-CELLULAR';
+export const POA_4G_TYPE_STR = 'POA-4G';
+export const POA_5G_TYPE_STR = 'POA-5G';
+export const POA_WIFI_TYPE_STR = 'POA-WIFI';
 export const DEFAULT_NL_TYPE_STR = 'DEFAULT';
 export const UE_TYPE_STR = 'UE';
 export const FOG_TYPE_STR = 'FOG';
@@ -197,7 +223,9 @@ export const ELEMENT_TYPE_OPERATOR_CELL = 'OPERATOR CELLULAR';
 export const ELEMENT_TYPE_ZONE = 'ZONE';
 export const ELEMENT_TYPE_POA = 'POA';
 export const ELEMENT_TYPE_POA_GENERIC = 'POA GENERIC';
-export const ELEMENT_TYPE_POA_CELL = 'POA CELLULAR';
+export const ELEMENT_TYPE_POA_4G = 'POA CELLULAR 4G';
+export const ELEMENT_TYPE_POA_5G = 'POA CELLULAR 5G';
+export const ELEMENT_TYPE_POA_WIFI = 'POA WIFI';
 export const ELEMENT_TYPE_DC = 'DISTANT CLOUD';
 export const ELEMENT_TYPE_CN = 'CORE NETWORK';
 export const ELEMENT_TYPE_EDGE = 'EDGE';
@@ -241,6 +269,12 @@ export const DEFAULT_THROUGHPUT_DL_APP = 1000;
 export const DEFAULT_THROUGHPUT_UL_APP = 1000;
 export const DEFAULT_PACKET_LOSS_APP = 0;
 export const DEFAULT_LATENCY_DC = 0;
+
+// Connection State & Types
+export const OPT_CONNECTED = {label: 'Connected', value: true};
+export const OPT_DISCONNECTED = {label: 'Disconnected', value: false};
+export const OPT_WIRELESS = {label: 'Wireless', value: true};
+export const OPT_WIRED = {label: 'Wired', value: false};
 
 // GPU Types
 export const GPU_TYPE_NVIDIA = 'NVIDIA';
@@ -286,6 +320,7 @@ export const VIEW_NAME_NONE = 'None';
 export const MAP_VIEW = 'Map View';
 export const NET_TOPOLOGY_VIEW = 'Network Topology';
 
+export const DEST_DISCONNECTED = 'DISCONNECTED';
 export const MOBILITY_EVENT = 'MOBILITY';
 export const NETWORK_CHARACTERISTICS_EVENT = 'NETWORK-CHARACTERISTICS-UPDATE';
 

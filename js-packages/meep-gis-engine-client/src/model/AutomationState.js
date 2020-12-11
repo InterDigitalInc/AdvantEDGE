@@ -78,7 +78,7 @@
   }
 
   /**
-   * Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
+   * Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
    * @member {module:model/AutomationState.TypeEnum} type
    */
   exports.prototype.type = undefined;
@@ -112,7 +112,13 @@
      * value: "POAS-IN-RANGE"
      * @const
      */
-    POAS_IN_RANGE: "POAS-IN-RANGE"
+    POAS_IN_RANGE: "POAS-IN-RANGE",
+
+    /**
+     * value: "NETWORK-CHARACTERISTICS-UPDATE"
+     * @const
+     */
+    NETWORK_CHARACTERISTICS_UPDATE: "NETWORK-CHARACTERISTICS-UPDATE"
   };
 
   return exports;

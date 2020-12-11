@@ -33,8 +33,11 @@ const initialState = {
   automationMovementMode: false,
   automationMobilityMode: false,
   automationPoasInRangeMode: false,
+  automationNetCharMode: false,
   execCurrentEvent: null,
   currentEventType: MOBILITY_EVENT, // Should be moved somewhere else
+  mobilityEventTarget: '',
+  mobilityEventDestination: '',
   devMode: false,
   currentDialog: '',
   automaticRefresh: false,
@@ -121,6 +124,22 @@ export function uiExecChangeCurrentEvent(event) {
   };
 }
 
+const UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET = 'UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET';
+export function uiExecChangeMobilityEventTarget(event) {
+  return {
+    type: UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET,
+    payload: event
+  };
+}
+
+const UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION = 'UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION';
+export function uiExecChangeMobilityEventDestination(event) {
+  return {
+    type: UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION,
+    payload: event
+  };
+}
+
 const UI_EXEC_CHANGE_EVENT_CREATION_MODE = 'UI_EXEC_CHANGE_EVENT_CREATION_MODE';
 export function uiExecChangeEventCreationMode(val) {
   return {
@@ -157,6 +176,14 @@ const UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE = 'UI_EXEC_CHANGE_AUTOMATION_
 export const uiExecChangeAutomationPoasInRangeMode = val => {
   return {
     type: UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE,
+    payload: val
+  };
+};
+
+const UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE = 'UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE';
+export const uiExecChangeAutomationNetCharMode = val => {
+  return {
+    type: UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE,
     payload: val
   };
 };
@@ -307,6 +334,10 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { sandboxCfg: action.payload });
   case UI_EXEC_CHANGE_CURRENT_EVENT:
     return updateObject(state, { execCurrentEvent: action.payload });
+  case UI_EXEC_CHANGE_MOBILITY_EVENT_TARGET:
+    return updateObject(state, { mobilityEventTarget: action.payload });
+  case UI_EXEC_CHANGE_MOBILITY_EVENT_DESTINATION:
+    return updateObject(state, { mobilityEventDestination: action.payload });
   case UI_CHANGE_DEV_MODE:
     return updateObject(state, { devMode: action.payload || false });
   case UI_CHANGE_CURRENT_DIALOG:
@@ -321,6 +352,8 @@ export default function uiReducer(state = initialState, action) {
     return updateObject(state, { automationMobilityMode: action.payload });
   case UI_EXEC_CHANGE_AUTOMATION_POAS_IN_RANGE_MODE:
     return updateObject(state, { automationPoasInRangeMode: action.payload });
+  case UI_EXEC_CHANGE_AUTOMATION_NET_CHAR_MODE:
+    return updateObject(state, { automationNetCharMode: action.payload });
   case UI_EXEC_CHANGE_EVENT_REPLAY_MODE:
     return updateObject(state, { eventReplayMode: action.payload });
   case UI_EXEC_CHANGE_DASH_CFG_MODE:

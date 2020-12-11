@@ -261,7 +261,7 @@ describe('Scenario Execution', function () {
     click(meep.EXEC_BTN_NEW_SANDBOX);
     type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
     click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
-    cy.wait(10000);
+    cy.wait(15000);
     verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
@@ -302,7 +302,7 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, name);
     click(meep.MEEP_DLG_DEPLOY_SCENARIO, 'Ok');
-    cy.wait(10000);
+    cy.wait(15000);
     verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
@@ -325,7 +325,7 @@ describe('Scenario Execution', function () {
   function testCancelEvent() {
     cy.log('Cancel event creation');
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     verifyForm(meep.EXEC_EVT_TYPE, true);
     verifyEnabled(meep.MEEP_BTN_CANCEL, true);
     // verifyEnabled(meep.MEEP_BTN_APPLY, false)
@@ -349,7 +349,7 @@ describe('Scenario Execution', function () {
   function createMobilityEvent(elem, dest) {
     cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.MOBILITY_EVENT);
     select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
@@ -365,7 +365,7 @@ describe('Scenario Execution', function () {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.NETWORK_CHARACTERISTICS_EVENT);
     select(meep.EXEC_EVT_NC_TYPE, elemType);
     select(meep.EXEC_EVT_NC_NAME, name);
@@ -388,11 +388,7 @@ describe('Scenario Execution', function () {
   // Retrieve Element entry from Application table
   function getEntry(entries, name) {
     if (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
-          return entries[i];
-        }
-      }
+      return entries[name] ? entries[name] : null;
     }
     return null;
   }

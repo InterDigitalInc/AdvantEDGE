@@ -17,25 +17,23 @@
 package sbi
 
 import (
+	"time"
+
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
+	gc "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-cache"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
-	postgis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-postgis"
 )
 
 const moduleName string = "meep-rnis-sbi"
-const geModuleName string = "meep-gis-engine"
-const postgisUser string = "postgres"
-const postgisPwd string = "pwd"
 
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	PostgisHost    string
-	PostgisPort    string
-	UeEcgiInfoCb   func(string, string, string, string)
+	UeDataCb       func(string, string, string, string, bool)
 	AppEcgiInfoCb  func(string, string, string, string)
+	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
 }
@@ -45,9 +43,11 @@ type RnisSbi struct {
 	mqLocal              *mq.MsgQueue
 	handlerId            int
 	activeModel          *mod.Model
-	pc                   *postgis.Connector
-	updateUeEcgiInfoCB   func(string, string, string, string)
+	gisCache             *gc.GisCache
+	refreshTicker        *time.Ticker
+	updateUeDataCB       func(string, string, string, string, bool)
 	updateAppEcgiInfoCB  func(string, string, string, string)
+	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
 }
@@ -63,8 +63,9 @@ func Init(cfg SbiCfg) (err error) {
 	}
 	sbi = new(RnisSbi)
 	sbi.sandboxName = cfg.SandboxName
-	sbi.updateUeEcgiInfoCB = cfg.UeEcgiInfoCb
+	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
+	sbi.updateDomainDataCB = cfg.DomainDataCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
 
@@ -90,13 +91,13 @@ func Init(cfg SbiCfg) (err error) {
 		return err
 	}
 
-	// Connect to Postgis DB
-	sbi.pc, err = postgis.NewConnector(geModuleName, sbi.sandboxName, postgisUser, postgisPwd, cfg.PostgisHost, cfg.PostgisPort)
+	// Connect to GIS cache
+	sbi.gisCache, err = gc.NewGisCache(sbi.sandboxName, cfg.RedisAddr)
 	if err != nil {
-		log.Error("Failed to create postgis connector with error: ", err.Error())
+		log.Error("Failed to GIS Cache: ", err.Error())
 		return err
 	}
-	log.Info("Postgis Connector created")
+	log.Info("Connected to GIS Cache")
 
 	// Initialize service
 	processActiveScenarioUpdate()
@@ -115,12 +116,36 @@ func Run() (err error) {
 		return err
 	}
 
+	// Start refresh loop
+	startRefreshTicker()
+
 	return nil
 }
 
 func Stop() (err error) {
+	// Stop refresh loop
+	stopRefreshTicker()
+
 	sbi.mqLocal.UnregisterHandler(sbi.handlerId)
 	return nil
+}
+
+func startRefreshTicker() {
+	log.Debug("Starting refresh loop")
+	sbi.refreshTicker = time.NewTicker(1000 * time.Millisecond)
+	go func() {
+		for range sbi.refreshTicker.C {
+			refreshMeasurements()
+		}
+	}()
+}
+
+func stopRefreshTicker() {
+	if sbi.refreshTicker != nil {
+		sbi.refreshTicker.Stop()
+		sbi.refreshTicker = nil
+		log.Debug("Refresh loop stopped")
+	}
 }
 
 // Message Queue handler
@@ -135,9 +160,6 @@ func msgHandler(msg *mq.Msg, userData interface{}) {
 	case mq.MsgScenarioTerminate:
 		log.Debug("RX MSG: ", mq.PrintMsg(msg))
 		processActiveScenarioTerminate()
-	case mq.MsgGeUpdate:
-		log.Debug("RX MSG: ", mq.PrintMsg(msg))
-		processGisEngineUpdate(msg.Payload)
 	default:
 		log.Trace("Ignoring unsupported message: ", mq.PrintMsg(msg))
 	}
@@ -153,19 +175,55 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
-
 	log.Debug("processActiveScenarioUpdate")
 
-	formerUeNameList := sbi.activeModel.GetNodeNames("UE")
+	// Get previous list of connected UEs & APPS
+	prevUeNames := []string{}
+	prevUeNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range prevUeNameList {
+		if isUeConnected(name) {
+			prevUeNames = append(prevUeNames, name)
+		}
+	}
+	prevApps := []string{}
+	prevAppList := sbi.activeModel.GetNodeNames("UE-APP", "EDGE-APP")
+	for _, app := range prevAppList {
+		if isAppConnected(app) {
+			prevApps = append(prevApps, app)
+		}
+	}
 
+	// Sync with active scenario store
 	sbi.activeModel.UpdateScenario()
 
 	scenarioName := sbi.activeModel.GetScenarioName()
 	sbi.updateScenarioNameCB(scenarioName)
 
+	// Update DOMAIN info
+	domainNameList := sbi.activeModel.GetNodeNames("OPERATOR-CELLULAR")
+
+	for _, name := range domainNameList {
+		node := sbi.activeModel.GetNode(name)
+		if node != nil {
+			domain := node.(*dataModel.Domain)
+			if domain.CellularDomainConfig != nil {
+				mnc := domain.CellularDomainConfig.Mnc
+				mcc := domain.CellularDomainConfig.Mcc
+				cellId := domain.CellularDomainConfig.DefaultCellId
+				sbi.updateDomainDataCB(name, mnc, mcc, cellId)
+			}
+		}
+	}
+
 	// Update UE info
+	ueNames := []string{}
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
 	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			continue
+		}
+		ueNames = append(ueNames, name)
 
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
@@ -176,52 +234,71 @@ func processActiveScenarioUpdate() {
 					mnc := ""
 					mcc := ""
 					cellId := ""
+					erabIdValid := false
 					if domain.CellularDomainConfig != nil {
 						mnc = domain.CellularDomainConfig.Mnc
 						mcc = domain.CellularDomainConfig.Mcc
+						cellId = domain.CellularDomainConfig.DefaultCellId
 					}
-					if poa.CellularPoaConfig != nil {
-						if poa.CellularPoaConfig.CellId != "" {
-							cellId = poa.CellularPoaConfig.CellId
-						} else {
-							cellId = domain.CellularDomainConfig.DefaultCellId
+					switch poa.Type_ {
+					case mod.NodeTypePoa4G:
+						if poa.Poa4GConfig != nil {
+							if poa.Poa4GConfig.CellId != "" {
+								cellId = poa.Poa4GConfig.CellId
+							}
 						}
-					} else {
-						if domain.CellularDomainConfig != nil {
-							cellId = domain.CellularDomainConfig.DefaultCellId
+						erabIdValid = true
+					/*no support for RNIS on 5G elements anymore
+					case mod.NodeTypePoa5G:
+						if poa.Poa5GConfig != nil {
+							if poa.Poa5GConfig.CellId != "" {
+								cellId = poa.Poa5GConfig.CellId
+							}
 						}
+					*/
+					default:
+						//empty cells for POAs not supporting RNIS
+						cellId = ""
 					}
-					sbi.updateUeEcgiInfoCB(name, mnc, mcc, cellId)
+
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, erabIdValid)
 				}
 			}
 		}
 	}
 
-	//only find UEs that were removed, check that former UEs are in new UE list
-	for _, oldUe := range formerUeNameList {
+	// Update UEs that were removed
+	for _, prevUeName := range prevUeNames {
 		found := false
-		for _, newUe := range ueNameList {
-			if newUe == oldUe {
+		for _, ueName := range ueNames {
+			if ueName == prevUeName {
 				found = true
 				break
 			}
 		}
 		if !found {
-			sbi.updateUeEcgiInfoCB(oldUe, "", "", "")
-			log.Info("Ue removed : ", oldUe)
+			sbi.updateUeDataCB(prevUeName, "", "", "", false)
+			log.Info("Ue removed : ", prevUeName)
 		}
 	}
 
 	// Update Edge App info
+	appNames := []string{}
 	meAppNameList := sbi.activeModel.GetNodeNames("EDGE-APP")
 	ueAppNameList := sbi.activeModel.GetNodeNames("UE-APP")
 	var appNameList []string
 	appNameList = append(appNameList, meAppNameList...)
 	appNameList = append(appNameList, ueAppNameList...)
 
-	for _, meAppName := range appNameList {
-		meAppParent := sbi.activeModel.GetNodeParent(meAppName)
+	for _, appName := range appNameList {
+		meAppParent := sbi.activeModel.GetNodeParent(appName)
 		if pl, ok := meAppParent.(*dataModel.PhysicalLocation); ok {
+			// Ignore disconnected apps
+			if !pl.Connected {
+				continue
+			}
+			appNames = append(appNames, appName)
+
 			plParent := sbi.activeModel.GetNodeParent(pl.Name)
 			if nl, ok := plParent.(*dataModel.NetworkLocation); ok {
 				//nl can be either POA for {FOG or UE} or Zone Default for {Edge
@@ -235,46 +312,85 @@ func processActiveScenarioUpdate() {
 						if domain.CellularDomainConfig != nil {
 							mnc = domain.CellularDomainConfig.Mnc
 							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
-						if nl.CellularPoaConfig != nil {
-							if nl.CellularPoaConfig.CellId != "" {
-								cellId = nl.CellularPoaConfig.CellId
-							} else {
-								cellId = domain.CellularDomainConfig.DefaultCellId
+						switch nl.Type_ {
+						case mod.NodeTypePoa4G:
+							if nl.Poa4GConfig != nil {
+								if nl.Poa4GConfig.CellId != "" {
+									cellId = nl.Poa4GConfig.CellId
+								}
 							}
-						} else {
-							if domain.CellularDomainConfig != nil {
-								cellId = domain.CellularDomainConfig.DefaultCellId
+						/*no support for RNIS on 5G elements anymore
+						case mod.NodeTypePoa5G:
+							if nl.Poa5GConfig != nil {
+								if nl.Poa5GConfig.CellId != "" {
+									cellId = nl.Poa5GConfig.CellId
+								}
 							}
+						*/
+						default:
+							//empty cells for POAs not supporting RNIS
+							cellId = ""
 						}
 
-						sbi.updateAppEcgiInfoCB(meAppName, mnc, mcc, cellId)
+						sbi.updateAppEcgiInfoCB(appName, mnc, mcc, cellId)
 					}
 				}
 			}
+		}
+	}
+
+	// Update APPs that were removed
+	for _, prevApp := range prevApps {
+		found := false
+		for _, app := range appNames {
+			if app == prevApp {
+				found = true
+				break
+			}
+		}
+		if !found {
+			sbi.updateAppEcgiInfoCB(prevApp, "", "", "")
+			log.Info("App removed : ", prevApp)
 		}
 	}
 }
 
-func processGisEngineUpdate(assetMap map[string]string) {
-	for assetName, assetType := range assetMap {
-		// Only process UE updates
-		// NOTE: RNIS requires distance measurements to calculate Timing Advance. Because timing advance
-		//       is not yet implemented, the distance measurements are simply logged here for now.
-		if assetType == postgis.TypeUe {
-			if assetName == postgis.AllAssets {
-				ueMap, err := sbi.pc.GetAllUe()
-				if err == nil {
-					for _, ue := range ueMap {
-						log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-					}
-				}
-			} else {
-				ue, err := sbi.pc.GetUe(assetName)
-				if err == nil {
-					log.Trace("UE[", ue.Name, "] POA [", ue.Poa, "] distance[", ue.PoaDistance, "]")
-				}
-			}
-		}
+func refreshMeasurements() {
+	// // Update UE measurements
+	// ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	// ueNameList := sbi.activeModel.GetNodeNames("UE")
+	// for _, name := range ueNameList {
+	// 	// Ignore disconnected UEs
+	// 	if !isUeConnected(name) {
+	// 		continue
+	// 	}
+
+	// 	// TODO - Update RSRP & RSRQ in RNIS
+	// 	if ueMeas, found := ueMeasMap[name]; found {
+	// 		log.Debug("UE Measurements for ", name, ":")
+	// 		for poaName, meas := range ueMeas.Measurements {
+	// 			log.Debug("  ", poaName, ": ", fmt.Sprintf("%+v", *meas))
+	// 		}
+	// 	}
+	// }
+}
+
+func isUeConnected(name string) bool {
+	node := sbi.activeModel.GetNode(name)
+	if node != nil {
+		pl := node.(*dataModel.PhysicalLocation)
+		return pl.Connected
 	}
+	return false
+}
+
+func isAppConnected(app string) bool {
+	parentNode := sbi.activeModel.GetNodeParent(app)
+	if parentNode != nil {
+		pl := parentNode.(*dataModel.PhysicalLocation)
+		return pl.Connected
+	}
+	return false
 }

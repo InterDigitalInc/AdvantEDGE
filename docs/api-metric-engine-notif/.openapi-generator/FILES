@@ -1,0 +1,9 @@
+.openapi-generator-ignore
+Apis/NotificationsApi.md
+Models/EventMetric.md
+Models/EventMetricList.md
+Models/EventNotification.md
+Models/NetworkMetric.md
+Models/NetworkMetricList.md
+Models/NetworkNotification.md
+README.md

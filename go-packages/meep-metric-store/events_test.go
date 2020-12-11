@@ -26,7 +26,7 @@ import (
 const eventStoreName string = "event-store"
 const eventStoreNamespace string = "event-ns"
 const eventStoreInfluxAddr string = "http://localhost:30986"
-const eventStoreRedisAddr string = "localhost:30380"
+const eventStoreRedisAddr string = MetricsDbDisabled
 
 func TestEventsMetricsGetSet(t *testing.T) {
 	fmt.Println("--- ", t.Name())
@@ -68,11 +68,11 @@ func TestEventsMetricsGetSet(t *testing.T) {
 	}
 
 	fmt.Println("Get event metrics")
-	_, err = ms.GetEventMetric("MOBILITY", "1ms", 0)
-	if err == nil {
+	eml, err := ms.GetEventMetric("MOBILITY", "1ms", 0)
+	if err != nil || len(eml) != 0 {
 		t.Fatalf("No metrics should be found in the last 1 ms")
 	}
-	eml, err := ms.GetEventMetric("MOBILITY", "", 1)
+	eml, err = ms.GetEventMetric("MOBILITY", "", 1)
 	if err != nil || len(eml) != 1 {
 		t.Fatalf("Failed to get metric")
 	}

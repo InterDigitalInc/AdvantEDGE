@@ -15,6 +15,7 @@
  */
 
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 
 import IDDialog from './id-dialog';
@@ -26,6 +27,8 @@ import {
 class IDNewScenarioDialog extends Component {
   constructor(props) {
     super(props);
+    autoBind(this);
+
     this.state = {
       scenarioName: '',
       err: null
@@ -69,20 +72,22 @@ class IDNewScenarioDialog extends Component {
     this.props.createScenario(this.state.scenarioName);
   }
 
+  onSubmit() {
+    this.props.api.getScenario(
+      this.state.scenarioName,
+      (error, data, response) => {
+        this.getScenarioNewCb(error, data, response);
+      }
+    );
+  }
+
   render() {
     return (
       <IDDialog
         title={this.props.title}
         open={this.props.open}
         onClose={this.props.onClose}
-        onSubmit={() => {
-          this.props.api.getScenario(
-            this.state.scenarioName,
-            (error, data, response) => {
-              this.getScenarioNewCb(error, data, response);
-            }
-          );
-        }}
+        onSubmit={this.onSubmit}
         cydata={MEEP_DLG_NEW_SCENARIO}
       >
         <TextField

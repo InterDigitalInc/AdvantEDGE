@@ -64,8 +64,9 @@ type WhSvrParameters struct {
 }
 
 type Config struct {
-	Containers []corev1.Container `yaml:"containers"`
-	Volumes    []corev1.Volume    `yaml:"volumes"`
+	Containers     []corev1.Container `yaml:"containers"`
+	Volumes        []corev1.Volume    `yaml:"volumes"`
+	InitContainers []corev1.Container `yaml:"initContainers"`
 }
 
 type patchOperation struct {
@@ -106,8 +107,8 @@ func loadConfig(configFile string) (*Config, error) {
 }
 
 // Determine if resource is part of the active scenario
-func isScenarioResource(name string, sandboxName string, scenarioName string) bool {
-	return name != "" && strings.HasPrefix(name, "meep-"+sandboxName+"-"+scenarioName+"-")
+func isScenarioResource(name string, scenarioName string) bool {
+	return name != "" && strings.HasPrefix(name, "meep-"+scenarioName+"-")
 }
 
 func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, meepAppName string, sandboxName string) (patch []byte, err error) {
@@ -144,6 +145,11 @@ func getSidecarPatch(template corev1.PodTemplateSpec, sidecarConfig *Config, mee
 	patchOps = append(patchOps, addContainer(template.Spec.Containers, sidecarContainers, "/spec/template/spec/containers")...)
 	patchOps = append(patchOps, addVolume(template.Spec.Volumes, sidecarConfig.Volumes, "/spec/template/spec/volumes")...)
 	patchOps = append(patchOps, updateLabels(template.ObjectMeta.Labels, newLabels, "/spec/template/metadata/labels")...)
+
+	// Init Cointainer for dependency check
+	var initContainers []corev1.Container
+	initContainers = append(initContainers, sidecarConfig.InitContainers...)
+	patchOps = append(patchOps, addContainer(template.Spec.InitContainers, initContainers, "/spec/template/spec/initContainers")...)
 
 	// Serialize patch
 	patch, err = json.Marshal(patchOps)
@@ -272,7 +278,7 @@ func (whsvr *WebhookServer) mutate(ar *v1beta1.AdmissionReview) *v1beta1.Admissi
 	}
 
 	// Determine if resource is part of the active scenario
-	if !isScenarioResource(releaseName, req.Namespace, activeScenarioNames[req.Namespace]) {
+	if !isScenarioResource(releaseName, activeScenarioNames[req.Namespace]) {
 		log.Info("Resource not part of active scenario. Ignoring request...")
 		return &v1beta1.AdmissionResponse{
 			Allowed: true,

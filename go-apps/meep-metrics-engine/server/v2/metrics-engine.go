@@ -37,6 +37,7 @@ import (
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
@@ -73,6 +74,7 @@ var hostUrl *url.URL
 var basePath string
 var baseKey string
 
+var SessionMgr *sm.SessionMgr
 var rc *redis.Connector
 
 type EventRegistration struct {
@@ -98,12 +100,16 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_SANDBOX_NAME: ", sandboxName)
 
-	// Retrieve Root URL from environment variable
-	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
-	if err != nil {
-		hostUrl = new(url.URL)
+	// hostUrl is the url of the node serving the resourceURL
+	// Retrieve public url address where service is reachable, if not present, use Host URL environment variable
+	hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_PUBLIC_URL")))
+	if err != nil || hostUrl == nil || hostUrl.String() == "" {
+		hostUrl, err = url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_URL")))
+		if err != nil {
+			hostUrl = new(url.URL)
+		}
 	}
-	log.Info("MEEP_HOST_URL: ", hostUrl)
+	log.Info("resource URL: ", hostUrl)
 
 	// Set base path
 	basePath = "/" + sandboxName + metricsBasePath
@@ -147,6 +153,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Redis DB")
+
+	// Connect to Session Manager
+	SessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
+	if err != nil {
+		log.Error("Failed connection to Session Manager: ", err.Error())
+		return err
+	}
+	log.Info("Connected to Session Manager")
 
 	nextNetworkSubscriptionIdAvailable = 1
 	nextEventSubscriptionIdAvailable = 1
@@ -306,7 +320,7 @@ func mePostEventQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 
@@ -386,7 +400,7 @@ func mePostHttpQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 
@@ -511,7 +525,7 @@ func mePostNetworkQuery(w http.ResponseWriter, r *http.Request) {
 	if len(valuesArray) == 0 {
 		err := errors.New("No matching metrics found")
 		log.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNoContent)
 		return
 	}
 

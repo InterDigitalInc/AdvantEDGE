@@ -55,6 +55,12 @@ type DeploymentTemplate struct {
 	GpuType                  string
 	GpuCount                 string
 	PlacementId              string
+	CpuEnabled               string
+	CpuMin                   string
+	CpuMax                   string
+	MemoryEnabled            string
+	MemoryMin                string
+	MemoryMax                string
 }
 
 // ServiceTemplate - Service Template
@@ -113,10 +119,13 @@ type ScenarioTemplate struct {
 
 // SandboxTemplate -helm values.yaml template
 type SandboxTemplate struct {
-	SandboxName string
-	Namespace   string
-	HostUrl     string
-	AltServer   string
+	SandboxName    string
+	Namespace      string
+	HostUrl        string
+	UserSwagger    string
+	UserSwaggerDir string
+	SessionKey     string
+	HttpsOnly      bool
 }
 
 // Service map
@@ -134,7 +143,7 @@ func Deploy(sandboxName string, model *mod.Model) error {
 	log.Debug("Created ", len(charts), " scenario charts")
 
 	// Deploy all charts
-	err = deployCharts(charts)
+	err = deployCharts(charts, sandboxName)
 	if err != nil {
 		log.Error("Error deploying charts: ", err)
 		return err
@@ -283,6 +292,28 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 				deploymentTemplate.GpuCount = strconv.Itoa(int(proc.GpuConfig.Count))
 			}
 
+			// Enable CPU template if present
+			if proc.CpuConfig != nil {
+				deploymentTemplate.CpuEnabled = trueStr
+				if proc.CpuConfig.Min != 0 {
+					deploymentTemplate.CpuMin = strconv.FormatFloat(float64(proc.CpuConfig.Min), 'f', -1, 32)
+				}
+				if proc.CpuConfig.Max != 0 {
+					deploymentTemplate.CpuMax = strconv.FormatFloat(float64(proc.CpuConfig.Max), 'f', -1, 32)
+				}
+			}
+
+			// Enable Memory template if present
+			if proc.MemoryConfig != nil {
+				deploymentTemplate.MemoryEnabled = trueStr
+				if proc.MemoryConfig.Min != 0 {
+					deploymentTemplate.MemoryMin = strconv.Itoa(int(proc.MemoryConfig.Min)) + "Mi"
+				}
+				if proc.MemoryConfig.Max != 0 {
+					deploymentTemplate.MemoryMax = strconv.Itoa(int(proc.MemoryConfig.Max)) + "Mi"
+				}
+			}
+
 			// Enable External template if set
 			if proc.IsExternal {
 				externalTemplate.Enabled = trueStr
@@ -337,8 +368,8 @@ func generateScenarioCharts(sandboxName string, model *mod.Model) (charts []helm
 	return charts, nil
 }
 
-func deployCharts(charts []helm.Chart) error {
-	err := helm.InstallCharts(charts)
+func deployCharts(charts []helm.Chart, sandboxName string) error {
+	err := helm.InstallCharts(charts, sandboxName)
 	if err != nil {
 		return err
 	}
@@ -352,10 +383,10 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 	var outChart string
 	if scenarioName == "" {
 		templateChart = "/templates/sandbox/" + chartName
-		outChart = "/data/" + sandboxName + "/sandbox/" + chartName
+		outChart = "/charts/" + sandboxName + "/sandbox/" + chartName
 	} else {
 		templateChart = "/templates/scenario/meep-virt-chart-templates"
-		outChart = "/data/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
+		outChart = "/charts/" + sandboxName + "/scenario/" + scenarioName + "/" + chartName
 	}
 	templateValues := templateChart + "/values-template.yaml"
 	outValues := outChart + "/values.yaml"
@@ -398,14 +429,11 @@ func createChart(chartName string, sandboxName string, scenarioName string, temp
 func newChart(chartName string, sandboxName string, scenarioName string, chartLocation string, valuesFile string) helm.Chart {
 	var chart helm.Chart
 
-	// Create release name by adding sandbox + scenario prefix
-	prefix := "meep-"
-	sandboxPrefix := prefix + sandboxName + "-"
+	// Create release name by adding scenario prefix
 	if scenarioName == "" {
-		prefix := "meep-"
-		chart.ReleaseName = sandboxPrefix + chartName[len(prefix):]
+		chart.ReleaseName = chartName
 	} else {
-		chart.ReleaseName = sandboxPrefix + scenarioName + "-" + chartName
+		chart.ReleaseName = "meep-" + scenarioName + "-" + chartName
 	}
 
 	chart.Name = chartName
@@ -456,6 +484,12 @@ func setDeploymentDefaults(deploymentTemplate *DeploymentTemplate) {
 	deploymentTemplate.ContainerEnvEnabled = falseStr
 	deploymentTemplate.ContainerCommandEnabled = falseStr
 	deploymentTemplate.GpuEnabled = falseStr
+	deploymentTemplate.CpuEnabled = falseStr
+	deploymentTemplate.MemoryEnabled = falseStr
+	deploymentTemplate.CpuMin = ""
+	deploymentTemplate.CpuMax = ""
+	deploymentTemplate.MemoryMin = ""
+	deploymentTemplate.MemoryMax = ""
 }
 
 func setServiceDefaults(serviceTemplate *ServiceTemplate) {
@@ -506,7 +540,10 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.SandboxName = sandboxName
 	sandboxTemplate.Namespace = sandboxName
 	sandboxTemplate.HostUrl = ve.hostUrl
-	sandboxTemplate.AltServer = ve.altServer
+	sandboxTemplate.UserSwagger = ve.userSwagger
+	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
+	sandboxTemplate.SessionKey = ve.sessionKey
+	sandboxTemplate.HttpsOnly = ve.httpsOnly
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {
@@ -545,7 +582,7 @@ func deploySandbox(name string) error {
 	log.Debug("Created ", len(charts), " sandbox charts")
 
 	// Deploy all charts
-	err = deployCharts(charts)
+	err = deployCharts(charts, name)
 	if err != nil {
 		log.Error("Error deploying charts: ", err)
 		return err

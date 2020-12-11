@@ -16,18 +16,23 @@
 
 package helm
 
-func GetReleasesName() ([]Release, error) {
-	return getReleasesName()
+func GetReleasesName(sandboxName string) ([]Release, error) {
+	return getReleasesName(sandboxName)
 }
 
-func GetReleases() ([]Release, error) {
-	return getReleases()
+/*
+* currently GetReleases is not used. Since it uses helm status and helmv3 doesn't show resources
+* https://github.com/helm/helm/issues/5952
+ */
+
+func GetReleases(sandboxName string) ([]Release, error) {
+	return getReleases(sandboxName)
 }
 
-func InstallCharts(charts []Chart) error {
-	return runTask(Install, charts)
+func InstallCharts(charts []Chart, sandboxName string) error {
+	return runTask(Install, charts, sandboxName)
 }
 
-func DeleteReleases(charts []Chart) error {
-	return runTask(Delete, charts)
+func DeleteReleases(charts []Chart, sandboxName string) error {
+	return runTask(Delete, charts, sandboxName)
 }

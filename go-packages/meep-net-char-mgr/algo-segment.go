@@ -95,8 +95,9 @@ type SegAlgoFlow struct {
 
 // SegAlgoPath -
 type SegAlgoPath struct {
-	Name     string
-	Segments []*SegAlgoSegment
+	Name         string
+	Segments     []*SegAlgoSegment
+	Disconnected bool
 }
 
 // SegAlgoNetElem -
@@ -386,7 +387,6 @@ func (algo *SegmentAlgorithm) createMetricsEntry(srcElem string, dstElem string)
 	creationTime["creationTime"] = time.Now()
 
 	// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":"+srcElem, creationTime)
 	_ = algo.rc.SetEntry(algo.BaseKey+dstElem+":throughput", creationTime)
 }
 
@@ -394,7 +394,6 @@ func (algo *SegmentAlgorithm) createMetricsEntry(srcElem string, dstElem string)
 func (algo *SegmentAlgorithm) deleteMetricsEntries() {
 	for _, flow := range algo.FlowMap {
 		// Entries are created with no values, sidecar will only fill them, otherwise, won't be cleared
-		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":" + flow.SrcNetElem)
 		_ = algo.rc.DelEntry(algo.BaseKey + flow.DstNetElem + ":throughput")
 	}
 }
@@ -461,6 +460,7 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 
 	path := new(SegAlgoPath)
 	path.Name = flowName
+	path.Disconnected = false
 
 	//app segment ul, dl
 	direction = "uplink"
@@ -481,6 +481,21 @@ func (algo *SegmentAlgorithm) createPath(flowName string, srcElement *SegAlgoNet
 	//if on same node, return
 	if srcElement.PhyLocName == destElement.PhyLocName {
 		return path
+	}
+
+	// Check if src or dest Physical location is disconnected
+	// NOTE: Does not apply to apps on same physical node
+	srcPhyLocNode := model.GetNode(srcElement.PhyLocName)
+	if srcPhyLocNode != nil {
+		if srcPhyLoc, ok := srcPhyLocNode.(*dataModel.PhysicalLocation); ok {
+			path.Disconnected = path.Disconnected || !srcPhyLoc.Connected
+		}
+	}
+	destPhyLocNode := model.GetNode(destElement.PhyLocName)
+	if destPhyLocNode != nil {
+		if destPhyLoc, ok := destPhyLocNode.(*dataModel.PhysicalLocation); ok {
+			path.Disconnected = path.Disconnected || !destPhyLoc.Connected
+		}
 	}
 
 	//network location ul, dl
@@ -632,6 +647,11 @@ func (algo *SegmentAlgorithm) reCalculateNetChar() {
 	//reset every planned throughput values for every flow since they will start to populate those
 	for _, flow := range algo.FlowMap {
 		resetComputedNetChar(flow)
+
+		// For flows passing through a disconnected Physical location, set Packet loss to 100%
+		if flow.Path != nil && flow.Path.Disconnected {
+			flow.ComputedPacketLoss = 100
+		}
 	}
 
 	//all segments determined by the scenario
@@ -654,18 +674,14 @@ func (algo *SegmentAlgorithm) reCalculateNetChar() {
 			flow.ComputedLatency += segment.ConfiguredNetChar.Latency
 			flow.ComputedJitter += segment.ConfiguredNetChar.Jitter
 			if flow.ComputedPacketLoss == 0 {
-				//first time it finds a value, it applies it directly
 				flow.ComputedPacketLoss = segment.ConfiguredNetChar.PacketLoss
-			} else {
-				if segment.ConfiguredNetChar.PacketLoss != 0 {
-					flow.ComputedPacketLoss += (flow.ComputedPacketLoss * (1 - segment.ConfiguredNetChar.PacketLoss))
-				}
+			} else if segment.ConfiguredNetChar.PacketLoss != 0 {
+				flow.ComputedPacketLoss += (segment.ConfiguredNetChar.PacketLoss * ((100 - flow.ComputedPacketLoss) / 100))
 			}
 		}
 		if algo.Config.LogVerbose {
 			printFlows(segment)
 		}
-
 	}
 }
 
@@ -677,7 +693,6 @@ func resetComputedNetChar(flow *SegAlgoFlow) {
 	flow.ComputedLatency = 0
 	flow.ComputedJitter = 0
 	flow.ComputedPacketLoss = 0
-
 }
 
 // recalculateSegmentBw -
@@ -807,7 +822,10 @@ func needToReevaluate(segment *SegAlgoSegment) (unusedBw float64, list []*SegAlg
 
 	//how many active connections that needs to be taken into account
 	for _, flow := range segment.Flows {
-		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound || flow.CurrentThroughput > flow.AllocatedThroughputUpperBound || flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow || flow.UpdateRequired {
+		if flow.CurrentThroughput < flow.AllocatedThroughputLowerBound ||
+			flow.CurrentThroughput > flow.AllocatedThroughputUpperBound ||
+			flow.CurrentThroughput >= segment.MaxFairShareBwPerFlow ||
+			flow.UpdateRequired {
 			list = append(list, flow)
 		} else {
 			//no need to reevalute algo one, so removing its allocated bw from the available one

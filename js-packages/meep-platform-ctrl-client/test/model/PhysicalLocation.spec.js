@@ -91,6 +91,24 @@
         // expect(instance.networkLocationsInRange).to.be(expectedValueLiteral);
       });
 
+      it('should have the property connected (base name: "connected")', function() {
+        // TODO: update the code to test the property connected
+        expect(instance).to.have.property('connected');
+        // expect(instance.connected).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property wireless (base name: "wireless")', function() {
+        // TODO: update the code to test the property wireless
+        expect(instance).to.have.property('wireless');
+        // expect(instance.wireless).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property wirelessType (base name: "wirelessType")', function() {
+        // TODO: update the code to test the property wirelessType
+        expect(instance).to.have.property('wirelessType');
+        // expect(instance.wirelessType).to.be(expectedValueLiteral);
+      });
+
       it('should have the property meta (base name: "meta")', function() {
         // TODO: update the code to test the property meta
         expect(instance).to.have.property('meta');
@@ -137,6 +155,12 @@
         // TODO: update the code to test the property linkPacketLoss
         expect(instance).to.have.property('linkPacketLoss');
         // expect(instance.linkPacketLoss).to.be(expectedValueLiteral);
+      });
+
+      it('should have the property macId (base name: "macId")', function() {
+        // TODO: update the code to test the property macId
+        expect(instance).to.have.property('macId');
+        // expect(instance.macId).to.be(expectedValueLiteral);
       });
 
     });

@@ -41,13 +41,12 @@ type Route struct {
 
 type Routes []Route
 
-func NewRouter() *mux.Router {
+func NewRouter(priSw string, altSw string) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	for _, route := range routes {
-		var handler http.Handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
-		// handler = httpLog.LogRx(handler, "")
 
+	for _, route := range routes {
+		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -56,7 +55,22 @@ func NewRouter() *mux.Router {
 	}
 
 	// Path prefix router order is important
-	router.PathPrefix("/api/").Handler(http.StripPrefix("/api/", http.FileServer(http.Dir("./swagger"))))
+	if altSw != "" {
+		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/alt/api/").
+			Name("AltSw").
+			Handler(handler)
+	}
+	if priSw != "" {
+		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
+		handler = sbxCtrl.sessionMgr.Authorizer(handler)
+		router.
+			PathPrefix("/api/").
+			Name("PriSw").
+			Handler(handler)
+	}
 
 	return router
 }

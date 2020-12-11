@@ -1,0 +1,5 @@
+.openapi-generator-ignore
+Apis/StateTransferApi.md
+Models/MobilityGroupAppState.md
+Models/MobilityGroupEvent.md
+README.md

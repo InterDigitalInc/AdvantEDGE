@@ -116,15 +116,15 @@ class CfgTable extends Component {
   render() {
     const classes = this.classes;
     const table = this.props.table;
-    const data = table.entries || [];
+    const data = table.entries || {};
+    const length = Object.keys(data).length;
     const order = table.order;
     const orderBy = table.orderBy;
     const rowsPerPage = table.rowsPerPage;
     const page = table.page;
-    const emptyRows =
-      rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, length - page * rowsPerPage);
 
-    if (!data || data.length < 1) {
+    if (!data || length < 1) {
       return null;
     }
 
@@ -188,7 +188,7 @@ class CfgTable extends Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {data
+                      {Object.values(data)
                         .sort(getSortingByField(order, orderBy))
                         .slice(
                           page * rowsPerPage,
@@ -227,7 +227,7 @@ class CfgTable extends Component {
                 </div>
                 <TablePagination
                   component="div"
-                  count={data.length}
+                  count={length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   backIconButtonProps={{ 'aria-label': 'Previous Page' }}

@@ -111,7 +111,7 @@ resources: {}
 podAnnotations: {}
 
 ingress:
-  enabled: true
+  enabled: false
   tls: false
   # secretName: my-tls-cert # only needed if tls above is true
   hostname: ''

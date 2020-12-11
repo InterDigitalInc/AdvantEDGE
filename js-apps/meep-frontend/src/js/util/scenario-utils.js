@@ -42,6 +42,9 @@ import {
   FIELD_MNC,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
+  FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_RADIUS,
   FIELD_GEO_PATH,
@@ -51,6 +54,9 @@ import {
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS,
+  FIELD_WIRELESS_TYPE,
   FIELD_INT_DOM_LATENCY,
   FIELD_INT_DOM_LATENCY_VAR,
   FIELD_INT_DOM_LATENCY_DIST,
@@ -82,10 +88,16 @@ import {
   FIELD_APP_THROUGHPUT_DL,
   FIELD_APP_THROUGHPUT_UL,
   FIELD_APP_PKT_LOSS,
+  FIELD_META_DISPLAY_MAP_COLOR,
+  FIELD_META_DISPLAY_MAP_ICON,
   createElem,
   getElemFieldVal,
   setElemFieldVal,
-  createUniqueName
+  createUniqueName,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from './elem-utils';
 
 import {
@@ -94,7 +106,9 @@ import {
   ELEMENT_TYPE_OPERATOR_CELL,
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -142,7 +156,9 @@ import {
   ZONE_TYPE_STR,
   COMMON_ZONE_TYPE_STR,
   POA_TYPE_STR,
-  POA_CELL_TYPE_STR,
+  POA_4G_TYPE_STR,
+  POA_5G_TYPE_STR,
+  POA_WIFI_TYPE_STR,
   DEFAULT_NL_TYPE_STR,
   UE_TYPE_STR,
   FOG_TYPE_STR,
@@ -162,6 +178,11 @@ import {
   TYPE_PHY_LOC,
   TYPE_PROCESS
 } from '../meep-constants';
+
+import {
+  META_DISPLAY_MAP_COLOR,
+  META_DISPLAY_MAP_ICON
+} from './meta-keys';
 
 // Import images used in JS
 import * as poaImage from '../../img/tower-02-idcc.svg';
@@ -264,10 +285,10 @@ export function parseScenario(scenario) {
   // Update table
   var table = {};
   table.data = { edges: edges, nodes: nodes };
-  table.entries = _.map(table.data.nodes, node => {
-    var elemFromScenario = getElementFromScenario(scenario, node.id);
-    return updateObject(node, elemFromScenario);
-  });
+  table.entries = _.reduce(table.data.nodes, (nodeMap, node) => {
+    nodeMap[node.name] = updateObject(node, getElementFromScenario(scenario, node.id));
+    return nodeMap;
+  }, {});
 
   // Update visualization data
   var visData = {};
@@ -365,8 +386,14 @@ export function addElementToScenario(scenario, element) {
   case ELEMENT_TYPE_ZONE:
     scenarioElement = createZone(uniqueId, name, element);
     break;
-  case ELEMENT_TYPE_POA_CELL:
-    scenarioElement = createPoaCell(uniqueId, name, element);
+  case ELEMENT_TYPE_POA_4G:
+    scenarioElement = createPoa4G(uniqueId, name, element);
+    break;
+  case ELEMENT_TYPE_POA_5G:
+    scenarioElement = createPoa5G(uniqueId, name, element);
+    break;
+  case ELEMENT_TYPE_POA_WIFI:
+    scenarioElement = createPoaWIFI(uniqueId, name, element);
     break;
   case ELEMENT_TYPE_POA:
     scenarioElement = createPoa(uniqueId, name, element);
@@ -547,6 +574,11 @@ export function updateElementInScenario(scenario, element) {
           }
         }
 
+        if (!zone.meta) {
+          zone.meta = {};
+        }
+        zone.meta[META_DISPLAY_MAP_COLOR] = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
+
         zone.label = name;
         zone.name = name;
         return;
@@ -565,11 +597,23 @@ export function updateElementInScenario(scenario, element) {
           nl.netChar.throughputUl = getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL);
           nl.netChar.packetLoss = getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS);
 
-          if (nl.type === POA_CELL_TYPE_STR) {
-            var cellularPoaConfig = {
+          if (nl.type === POA_4G_TYPE_STR) {
+            var poa4GConfig = {
               cellId: getElemFieldVal(element, FIELD_CELL_ID)
             };
-            nl.cellularPoaConfig = cellularPoaConfig;
+            nl.poa4GConfig = poa4GConfig;
+          }
+          if (nl.type === POA_5G_TYPE_STR) {
+            var poa5GConfig = {
+              cellId: getElemFieldVal(element, FIELD_NR_CELL_ID)
+            };
+            nl.poa5GConfig = poa5GConfig;
+          }
+          if (nl.type === POA_WIFI_TYPE_STR) {
+            var poaWifiConfig = {
+              macId: getElemFieldVal(element, FIELD_MAC_ID)
+            };
+            nl.poaWifiConfig = poaWifiConfig;
           }
 
           if (!nl.geoData) {
@@ -601,6 +645,11 @@ export function updateElementInScenario(scenario, element) {
             pl.netChar.throughputUl = getElemFieldVal(element, FIELD_LINK_THROUGHPUT_UL);
             pl.netChar.packetLoss = getElemFieldVal(element, FIELD_LINK_PKT_LOSS);
 
+            pl.connected = getElemFieldVal(element, FIELD_CONNECTED);
+            var wireless = getElemFieldVal(element, FIELD_WIRELESS);
+            pl.wireless = wireless;
+            pl.wirelessType = wireless ? getElemFieldVal(element, FIELD_WIRELESS_TYPE) : '';
+
             if (!pl.geoData) {
               pl.geoData = {};
             }
@@ -617,6 +666,8 @@ export function updateElementInScenario(scenario, element) {
             pl.geoData.eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE);
             const velocity = getElemFieldVal(element, FIELD_GEO_VELOCITY);
             pl.geoData.velocity = velocity ? velocity : null;
+
+            pl.macId = getElemFieldVal(element, FIELD_UE_MAC_ID);
 
             pl.label = name;
             pl.name = name;
@@ -841,6 +892,10 @@ export function createProcess(uniqueId, name, type, element) {
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var port = getElemFieldVal(element, FIELD_PORT);
   var gpuCount = getElemFieldVal(element, FIELD_GPU_COUNT);
+  var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
+  var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
+  var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
+  var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
   var process = {
     id: uniqueId,
     name: name,
@@ -855,6 +910,8 @@ export function createProcess(uniqueId, name, type, element) {
     commandExe: null,
     serviceConfig: null,
     gpuConfig: null,
+    cpuConfig: null,
+    memoryConfig: null,
     externalConfig: null,
     netChar: {
       latency: parseInt(DEFAULT_LATENCY_APP),
@@ -901,6 +958,14 @@ export function createProcess(uniqueId, name, type, element) {
         getElemFieldVal(element, FIELD_GPU_TYPE).toUpperCase(),
       count: gpuCount
     };
+    process.cpuConfig = (cpuMin && !isNaN(cpuMin)) || (cpuMax && !isNaN(cpuMax)) ? {
+      min: cpuMin && !isNaN(cpuMin) ? parseFloat(cpuMin) : null,
+      max: cpuMax && !isNaN(cpuMax) ? parseFloat(cpuMax): null
+    } : null;
+    process.memoryConfig = (memoryMin && !isNaN(memoryMin)) || (memoryMax && !isNaN(memoryMax)) ? {
+      min: memoryMin && !isNaN(memoryMin) ? parseInt(memoryMin) : null,
+      max: memoryMax && !isNaN(memoryMax) ? parseInt(memoryMax) : null
+    } : null;
     process.placementId = getElemFieldVal(element, FIELD_PLACEMENT_ID);
   }
   if (process.netChar) {
@@ -1088,13 +1153,13 @@ export function createPoa(uniqueId, name, element) {
   return nl;
 }
 
-export function createPoaCell(uniqueId, name, element) {
+export function createPoa4G(uniqueId, name, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
   var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
   var nl = {
     id: uniqueId,
     name: name,
-    type: POA_CELL_TYPE_STR,
+    type: POA_4G_TYPE_STR,
     netChar: {
       latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
       latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
@@ -1103,8 +1168,68 @@ export function createPoaCell(uniqueId, name, element) {
       packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
     },
     physicalLocations: [],
-    cellularPoaConfig: {
+    poa4GConfig: {
       cellId: getElemFieldVal(element, FIELD_CELL_ID)
+    },
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: (radius === '') ? null : radius
+    }
+  };
+
+  return nl;
+}
+
+export function createPoa5G(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+  var nl = {
+    id: uniqueId,
+    name: name,
+    type: POA_5G_TYPE_STR,
+    netChar: {
+      latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+      latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+      throughputDl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL),
+      throughputUl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL),
+      packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
+    },
+    physicalLocations: [],
+    poa5GConfig: {
+      cellId: getElemFieldVal(element, FIELD_NR_CELL_ID)
+    },
+    geoData: !location ? null : {
+      location: {
+        type: 'Point',
+        coordinates: JSON.parse(location)
+      },
+      radius: (radius === '') ? null : radius
+    }
+  };
+
+  return nl;
+}
+
+export function createPoaWIFI(uniqueId, name, element) {
+  var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var radius = getElemFieldVal(element, FIELD_GEO_RADIUS);
+  var nl = {
+    id: uniqueId,
+    name: name,
+    type: POA_WIFI_TYPE_STR,
+    netChar: {
+      latency: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY),
+      latencyVariation: getElemFieldVal(element, FIELD_TERM_LINK_LATENCY_VAR),
+      throughputDl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_DL),
+      throughputUl: getElemFieldVal(element, FIELD_TERM_LINK_THROUGHPUT_UL),
+      packetLoss: getElemFieldVal(element, FIELD_TERM_LINK_PKT_LOSS)
+    },
+    physicalLocations: [],
+    poaWifiConfig: {
+      macId: getElemFieldVal(element, FIELD_MAC_ID)
     },
     geoData: !location ? null : {
       location: {
@@ -1139,11 +1264,15 @@ export function createDefaultNL(zoneName) {
 
 export function createPL(uniqueId, name, type, element) {
   var location = getElemFieldVal(element, FIELD_GEO_LOCATION);
+  var wireless = getElemFieldVal(element, FIELD_WIRELESS);
   var pl = {
     id: uniqueId,
     name: name,
     type: type,
     isExternal: getElemFieldVal(element, FIELD_IS_EXTERNAL),
+    connected: getElemFieldVal(element, FIELD_CONNECTED),
+    wireless: wireless,
+    wirelessType: wireless ? getElemFieldVal(element, FIELD_WIRELESS_TYPE) : '',
     netChar: {
       latency: getElemFieldVal(element, FIELD_LINK_LATENCY),
       latencyVariation: getElemFieldVal(element, FIELD_LINK_LATENCY_VAR),
@@ -1157,6 +1286,7 @@ export function createPL(uniqueId, name, type, element) {
         coordinates: JSON.parse(location)
       }
     },
+    macId: getElemFieldVal(element, FIELD_UE_MAC_ID),
     processes: []
   };
 
@@ -1186,8 +1316,10 @@ export function createZone(uniqueId, name, element) {
       throughputUl: getElemFieldVal(element, FIELD_INTRA_ZONE_THROUGHPUT_UL),
       packetLoss: getElemFieldVal(element, FIELD_INTRA_ZONE_PKT_LOSS)
     },
-    networkLocations: [createDefaultNL(name)]
+    networkLocations: [createDefaultNL(name)],
+    meta: {}
   };
+  zone.meta[META_DISPLAY_MAP_COLOR] = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
   return zone;
 }
 
@@ -1277,6 +1409,9 @@ export function getElementFromScenario(scenario, elementId) {
           setElemFieldVal(elem, FIELD_INTRA_ZONE_THROUGHPUT_UL, zone.netChar.throughputUl || DEFAULT_THROUGHPUT_UL_INTRA_ZONE);
           setElemFieldVal(elem, FIELD_INTRA_ZONE_PKT_LOSS, zone.netChar.packetLoss || 0);
         }
+        if (zone.meta) {
+          setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_COLOR, zone.meta[META_DISPLAY_MAP_COLOR]);
+        }
         return elem;
       }
 
@@ -1287,8 +1422,14 @@ export function getElementFromScenario(scenario, elementId) {
           case POA_TYPE_STR:
             setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA);
             break;
-          case POA_CELL_TYPE_STR:
-            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_CELL);
+          case POA_4G_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_4G);
+            break;
+          case POA_5G_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_5G);
+            break;
+          case POA_WIFI_TYPE_STR:
+            setElemFieldVal(elem, FIELD_TYPE, ELEMENT_TYPE_POA_WIFI);
             break;
           default:
             break;
@@ -1304,15 +1445,25 @@ export function getElementFromScenario(scenario, elementId) {
             setElemFieldVal(elem, FIELD_TERM_LINK_THROUGHPUT_UL, nl.netChar.throughputUl || 0);
             setElemFieldVal(elem, FIELD_TERM_LINK_PKT_LOSS, nl.netChar.packetLoss || 0);
           }
-          //only valid for POA_CELL
-          if (nl.cellularPoaConfig) {
-            setElemFieldVal(elem, FIELD_CELL_ID, nl.cellularPoaConfig.cellId || '');
+          //only valid for specific POAs
+          if (nl.poa4GConfig) {
+            setElemFieldVal(elem, FIELD_CELL_ID, nl.poa4GConfig.cellId || '');
           }
+          if (nl.poa5GConfig) {
+            setElemFieldVal(elem, FIELD_NR_CELL_ID, nl.poa5GConfig.cellId || '');
+          }
+          if (nl.poaWifiConfig) {
+            setElemFieldVal(elem, FIELD_MAC_ID, nl.poaWifiConfig.macId || '');
+          }
+
           if (nl.geoData) {
             if (nl.geoData.location) {
               setElemFieldVal(elem, FIELD_GEO_LOCATION, JSON.stringify(nl.geoData.location.coordinates) || '');
             }
             setElemFieldVal(elem, FIELD_GEO_RADIUS, nl.geoData.radius || '');
+          }
+          if (nl.meta) {
+            setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, nl.meta[META_DISPLAY_MAP_ICON]);
           }
           return elem;
         }
@@ -1339,6 +1490,7 @@ export function getElementFromScenario(scenario, elementId) {
             default:
               break;
             }
+
             setElemFieldVal(elem, FIELD_NAME, pl.name);
             setElemFieldVal(elem, FIELD_PARENT, domain.type === PUBLIC_DOMAIN_TYPE_STR ? scenario.name :
               zone.type === COMMON_ZONE_TYPE_STR ? domain.name :
@@ -1351,6 +1503,11 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_LINK_PKT_LOSS, pl.netChar.packetLoss || DEFAULT_PACKET_LOSS_LINK);
             }
             setElemFieldVal(elem, FIELD_IS_EXTERNAL, pl.isExternal || false);
+            setElemFieldVal(elem, FIELD_CONNECTED, pl.connected || false);
+            setElemFieldVal(elem, FIELD_WIRELESS, pl.wireless || false);
+            setElemFieldVal(elem, FIELD_WIRELESS_TYPE, pl.wirelessType || '');
+
+            setElemFieldVal(elem, FIELD_UE_MAC_ID, pl.macId || '');
 
             if (pl.geoData) {
               if (pl.geoData.location) {
@@ -1362,7 +1519,9 @@ export function getElementFromScenario(scenario, elementId) {
               setElemFieldVal(elem, FIELD_GEO_EOP_MODE, pl.geoData.eopMode || '');
               setElemFieldVal(elem, FIELD_GEO_VELOCITY, pl.geoData.velocity || '');
             }
-
+            if (pl.meta) {
+              setElemFieldVal(elem, FIELD_META_DISPLAY_MAP_ICON, pl.meta[META_DISPLAY_MAP_ICON]);
+            }
             return elem;
           }
 
@@ -1418,6 +1577,16 @@ export function getElementFromScenario(scenario, elementId) {
                 if (process.gpuConfig) {
                   setElemFieldVal(elem, FIELD_GPU_COUNT, process.gpuConfig.count || '');
                   setElemFieldVal(elem, FIELD_GPU_TYPE, process.gpuConfig.type || '');
+                }
+
+                if (process.cpuConfig) {
+                  setElemFieldVal(elem, FIELD_CPU_MIN, process.cpuConfig.min || '');
+                  setElemFieldVal(elem, FIELD_CPU_MAX, process.cpuConfig.max || '');
+                }
+
+                if (process.memoryConfig) {
+                  setElemFieldVal(elem, FIELD_MEMORY_MIN, process.memoryConfig.min || '');
+                  setElemFieldVal(elem, FIELD_MEMORY_MAX, process.memoryConfig.max || '');
                 }
               }
 
@@ -1582,18 +1751,20 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
 
   var latency = null;
+  var lineColor = (pl.connected) ? '#606060' : '#FF0000';
+  e['color'] = {
+    color: lineColor,
+    highlight: lineColor,
+    hover: lineColor
+  };
+  e['dashes'] = pl.wireless || false;
 
   // Set level and group based on PL type
   switch (pl.type) {
   case FOG_TYPE_STR: {
     // latency = "0";
-    e['color'] = {
-      color: '#606060',
-      highlight: '#606060',
-      hover: '#606060'
-    };
     n['level'] = 4;
-
+    
     if (pl.isExternal) {
       n['group'] = 'pLocExtFog';
     } else {
@@ -1609,11 +1780,6 @@ export function addPlNode(pl, parent, nodes, edges) {
   }
   case EDGE_TYPE_STR: {
     // latency = "0";
-    e['color'] = {
-      color: '#606060',
-      highlight: '#606060',
-      hover: '#606060'
-    };
     n['level'] = 3;
 
     if (pl.isExternal) {
@@ -1632,9 +1798,8 @@ export function addPlNode(pl, parent, nodes, edges) {
 
   case UE_TYPE_STR: {
     latency = parent.terminalLinkLatency;
-    e['dashes'] = true;
     n['level'] = 4;
-
+     
     if (pl.isExternal) {
       const image = getScenarioSpecificImage(
         n.label + '-ext',

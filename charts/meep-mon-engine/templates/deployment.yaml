@@ -44,6 +44,14 @@ spec:
             - name: {{ $key }}
               value: {{ $value }}
             {{- end }}
+            {{- range $key, $value := .Values.image.envSecret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $value.name }}
+                  key: {{ $value.key }}
+                  optional: true
+            {{- end }}
           {{- if .Values.codecov.enabled}}
           volumeMounts:
           - name: codecov-storage
@@ -54,5 +62,11 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
+      initContainers:
+        - name: init-{{ .Values.deployment.dependency }}
+          image: busybox:1.28
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nslookup {{ .Values.deployment.dependency }}.kube-system ; do echo waiting for {{ .Values.deployment.dependency }}; sleep 0.25; done;']
+
 
               

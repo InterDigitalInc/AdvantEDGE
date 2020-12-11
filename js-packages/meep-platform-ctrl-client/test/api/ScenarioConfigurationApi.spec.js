@@ -146,6 +146,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig = new AdvantEdgePlatformControllerRestApi.CellularPoaConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa4GConfig = new AdvantEdgePlatformControllerRestApi.Poa4GConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa4GConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa5GConfig = new AdvantEdgePlatformControllerRestApi.Poa5GConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa5GConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poaWifiConfig = new AdvantEdgePlatformControllerRestApi.PoaWifiConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poaWifiConfig.macId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.type = "Point";
@@ -172,6 +178,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];
@@ -193,6 +202,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig = new AdvantEdgePlatformControllerRestApi.GpuConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.type = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.count = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig = new AdvantEdgePlatformControllerRestApi.MemoryConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.min = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.max = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig = new AdvantEdgePlatformControllerRestApi.CpuConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.min = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.max = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig = new AdvantEdgePlatformControllerRestApi.ExternalConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap = [new AdvantEdgePlatformControllerRestApi.IngressService()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap[0].name = "";
@@ -236,6 +251,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkPacketLoss = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].macId = "";
 
           instance.createScenario(name, scenario, function(error, data, response) {
             if (error) {
@@ -551,6 +567,15 @@
                           expect(data.cellularPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CellularPoaConfig);
                                 expect(data.cellularPoaConfig.cellId).to.be.a('string');
                             expect(data.cellularPoaConfig.cellId).to.be("");
+                          expect(data.poa4GConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Poa4GConfig);
+                                expect(data.poa4GConfig.cellId).to.be.a('string');
+                            expect(data.poa4GConfig.cellId).to.be("");
+                          expect(data.poa5GConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Poa5GConfig);
+                                expect(data.poa5GConfig.cellId).to.be.a('string');
+                            expect(data.poa5GConfig.cellId).to.be("");
+                          expect(data.poaWifiConfig).to.be.a(AdvantEdgePlatformControllerRestApi.PoaWifiConfig);
+                                expect(data.poaWifiConfig.macId).to.be.a('string');
+                            expect(data.poaWifiConfig.macId).to.be("");
                           expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
                                 expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
                                   expect(data.geoData.location.type).to.be.a('string');
@@ -642,6 +667,12 @@
                                   expect(data).to.be("");
                                 }
                               }
+                              expect(data.connected).to.be.a('boolean');
+                              expect(data.connected).to.be(false);
+                              expect(data.wireless).to.be.a('boolean');
+                              expect(data.wireless).to.be(false);
+                              expect(data.wirelessType).to.be.a('string');
+                              expect(data.wirelessType).to.be("");
                               {
                                 let dataCtr = data.meta;
                                 expect(dataCtr).to.be.an(Object);
@@ -710,6 +741,16 @@
                                     expect(data.gpuConfig.type).to.be("");
                                     expect(data.gpuConfig.count).to.be.a('number');
                                     expect(data.gpuConfig.count).to.be(0);
+                                  expect(data.memoryConfig).to.be.a(AdvantEdgePlatformControllerRestApi.MemoryConfig);
+                                        expect(data.memoryConfig.min).to.be.a('number');
+                                    expect(data.memoryConfig.min).to.be(0);
+                                    expect(data.memoryConfig.max).to.be.a('number');
+                                    expect(data.memoryConfig.max).to.be(0);
+                                  expect(data.cpuConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CpuConfig);
+                                        expect(data.cpuConfig.min).to.be.a('number');
+                                    expect(data.cpuConfig.min).to.be(0.0);
+                                    expect(data.cpuConfig.max).to.be.a('number');
+                                    expect(data.cpuConfig.max).to.be(0.0);
                                   expect(data.externalConfig).to.be.a(AdvantEdgePlatformControllerRestApi.ExternalConfig);
                                         {
                                       let dataCtr = data.externalConfig.ingressServiceMap;
@@ -825,6 +866,8 @@
                               expect(data.linkThroughput).to.be(0);
                               expect(data.linkPacketLoss).to.be.a('number');
                               expect(data.linkPacketLoss).to.be(0.0);
+                              expect(data.macId).to.be.a('string');
+                              expect(data.macId).to.be("");
                             }
                           }
                         }
@@ -1111,6 +1154,15 @@
                               expect(data.cellularPoaConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CellularPoaConfig);
                                     expect(data.cellularPoaConfig.cellId).to.be.a('string');
                                 expect(data.cellularPoaConfig.cellId).to.be("");
+                              expect(data.poa4GConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Poa4GConfig);
+                                    expect(data.poa4GConfig.cellId).to.be.a('string');
+                                expect(data.poa4GConfig.cellId).to.be("");
+                              expect(data.poa5GConfig).to.be.a(AdvantEdgePlatformControllerRestApi.Poa5GConfig);
+                                    expect(data.poa5GConfig.cellId).to.be.a('string');
+                                expect(data.poa5GConfig.cellId).to.be("");
+                              expect(data.poaWifiConfig).to.be.a(AdvantEdgePlatformControllerRestApi.PoaWifiConfig);
+                                    expect(data.poaWifiConfig.macId).to.be.a('string');
+                                expect(data.poaWifiConfig.macId).to.be("");
                               expect(data.geoData).to.be.a(AdvantEdgePlatformControllerRestApi.GeoData);
                                     expect(data.geoData.location).to.be.a(AdvantEdgePlatformControllerRestApi.Point);
                                       expect(data.geoData.location.type).to.be.a('string');
@@ -1202,6 +1254,12 @@
                                       expect(data).to.be("");
                                     }
                                   }
+                                  expect(data.connected).to.be.a('boolean');
+                                  expect(data.connected).to.be(false);
+                                  expect(data.wireless).to.be.a('boolean');
+                                  expect(data.wireless).to.be(false);
+                                  expect(data.wirelessType).to.be.a('string');
+                                  expect(data.wirelessType).to.be("");
                                   {
                                     let dataCtr = data.meta;
                                     expect(dataCtr).to.be.an(Object);
@@ -1270,6 +1328,16 @@
                                         expect(data.gpuConfig.type).to.be("");
                                         expect(data.gpuConfig.count).to.be.a('number');
                                         expect(data.gpuConfig.count).to.be(0);
+                                      expect(data.memoryConfig).to.be.a(AdvantEdgePlatformControllerRestApi.MemoryConfig);
+                                            expect(data.memoryConfig.min).to.be.a('number');
+                                        expect(data.memoryConfig.min).to.be(0);
+                                        expect(data.memoryConfig.max).to.be.a('number');
+                                        expect(data.memoryConfig.max).to.be(0);
+                                      expect(data.cpuConfig).to.be.a(AdvantEdgePlatformControllerRestApi.CpuConfig);
+                                            expect(data.cpuConfig.min).to.be.a('number');
+                                        expect(data.cpuConfig.min).to.be(0.0);
+                                        expect(data.cpuConfig.max).to.be.a('number');
+                                        expect(data.cpuConfig.max).to.be(0.0);
                                       expect(data.externalConfig).to.be.a(AdvantEdgePlatformControllerRestApi.ExternalConfig);
                                             {
                                           let dataCtr = data.externalConfig.ingressServiceMap;
@@ -1385,6 +1453,8 @@
                                   expect(data.linkThroughput).to.be(0);
                                   expect(data.linkPacketLoss).to.be.a('number');
                                   expect(data.linkPacketLoss).to.be(0.0);
+                                  expect(data.macId).to.be.a('string');
+                                  expect(data.macId).to.be("");
                                 }
                               }
                             }
@@ -1499,6 +1569,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig = new AdvantEdgePlatformControllerRestApi.CellularPoaConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].cellularPoaConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa4GConfig = new AdvantEdgePlatformControllerRestApi.Poa4GConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa4GConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa5GConfig = new AdvantEdgePlatformControllerRestApi.Poa5GConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poa5GConfig.cellId = "";
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poaWifiConfig = new AdvantEdgePlatformControllerRestApi.PoaWifiConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].poaWifiConfig.macId = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData = new AdvantEdgePlatformControllerRestApi.GeoData();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location = new AdvantEdgePlatformControllerRestApi.Point();
           scenario.deployment.domains[0].zones[0].networkLocations[0].geoData.location.type = "Point";
@@ -1525,6 +1601,9 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.eopMode = "LOOP";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].geoData.velocity = ;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].networkLocationsInRange = [""];
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].connected = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wireless = false;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].wirelessType = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].meta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].userMeta = {key: ""};
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes = [new AdvantEdgePlatformControllerRestApi.Process()];
@@ -1546,6 +1625,12 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig = new AdvantEdgePlatformControllerRestApi.GpuConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.type = "";
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].gpuConfig.count = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig = new AdvantEdgePlatformControllerRestApi.MemoryConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.min = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].memoryConfig.max = 0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig = new AdvantEdgePlatformControllerRestApi.CpuConfig();
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.min = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].cpuConfig.max = 0.0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig = new AdvantEdgePlatformControllerRestApi.ExternalConfig();
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap = [new AdvantEdgePlatformControllerRestApi.IngressService()];
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].processes[0].externalConfig.ingressServiceMap[0].name = "";
@@ -1589,6 +1674,7 @@
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkLatencyVariation = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkThroughput = 0;
           scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].linkPacketLoss = 0.0;
+          scenario.deployment.domains[0].zones[0].networkLocations[0].physicalLocations[0].macId = "";
 
           instance.setScenario(name, scenario, function(error, data, response) {
             if (error) {

@@ -63,7 +63,7 @@ var AdvantEdgeGisEngineRestApi = require('advant_edge_gis_engine_rest_api');
 
 var apiInstance = new AdvantEdgeGisEngineRestApi.AutomationApi();
 
-var type = "type_example"; // String | Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes.
+var type = "type_example"; // String | Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
 
 
 var callback = function(error, data, response) {
@@ -80,7 +80,7 @@ apiInstance.getAutomationStateByName(type, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **type** | **String**| Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. | 
+ **type** | **String**| Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change. | 
 
 ### Return type
 
@@ -109,7 +109,7 @@ var AdvantEdgeGisEngineRestApi = require('advant_edge_gis_engine_rest_api');
 
 var apiInstance = new AdvantEdgeGisEngineRestApi.AutomationApi();
 
-var type = "type_example"; // String | Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes
+var type = "type_example"; // String | Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change.
 
 var run = true; // Boolean | Automation state (e.g. true=running, false=stopped)
 
@@ -128,7 +128,7 @@ apiInstance.setAutomationStateByName(type, run, callback);
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **type** | **String**| Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes | 
+ **type** | **String**| Automation type.<br> Automation loop evaluates enabled automation types once every second.<br> <p>Supported Types: <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT - Advances UEs along configured paths using previous position & velocity as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE - Sends network characteristics update events to Sanbox Controller when throughput values change. | 
  **run** | **Boolean**| Automation state (e.g. true=running, false=stopped) | 
 
 ### Return type

@@ -19,6 +19,7 @@ package server
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-virt-engine/helm"
@@ -46,7 +47,10 @@ type VirtEngine struct {
 	activeModels        map[string]*mod.Model
 	activeScenarioNames map[string]string
 	hostUrl             string
-	altServer           string
+	userSwagger         string
+	userSwaggerDir      string
+	sessionKey          string
+	httpsOnly           bool
 	handlerId           int
 	sboxPods            map[string]string
 }
@@ -85,14 +89,37 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_HOST_URL: ", ve.hostUrl)
 
-	// Retrieve Alt Server from environment variable
-	ve.altServer = strings.TrimSpace(os.Getenv("MEEP_ALT_SERVER"))
-	if ve.altServer == "" {
-		err = errors.New("MEEP_ALT_SERVER variable not set")
+	// Retrieve User Swagger from environment variable
+	ve.userSwagger = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER"))
+	if ve.userSwagger == "" {
+		err = errors.New("MEEP_USER_SWAGGER variable not set")
 		log.Error(err.Error())
 		return err
 	}
-	log.Info("MEEP_ALT_SERVER: ", ve.altServer)
+	log.Info("MEEP_USER_SWAGGER: ", ve.userSwagger)
+
+	// Retrieve User Swagger Dir from environment variable
+	ve.userSwaggerDir = strings.TrimSpace(os.Getenv("MEEP_USER_SWAGGER_DIR"))
+	if ve.userSwaggerDir == "" {
+		err = errors.New("MEEP_USER_SWAGGER_DIR variable not set")
+		log.Error(err.Error())
+		return err
+	}
+	log.Info("MEEP_USER_SWAGGER_DIR: ", ve.userSwaggerDir)
+
+	// Retrieve HTTPS only mode from environment variable
+	httpsOnlyStr := strings.TrimSpace(os.Getenv("MEEP_HTTPS_ONLY"))
+	httpsOnly, err := strconv.ParseBool(httpsOnlyStr)
+	if err == nil {
+		ve.httpsOnly = httpsOnly
+	}
+	log.Info("MEEP_HTTPS_ONLY: ", httpsOnlyStr)
+
+	// Retrieve Session Encryption Key from environment variable
+	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
+	if ve.sessionKey == "" {
+		log.Warn("MEEP_SESSION_KEY not found")
+	}
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)
@@ -105,7 +132,7 @@ func Init() (err error) {
 	// Setup for liveness monitoring
 	ve.wdPinger, err = wd.NewPinger(moduleName, moduleNamespace, redisAddr)
 	if err != nil {
-		log.Error("Failed to initialize pigner. Error: ", err)
+		log.Error("Failed to initialize pinger. Error: ", err)
 		return err
 	}
 	err = ve.wdPinger.Start()
@@ -270,8 +297,8 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 	}
 
 	// Get chart prefix & path
-	path := "/data/" + sandboxName
-	releasePrefix := "meep-" + sandboxName + "-"
+	path := "/charts/" + sandboxName
+	releasePrefix := "meep-"
 	if scenarioName != "" {
 		path += "/scenario/"
 		releasePrefix += scenarioName + "-"
@@ -279,7 +306,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 
 	// Retrieve list of releases
 	chartsToDelete := 0
-	rels, err := helm.GetReleasesName()
+	rels, err := helm.GetReleasesName(sandboxName)
 	if err == nil {
 		// Filter charts by sandbox & scenario names
 		var toDelete []helm.Chart
@@ -287,6 +314,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 			if strings.HasPrefix(rel.Name, releasePrefix) {
 				var c helm.Chart
 				c.ReleaseName = rel.Name
+				c.Namespace = sandboxName
 				toDelete = append(toDelete, c)
 			}
 		}
@@ -295,7 +323,7 @@ func deleteReleases(sandboxName string, scenarioName string) (error, int) {
 		chartsToDelete = len(toDelete)
 		if chartsToDelete > 0 {
 			log.Debug("Deleting [", chartsToDelete, "] charts with release prefix: ", releasePrefix)
-			err := helm.DeleteReleases(toDelete)
+			err := helm.DeleteReleases(toDelete, sandboxName)
 			chartsToDelete = len(toDelete)
 			if err != nil {
 				log.Debug("Releases deletion failure:", err)

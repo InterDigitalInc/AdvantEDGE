@@ -44,6 +44,73 @@ func convertEcgiToJson(obj *Ecgi) string {
 	return string(jsonInfo)
 }
 
+func convertJsonToUeData(jsonData string) *UeData {
+
+	var obj UeData
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertUeDataToJson(obj *UeData) string {
+
+	jsonData, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonData)
+}
+
+func convertJsonToDomainData(jsonData string) *DomainData {
+
+	var obj DomainData
+	err := json.Unmarshal([]byte(jsonData), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertDomainDataToJson(obj *DomainData) string {
+
+	jsonData, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonData)
+}
+
+/*
+func convertJsonToOneOfNotificationSubscription(jsonInfo string) *OneOfNotificationSubscription {
+
+        var obj OneOfNotificationSubscription
+        err := json.Unmarshal([]byte(jsonInfo), &obj)
+        if err != nil {
+                log.Error(err.Error())
+                return nil
+        }
+        return &obj
+}
+
+func convertOneOfNotificationSubscriptionToJson(obj *OneOfNotificationSubscription) string {
+
+        jsonInfo, err := json.Marshal(*obj)
+        if err != nil {
+                log.Error(err.Error())
+                return ""
+        }
+
+        return string(jsonInfo)
+}
+*/
 func convertJsonToCellChangeSubscription(jsonInfo string) *CellChangeSubscription {
 
 	var obj CellChangeSubscription
@@ -56,6 +123,50 @@ func convertJsonToCellChangeSubscription(jsonInfo string) *CellChangeSubscriptio
 }
 
 func convertCellChangeSubscriptionToJson(obj *CellChangeSubscription) string {
+
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToRabEstSubscription(jsonInfo string) *RabEstSubscription {
+
+	var obj RabEstSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertRabEstSubscriptionToJson(obj *RabEstSubscription) string {
+
+	jsonInfo, err := json.Marshal(*obj)
+	if err != nil {
+		log.Error(err.Error())
+		return ""
+	}
+
+	return string(jsonInfo)
+}
+
+func convertJsonToRabRelSubscription(jsonInfo string) *RabRelSubscription {
+
+	var obj RabRelSubscription
+	err := json.Unmarshal([]byte(jsonInfo), &obj)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
+	return &obj
+}
+
+func convertRabRelSubscriptionToJson(obj *RabRelSubscription) string {
 
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {

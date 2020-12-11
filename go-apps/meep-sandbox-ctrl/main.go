@@ -64,8 +64,21 @@ func main() {
 			return
 		}
 
-		// Start REST API Server
-		router := server.NewRouter()
+		var priSw string
+		var altSw string
+		userSw := os.Getenv("USER_SWAGGER_SANDBOX")
+		if userSw == "" {
+			priSw = "./swagger/"
+			altSw = ""
+		} else {
+			priSw = "." + userSw + "/"
+			altSw = "./swagger/"
+		}
+
+		// Start primary REST API Server
+		log.Info("Primary-serving [sw:" + priSw + "]")
+		log.Info("Alt-serving [sw:" + altSw + "]")
+		router := server.NewRouter(priSw, altSw)
 		methods := handlers.AllowedMethods([]string{"OPTIONS", "DELETE", "GET", "HEAD", "POST", "PUT"})
 		header := handlers.AllowedHeaders([]string{"content-type"})
 		log.Fatal(http.ListenAndServe(":80", handlers.CORS(methods, header)(router)))

@@ -23,9 +23,10 @@ import { Button } from '@rmwc/button';
 import { TextField, TextFieldIcon, TextFieldHelperText } from '@rmwc/textfield';
 import { Checkbox } from '@rmwc/checkbox';
 import { Typography } from '@rmwc/typography';
+import { Icon } from '@rmwc/icon';
+import { ChromePicker } from 'react-color';
 
 import { updateObject } from '../../util/object-util';
-import { createUniqueName } from '../../util/elem-utils';
 import L from 'leaflet';
 
 import IDSelect from '../../components/helper-components/id-select';
@@ -51,8 +52,11 @@ import {
   FIELD_IS_EXTERNAL,
   FIELD_MCC,
   FIELD_MNC,
+  FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
   FIELD_GEO_LOCATION,
   FIELD_GEO_RADIUS,
   FIELD_GEO_PATH,
@@ -62,10 +66,19 @@ import {
   FIELD_CHART_LOC,
   FIELD_CHART_VAL,
   FIELD_CHART_GROUP,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS,
+  FIELD_WIRELESS_TYPE,
+  FIELD_META_DISPLAY_MAP_COLOR,
   getElemFieldVal,
   setElemFieldVal,
   getElemFieldErr,
-  setElemFieldErr
+  setElemFieldErr,
+  createUniqueName,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from '../../util/elem-utils';
 
 import {
@@ -87,7 +100,9 @@ import {
   ELEMENT_TYPE_ZONE,
   ELEMENT_TYPE_POA,
   ELEMENT_TYPE_POA_GENERIC,
-  ELEMENT_TYPE_POA_CELL,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI,
   ELEMENT_TYPE_DC,
   ELEMENT_TYPE_CN,
   ELEMENT_TYPE_EDGE,
@@ -97,6 +112,12 @@ import {
   ELEMENT_TYPE_UE_APP,
   ELEMENT_TYPE_EDGE_APP,
   ELEMENT_TYPE_CLOUD_APP,
+
+  // Connection state & type options
+  OPT_CONNECTED,
+  OPT_DISCONNECTED,
+  OPT_WIRELESS,
+  OPT_WIRED,
 
   // GPU types
   GPU_TYPE_NVIDIA,
@@ -121,14 +142,21 @@ import {
   CFG_ELEM_PROT,
   CFG_ELEM_GPU_COUNT,
   CFG_ELEM_GPU_TYPE,
+  CFG_ELEM_CPU_MIN,
+  CFG_ELEM_CPU_MAX,
+  CFG_ELEM_MEMORY_MIN,
+  CFG_ELEM_MEMORY_MAX,
   CFG_ELEM_PLACEMENT_ID,
   CFG_ELEM_CMD,
   CFG_ELEM_ARGS,
   CFG_ELEM_EXTERNAL_CHECK,
   CFG_ELEM_MNC,
   CFG_ELEM_MCC,
+  CFG_ELEM_MAC_ID,
+  CFG_ELEM_UE_MAC_ID,
   CFG_ELEM_DEFAULT_CELL_ID,
   CFG_ELEM_CELL_ID,
+  CFG_ELEM_NR_CELL_ID,
   CFG_ELEM_GEO_LOCATION,
   CFG_ELEM_GEO_RADIUS,
   CFG_ELEM_GEO_PATH,
@@ -138,8 +166,12 @@ import {
   CFG_ELEM_CHART_LOC,
   CFG_ELEM_CHART_GROUP,
   CFG_ELEM_CHART_ALT_VAL,
+  CFG_ELEM_CONNECTED,
+  CFG_ELEM_WIRELESS,
+  CFG_ELEM_WIRELESS_TYPE,
   CFG_ELEM_INGRESS_SVC_MAP,
   CFG_ELEM_EGRESS_SVC_MAP,
+  CFG_ELEM_META_DISPLAY_MAP_COLOR,
   CFG_BTN_NEW_ELEM,
   CFG_BTN_DEL_ELEM,
   CFG_BTN_CLONE_ELEM,
@@ -245,6 +277,48 @@ const validatePath = val => {
   return null;
 };
 
+const validatePositiveFloat = val => {
+  const floatError = validateNumber(val);
+  if (floatError) {
+    return floatError;
+  }
+  return val >= 0 ? null : 'Must be a positive float';
+};
+
+const validateCpuValue = count => {
+  if (count === '') {
+    return null;
+  }
+
+  const notPosFloatError = validatePositiveFloat(count);
+  if (notPosFloatError) {
+    return notPosFloatError;
+  }
+
+  const p = Number(count);
+  if (p !== '' && p === 0) {
+    return 'Must be a float greater than 0';
+  }
+  return null;
+};
+
+const validateMemoryValue = count => {
+  if (count === '') {
+    return null;
+  }
+
+  const notPosIntError = validatePositiveInt(count);
+  if (notPosIntError) {
+    return notPosIntError;
+  }
+
+  const p = Number(count);
+  if (p !== '' && p === 0) {
+    return 'Must be an integer greater than 0';
+  }
+  return null;
+};
+
 const validatePort = port => {
   if (port === '') {
     return null;
@@ -279,6 +353,15 @@ const validateGpuCount = count => {
   return null;
 };
 
+const validateWirelessType = val => {
+  if (val) {
+    if (!val.match(/^((,\s*)?(wifi|5g|4g|other))+$/)) {
+      return 'Comma-separated values: wifi|5g|4g|other';
+    }
+  }
+  return null;
+};
+
 const validateCellularMccMnc = val => {
   if (val) {
     if (val.length > 3) {
@@ -294,6 +377,28 @@ const validateCellularCellId = val => {
   if (val) {
     if (val.length > 7) {
       return 'Maximum 7 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
+  }
+  return null;
+};
+
+const validateCellularNrCellId = val => {
+  if (val) {
+    if (val.length > 9) {
+      return 'Maximum 9 characters';
+    } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
+      return 'Alphanumeric hex characters only';
+    }
+  }
+  return null;
+};
+
+const validateMacAddress = val => {
+  if (val) {
+    if (val.length > 12) {
+      return 'Maximum 12 characters';
     } else if (!val.match(/^(([_a-f0-9A-F][_-a-f0-9]*)?[_a-f0-9A-F])+$/)) {
       return 'Alphanumeric hex characters only';
     }
@@ -350,6 +455,16 @@ const validateProtocol = protocol => {
     if (protocol !== '' && protocol !== 'TCP' && protocol !== 'UDP') {
       return 'Must be TCP or UDP';
     }
+  }
+  return null;
+};
+
+const validateColor = val => {
+  if (val === '') {
+    return null;
+  }
+  if (!val.match(/^#[0-9A-Fa-f]{6}$/)) {
+    return 'Invalid hex format';
   }
   return null;
 };
@@ -566,6 +681,60 @@ const GpuGroup = ({ onUpdate, element }) => {
   );
 };
 
+const CpuGroup = ({ onUpdate, element }) => {
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateCpuValue}
+        isNumber={true}
+        label="Min CPU Count"
+        fieldName={FIELD_CPU_MIN}
+        cydata={CFG_ELEM_CPU_MIN}
+      />
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateCpuValue}
+        isNumber={true}
+        label="Max CPU Count"
+        fieldName={FIELD_CPU_MAX}
+        cydata={CFG_ELEM_CPU_MAX}
+      />
+    </Grid>
+  );
+};
+
+const MemoryGroup = ({ onUpdate, element }) => {
+  return (
+    <Grid>
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateMemoryValue}
+        isNumber={true}
+        label="Min Memory (MB)"
+        fieldName={FIELD_MEMORY_MIN}
+        cydata={CFG_ELEM_MEMORY_MIN}
+      />
+      <CfgTextFieldCell
+        span={6}
+        onUpdate={onUpdate}
+        element={element}
+        validate={validateMemoryValue}
+        isNumber={true}
+        label="Max Memory (MB)"
+        fieldName={FIELD_MEMORY_MAX}
+        cydata={CFG_ELEM_MEMORY_MAX}
+      />
+    </Grid>
+  );
+};
+
 const CommandGroup = ({ onUpdate, element }) => {
   return (
     <Grid>
@@ -659,12 +828,34 @@ const UserChartFields = ({ element, onUpdate }) => {
   );
 };
 
+const ColorIcon = (color) => {
+  return (
+    <Icon
+      icon={
+        <div
+          style={{
+            background: color,
+            width: '24px',
+            height: '24px',
+            border: '1px solid',
+            borderRadius: '5px',
+            borderColor: '#4d4d4d'
+          }}
+        />
+      }
+    />
+  );
+};
+
 // Display element-specific form fields
 const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }) => {
   var type = getElemFieldVal(element, FIELD_TYPE);
+  var isConnected = getElemFieldVal(element, FIELD_CONNECTED) || false;
+  var isWireless = getElemFieldVal(element, FIELD_WIRELESS) || false;
   var isExternal = getElemFieldVal(element, FIELD_IS_EXTERNAL);
   var chartEnabled = getElemFieldVal(element, FIELD_CHART_ENABLED);
   var eopMode = getElemFieldVal(element, FIELD_GEO_EOP_MODE) || '';
+  var color = getElemFieldVal(element, FIELD_META_DISPLAY_MAP_COLOR);
 
   switch (type) {
   case ELEMENT_TYPE_SCENARIO:
@@ -726,11 +917,39 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
     );
   case ELEMENT_TYPE_ZONE:
     return (
-      <NCGroups
-        onUpdate={onUpdate}
-        element={element}
-        prefixes={[PREFIX_INTRA_ZONE]}
-      />
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_INTRA_ZONE]}
+        />
+        <Grid style={{position: 'relative'}}>
+          <CfgTextFieldCell
+            span={6}
+            icon={ColorIcon(color)}
+            onIconClick={() => {
+              var colorErr = getElemFieldErr(element, FIELD_META_DISPLAY_MAP_COLOR);
+              element.editColor = !element.editColor;
+              onUpdate(FIELD_META_DISPLAY_MAP_COLOR, color, colorErr);
+            }}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateColor}
+            label="Zone Color"
+            fieldName={FIELD_META_DISPLAY_MAP_COLOR}
+            cydata={CFG_ELEM_META_DISPLAY_MAP_COLOR}
+          />
+          { !element.editColor ? null :
+            <div style={ styles.popover }>
+              <ChromePicker
+                color={color}
+                disableAlpha={true}
+                onChange={(color) => {onUpdate(FIELD_META_DISPLAY_MAP_COLOR, color.hex.toUpperCase(), null);}}
+              />
+            </div>
+          }
+        </Grid>
+      </>
     );
   case ELEMENT_TYPE_POA:
     return (
@@ -765,7 +984,7 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
         </Grid>
       </>
     );
-  case ELEMENT_TYPE_POA_CELL:
+  case ELEMENT_TYPE_POA_4G:
     return (
       <>
         <NCGroups
@@ -806,6 +1025,88 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
         />
       </>
     );
+  case ELEMENT_TYPE_POA_5G:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validateNumber}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateCellularNrCellId}
+          label="Cell Id"
+          fieldName={FIELD_NR_CELL_ID}
+          cydata={CFG_ELEM_NR_CELL_ID}
+        />
+      </>
+    );
+  case ELEMENT_TYPE_POA_WIFI:
+    return (
+      <>
+        <NCGroups
+          onUpdate={onUpdate}
+          element={element}
+          prefixes={[PREFIX_TERM_LINK]}
+        />
+        <Grid>
+          <CfgTextFieldCell
+            span={8}
+            icon='location_on'
+            onIconClick={onEditLocation}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateLocation}
+            label='Location Coordinates'
+            fieldName={FIELD_GEO_LOCATION}
+            cydata={CFG_ELEM_GEO_LOCATION}
+          />
+          <CfgTextFieldCell
+            span={4}
+            onUpdate={onUpdate}
+            element={element}
+            isNumber={true}
+            label='Radius (m)'
+            validate={validateNumber}
+            fieldName={FIELD_GEO_RADIUS}
+            cydata={CFG_ELEM_GEO_RADIUS}
+          />
+        </Grid>
+        <CfgTextFieldCell
+          onUpdate={onUpdate}
+          element={element}
+          validate={validateMacAddress}
+          label="Mac Address"
+          fieldName={FIELD_MAC_ID}
+          cydata={CFG_ELEM_MAC_ID}
+        />
+      </>
+    );
   case ELEMENT_TYPE_UE:
     return (
       <>
@@ -814,6 +1115,47 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           element={element}
           prefixes={[PREFIX_LINK]}
         />
+
+        <Grid style={{ paddingTop: 16 }} >
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRELESS]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ? (
+          <Grid>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid>
+        ) : (
+          <></>
+        )}
+
         <Grid>
           <CfgTextFieldCell
             span={12}
@@ -863,6 +1205,17 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
             cydata={CFG_ELEM_GEO_VELOCITY}
           />
         </Grid>
+        <Grid>
+          <CfgTextFieldCell
+            span={12}
+            onUpdate={onUpdate}
+            element={element}
+            validate={validateMacAddress}
+            label="Mac Address"
+            fieldName={FIELD_UE_MAC_ID}
+            cydata={CFG_ELEM_UE_MAC_ID}
+          />
+        </Grid>
       </>
     );
   case ELEMENT_TYPE_DC:
@@ -875,6 +1228,47 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
           element={element}
           prefixes={[PREFIX_LINK]}
         />
+
+        <Grid style={{ paddingTop: 16 }} >
+          <GridCell span={6}>
+            <IDSelect
+              label='Initial Connection State'
+              span={12}
+              options={[OPT_CONNECTED, OPT_DISCONNECTED]}
+              onChange={e => onUpdate(FIELD_CONNECTED, e.target.value === 'true', null)}
+              value={isConnected}
+              disabled={false}
+              cydata={CFG_ELEM_CONNECTED}
+            />
+          </GridCell>
+          <GridCell span={6}>
+            <IDSelect
+              label='Connection Mode'
+              span={12}
+              options={[OPT_WIRED]}
+              onChange={e => onUpdate(FIELD_WIRELESS, e.target.value === 'true', null)}
+              value={isWireless}
+              disabled={false}
+              cydata={CFG_ELEM_WIRELESS}
+            />
+          </GridCell>
+        </Grid>
+        {isWireless ? (
+          <Grid>
+            <CfgTextFieldCell
+              span={12}
+              onUpdate={onUpdate}
+              element={element}
+              validate={validateWirelessType}
+              label='Supported Wireless Types (order by priority)'
+              fieldName={FIELD_WIRELESS_TYPE}
+              cydata={CFG_ELEM_WIRELESS_TYPE}
+            />
+          </Grid> 
+        ) : ( 
+          <></>
+        )}
+        
         <Grid>
           <CfgTextFieldCell
             span={12}
@@ -943,6 +1337,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                         cydata={CFG_ELEM_IMG}
                       />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
@@ -1020,6 +1416,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                       />
                       <PortProtocolGroup onUpdate={onUpdate} element={element} />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
@@ -1104,6 +1502,8 @@ const TypeRelatedFormFields = ({ onUpdate, onEditLocation, onEditPath, element }
                         cydata={CFG_ELEM_GROUP}
                       />
                       <GpuGroup onUpdate={onUpdate} element={element} />
+                      <CpuGroup onUpdate={onUpdate} element={element} />
+                      <MemoryGroup onUpdate={onUpdate} element={element} />
                       <CfgTextField
                         onUpdate={onUpdate}
                         element={element}
@@ -1143,7 +1543,7 @@ const elementTypes = [
   },
   {
     label: 'Network Location',
-    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_CELL]
+    options: [ELEMENT_TYPE_POA_GENERIC, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI]
   },
   {
     label: 'Physical Location',
@@ -1173,17 +1573,15 @@ parentTypes[ELEMENT_TYPE_OPERATOR_CELL] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_EDGE] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_ZONE] = [ELEMENT_TYPE_OPERATOR, ELEMENT_TYPE_OPERATOR_CELL];
 parentTypes[ELEMENT_TYPE_POA] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_POA_CELL] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_4G] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_5G] = [ELEMENT_TYPE_ZONE];
+parentTypes[ELEMENT_TYPE_POA_WIFI] = [ELEMENT_TYPE_ZONE];
 parentTypes[ELEMENT_TYPE_CN] = [ELEMENT_TYPE_ZONE];
-parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
-parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_CELL];
+parentTypes[ELEMENT_TYPE_FOG] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI];
+parentTypes[ELEMENT_TYPE_UE] = [ELEMENT_TYPE_POA, ELEMENT_TYPE_POA_4G, ELEMENT_TYPE_POA_5G, ELEMENT_TYPE_POA_WIFI];
 parentTypes[ELEMENT_TYPE_DC] = [ELEMENT_TYPE_SCENARIO];
 parentTypes[ELEMENT_TYPE_UE_APP] = [ELEMENT_TYPE_UE];
-parentTypes[ELEMENT_TYPE_MECSVC] = [
-  ELEMENT_TYPE_FOG,
-  ELEMENT_TYPE_EDGE,
-  ELEMENT_TYPE_CN
-];
+parentTypes[ELEMENT_TYPE_MECSVC] = [ELEMENT_TYPE_FOG, ELEMENT_TYPE_EDGE, ELEMENT_TYPE_CN];
 parentTypes[ELEMENT_TYPE_EDGE_APP] = [ELEMENT_TYPE_FOG, ELEMENT_TYPE_EDGE];
 parentTypes[ELEMENT_TYPE_CLOUD_APP] = [ELEMENT_TYPE_DC];
 
@@ -1261,8 +1659,14 @@ const getSuggestedName = ( type, elements ) => {
   case ELEMENT_TYPE_DC:
     suggestedPrefix = 'cloud';
     break;
-  case ELEMENT_TYPE_POA_CELL:
-    suggestedPrefix = 'poa-cell';
+  case ELEMENT_TYPE_POA_4G:
+    suggestedPrefix = 'poa-4g';
+    break;
+  case ELEMENT_TYPE_POA_5G:
+    suggestedPrefix = 'poa-5g';
+    break;
+  case ELEMENT_TYPE_POA_WIFI:
+    suggestedPrefix = 'poa-wifi';
     break;
   case ELEMENT_TYPE_OPERATOR_CELL:
     suggestedPrefix = 'operator-cell';
@@ -1399,6 +1803,10 @@ export class CfgNetworkElementContainer extends Component {
     var elementTypeOverride = getElementTypeOverrideBack(elementType);
     setElemFieldVal(elem, FIELD_TYPE, elementTypeOverride);
     setElemFieldVal(elem, FIELD_PARENT, null);
+    if (elementTypeOverride === ELEMENT_TYPE_UE) {
+      setElemFieldVal(elem, FIELD_WIRELESS, true);
+      setElemFieldVal(elem, FIELD_WIRELESS_TYPE, 'wifi,5g,4g,other');
+    }
 
     elem.parentElements = this.elementsOfType(getParentTypes(elementTypeOverride));
 
@@ -1507,6 +1915,11 @@ const styles = {
   },
   select: {
     width: '100%'
+  },
+  popover: {
+    position: 'absolute',
+    top: '80px',
+    zIndex: '2'
   }
 };
 

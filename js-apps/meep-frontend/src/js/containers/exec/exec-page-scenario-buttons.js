@@ -26,7 +26,7 @@ import {
   EXEC_BTN_DEPLOY,
   EXEC_BTN_TERMINATE,
   EXEC_BTN_EVENT,
-  EXEC_BTN_CONFIG
+  EXEC_BTN_DASHBOARD
 } from '../../meep-constants';
 
 import {
@@ -129,7 +129,7 @@ class ExecPageScenarioButtons extends Component {
           style={styles.button}
           onClick={this.props.onOpenDashCfg}
           disabled={!this.canOpenDashCfg()}
-          data-cy={EXEC_BTN_CONFIG}
+          data-cy={EXEC_BTN_DASHBOARD}
         >
           DASHBOARD
         </Button>

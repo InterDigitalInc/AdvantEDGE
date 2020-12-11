@@ -23,10 +23,6 @@
 
 package server
 
-import (
-	"time"
-)
-
 // User tracking notification - callback generated toward an ME app with a user tracking subscription
 type UserTrackingNotification struct {
 
@@ -36,7 +32,7 @@ type UserTrackingNotification struct {
 	UserInfo *UserInfo `json:"userInfo"`
 
 	// Indicates the time of day for zonal presence notification.
-	TimeStamp time.Time `json:"timeStamp"`
+	TimeStamp TimeStamp `json:"timeStamp"`
 
 	UserEventType *UserEventType `json:"userEventType,omitempty"`
 }

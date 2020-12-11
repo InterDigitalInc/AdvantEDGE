@@ -165,3 +165,62 @@ select {
     height: 50px;
     vertical-align: middle;
 }
+
+// Markers
+.custom-marker-pin {
+    width: 28px;
+    height: 28px;
+    border-radius: 50% 50% 50% 0;
+    background: #00ccff;
+    position: absolute;
+    transform: rotate(-45deg);
+    left: 50%;
+    top: 50%;
+    margin: -15px 0 0 -15px;
+    border: 1px solid;
+    border-color: #00a3cc;
+}
+// to draw white circle
+.custom-marker-pin::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    margin: 2px 0 0 2px;
+    background: #ffffff;
+    position: absolute;
+    border-radius: 50%;
+}
+
+// to align icon
+.custom-marker-icon {
+    position: absolute;
+    width: 20px;
+    font-size: 20px;
+    left: 0;
+    right: 0;
+    margin: 11px auto;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.custom-marker-icon-text {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+    left: 0;
+    right: 0;
+    margin: 11px auto;
+    // text-align: center;
+    vertical-align: middle;
+    font-family: 'Roboto';
+    font-weight: 600;
+}
+
+.custom-marker-text {
+    height: 20px;
+    margin: 12px auto;
+    font-size: 12px;
+    font-family: 'Roboto';
+    font-weight: 600;
+}

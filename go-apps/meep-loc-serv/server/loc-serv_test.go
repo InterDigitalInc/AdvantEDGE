@@ -28,7 +28,6 @@ import (
 	"testing"
 	"time"
 
-	locNotif "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-loc-serv-notification-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
@@ -40,477 +39,414 @@ import (
 //json format using spacing to facilitate reading
 const testScenario string = `
 {
-	"version": "1.4.0",
-	"name": "test-scenario",
-	"deployment": {
-		"interDomainLatency": 50,
-		"interDomainLatencyVariation": 5,
-		"interDomainThroughput": 1000,
-		"domains": [
-			{
-				"id": "PUBLIC",
-				"name": "PUBLIC",
-				"type": "PUBLIC",
-				"interZoneLatency": 6,
-				"interZoneLatencyVariation": 2,
-				"interZoneThroughput": 1000000,
-				"zones": [
-					{
-						"id": "PUBLIC-COMMON",
-						"name": "PUBLIC-COMMON",
-						"type": "COMMON",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000000
-						},
-						"networkLocations": [
-							{
-								"id": "PUBLIC-COMMON-DEFAULT",
-								"name": "PUBLIC-COMMON-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 50000,
-								"terminalLinkPacketLoss": 1,
-								"physicalLocations": []
-							}
-						]
-					}
-				]
-			},
-			{
-				"id": "4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
-				"name": "operator-cell1",
-				"type": "OPERATOR-CELL",
-				"interZoneLatency": 6,
-				"interZoneLatencyVariation": 2,
-				"interZoneThroughput": 1000,
-				"interZonePacketLoss": 0,
-				"zones": [
-					{
-						"id": "operator-cell1-COMMON",
-						"name": "operator-cell1-COMMON",
-						"type": "COMMON",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "operator-cell1-COMMON-DEFAULT",
-								"name": "operator-cell1-COMMON-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": []
-							}
-						]
-					},
-					{
-						"id": "0836975f-a7ea-41ec-b0e0-aff43178194d",
-						"name": "zone1",
-						"type": "ZONE",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "zone1-DEFAULT",
-								"name": "zone1-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
-										"name": "zone1-edge1",
-										"type": "EDGE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "fcf1269c-a061-448e-aa80-6dd9c2d4c548",
-												"name": "zone1-edge1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone1-edge1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "35697e68-c627-4b8d-9cd7-ad8b8e226aee",
-												"name": "zone1-edge1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone1-edge1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone1-edge1"
-									}
-								]
-							},
-							{
-								"id": "7a6f8077-b0b3-403d-b954-3351e21afeb7",
-								"name": "zone1-poa-cell1",
-								"type": "POA-CELLULAR",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "32a2ced4-a262-49a8-8503-8489a94386a2",
-										"name": "ue1",
-										"type": "UE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
-												"name": "ue1-iperf",
-												"type": "UE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-client",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT -t 3600 -b 50M;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": null,
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "ue1"
-									},
-									{
-										"id": "b1851da5-c9e1-4bd8-ad23-5925c82ee127",
-										"name": "zone1-fog1",
-										"type": "FOG",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
-												"name": "zone1-fog1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone1-fog1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "53b5806b-e213-4c5a-a181-f1c31c24287b",
-												"name": "zone1-fog1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone1-fog1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone1-fog1"
-									},
-									{
-										"id": "9fe500e3-2cf8-46e6-acdd-07a445edef6c",
-										"name": "ue2-ext",
-										"type": "UE",
-										"isExternal": true,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "4bed3902-c769-4c94-bcf8-95aee67d1e03",
-												"name": "ue2-svc",
-												"type": "UE-APP",
-												"isExternal": true,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": null,
-												"environment": null,
-												"commandArguments": null,
-												"commandExe": null,
-												"serviceConfig": null,
-												"gpuConfig": null,
-												"externalConfig": {
-													"ingressServiceMap": [],
-													"egressServiceMap": []
-												},
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "ue2-ext"
-									}
-								],
-								"cellularPoaConfig": {
-									"cellId": "2345678"
-								}
-							},
-							{
-								"id": "7ff90180-2c1a-4c11-b59a-3608c5d8d874",
-								"name": "zone1-poa-cell2",
-								"type": "POA-CELLULAR",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [],
-								"cellularPoaConfig": {
-									"cellId": "3456789"
-								}
-							}
-						],
-						"label": "zone1"
-					},
-					{
-						"id": "d1f06b00-4454-4d35-94a5-b573888e7ea9",
-						"name": "zone2",
-						"type": "ZONE",
-						"netChar": {
-							"latency": 5,
-							"latencyVariation": 1,
-							"throughput": 1000,
-							"packetLoss": 0
-						},
-						"networkLocations": [
-							{
-								"id": "zone2-DEFAULT",
-								"name": "zone2-DEFAULT",
-								"type": "DEFAULT",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 1000,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [
-									{
-										"id": "fb130d18-fd81-43e0-900c-c584e7190302",
-										"name": "zone2-edge1",
-										"type": "EDGE",
-										"isExternal": false,
-										"linkLatency": 0,
-										"linkLatencyVariation": 0,
-										"linkThroughput": 1000,
-										"linkPacketLoss": 0,
-										"processes": [
-											{
-												"id": "5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
-												"name": "zone2-edge1-iperf",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/iperf-server",
-												"environment": "",
-												"commandArguments": "-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
-												"commandExe": "/bin/bash",
-												"serviceConfig": {
-													"name": "zone2-edge1-iperf",
-													"meSvcName": "iperf",
-													"ports": [
-														{
-															"protocol": "UDP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											},
-											{
-												"id": "53fa28f0-80e2-414c-8841-86db9bd37d51",
-												"name": "zone2-edge1-svc",
-												"type": "EDGE-APP",
-												"isExternal": false,
-												"userChartLocation": null,
-												"userChartAlternateValues": null,
-												"userChartGroup": null,
-												"image": "meep-docker-registry:30001/demo-server",
-												"environment": "MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
-												"commandArguments": "",
-												"commandExe": "",
-												"serviceConfig": {
-													"name": "zone2-edge1-svc",
-													"meSvcName": "svc",
-													"ports": [
-														{
-															"protocol": "TCP",
-															"port": 80,
-															"externalPort": null
-														}
-													]
-												},
-												"gpuConfig": null,
-												"externalConfig": null,
-												"appLatency": 0,
-												"appLatencyVariation": 0,
-												"appThroughput": 1000,
-												"appPacketLoss": 0,
-												"placementId": ""
-											}
-										],
-										"label": "zone2-edge1"
-									}
-								]
-							},
-							{
-								"id": "c44b8937-58af-44b2-acdb-e4d1c4a1510b",
-								"name": "zone2-poa1",
-								"type": "POA",
-								"terminalLinkLatency": 1,
-								"terminalLinkLatencyVariation": 1,
-								"terminalLinkThroughput": 20,
-								"terminalLinkPacketLoss": 0,
-								"physicalLocations": [],
-								"label": "zone2-poa1"
-							}
-						],
-						"label": "zone2"
-					}
-				],
-				"cellularDomainConfig": {
-					"mcc": "123",
-					"mnc": "456",
-					"defaultCellId": "1234567"
-				}
-			}
-		]
-	}
+    "version":"1.5.3",
+    "name":"test-scenario",
+    "deployment":{
+        "netChar":{
+            "latency":50,
+            "latencyVariation":5,
+            "latencyDistribution":"Normal",
+            "throughputDl":1000,
+            "throughputUl":1000
+        },
+        "domains":[
+            {
+                "id":"PUBLIC",
+                "name":"PUBLIC",
+                "type":"PUBLIC",
+                "netChar":{
+                    "latency":6,
+                    "latencyVariation":2,
+                    "throughputDl":1000000,
+                    "throughputUl":1000000
+                },
+                "zones":[
+                    {
+                        "id":"PUBLIC-COMMON",
+                        "name":"PUBLIC-COMMON",
+                        "type":"COMMON",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000000,
+                            "throughputUl":1000000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"PUBLIC-COMMON-DEFAULT",
+                                "name":"PUBLIC-COMMON-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":50000,
+                                    "throughputUl":50000,
+                                    "packetLoss":1
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id":"4da82f2d-1f44-4945-8fe7-00c0431ef8c7",
+                "name":"operator-cell1",
+                "type":"OPERATOR-CELLULAR",
+                "netChar":{
+                    "latency":6,
+                    "latencyVariation":2,
+                    "throughputDl":1000,
+                    "throughputUl":1000
+                },
+                "cellularDomainConfig":{
+                    "mnc":"456",
+                    "mcc":"123",
+                    "defaultCellId":"1234567"
+                },
+                "zones":[
+                    {
+                        "id":"operator-cell1-COMMON",
+                        "name":"operator-cell1-COMMON",
+                        "type":"COMMON",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000,
+                            "throughputUl":1000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"operator-cell1-COMMON-DEFAULT",
+                                "name":"operator-cell1-COMMON-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id":"0836975f-a7ea-41ec-b0e0-aff43178194d",
+                        "name":"zone1",
+                        "type":"ZONE",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000,
+                            "throughputUl":1000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"zone1-DEFAULT",
+                                "name":"zone1-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"97b80da7-a74a-4649-bb61-f7fa4fbb2d76",
+                                        "name":"zone1-edge1",
+                                        "type":"EDGE",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"fcf1269c-a061-448e-aa80-6dd9c2d4c548",
+                                                "name":"zone1-edge1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone1-edge1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"35697e68-c627-4b8d-9cd7-ad8b8e226aee",
+                                                "name":"zone1-edge1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-edge1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone1-edge1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"7a6f8077-b0b3-403d-b954-3351e21afeb7",
+                                "name":"zone1-poa-cell1",
+                                "type":"POA-4G",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "poa4GConfig":{
+                                    "cellId":"2345678"
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"32a2ced4-a262-49a8-8503-8489a94386a2",
+                                        "name":"ue1",
+                                        "type":"UE",
+                                        "connected":true,
+                                        "wireless":true,
+                                        "processes":[
+                                            {
+                                                "id":"9bdd6acd-f6e4-44f6-a26c-8fd9abd338a7",
+                                                "name":"ue1-iperf",
+                                                "type":"UE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-client",
+                                                "commandArguments":"-c, export; iperf -u -c $IPERF_SERVICE_HOST -p $IPERF_SERVICE_PORT\n-t 3600 -b 50M;",
+                                                "commandExe":"/bin/bash",
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    },
+                                    {
+                                        "id":"b1851da5-c9e1-4bd8-ad23-5925c82ee127",
+                                        "name":"zone1-fog1",
+                                        "type":"FOG",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"c2f2fb5d-4053-4cee-a0ee-e62bbb7751b6",
+                                                "name":"zone1-fog1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone1-fog1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"53b5806b-e213-4c5a-a181-f1c31c24287b",
+                                                "name":"zone1-fog1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone1-fog1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone1-fog1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    },
+                                    {
+                                        "id":"9fe500e3-2cf8-46e6-acdd-07a445edef6c",
+                                        "name":"ue2-ext",
+                                        "type":"UE",
+                                        "isExternal":true,
+                                        "connected":true,
+                                        "wireless":true,
+                                        "processes":[
+                                            {
+                                                "id":"4bed3902-c769-4c94-bcf8-95aee67d1e03",
+                                                "name":"ue2-svc",
+                                                "type":"UE-APP",
+                                                "isExternal":true,
+                                                "externalConfig":{
+                                                    
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"7ff90180-2c1a-4c11-b59a-3608c5d8d874",
+                                "name":"zone1-poa-cell2",
+                                "type":"POA-4G",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "poa4GConfig":{
+                                    "cellId":"3456789"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id":"d1f06b00-4454-4d35-94a5-b573888e7ea9",
+                        "name":"zone2",
+                        "type":"ZONE",
+                        "netChar":{
+                            "latency":5,
+                            "latencyVariation":1,
+                            "throughputDl":1000,
+                            "throughputUl":1000
+                        },
+                        "networkLocations":[
+                            {
+                                "id":"zone2-DEFAULT",
+                                "name":"zone2-DEFAULT",
+                                "type":"DEFAULT",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":1000,
+                                    "throughputUl":1000
+                                },
+                                "physicalLocations":[
+                                    {
+                                        "id":"fb130d18-fd81-43e0-900c-c584e7190302",
+                                        "name":"zone2-edge1",
+                                        "type":"EDGE",
+                                        "connected":true,
+                                        "processes":[
+                                            {
+                                                "id":"5c8276ba-0b78-429d-a0bf-d96f35ba2c77",
+                                                "name":"zone2-edge1-iperf",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/iperf-server",
+                                                "commandArguments":"-c, export; iperf -s -p $IPERF_SERVICE_PORT;",
+                                                "commandExe":"/bin/bash",
+                                                "serviceConfig":{
+                                                    "name":"zone2-edge1-iperf",
+                                                    "meSvcName":"iperf",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"UDP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            },
+                                            {
+                                                "id":"53fa28f0-80e2-414c-8841-86db9bd37d51",
+                                                "name":"zone2-edge1-svc",
+                                                "type":"EDGE-APP",
+                                                "image":"meep-docker-registry:30001/demo-server",
+                                                "environment":"MGM_GROUP_NAME=svc, MGM_APP_ID=zone2-edge1-svc, MGM_APP_PORT=80",
+                                                "serviceConfig":{
+                                                    "name":"zone2-edge1-svc",
+                                                    "meSvcName":"svc",
+                                                    "ports":[
+                                                        {
+                                                            "protocol":"TCP",
+                                                            "port":80
+                                                        }
+                                                    ]
+                                                },
+                                                "netChar":{
+                                                    "throughputDl":1000,
+                                                    "throughputUl":1000
+                                                }
+                                            }
+                                        ],
+                                        "netChar":{
+                                            "throughputDl":1000,
+                                            "throughputUl":1000
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "id":"c44b8937-58af-44b2-acdb-e4d1c4a1510b",
+                                "name":"zone2-poa1",
+                                "type":"POA",
+                                "netChar":{
+                                    "latency":1,
+                                    "latencyVariation":1,
+                                    "throughputDl":20,
+                                    "throughputUl":20
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
 }
 `
 
 const redisTestAddr = "localhost:30380"
 const influxTestAddr = "http://localhost:30986"
-const postgisTestHost = "localhost"
-const postgisTestPort = "30432"
 const testScenarioName = "testScenario"
 
 var m *mod.Model
@@ -634,12 +570,12 @@ func testZonalSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, nil, nil, http.StatusOK, ZonalTrafficSubGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, nil, nil, http.StatusOK, ZonalTrafficSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZonalTrafficNotificationSubscriptionList
+	var respBody InlineNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -659,13 +595,13 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestDuration := "0"
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zonalTraffic/" + strconv.Itoa(nextZonalSubscriptionIdAvailable)
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestDuration := int32(0)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + strconv.Itoa(nextZonalSubscriptionIdAvailable)
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := ResponseZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -678,7 +614,8 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -691,12 +628,12 @@ func testZonalSubscriptionPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZonalTrafficSubscription
+	var respBody InlineZonalTrafficSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -715,13 +652,13 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestDuration := "0"
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zonalTraffic/" + subscriptionId
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestDuration := int32(0)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zonalTraffic/" + subscriptionId
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
-	expectedResponse := ResponseZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	expectedResponse := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -736,7 +673,8 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -750,12 +688,12 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZonalTrafficSubscription
+		var respBody InlineZonalTrafficSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -766,7 +704,7 @@ func testZonalSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZonalTrafficSubPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, ZonalTrafficSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -800,17 +738,17 @@ func testZonalSubscriptionGet(t *testing.T, subscriptionId string, expectedRespo
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNotFound, ZonalTrafficSubGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNotFound, ZonalTrafficSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusOK, ZonalTrafficSubGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusOK, ZonalTrafficSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneInfo
+		var respBody InlineZonalTrafficSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -845,7 +783,7 @@ func testZonalSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNoContent, ZonalTrafficSubDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zonalTraffic", nil, vars, nil, http.StatusNoContent, ZonalTrafficSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -969,12 +907,12 @@ func testUserSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, nil, nil, http.StatusOK, UserTrackingSubGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, nil, nil, http.StatusOK, UserTrackingSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseUserTrackingNotificationSubscriptionList
+	var respBody InlineNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -994,12 +932,12 @@ func testUserSubscriptionPost(t *testing.T) string {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/userTracking/" + strconv.Itoa(nextUserSubscriptionIdAvailable)
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + strconv.Itoa(nextUserSubscriptionIdAvailable)
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
+	expectedResponse := InlineUserTrackingSubscription{&expectedUserTrackingSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1012,7 +950,8 @@ func testUserSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := InlineUserTrackingSubscription{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1025,11 +964,11 @@ func testUserSubscriptionPost(t *testing.T) string {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-	var respBody ResponseUserTrackingSubscription
+	var respBody InlineUserTrackingSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1048,12 +987,12 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "myAddr"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/userTracking/" + subscriptionId
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/userTracking/" + subscriptionId
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
-	expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
+	expectedResponse := InlineUserTrackingSubscription{&expectedUserTrackingSubscription}
 
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
@@ -1069,7 +1008,8 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := InlineUserTrackingSubscription{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1083,12 +1023,12 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseUserTrackingSubscription
+		var respBody InlineUserTrackingSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1099,7 +1039,7 @@ func testUserSubscriptionPut(t *testing.T, subscriptionId string, expectSuccess 
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusOK, UserTrackingSubPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, UserTrackingSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1133,17 +1073,17 @@ func testUserSubscriptionGet(t *testing.T, subscriptionId string, expectedRespon
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusNotFound, UserTrackingSubGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusNotFound, UserTrackingSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusOK, UserTrackingSubGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/userTracking", nil, vars, nil, http.StatusOK, UserTrackingSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseUserInfo
+		var respBody InlineUserTrackingSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1178,7 +1118,7 @@ func testUserSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, http.StatusNoContent, UserTrackingSubDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/userTracking", nil, vars, nil, http.StatusNoContent, UserTrackingSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1302,12 +1242,12 @@ func testZoneStatusSubscriptionList(t *testing.T) {
 	 * request execution section
 	 ******************************/
 
-	rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, nil, nil, http.StatusOK, ZoneStatusGet)
+	rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, nil, nil, http.StatusOK, ZoneStatusSubListGET)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZoneStatusNotificationSubscriptionList
+	var respBody InlineNotificationSubscriptionList
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1330,11 +1270,11 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	requestOperationStatus := []OperationStatus{SERVICEABLE}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zoneStatus/" + strconv.Itoa(nextZoneStatusSubscriptionIdAvailable)
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + strconv.Itoa(nextZoneStatusSubscriptionIdAvailable)
 
-	expectedZoneStatusSubscription := ZoneStatusSubscription{requestClientCorrelator, requestResourceURL, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, requestNumberOfUsersZoneThreshold, requestNumberOfUsersAPThreshold, requestOperationStatus}
+	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := ResponseZoneStatusSubscription2{&expectedZoneStatusSubscription}
+	expectedResponse := InlineZoneStatusSubscription{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1347,7 +1287,8 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZoneStatusSubscription)
+	expectedBody := InlineZoneStatusSubscription{&expectedZoneStatusSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1359,12 +1300,12 @@ func testZoneStatusSubscriptionPost(t *testing.T) string {
 	/******************************
 	 * request execution section
 	 ******************************/
-	rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZoneStatusPost)
+	rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZoneStatusSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	var respBody ResponseZoneStatusSubscription2
+	var respBody InlineZoneStatusSubscription
 	err = json.Unmarshal([]byte(rr), &respBody)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
@@ -1386,11 +1327,11 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	requestOperationStatus := []OperationStatus{SERVICEABLE}
 	requestNumberOfUsersZoneThreshold := int32(10)
 	requestNumberOfUsersAPThreshold := int32(8)
-	requestResourceURL := "/" + testScenarioName + "/location/v1/subscriptions/zoneStatus/" + subscriptionId
+	requestResourceURL := "/" + testScenarioName + "/location/v2/subscriptions/zoneStatus/" + subscriptionId
 
-	expectedZoneStatusSubscription := ZoneStatusSubscription{requestClientCorrelator, requestResourceURL, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, requestNumberOfUsersZoneThreshold, requestNumberOfUsersAPThreshold, requestOperationStatus}
+	expectedZoneStatusSubscription := ZoneStatusSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestNumberOfUsersAPThreshold, requestNumberOfUsersZoneThreshold, requestOperationStatus, requestResourceURL, requestZoneId}
 
-	expectedResponse := ResponseZoneStatusSubscription2{&expectedZoneStatusSubscription}
+	expectedResponse := InlineZoneStatusSubscription{&expectedZoneStatusSubscription}
 	expectedResponseStr, err := json.Marshal(expectedResponse)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -1405,7 +1346,8 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZoneStatusSubscription)
+	expectedBody := InlineZoneStatusSubscription{&expectedZoneStatusSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1419,12 +1361,12 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 	 ******************************/
 
 	if expectSuccess {
-		rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusPutById)
+		rr, err := sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneStatusSubscription2
+		var respBody InlineZoneStatusSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1435,7 +1377,7 @@ func testZoneStatusSubscriptionPut(t *testing.T, subscriptionId string, expectSu
 		}
 		return string(expectedResponseStr)
 	} else {
-		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusOK, ZoneStatusPutById)
+		_, err = sendRequest(http.MethodPost, "/subscriptions/zoneStatus", bytes.NewBuffer(body), vars, nil, http.StatusNotFound, ZoneStatusSubPUT)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
@@ -1469,17 +1411,17 @@ func testZoneStatusSubscriptionGet(t *testing.T, subscriptionId string, expected
 	 ******************************/
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNotFound, ZoneStatusGetById)
+		_, err = sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNotFound, ZoneStatusSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusOK, ZoneStatusGetById)
+		rr, err := sendRequest(http.MethodGet, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusOK, ZoneStatusSubGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneStatusSubscription2
+		var respBody InlineZoneStatusSubscription
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1514,7 +1456,7 @@ func testZoneStatusSubscriptionDelete(t *testing.T, subscriptionId string) {
 	 * request execution section
 	 ******************************/
 
-	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNoContent, ZoneStatusDelById)
+	_, err := sendRequest(http.MethodDelete, "/subscriptions/zoneStatus", nil, vars, nil, http.StatusNoContent, ZoneStatusSubDELETE)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1542,16 +1484,28 @@ func TestUserInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedUserInfo := UserInfo{"ue1", "zone1-poa-cell1", "zone1", "", nil, "", ""}
+	expectedListResourceURL := "/" + testScenarioName + "/location/v2/queries/users"
+	expectedResourceURL := expectedListResourceURL + "?address=ue1"
+	//expectedListResourceURL := ""
+	//expectedResourceURL := ""
+	expectedUserInfo := UserInfo{"zone1-poa-cell1", "ue1", "", "", nil, expectedResourceURL, nil, "zone1"}
+	expectedUserList := UserList{expectedListResourceURL, nil}
+	expectedUserList.User = append(expectedUserList.User, expectedUserInfo)
 
-	expectedResponseStr, err := json.Marshal(expectedUserInfo)
+	expectedResponseStr, err := json.Marshal(expectedUserList)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
 	testUserInfo(t, expectedUserInfo.Address, string(expectedResponseStr))
 
-	testUserInfo(t, "ue-unknown", "")
+	expectedUserList = UserList{expectedListResourceURL, nil}
+	expectedResponseStr, err = json.Marshal(expectedUserList)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	testUserInfo(t, "ue-unknown", string(expectedResponseStr))
 
 	/******************************
 	 * back to initial state section
@@ -1568,8 +1522,8 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	/******************************
 	 * request vars section
 	 ******************************/
-	vars := make(map[string]string)
-	vars["userId"] = userId
+	query := make(map[string]string)
+	query["address"] = userId
 
 	/******************************
 	 * request body section
@@ -1583,33 +1537,24 @@ func testUserInfo(t *testing.T, userId string, expectedResponse string) {
 	 * request execution section
 	 ******************************/
 
-	var err error
-	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/users", nil, vars, nil, http.StatusNotFound, UsersGetById)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
-	} else {
-		rr, err := sendRequest(http.MethodGet, "/users", nil, vars, nil, http.StatusOK, UsersGetById)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
+	rr, err := sendRequest(http.MethodGet, "/queries/users", nil, nil, query, http.StatusOK, UsersGET)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
 
-		var respBody ResponseUserInfo
-		err = json.Unmarshal([]byte(rr), &respBody)
-		if err != nil {
-			t.Fatalf("Failed to get expected response")
-		}
-		//need to remove the resourec url since it was not given in the expected response
-		respBody.UserInfo.ResourceURL = ""
-		receivedResponseStr, err := json.Marshal(respBody.UserInfo)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+	var respBody InlineUserList
+	err = json.Unmarshal([]byte(rr), &respBody)
+	if err != nil {
+		t.Fatalf("Failed to get expected response")
+	}
+	//need to remove the resourec url since it was not given in the expected response
+	receivedResponseStr, err := json.Marshal(respBody.UserList)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 
-		if string(receivedResponseStr) != expectedResponse {
-			t.Fatalf("Failed to get expected response")
-		}
+	if string(receivedResponseStr) != expectedResponse {
+		t.Fatalf("Failed to get expected response")
 	}
 }
 
@@ -1635,7 +1580,7 @@ func TestZoneInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedZoneInfo := ZoneInfo{"zone1", 2, 0, 2, ""}
+	expectedZoneInfo := ZoneInfo{2, 0, 2, "", "zone1"}
 
 	expectedResponseStr, err := json.Marshal(expectedZoneInfo)
 	if err != nil {
@@ -1678,17 +1623,17 @@ func testZoneInfo(t *testing.T, zoneId string, expectedResponse string) {
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
+		_, err = sendRequest(http.MethodGet, "/queries/zones", nil, vars, nil, http.StatusNotFound, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
+		rr, err := sendRequest(http.MethodGet, "/queries/zones", nil, vars, nil, http.StatusOK, ZonesGetById)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseZoneInfo
+		var respBody InlineZoneInfo
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1728,10 +1673,10 @@ func TestAPInfo(t *testing.T) {
 	/******************************
 	 * expected response section
 	 ******************************/
-	expectedConnType := CONTYPE_UNKNOWN
-	expectedOpStatus := OPSTATUS_UNKNOWN
-	expectedTimeZone := time.Time{}
-	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", nil, &expectedConnType, &expectedOpStatus, 2, expectedTimeZone, "", ""}
+	expectedConnType := MACRO
+	expectedOpStatus := SERVICEABLE
+
+	expectedAPInfo := AccessPointInfo{"zone1-poa-cell1", &expectedConnType, "", nil, 2, &expectedOpStatus, "", ""}
 
 	expectedResponseStr, err := json.Marshal(expectedAPInfo)
 	if err != nil {
@@ -1775,17 +1720,17 @@ func testAPInfo(t *testing.T, zoneId string, apId string, expectedResponse strin
 
 	var err error
 	if expectedResponse == "" {
-		_, err = sendRequest(http.MethodGet, "/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ZonesByIdGetApsById)
+		_, err = sendRequest(http.MethodGet, "/queries/zones/"+zoneId+"/accessPoints", nil, vars, nil, http.StatusNotFound, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 	} else {
-		rr, err := sendRequest(http.MethodGet, "/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ZonesByIdGetApsById)
+		rr, err := sendRequest(http.MethodGet, "/queries/zones"+zoneId+"/accessPoints", nil, vars, nil, http.StatusOK, ApByIdGET)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
 		}
 
-		var respBody ResponseAccessPointInfo
+		var respBody InlineAccessPointInfo
 		err = json.Unmarshal([]byte(rr), &respBody)
 		if err != nil {
 			t.Fatalf("Failed to get expected response")
@@ -1834,10 +1779,10 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestAddr := "ue1"
-	requestUserEvent := []UserEventType{ENTERING, TRANSFERRING}
+	requestUserEvent := []UserEventType{ENTERING_EVENT, TRANSFERRING_EVENT}
 	requestResourceURL := ""
 
-	expectedUserTrackingSubscription := UserTrackingSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestAddr, requestUserEvent, requestResourceURL}
+	expectedUserTrackingSubscription := UserTrackingSubscription{requestAddr, &CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestResourceURL, requestUserEvent}
 
 	/*expectedResponse := ResponseUserTrackingSubscription{&expectedUserTrackingSubscription}
 	  expectedResponseStr, err := json.Marshal(expectedResponse)
@@ -1852,7 +1797,8 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedUserTrackingSubscription)
+	expectedBody := InlineUserTrackingSubscription{&expectedUserTrackingSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1864,7 +1810,7 @@ func TestUserSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request execution section
 	 ******************************/
-	_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/userTracking", bytes.NewBuffer(body), nil, nil, http.StatusCreated, UserTrackingSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1882,12 +1828,12 @@ func TestUserSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification locNotif.TrackingNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var inlineZonalPresenceNotification InlineZonalPresenceNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification := inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -1939,21 +1885,21 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	requestClientCorrelator := "123"
 	requestCallbackReference := "myCallbackRef"
 	requestZoneId := "zone2"
-	requestUserEvent := []UserEventType{ENTERING, LEAVING}
-	requestDuration := "0"
+	requestUserEvent := []UserEventType{ENTERING_EVENT, LEAVING_EVENT}
+	requestDuration := int32(0)
 	requestResourceURL := ""
 
-	expectedZonalTrafficSubscription := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
 	//2nd request
 	requestClientCorrelator = "123"
 	requestCallbackReference = "myCallbackRef"
 	requestZoneId = "zone1"
-	requestUserEvent = []UserEventType{TRANSFERRING}
-	requestDuration = "0"
+	requestUserEvent = []UserEventType{TRANSFERRING_EVENT}
+	requestDuration = int32(0)
 	requestResourceURL = ""
 
-	expectedZonalTrafficSubscription2 := ZonalTrafficSubscription{requestClientCorrelator, &UserTrackingSubscriptionCallbackReference{requestCallbackReference}, requestZoneId, nil, requestUserEvent, requestDuration, requestResourceURL}
+	expectedZonalTrafficSubscription2 := ZonalTrafficSubscription{&CallbackReference{"", nil, requestCallbackReference}, requestClientCorrelator, requestDuration, nil, requestResourceURL, requestUserEvent, requestZoneId}
 
 	/******************************
 	 * request vars section
@@ -1962,12 +1908,14 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request body section
 	 ******************************/
-	body, err := json.Marshal(expectedZonalTrafficSubscription)
+	expectedBody := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription}
+	body, err := json.Marshal(expectedBody)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 
-	body2, err := json.Marshal(expectedZonalTrafficSubscription2)
+	expectedBody2 := InlineZonalTrafficSubscription{&expectedZonalTrafficSubscription2}
+	body2, err := json.Marshal(expectedBody2)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -1979,12 +1927,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 	/******************************
 	 * request execution section
 	 ******************************/
-	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
-	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body2), nil, nil, http.StatusCreated, ZonalTrafficSubPost)
+	_, err = sendRequest(http.MethodPost, "/subscriptions/zonalTraffic", bytes.NewBuffer(body2), nil, nil, http.StatusCreated, ZonalTrafficSubPOST)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -2002,12 +1950,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	var notification locNotif.TrackingNotification
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	var inlineZonalPresenceNotification InlineZonalPresenceNotification
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification := inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -2019,11 +1967,11 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
-
+	notification = inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId != notification.ZoneId || expectedPoa != notification.CurrentAccessPointId || expectedAddr != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -2035,11 +1983,12 @@ func TestZoneSubscriptionNotification(t *testing.T) {
 		t.Fatalf("Failed to get metric")
 	}
 
-	err = json.Unmarshal([]byte(httpLog[0].Body), &notification)
+	err = json.Unmarshal([]byte(httpLog[0].Body), &inlineZonalPresenceNotification)
 	if err != nil {
 		t.Fatalf("Failed to get expected response")
 	}
 
+	notification = inlineZonalPresenceNotification.ZonalPresenceNotification
 	if expectedZoneId2 != notification.ZoneId || expectedPoa2 != notification.CurrentAccessPointId || expectedAddr2 != notification.Address {
 		t.Fatalf("Failed to get expected response")
 	}
@@ -2123,8 +2072,6 @@ func initializeVars() {
 	mod.DbAddress = redisTestAddr
 	redisAddr = redisTestAddr
 	influxAddr = influxTestAddr
-	postgisHost = postgisTestHost
-	postgisPort = postgisTestPort
 	sandboxName = testScenarioName
 }
 

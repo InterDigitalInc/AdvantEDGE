@@ -73,10 +73,27 @@ import {
   FIELD_APP_PKT_LOSS,
   FIELD_MNC,
   FIELD_MCC,
+  FIELD_MAC_ID,
+  FIELD_UE_MAC_ID,
   FIELD_DEFAULT_CELL_ID,
   FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
 
   getElemFieldVal,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX,
+
+  FIELD_META_DISPLAY_MAP_COLOR,
+  FIELD_GEO_LOCATION,
+  FIELD_GEO_RADIUS,
+  FIELD_GEO_PATH,
+  FIELD_GEO_VELOCITY,
+  FIELD_GEO_EOP_MODE,
+  FIELD_CONNECTED,
+  FIELD_WIRELESS_TYPE,
+
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
@@ -177,7 +194,9 @@ describe('Scenario Configuration', function () {
     let edgeName = 'edge1';
     let edgeAppName = 'edge1-app1';
     let poaName = 'poa1';
-    let poaCellName = 'poa-cell1';
+    let poa4GName = 'poa-4g1';
+    let poa5GName = 'poa-5g1';
+    let poaWifiName = 'poa-wifi1';
     let fogName = 'fog1';
     let fogAppName = 'fog1-app1';
     let ueName = 'ue1';
@@ -237,10 +256,20 @@ describe('Scenario Configuration', function () {
     addPoa(poaName, zoneName);
     validatePoa(poaName, zoneName);
 
-    // POA Cell
-    cy.log('Add new poa cell and verify default & configured settings: ' + poaCellName);
-    addPoaCell(poaCellName, zoneName);
-    validatePoaCell(poaCellName, zoneName);
+    // POA 4G
+    cy.log('Add new poa 4G and verify default & configured settings: ' + poa4GName);
+    addPoa4G(poa4GName, zoneName);
+    validatePoa4G(poa4GName, zoneName);
+
+    // POA 5G
+    cy.log('Add new poa 5G and verify default & configured settings: ' + poa5GName);
+    addPoa5G(poa5GName, zoneName);
+    validatePoa5G(poa5GName, zoneName);
+
+    // POA WIFI
+    cy.log('Add new poa wifi and verify default & configured settings: ' + poaWifiName);
+    addPoaWifi(poaWifiName, zoneName);
+    validatePoaWifi(poaWifiName, zoneName);
 
     // Fog
     cy.log('Add new fog and verify default & configured settings: ' + fogName);
@@ -300,7 +329,9 @@ describe('Scenario Configuration', function () {
     validateEdge(edgeName, zoneName);
     validateEdgeApp(edgeAppName, edgeName);
     validatePoa(poaName, zoneName);
-    validatePoaCell(poaCellName, zoneName);
+    validatePoa4G(poa4GName, zoneName);
+    validatePoa5G(poa5GName, zoneName);
+    validatePoaWifi(poaWifiName, zoneName);
     validateFog(fogName, poaName);
     validateFogApp(fogAppName, fogName);
     validateUe(ueName, poaName);
@@ -318,11 +349,7 @@ describe('Scenario Configuration', function () {
   // Retrieve Element entry from Application table
   function getEntry(entries, name) {
     if (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
-          return entries[i];
-        }
-      }
+      return entries[name] ? entries[name] : null;
     }
     return null;
   }
@@ -455,12 +482,32 @@ describe('Scenario Configuration', function () {
   // ==============================
   // ZONE
   // ==============================
+  let intraZoneLatency = '2';
+  let intraZoneLatencyVar = '3';
+  let intraZonePktLoss = '4';
+  let intraZoneThroughput = '5';
+  let zoneColor = '#123DEF'
 
   function addZone(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
     select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_ZONE);
     select(meep.CFG_ELEM_PARENT, parent);
-    type(meep.CFG_ELEM_NAME, name);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_INTRA_ZONE));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_INTRA_ZONE));
+    //error value section
+    type(meep.CFG_ELEM_META_DISPLAY_MAP_COLOR, 'red');
+    click(meep.MEEP_BTN_APPLY);
+    cy.contains('1 fields in error')
+    //valid value section
+    type(meep.CFG_ELEM_LATENCY, intraZoneLatency);
+    type(meep.CFG_ELEM_LATENCY_VAR, intraZoneLatencyVar);
+    type(meep.CFG_ELEM_PKT_LOSS, intraZonePktLoss);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, intraZoneThroughput);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, intraZoneThroughput-1);
+    type(meep.CFG_ELEM_META_DISPLAY_MAP_COLOR, zoneColor);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -473,6 +520,13 @@ describe('Scenario Configuration', function () {
       assert.isNotNull(entry);
       assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_ZONE);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY), intraZoneLatency);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_LATENCY_VAR), intraZoneLatencyVar);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_PKT_LOSS), intraZonePktLoss);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), intraZoneThroughput);
+      assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), intraZoneThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_META_DISPLAY_MAP_COLOR), zoneColor);
+
     });
   }
 
@@ -485,6 +539,7 @@ describe('Scenario Configuration', function () {
   let linkLatencyVar = '3';
   let linkPktLoss = '4';
   let linkThroughput = '5';
+  let linkLocationCoordinates = '[7.419344,43.72764]';
 
   function addEdge(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -494,11 +549,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -518,6 +576,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
@@ -542,6 +601,10 @@ describe('Scenario Configuration', function () {
   let edgeAppCmd = '/bin/bash';
   let edgeAppArgs = '-c, export;';
   let edgeAppPlacementId = 'node1';
+  let edgeAppCpuMin = '0.5';
+  let edgeAppCpuMax = '1';
+  let edgeAppMemoryMin = '100';
+  let edgeAppMemoryMax = '200';
 
   function addEdgeApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -565,6 +628,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_GROUP, edgeAppGroup);
     type(meep.CFG_ELEM_GPU_COUNT, edgeAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, edgeAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, edgeAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, edgeAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, edgeAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, edgeAppMemoryMax);
     type(meep.CFG_ELEM_ENV, edgeAppEnv);
     type(meep.CFG_ELEM_CMD, edgeAppCmd);
     type(meep.CFG_ELEM_ARGS, edgeAppArgs);
@@ -588,6 +655,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_GROUP), edgeAppGroup);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), edgeAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), edgeAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), edgeAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), edgeAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), edgeAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), edgeAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), edgeAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), edgeAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), edgeAppArgs);
@@ -609,6 +680,8 @@ describe('Scenario Configuration', function () {
   let termLinkLatencyVar = '3';
   let termLinkPktLoss = '4';
   let termLinkThroughput = '5';
+  let termLinkLocationCoordinates = '[7.419344,43.72764]';
+  let termLinkRadius = '10';
 
   function addPoa(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -623,6 +696,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -642,22 +717,27 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius);
     });
   }
 
   // ==============================
-  // POA-CELL
+  // POA-4G
   // ==============================
 
   let termLinkLatency2 = '2';
   let termLinkLatencyVar2 = '3';
   let termLinkPktLoss2 = '4';
   let termLinkThroughput2 = '5';
+  let termLinkLocationCoordinates2 = '[7.419344,43.72764]';
+  let termLinkRadius2 = '10';
   let cellId = '1234567';
 
-  function addPoaCell(name, parent) {
+
+  function addPoa4G(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
-    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_CELL);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_4G);
     verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
@@ -668,6 +748,8 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss2);
     type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput2);
     type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput2-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates2);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius2);
     type(meep.CFG_ELEM_CELL_ID, cellId);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
@@ -677,18 +759,126 @@ describe('Scenario Configuration', function () {
     verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
   }
 
-  function validatePoaCell(name, parent) {
+  function validatePoa4G(name, parent) {
     cy.window().then((win) => {
       var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
       assert.isNotNull(entry);
-      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_CELL);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_4G);
       assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput2);
       assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput2-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates2);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius2);
       assert.equal(getElemFieldVal(entry, FIELD_CELL_ID), cellId);
+    });
+  }
+
+  // ==============================
+  // POA-5G
+  // ==============================
+
+  let termLinkLatency3 = '2';
+  let termLinkLatencyVar3 = '3';
+  let termLinkPktLoss3 = '4';
+  let termLinkThroughput3 = '5';
+  let termLinkLocationCoordinates3 = '[7.419344,43.72764]';
+  let termLinkRadius3 = '10';
+  let nrCellId = '3456789';
+
+  function addPoa5G(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_5G);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency3);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar3);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss3);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput3);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput3-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates3);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius3);
+    type(meep.CFG_ELEM_NR_CELL_ID, nrCellId);
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validatePoa5G(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_5G);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput3);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput3-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates3);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius3);
+      assert.equal(getElemFieldVal(entry, FIELD_NR_CELL_ID), nrCellId);
+    });
+  }
+
+  // ==============================
+  // POA-WIFI
+  // ==============================
+
+  let termLinkLatency4 = '2';
+  let termLinkLatencyVar4 = '3';
+  let termLinkPktLoss4 = '4';
+  let termLinkThroughput4 = '5';
+  let termLinkLocationCoordinates4 = '[7.419344,43.72764]';
+  let termLinkRadius4 = '10';
+  let macId = '112233445566';
+
+  function addPoaWifi(name, parent) {
+    click(meep.CFG_BTN_NEW_ELEM);
+    select(meep.CFG_ELEM_TYPE, meep.ELEMENT_TYPE_POA_WIFI);
+    verifyForm(meep.CFG_ELEM_LATENCY, true, 'have.value', String(meep.DEFAULT_LATENCY_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_LATENCY_VAR, true, 'have.value', String(meep.DEFAULT_LATENCY_JITTER_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_TERMINAL_LINK));
+    verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_TERMINAL_LINK));
+    type(meep.CFG_ELEM_LATENCY, termLinkLatency4);
+    type(meep.CFG_ELEM_LATENCY_VAR, termLinkLatencyVar4);
+    type(meep.CFG_ELEM_PKT_LOSS, termLinkPktLoss4);
+    type(meep.CFG_ELEM_THROUGHPUT_DL, termLinkThroughput4);
+    type(meep.CFG_ELEM_THROUGHPUT_UL, termLinkThroughput4-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, termLinkLocationCoordinates4);
+    type(meep.CFG_ELEM_GEO_RADIUS, termLinkRadius4);
+    type(meep.CFG_ELEM_MAC_ID, macId);
+    select(meep.CFG_ELEM_PARENT, parent);
+    type(meep.CFG_ELEM_NAME, name);
+    click(meep.MEEP_BTN_APPLY);
+    verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
+    verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
+    verifyEnabled(meep.CFG_BTN_CLONE_ELEM, false);
+  }
+
+  function validatePoaWifi(name, parent) {
+    cy.window().then((win) => {
+      var entry = getEntry(win.meepStore.getState().cfg.table.entries, name);
+      assert.isNotNull(entry);
+      assert.equal(getElemFieldVal(entry, FIELD_TYPE), meep.ELEMENT_TYPE_POA_WIFI);
+      assert.equal(getElemFieldVal(entry, FIELD_PARENT), parent);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), termLinkLatency4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), termLinkLatencyVar4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), termLinkPktLoss4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_DL), termLinkThroughput4);
+      assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_THROUGHPUT_UL), termLinkThroughput4-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), termLinkLocationCoordinates4);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_RADIUS), termLinkRadius4);
+      assert.equal(getElemFieldVal(entry, FIELD_MAC_ID), macId);
     });
   }
 
@@ -704,11 +894,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -728,6 +921,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
@@ -746,6 +940,10 @@ describe('Scenario Configuration', function () {
   let fogAppCmd = '/bin/bash';
   let fogAppArgs = '-c, export;';
   let fogAppPlacementId = 'node2';
+  let fogAppCpuMin = '0.5';
+  let fogAppCpuMax = '1';
+  let fogAppMemoryMin = '100';
+  let fogAppMemoryMax = '200';
 
   function addFogApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -769,6 +967,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_GROUP, fogAppGroup);
     type(meep.CFG_ELEM_GPU_COUNT, fogAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, fogAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, fogAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, fogAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, fogAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, fogAppMemoryMax);
     type(meep.CFG_ELEM_ENV, fogAppEnv);
     type(meep.CFG_ELEM_CMD, fogAppCmd);
     type(meep.CFG_ELEM_ARGS, fogAppArgs);
@@ -792,6 +994,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_GROUP), fogAppGroup);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), fogAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), fogAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), fogAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), fogAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), fogAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), fogAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), fogAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), fogAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), fogAppArgs);
@@ -808,6 +1014,11 @@ describe('Scenario Configuration', function () {
   // ==============================
   // UE
   // ==============================
+  let linkWirelessType = 'wifi,4g'
+  let linkPath = '[[7.419344,43.72764],[8.419344,43.72764]]';
+  let linkPathMode = meep.GEO_EOP_MODE_REVERSE;
+  let linkVelocity = '9';
+  let ueMacId = '123456123456';
 
   function addUe(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -817,13 +1028,23 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRELESS.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    select(meep.CFG_ELEM_CONNECTED, meep.OPT_DISCONNECTED.label);
+    type(meep.CFG_ELEM_WIRELESS_TYPE, linkWirelessType);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
+    type(meep.CFG_ELEM_GEO_PATH, linkPath);
+    type(meep.CFG_ELEM_GEO_VELOCITY, linkVelocity);
+    select(meep.CFG_ELEM_GEO_EOP_MODE, linkPathMode);
+
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
+    type(meep.CFG_ELEM_UE_MAC_ID, ueMacId);
     click(meep.MEEP_BTN_APPLY);
     verifyEnabled(meep.CFG_BTN_NEW_ELEM, true);
     verifyEnabled(meep.CFG_BTN_DEL_ELEM, false);
@@ -842,6 +1063,13 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_CONNECTED), false);
+      assert.equal(getElemFieldVal(entry, FIELD_WIRELESS_TYPE), linkWirelessType);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_PATH), linkPath);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_EOP_MODE), linkPathMode);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_VELOCITY), linkVelocity);
+      assert.equal(getElemFieldVal(entry, FIELD_UE_MAC_ID), ueMacId);
     });
   }
 
@@ -856,6 +1084,10 @@ describe('Scenario Configuration', function () {
   let ueAppCmd = '/bin/bash';
   let ueAppArgs = '-c, export;';
   let ueAppPlacementId = 'node3';
+  let ueAppCpuMin = '0.5';
+  let ueAppCpuMax = '1';
+  let ueAppMemoryMin = '100';
+  let ueAppMemoryMax = '200';
 
   // Add new ue app element
   function addUeApp(name, parent) {
@@ -876,6 +1108,10 @@ describe('Scenario Configuration', function () {
     type(meep.CFG_ELEM_IMG, ueAppImg);
     type(meep.CFG_ELEM_GPU_COUNT, ueAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, ueAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, ueAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, ueAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, ueAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, ueAppMemoryMax);
     type(meep.CFG_ELEM_ENV, ueAppEnv);
     type(meep.CFG_ELEM_CMD, ueAppCmd);
     type(meep.CFG_ELEM_ARGS, ueAppArgs);
@@ -895,6 +1131,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_IMAGE), ueAppImg);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), ueAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), ueAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), ueAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), ueAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), ueAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), ueAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), ueAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), ueAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), ueAppArgs);
@@ -941,11 +1181,14 @@ describe('Scenario Configuration', function () {
     verifyForm(meep.CFG_ELEM_PKT_LOSS, true, 'have.value', String(meep.DEFAULT_PACKET_LOSS_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_DL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_DL_LINK));
     verifyForm(meep.CFG_ELEM_THROUGHPUT_UL, true, 'have.value', String(meep.DEFAULT_THROUGHPUT_UL_LINK));
+    verifyForm(meep.CFG_ELEM_CONNECTED, true, 'have.value', String(meep.OPT_CONNECTED.value));
+    verifyForm(meep.CFG_ELEM_WIRELESS, true, 'have.value', String(meep.OPT_WIRED.value));
     type(meep.CFG_ELEM_LATENCY, linkLatency);
     type(meep.CFG_ELEM_LATENCY_VAR, linkLatencyVar);
     type(meep.CFG_ELEM_PKT_LOSS, linkPktLoss);
     type(meep.CFG_ELEM_THROUGHPUT_DL, linkThroughput);
     type(meep.CFG_ELEM_THROUGHPUT_UL, linkThroughput-1);
+    type(meep.CFG_ELEM_GEO_LOCATION, linkLocationCoordinates);
     select(meep.CFG_ELEM_PARENT, parent);
     type(meep.CFG_ELEM_NAME, name);
     click(meep.MEEP_BTN_APPLY);
@@ -965,6 +1208,7 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_LINK_PKT_LOSS), linkPktLoss);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_DL), linkThroughput);
       assert.equal(getElemFieldVal(entry, FIELD_LINK_THROUGHPUT_UL), linkThroughput-1);
+      assert.equal(getElemFieldVal(entry, FIELD_GEO_LOCATION), linkLocationCoordinates);
     });
   }
 
@@ -982,6 +1226,10 @@ describe('Scenario Configuration', function () {
   let cloudAppCmd = '/bin/bash';
   let cloudAppArgs = '-c, export;';
   let cloudAppPlacementId = '';
+  let cloudAppCpuMin = '0.5';
+  let cloudAppCpuMax = '1';
+  let cloudAppMemoryMin = '100';
+  let cloudAppMemoryMax = '200';
 
   function addCloudApp(name, parent) {
     click(meep.CFG_BTN_NEW_ELEM);
@@ -1004,6 +1252,10 @@ describe('Scenario Configuration', function () {
     select(meep.CFG_ELEM_PROT, cloudAppProt);
     type(meep.CFG_ELEM_GPU_COUNT, cloudAppGpuCount);
     select(meep.CFG_ELEM_GPU_TYPE, cloudAppGpuType);
+    type(meep.CFG_ELEM_CPU_MIN, cloudAppCpuMin);
+    type(meep.CFG_ELEM_CPU_MAX, cloudAppCpuMax);
+    type(meep.CFG_ELEM_MEMORY_MIN, cloudAppMemoryMin);
+    type(meep.CFG_ELEM_MEMORY_MAX, cloudAppMemoryMax);
     type(meep.CFG_ELEM_ENV, cloudAppEnv);
     type(meep.CFG_ELEM_CMD, cloudAppCmd);
     type(meep.CFG_ELEM_ARGS, cloudAppArgs);
@@ -1026,6 +1278,10 @@ describe('Scenario Configuration', function () {
       assert.equal(getElemFieldVal(entry, FIELD_PROTOCOL), cloudAppProt);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_COUNT), cloudAppGpuCount);
       assert.equal(getElemFieldVal(entry, FIELD_GPU_TYPE), cloudAppGpuType);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MIN), cloudAppCpuMin);
+      assert.equal(getElemFieldVal(entry, FIELD_CPU_MAX), cloudAppCpuMax);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MIN), cloudAppMemoryMin);
+      assert.equal(getElemFieldVal(entry, FIELD_MEMORY_MAX), cloudAppMemoryMax);
       assert.equal(getElemFieldVal(entry, FIELD_ENV_VAR), cloudAppEnv);
       assert.equal(getElemFieldVal(entry, FIELD_CMD), cloudAppCmd);
       assert.equal(getElemFieldVal(entry, FIELD_CMD_ARGS), cloudAppArgs);

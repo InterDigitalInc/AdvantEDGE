@@ -49,17 +49,20 @@ paths:
       - name: "type"
         in: "path"
         description: "Automation type.<br> Automation loop evaluates enabled automation\
-          \ types once every second.<br>\n<p>Supported Types: <li>MOBILITY - Sends\
-          \ Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT\
-          \ - Advances UEs along configured paths using previous position & velocity\
-          \ as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller\
-          \ when list of POAs in range changes."
+          \ types once every second.<br>\n<p>Supported Types: <li>MOVEMENT - Advances\
+          \ UEs along configured paths using previous position & velocity as inputs.\
+          \ <li>MOBILITY - Sends Mobility events to Sanbox Controller when UE changes\
+          \ POA. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller\
+          \ when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE\
+          \ - Sends network characteristics update events to Sanbox Controller when\
+          \ throughput values change."
         required: true
         type: "string"
         enum:
         - "MOBILITY"
         - "MOVEMENT"
         - "POAS-IN-RANGE"
+        - "NETWORK-CHARACTERISTICS-UPDATE"
         x-exportParamName: "Type_"
       responses:
         200:
@@ -84,13 +87,16 @@ paths:
           \ Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT\
           \ - Advances UEs along configured paths using previous position & velocity\
           \ as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller\
-          \ when list of POAs in range changes"
+          \ when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE\
+          \ - Sends network characteristics update events to Sanbox Controller when\
+          \ throughput values change."
         required: true
         type: "string"
         enum:
         - "MOBILITY"
         - "MOVEMENT"
         - "POAS-IN-RANGE"
+        - "NETWORK-CHARACTERISTICS-UPDATE"
         x-exportParamName: "Type_"
       - name: "run"
         in: "query"
@@ -132,11 +138,23 @@ paths:
         enum:
         - "UE"
         - "POA"
-        - "POA-CELLULAR"
+        - "POA-4G"
+        - "POA-5G"
+        - "POA-WIFI"
         - "EDGE"
         - "FOG"
         - "CLOUD"
         x-exportParamName: "SubType"
+        x-optionalDataType: "String"
+      - name: "excludePath"
+        in: "query"
+        description: "Exclude UE paths in response (default: false)"
+        required: false
+        type: "string"
+        enum:
+        - "true"
+        - "false"
+        x-exportParamName: "ExcludePath"
         x-optionalDataType: "String"
       responses:
         200:
@@ -161,6 +179,16 @@ paths:
         required: true
         type: "string"
         x-exportParamName: "AssetName"
+      - name: "excludePath"
+        in: "query"
+        description: "Exclude UE paths in response (default: false)"
+        required: false
+        type: "string"
+        enum:
+        - "true"
+        - "false"
+        x-exportParamName: "ExcludePath"
+        x-optionalDataType: "String"
       responses:
         200:
           description: "OK"
@@ -241,11 +269,14 @@ definitions:
           \ Mobility events to Sanbox Controller when UE changes POA. <li>MOVEMENT\
           \ - Advances UEs along configured paths using previous position & velocity\
           \ as inputs. <li>POAS-IN-RANGE - Sends POAS-IN-RANGE events to Sanbox Controller\
-          \ when list of POAs in range changes"
+          \ when list of POAs in range changes. <li>NETWORK-CHARACTERISTICS-UPDATE\
+          \ - Sends network characteristics update events to Sanbox Controller when\
+          \ throughput values change."
         enum:
         - "MOBILITY"
         - "MOVEMENT"
         - "POAS-IN-RANGE"
+        - "NETWORK-CHARACTERISTICS-UPDATE"
       active:
         type: "boolean"
         description: "Automation feature state"
@@ -281,7 +312,9 @@ definitions:
           enum:
           - "UE"
           - "POA"
-          - "POA-CELLULAR"
+          - "POA-4G"
+          - "POA-5G"
+          - "POA-WIFI"
           - "EDGE"
           - "FOG"
           - "CLOUD"

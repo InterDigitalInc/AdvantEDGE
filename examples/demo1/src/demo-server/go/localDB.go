@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"io/ioutil"
 
 	mgm "github.com/InterDigitalInc/AdvantEDGE/mgmanagerapi"
 )
@@ -208,20 +209,21 @@ func localDBHandleEvent(w http.ResponseWriter, r *http.Request) {
 func localDBUpdateTrackedUes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var notif TrackingNotification
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&notif)
+	var notif InlineTrackingNotification
+	bodyBytes, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(bodyBytes, &notif)
 	if err != nil {
-		log.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var userInfo UserInfo
-	userInfo.Address = notif.Address
-	userInfo.ZoneId = notif.ZoneId
-	userInfo.AccessPointId = notif.CurrentAccessPointId
 
-	ueIdToUserInfoMap[notif.Address] = &userInfo
+	var userInfo UserInfo
+	userInfo.Address = notif.ZonalPresenceNotification.Address
+	userInfo.ZoneId = notif.ZonalPresenceNotification.ZoneId
+	userInfo.AccessPointId = notif.ZonalPresenceNotification.CurrentAccessPointId
+
+	ueIdToUserInfoMap[notif.ZonalPresenceNotification.Address] = &userInfo
+
 	w.WriteHeader(http.StatusOK)
 
 }

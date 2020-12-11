@@ -18,6 +18,7 @@ import { updateObject } from '../../util/object-util';
 
 const initialState = {
   data: [],
+  entries: {},
   selected: [],
   order: 'asc',
   orderBy: 'name',
@@ -27,14 +28,12 @@ const initialState = {
 };
 
 const EXEC_CHANGE_TABLE = 'EXEC_CHANGE_TABLE';
-function execChangeTable(table) {
+export function execChangeTable(table) {
   return {
     type: EXEC_CHANGE_TABLE,
     payload: table
   };
 }
-
-export { execChangeTable, EXEC_CHANGE_TABLE };
 
 export function execTableReducer(state = initialState, action) {
   switch (action.type) {

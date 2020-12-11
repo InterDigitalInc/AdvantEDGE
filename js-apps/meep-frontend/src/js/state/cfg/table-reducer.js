@@ -18,6 +18,7 @@ import { updateObject } from '../../util/object-util';
 
 const initialState = {
   data: [],
+  entries: {},
   selected: [],
   order: 'asc',
   orderBy: 'name',
@@ -27,14 +28,12 @@ const initialState = {
 };
 
 const CFG_CHANGE_TABLE = 'CFG_CHANGE_TABLE';
-function cfgChangeTable(table) {
+export function cfgChangeTable(table) {
   return {
     type: CFG_CHANGE_TABLE,
     payload: table
   };
 }
-
-export { cfgChangeTable, CFG_CHANGE_TABLE };
 
 export function cfgTableReducer(state = initialState, action) {
   switch (action.type) {

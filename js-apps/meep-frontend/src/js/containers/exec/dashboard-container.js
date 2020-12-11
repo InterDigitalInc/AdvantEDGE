@@ -16,6 +16,7 @@
 
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 import { Grid, GridCell } from '@rmwc/grid';
 import { Elevation } from '@rmwc/elevation';
 // import ReactDOM from 'react-dom';
@@ -43,8 +44,10 @@ import {
   VIEW_NAME_NONE,
   MAP_VIEW,
   NET_TOPOLOGY_VIEW,
-  DEFAULT_DASHBOARD_OPTIONS
+  DEFAULT_DASHBOARD_OPTIONS,
+  EXEC_BTN_DASHBOARD_BTN_CLOSE
 } from '../../meep-constants';
+
 import { updateObject } from '../../util/object-util';
 
 const styles = {
@@ -250,6 +253,7 @@ const DashboardConfiguration = props => {
               outlined
               style={styles.button}
               onClick={() => props.onCloseDashCfg()}
+              data-cy={EXEC_BTN_DASHBOARD_BTN_CLOSE}
             >
             Close
             </Button>
@@ -264,6 +268,8 @@ const DashboardConfiguration = props => {
 class DashboardContainer extends Component {
   constructor(props) {
     super(props);
+    autoBind(this);
+
     this.state = {
       sourceNodeId: ''
     };
@@ -406,16 +412,12 @@ class DashboardContainer extends Component {
           view2Name={view2Name}
           sourceNodeSelected={selectedSource}
           destNodeSelected={selectedDest}
-          changeSourceNodeSelected={nodeId =>
-            this.props.changeSourceNodeSelected(nodeId)
-          }
-          changeDestNodeSelected={nodeId =>
-            this.props.changeDestNodeSelected(nodeId)
-          }
+          changeSourceNodeSelected={this.props.changeSourceNodeSelected}
+          changeDestNodeSelected={this.props.changeDestNodeSelected}
           dashboardViewsList={dashboardViewsList}
-          changeView1={viewName => this.changeView1(viewName)}
-          changeView2={viewName => this.changeView2(viewName)}
-          changeShowApps={checked => this.changeShowApps(checked)}
+          changeView1={this.changeView1}
+          changeView2={this.changeView2}
+          changeShowApps={this.changeShowApps}
           showApps={this.props.showApps}
         />
 

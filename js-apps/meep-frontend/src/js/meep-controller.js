@@ -20,7 +20,10 @@ import 'leaflet/dist/leaflet.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import 'vis/dist/vis.min.css';
+import 'ionicons/scss/ionicons.scss';
 import '../css/meep-controller.scss';
+
+import '../img/ID-Icon-01-idcc-blue.svg';
 
 // Import module dependencies
 // import 'material-design-icons';

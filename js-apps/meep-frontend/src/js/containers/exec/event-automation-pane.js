@@ -24,12 +24,22 @@ import { Typography } from '@rmwc/typography';
 import {
   uiExecChangeAutomationMovementMode,
   uiExecChangeAutomationMobilityMode,
-  uiExecChangeAutomationPoasInRangeMode
+  uiExecChangeAutomationPoasInRangeMode,
+  uiExecChangeAutomationNetCharMode
 } from '../../state/ui';
+
+import {
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR,
+  EXEC_BTN_EVENT_BTN_AUTOMATION_BTN_CLOSE
+} from '../../meep-constants';
 
 const AUTO_TYPE_MOVEMENT = 'MOVEMENT';
 const AUTO_TYPE_MOBILITY = 'MOBILITY';
 const AUTO_TYPE_POAS_IN_RANGE = 'POAS-IN-RANGE';
+const AUTO_TYPE_NET_CHAR = 'NETWORK-CHARACTERISTICS-UPDATE';
 
 class EventAutomationPane extends Component {
   constructor(props) {
@@ -62,6 +72,9 @@ class EventAutomationPane extends Component {
             break;
           case AUTO_TYPE_POAS_IN_RANGE:
             this.props.changeAutomationPoasInRangeMode(mode);
+            break;
+          case AUTO_TYPE_NET_CHAR:
+            this.props.changeAutomationNetCharMode(mode);
             break;
           default:
             break;
@@ -101,6 +114,16 @@ class EventAutomationPane extends Component {
     });
   }
 
+  setNetCharMode(mode) {
+    this.props.changeAutomationNetCharMode(mode);
+    this.props.api.setAutomationStateByName(AUTO_TYPE_NET_CHAR, mode, (error) => {
+      if (error) {
+        // TODO consider showing an alert
+        // console.log(error);
+      }
+    });
+  }
+
   render() {
     if (this.props.hide) {
       return null;
@@ -117,6 +140,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationMovementMode}
               onChange={e => this.setMovementMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT}
             >
               Movement
             </Checkbox>
@@ -125,6 +149,7 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationMobilityMode}
               onChange={e => this.setMobilityMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY}
             >
               Mobility
             </Checkbox>
@@ -133,8 +158,18 @@ class EventAutomationPane extends Component {
             <Checkbox
               checked={this.props.automationPoasInRangeMode}
               onChange={e => this.setPoasInRangeMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE}
             >
               POAs in range
+            </Checkbox>
+          </GridCell>
+          <GridCell span={12}>
+            <Checkbox
+              checked={this.props.automationNetCharMode}
+              onChange={e => this.setNetCharMode(e.target.checked)}
+              data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR}
+            >
+              Network Characteristics
             </Checkbox>
           </GridCell>
         </Grid>
@@ -146,6 +181,7 @@ class EventAutomationPane extends Component {
                 outlined
                 style={styles.button}
                 onClick={this.props.onClose}
+                data-cy={EXEC_BTN_EVENT_BTN_AUTOMATION_BTN_CLOSE}
               >
                 Close
               </Button>
@@ -174,6 +210,7 @@ const mapStateToProps = state => {
     automationMovementMode: state.ui.automationMovementMode,
     automationMobilityMode: state.ui.automationMobilityMode,
     automationPoasInRangeMode: state.ui.automationPoasInRangeMode,
+    automationNetCharMode: state.ui.automationNetCharMode,
     sandbox: state.ui.sandbox
   };
 };
@@ -182,7 +219,8 @@ const mapDispatchToProps = dispatch => {
   return {
     changeAutomationMovementMode: mode => dispatch(uiExecChangeAutomationMovementMode(mode)),
     changeAutomationMobilityMode: mode => dispatch(uiExecChangeAutomationMobilityMode(mode)),
-    changeAutomationPoasInRangeMode: mode => dispatch(uiExecChangeAutomationPoasInRangeMode(mode))
+    changeAutomationPoasInRangeMode: mode => dispatch(uiExecChangeAutomationPoasInRangeMode(mode)),
+    changeAutomationNetCharMode: mode => dispatch(uiExecChangeAutomationNetCharMode(mode))
   };
 };
 

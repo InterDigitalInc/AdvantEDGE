@@ -28,8 +28,10 @@ We put time & efforts keeping the wiki up to date, so we recommend to look there
 - Deployment questions -- [Deployment cheat-sheet](https://github.com/InterDigitalInc/AdvantEDGE/wiki/deployment-details), [meepctl CLI tool](https://github.com/InterDigitalInc/AdvantEDGE/blob/master/docs/meepctl/meepctl.md), [Build](https://github.com/InterDigitalInc/AdvantEDGE/wiki/build-advantedge), [Deploy](https://github.com/InterDigitalInc/AdvantEDGE/wiki/deploy-advantedge), [Upgrade](https://github.com/InterDigitalInc/AdvantEDGE/wiki/upgrade-advantedge), [Test](https://github.com/InterDigitalInc/AdvantEDGE/wiki/test-advantedge)
 - Usage questions -- [GUI](https://github.com/InterDigitalInc/AdvantEDGE/wiki/gui-overview), [basic operation](https://github.com/InterDigitalInc/AdvantEDGE/wiki/basic-operation), [creating a first scenario](https://github.com/InterDigitalInc/AdvantEDGE/wiki/first-scenario), [scenario monitoring](https://github.com/InterDigitalInc/AdvantEDGE/wiki/scenario-monitoring), [using external nodes](https://github.com/InterDigitalInc/AdvantEDGE/wiki/external-nodes), [pod placement](https://github.com/InterDigitalInc/AdvantEDGE/wiki/pod-placement)
 
-#### Resource #2 - Email us
-Of course - because we cannot document everything - if you still have a question, we can be reached at AdvantEDGE@InterDigital.com
+#### Resource #2 - Start a Discussion
+Of course - because we cannot document everything - if you still have a question, you can reach out to us.
+
+We use GitHub's new feature called [Discussions](https://github.com/InterDigitalInc/AdvantEDGE/discussions) - simply start a discussion and you will have direct access to the development team!
 
 ## Reporting issues
 Whether it's a bug found while using the platform or simply a typo noticed while browsing the documentation, we appreciate that you open a GitHub issue ([here](https://github.com/InterDigitalInc/AdvantEDGE/issues))
@@ -44,9 +46,7 @@ Use the Custom Issue template to provide a link to the page, a copy the problema
 ## Suggesting enhancements
 We appreciate feature enhancements and as such, we collect feature ideas via GitHub issues ([here](https://github.com/InterDigitalInc/AdvantEDGE/issues))
 
-If you are not sure about the proposed enhancement, it's always a good idea to communicate with us (AdvantEDGE@InterDigital.com using subject subject `enhancement`) to discuss the feature beforehand.
-
-Use the Feature Request template provided in GitHub to document the request.
+If you are not sure about the proposed enhancement, it's always a good idea to communicate with us by starting a [Discussion](https://github.com/InterDigitalInc/AdvantEDGE/discussions) about the feature beforehand.
 
 ## Contributing content
 Contributing content is more involving than submitting an issue or an enhancement request as it requires a CLA and learning how to operate with the project team.

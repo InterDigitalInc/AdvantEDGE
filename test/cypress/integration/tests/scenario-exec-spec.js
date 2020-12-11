@@ -48,7 +48,7 @@ import {
 } from '../../../../js-apps/meep-frontend/src/js/util/elem-utils';
 
 // Import Test utility functions
-import { selector, click, type, select, verify, verifyEnabled, verifyForm } from '../util/util';
+import { selector, click, check, type, select, verify, verifyEnabled, verifyForm, verifyChecked } from '../util/util';
 
 // Scenario Execution Tests
 describe('Scenario Execution', function () {
@@ -56,36 +56,111 @@ describe('Scenario Execution', function () {
   // Test Variables
   let defaultScenario = 'None';
   let sandbox = 'sbox-test';
-
-  // Test Setup
-  beforeEach(() => {
-    var meepUrl = Cypress.env('meep_url');
-    if (meepUrl == null) {
-      meepUrl = 'http://127.0.0.1';
-    }
-
-    cy.viewport(1920, 1080);
-    cy.visit(meepUrl);
-  });
+  let scenario = 'demo1';
+  let scenario2 = 'demo2';
+  let replayEventsName = 'replaydemo1'
+  let replayEventsDescription = 'replay demo1 description'
 
   // ------------------------------
   //            TESTS
   // ------------------------------
 
   // Demo1 scenario testing (Virt-Engine)
-  it('Deploy & Test DEMO1 scenario', function () {
-    let scenario = 'demo1';
+  it('Deploy DEMO1 scenario', function () {
+    openDefaultMeepUrl();
 
     // Create Sandbox
     createSandbox(sandbox);
 
     // Deploy demo scenario
     deployScenario(scenario);
+  });
 
-    // Test events
+  // Test manual events
+  it('Test Event - Manual button - Cancel', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
     testCancelEvent();
+  });
+
+  it('Test Event - Manual button - Mobility event', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
     testMobilityEvent();
+  });
+
+  it('Test Event - Manual button - NetChar event', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
     testNetCharEvent(scenario);
+  });
+
+  // Test Save events
+  // previous manual execution created 13 eventsn
+  it('Test Event - Save button', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
+    testSaveReplayEvents(replayEventsName, replayEventsDescription);
+  });
+
+  // Test Auto-Replay
+  //replay event as 13 events in it based on the file that was stored
+  it('Test Event - Auto-Replay button', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
+    testAutoReplay(replayEventsName, 13);
+  });
+
+  // Test Automation
+  it('Test Event - Automation button', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
+    testEventAutomation();
+  });
+
+  // Open/Close panes
+  it('Test Event and Dashboard panes visibility', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
+
+    testEventPane();
+    testDashboardPane();
+    testPanes();
+  });
+
+  it('DEMO1 scenario - terminate', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Terminate demo scenario
     terminateScenario(scenario);
@@ -96,21 +171,32 @@ describe('Scenario Execution', function () {
 
   // Demo2 scenario testing (User Charts)
   it('Deploy & Test DEMO2 scenario', function () {
-    let scenario = 'demo2';
+    openDefaultMeepUrl();
+    cy.wait(3000);
 
     // Create Sandbox
     createSandbox(sandbox);
 
     // Deploy demo scenario
-    deployScenario(scenario);
+    deployScenario(scenario2);
 
     // Test events
     testCancelEvent();
     testMobilityEvent();
-    testNetCharEvent(scenario);
+    testNetCharEvent(scenario2);
+
+  });
+
+  //separating deployment and termination to force termination to be called if the test above fails during execution
+  it('DEMO2 scenario - terminate', function () {
+    openDefaultMeepUrl();
+    click(meep.MEEP_TAB_EXEC);
+    cy.wait(1000);
+    select(meep.EXEC_SELECT_SANDBOX, sandbox);
+    cy.wait(3000);
 
     // Terminate demo scenario
-    terminateScenario(scenario);
+    terminateScenario(scenario2);
 
     // Destroy Sandbox
     destroySandbox(sandbox);
@@ -119,6 +205,18 @@ describe('Scenario Execution', function () {
   // ------------------------------
   //          FUNCTIONS
   // ------------------------------
+
+  // Opens the default meepUrl page
+  function openDefaultMeepUrl() {
+    var meepUrl = Cypress.env('meep_url');
+    if (meepUrl == null) {
+      meepUrl = 'http://127.0.0.1';
+    }
+
+    cy.viewport(1920, 1080);
+    cy.visit(meepUrl);
+    cy.wait(1000);
+  }
 
   // Create sandbox with provided name
   function createSandbox(name) {
@@ -138,7 +236,7 @@ describe('Scenario Execution', function () {
     click(meep.EXEC_BTN_NEW_SANDBOX);
     type(meep.MEEP_DLG_NEW_SANDBOX_NAME, name);
     click(meep.MEEP_DLG_NEW_SANDBOX, 'Ok');
-    cy.wait(10000);
+    cy.wait(15000);
     verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, true);
@@ -153,7 +251,7 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     click(meep.EXEC_BTN_DELETE_SANDBOX);
     click(meep.MEEP_DLG_DELETE_SANDBOX, 'Ok');
-    cy.wait(10000);
+    cy.wait(20000);
     verifyEnabled(meep.EXEC_BTN_NEW_SANDBOX, true);
     verifyEnabled(meep.EXEC_BTN_DELETE_SANDBOX, false);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
@@ -179,7 +277,7 @@ describe('Scenario Execution', function () {
     cy.wait(1000);
     select(meep.MEEP_DLG_DEPLOY_SCENARIO_SELECT, name);
     click(meep.MEEP_DLG_DEPLOY_SCENARIO, 'Ok');
-    cy.wait(10000);
+    cy.wait(15000);
     verifyEnabled(meep.EXEC_BTN_EVENT, true, 30000);
     verifyEnabled(meep.EXEC_BTN_DEPLOY, false);
     verifyEnabled(meep.EXEC_BTN_TERMINATE, true);
@@ -202,7 +300,7 @@ describe('Scenario Execution', function () {
   function testCancelEvent() {
     cy.log('Cancel event creation');
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     verifyForm(meep.EXEC_EVT_TYPE, true);
     verifyEnabled(meep.MEEP_BTN_CANCEL, true);
     // verifyEnabled(meep.MEEP_BTN_APPLY, false)
@@ -225,19 +323,19 @@ describe('Scenario Execution', function () {
   function testNetCharEvent(scenario) {
     cy.log('Create & Validate Network Characteristic event');
     createNetCharEvent('SCENARIO', scenario, 60, 5, 1, 200000, 'Pareto');
-    createNetCharEvent('OPERATOR GENERIC', 'operator1', 10, 3, 2, 90000, '');
+    createNetCharEvent('OPERATOR', 'operator1', 10, 3, 2, 90000, '');
     createNetCharEvent('ZONE', 'zone1', 6, 2, 1, 70000, '');
     createNetCharEvent('ZONE', 'zone2', 6, 2, 1, 70000, '');
-    createNetCharEvent('POA GENERIC', 'zone1-poa1', 2, 3, 4, 10000, '');
-    createNetCharEvent('POA GENERIC', 'zone1-poa2', 40, 5, 2, 20000, '');
-    createNetCharEvent('POA GENERIC', 'zone2-poa1', 0, 0, 1, 15000, '');
+    createNetCharEvent('POA', 'zone1-poa1', 2, 3, 4, 10000, '');
+    createNetCharEvent('POA', 'zone1-poa2', 40, 5, 2, 20000, '');
+    createNetCharEvent('POA', 'zone2-poa1', 0, 0, 1, 15000, '');
   }
 
   // Create a Mobility event
   function createMobilityEvent(elem, dest) {
     cy.log('Moving ' + elem + ' --> ' + dest);
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.MOBILITY_EVENT);
     select(meep.EXEC_EVT_MOB_TARGET, elem);
     select(meep.EXEC_EVT_MOB_DEST, dest);
@@ -253,7 +351,7 @@ describe('Scenario Execution', function () {
     cy.log('Setting Net Char for type[' + elemType + '] name[' + name + '] latency[' + l +
       '] variation[' + lv + '] packetLoss[' + pl + '] throughput[' + tp + ']');
     click(meep.EXEC_BTN_EVENT);
-    click(meep.EXEC_BTN_MANUAL_REPLAY);
+    click(meep.EXEC_BTN_EVENT_BTN_MANUAL_REPLAY);
     select(meep.EXEC_EVT_TYPE, meep.NETWORK_CHARACTERISTICS_EVENT);
     select(meep.EXEC_EVT_NC_TYPE, elemType);
     select(meep.EXEC_EVT_NC_NAME, name);
@@ -273,14 +371,137 @@ describe('Scenario Execution', function () {
     validateNetCharEvent(elemType, name, l, lv, pl, tp, tp-1, dist);
   }
 
+  // Save Replay Events
+  function testSaveReplayEvents(name, desc) {
+    cy.log('Save events');
+    click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_EVENT_BTN_SAVE_REPLAY);
+    type(meep.MEEP_DLG_SAVE_REPLAY_NAME, name);
+    type(meep.MEEP_DLG_SAVE_REPLAY_DESCRIPTION, desc);
+    click(meep.MEEP_DLG_SAVE_REPLAY, 'Ok');
+    cy.wait(1000);
+    //no way to check except by executing auto-replay test that gets the file
+    click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY);
+    select(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES, name);
+    cy.wait(500);
+    //check that by loading the saved replay event file that the description gets populated to confirm it was stored properly
+    //and check play button is enabled
+    cy.contains(desc)
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
+  }
+
+  // Auto Replay
+  function testAutoReplay(name, nbEvents) {
+    cy.log('Auto Replay');
+
+    testAutoReplayExecution(name, false, nbEvents)
+    //confirm execution started
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false, 1000);
+    //confirm it executed completely
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true, 75000);
+
+    testAutoReplayExecution(name, true, nbEvents)
+    //confirm execution started
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false, 1000);
+    cy.wait(75000);
+    //confirm it executed completely but restarted
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, false);
+
+    click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_STOP)
+    cy.wait(500);
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
+  }
+
+  function testAutoReplayExecution(name, loop, nbEvents) {
+    click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY);
+    if (loop) {
+      check(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_CHKBOX_LOOP, true);
+    } else {
+      check(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_CHKBOX_LOOP, false);
+    }
+    select(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_EVT_REPLAY_FILES, name);
+    cy.wait(500);
+    verifyEnabled(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START, true);
+    click(meep.EXEC_BTN_EVENT_BTN_AUTO_REPLAY_BTN_REPLAY_START)
+    //check right number of events will be executed
+    verify(meep.MEEP_EVENT_COUNT, 'contain', " / " + nbEvents);
+  }
+
+  // Event pane display
+  function testEventPane() {
+    cy.log('Event Pane show/hide');
+
+    click(meep.EXEC_BTN_EVENT);
+    cy.wait(500);
+    cy.contains("Event");
+    click(meep.EXEC_BTN_EVENT_BTN_CLOSE);
+    cy.wait(500);
+    cy.contains("Event").should('not.visible');
+  }
+
+  // Dashboard pane display
+  function testDashboardPane() {
+    cy.log('Dashboard Pane show/hide');
+
+    click(meep.EXEC_BTN_DASHBOARD);
+    cy.wait(500);
+    cy.contains("Dashboard");
+    click(meep.EXEC_BTN_DASHBOARD_BTN_CLOSE);
+    cy.wait(500);
+    cy.contains("Dashboard").should('not.visible');
+  }
+
+  // Panes mix display
+  function testPanes() {
+    cy.log('Mix Panes show/hide');
+
+    click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_DASHBOARD);
+    cy.wait(500);
+    cy.contains("Event");
+    cy.contains("Dashboard");
+    click(meep.EXEC_BTN_EVENT_BTN_CLOSE);
+    click(meep.EXEC_BTN_DASHBOARD_BTN_CLOSE);
+    cy.wait(500);
+    cy.contains("Event").should('not.visible');
+    cy.contains("Dashboard").should('not.visible');
+  }
+
+  // Event automation
+  function testEventAutomation() {
+    cy.log('Event Automation');
+
+    click(meep.EXEC_BTN_EVENT);
+    click(meep.EXEC_BTN_EVENT_BTN_AUTOMATION);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT, true);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY, true);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE, true);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR, true);
+
+    cy.wait(2000);
+
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT, true);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY, true);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE, true);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR, true);
+
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT, false);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY, false);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE, false);
+    check(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR, false);
+    cy.wait(2000);
+
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOVEMENT, false);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_MOBILITY, false);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_POAS_IN_RANGE, false);
+    verifyChecked(meep.EXEC_BTN_EVENT_BTN_AUTOMATION_CHKBOX_NETCHAR, false);
+  }
+
   // Retrieve Element entry from Application table
   function getEntry(entries, name) {
     if (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        if (getElemFieldVal(entries[i], FIELD_NAME) == name) {
-          return entries[i];
-        }
-      }
+      return entries[name] ? entries[name] : null;
     }
     return null;
   }
@@ -310,7 +531,7 @@ describe('Scenario Execution', function () {
           assert.equal(getElemFieldVal(entry, FIELD_INT_DOM_THROUGHPUT_UL), tpUl);
 
           break;
-        case 'OPERATOR GENERIC':
+        case 'OPERATOR':
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_INT_ZONE_PKT_LOSS), pl);
@@ -324,7 +545,7 @@ describe('Scenario Execution', function () {
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_DL), tpDl);
           assert.equal(getElemFieldVal(entry, FIELD_INTRA_ZONE_THROUGHPUT_UL), tpUl);
           break;
-        case 'POA GENERIC':
+        case 'POA':
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY), l);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_LATENCY_VAR), lv);
           assert.equal(getElemFieldVal(entry, FIELD_TERM_LINK_PKT_LOSS), pl);

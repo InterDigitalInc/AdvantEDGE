@@ -17,68 +17,9 @@
 import { updateObject } from '../../util/object-util';
 import { createElem } from '../../util/elem-utils';
 
-const CFG_ELEM_NEW = 'CFG_ELEM_NEW';
-const CFG_ELEM_EDIT = 'CFG_ELEM_EDIT';
-const CFG_ELEM_CLONE = 'CFG_ELEM_CLONE';
-const CFG_ELEM_CLEAR = 'CFG_ELEM_CLEAR';
-const CFG_ELEM_UPDATE = 'CFG_ELEM_UPDATE';
-const CFG_ELEM_SET_ERR_MSG = 'CFG_ELEM_SET_ERR_MSG';
-
-const CFG_ELEM_MODE_NEW = 'CFG_ELEM_MODE_NEW';
-const CFG_ELEM_MODE_EDIT = 'CFG_ELEM_MODE_EDIT';
-const CFG_ELEM_MODE_CLONE = 'CFG_ELEM_MODE_CLONE';
-
-function cfgElemNew() {
-  return {
-    type: CFG_ELEM_NEW
-  };
-}
-
-function cfgElemEdit(elem) {
-  return {
-    type: CFG_ELEM_EDIT,
-    payload: elem
-  };
-}
-
-function cfgElemClone(elem) {
-  return {
-    type: CFG_ELEM_CLONE,
-    payload: elem
-  };
-}
-
-function cfgElemClear() {
-  return {
-    type: CFG_ELEM_CLEAR
-  };
-}
-
-function cfgElemUpdate(elem) {
-  return {
-    type: CFG_ELEM_UPDATE,
-    payload: elem
-  };
-}
-
-function cfgElemSetErrMsg(msg) {
-  return {
-    type: CFG_ELEM_SET_ERR_MSG,
-    payload: msg
-  };
-}
-
-export {
-  cfgElemNew,
-  cfgElemEdit,
-  cfgElemClone,
-  cfgElemClear,
-  cfgElemUpdate,
-  cfgElemSetErrMsg,
-  CFG_ELEM_MODE_NEW,
-  CFG_ELEM_MODE_EDIT,
-  CFG_ELEM_MODE_CLONE
-};
+export const CFG_ELEM_MODE_NEW = 'CFG_ELEM_MODE_NEW';
+export const CFG_ELEM_MODE_EDIT = 'CFG_ELEM_MODE_EDIT';
+export const CFG_ELEM_MODE_CLONE = 'CFG_ELEM_MODE_CLONE';
 
 const initialState = {
   configuredElement: null,
@@ -86,6 +27,52 @@ const initialState = {
   isModified: false,
   errorMessage: ''
 };
+
+const CFG_ELEM_NEW = 'CFG_ELEM_NEW';
+export function cfgElemNew() {
+  return {
+    type: CFG_ELEM_NEW
+  };
+}
+
+const CFG_ELEM_EDIT = 'CFG_ELEM_EDIT';
+export function cfgElemEdit(elem) {
+  return {
+    type: CFG_ELEM_EDIT,
+    payload: elem
+  };
+}
+
+const CFG_ELEM_CLONE = 'CFG_ELEM_CLONE';
+export function cfgElemClone(elem) {
+  return {
+    type: CFG_ELEM_CLONE,
+    payload: elem
+  };
+}
+
+const CFG_ELEM_CLEAR = 'CFG_ELEM_CLEAR';
+export function cfgElemClear() {
+  return {
+    type: CFG_ELEM_CLEAR
+  };
+}
+
+const CFG_ELEM_UPDATE = 'CFG_ELEM_UPDATE';
+export function cfgElemUpdate(elem) {
+  return {
+    type: CFG_ELEM_UPDATE,
+    payload: elem
+  };
+}
+
+const CFG_ELEM_SET_ERR_MSG = 'CFG_ELEM_SET_ERR_MSG';
+export function cfgElemSetErrMsg(msg) {
+  return {
+    type: CFG_ELEM_SET_ERR_MSG,
+    payload: msg
+  };
+}
 
 export function cfgElementConfigurationReducer(state = initialState, action) {
   switch (action.type) {

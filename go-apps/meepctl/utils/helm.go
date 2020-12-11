@@ -33,7 +33,7 @@ func IsHelmRelease(name string, cobraCmd *cobra.Command) (exist bool, err error)
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
 	start := time.Now()
-	cmd := exec.Command("helm", "ls", name, "--short")
+	cmd := exec.Command("helm", "ls", "--filter", name, "--short")
 	if verbose {
 		fmt.Println("Cmd:", cmd.Args)
 	}
@@ -44,8 +44,13 @@ func IsHelmRelease(name string, cobraCmd *cobra.Command) (exist bool, err error)
 		fmt.Println(err)
 	} else {
 		s := string(out)
-		exist = strings.HasPrefix(s, name)
-
+		lines := strings.Split(s, "\n")
+		for _, line := range lines {
+			if line == name {
+				exist = true
+				break
+			}
+		}
 	}
 	if verbose {
 		r := FormatResult("Result: "+string(out), elapsed, cobraCmd)
@@ -61,7 +66,7 @@ func HelmDelete(name string, cobraCmd *cobra.Command) (err error) {
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
 	start := time.Now()
-	cmd := exec.Command("helm", "delete", name, "--purge")
+	cmd := exec.Command("helm", "uninstall", name)
 	if verbose {
 		fmt.Println("Cmd:", cmd.Args)
 	}
@@ -88,7 +93,7 @@ func HelmInstall(name string, chart string, flags [][]string, cobraCmd *cobra.Co
 	verbose, _ := cobraCmd.Flags().GetBool("verbose")
 
 	start := time.Now()
-	cmd := exec.Command("helm", "install", "--name", name, "--set", "fullnameOverride="+name, chart, "--replace")
+	cmd := exec.Command("helm", "install", name, "--set", "fullnameOverride="+name, chart, "--replace")
 	for _, f := range flags {
 		cmd.Args = append(cmd.Args, f[0])
 		cmd.Args = append(cmd.Args, f[1])

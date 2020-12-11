@@ -15,28 +15,29 @@
  */
 
 import _ from 'lodash';
+import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Select } from '@rmwc/select';
 import { Grid, GridCell } from '@rmwc/grid';
 import CancelApplyPair from '../../components/helper-components/cancel-apply-pair';
 
-import { EXEC_EVT_MOB_TARGET, EXEC_EVT_MOB_DEST } from '../../meep-constants';
+import { EXEC_EVT_MOB_TARGET, EXEC_EVT_MOB_DEST, DEST_DISCONNECTED } from '../../meep-constants';
 
 import { getElemFieldVal, FIELD_NAME } from '../../util/elem-utils';
+
+import {
+  uiExecChangeMobilityEventTarget,
+  uiExecChangeMobilityEventDestination
+} from '@/js/state/ui';
 
 class MobilityEventPane extends Component {
   constructor(props) {
     super(props);
-    this.values = {
-      eventType: '',
-      eventTarget: '',
-      eventDestination: ''
-    };
 
     this.state = {};
   }
-
-  shouldComponentUpdate(nextProps, nextState) {
+  // shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     /**
      * element={props.element}
         eventTypes={props.eventTypes}
@@ -66,8 +67,15 @@ class MobilityEventPane extends Component {
       this.props.MobTypes !== nextProps.MobTypes ||
       this.props.FogEdges !== nextProps.FogEdges ||
       this.props.EdgeApps !== nextProps.EdgeApps ||
-      this.state.eventTarget !== nextState.eventTarget
+      this.props.mobilityEventTarget !== nextProps.mobilityEventTarget
     );
+  }
+
+  onMobilityPaneClose(e) {
+    e.preventDefault();
+    this.props.changeEventTarget('');
+    this.props.changeEventDestination('');
+    this.props.onClose(e);
   }
 
   triggerEvent(e) {
@@ -76,8 +84,8 @@ class MobilityEventPane extends Component {
       name: 'name',
       type: this.props.currentEvent,
       eventMobility: {
-        elementName: this.values.eventTarget,
-        dest: this.values.eventDestination
+        elementName: this.props.mobilityEventTarget,
+        dest: this.props.mobilityEventDestination
       }
     };
 
@@ -92,7 +100,7 @@ class MobilityEventPane extends Component {
   render() {
     //let found = this.props.UEs.find(element => element.label == this.values.eventTarget);
     //find if its the selection was a UE, otherwise (in order) EDGE, FOG, EDGE-APP, UE-APP
-    var target = this.state.eventTarget;
+    var target = this.props.mobilityEventTarget;
     var found = this.props.UEs.find(function(element) {
       return element.label === target;
     });
@@ -123,6 +131,8 @@ class MobilityEventPane extends Component {
         }
       }
     }
+    var destOptions = _.map(populateDestination, elem => getElemFieldVal(elem, FIELD_NAME));
+    destOptions.push(DEST_DISCONNECTED);
 
     return (
       <div>
@@ -137,10 +147,11 @@ class MobilityEventPane extends Component {
                   getElemFieldVal(elem, FIELD_NAME)
                 )}
                 onChange={event => {
-                  this.values['eventTarget'] = event.target.value;
-                  this.setState({ eventTarget: event.target.value });
+                  this.props.changeEventTarget(event.target.value);
+                  this.props.changeEventDestination('');
                 }}
                 data-cy={EXEC_EVT_MOB_TARGET}
+                value={this.props.mobilityEventTarget}
               />
             </GridCell>
             <GridCell span="4"></GridCell>
@@ -151,14 +162,12 @@ class MobilityEventPane extends Component {
                 style={styles.select}
                 label="Destination"
                 outlined
-                options={_.map(populateDestination, elem =>
-                  getElemFieldVal(elem, FIELD_NAME)
-                )}
+                options={destOptions}
                 onChange={event => {
-                  this.values['eventDestination'] = event.target.value;
-                  this.setState({ eventDestination: event.target.value });
+                  this.props.changeEventDestination(event.target.value);
                 }}
                 data-cy={EXEC_EVT_MOB_DEST}
+                value={this.props.mobilityEventDestination}
               />
             </GridCell>
             <GridCell span="4"></GridCell>
@@ -166,8 +175,9 @@ class MobilityEventPane extends Component {
           <CancelApplyPair
             cancelText="Close"
             applyText="Submit"
-            onCancel={this.props.onClose}
+            onCancel={e => this.onMobilityPaneClose(e)}
             onApply={e => this.triggerEvent(e)}
+            removeCyCancel={true}
           />
         </>
       </div>
@@ -187,4 +197,23 @@ const styles = {
   }
 };
 
-export default MobilityEventPane;
+const mapStateToProps = state => {
+  return {
+    mobilityEventTarget: state.ui.mobilityEventTarget,
+    mobilityEventDestination: state.ui.mobilityEventDestination
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    changeEventTarget: event => dispatch(uiExecChangeMobilityEventTarget(event)),
+    changeEventDestination: event => dispatch(uiExecChangeMobilityEventDestination(event))
+  };
+};
+
+const ConnectedMobilityEventPane = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MobilityEventPane);
+
+export default ConnectedMobilityEventPane;

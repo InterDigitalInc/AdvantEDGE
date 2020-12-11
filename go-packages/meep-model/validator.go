@@ -34,12 +34,14 @@ const (
 )
 
 // Current validator version
-var ValidatorVersion = semver.Version{Major: 1, Minor: 5, Patch: 0}
+var ValidatorVersion = semver.Version{Major: 1, Minor: 6, Patch: 0}
 
 // Versions requiring scenario update
 var Version130 = semver.Version{Major: 1, Minor: 3, Patch: 0}
 var Version140 = semver.Version{Major: 1, Minor: 4, Patch: 0}
 var Version150 = semver.Version{Major: 1, Minor: 5, Patch: 0}
+var Version151 = semver.Version{Major: 1, Minor: 5, Patch: 1}
+var Version153 = semver.Version{Major: 1, Minor: 5, Patch: 3}
 
 // Default latency distribution
 const DEFAULT_LATENCY_DISTRIBUTION = "Normal"
@@ -59,6 +61,7 @@ func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl in
 // ValidateScenario - Verify if json scenario is valid & supported. Upgrade scenario if possible & necessary.
 func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status string, err error) {
 	var scenarioVersion semver.Version
+	var scenarioUpdated = false
 
 	// Unmarshal scenario
 	scenario := new(dataModel.Scenario)
@@ -68,9 +71,11 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 		return nil, ValidatorStatusError, err
 	}
 	// Retrieve scenario version
-	// If no version found, assume current validator version
+	// If no version found, assume & set current validator version
 	if scenario.Version == "" {
 		scenarioVersion = ValidatorVersion
+		scenario.Version = ValidatorVersion.String()
+		scenarioUpdated = true
 	} else {
 		scenarioVersion, err = semver.Make(scenario.Version)
 		if err != nil {
@@ -85,11 +90,6 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 			err = errors.New("Scenario version " + scenario.Version + " incompatible with validator version " + ValidatorVersion.String())
 			return nil, ValidatorStatusError, err
 		}
-
-		// Skip validation if already current version
-		if scenarioVersion.EQ(ValidatorVersion) {
-			return jsonScenario, ValidatorStatusValid, nil
-		}
 	}
 
 	// Run upgrade functions starting from oldest applicable patch to newest
@@ -98,22 +98,50 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 	if scenarioVersion.LT(Version140) {
 		upgradeScenarioTo140(scenario)
 		scenarioVersion = Version140
+		scenarioUpdated = true
 	}
 	// UPGRADE TO 1.5.0
 	if scenarioVersion.LT(Version150) {
 		upgradeScenarioTo150(scenario)
 		scenarioVersion = Version150
+		scenarioUpdated = true
+	}
+	// UPGRADE TO 1.5.1
+	if scenarioVersion.LT(Version151) {
+		upgradeScenarioTo151(scenario)
+		scenarioVersion = Version151
+		scenarioUpdated = true
+	}
+	// UPGRADE TO 1.5.3
+	if scenarioVersion.LT(Version153) {
+		upgradeScenarioTo153(scenario)
+		scenarioVersion = Version153
+		scenarioUpdated = true
 	}
 
 	// Set current scenario version
-	scenario.Version = ValidatorVersion.String()
+	if scenarioVersion.LT(ValidatorVersion) {
+		scenario.Version = ValidatorVersion.String()
+		scenarioUpdated = true
+	}
 
-	// Marshal updated scenario
-	validJsonScenario, err = json.Marshal(scenario)
+	// Validate scenario format & content
+	err = validateScenario(scenario)
 	if err != nil {
+		log.Error(err.Error())
 		return nil, ValidatorStatusError, err
 	}
-	return validJsonScenario, ValidatorStatusUpdated, err
+
+	// Marshal updated scenario
+	if scenarioUpdated {
+		validJsonScenario, err = json.Marshal(scenario)
+		if err != nil {
+			return nil, ValidatorStatusError, err
+		}
+		return validJsonScenario, ValidatorStatusUpdated, err
+	} else {
+		return jsonScenario, ValidatorStatusValid, nil
+	}
 }
 
 func upgradeScenarioTo140(scenario *dataModel.Scenario) {
@@ -276,6 +304,165 @@ func upgradeScenarioTo150(scenario *dataModel.Scenario) {
 			}
 		}
 	}
+}
+
+func upgradeScenarioTo151(scenario *dataModel.Scenario) {
+	//changes in 160 (151 for now) vs 150
+	//rename POA-CELLULAR to POA-4G
+
+	// Set updated version
+	scenario.Version = Version151.String()
+
+	// Migrate netchar information
+	if scenario.Deployment != nil {
+		for iDomain := range scenario.Deployment.Domains {
+			domain := &scenario.Deployment.Domains[iDomain]
+			for iZone := range domain.Zones {
+				zone := &domain.Zones[iZone]
+				for iNl := range zone.NetworkLocations {
+					nl := &zone.NetworkLocations[iNl]
+					if nl.Type_ == "POA-CELLULAR" {
+						nl.Type_ = "POA-4G"
+						if nl.CellularPoaConfig != nil {
+							if nl.Poa4GConfig == nil {
+								nl.Poa4GConfig = new(dataModel.Poa4GConfig)
+							}
+							nl.Poa4GConfig.CellId = nl.CellularPoaConfig.CellId
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func upgradeScenarioTo153(scenario *dataModel.Scenario) {
+	// Set updated version
+	scenario.Version = Version153.String()
+
+	// Set Physical location connection parameters
+	if scenario.Deployment != nil {
+		for iDomain := range scenario.Deployment.Domains {
+			domain := &scenario.Deployment.Domains[iDomain]
+			for iZone := range domain.Zones {
+				zone := &domain.Zones[iZone]
+				for iNl := range zone.NetworkLocations {
+					nl := &zone.NetworkLocations[iNl]
+					for iPl := range nl.PhysicalLocations {
+						pl := &nl.PhysicalLocations[iPl]
+						pl.Connected = true
+						pl.WirelessType = ""
+						if pl.Type_ == "UE" {
+							pl.Wireless = true
+						} else {
+							pl.Wireless = false
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Validate scenario
+func validateScenario(scenario *dataModel.Scenario) error {
+
+	// TODO -- Augment this for full scenario validation
+
+	idMap := make(map[string]bool)
+	nameMap := make(map[string]bool)
+
+	// Validate scenario
+	if scenario == nil {
+		return errors.New("scenario == nil")
+	}
+	if err := validateUniqueId(scenario.Id, idMap); err != nil {
+		return err
+	}
+	if err := validateUniqueName(scenario.Name, nameMap); err != nil {
+		return err
+	}
+
+	// Validate deployment
+	deployment := scenario.Deployment
+	if deployment == nil {
+		return errors.New("deployment == nil")
+	}
+
+	// Validate domains
+	for _, domain := range scenario.Deployment.Domains {
+		if err := validateUniqueId(domain.Id, idMap); err != nil {
+			return err
+		}
+		if err := validateUniqueName(domain.Name, nameMap); err != nil {
+			return err
+		}
+
+		// Validate zones
+		for _, zone := range domain.Zones {
+			if err := validateUniqueId(zone.Id, idMap); err != nil {
+				return err
+			}
+			if err := validateUniqueName(zone.Name, nameMap); err != nil {
+				return err
+			}
+
+			// Validate Network Locations
+			for _, nl := range zone.NetworkLocations {
+				if err := validateUniqueId(nl.Id, idMap); err != nil {
+					return err
+				}
+				if err := validateUniqueName(nl.Name, nameMap); err != nil {
+					return err
+				}
+
+				// Validate Physical Locations
+				for _, pl := range nl.PhysicalLocations {
+					if err := validateUniqueId(pl.Id, idMap); err != nil {
+						return err
+					}
+					if err := validateUniqueName(pl.Name, nameMap); err != nil {
+						return err
+					}
+
+					// Validate Processes
+					for _, proc := range pl.Processes {
+						if err := validateUniqueId(proc.Id, idMap); err != nil {
+							return err
+						}
+						if err := validateUniqueName(proc.Name, nameMap); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func validateUniqueId(id string, idMap map[string]bool) error {
+	// TODO -- Validate ID format
+
+	// Verify unique ID
+	if _, found := idMap[id]; found {
+		return errors.New("Id not unique: " + id)
+	}
+	idMap[id] = true
+
+	return nil
+}
+
+func validateUniqueName(name string, nameMap map[string]bool) error {
+	// TODO -- Validate name format
+
+	// Verify unique name
+	if _, found := nameMap[name]; found {
+		return errors.New("Name not unique: " + name)
+	}
+	nameMap[name] = true
+
+	return nil
 }
 
 // Validate the provided PL

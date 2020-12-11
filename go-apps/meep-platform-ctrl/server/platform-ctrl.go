@@ -26,32 +26,51 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/oauth2"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
+	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
+	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
+	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	wd "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-watchdog"
+	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
+	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 )
 
 type Scenario struct {
 	Name string `json:"name,omitempty"`
 }
 
+type LoginRequest struct {
+	provider string
+	timer    *time.Timer
+}
+
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
+	rc            *redis.Connector
+	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
-	veWatchdog    *wd.Watchdog
+	userStore     *users.Connector
+	metricStore   *ms.MetricStore
 	mqGlobal      *mq.MsgQueue
+	maxSessions   int
+	uri           string
+	oauthConfigs  map[string]*oauth2.Config
+	loginRequests map[string]*LoginRequest
 }
 
 const scenarioDBName = "scenarios"
+const redisTable = 0
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
-const moduleVirtEngineName = "meep-virt-engine"
-const moduleVirtEngineNamespace = "default"
+const postgisUser = "postgres"
+const postgisPwd = "pwd"
+const permissionsRoot = "services"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -81,6 +100,14 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Message Queue created")
+
+	// Connect to Redis DB
+	pfmCtrl.rc, err = redis.NewConnector(redisDBAddr, redisTable)
+	if err != nil {
+		log.Error("Failed connection to Redis DB. Error: ", err)
+		return err
+	}
+	log.Info("Connected to Redis DB")
 
 	// Connect to Scenario Store
 	pfmCtrl.scenarioStore, err = couch.NewConnector(couchDBAddr, scenarioDBName)
@@ -125,26 +152,28 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Setup for virt-engine monitoring
-	pfmCtrl.veWatchdog, err = wd.NewWatchdog(moduleName, moduleNamespace, moduleVirtEngineName, moduleVirtEngineNamespace, "")
+	// Initialize OAuth
+	err = initOAuth()
 	if err != nil {
-		log.Error("Failed to initialize virt-engine wd. Error: ", err)
+		log.Error("Failed OAuth Init: ", err.Error())
 		return err
 	}
 
+	log.Info("Platform Controller initialized")
 	return nil
 }
 
 // Run Starts the Platform Controller
 func Run() (err error) {
 
-	// Start Virt Engine wd
-	err = pfmCtrl.veWatchdog.Start(time.Second, 3*time.Second)
+	// Start OAuth
+	err = runOAuth()
 	if err != nil {
-		log.Error("Failed to start virt-engine wd. Error: ", err)
+		log.Error("Failed to start OAuth: ", err.Error())
 		return err
 	}
 
+	log.Info("Platform Controller started")
 	return nil
 }
 
@@ -360,18 +389,8 @@ func pcCreateSandbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get unique sandbox name
-	var sandboxName string
-	uniqueNameFound := false
-	retryCount := 3
-	for i := 0; i < retryCount; i++ {
-		// sandboxName = "sbox-" + xid.New().String()
-		sandboxName = "sbox-" + randSeq(6)
-		if sbox, _ := pfmCtrl.sandboxStore.Get(sandboxName); sbox == nil {
-			uniqueNameFound = true
-			break
-		}
-	}
-	if !uniqueNameFound {
+	sandboxName := getUniqueSandboxName()
+	if sandboxName == "" {
 		err = errors.New("Failed to generate a unique sandbox name")
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -583,6 +602,9 @@ func pcGetSandboxList(w http.ResponseWriter, r *http.Request) {
 // Create new sandbox in store and publish updagte
 func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (err error) {
 
+	// Flush sandbox data
+	_ = pfmCtrl.rc.DBFlush(dkm.GetKeyRoot(sandboxName))
+
 	// Create sandbox in DB
 	sbox := new(ss.Sandbox)
 	sbox.Name = sandboxName
@@ -608,6 +630,9 @@ func createSandbox(sandboxName string, sandboxConfig *dataModel.SandboxConfig) (
 }
 
 func deleteSandbox(sandboxName string) {
+	if sandboxName == "" {
+		return
+	}
 
 	// Remove sandbox from store
 	pfmCtrl.sandboxStore.Del(sandboxName)
@@ -620,6 +645,19 @@ func deleteSandbox(sandboxName string) {
 	if err != nil {
 		log.Error("Failed to send message. Error: ", err.Error())
 	}
+}
+
+func getUniqueSandboxName() (name string) {
+	retryCount := 3
+	for i := 0; i < retryCount; i++ {
+		// sandboxName = "sbox-" + xid.New().String()
+		randName := "sbx" + randSeq(7)
+		if sbox, _ := pfmCtrl.sandboxStore.Get(randName); sbox == nil {
+			name = randName
+			break
+		}
+	}
+	return name
 }
 
 var charset = []rune("abcdefghijklmnopqrstuvwxyz0123456789")

@@ -125,8 +125,8 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fmt.Println("Get empty metric")
 	tags := map[string]string{tag1: "tag1", tag2: "tag2"}
 	fields := []string{field1, field2, field3, field4}
-	_, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1)
-	if err == nil {
+	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 1)
+	if err != nil || len(result) != 0 {
 		t.Fatalf("Net metric should not exist")
 	}
 
@@ -150,7 +150,7 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fmt.Println("Get last metric")
 	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	fields = []string{field1, field2, field3, field4}
-	result, err := ms.GetInfluxMetric(metric1, tags, fields, "", 1)
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "", 1)
 	if err != nil || len(result) != 1 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -175,7 +175,7 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fmt.Println("Get all metrics from the last 10 seconds")
 	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	fields = []string{field1, field2, field3, field4}
-	_, err = ms.GetInfluxMetric(metric1, tags, fields, "10s", 0)
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "10s", 0)
 	if err != nil || len(result) != 2 {
 		t.Fatalf("Failed to get metric")
 	}
@@ -189,8 +189,8 @@ func TestMetricStoreGetSetInflux(t *testing.T) {
 	fmt.Println("Get all metrics from the last millisecond (none)")
 	tags = map[string]string{tag1: "tag1", tag2: "tag2"}
 	fields = []string{field1, field2, field3, field4}
-	_, err = ms.GetInfluxMetric(metric1, tags, fields, "1ms", 0)
-	if err == nil {
+	result, err = ms.GetInfluxMetric(metric1, tags, fields, "1ms", 0)
+	if err != nil || len(result) != 0 {
 		t.Fatalf("Net metric list should be empty")
 	}
 

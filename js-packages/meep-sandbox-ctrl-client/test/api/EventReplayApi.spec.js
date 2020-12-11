@@ -100,6 +100,9 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.eopMode = "LOOP";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.geoData.velocity = ;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.networkLocationsInRange = [""];
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless = false;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.userMeta = {key: ""};
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes = [new AdvantEdgeSandboxControllerRestApi.Process()];
@@ -121,6 +124,12 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig = new AdvantEdgeSandboxControllerRestApi.GpuConfig();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.type = "";
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].gpuConfig.count = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig = new AdvantEdgeSandboxControllerRestApi.MemoryConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.min = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].memoryConfig.max = 0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig = new AdvantEdgeSandboxControllerRestApi.CpuConfig();
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.min = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].cpuConfig.max = 0.0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig = new AdvantEdgeSandboxControllerRestApi.ExternalConfig();
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap = [new AdvantEdgeSandboxControllerRestApi.IngressService()];
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.processes[0].externalConfig.ingressServiceMap[0].name = "";
@@ -164,6 +173,7 @@
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkLatencyVariation = 0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput = 0;
           replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss = 0.0;
+          replayFile.events[0].event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId = "";
           replayFile.events[0].event.eventScenarioUpdate.node.parent = "";
           replayFile.events[0].event.eventScenarioUpdate.node.children = [""];
 
@@ -367,6 +377,12 @@
                               expect(data).to.be("");
                             }
                           }
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.connected).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless).to.be.a('boolean');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wireless).to.be(false);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.wirelessType).to.be("");
                           {
                             let dataCtr = data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.meta;
                             expect(dataCtr).to.be.an(Object);
@@ -435,6 +451,16 @@
                                 expect(data.gpuConfig.type).to.be("");
                                 expect(data.gpuConfig.count).to.be.a('number');
                                 expect(data.gpuConfig.count).to.be(0);
+                              expect(data.memoryConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.MemoryConfig);
+                                    expect(data.memoryConfig.min).to.be.a('number');
+                                expect(data.memoryConfig.min).to.be(0);
+                                expect(data.memoryConfig.max).to.be.a('number');
+                                expect(data.memoryConfig.max).to.be(0);
+                              expect(data.cpuConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.CpuConfig);
+                                    expect(data.cpuConfig.min).to.be.a('number');
+                                expect(data.cpuConfig.min).to.be(0.0);
+                                expect(data.cpuConfig.max).to.be.a('number');
+                                expect(data.cpuConfig.max).to.be(0.0);
                               expect(data.externalConfig).to.be.a(AdvantEdgeSandboxControllerRestApi.ExternalConfig);
                                     {
                                   let dataCtr = data.externalConfig.ingressServiceMap;
@@ -550,6 +576,8 @@
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkThroughput).to.be(0);
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be.a('number');
                           expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.linkPacketLoss).to.be(0.0);
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be.a('string');
+                          expect(data.event.eventScenarioUpdate.node.nodeDataUnion.physicalLocation.macId).to.be("");
                       expect(data.event.eventScenarioUpdate.node.parent).to.be.a('string');
                       expect(data.event.eventScenarioUpdate.node.parent).to.be("");
                       {

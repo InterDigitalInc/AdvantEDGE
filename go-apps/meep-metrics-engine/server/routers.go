@@ -29,8 +29,6 @@ import (
 	"net/http"
 	"strings"
 
-	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
-
 	"github.com/gorilla/mux"
 
 	v2 "github.com/InterDigitalInc/AdvantEDGE/go-apps/meep-metrics-engine/server/v2"
@@ -50,8 +48,8 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-		handler = httpLog.LogRx(handler, "")
-
+		// handler = httpLog.LogRx(handler, "")
+		handler = v2.SessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

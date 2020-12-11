@@ -19,6 +19,8 @@ import { createElem } from '../../util/elem-utils';
 
 const EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT =
   'EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT';
+const EXEC_RESET_SELECTED_SCENARIO_ELEMENT =
+  'EXEC_RESET_SELECTED_SCENARIO_ELEMENT';
 
 // CFG_SET_EDITED_ELEMENT
 function execChangeSelectedScenarioElement(element) {
@@ -28,7 +30,15 @@ function execChangeSelectedScenarioElement(element) {
   };
 }
 
-export { execChangeSelectedScenarioElement };
+// EXEC_RESET_ELEMENT
+function execResetSelectedScenarioElement() {
+  return {
+    type: EXEC_RESET_SELECTED_SCENARIO_ELEMENT,
+    payload: 'dummy'
+  };
+}
+
+export { execChangeSelectedScenarioElement, execResetSelectedScenarioElement };
 
 const initialState = createElem('dummy');
 
@@ -36,6 +46,8 @@ export function execSelectedScenarioElement(state = initialState, action) {
   switch (action.type) {
   case EXEC_CHANGE_SELECTED_SCENARIO_ELEMENT:
     return updateObject({}, action.payload);
+  case EXEC_RESET_SELECTED_SCENARIO_ELEMENT:
+    return createElem('dummy');
   default:
     return state;
   }

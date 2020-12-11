@@ -1,0 +1,13 @@
+---
+
+- hosts: dev
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: golang, tags: golang }
+
+- hosts: dev
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: node, tags: node }

@@ -1,0 +1,8 @@
+.openapi-generator-ignore
+Apis/MembershipApi.md
+Apis/StateTransferApi.md
+Models/MobilityGroup.md
+Models/MobilityGroupApp.md
+Models/MobilityGroupAppState.md
+Models/MobilityGroupUE.md
+README.md

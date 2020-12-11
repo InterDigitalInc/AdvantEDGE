@@ -65,7 +65,10 @@ import {
   IDC_DIALOG_NEW_SCENARIO,
   IDC_DIALOG_SAVE_SCENARIO,
   IDC_DIALOG_DELETE_SCENARIO,
-  IDC_DIALOG_EXPORT_SCENARIO
+  IDC_DIALOG_EXPORT_SCENARIO,
+  ELEMENT_TYPE_POA_4G,
+  ELEMENT_TYPE_POA_5G,
+  ELEMENT_TYPE_POA_WIFI
 } from '../../meep-constants';
 
 import {
@@ -76,7 +79,15 @@ import {
   FIELD_EXT_PORT,
   FIELD_GPU_COUNT,
   FIELD_GPU_TYPE,
-  getElemFieldVal
+  getElemFieldVal,
+  resetElem,
+  FIELD_CELL_ID,
+  FIELD_NR_CELL_ID,
+  FIELD_MAC_ID,
+  FIELD_CPU_MIN,
+  FIELD_CPU_MAX,
+  FIELD_MEMORY_MIN,
+  FIELD_MEMORY_MAX
 } from '../../util/elem-utils';
 
 import { pipe, filter } from '../../util/functional';
@@ -122,6 +133,7 @@ class CfgPageContainer extends Component {
   onEditElement(element) {
     if (element !== null) {
       if (!this.props.configuredElement || (element.id !== this.props.configuredElement.id)) {
+        resetElem(element);
         this.props.cfgElemEdit(element);
       }
     } else {
@@ -196,15 +208,6 @@ class CfgPageContainer extends Component {
     }
   }
 
-  findIndexByKeyValue(_array, key, value) {
-    for (var i = 0; i < _array.length; i++) {
-      if (getElemFieldVal(_array[i], key) === value) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   findOtherThanSelfIndexByKeyValue(_array, key, value, exceptionId) {
     for (var i = 0; i < _array.length; i++) {
       if (getElemFieldVal(_array[i], key) === value) {
@@ -248,7 +251,7 @@ class CfgPageContainer extends Component {
       return false;
     }
 
-    if (this.findOtherThanSelfIndexByKeyValue(data, FIELD_NAME, name, element.id) !== -1) {
+    if (data[name] && (data[name].id !== element.id)) {
       this.props.cfgElemSetErrMsg('Element name already exists');
       return false;
     }
@@ -259,13 +262,7 @@ class CfgPageContainer extends Component {
     }
 
     // Make sure parent exists
-    if (
-      this.findIndexByKeyValue(
-        data,
-        FIELD_NAME,
-        getElemFieldVal(element, FIELD_PARENT)
-      ) === -1
-    ) {
+    if (!data[getElemFieldVal(element, FIELD_PARENT)]) {
       this.props.cfgElemSetErrMsg('Parent does not exist');
       return false;
     }
@@ -280,6 +277,47 @@ class CfgPageContainer extends Component {
       }
     }
 
+    // If CPU limitations is requested, making sure Min CPU <= Max CPU
+    var cpuMin = getElemFieldVal(element, FIELD_CPU_MIN);
+    var cpuMax = getElemFieldVal(element, FIELD_CPU_MAX);
+    if (cpuMin !== null && cpuMax !== null) {
+      if (parseFloat(cpuMin) > parseFloat(cpuMax)) {
+        this.props.cfgElemSetErrMsg('Min CPU > Max CPU');
+        return false;
+      }
+    }
+
+    // If Memory limitations is requested, making sure Min Memory <= Max Memory
+    var memoryMin = getElemFieldVal(element, FIELD_MEMORY_MIN);
+    var memoryMax = getElemFieldVal(element, FIELD_MEMORY_MAX);
+    if (memoryMin !== null && memoryMax !== null) {
+      if (parseInt(memoryMin) > parseInt(memoryMax)) {
+        this.props.cfgElemSetErrMsg('Min Memory > Max Memory');
+        return false;
+      }
+    }
+
+    // Verify cellid/mac address if required
+    if (type === ELEMENT_TYPE_POA_4G) {
+      var cellId = getElemFieldVal(element, FIELD_CELL_ID);
+      if (!cellId) {
+        this.props.cfgElemSetErrMsg('Missing Cell ID');
+        return false;
+      }
+    } else if (type === ELEMENT_TYPE_POA_5G) {
+      var nrCellId = getElemFieldVal(element, FIELD_NR_CELL_ID);
+      if (!nrCellId) {
+        this.props.cfgElemSetErrMsg('Missing NR Cell ID');
+        return false;
+      }
+    } else if (type === ELEMENT_TYPE_POA_WIFI) {
+      var macId = getElemFieldVal(element, FIELD_MAC_ID);
+      if (!macId) {
+        this.props.cfgElemSetErrMsg('Missing MAC Address');
+        return false;
+      }
+    }
+
     // TODO -- verify node port not already used
     const extPorts = externalPorts(element);
 
@@ -287,10 +325,10 @@ class CfgPageContainer extends Component {
       const elemsWithSameExtPort = pipe(
         filter(hasDifferentName(element)),
         filter(hasExtPortsInCommon(element))
-      )(data);
+      )(Object.values(data));
 
       if (elemsWithSameExtPort.length) {
-        const elemNames = elemsWithSameExtPort.map(e => e.id);
+        const elemNames = elemsWithSameExtPort.map(e => getElemFieldVal(e, FIELD_NAME));
         this.props.cfgElemSetErrMsg(
           `External port already used in ${elemNames}`
         );
@@ -599,7 +637,7 @@ class CfgPageContainer extends Component {
       <div style={styles.page}>
         {this.renderDialogs()}
 
-        <div style={{ width: '100%' }}>
+        <div style={styles.fullwidth}>
           <Grid style={styles.headlineGrid}>
             <GridCell span={12}>
               <Elevation
@@ -617,7 +655,7 @@ class CfgPageContainer extends Component {
                     disabled={false}
                     cydata={CFG_VIEW_TYPE}
                   />
-                  <GridCell align={'middle'} style={{ height: '100%'}} span={3}>
+                  <GridCell align={'middle'} style={styles.fullheight} span={3}>
                     <GridInner style={{ marginLeft: 10, height: '100%', borderLeft: '2px solid #e4e4e4'}}>
                       <GridCell align={'middle'} style={{ marginLeft: 20}} span={12}>
                         <HeadlineBar
@@ -716,6 +754,12 @@ class CfgPageContainer extends Component {
 }
 
 const styles = {
+  fullwidth: {
+    width: '100%'
+  },
+  fullheight: {
+    height: '100%'
+  },
   headlineGrid: {
     marginBottom: 10
   },

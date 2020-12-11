@@ -15,6 +15,7 @@
  */
 
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 
 import IDDialog from './id-dialog';
 import IDSelect from '../helper-components/id-select';
@@ -26,6 +27,8 @@ import {
 class IDDeployScenarioDialog extends Component {
   constructor(props) {
     super(props);
+    autoBind(this);
+
     this.state = {
       selectedScenario: null
     };
@@ -45,24 +48,24 @@ class IDDeployScenarioDialog extends Component {
     );
   }
 
+  onChange(e) {
+    this.setState({ selectedScenario: e.target.value });
+  }
+
   render() {
     return (
       <IDDialog
         title="Deploy Scenario"
         open={this.props.open}
         onClose={this.props.onClose}
-        onSubmit={() => {
-          this.onDeployScenario();
-        }}
+        onSubmit={this.onDeployScenario}
         cydata={MEEP_DLG_DEPLOY_SCENARIO}
       >
         <IDSelect
           label={this.props.label || 'Scenario'}
           value={this.props.value}
           options={this.props.options}
-          onChange={e => {
-            this.setState({ selectedScenario: e.target.value });
-          }}
+          onChange={this.onChange}
           cydata={MEEP_DLG_DEPLOY_SCENARIO_SELECT}
         />
       </IDDialog>

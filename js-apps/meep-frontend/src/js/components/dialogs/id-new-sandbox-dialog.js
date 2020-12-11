@@ -15,6 +15,7 @@
  */
 
 import React, { Component } from 'react';
+import autoBind from 'react-autobind';
 import { TextField, TextFieldHelperText } from '@rmwc/textfield';
 
 import IDDialog from './id-dialog';
@@ -26,6 +27,8 @@ import {
 class IDNewSandboxDialog extends Component {
   constructor(props) {
     super(props);
+    autoBind(this);
+
     this.state = {
       sandboxName: '',
       err: null
@@ -46,22 +49,28 @@ class IDNewSandboxDialog extends Component {
     this.setState({ sandboxName: name, err: err });
   }
 
+  onSubmit() {
+    this.props.createSandbox(this.state.sandboxName);
+  }
+
+  onChange(e) {
+    this.changeSandboxName(e.target.value);
+  }
+
   render() {
     return (
       <IDDialog
         title={this.props.title}
         open={this.props.open}
         onClose={this.props.onClose}
-        onSubmit={() => {this.props.createSandbox(this.state.sandboxName);}}
+        onSubmit={this.onSubmit}
         cydata={MEEP_DLG_NEW_SANDBOX}
       >
         <TextField
           outlined
           style={{ width: '100%' }}
           label={'Sandbox Name'}
-          onChange={e => {
-            this.changeSandboxName(e.target.value);
-          }}
+          onChange={this.onChange}
           value={this.state.sandboxName}
           invalid={this.state.err ? true : false}
           data-cy={MEEP_DLG_NEW_SANDBOX_NAME}

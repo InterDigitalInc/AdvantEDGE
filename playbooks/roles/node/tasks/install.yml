@@ -1,0 +1,32 @@
+---
+
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - build-essential
+    - libssl-dev
+
+- name: "Copy nvm file"
+  copy:
+    src: "install_nvm.sh"
+    dest: "install_nvm.sh"
+    mode: 0744
+  tags: node
+
+- name: "Install nvm"
+  become: false
+  shell: "bash install_nvm.sh"
+  tags: node
+  args:
+    executable: /bin/bash
+
+- name: Install node
+  become: false
+  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && nvm install {{ node_version }}"
+
+- name: Install npm and eslint
+  become: false
+  shell: /bin/bash -c "source /home/{{ ansible_user }}/.nvm/nvm.sh && npm install -g npm && npm install -g eslint@{{ eslint_version }} && npm install -g eslint-plugin-react"

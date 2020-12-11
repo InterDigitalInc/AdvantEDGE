@@ -32,7 +32,7 @@ const CancelApplyPair = props => {
             outlined
             style={buttonStyles}
             onClick={props.onCancel}
-            data-cy={MEEP_BTN_CANCEL}
+            data-cy={props.removeCyCancel ? '' : MEEP_BTN_CANCEL}
           >
             {props.cancelText ? props.cancelText : 'Cancel'}
           </Button>
@@ -41,7 +41,7 @@ const CancelApplyPair = props => {
             style={buttonStyles}
             onClick={props.onApply}
             disabled={props.saveDisabled}
-            data-cy={MEEP_BTN_APPLY}
+            data-cy={props.removeCyApply ? '' : MEEP_BTN_APPLY}
           >
             {props.applyText ? props.applyText : 'Apply'}
           </Button>
