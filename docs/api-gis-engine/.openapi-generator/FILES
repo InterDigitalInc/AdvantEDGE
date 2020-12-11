@@ -1,0 +1,12 @@
+.openapi-generator-ignore
+Apis/AutomationApi.md
+Apis/GeospatialDataApi.md
+Models/AutomationState.md
+Models/AutomationStateList.md
+Models/GeoData.md
+Models/GeoDataAsset.md
+Models/GeoDataAssetAllOf.md
+Models/GeoDataAssetList.md
+Models/LineString.md
+Models/Point.md
+README.md

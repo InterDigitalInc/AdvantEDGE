@@ -1,0 +1,5 @@
+.openapi-generator-ignore
+Apis/PodStatesApi.md
+Models/PodStatus.md
+Models/PodsStatus.md
+README.md
