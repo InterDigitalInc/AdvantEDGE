@@ -42,7 +42,7 @@ func init() {
 
 func initialiseTest() {
 	log.Info("activating Scenario")
-	err := activateScenario("system-test")
+	err := activateScenario("loc-serv-system-test")
 	if err != nil {
 		log.Fatal("Scenario cannot be activated: ", err)
 	}
@@ -62,6 +62,17 @@ func clearUpTest() {
 	time.Sleep(1000 * time.Millisecond)
 }
 
+//no really a test, but loading the scenarios needed that will be used in the following tests
+//deletion of those scenarios at the end
+func Test_loc_serv_load_scenarios(t *testing.T) {
+
+	// no override if the name is already in the DB.. security not to override something important
+	err := createScenario("loc-serv-system-test", "loc-serv-system-test.yaml")
+	if err != nil {
+		t.Fatal("cannot create scenario :", err)
+	}
+}
+
 func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
@@ -78,7 +89,7 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
 	if err != nil {
-		t.Fatalf("Subscription failed")
+		t.Fatal("Subscription failed: ", err)
 	}
 
 	log.Info("moving asset")
@@ -2472,7 +2483,12 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 }
 
 //not a real test, just the last test that stops the system test environment
-func Test_stopSystemTest(t *testing.T) {
+func Test_loc_serv_stopSystemTest(t *testing.T) {
+	err := deleteScenario("loc-serv-system-test")
+	if err != nil {
+		log.Error("cannot delete scenario :", err)
+	}
+
 	stopSystemTest()
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/ghodss/yaml"
 
 	gisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-engine-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
@@ -152,10 +155,24 @@ func deleteSandbox(name string) error {
 	return nil
 }
 
-func createScenario(name string) error {
+func createScenario(name string, filepath string) error {
+
+	//get the content of the file
+	content, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Error("couldn't read file: ", err)
+		return err
+	}
+
+	jsonContent, err := yaml.YAMLToJSON(content)
 
 	var scenario platformCtrlClient.Scenario
-	_, err := platformCtrlAppClient.ScenarioConfigurationApi.SetScenario(context.TODO(), name, scenario)
+	err = json.Unmarshal([]byte(jsonContent), &scenario)
+	if err != nil {
+		log.Error("Failed to unmarshal: ", err)
+		return err
+	}
+	_, err = platformCtrlAppClient.ScenarioConfigurationApi.CreateScenario(context.TODO(), name, scenario)
 	if err != nil {
 		log.Error("Failed to create scenario: ", err)
 		return err
