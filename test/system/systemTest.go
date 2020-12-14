@@ -67,17 +67,21 @@ func initialiseVars() {
 
 	hostUrl, _ := url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_TEST_URL")))
 	hostUrlStr = hostUrl.String()
+        if hostUrlStr == "" {
+                hostUrlStr = "http://localhost"
+        }
 }
 
 func createClients() error {
 
 	// Create & store client for App REST API
 	platformCtrlAppClientCfg := platformCtrlClient.NewConfiguration()
+
 	if hostUrlStr == "" {
-		platformCtrlAppClientCfg.BasePath = "http://localhost/platform-ctrl/v1"
-	} else {
-		platformCtrlAppClientCfg.BasePath = hostUrlStr + "/platform-ctrl/v1"
-	}
+                hostUrlStr = "http://localhost"
+        }
+	platformCtrlAppClientCfg.BasePath = hostUrlStr + "/platform-ctrl/v1"
+
 	platformCtrlAppClient = platformCtrlClient.NewAPIClient(platformCtrlAppClientCfg)
 	if platformCtrlAppClient == nil {
 		log.Error("Failed to create Platform App REST API client: ", platformCtrlAppClientCfg.BasePath)
@@ -92,10 +96,10 @@ func createSandboxClients(sandboxName string) error {
 	// Create & store client for App REST API
 	sandboxCtrlAppClientCfg := sandboxCtrlClient.NewConfiguration()
 	if hostUrlStr == "" {
-		sandboxCtrlAppClientCfg.BasePath = "http://localhost/" + sandboxName + "/sandbox-ctrl/v1"
-	} else {
-		sandboxCtrlAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/sandbox-ctrl/v1"
+		hostUrlStr = "http://localhost"
 	}
+	sandboxCtrlAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/sandbox-ctrl/v1"
+
 	sandboxCtrlAppClient = sandboxCtrlClient.NewAPIClient(sandboxCtrlAppClientCfg)
 	if sandboxCtrlAppClient == nil {
 		log.Error("Failed to create Sandbox App REST API client: ", sandboxCtrlAppClientCfg.BasePath)
@@ -104,11 +108,8 @@ func createSandboxClients(sandboxName string) error {
 	}
 
 	gisAppClientCfg := gisClient.NewConfiguration()
-	if hostUrlStr == "" {
-		gisAppClientCfg.BasePath = "http://localhost/" + sandboxName + "/gis/v1"
-	} else {
-		gisAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/gis/v1"
-	}
+	gisAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/gis/v1"
+
 	gisAppClient = gisClient.NewAPIClient(gisAppClientCfg)
 	if gisAppClient == nil {
 		log.Error("Failed to create GIS App REST API client: ", gisAppClientCfg.BasePath)

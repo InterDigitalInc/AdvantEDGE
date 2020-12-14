@@ -41,14 +41,16 @@ func init() {
 	//create client
 	locServAppClientCfg := locServClient.NewConfiguration()
 	if hostUrlStr == "" {
-		locServAppClientCfg.BasePath = "http://localhost/" + sandboxName + "/location/v2"
-	} else {
-		locServAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/location/v2"
+		hostUrlStr = "http://localhost"
 	}
+
+	locServAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/location/v2"
+
 	locServAppClient = locServClient.NewAPIClient(locServAppClientCfg)
 	if locServAppClient == nil {
 		log.Error("Failed to create Location App REST API client: ", locServAppClientCfg.BasePath)
 	}
+	//NOTE: if localhost is set as the hostUrl, might not be reachable from the service, export MEEP_HOST_TEST_URL ="http://[yourhost]"
 	locServServerUrl = hostUrlStr + ":" + httpListenerPort
 
 	//enable gis engine mobility, poas-in-range and netchar update
