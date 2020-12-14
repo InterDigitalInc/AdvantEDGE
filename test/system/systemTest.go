@@ -35,17 +35,13 @@ import (
 	gisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-gis-engine-client"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	platformCtrlClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-platform-ctrl-client"
-	rnisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client"
 	sandboxCtrlClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-ctrl-client"
-	waisClient "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-client"
 )
 
 var httpReqBody []string
 
 var platformCtrlAppClient *platformCtrlClient.APIClient
 var sandboxCtrlAppClient *sandboxCtrlClient.APIClient
-var rnisAppClient *rnisClient.APIClient
-var waisAppClient *waisClient.APIClient
 var gisAppClient *gisClient.APIClient
 
 var sandboxName = "sandbox-system-test"
@@ -104,32 +100,6 @@ func createSandboxClients(sandboxName string) error {
 	if sandboxCtrlAppClient == nil {
 		log.Error("Failed to create Sandbox App REST API client: ", sandboxCtrlAppClientCfg.BasePath)
 		err := errors.New("Failed to create Sandbox App REST API client")
-		return err
-	}
-
-	rnisAppClientCfg := rnisClient.NewConfiguration()
-	if hostUrlStr == "" {
-		rnisAppClientCfg.BasePath = "http://localhost/" + sandboxName + "/rni/v2"
-	} else {
-		rnisAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/rni/v2"
-	}
-	rnisAppClient = rnisClient.NewAPIClient(rnisAppClientCfg)
-	if rnisAppClient == nil {
-		log.Error("Failed to create RNI App REST API client: ", rnisAppClientCfg.BasePath)
-		err := errors.New("Failed to create RNI App REST API client")
-		return err
-	}
-
-	waisAppClientCfg := waisClient.NewConfiguration()
-	if hostUrlStr == "" {
-		waisAppClientCfg.BasePath = "http://localhost/" + sandboxName + "/wai/v2"
-	} else {
-		waisAppClientCfg.BasePath = hostUrlStr + "/" + sandboxName + "/wai/v2"
-	}
-	waisAppClient = waisClient.NewAPIClient(waisAppClientCfg)
-	if waisAppClient == nil {
-		log.Error("Failed to create WAI App REST API client: ", waisAppClientCfg.BasePath)
-		err := errors.New("Failed to create WAI App REST API client")
 		return err
 	}
 
