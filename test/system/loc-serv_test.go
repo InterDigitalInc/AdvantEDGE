@@ -58,7 +58,7 @@ func init() {
 
 }
 
-func initialiseTest() {
+func initialiseLocServTest() {
 	log.Info("activating Scenario")
 	err := activateScenario("loc-serv-system-test")
 	if err != nil {
@@ -74,7 +74,7 @@ func initialiseTest() {
 	time.Sleep(1000 * time.Millisecond)
 }
 
-func clearUpTest() {
+func clearUpLocServTest() {
 	log.Info("terminating Scenario")
 	terminateScenario()
 	time.Sleep(1000 * time.Millisecond)
@@ -95,8 +95,8 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -120,7 +120,11 @@ func Test_4g_to_4g_same_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g2", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g2", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -131,8 +135,8 @@ func Test_4g_to_4g_diff_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -156,13 +160,21 @@ func Test_4g_to_4g_diff_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "", "Entering")
+		errStr = validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -173,8 +185,8 @@ func Test_4g_to_5g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -198,7 +210,11 @@ func Test_4g_to_5g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -209,8 +225,8 @@ func Test_4g_to_wifi_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -234,7 +250,11 @@ func Test_4g_to_wifi_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -245,8 +265,8 @@ func Test_4g_to_generic_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -270,7 +290,11 @@ func Test_4g_to_generic_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -281,8 +305,8 @@ func Test_4g_to_none_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -306,7 +330,11 @@ func Test_4g_to_none_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -317,14 +345,14 @@ func Test_5g_to_5g_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
 	//moving to initial position
 	geMoveAssetCoordinates(testAddress, 7.419917, 43.733505)
-	time.Sleep(1500 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	//subscription to test
 	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
@@ -342,7 +370,11 @@ func Test_5g_to_5g_same_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g3", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g3", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -353,8 +385,8 @@ func Test_5g_to_5g_diff_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -378,13 +410,21 @@ func Test_5g_to_5g_diff_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "", "Entering")
+		errStr = validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -395,8 +435,8 @@ func Test_5g_to_4g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -420,7 +460,11 @@ func Test_5g_to_4g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-4g3", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -431,8 +475,8 @@ func Test_5g_to_wifi_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -456,7 +500,11 @@ func Test_5g_to_wifi_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-wifi2", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-wifi2", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -467,8 +515,8 @@ func Test_5g_to_generic_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -492,7 +540,11 @@ func Test_5g_to_generic_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa2", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa2", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -503,8 +555,8 @@ func Test_5g_to_none_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -528,7 +580,11 @@ func Test_5g_to_none_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone2", "poa-5g2", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -539,8 +595,8 @@ func Test_wifi_to_wifi_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -564,7 +620,11 @@ func Test_wifi_to_wifi_same_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -575,8 +635,8 @@ func Test_wifi_to_wifi_diff_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -600,13 +660,21 @@ func Test_wifi_to_wifi_diff_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "", "Entering")
+		errStr = validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -617,8 +685,8 @@ func Test_wifi_to_5g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -642,7 +710,11 @@ func Test_wifi_to_5g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-5g4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -653,8 +725,8 @@ func Test_wifi_to_4g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -678,7 +750,11 @@ func Test_wifi_to_4g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-4g4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-4g4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -689,8 +765,8 @@ func Test_wifi_to_generic_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -714,7 +790,11 @@ func Test_wifi_to_generic_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa3", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa3", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -725,8 +805,8 @@ func Test_wifi_to_none_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -750,7 +830,11 @@ func Test_wifi_to_none_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone3", "poa-wifi3", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -761,8 +845,8 @@ func Test_generic_to_generic_same_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -786,7 +870,11 @@ func Test_generic_to_generic_same_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -797,8 +885,8 @@ func Test_generic_to_generic_diff_zone_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -822,25 +910,33 @@ func Test_generic_to_generic_diff_zone_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone5", "poa6", "", "Entering")
+		errStr = validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone5", "poa6", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
 
-func Test_gereneric_to_wifi_userTracking(t *testing.T) {
+func Test_generic_to_wifi_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -864,7 +960,11 @@ func Test_gereneric_to_wifi_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa-wifi5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -875,8 +975,8 @@ func Test_generic_to_4g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -900,7 +1000,11 @@ func Test_generic_to_4g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-4g5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa-4g5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -911,8 +1015,8 @@ func Test_generic_to_5g_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -936,7 +1040,11 @@ func Test_generic_to_5g_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa-5g5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa-5g5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -947,8 +1055,8 @@ func Test_generic_to_none_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -972,7 +1080,171 @@ func Test_generic_to_none_userTracking(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone4", "poa4", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_4g_userTracking(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_5g_userTracking(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_wifi_userTracking(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_generic_userTracking(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionUserTracking(testAddress, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -983,8 +1255,8 @@ func Test_none_to_none_userTracking(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 
@@ -1003,6 +1275,7 @@ func Test_none_to_none_userTracking(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 }
@@ -1011,8 +1284,8 @@ func Test_4g_to_4g_same_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1037,7 +1310,11 @@ func Test_4g_to_4g_same_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g2", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g2", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1048,8 +1325,8 @@ func Test_4g_to_4g_diff_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1074,7 +1351,11 @@ func Test_4g_to_4g_diff_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1085,8 +1366,8 @@ func Test_4g_to_5g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1111,7 +1392,11 @@ func Test_4g_to_5g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1122,8 +1407,8 @@ func Test_4g_to_wifi_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1148,7 +1433,11 @@ func Test_4g_to_wifi_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1159,8 +1448,8 @@ func Test_4g_to_generic_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1185,7 +1474,11 @@ func Test_4g_to_generic_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa1", "poa-4g1", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa1", "poa-4g1", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1196,8 +1489,8 @@ func Test_4g_to_none_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1222,7 +1515,11 @@ func Test_4g_to_none_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g1", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1233,8 +1530,8 @@ func Test_5g_to_5g_same_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1259,7 +1556,11 @@ func Test_5g_to_5g_same_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g3", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g3", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1270,8 +1571,8 @@ func Test_5g_to_5g_diff_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1296,7 +1597,11 @@ func Test_5g_to_5g_diff_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1307,8 +1612,8 @@ func Test_5g_to_4g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1333,7 +1638,11 @@ func Test_5g_to_4g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g3", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g3", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1344,8 +1653,8 @@ func Test_5g_to_wifi_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1370,7 +1679,11 @@ func Test_5g_to_wifi_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi2", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi2", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1381,8 +1694,8 @@ func Test_5g_to_generic_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1407,7 +1720,11 @@ func Test_5g_to_generic_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa2", "poa-5g2", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa2", "poa-5g2", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1418,8 +1735,8 @@ func Test_5g_to_none_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone2"
@@ -1444,7 +1761,11 @@ func Test_5g_to_none_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g2", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1455,8 +1776,8 @@ func Test_wifi_to_wifi_same_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1482,7 +1803,11 @@ func Test_wifi_to_wifi_same_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1493,8 +1818,8 @@ func Test_wifi_to_wifi_diff_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1519,7 +1844,11 @@ func Test_wifi_to_wifi_diff_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1530,8 +1859,8 @@ func Test_wifi_to_5g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1556,7 +1885,11 @@ func Test_wifi_to_5g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1567,8 +1900,8 @@ func Test_wifi_to_4g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1593,7 +1926,11 @@ func Test_wifi_to_4g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g4", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g4", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1604,8 +1941,8 @@ func Test_wifi_to_generic_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1630,7 +1967,11 @@ func Test_wifi_to_generic_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa3", "poa-wifi3", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa3", "poa-wifi3", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1641,8 +1982,8 @@ func Test_wifi_to_none_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone3"
@@ -1667,7 +2008,11 @@ func Test_wifi_to_none_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi3", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1678,8 +2023,8 @@ func Test_generic_to_generic_same_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1704,7 +2049,11 @@ func Test_generic_to_generic_same_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1715,8 +2064,8 @@ func Test_generic_to_generic_diff_zone_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1741,19 +2090,23 @@ func Test_generic_to_generic_diff_zone_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
 	}
 }
 
-func Test_gereneric_to_wifi_zonalTraffic(t *testing.T) {
+func Test_generic_to_wifi_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1778,7 +2131,11 @@ func Test_gereneric_to_wifi_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-wifi5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1789,8 +2146,8 @@ func Test_generic_to_4g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1815,7 +2172,11 @@ func Test_generic_to_4g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-4g5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1826,8 +2187,8 @@ func Test_generic_to_5g_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1852,7 +2213,11 @@ func Test_generic_to_5g_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g5", "poa4", "Transferring")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa-5g5", "poa4", "Transferring")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1863,8 +2228,8 @@ func Test_generic_to_none_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone4"
@@ -1889,7 +2254,175 @@ func Test_generic_to_none_zonalTraffic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZonalPresenceNotification(t, body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, testZoneId, "poa4", "", "Leaving")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_4g_zonalTraffic(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+	testZoneId := "zone1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-4g1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_5g_zonalTraffic(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+	testZoneId := "zone1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.411917, 43.733505)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-5g1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_wifi_zonalTraffic(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+	testZoneId := "zone1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa-wifi1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
+	} else {
+		printHttpReqBody()
+		t.Fatalf("Number of expected notifications not received")
+	}
+}
+
+func Test_none_to_generic_zonalTraffic(t *testing.T) {
+	fmt.Println("--- ", t.Name())
+	log.MeepTextLogInit(t.Name())
+
+	initialiseLocServTest()
+	defer clearUpLocServTest()
+
+	testAddress := "ue1"
+	testZoneId := "zone1"
+
+	//moving to initial position
+	geMoveAssetCoordinates(testAddress, 0.0, 0.0)
+	time.Sleep(2000 * time.Millisecond)
+
+	//subscription to test
+	err := locServSubscriptionZonalTraffic(testZoneId, locServServerUrl)
+	if err != nil {
+		t.Fatalf("Subscription failed")
+	}
+
+	log.Info("moving asset")
+	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
+	time.Sleep(2000 * time.Millisecond)
+
+	if len(httpReqBody) == 1 {
+		var body locServClient.InlineZonalPresenceNotification
+		err = json.Unmarshal([]byte(httpReqBody[0]), &body)
+		if err != nil {
+			t.Fatalf("cannot unmarshall response")
+		}
+		errStr := validateZonalPresenceNotification(body.ZonalPresenceNotification, testAddress, "zone1", "poa1", "", "Entering")
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1900,8 +2433,8 @@ func Test_none_to_none_zonalTraffic(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testAddress := "ue1"
 	testZoneId := "zone1"
@@ -1921,6 +2454,7 @@ func Test_none_to_none_zonalTraffic(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 }
@@ -1929,8 +2463,8 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone1"
 
@@ -1952,6 +2486,7 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 
@@ -1966,7 +2501,11 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -1983,7 +2522,11 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2000,7 +2543,11 @@ func Test_zoneStatus_4g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2030,8 +2577,8 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone2"
 
@@ -2053,6 +2600,7 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 
@@ -2067,7 +2615,11 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2084,7 +2636,11 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 3, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-5g2", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2101,7 +2657,11 @@ func Test_zoneStatus_5g_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-5g2", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2131,8 +2691,8 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone3"
 
@@ -2154,6 +2714,7 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 
@@ -2168,7 +2729,11 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2185,7 +2750,11 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 3, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-wifi3", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2202,7 +2771,11 @@ func Test_zoneStatus_wifi_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-wifi3", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2232,8 +2805,8 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone4"
 
@@ -2256,6 +2829,7 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) >= 1 {
+		printHttpReqBody()
 		t.Fatalf("Notification received")
 	}
 
@@ -2270,7 +2844,11 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2287,7 +2865,11 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 3, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa4", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2304,7 +2886,11 @@ func Test_zoneStatus_generic_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa4", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2334,8 +2920,8 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone1"
 
@@ -2367,7 +2953,11 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 4)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "", -1, 4)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2384,7 +2974,11 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 	} else {
 		printHttpReqBody()
 		t.Fatalf("Number of expected notifications not received")
@@ -2404,8 +2998,8 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 	fmt.Println("--- ", t.Name())
 	log.MeepTextLogInit(t.Name())
 
-	initialiseTest()
-	defer clearUpTest()
+	initialiseLocServTest()
+	defer clearUpLocServTest()
 
 	testZoneId := "zone1"
 
@@ -2450,49 +3044,81 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		errStr := validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[1]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[2]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[3]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 4, -1)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 4, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[4]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 4)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "", -1, 4)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[5]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 3, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[6]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "", -1, 3)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 		err = json.Unmarshal([]byte(httpReqBody[7]), &body)
 		if err != nil {
 			t.Fatalf("cannot unmarshall response")
 		}
-		validateZoneStatusNotification(t, body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		errStr = validateZoneStatusNotification(body.ZoneStatusNotification, testZoneId, "poa-4g1", 2, -1)
+		if errStr != "" {
+			printHttpReqBody()
+			t.Fatalf(errStr)
+		}
 
 	} else {
 		printHttpReqBody()
@@ -2504,10 +3130,11 @@ func Test_zoneStatus_zone_AP_threshold(t *testing.T) {
 func Test_loc_serv_stopSystemTest(t *testing.T) {
 	err := deleteScenario("loc-serv-system-test")
 	if err != nil {
-		log.Error("cannot delete scenario :", err)
+		t.Fatal("cannot delete scenario :", err)
 	}
 
-	stopSystemTest()
+	//call to stopSystemTest done outside in case other test cases are running
+	//stopSystemTest()
 }
 
 func locServSubscriptionUserTracking(address string, callbackReference string) error {
@@ -2552,43 +3179,44 @@ func locServSubscriptionZoneStatus(zoneId string, callbackReference string, nbAp
 	return nil
 }
 
-func validateZonalPresenceNotification(t *testing.T, zonalPresenceNotification *locServClient.ZonalPresenceNotification, expectedAddress string, expectedZoneId string, expectedCurrentAccessPointId string, expectedPreviousAccessPointId string, expectedUserEventType locServClient.UserEventType) {
+func validateZonalPresenceNotification(zonalPresenceNotification *locServClient.ZonalPresenceNotification, expectedAddress string, expectedZoneId string, expectedCurrentAccessPointId string, expectedPreviousAccessPointId string, expectedUserEventType locServClient.UserEventType) string {
 
 	if zonalPresenceNotification.Address != expectedAddress {
-		t.Fatalf("Address of notification not as expected")
+		return ("Address of notification not as expected: " + zonalPresenceNotification.Address + " instead of " + expectedAddress)
 	}
 	if zonalPresenceNotification.ZoneId != expectedZoneId {
-		t.Fatalf("ZoneId of notification not as expected")
+		return ("ZoneId of notification not as expected: " + zonalPresenceNotification.ZoneId + " instead of " + expectedZoneId)
 	}
 	if zonalPresenceNotification.CurrentAccessPointId != expectedCurrentAccessPointId {
-		t.Fatalf("CurrentAccessPointId of notification not as expected")
+		return ("CurrentAccessPointId of notification not as expected: " + zonalPresenceNotification.CurrentAccessPointId + " instead of " + expectedCurrentAccessPointId)
 	}
 	if zonalPresenceNotification.PreviousAccessPointId != expectedPreviousAccessPointId {
-		t.Fatalf("PreviousAccessPointId of notification not as expected")
+		return ("PreviousAccessPointId of notification not as expected: " + zonalPresenceNotification.PreviousAccessPointId + " instead of " + expectedPreviousAccessPointId)
 	}
 	if *zonalPresenceNotification.UserEventType != expectedUserEventType {
-		t.Fatalf("UserEventType of notification not as expected")
+		return ("UserEventType of notification not as expected: " + string(*zonalPresenceNotification.UserEventType) + " instead of " + string(expectedUserEventType))
 	}
+	return ""
 }
 
-func validateZoneStatusNotification(t *testing.T, zoneStatusNotification *locServClient.ZoneStatusNotification, expectedZoneId string, expectedApId string, expectedNbUsersInAP int32, expectedNbUsersInZone int32) {
+func validateZoneStatusNotification(zoneStatusNotification *locServClient.ZoneStatusNotification, expectedZoneId string, expectedApId string, expectedNbUsersInAP int32, expectedNbUsersInZone int32) string {
 
 	if zoneStatusNotification.ZoneId != expectedZoneId {
-		t.Fatalf("ZoneId of notification not as expected: " + zoneStatusNotification.ZoneId + " instead of " + expectedZoneId)
+		return ("ZoneId of notification not as expected: " + zoneStatusNotification.ZoneId + " instead of " + expectedZoneId)
 	}
 
 	if expectedNbUsersInZone != -1 {
 		if zoneStatusNotification.NumberOfUsersInZone != expectedNbUsersInZone {
-			t.Fatalf("NumberOfUsersInZone of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInZone)) + " instead of " + strconv.Itoa(int(expectedNbUsersInZone)))
+			return ("NumberOfUsersInZone of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInZone)) + " instead of " + strconv.Itoa(int(expectedNbUsersInZone)))
 		}
 	}
 	if expectedNbUsersInAP != -1 {
 		if zoneStatusNotification.NumberOfUsersInAP != expectedNbUsersInAP {
-			t.Fatalf("NumberOfUsersInAP of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInAP)) + " instead of " + strconv.Itoa(int(expectedNbUsersInAP)))
+			return ("NumberOfUsersInAP of notification not as expected: " + strconv.Itoa(int(zoneStatusNotification.NumberOfUsersInAP)) + " instead of " + strconv.Itoa(int(expectedNbUsersInAP)))
 		}
 		if zoneStatusNotification.AccessPointId != expectedApId {
-			t.Fatalf("AccessPointId of notification not as expected: " + zoneStatusNotification.AccessPointId + " instead of " + expectedApId)
+			return ("AccessPointId of notification not as expected: " + zoneStatusNotification.AccessPointId + " instead of " + expectedApId)
 		}
-
 	}
+	return ""
 }

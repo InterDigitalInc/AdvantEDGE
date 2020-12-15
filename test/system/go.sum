@@ -1,5 +1,6 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/InterDigitalInc/AdvantEDGE v1.5.0 h1:Gv1wxW7kV31reTqxX5TflvvYEEqnxaUlKWvgoandpfI=
+github.com/InterDigitalInc/AdvantEDGE v1.6.0 h1:MTmJx1AQ4rc1qAJHLS54C5lU2i1NoqukyTcnaPiZ/hU=
 github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0-20200703133018-94138d8210a3 h1:hbmjC8Fpv+9m2NytJO4bkf25Xz+IRn28/9CseJxS9YQ=
 github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-rnis-client v0.0.0-20200703133018-94138d8210a3/go.mod h1:OboTWbYNj5baVwRuX8A7o8JSx4cxVqT9uDs9DWFP8sc=
 github.com/KromDaniel/jonson v0.0.0-20180630143114-d2f9c3c389db/go.mod h1:RU+6d0CNIRSp6yo1mXLIIrnFa/3LHhvcDVLVJyovptM=
