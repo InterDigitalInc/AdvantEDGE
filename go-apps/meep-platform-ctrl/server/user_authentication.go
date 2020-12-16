@@ -45,8 +45,8 @@ import (
 	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 	"github.com/google/go-github/github"
+	"github.com/lkysow/go-gitlab"
 	"github.com/roymx/viper"
-	"github.com/xanzy/go-gitlab"
 	"golang.org/x/oauth2"
 )
 
@@ -375,19 +375,20 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oauthClient := config.Client(context.Background(), token)
+	if oauthClient == nil {
+		err = errors.New("Failed to create new oauth client")
+		log.Error(err.Error())
+		metric.Description = err.Error()
+		_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+		http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
+		return
+	}
+
 	// Retrieve User ID
 	var userId string
 	switch provider {
 	case OAUTH_PROVIDER_GITHUB:
-		oauthClient := config.Client(context.Background(), token)
-		if oauthClient == nil {
-			err = errors.New("Failed to create new GitHub oauth client")
-			log.Error(err.Error())
-			metric.Description = err.Error()
-			_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
-			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
-			return
-		}
 		client := github.NewClient(oauthClient)
 		if client == nil {
 			err = errors.New("Failed to create new GitHub client")
@@ -406,14 +407,10 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		userId = *user.Login
+
 	case OAUTH_PROVIDER_GITLAB:
-		var client *gitlab.Client
-		if gitlabApiUrl != "" {
-			client, err = gitlab.NewOAuthClient(token.AccessToken, gitlab.WithBaseURL(gitlabApiUrl))
-		} else {
-			client, err = gitlab.NewOAuthClient(token.AccessToken)
-		}
-		if err != nil {
+		client := gitlab.NewOAuthClient(oauthClient, token.AccessToken)
+		if client == nil {
 			err = errors.New("Failed to create new GitLab client")
 			log.Error(err.Error())
 			metric.Description = err.Error()
@@ -421,6 +418,19 @@ func uaAuthorize(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, getErrUrl(err.Error()), http.StatusFound)
 			return
 		}
+
+		// Override default gitlab base URL
+		if gitlabApiUrl != "" {
+			err = client.SetBaseURL(gitlabApiUrl)
+			if err != nil {
+				log.Error(err.Error())
+				metric.Description = err.Error()
+				_ = pfmCtrl.metricStore.SetSessionMetric(ms.SesMetTypeError, metric)
+				http.Redirect(w, r, getErrUrl("Failed to set GitLab API base url"), http.StatusFound)
+				return
+			}
+		}
+
 		user, _, err := client.Users.CurrentUser()
 		if err != nil {
 			log.Error(err.Error())

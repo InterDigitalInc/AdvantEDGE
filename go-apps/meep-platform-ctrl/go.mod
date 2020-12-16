@@ -16,10 +16,11 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users v0.0.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.4
+	github.com/lkysow/go-gitlab v0.7.1
 	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3
-	github.com/xanzy/go-gitlab v0.39.0
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	google.golang.org/protobuf v1.25.0 // indirect
 )
