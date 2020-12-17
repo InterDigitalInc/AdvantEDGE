@@ -261,7 +261,7 @@ export function parseScenario(scenario) {
           // Add PL with geodata to map
           if (pl.geoData && pl.geoData.location) {
             var plGeoDataAsset = updateObject({assetName: pl.name, subType: pl.type}, pl.geoData);
-            if (pl.type === ELEMENT_TYPE_UE) {
+            if (pl.type === UE_TYPE_STR) {
               plGeoDataAsset.assetType = 'UE';
               ueList.push(plGeoDataAsset);
             } else {
