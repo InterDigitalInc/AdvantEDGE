@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package systemTest
 
 import (
 	"encoding/json"
@@ -52,10 +52,6 @@ func init() {
 	}
 	//NOTE: if localhost is set as the hostUrl, might not be reachable from the service, export MEEP_HOST_TEST_URL ="http://[yourhost]"
 	rnisServerUrl = hostUrlStr + ":" + httpListenerPort
-
-	//enable gis engine mobility, poas-in-range and netchar update
-	geAutomationUpdate(true, false, true, true)
-
 }
 
 func initialiseRnisTest() {
@@ -65,13 +61,9 @@ func initialiseRnisTest() {
 		log.Fatal("Scenario cannot be activated: ", err)
 	}
 	time.Sleep(1000 * time.Millisecond)
-	//enable gis engine mobility, poas-in-range and netchar update
-	geAutomationUpdate(true, false, true, true)
-	if err != nil {
-		log.Fatal("GIS engine error: ", err)
+	if isAutomationReady(true, 10, 0) {
+		geAutomationUpdate(true, false, true, true)
 	}
-
-	time.Sleep(1000 * time.Millisecond)
 }
 
 func clearUpRnisTest() {

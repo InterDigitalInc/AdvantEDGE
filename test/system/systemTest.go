@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package systemTest
 
 import (
 	"context"
@@ -67,9 +67,9 @@ func initialiseVars() {
 
 	hostUrl, _ := url.Parse(strings.TrimSpace(os.Getenv("MEEP_HOST_TEST_URL")))
 	hostUrlStr = hostUrl.String()
-        if hostUrlStr == "" {
-                hostUrlStr = "http://localhost"
-        }
+	if hostUrlStr == "" {
+		hostUrlStr = "http://localhost"
+	}
 }
 
 func createClients() error {
@@ -78,8 +78,8 @@ func createClients() error {
 	platformCtrlAppClientCfg := platformCtrlClient.NewConfiguration()
 
 	if hostUrlStr == "" {
-                hostUrlStr = "http://localhost"
-        }
+		hostUrlStr = "http://localhost"
+	}
 	platformCtrlAppClientCfg.BasePath = hostUrlStr + "/platform-ctrl/v1"
 
 	platformCtrlAppClient = platformCtrlClient.NewAPIClient(platformCtrlAppClientCfg)
@@ -153,10 +153,10 @@ func createScenario(name string, filepath string) error {
 
 	//converting to json since unmarshal with yaml directly not working well, while json does
 	jsonContent, err := yaml.YAMLToJSON(yamlContent)
-        if err != nil {
-                log.Error("Failed converting yaml to json: ", err)
-                return err
-        }
+	if err != nil {
+		log.Error("Failed converting yaml to json: ", err)
+		return err
+	}
 
 	var scenario platformCtrlClient.Scenario
 	err = json.Unmarshal([]byte(jsonContent), &scenario)
@@ -192,6 +192,12 @@ func activateScenario(name string) error {
 		return err
 	}
 
+	_, _, err = sandboxCtrlAppClient.ActiveScenarioApi.GetActiveScenario(context.TODO(), nil)
+	if err != nil {
+		log.Error("Scenario not active : ", err)
+		return err
+	}
+
 	//reinitialisation of http msg queue
 	resetHttpReqBody()
 
@@ -209,7 +215,7 @@ func terminateScenario() error {
 	return nil
 }
 
-func createBasics() error {
+func createSystemTestReadyState() error {
 	initialiseVars()
 	log.Info("creating Clients")
 	err := createClients()
@@ -221,18 +227,18 @@ func createBasics() error {
 	if err != nil {
 		return err
 	} else {
-		time.Sleep(20000 * time.Millisecond)
+		time.Sleep(30000 * time.Millisecond)
 	}
 	log.Info("creating Sandbox Clients")
 	err = createSandboxClients(sandboxName)
 	if err != nil {
-		clearBasics()
+		clearSystemTestReadyState()
 		return err
 	}
 	return nil
 }
 
-func clearBasics() {
+func clearSystemTestReadyState() {
 	log.Info("deleting Sandbox")
 	deleteSandbox(sandboxName)
 }
@@ -240,7 +246,7 @@ func clearBasics() {
 func startSystemTest() error {
 	if !run {
 		go main()
-		err := createBasics()
+		err := createSystemTestReadyState()
 		if err != nil {
 			run = false
 			return err
@@ -251,7 +257,7 @@ func startSystemTest() error {
 
 func stopSystemTest() {
 	if run {
-		clearBasics()
+		clearSystemTestReadyState()
 		run = false
 	}
 }
@@ -303,13 +309,45 @@ func main() {
 	for {
 		if !run {
 			log.Info("Ran for ", count, " seconds")
-			clearBasics()
+			clearSystemTestReadyState()
 			break
 		}
 		time.Sleep(time.Second)
 		count++
 	}
 
+}
+
+func isAutomationReady(waitUntilReady bool, maxRetry int, initialWait int) bool {
+
+	if initialWait > 0 {
+		time.Sleep(time.Duration(initialWait) * time.Second)
+	}
+
+	var err error
+	if waitUntilReady {
+		retry := 0
+
+		for retry <= maxRetry {
+			_, _, err = gisAppClient.AutomationApi.GetAutomationState(context.TODO())
+			if err != nil {
+				retry++
+				log.Error("Failed to communicate with gis engine but retrying: ", err)
+				time.Sleep(time.Second)
+			} else {
+				return true
+			}
+		}
+		log.Error("Failed to communicate with gis engine: ", err)
+		return false
+	} else {
+		_, _, err = gisAppClient.AutomationApi.GetAutomationState(context.TODO())
+		if err != nil {
+			log.Error("Failed to communicate with gis engine: ", err)
+			return false
+		}
+	}
+	return true
 }
 
 func geAutomationUpdate(mobility bool, movement bool, poasInRange bool, netCharUpd bool) error {

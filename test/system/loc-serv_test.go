@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package systemTest
 
 import (
 	"encoding/json"
@@ -52,10 +52,6 @@ func init() {
 	}
 	//NOTE: if localhost is set as the hostUrl, might not be reachable from the service, export MEEP_HOST_TEST_URL ="http://[yourhost]"
 	locServServerUrl = hostUrlStr + ":" + httpListenerPort
-
-	//enable gis engine mobility, poas-in-range and netchar update
-	geAutomationUpdate(true, false, true, true)
-
 }
 
 func initialiseLocServTest() {
@@ -65,13 +61,9 @@ func initialiseLocServTest() {
 		log.Fatal("Scenario cannot be activated: ", err)
 	}
 	time.Sleep(1000 * time.Millisecond)
-	//enable gis engine mobility, poas-in-range and netchar update
-	geAutomationUpdate(true, false, true, true)
-	if err != nil {
-		log.Fatal("GIS engine error: ", err)
+	if isAutomationReady(true, 10, 0) {
+		geAutomationUpdate(true, false, true, true)
 	}
-
-	time.Sleep(1000 * time.Millisecond)
 }
 
 func clearUpLocServTest() {
@@ -2368,7 +2360,7 @@ func Test_none_to_wifi_zonalTraffic(t *testing.T) {
 	}
 
 	log.Info("moving asset")
-	geMoveAssetCoordinates(testAddress, 7.431917, 43.735005)
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.735005)
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
@@ -2409,7 +2401,7 @@ func Test_none_to_generic_zonalTraffic(t *testing.T) {
 	}
 
 	log.Info("moving asset")
-	geMoveAssetCoordinates(testAddress, 7.431917, 43.732005)
+	geMoveAssetCoordinates(testAddress, 7.413917, 43.732005)
 	time.Sleep(2000 * time.Millisecond)
 
 	if len(httpReqBody) == 1 {
@@ -2940,8 +2932,8 @@ func Test_zoneStatus_zone_threshold(t *testing.T) {
 
 	log.Info("moving asset")
 	//moving to each different type of POA
-	geMoveAssetCoordinates("ue1", 7.415917, 43.733505)
-	geMoveAssetCoordinates("ue2", 7.419917, 43.733505)
+	geMoveAssetCoordinates("ue1", 7.413917, 43.733505)
+	geMoveAssetCoordinates("ue2", 7.411917, 43.733505)
 	geMoveAssetCoordinates("ue3", 7.413917, 43.735005)
 	geMoveAssetCoordinates("ue4", 7.413917, 43.732005)
 	time.Sleep(2000 * time.Millisecond)
