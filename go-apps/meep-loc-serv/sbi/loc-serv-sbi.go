@@ -19,6 +19,7 @@ package sbi
 import (
 	"errors"
 	"strings"
+	"sync"
 	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -52,6 +53,7 @@ type LocServSbi struct {
 	updateAccessPointInfoCB func(string, string, string, string, int, *float32, *float32)
 	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
+	mutex                   sync.Mutex
 }
 
 var sbi *LocServSbi
@@ -176,6 +178,10 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
+
+	sbi.mutex.Lock()
+	defer sbi.mutex.Unlock()
+
 	log.Debug("processActiveScenarioUpdate")
 
 	// Get previous list of connected UEs
@@ -245,7 +251,7 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Update POA Cellular and Wifi info
-	poaTypeList := [3]string{mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi}
+	poaTypeList := [4]string{mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa}
 	conType := ""
 	for _, poaType := range poaTypeList {
 
@@ -306,6 +312,9 @@ func getNetworkLocation(name string) (zone string, netLoc string, err error) {
 
 func refreshPositions() {
 
+	sbi.mutex.Lock()
+	defer sbi.mutex.Unlock()
+
 	// Update UE Positions
 	uePositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypeUe)
 	ueNameList := sbi.activeModel.GetNodeNames("UE")
@@ -335,7 +344,7 @@ func refreshPositions() {
 
 	// Update POA Positions
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
-	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi)
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
 	for _, name := range poaNameList {
 		// Get network location
 		zone, netLoc, err := getNetworkLocation(name)

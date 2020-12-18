@@ -28,17 +28,17 @@ type TriggerNr int32
 
 // List of TriggerNr
 const (
-	0__TriggerNr TriggerNr = "0"
-	1__TriggerNr TriggerNr = "1"
-	2__TriggerNr TriggerNr = "2"
-	10__TriggerNr TriggerNr = "10"
-	11__TriggerNr TriggerNr = "11"
-	12__TriggerNr TriggerNr = "12"
-	13__TriggerNr TriggerNr = "13"
-	14__TriggerNr TriggerNr = "14"
-	15__TriggerNr TriggerNr = "15"
-	20__TriggerNr TriggerNr = "20"
-	21__TriggerNr TriggerNr = "21"
-	30__TriggerNr TriggerNr = "30"
-	31__TriggerNr TriggerNr = "31"
+        TRIGGER_NR_NOT_AVAILABLE        TriggerNr = 0
+        TRIGGER_NR_NR_PERIODICAL        TriggerNr = 1
+        TRIGGER_NR_NR_CGI               TriggerNr = 2
+        TRIGGER_NR_EVENT_A1             TriggerNr = 10
+        TRIGGER_NR_EVENT_A2             TriggerNr = 11
+        TRIGGER_NR_EVENT_A3             TriggerNr = 12
+        TRIGGER_NR_EVENT_A4             TriggerNr = 13
+        TRIGGER_NR_EVENT_A5             TriggerNr = 14
+        TRIGGER_NR_EVENT_A6             TriggerNr = 15
+        TRIGGER_NR_INTER_RAT_PERIODICAL TriggerNr = 20
+        TRIGGER_NR_INTER_RAT_CGI        TriggerNr = 21
+        TRIGGER_NR_EVENT_B1             TriggerNr = 30
+        TRIGGER_NR_EVENT_B2             TriggerNr = 31
 )

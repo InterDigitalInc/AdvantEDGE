@@ -17,6 +17,7 @@
 package sbi
 
 import (
+	"sync"
 	"time"
 
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
@@ -50,6 +51,7 @@ type WaisSbi struct {
 	updateAccessPointInfoCB func(string, string, *float32, *float32, []string)
 	updateScenarioNameCB    func(string)
 	cleanUpCB               func()
+	mutex                   sync.Mutex
 }
 
 var sbi *WaisSbi
@@ -175,6 +177,10 @@ func processActiveScenarioTerminate() {
 }
 
 func processActiveScenarioUpdate() {
+
+	sbi.mutex.Lock()
+	defer sbi.mutex.Unlock()
+
 	log.Debug("processActiveScenarioUpdate")
 
 	// Get previous list of connected UEs
@@ -254,13 +260,19 @@ func processActiveScenarioUpdate() {
 		var ueMacIdList []string
 
 		for _, pl := range poa.PhysicalLocations {
-			ueMacIdList = append(ueMacIdList, pl.MacId)
+			if pl.Connected {
+				ueMacIdList = append(ueMacIdList, pl.MacId)
+			}
 		}
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)
 	}
 }
 
 func refreshPositions() {
+
+	sbi.mutex.Lock()
+	defer sbi.mutex.Unlock()
+
 	// Update POA Positions
 	poaPositionMap, _ := sbi.gisCache.GetAllPositions(gc.TypePoa)
 	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoaWifi)
@@ -283,7 +295,9 @@ func refreshPositions() {
 		// Get list UE MacIds
 		var ueMacIdList []string
 		for _, pl := range poa.PhysicalLocations {
-			ueMacIdList = append(ueMacIdList, pl.MacId)
+			if pl.Connected {
+				ueMacIdList = append(ueMacIdList, pl.MacId)
+			}
 		}
 
 		sbi.updateAccessPointInfoCB(name, poa.PoaWifiConfig.MacId, longitude, latitude, ueMacIdList)

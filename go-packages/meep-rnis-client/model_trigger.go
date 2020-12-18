@@ -28,27 +28,29 @@ type Trigger int32
 
 // List of Trigger
 const (
-	0__Trigger Trigger = "0"
-	1__Trigger Trigger = "1"
-	2__Trigger Trigger = "2"
-	3__Trigger Trigger = "3"
-	4__Trigger Trigger = "4"
-	5__Trigger Trigger = "5"
-	10__Trigger Trigger = "10"
-	11__Trigger Trigger = "11"
-	12__Trigger Trigger = "12"
-	13__Trigger Trigger = "13"
-	14__Trigger Trigger = "14"
-	15__Trigger Trigger = "15"
-	20__Trigger Trigger = "20"
-	21__Trigger Trigger = "21"
-	30__Trigger Trigger = "30"
-	31__Trigger Trigger = "31"
-	40__Trigger Trigger = "40"
-	41__Trigger Trigger = "41"
-	42__Trigger Trigger = "42"
-	50__Trigger Trigger = "50"
-	51__Trigger Trigger = "51"
-	60__Trigger Trigger = "60"
-	61__Trigger Trigger = "61"
+        TRIGGER_NOT_AVAILABLE                             Trigger = 0
+        TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS         Trigger = 1
+        TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS_FOR_SON Trigger = 2
+        TRIGGER_PERIODICAL_REPORT_CGI                     Trigger = 3
+        TRIGGER_INTRA_PERIODICAL_REPORT_STRONGEST_CELLS   Trigger = 4
+        TRIGGER_INTRA_PERIODICAL_REPORT_CGI               Trigger = 5
+        TRIGGER_EVENT_A1                                  Trigger = 10
+        TRIGGER_EVENT_A2                                  Trigger = 11
+        TRIGGER_EVENT_A3                                  Trigger = 12
+        TRIGGER_EVENT_A4                                  Trigger = 13
+        TRIGGER_EVENT_A5                                  Trigger = 14
+        TRIGGER_EVENT_A6                                  Trigger = 15
+        TRIGGER_EVENT_B1                                  Trigger = 20
+        TRIGGER_EVENT_B2                                  Trigger = 21
+        TRIGGER_EVENT_B1_NR                               Trigger = 20
+        TRIGGER_EVENT_B2_NR                               Trigger = 21
+        TRIGGER_EVENT_C1                                  Trigger = 30
+        TRIGGER_EVENT_C2                                  Trigger = 31
+        TRIGGER_EVENT_W1                                  Trigger = 40
+        TRIGGER_EVENT_W2                                  Trigger = 41
+        TRIGGER_EVENT_W3                                  Trigger = 42
+        TRIGGER_EVENT_V1                                  Trigger = 50
+        TRIGGER_EVENT_V2                                  Trigger = 51
+        TRIGGER_EVENT_H1                                  Trigger = 60
+        TRIGGER_EVENT_H2                                  Trigger = 61
 )
