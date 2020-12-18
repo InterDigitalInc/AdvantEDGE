@@ -245,7 +245,7 @@ func clearSystemTestReadyState() {
 
 func startSystemTest() error {
 	if !run {
-		go main()
+		go systemTest()
 		err := createSystemTestReadyState()
 		if err != nil {
 			run = false
@@ -262,7 +262,7 @@ func stopSystemTest() {
 	}
 }
 
-func main() {
+func systemTest() {
 
 	//create default route handler
 	http.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
