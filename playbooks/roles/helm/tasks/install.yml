@@ -8,7 +8,7 @@
     state: present
 
 - name: "Enable incubator charts"
-  shell: "helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/ --kubeconfig .kube/config"
+  shell: "helm repo add incubator https://charts.helm.sh/incubator --kubeconfig .kube/config"
   tags: helm
 
 - name: "Repo Update"
