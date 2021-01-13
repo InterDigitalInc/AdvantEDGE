@@ -126,7 +126,7 @@ func Init() (err error) {
 
 	// Validate DB scenarios & upgrade them if compatible
 	for _, scenario := range scenarioList {
-		validScenario, status, err := mod.ValidateScenario(scenario)
+		validScenario, status, err := mod.ValidateScenario(scenario, "")
 		if err == nil && status == mod.ValidatorStatusUpdated {
 			// Retrieve scenario name
 			s := new(Scenario)
@@ -202,7 +202,7 @@ func pcCreateScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate scenario
-	validScenario, _, err := mod.ValidateScenario(b)
+	validScenario, _, err := mod.ValidateScenario(b, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -352,7 +352,7 @@ func pcSetScenario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate scenario
-	validScenario, _, err := mod.ValidateScenario(b)
+	validScenario, _, err := mod.ValidateScenario(b, scenarioName)
 	if err != nil {
 		log.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)

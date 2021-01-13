@@ -59,7 +59,7 @@ func createNetChar(lat int32, latVar int32, dist string, tputDl int32, tputUl in
 }
 
 // ValidateScenario - Verify if json scenario is valid & supported. Upgrade scenario if possible & necessary.
-func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status string, err error) {
+func ValidateScenario(jsonScenario []byte, name string) (validJsonScenario []byte, status string, err error) {
 	var scenarioVersion semver.Version
 	var scenarioUpdated = false
 
@@ -70,6 +70,14 @@ func ValidateScenario(jsonScenario []byte) (validJsonScenario []byte, status str
 		log.Error(err.Error())
 		return nil, ValidatorStatusError, err
 	}
+
+	if name != "" {
+		if scenario.Name != name {
+                        err = errors.New("Scenario creation name " + name + " incompatible with scenario body content name " + scenario.Name + ". They must be the same.")
+                        return nil, ValidatorStatusError, err
+		}
+	}
+
 	// Retrieve scenario version
 	// If no version found, assume & set current validator version
 	if scenario.Version == "" {
