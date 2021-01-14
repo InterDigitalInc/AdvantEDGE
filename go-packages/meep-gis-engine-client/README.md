@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/gis/v1*
+All URIs are relative to *https://localhost/sandboxname/gis/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

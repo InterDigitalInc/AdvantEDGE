@@ -1,6 +1,6 @@
 # ActiveScenarioApi
 
-All URIs are relative to *http://localhost/sandbox-ctrl/v1*
+All URIs are relative to *http://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

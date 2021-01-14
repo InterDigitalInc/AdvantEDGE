@@ -61,9 +61,9 @@
     /**
      * The base URL against which to resolve every API call's (relative) path.
      * @type {String}
-     * @default https://localhost/metrics/v2
+     * @default https://localhost/sandboxname/metrics/v2
      */
-    this.basePath = 'https://localhost/metrics/v2'.replace(/\/+$/, '');
+    this.basePath = 'https://localhost/sandboxname/metrics/v2'.replace(/\/+$/, '');
 
     /**
      * The authentication methods to be included for all API calls.

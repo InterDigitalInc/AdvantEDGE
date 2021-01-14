@@ -10,7 +10,10 @@ info:
   <p>[Copyright (c) ETSI 2020](https://forge.etsi.org/etsi-forge-copyright-notice.txt)
   <p>**Micro-service**<br>[meep-wais](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-wais)
   <p>**Type & Usage**<br>Edge Service used by edge applications that want to get information about WLAN access information in the network
-  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_"
+  <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+  <p>AdvantEDGE supports a selected subset of WAI API subscription types.
+  <p>Supported subscriptions:
+  <p> - AssocStaSubscription"
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
@@ -18,7 +21,7 @@ externalDocs:
   description: ETSI MEC028 V2.1.1 WLAN Information API
   url: 'http://www.etsi.org/deliver/etsi_gs/MEC/001_099/028/02.01.01_60/gs_mec028v020101p.pdf'
 servers:
-  - url: 'https://localhost/wai/v2'
+  - url: 'https://localhost/sandboxname/wai/v2'
 tags:
 - name: "wai"
 paths:

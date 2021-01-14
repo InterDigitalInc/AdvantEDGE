@@ -1,6 +1,6 @@
 # AutomationApi
 
-All URIs are relative to *http://localhost/gis/v1*
+All URIs are relative to *http://localhost/sandboxname/gis/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

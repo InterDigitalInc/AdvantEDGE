@@ -8,7 +8,8 @@ info:
     <p>**Micro-service**<br>[meep-loc-serv](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-loc-serv)
     <p>**Type & Usage**<br>Edge Service used by edge applications that want to get
     information about Users (UE) and Zone locations <p>**Details**<br>API details
-    available at _your-AdvantEDGE-ip-address/api_
+    available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected
+    subset of Location API endpoints (see below)
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -20,14 +21,15 @@ externalDocs:
   description: ETSI MEC013 V2.1.1 Location Service API
   url: http://www.etsi.org/deliver/etsi_gs/MEC/001_099/013/02.01.01_60/gs_mec013v020101p.pdf
 servers:
-- url: https://localhost/location/v2
+- url: https://localhost/sandboxname/location/v2
 tags:
 - name: location
+- name: unsupported
 paths:
   /queries/distance:
     get:
       tags:
-      - location
+      - unsupported
       summary: UE Distance Lookup of a specific UE
       description: UE Distance Lookup between terminals or a terminal and a location
       operationId: distanceGET
@@ -485,7 +487,7 @@ paths:
   /subscriptions/area/circle:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieves all active subscriptions to area change notifications
       description: This operation is used for retrieving all active subscriptions
         to area change notifications.
@@ -516,7 +518,7 @@ paths:
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/area/circle
     post:
       tags:
-      - location
+      - unsupported
       summary: Creates a subscription for area change notification
       description: Creates a subscription to the Location Service for an area change
         notification.
@@ -644,7 +646,7 @@ paths:
   /subscriptions/area/circle/{subscriptionId}:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieve subscription information
       description: Get subscription information.
       operationId: areaCircleSubGET
@@ -725,7 +727,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - location
+      - unsupported
       summary: Updates a subscription information
       description: Updates a subscription.
       operationId: areaCircleSubPUT
@@ -856,7 +858,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - location
+      - unsupported
       summary: Cancel a subscription
       description: Method to delete a subscription.
       operationId: areaCircleSubDELETE
@@ -905,7 +907,7 @@ paths:
   /subscriptions/distance:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieves all active subscriptions to distance change notifications
       description: This operation is used for retrieving all active subscriptions
         to a distance change notifications.
@@ -937,7 +939,7 @@ paths:
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/distance
     post:
       tags:
-      - location
+      - unsupported
       summary: Creates a subscription for distance change notification
       description: Creates a subscription to the Location Service for a distance change
         notification.
@@ -1077,7 +1079,7 @@ paths:
   /subscriptions/distance/{subscriptionId}:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieve subscription information
       description: Get subscription information.
       operationId: distanceSubGET
@@ -1159,7 +1161,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - location
+      - unsupported
       summary: Updates a subscription information
       description: Updates a subscription.
       operationId: distanceSubPUT
@@ -1292,7 +1294,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - location
+      - unsupported
       summary: Cancel a subscription
       description: Method to delete a subscription.
       operationId: distanceSubDELETE
@@ -1341,7 +1343,7 @@ paths:
   /subscriptions/periodic:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieves all active subscriptions to periodic notifications
       description: This operation is used for retrieving all active subscriptions
         to periodic notifications.
@@ -1367,7 +1369,7 @@ paths:
                   resourceURL: http://meAppServer.example.com/location/v2/subscriptions/periodic
     post:
       tags:
-      - location
+      - unsupported
       summary: Creates a subscription for periodic notification
       description: Creates a subscription to the Location Service for a periodic notification.
       operationId: periodicSubPOST
@@ -1483,7 +1485,7 @@ paths:
   /subscriptions/periodic/{subscriptionId}:
     get:
       tags:
-      - location
+      - unsupported
       summary: Retrieve subscription information
       description: Get subscription information.
       operationId: periodicSubGET
@@ -1559,7 +1561,7 @@ paths:
       x-swagger-router-controller: subscriptions
     put:
       tags:
-      - location
+      - unsupported
       summary: Updates a subscription information
       description: Updates a subscription.
       operationId: periodicSubPUT
@@ -1680,7 +1682,7 @@ paths:
       x-swagger-router-controller: subscriptions
     delete:
       tags:
-      - location
+      - unsupported
       summary: Cancel a subscription
       description: Method to delete a subscription.
       operationId: periodicSubDELETE

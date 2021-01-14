@@ -14,7 +14,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/sandbox-ctrl/v1"
+basePath: "/sandboxname/sandbox-ctrl/v1"
 tags:
 - name: "Active Scenario"
 - name: "Events"

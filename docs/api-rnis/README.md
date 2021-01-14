@@ -3,19 +3,19 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/rni/v2*
+All URIs are relative to *https://localhost/sandboxname/rni/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*RniApi* | [**layer2MeasInfoGET**](Apis/RniApi.md#layer2measinfoget) | **GET** /queries/layer2_meas | Retrieve information on layer 2 measurements
 *RniApi* | [**plmnInfoGET**](Apis/RniApi.md#plmninfoget) | **GET** /queries/plmn_info | Retrieve information on the underlying Mobile Network that the MEC application is associated to
 *RniApi* | [**rabInfoGET**](Apis/RniApi.md#rabinfoget) | **GET** /queries/rab_info | Retrieve information on Radio Access Bearers
-*RniApi* | [**s1BearerInfoGET**](Apis/RniApi.md#s1bearerinfoget) | **GET** /queries/s1_bearer_info | Retrieve S1-U bearer information related to specific UE(s)
 *RniApi* | [**subscriptionLinkListSubscriptionsGET**](Apis/RniApi.md#subscriptionlinklistsubscriptionsget) | **GET** /subscriptions | Retrieve information on subscriptions for notifications
 *RniApi* | [**subscriptionsDELETE**](Apis/RniApi.md#subscriptionsdelete) | **DELETE** /subscriptions/{subscriptionId} | Cancel an existing subscription
 *RniApi* | [**subscriptionsGET**](Apis/RniApi.md#subscriptionsget) | **GET** /subscriptions/{subscriptionId} | Retrieve information on current specific subscription
 *RniApi* | [**subscriptionsPOST**](Apis/RniApi.md#subscriptionspost) | **POST** /subscriptions | Create a new subscription
 *RniApi* | [**subscriptionsPUT**](Apis/RniApi.md#subscriptionsput) | **PUT** /subscriptions/{subscriptionId} | Modify an existing subscription
+*UnsupportedApi* | [**layer2MeasInfoGET**](Apis/UnsupportedApi.md#layer2measinfoget) | **GET** /queries/layer2_meas | Retrieve information on layer 2 measurements
+*UnsupportedApi* | [**s1BearerInfoGET**](Apis/UnsupportedApi.md#s1bearerinfoget) | **GET** /queries/s1_bearer_info | Retrieve S1-U bearer information related to specific UE(s)
 
 
 <a name="documentation-for-models"></a>

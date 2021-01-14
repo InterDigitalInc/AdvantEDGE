@@ -13,7 +13,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/metrics/v2"
+basePath: "/sandboxname/metrics/v2"
 tags:
 - name: "Metrics"
 - name: "Subscriptions"
