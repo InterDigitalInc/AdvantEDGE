@@ -33,11 +33,6 @@ Class | Method | HTTP request | Description
 *ScenarioConfigurationApi* | [**GetScenario**](docs/ScenarioConfigurationApi.md#getscenario) | **Get** /scenarios/{name} | Get a specific scenario
 *ScenarioConfigurationApi* | [**GetScenarioList**](docs/ScenarioConfigurationApi.md#getscenariolist) | **Get** /scenarios | Get all scenarios
 *ScenarioConfigurationApi* | [**SetScenario**](docs/ScenarioConfigurationApi.md#setscenario) | **Put** /scenarios/{name} | Update a scenario
-*UserAuthenticationApi* | [**Authorize**](docs/UserAuthenticationApi.md#authorize) | **Get** /authorize | OAuth authorization response endpoint
-*UserAuthenticationApi* | [**LoginOAuth**](docs/UserAuthenticationApi.md#loginoauth) | **Get** /login | Initiate OAuth login procedure
-*UserAuthenticationApi* | [**LoginUser**](docs/UserAuthenticationApi.md#loginuser) | **Post** /login | Start a session
-*UserAuthenticationApi* | [**LogoutUser**](docs/UserAuthenticationApi.md#logoutuser) | **Get** /logout | Terminate a session
-*UserAuthenticationApi* | [**TriggerWatchdog**](docs/UserAuthenticationApi.md#triggerwatchdog) | **Post** /watchdog | Send heartbeat to watchdog
 
 
 ## Documentation For Models

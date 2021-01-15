@@ -1,8 +1,8 @@
-# Default values for meep-platform-ctrl.
+# Default values for meep-auth-svc.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-serviceAccount: meep-platform-ctrl
+serviceAccount: meep-auth-svc
 
 deployment:
   replicas: 1
@@ -20,14 +20,36 @@ affinity:
           operator: Exists
 
 image:
-  repository: meep-platform-ctrl
+  repository: meep-auth-svc
   tag: latest
   pullPolicy: Always
   env:
+    MEEP_MAX_SESSIONS: "10"
+    MEEP_OAUTH_GITHUB_ENABLED: "false"
+    MEEP_OAUTH_GITHUB_AUTH_URL: ""
+    MEEP_OAUTH_GITHUB_TOKEN_URL: ""
+    MEEP_OAUTH_GITHUB_REDIRECT_URI: ""
+    MEEP_OAUTH_GITLAB_ENABLED: "false"
+    MEEP_OAUTH_GITLAB_AUTH_URL: ""
+    MEEP_OAUTH_GITLAB_TOKEN_URL: ""
+    MEEP_OAUTH_GITLAB_REDIRECT_URI: ""
+    MEEP_OAUTH_GITLAB_API_URL: ""
   envSecret:
     MEEP_SESSION_KEY:
       name: meep-session
       key: encryption-key
+    MEEP_OAUTH_GITHUB_CLIENT_ID:
+      name: github-secret
+      key: client-id
+    MEEP_OAUTH_GITHUB_SECRET:
+      name: github-secret
+      key: secret
+    MEEP_OAUTH_GITLAB_CLIENT_ID:
+      name: gitlab-secret
+      key: client-id
+    MEEP_OAUTH_GITLAB_SECRET:
+      name: gitlab-secret
+      key: secret
 
 service:
   type: ClusterIP
@@ -39,16 +61,13 @@ ingress:
   hosts:
     - name: ''
       paths:
-        - /
-        - /platform-ctrl
+        - /auth
   annotations:
     kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/api$ $scheme://$http_host/api/ permanent;
-      rewrite ^/alt$ $scheme://$http_host/alt/ permanent;
-      rewrite ^/alt/api$ $scheme://$http_host/alt/api/ permanent;
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   rewrite ^(/api)$ $1/ redirect;
   labels: {}
   tls:
     # Secrets must be manually created in the namespace.
@@ -58,17 +77,6 @@ ingress:
 
 codecov:
   enabled: false
-  location: "<WORKDIR>/codecov/meep-platform-ctrl"
-
-user:
-  frontend:
-    enabled: false
-    location: "<WORKDIR>/user/frontend"
-    mountpath: "/user-frontend"
-
-  swagger:
-    enabled: false
-    location: "<WORKDIR>/user/swagger"
-    mountpath: "/user-swagger"
+  location: "<WORKDIR>/codecov/meep-auth-svc"
 
 meepOrigin: core

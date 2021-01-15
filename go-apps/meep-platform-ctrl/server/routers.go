@@ -186,39 +186,4 @@ var routes = Routes{
 		"/platform-ctrl/v1/scenarios/{name}",
 		SetScenario,
 	},
-
-	Route{
-		"Authorize",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/authorize",
-		Authorize,
-	},
-
-	Route{
-		"LoginOAuth",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/login",
-		LoginOAuth,
-	},
-
-	Route{
-		"LoginUser",
-		strings.ToUpper("Post"),
-		"/platform-ctrl/v1/login",
-		LoginUser,
-	},
-
-	Route{
-		"LogoutUser",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/logout",
-		LogoutUser,
-	},
-
-	Route{
-		"TriggerWatchdog",
-		strings.ToUpper("Post"),
-		"/platform-ctrl/v1/watchdog",
-		TriggerWatchdog,
-	},
 }

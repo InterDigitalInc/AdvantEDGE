@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "meep-auth-svc.fullname" . }}
+  labels:
+    app: {{ template "meep-auth-svc.name" . }}
+    chart: {{ template "meep-auth-svc.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    meepOrigin: {{ .Values.meepOrigin }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ template "meep-auth-svc.name" . }}
+    release: {{ .Release.Name }}
+    meepOrigin: {{ .Values.meepOrigin }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.deployment.port }}
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}

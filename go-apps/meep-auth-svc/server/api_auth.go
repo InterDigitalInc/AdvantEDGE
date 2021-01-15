@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Platform Controller REST API
+ * AdvantEDGE Auth Service REST API
  *
- * This API is the main Platform Controller API for scenario configuration & sandbox management <p>**Micro-service**<br>[meep-pfm-ctrl](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-platform-ctrl) <p>**Type & Usage**<br>Platform main interface used by controller software to configure scenarios and manage sandboxes in the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+ * This API provides microservice API authentication & authorization services <p>**Micro-service**<br>[meep-auth](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-auth) <p>**Type & Usage**<br>Platform interface used by ingress to authenticate & authorize microservice API access <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * API version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -28,22 +28,26 @@ import (
 	"net/http"
 )
 
-func Authorize(w http.ResponseWriter, r *http.Request) {
-	uaAuthorize(w, r)
+func Authenticate(w http.ResponseWriter, r *http.Request) {
+	asAuthenticate(w, r)
 }
 
-func LoginOAuth(w http.ResponseWriter, r *http.Request) {
-	uaLoginOAuth(w, r)
+func Authorize(w http.ResponseWriter, r *http.Request) {
+	asAuthorize(w, r)
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	asLogin(w, r)
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
-	uaLoginUser(w, r)
+	asLoginUser(w, r)
 }
 
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
-	uaLogoutUser(w, r)
+func Logout(w http.ResponseWriter, r *http.Request) {
+	asLogout(w, r)
 }
 
 func TriggerWatchdog(w http.ResponseWriter, r *http.Request) {
-	uaTriggerWatchdog(w, r)
+	asTriggerWatchdog(w, r)
 }

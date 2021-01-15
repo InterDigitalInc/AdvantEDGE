@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Platform Controller REST API
- * This API is the main Platform Controller API for scenario configuration & sandbox management <p>**Micro-service**<br>[meep-pfm-ctrl](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-platform-ctrl) <p>**Type & Usage**<br>Platform main interface used by controller software to configure scenarios and manage sandboxes in the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+ * AdvantEDGE Auth Service REST API
+ * This API provides microservice API authentication & authorization services <p>**Micro-service**<br>[meep-auth](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-auth) <p>**Type & Usage**<br>Platform interface used by ingress to authenticate & authorize microservice API access <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -37,23 +37,23 @@
     module.exports = factory(require('../ApiClient'), require('../model/Sandbox'));
   } else {
     // Browser globals (root is window)
-    if (!root.AdvantEdgePlatformControllerRestApi) {
-      root.AdvantEdgePlatformControllerRestApi = {};
+    if (!root.AdvantEdgeAuthServiceRestApi) {
+      root.AdvantEdgeAuthServiceRestApi = {};
     }
-    root.AdvantEdgePlatformControllerRestApi.UserAuthenticationApi = factory(root.AdvantEdgePlatformControllerRestApi.ApiClient, root.AdvantEdgePlatformControllerRestApi.Sandbox);
+    root.AdvantEdgeAuthServiceRestApi.AuthApi = factory(root.AdvantEdgeAuthServiceRestApi.ApiClient, root.AdvantEdgeAuthServiceRestApi.Sandbox);
   }
 }(this, function(ApiClient, Sandbox) {
   'use strict';
 
   /**
-   * UserAuthentication service.
-   * @module api/UserAuthenticationApi
+   * Auth service.
+   * @module api/AuthApi
    * @version 1.0.0
    */
 
   /**
-   * Constructs a new UserAuthenticationApi. 
-   * @alias module:api/UserAuthenticationApi
+   * Constructs a new AuthApi. 
+   * @alias module:api/AuthApi
    * @class
    * @param {module:ApiClient} [apiClient] Optional API client implementation to use,
    * default to {@link module:ApiClient#instance} if unspecified.
@@ -63,8 +63,54 @@
 
 
     /**
+     * Callback function to receive the result of the authenticate operation.
+     * @callback module:api/AuthApi~authenticateCallback
+     * @param {String} error Error message, if any.
+     * @param data This operation does not return a value.
+     * @param {String} response The complete HTTP response.
+     */
+
+    /**
+     * Authenticate service request
+     * Authenticate & authorize microservice endpoint access
+     * @param {Object} opts Optional parameters
+     * @param {String} opts.svc Service requesting authentication
+     * @param {String} opts.sbox Sandbox name
+     * @param {module:api/AuthApi~authenticateCallback} callback The callback function, accepting three arguments: error, data, response
+     */
+    this.authenticate = function(opts, callback) {
+      opts = opts || {};
+      var postBody = null;
+
+
+      var pathParams = {
+      };
+      var queryParams = {
+        'svc': opts['svc'],
+        'sbox': opts['sbox'],
+      };
+      var collectionQueryParams = {
+      };
+      var headerParams = {
+      };
+      var formParams = {
+      };
+
+      var authNames = [];
+      var contentTypes = ['application/json'];
+      var accepts = ['application/json'];
+      var returnType = null;
+
+      return this.apiClient.callApi(
+        '/authenticate', 'GET',
+        pathParams, queryParams, collectionQueryParams, headerParams, formParams, postBody,
+        authNames, contentTypes, accepts, returnType, callback
+      );
+    }
+
+    /**
      * Callback function to receive the result of the authorize operation.
-     * @callback module:api/UserAuthenticationApi~authorizeCallback
+     * @callback module:api/AuthApi~authorizeCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -76,7 +122,7 @@
      * @param {Object} opts Optional parameters
      * @param {String} opts.code Temporary authorization code
      * @param {String} opts.state User-provided random state
-     * @param {module:api/UserAuthenticationApi~authorizeCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/AuthApi~authorizeCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.authorize = function(opts, callback) {
       opts = opts || {};
@@ -109,8 +155,8 @@
     }
 
     /**
-     * Callback function to receive the result of the loginOAuth operation.
-     * @callback module:api/UserAuthenticationApi~loginOAuthCallback
+     * Callback function to receive the result of the login operation.
+     * @callback module:api/AuthApi~loginCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -121,9 +167,9 @@
      * Start OAuth login procedure with provider
      * @param {Object} opts Optional parameters
      * @param {module:model/String} opts.provider Oauth provider
-     * @param {module:api/UserAuthenticationApi~loginOAuthCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/AuthApi~loginCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.loginOAuth = function(opts, callback) {
+    this.login = function(opts, callback) {
       opts = opts || {};
       var postBody = null;
 
@@ -154,7 +200,7 @@
 
     /**
      * Callback function to receive the result of the loginUser operation.
-     * @callback module:api/UserAuthenticationApi~loginUserCallback
+     * @callback module:api/AuthApi~loginUserCallback
      * @param {String} error Error message, if any.
      * @param {module:model/Sandbox} data The data returned by the service call.
      * @param {String} response The complete HTTP response.
@@ -166,7 +212,7 @@
      * @param {Object} opts Optional parameters
      * @param {String} opts.username User Name
      * @param {String} opts.password User Password
-     * @param {module:api/UserAuthenticationApi~loginUserCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/AuthApi~loginUserCallback} callback The callback function, accepting three arguments: error, data, response
      * data is of type: {@link module:model/Sandbox}
      */
     this.loginUser = function(opts, callback) {
@@ -200,8 +246,8 @@
     }
 
     /**
-     * Callback function to receive the result of the logoutUser operation.
-     * @callback module:api/UserAuthenticationApi~logoutUserCallback
+     * Callback function to receive the result of the logout operation.
+     * @callback module:api/AuthApi~logoutCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -210,9 +256,9 @@
     /**
      * Terminate a session
      * Terminate a session
-     * @param {module:api/UserAuthenticationApi~logoutUserCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/AuthApi~logoutCallback} callback The callback function, accepting three arguments: error, data, response
      */
-    this.logoutUser = function(callback) {
+    this.logout = function(callback) {
       var postBody = null;
 
 
@@ -241,7 +287,7 @@
 
     /**
      * Callback function to receive the result of the triggerWatchdog operation.
-     * @callback module:api/UserAuthenticationApi~triggerWatchdogCallback
+     * @callback module:api/AuthApi~triggerWatchdogCallback
      * @param {String} error Error message, if any.
      * @param data This operation does not return a value.
      * @param {String} response The complete HTTP response.
@@ -250,7 +296,7 @@
     /**
      * Send heartbeat to watchdog
      * Send heartbeat to watchdog to keep session alive
-     * @param {module:api/UserAuthenticationApi~triggerWatchdogCallback} callback The callback function, accepting three arguments: error, data, response
+     * @param {module:api/AuthApi~triggerWatchdogCallback} callback The callback function, accepting three arguments: error, data, response
      */
     this.triggerWatchdog = function(callback) {
       var postBody = null;

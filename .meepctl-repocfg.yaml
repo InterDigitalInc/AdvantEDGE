@@ -61,7 +61,7 @@ repo:
         # access token url
         token-url: https://github.com/login/oauth/access_token
         # OAuth redirect URI
-        redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
+        redirect-uri: https://my-platform-fqdn/auth/v1/authorize
         # OAuth k8s secret (data: client-id, secret)
         secret: meep-oauth-github
       # GitLab OAuth provider config
@@ -73,7 +73,7 @@ repo:
         # access token url
         token-url: https://gitlab.com/oauth/token
         # OAuth redirect URI
-        redirect-uri: https://my-platform-fqdn/platform-ctrl/v1/authorize
+        redirect-uri: https://my-platform-fqdn/auth/v1/authorize
         # GitLab api url
         # api-url: https://gitlab.com
         # OAuth k8s secret (data: client-id, secret)
@@ -86,6 +86,31 @@ repo:
 
     # Go Applications
     go-apps:
+      meep-auth-svc:
+        # location of source code
+        src: go-apps/meep-auth-svc
+        # location of binary
+        bin: bin/meep-auth-svc
+        # location of deployment chart
+        chart: charts/meep-auth-svc
+        # user supplied value file located @ .meep/user/values (use below file name)
+        chart-user-values: meep-auth-svc.yaml
+        # enable meepctl build
+        build: true
+        # enable meepctl dockerize
+        dockerize: true
+        # enable meepctl deploy/delete
+        deploy: true
+        # supports code coverage measurement when built in codecov mode
+        codecov: true
+        # supports linting
+        lint: true
+        # location of API specification
+        api: go-apps/meep-auth-svc/api/swagger.yaml
+        # AdvantEDGE resources included in Docker container image
+        docker-data:
+          # location of REST API permissions file
+          'permissions.yaml': config/permissions.yaml
       meep-ingress-certs:
         # enable meepctl build
         build: false
@@ -178,8 +203,6 @@ repo:
           swagger: bin/meep-platform-swagger-ui
           # location of AdvantEDGE frontend
           frontend: bin/meep-frontend
-          # location of REST API permissions file
-          'permissions.yaml': config/permissions.yaml
       meep-virt-engine:
         # location of source code
         src: go-apps/meep-virt-engine
@@ -284,6 +307,7 @@ repo:
         lint: false
         # list of platform level swagger specs
         api-bundle:
+          - core.go-apps.meep-auth-svc
           - core.go-apps.meep-platform-ctrl
           - core.go-apps.meep-mon-engine
       meep-sandbox-swagger-ui:

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * AdvantEDGE Platform Controller REST API
- * This API is the main Platform Controller API for scenario configuration & sandbox management <p>**Micro-service**<br>[meep-pfm-ctrl](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-platform-ctrl) <p>**Type & Usage**<br>Platform main interface used by controller software to configure scenarios and manage sandboxes in the AdvantEDGE platform <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
+ * AdvantEDGE Auth Service REST API
+ * This API provides microservice API authentication & authorization services <p>**Micro-service**<br>[meep-auth](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-auth) <p>**Type & Usage**<br>Platform interface used by ingress to authenticate & authorize microservice API access <p>**Details**<br>API details available at _your-AdvantEDGE-ip-address/api_
  *
  * OpenAPI spec version: 1.0.0
  * Contact: AdvantEDGE@InterDigital.com
@@ -37,19 +37,40 @@
     factory(require('expect.js'), require('../../src/index'));
   } else {
     // Browser globals (root is window)
-    factory(root.expect, root.AdvantEdgePlatformControllerRestApi);
+    factory(root.expect, root.AdvantEdgeAuthServiceRestApi);
   }
-}(this, function(expect, AdvantEdgePlatformControllerRestApi) {
+}(this, function(expect, AdvantEdgeAuthServiceRestApi) {
   'use strict';
 
   var instance;
 
   beforeEach(function() {
-    instance = new AdvantEdgePlatformControllerRestApi.UserAuthenticationApi();
+    instance = new AdvantEdgeAuthServiceRestApi.AuthApi();
   });
 
   describe('(package)', function() {
-    describe('UserAuthenticationApi', function() {
+    describe('AuthApi', function() {
+      describe('authenticate', function() {
+        it('should call authenticate successfully', function(done) {
+          // TODO: uncomment, update parameter values for authenticate call
+          /*
+          var opts = {};
+          opts.svc = "svc_example";
+          opts.sbox = "sbox_example";
+
+          instance.authenticate(opts, function(error, data, response) {
+            if (error) {
+              done(error);
+              return;
+            }
+
+            done();
+          });
+          */
+          // TODO: uncomment and complete method invocation above, then delete this line and the next:
+          done();
+        });
+      });
       describe('authorize', function() {
         it('should call authorize successfully', function(done) {
           // TODO: uncomment, update parameter values for authorize call
@@ -71,14 +92,14 @@
           done();
         });
       });
-      describe('loginOAuth', function() {
-        it('should call loginOAuth successfully', function(done) {
-          // TODO: uncomment, update parameter values for loginOAuth call
+      describe('login', function() {
+        it('should call login successfully', function(done) {
+          // TODO: uncomment, update parameter values for login call
           /*
           var opts = {};
           opts.provider = "provider_example";
 
-          instance.loginOAuth(opts, function(error, data, response) {
+          instance.login(opts, function(error, data, response) {
             if (error) {
               done(error);
               return;
@@ -105,7 +126,7 @@
               return;
             }
             // TODO: update response assertions
-            expect(data).to.be.a(AdvantEdgePlatformControllerRestApi.Sandbox);
+            expect(data).to.be.a(AdvantEdgeAuthServiceRestApi.Sandbox);
             expect(data.name).to.be.a('string');
             expect(data.name).to.be("");
 
@@ -116,12 +137,12 @@
           done();
         });
       });
-      describe('logoutUser', function() {
-        it('should call logoutUser successfully', function(done) {
-          // TODO: uncomment logoutUser call
+      describe('logout', function() {
+        it('should call logout successfully', function(done) {
+          // TODO: uncomment logout call
           /*
 
-          instance.logoutUser(function(error, data, response) {
+          instance.logout(function(error, data, response) {
             if (error) {
               done(error);
               return;
