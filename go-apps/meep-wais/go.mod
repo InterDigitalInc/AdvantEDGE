@@ -12,7 +12,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-client v0.0.0 // indirect
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
@@ -31,6 +30,5 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model => ../../go-packages/meep-model
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions => ../../go-packages/meep-sessions
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-wais-client => ../../go-packages/meep-wais-client
 )

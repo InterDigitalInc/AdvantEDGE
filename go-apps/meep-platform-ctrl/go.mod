@@ -12,8 +12,6 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users v0.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -35,6 +33,4 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store => ../../go-packages/meep-sandbox-store
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions => ../../go-packages/meep-sessions
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users => ../../go-packages/meep-users
 )

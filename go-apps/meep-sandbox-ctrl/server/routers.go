@@ -46,7 +46,6 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -57,7 +56,6 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 	// Path prefix router order is important
 	if altSw != "" {
 		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/alt/api/").
 			Name("AltSw").
@@ -65,7 +63,6 @@ func NewRouter(priSw string, altSw string) *mux.Router {
 	}
 	if priSw != "" {
 		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
-		handler = sbxCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/api/").
 			Name("PriSw").

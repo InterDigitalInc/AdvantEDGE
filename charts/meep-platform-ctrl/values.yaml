@@ -35,7 +35,6 @@ service:
 
 ingress:
   enabled: true
-  # Used to create an Ingress record.
   hosts:
     - name: ''
       paths:
@@ -43,18 +42,13 @@ ingress:
         - /platform-ctrl
   annotations:
     kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-platform-ctrl
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/api$ $scheme://$http_host/api/ permanent;
       rewrite ^/alt$ $scheme://$http_host/alt/ permanent;
       rewrite ^/alt/api$ $scheme://$http_host/alt/api/ permanent;
   labels: {}
   tls:
-    # Secrets must be manually created in the namespace.
-    # - secretName: chart-example-tls
-    #   hosts:
-    #     - chart-example.local
 
 codecov:
   enabled: false

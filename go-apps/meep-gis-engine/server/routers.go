@@ -46,7 +46,6 @@ func NewRouter() *mux.Router {
 	for _, route := range routes {
 		var handler http.Handler = route.HandlerFunc
 		handler = Logger(handler, route.Name)
-		handler = ge.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).

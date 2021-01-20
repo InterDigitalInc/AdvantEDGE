@@ -35,7 +35,6 @@ import (
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 )
 
 type Scenario struct {
@@ -45,7 +44,6 @@ type Scenario struct {
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	rc            *redis.Connector
-	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
 	mqGlobal      *mq.MsgQueue
 }
@@ -134,14 +132,6 @@ func Init() (err error) {
 		return err
 	}
 	log.Info("Connected to Sandbox Store")
-
-	// Connect to Session Manager
-	pfmCtrl.sessionMgr, err = sm.NewSessionMgr(moduleName, "", redisDBAddr, redisDBAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	log.Info("Platform Controller initialized")
 	return nil

@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -61,12 +62,58 @@ const moduleName = "meep-auth-svc"
 const moduleNamespace = "default"
 const postgisUser = "postgres"
 const postgisPwd = "pwd"
-const permissionsRoot = "services"
 const pfmCtrlBasepath = "http://meep-platform-ctrl/platform-ctrl/v1"
+
+// Permission Configuration types
+type Permission struct {
+	Mode  string            `yaml:"mode"`
+	Roles map[string]string `yaml:"roles"`
+}
+type Fileserver struct {
+	Name  string            `yaml:"name"`
+	Path  string            `yaml:"path"`
+	Sbox  bool              `yaml:"sbox"`
+	Mode  string            `yaml:"mode"`
+	Roles map[string]string `yaml:"roles"`
+}
+type Endpoint struct {
+	Name   string            `yaml:"name"`
+	Path   string            `yaml:"path"`
+	Method string            `yaml:"method"`
+	Sbox   bool              `yaml:"sbox"`
+	Mode   string            `yaml:"mode"`
+	Roles  map[string]string `yaml:"roles"`
+}
+type Service struct {
+	Name      string      `yaml:"name"`
+	Path      string      `yaml:"path"`
+	Sbox      bool        `yaml:"sbox"`
+	Default   *Permission `yaml:"default"`
+	Endpoints []*Endpoint `yaml:"endpoints"`
+}
+type PermissionsConfig struct {
+	Default     *Permission   `yaml:"default"`
+	Fileservers []*Fileserver `yaml:"fileservers"`
+	Services    []*Service    `yaml:"services"`
+}
+
+// Auth Service types
+type AuthRoute struct {
+	Name    string
+	Method  string
+	Pattern string
+	Prefix  bool
+}
 
 type LoginRequest struct {
 	provider string
 	timer    *time.Timer
+}
+
+type PermissionsCache struct {
+	Default     *Permission
+	Fileservers map[string]*Permission
+	Services    map[string]map[string]*Permission
 }
 
 type AuthSvc struct {
@@ -79,6 +126,8 @@ type AuthSvc struct {
 	uri           string
 	oauthConfigs  map[string]*oauth2.Config
 	loginRequests map[string]*LoginRequest
+	router        *mux.Router
+	cache         PermissionsCache
 }
 
 var mutex sync.Mutex
@@ -131,8 +180,8 @@ func Init() (err error) {
 	_ = authSvc.userStore.CreateTables()
 	log.Info("Connected to User Store")
 
-	// Set endpoint authorization permissions
-	setPermissions()
+	// Retrieve & cache endpoint authorization permissions
+	cachePermissions()
 
 	// Connect to Metric Store
 	authSvc.metricStore, err = ms.NewMetricStore("session-metrics", "global", influxDBAddr, ms.MetricsDbDisabled)
@@ -218,49 +267,171 @@ func Run() (err error) {
 	return nil
 }
 
-func setPermissions() {
-
-	// Flush old permissions
-	ps := authSvc.sessionMgr.GetPermissionStore()
-	ps.Flush()
-
+func getPermissionsConfig() (config *PermissionsConfig, err error) {
 	// Read & apply API permissions from file
 	permissionsFile := "/permissions.yaml"
 	permissions := viper.New()
 	permissions.SetConfigFile(permissionsFile)
-	err := permissions.ReadInConfig()
+	err = permissions.ReadInConfig()
 	if err != nil {
-		log.Warn("Failed to read permissions from file")
-		log.Warn("Granting full API access for all roles by default")
-		_ = ps.SetDefaultPermission(&sm.Permission{Mode: sm.ModeAllow})
-		return
+		return nil, err
 	}
 
-	// Loop through services
-	for service := range permissions.GetStringMap(permissionsRoot) {
-		// Default permissions
-		if service == "default" {
-			permissionsRoute := permissionsRoot + ".default"
-			permission := new(sm.Permission)
-			permission.Mode = permissions.GetString(permissionsRoute + ".mode")
-			permission.RolePermissions = make(map[string]string)
-			for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
-				permission.RolePermissions[role] = access
+	// Unmarshal config into Permission Configuration structure
+	config = new(PermissionsConfig)
+	err = permissions.Unmarshal(config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func cachePermissions() {
+	// Create new Auth Router
+	authSvc.router = mux.NewRouter().StrictSlash(true)
+
+	// Get permissions from configuration file
+	config, err := getPermissionsConfig()
+	if err != nil || config == nil {
+		log.Warn("Failed to retrieve permissions from file with err: ", err.Error())
+		log.Warn("Granting full API access for all roles by default")
+
+		// Cache default permission
+		authSvc.cache.Default = &Permission{Mode: sm.ModeAllow}
+		return
+	}
+	// log.Info(fmt.Sprintf("%+v\n", config))
+
+	// Parse & cache permissions from config file
+	// IMPORTANT NOTE: Order is important to prevent prefix matches from running first
+	cacheDefaultPermission(config)
+	cacheServicePermissions(config)
+	cacheFileserverPermissions(config)
+}
+
+func cacheDefaultPermission(cfg *PermissionsConfig) {
+	authSvc.cache.Default = cfg.Default
+	if authSvc.cache.Default == nil {
+		log.Warn("Failed to retrieve default permission")
+		log.Warn("Granting full API access for all roles by default")
+		permission := new(Permission)
+		permission.Mode = sm.ModeAllow
+		authSvc.cache.Default = permission
+	}
+}
+
+func cacheServicePermissions(cfg *PermissionsConfig) {
+	var routes []*AuthRoute
+
+	// Initialize Service permissions cache
+	authSvc.cache.Services = make(map[string]map[string]*Permission)
+
+	for _, svc := range cfg.Services {
+		// Create new service + add it to service cache
+		svcMap := make(map[string]*Permission)
+		authSvc.cache.Services[svc.Name] = svcMap
+
+		// Service Endpoints
+		for _, ep := range svc.Endpoints {
+			// Cache service endpoint permissions
+			permission := new(Permission)
+			permission.Mode = ep.Mode
+			permission.Roles = make(map[string]string)
+			for role, access := range ep.Roles {
+				permission.Roles[role] = access
 			}
-			_ = ps.SetDefaultPermission(permission)
+			svcMap[ep.Name] = permission
+
+			// Add auth service route
+			route := new(AuthRoute)
+			route.Name = ep.Name
+			route.Prefix = false
+			route.Method = ep.Method
+			if svc.Sbox {
+				route.Pattern = "/{sbox}" + svc.Path + ep.Path
+			} else {
+				route.Pattern = svc.Path + ep.Path
+			}
+			routes = append(routes, route)
+		}
+		// fmt.Printf("%+v\n", svcMap)
+
+		// Default service permissions
+		// IMPORTANT NOTE: This prefix route must be added after the service endpoint routes
+		var permission *Permission
+		if svc.Default.Mode != "" {
+			permission := new(Permission)
+			permission.Roles = make(map[string]string)
+			permission.Mode = svc.Default.Mode
+			for role, access := range svc.Default.Roles {
+				permission.Roles[role] = access
+			}
 		} else {
-			// Service route names
-			permissionsService := permissionsRoot + "." + service
-			for name := range permissions.GetStringMap(permissionsService) {
-				permissionsRoute := permissionsService + "." + name
-				permission := new(sm.Permission)
-				permission.Mode = permissions.GetString(permissionsRoute + ".mode")
-				permission.RolePermissions = make(map[string]string)
-				for role, access := range permissions.GetStringMapString(permissionsRoute + ".roles") {
-					permission.RolePermissions[role] = access
-				}
-				_ = ps.Set(service, name, permission)
-			}
+			// Use cache default permission if service-specific default is not found
+			permission = authSvc.cache.Default
+		}
+		svcMap[svc.Name] = permission
+
+		// Add auth service default route
+		route := new(AuthRoute)
+		route.Name = svc.Name
+		route.Prefix = true
+		if svc.Sbox {
+			route.Pattern = "/{sbox}" + svc.Path
+		} else {
+			route.Pattern = svc.Path
+		}
+		routes = append(routes, route)
+	}
+
+	// Add routes to router
+	addRoutes(routes)
+}
+
+func cacheFileserverPermissions(cfg *PermissionsConfig) {
+	var routes []*AuthRoute
+
+	// Initialize Fileserver permissions cache
+	authSvc.cache.Fileservers = make(map[string]*Permission)
+
+	for _, fs := range cfg.Fileservers {
+		// Cache fileserver permissions
+		permission := new(Permission)
+		permission.Mode = fs.Mode
+		permission.Roles = make(map[string]string)
+		for role, access := range fs.Roles {
+			permission.Roles[role] = access
+		}
+		authSvc.cache.Fileservers[fs.Name] = permission
+
+		// Add auth service route
+		route := new(AuthRoute)
+		route.Name = fs.Name
+		route.Prefix = true
+		if fs.Sbox {
+			route.Pattern = "/{sbox}" + fs.Path
+		} else {
+			route.Pattern = fs.Path
+		}
+		routes = append(routes, route)
+	}
+
+	// Add routes to router
+	addRoutes(routes)
+}
+
+func addRoutes(routes []*AuthRoute) {
+	for _, route := range routes {
+		fmt.Printf("%+v\n", route)
+		if route.Prefix {
+			authSvc.router.
+				Name(route.Name).
+				PathPrefix(route.Pattern)
+		} else {
+			authSvc.router.
+				Name(route.Name).
+				Methods(route.Method).
+				Path(route.Pattern)
 		}
 	}
 }
@@ -336,58 +507,74 @@ func getErrUrl(err string) string {
 	return authSvc.uri + "?err=" + strings.ReplaceAll(err, " ", "+")
 }
 
+// ----------  REST API  ----------
+
 func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 
-	// Get service & sandbox name from request parameters
-	vars := mux.Vars(r)
-	svcName := vars["svc"]
-	sboxName := vars["sbox"]
-	log.Debug("svcName: ", svcName, " sboxName: ", sboxName)
+	// Get service & sandbox name from request query parameters
+	query := r.URL.Query()
+	svcName := query.Get("svc")
+	// sboxName := query.Get("sbox")
+	var sboxName string
 
-	// Get target method & URL from forwarded request headers
-	targetMethod := r.Header.Get("X-Original-Method")
-	targetUrl := r.Header.Get("X-Original-URL")
-	log.Debug("targetMethod: ", targetMethod, " targetUrl: ", targetUrl)
+	// Get original request URL & method
+	originalUrl := r.Header.Get("X-Original-URL")
+	originalMethod := r.Header.Get("X-Original-Method")
+	if originalUrl == "" || originalMethod == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-	// Get target permissions
-	// TODO -- parse permissions file on startup to create regexp table
-	// // Get permission store instance
-	// ps := pfmCtrl.sessionMgr.GetPermissionStore()
+	// Update request URL & method before running through matchers
+	var err error
+	r.Method = originalMethod
+	r.URL, err = url.ParseRequestURI(originalUrl)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-	// if targetMethod != "" && targetUrl != "" {
-	// 	url, err := url.ParseRequestURI(targetUrl)
-	// 	if err == nil {
+	// Get permissions for matching route or default if not found
+	var permission *Permission
+	var match mux.RouteMatch
+	if authSvc.router.Match(r, &match) {
+		routeName := match.Route.GetName()
+		sboxName = match.Vars["sbox"]
 
-	// 	}
-	// }
-	permission := new(sm.Permission)
-	// permission.Mode = sm.ModeAllow
-	permission.Mode = sm.ModeVerify
-	permission.RolePermissions = make(map[string]string)
-	permission.RolePermissions[sm.RoleAdmin] = sm.ModeAllow
-	permission.RolePermissions[sm.RoleUser] = sm.ModeBlock
+		log.Error("routeName: ", routeName, " sboxName: ", sboxName)
 
-	// // Use default permission if none found
-	// if permission == nil {
-	// 	permission, err = ps.GetDefaultPermission()
-	// 	if err != nil || permission == nil {
-	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 		return
-	// 	}
-	// }
+		// Check service-specific routes
+		if svcName != "" {
+			if svcPermissions, found := authSvc.cache.Services[svcName]; found {
+				permission = svcPermissions[routeName]
+			}
+		}
+		// Check file servers if not already found
+		if permission == nil {
+			if fsPermission, found := authSvc.cache.Fileservers[routeName]; found {
+				permission = fsPermission
+			}
+		}
+	} else {
+		permission = authSvc.cache.Default
+	}
 
-	// Get session store instance
-	ss := authSvc.sessionMgr.GetSessionStore()
+	// Verify permission
+	if permission == nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	// Handle according to permission mode
 	switch permission.Mode {
+	case sm.ModeAllow:
+		// break
 	case sm.ModeBlock:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
-	case sm.ModeAllow:
 	case sm.ModeVerify:
 		// Retrieve user session, if any
-		session, err := ss.Get(r)
+		session, err := authSvc.sessionMgr.GetSessionStore().Get(r)
 		if err != nil || session == nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -399,7 +586,7 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		access := permission.RolePermissions[role]
+		access := permission.Roles[role]
 		if access != sm.AccessGranted {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -410,13 +597,21 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
 	default:
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	// Allow request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	// Invoke handler
+	// handler.ServeHTTP(w, r)
+	// handler(w, r)
+
+	// authSvc.router.ServeHTTP(w, r)
 }
 
 func asAuthorize(w http.ResponseWriter, r *http.Request) {

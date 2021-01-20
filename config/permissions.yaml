@@ -12,689 +12,563 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#------------------------------------------------------------------------------
+#  NOTES:
+#  - Fileserver names must be unique for all fileservers
+#  - Service endpoint names must be unique within a service
+#  - 'mode' is the access authorization mode
+#    -> allow: grant access 
+#    -> block: deny access
+#    -> verify: obtain session role & verify role-specific access permissions
+#  - 'roles' is a map of role permissions
+#    -> allow: grant access 
+#    -> block: deny access 
+#  - Default access mode & role permissions are used when service-specific
+#    values are not provided
+#------------------------------------------------------------------------------
 
-# Service API & File Server Access Permissions
-# 
-# Each service provides route-specific access authorization mode & role permissions:
-# - Route name uniquely identifies http router paths
-#   -> NOTE: route names are case-insensitive
-# - 'mode' is the access authorization mode
-#   -> allow: grant access 
-#   -> block: deny access
-#   -> verify: obtain session role & verify role-specific access permissions
-# - 'roles' is a map of role permissions
-#   -> allow: grant access 
-#   -> block: deny access 
+#------------------------------------------------------------------------------
+#  DEFAULT PERMISSIONS:
+#  Default access mode & permissions for File Server & Service API routes.
 #
-# Default access mode & role permissions are used when service-specific
-# values are not provided.
-#
-services:
+#  FORMAT:
+#  mode: 'verify'         # access authorization mode: allow|block|verify
+#  roles:                 # role permissions: allow|block
+#    admin: 'allow'
+#    user: 'block'
+#------------------------------------------------------------------------------
+default:
+  mode: 'block'
 
+#------------------------------------------------------------------------------
+#  FILESERVER PERMISSIONS
+#  File Server access permissions.
+#
+#  FORMAT:
+#  - name: 'fs-name'              # fileserver name
+#    path: '/path/to/fs'          # fileserver path
+#    sbox: true|false             # sandbox deployment
+#    mode: 'allow|block|verify'   # access authorization mode
+#    roles:                       # role-specific permissions
+#      admin: 'allow|block'
+#      user: 'allow|block'
+#
+#  !!! IMPORTANT NOTE !!!
+#  Fileserver route matching is performed in the order defined below.
+#  You must place more specific routes first.
+#------------------------------------------------------------------------------
+fileservers:
   #------------------------------
-  #  Default
+  #  Grafana (3rd Party)
   #------------------------------
-  # Default access mode & permissions for File Server & API routes
-  default:
-    # access authorization mode: allow|block|verify
+  - name: 'grafana'
+    path: '/grafana/'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'block'
+  #------------------------------
+  #  Swagger UI
+  #------------------------------
+  - name: 'meep-swagger-ui'
+    path: '/api/'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'block'
+  #------------------------------
+  #  Alternate Swagger UI
+  #------------------------------
+  - name: 'meep-alt-swagger-ui'
+    path: '/alt/api/'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'block'
+  #------------------------------
+  #  Alternate Frontend
+  #------------------------------
+  - name: 'meep-alt-frontend'
+    path: '/alt/'
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'block'
+  #------------------------------
+  #  Sandbox Swagger UI (Sbox)
+  #------------------------------
+  - name: 'meep-sbox-swagger-ui'
+    path: '/api/'
+    sbox: true
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'allow'
+  #------------------------------
+  #  Sandbox Alternate Swagger UI (Sbox)
+  #------------------------------
+  - name: 'meep-alt-sbox-swagger-ui'
+    path: '/alt/api/'
+    sbox: true
+    mode: 'verify'
+    roles:
+      admin: 'allow'
+      user: 'block'
+  #------------------------------
+  #  Frontend (Default)
+  #------------------------------
+  - name: 'meep-frontend'
+    path: '/'
     mode: 'allow'
-    # # role permissions: allow|block
-    # roles:
-    #   admin: 'allow'
-    #   user: 'allow'
 
-  # #------------------------------
-  # #  GIS Engine
-  # #------------------------------
-  # meep-gis-engine:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   GetAutomationState:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   GetAutomationStateByName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   SetAutomationStateByName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   DeleteGeoDataByName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetAssetData:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   GetGeoDataByName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   UpdateGeoDataByName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-
-  # #------------------------------
-  # #  Location Service
-  # #------------------------------
-  # meep-loc-serv:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   ApByIdGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ApGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   AreaCircleSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   AreaCircleSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   AreaCircleSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   AreaCircleSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   AreaCircleSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DistanceSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PeriodicSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PeriodicSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PeriodicSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PeriodicSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PeriodicSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UserTrackingSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UserTrackingSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UserTrackingSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UserTrackingSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UserTrackingSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   UsersGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonalTrafficSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonalTrafficSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonalTrafficSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonalTrafficSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonalTrafficSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZoneStatusSubDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZoneStatusSubGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZoneStatusSubListGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZoneStatusSubPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZoneStatusSubPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonesGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   ZonesGetById:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-
-  # #------------------------------
-  # #  Metrics Engine
-  # #------------------------------
-  # meep-metrics-engine:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   IndexV2:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   PostEventQuery:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   PostHttpQuery:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   PostNetworkQuery:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   CreateEventSubscription:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   CreateNetworkSubscription:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteEventSubscriptionById:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteNetworkSubscriptionById:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetEventSubscription:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetEventSubscriptionById:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetNetworkSubscription:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetNetworkSubscriptionById:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-
-  # #------------------------------
-  # #  Mobility Group Manager
-  # #------------------------------
-  # meep-mg-manager:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   CreateMobilityGroup:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   CreateMobilityGroupApp:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   CreateMobilityGroupUe:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DeleteMobilityGroup:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   DeleteMobilityGroupApp:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   GetMobilityGroup:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   GetMobilityGroupApp:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   GetMobilityGroupAppList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   GetMobilityGroupList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SetMobilityGroup:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SetMobilityGroupApp:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   TransferAppState:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-
-  # #------------------------------
-  # #  Monitoring Engine
-  # #------------------------------
-  # meep-mon-engine:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   GetStates:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-
-  # #------------------------------
-  # #  Platform Controller
-  # #------------------------------
-  # meep-platform-ctrl:
-  #   # File server routes: names provided to file server routes during router initialization
-  #   AltSw:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   AltFe:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   PriSw:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   PriFe:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   CreateSandbox:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   CreateSandboxWithName:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteSandbox:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteSandboxList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetSandbox:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   GetSandboxList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   CreateScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteScenarioList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   GetScenarioList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   SetScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   Authorize:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   LoginOAuth:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   LoginUser:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   LogoutUser:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   TriggerWatchdog:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-
-  # #------------------------------
-  # #  RNI Service
-  # #------------------------------
-  # meep-rnis:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   Layer2MeasInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   PlmnInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   RabInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   S1BearerInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionLinkListSubscriptionsGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-
-  # #------------------------------
-  # #  WAI Service
-  # #------------------------------
-  # meep-wais:
-  #   # REST API endpoint routes: names provided to endpoint routes during router initialization
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   ApInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   StaInfoGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionLinkListSubscriptionsGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsDELETE:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsGET:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsPOST:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-  #   SubscriptionsPUT:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
-
-  # #------------------------------
-  # #  Sandbox Controller
-  # #------------------------------
-  # meep-sandbox-ctrl:
-  #   # File server routes
-  #   AltSw:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   PriSw:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-
-  #   # REST API endpoints
-  #   Index:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'block'
-  #   ActivateScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   GetActiveNodeServiceMaps:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetActiveScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   TerminateScenario:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'allow'
-  #   CreateReplayFile:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   CreateReplayFileFromScenarioExec:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteReplayFile:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   DeleteReplayFileList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetReplayFile:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetReplayFileList:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   GetReplayStatus:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   LoopReplay:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   PlayReplayFile:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   StopReplayFile:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'verify'
-  #     # role permissions: allow|block
-  #     roles:
-  #       admin: 'allow'
-  #       user: 'block'
-  #   SendEvent:
-  #     # access authorization mode: allow|block|verify
-  #     mode: 'allow'
+#------------------------------------------------------------------------------
+#  SERVICE ENDPOINT PERMISSIONS
+#  Service REST API endpoint access permissions.
+#
+#  FORMAT:
+#  - name: 'svc-name'                   # service name
+#    path: '/svc/base/path'             # service base path
+#    sbox: true|false                   # sandbox deployment
+#    default:                           # default service permissions
+#      mode: 'allow|block|verify'       # access authorization mode
+#      roles:                           # role-specific permissions
+#        admin: 'allow|block'
+#        user: 'allow|block'
+#    endpoints:                         # Endpoint permissions (overrides default)
+#      - name 'endpoint-name'           # endpoint name
+#        path: '/endpoint/path'         # endpoint path
+#        method: 'GET|POST|PUT|DELETE'  # endpoint method
+#        mode: 'allow|block|verify'     # access authorization mode
+#        roles:                         # role-specific permissions
+#          admin: 'allow|block'
+#          user: 'allow|block'
+#------------------------------------------------------------------------------
+services:
+  #------------------------------
+  #  GIS Engine (Sbox)
+  #------------------------------
+  - name: 'meep-gis-engine'
+    path: '/gis/v1'
+    sbox: true
+    default:
+      mode: 'block'
+    endpoints:
+      - name: 'GetAutomationState'
+        path: '/automation'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'GetAutomationStateByName'
+        path: '/automation/{type}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'SetAutomationStateByName'
+        path: '/automation/{type}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'DeleteGeoDataByName'
+        path: '/geodata/{assetName}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetAssetData'
+        path: '/geodata'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'GetGeoDataByName'
+        path: '/geodata/{assetName}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'UpdateGeoDataByName'
+        path: '/geodata/{assetName}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+  #------------------------------
+  #  Location Service (Sbox)
+  #------------------------------
+  - name: 'meep-loc-serv'
+    path: '/location/v1'
+    sbox: true
+    default:
+      mode: 'allow'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+  #------------------------------
+  #  Metrics Engine (Sbox)
+  #------------------------------
+  - name: 'meep-metrics-engine'
+    path: '/metrics/v2'
+    sbox: true
+    default:
+      mode: 'block'
+    endpoints:
+      - name: 'PostEventQuery'
+        path: '/metrics/query/event'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'PostHttpQuery'
+        path: '/metrics/query/http'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'PostNetworkQuery'
+        path: '/metrics/query/network'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateEventSubscription'
+        path: '/metrics/subscriptions/event'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateNetworkSubscription'
+        path: '/metrics/subscriptions/network'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteEventSubscriptionById'
+        path: '/metrics/subscriptions/event/{subscriptionId}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteNetworkSubscriptionById'
+        path: '/metrics/subscriptions/network/{subscriptionId}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetEventSubscription'
+        path: '/metrics/subscriptions/event'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetEventSubscriptionById'
+        path: '/metrics/subscriptions/event/{subscriptionId}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetNetworkSubscription'
+        path: '/metrics/subscriptions/network'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetNetworkSubscriptionById'
+        path: '/metrics/subscriptions/network/{subscriptionId}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+  #------------------------------
+  #  Mobility Group Manager (Sbox)
+  #------------------------------
+  - name: 'meep-mg-manager'
+    path: '/mgm/v1'
+    sbox: true
+    default:
+      mode: 'allow'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+  #------------------------------
+  #  Monitoring Engine
+  #------------------------------
+  - name: 'meep-mon-engine'
+    path: '/mon-engine/v1'
+    sbox: false
+    default:
+      mode: 'block'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+      - name: 'GetStates'
+        path: '/states'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+  #------------------------------
+  #  Platform Controller
+  #------------------------------
+  - name: 'meep-platform-ctrl'
+    path: '/platform-ctrl/v1'
+    sbox: false
+    default:
+      mode: 'block'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+      - name: 'CreateSandbox'
+        path: '/sandboxes'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateSandboxWithName'
+        path: '/sandboxes/{name}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteSandbox'
+        path: '/sandboxes/{name}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteSandboxList'
+        path: '/sandboxes'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetSandbox'
+        path: '/sandboxes/{name}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'GetSandboxList'
+        path: '/sandboxes'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateScenario'
+        path: '/scenarios/{name}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteScenario'
+        path: '/scenarios/{name}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteScenarioList'
+        path: '/scenarios'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetScenario'
+        path: '/scenarios/{name}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'GetScenarioList'
+        path: '/scenarios'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'SetScenario'
+        path: '/scenarios/{name}'
+        method: 'PUT'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+  #------------------------------
+  #  RNI Service (Sbox)
+  #------------------------------
+  - name: 'meep-rnis'
+    path: '/rni/v2'
+    sbox: true
+    default:
+      mode: 'allow'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+  #------------------------------
+  #  Sandbox Controller (Sbox)
+  #------------------------------
+  - name: 'meep-sandbox-ctrl'
+    path: '/sandbox-ctrl/v1'
+    sbox: true
+    default:
+      mode: 'block'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
+      - name: 'ActivateScenario'
+        path: '/active/{name}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'GetActiveNodeServiceMaps'
+        path: '/active/serviceMaps'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetActiveScenario'
+        path: '/active'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'allow'
+      - name: 'TerminateScenario'
+        path: '/active'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateReplayFile'
+        path: '/replay/{name}'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'CreateReplayFileFromScenarioExec'
+        path: '/replay/{name}/generate'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteReplayFile'
+        path: '/replay/{name}'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'DeleteReplayFileList'
+        path: '/replay'
+        method: 'DELETE'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetReplayFile'
+        path: '/replay/{name}'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetReplayFileList'
+        path: '/replay'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'GetReplayStatus'
+        path: '/replaystatus'
+        method: 'GET'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'LoopReplay'
+        path: '/replay/{name}/loop'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'PlayReplayFile'
+        path: '/replay/{name}/play'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'StopReplayFile'
+        path: '/replay/{name}/stop'
+        method: 'POST'
+        mode: 'verify'
+        roles:
+          admin: 'allow'
+          user: 'block'
+      - name: 'SendEvent'
+        path: '/events/{type}'
+        method: 'POST'
+        mode: 'allow'
+  #------------------------------
+  #  WAI Service (Sbox)
+  #------------------------------
+  - name: 'meep-wais'
+    path: '/wai/v2'
+    sbox: true
+    default:
+      mode: 'allow'
+    endpoints:
+      - name: 'Index'
+        path: '/'
+        method: 'GET'
+        mode: 'block'
