@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.6.0
+version: 1.6.2
 repo:
   name: AdvantEDGE
 
@@ -47,6 +47,9 @@ repo:
 
     # authentication & authorization config
     auth:
+      # enable authentication & authorization
+      enabled: false
+      # Session config
       session:
         # session encryption key k8s secret (data: encryption-key)
         key-secret: meep-session
@@ -96,15 +99,15 @@ repo:
         # user supplied value file located @ .meep/user/values (use below file name)
         chart-user-values: meep-auth-svc.yaml
         # enable meepctl build
-        build: true
+        build: false
         # enable meepctl dockerize
-        dockerize: true
+        dockerize: false
         # enable meepctl deploy/delete
-        deploy: true
+        deploy: false
         # supports code coverage measurement when built in codecov mode
         codecov: true
         # supports linting
-        lint: true
+        lint: false
         # location of API specification
         api: go-apps/meep-auth-svc/api/swagger.yaml
         # AdvantEDGE resources included in Docker container image

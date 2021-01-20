@@ -28,9 +28,7 @@ image:
     MEEP_CORE_PODS: ""
     MEEP_SANDBOX_PODS: ""
   envSecret:
-    MEEP_SESSION_KEY:
-      name: meep-session
-      key: encryption-key
+
 service:
   type: ClusterIP
   port: 80
@@ -43,7 +41,7 @@ ingress:
         - /mon-engine
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-mon-engine
+    # nginx.ingress.kubernetes.io/auth-url: <-- set by 'meepctl deploy' when auth enabled
 
 codecov:
   enabled: false

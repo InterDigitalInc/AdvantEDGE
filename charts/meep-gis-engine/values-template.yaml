@@ -16,7 +16,6 @@ image:
   pullPolicy: Always
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
-    MEEP_SESSION_KEY: {{ .SessionKey }}
 
 service:
   name: meep-gis-engine
@@ -32,9 +31,11 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-gis-engine&sbox={{ .SandboxName }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/{{ .SandboxName }}/gis(/|$)(.*)$ /gis/$2 break;
+    {{- if .AuthEnabled }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-gis-engine&sbox={{ .SandboxName }}
+    {{- end }}
   labels: {}
   tls:
 

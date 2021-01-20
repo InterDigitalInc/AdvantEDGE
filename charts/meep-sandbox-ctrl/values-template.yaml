@@ -27,7 +27,6 @@ image:
   env:
     MEEP_SANDBOX_NAME: {{ .SandboxName }}
     MEEP_HOST_URL: {{ .HostUrl }}
-    MEEP_SESSION_KEY: {{ .SessionKey }}
 
 service:
   type: ClusterIP
@@ -44,13 +43,15 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: {{ .HttpsOnly }}
-    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-sandbox-ctrl&sbox={{ .SandboxName }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/{{ .SandboxName }}/api$ $scheme://$http_host/{{ .SandboxName }}/api/ permanent;
       rewrite ^/{{ .SandboxName }}/alt/api$ $scheme://$http_host/{{ .SandboxName }}/alt/api/ permanent;
       rewrite ^/{{ .SandboxName }}/api(/|$)(.*)$ /api/$2 break;
       rewrite ^/{{ .SandboxName }}/alt/api(/|$)(.*)$ /alt/api/$2 break;
       rewrite ^/{{ .SandboxName }}/sandbox-ctrl(/|$)(.*)$ /sandbox-ctrl/$2 break;
+    {{- if .AuthEnabled }}
+    nginx.ingress.kubernetes.io/auth-url: https://$http_host/auth/v1/authenticate?svc=meep-sandbox-ctrl&sbox={{ .SandboxName }}
+    {{- end }}
   labels: {}
   tls:
 
