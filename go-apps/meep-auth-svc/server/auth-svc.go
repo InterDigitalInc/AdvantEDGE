@@ -85,16 +85,16 @@ type Endpoint struct {
 	Roles  map[string]string `yaml:"roles"`
 }
 type Service struct {
-	Name      string      `yaml:"name"`
-	Path      string      `yaml:"path"`
-	Sbox      bool        `yaml:"sbox"`
-	Default   *Permission `yaml:"default"`
-	Endpoints []*Endpoint `yaml:"endpoints"`
+	Name      string     `yaml:"name"`
+	Path      string     `yaml:"path"`
+	Sbox      bool       `yaml:"sbox"`
+	Default   Permission `yaml:"default"`
+	Endpoints []Endpoint `yaml:"endpoints"`
 }
 type PermissionsConfig struct {
-	Default     *Permission   `yaml:"default"`
-	Fileservers []*Fileserver `yaml:"fileservers"`
-	Services    []*Service    `yaml:"services"`
+	Default     Permission   `yaml:"default"`
+	Fileservers []Fileserver `yaml:"fileservers"`
+	Services    []Service    `yaml:"services"`
 }
 
 // Auth Service types
@@ -300,7 +300,7 @@ func cachePermissions() {
 		authSvc.cache.Default = &Permission{Mode: sm.ModeAllow}
 		return
 	}
-	// log.Info(fmt.Sprintf("%+v\n", config))
+	fmt.Printf("%+v\n", config)
 
 	// Parse & cache permissions from config file
 	// IMPORTANT NOTE: Order is important to prevent prefix matches from running first
@@ -310,7 +310,7 @@ func cachePermissions() {
 }
 
 func cacheDefaultPermission(cfg *PermissionsConfig) {
-	authSvc.cache.Default = cfg.Default
+	authSvc.cache.Default = &cfg.Default
 	if authSvc.cache.Default == nil {
 		log.Warn("Failed to retrieve default permission")
 		log.Warn("Granting full API access for all roles by default")
@@ -354,13 +354,12 @@ func cacheServicePermissions(cfg *PermissionsConfig) {
 			}
 			routes = append(routes, route)
 		}
-		// fmt.Printf("%+v\n", svcMap)
 
 		// Default service permissions
 		// IMPORTANT NOTE: This prefix route must be added after the service endpoint routes
 		var permission *Permission
 		if svc.Default.Mode != "" {
-			permission := new(Permission)
+			permission = new(Permission)
 			permission.Roles = make(map[string]string)
 			permission.Mode = svc.Default.Mode
 			for role, access := range svc.Default.Roles {
@@ -540,8 +539,7 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	if authSvc.router.Match(r, &match) {
 		routeName := match.Route.GetName()
 		sboxName = match.Vars["sbox"]
-
-		log.Error("routeName: ", routeName, " sboxName: ", sboxName)
+		log.Debug("routeName: ", routeName, " sboxName: ", sboxName)
 
 		// Check service-specific routes
 		if svcName != "" {
@@ -606,12 +604,6 @@ func asAuthenticate(w http.ResponseWriter, r *http.Request) {
 	// Allow request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-
-	// Invoke handler
-	// handler.ServeHTTP(w, r)
-	// handler(w, r)
-
-	// authSvc.router.ServeHTTP(w, r)
 }
 
 func asAuthorize(w http.ResponseWriter, r *http.Request) {

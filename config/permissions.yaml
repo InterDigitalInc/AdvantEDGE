@@ -62,7 +62,7 @@ fileservers:
   #  Grafana (3rd Party)
   #------------------------------
   - name: 'grafana'
-    path: '/grafana/'
+    path: '/grafana'
     mode: 'verify'
     roles:
       admin: 'allow'
@@ -206,7 +206,7 @@ services:
   #  Location Service (Sbox)
   #------------------------------
   - name: 'meep-loc-serv'
-    path: '/location/v1'
+    path: '/location/v2'
     sbox: true
     default:
       mode: 'allow'
@@ -484,7 +484,7 @@ services:
         mode: 'verify'
         roles:
           admin: 'allow'
-          user: 'block'
+          user: 'allow'
       - name: 'CreateReplayFile'
         path: '/replay/{name}'
         method: 'POST'

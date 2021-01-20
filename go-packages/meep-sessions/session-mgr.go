@@ -18,12 +18,9 @@ package sessions
 
 import (
 	"errors"
-	"net/http"
-	"strings"
 	"time"
 
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	"github.com/gorilla/mux"
 )
 
 type SessionTimeoutHandler func(*Session)
@@ -76,63 +73,6 @@ func (sm *SessionMgr) GetSessionStore() *SessionStore {
 // GetPermissionTable - Retrieve permission table instance
 func (sm *SessionMgr) GetPermissionStore() *PermissionStore {
 	return sm.ps
-}
-
-// Authorizer - Authorization handler for API access
-func (sm *SessionMgr) Authorizer(inner http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// Get route access permissions
-		permission, err := sm.ps.Get(sm.service, strings.ToLower(mux.CurrentRoute(r).GetName()))
-		if err != nil || permission == nil {
-			permission, err = sm.ps.GetDefaultPermission()
-			if err != nil || permission == nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-		}
-
-		// Handle according to permission mode
-		switch permission.Mode {
-		case ModeBlock:
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		case ModeAllow:
-			inner.ServeHTTP(w, r)
-			return
-		case ModeVerify:
-			// Retrieve user session, if any
-			session, err := sm.ss.Get(r)
-			if err != nil || session == nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			// Verify role permissions
-			role := session.Role
-			if role == "" {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			access := permission.RolePermissions[role]
-			if access != AccessGranted {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			// For non-admin users, verify session sandbox matches service sandbox, if any
-			if session.Role != RoleAdmin && sm.sboxName != "" && sm.sboxName != session.Sandbox {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			inner.ServeHTTP(w, r)
-			return
-		default:
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-	})
 }
 
 // StartSessionWatchdog - Start Session Watchdog
