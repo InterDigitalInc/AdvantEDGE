@@ -28,7 +28,7 @@ import (
 )
 
 func Layer2MeasInfoGET(w http.ResponseWriter, r *http.Request) {
-	notImplemented(w, r)
+	layer2MeasInfoGet(w, r)
 }
 
 func PlmnInfoGET(w http.ResponseWriter, r *http.Request) {
