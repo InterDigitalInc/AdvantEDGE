@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://github.com/swagger-api/swagger-codegen/blob/master/README.md)
 
 - API version: 1.0.0
-- Build date: 2021-01-14T16:45:19.169-05:00
+- Build date: 2021-01-21T14:48:09.893-05:00
 
 
 ### Running the server

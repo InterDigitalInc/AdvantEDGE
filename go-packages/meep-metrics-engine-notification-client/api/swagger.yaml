@@ -14,7 +14,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
-basePath: "/metrics-notif/v2"
+basePath: "/sandboxname/metrics-notif/v2"
 tags:
 - name: "notifications"
 consumes:

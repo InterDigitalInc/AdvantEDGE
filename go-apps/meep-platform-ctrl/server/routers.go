@@ -38,6 +38,7 @@ type Route struct {
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
+
 type Routes []Route
 
 func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Router {
