@@ -31,7 +31,9 @@ const moduleName string = "meep-rnis-sbi"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UeDataCb       func(string, string, string, string, bool)
+	UeDataCb       func(string, string, string, string, string, bool)
+	MeasInfoCb     func(string, string, []string, []int32, []int32)
+	PoaInfoCb      func(string, string, string, string, string)
 	AppEcgiInfoCb  func(string, string, string, string)
 	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
@@ -45,7 +47,9 @@ type RnisSbi struct {
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
-	updateUeDataCB       func(string, string, string, string, bool)
+	updateUeDataCB       func(string, string, string, string, string, bool)
+	updateMeasInfoCB     func(string, string, []string, []int32, []int32)
+	updatePoaInfoCB      func(string, string, string, string, string)
 	updateAppEcgiInfoCB  func(string, string, string, string)
 	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
@@ -64,6 +68,8 @@ func Init(cfg SbiCfg) (err error) {
 	sbi = new(RnisSbi)
 	sbi.sandboxName = cfg.SandboxName
 	sbi.updateUeDataCB = cfg.UeDataCb
+	sbi.updateMeasInfoCB = cfg.MeasInfoCb
+	sbi.updatePoaInfoCB = cfg.PoaInfoCb
 	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
 	sbi.updateDomainDataCB = cfg.DomainDataCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
@@ -234,6 +240,7 @@ func processActiveScenarioUpdate() {
 					mnc := ""
 					mcc := ""
 					cellId := ""
+					nrcellId := ""
 					erabIdValid := false
 					if domain.CellularDomainConfig != nil {
 						mnc = domain.CellularDomainConfig.Mnc
@@ -242,26 +249,28 @@ func processActiveScenarioUpdate() {
 					}
 					switch poa.Type_ {
 					case mod.NodeTypePoa4G:
+						//using the default cellId if no poa4GConfig is set
 						if poa.Poa4GConfig != nil {
 							if poa.Poa4GConfig.CellId != "" {
 								cellId = poa.Poa4GConfig.CellId
 							}
 						}
 						erabIdValid = true
-					/*no support for RNIS on 5G elements anymore
+					/*no support for RNIS on 5G elements anymore, but need the info for meas_rep_ue*/
 					case mod.NodeTypePoa5G:
+						//clearing the cellId filled by the domain since it does not apply to 5G elements
+						cellId = ""
 						if poa.Poa5GConfig != nil {
 							if poa.Poa5GConfig.CellId != "" {
-								cellId = poa.Poa5GConfig.CellId
+								nrcellId = poa.Poa5GConfig.CellId
 							}
 						}
-					*/
 					default:
 						//empty cells for POAs not supporting RNIS
 						cellId = ""
 					}
 
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, erabIdValid)
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid)
 				}
 			}
 		}
@@ -277,7 +286,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", false)
+			sbi.updateUeDataCB(prevUeName, "", "", "", "", false)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -355,26 +364,85 @@ func processActiveScenarioUpdate() {
 			log.Info("App removed : ", prevApp)
 		}
 	}
+
+	// Update POA Cellular and Wifi info
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
+	for _, name := range poaNameList {
+		node := sbi.activeModel.GetNode(name)
+		if node != nil {
+			nl := node.(*dataModel.NetworkLocation)
+
+			mnc := ""
+			mcc := ""
+			cellId := ""
+
+			switch nl.Type_ {
+			case mod.NodeTypePoa4G, mod.NodeTypePoa5G:
+				poaParent := sbi.activeModel.GetNodeParent(name)
+				if zone, ok := poaParent.(*dataModel.Zone); ok {
+					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
+					if domain, ok := zoneParent.(*dataModel.Domain); ok {
+						if domain.CellularDomainConfig != nil {
+							mnc = domain.CellularDomainConfig.Mnc
+							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
+						}
+					}
+				}
+				if nl.Poa4GConfig != nil {
+					cellId = nl.Poa4GConfig.CellId
+				} else if nl.Poa5GConfig != nil {
+					cellId = nl.Poa5GConfig.CellId
+				}
+
+				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId)
+			}
+		}
+	}
 }
 
 func refreshMeasurements() {
-	// // Update UE measurements
-	// ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
-	// ueNameList := sbi.activeModel.GetNodeNames("UE")
-	// for _, name := range ueNameList {
-	// 	// Ignore disconnected UEs
-	// 	if !isUeConnected(name) {
-	// 		continue
-	// 	}
+	// Update UE measurements
+	ueMeasMap, _ := sbi.gisCache.GetAllMeasurements()
+	ueNameList := sbi.activeModel.GetNodeNames("UE")
+	for _, name := range ueNameList {
+		// Ignore disconnected UEs
+		if !isUeConnected(name) {
+			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
+			continue
+		}
 
-	// 	// TODO - Update RSRP & RSRQ in RNIS
-	// 	if ueMeas, found := ueMeasMap[name]; found {
-	// 		log.Debug("UE Measurements for ", name, ":")
-	// 		for poaName, meas := range ueMeas.Measurements {
-	// 			log.Debug("  ", poaName, ": ", fmt.Sprintf("%+v", *meas))
-	// 		}
-	// 	}
-	// }
+		ueParent := sbi.activeModel.GetNodeParent(name)
+		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
+			poaNames, rsrps, rsrqs := getMeas(name, "", ueMeasMap)
+			sbi.updateMeasInfoCB(name, poa.Name, poaNames, rsrps, rsrqs)
+		} else {
+			sbi.updateMeasInfoCB(name, "", nil, nil, nil)
+		}
+	}
+}
+
+func getMeas(ue string, poaName string, ueMeasMap map[string]*gc.UeMeasurement) ([]string, []int32, []int32) {
+	var poaNames []string
+	var rsrps []int32
+	var rsrqs []int32
+
+	if ueMeas, ueFound := ueMeasMap[ue]; ueFound {
+		if poaName == "" {
+			for poaName, meas := range ueMeas.Measurements {
+				poaNames = append(poaNames, poaName)
+				rsrps = append(rsrps, int32(meas.Rsrp))
+				rsrqs = append(rsrqs, int32(meas.Rsrq))
+			}
+		} else {
+			if meas, poaFound := ueMeas.Measurements[poaName]; poaFound {
+				poaNames = append(poaNames, poaName)
+				rsrps = append(rsrps, int32(meas.Rsrp))
+				rsrqs = append(rsrqs, int32(meas.Rsrq))
+			}
+		}
+	}
+	return poaNames, rsrps, rsrqs
 }
 
 func isUeConnected(name string) bool {

@@ -51,19 +51,29 @@ var influxAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 const cellChangeSubscriptionType = "cell_change"
 const rabEstSubscriptionType = "rab_est"
 const rabRelSubscriptionType = "rab_rel"
+const measRepUeSubscriptionType = "meas_rep_ue"
+const nrMeasRepUeSubscriptionType = "nr_meas_rep_ue"
+const poaType4G = "POA-4G"
+const poaType5G = "POA-5G"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}
 var reSubscriptionMap = map[int]*RabEstSubscription{}
 var rrSubscriptionMap = map[int]*RabRelSubscription{}
+var mrSubscriptionMap = map[int]*MeasRepUeSubscription{}
+var nrMrSubscriptionMap = map[int]*NrMeasRepUeSubscription{}
 var subscriptionExpiryMap = map[int][]int{}
 var currentStoreName = ""
 
 const CELL_CHANGE_SUBSCRIPTION = "CellChangeSubscription"
 const RAB_EST_SUBSCRIPTION = "RabEstSubscription"
 const RAB_REL_SUBSCRIPTION = "RabRelSubscription"
+const MEAS_REP_UE_SUBSCRIPTION = "MeasRepUeSubscription"
+const NR_MEAS_REP_UE_SUBSCRIPTION = "NrMeasRepUeSubscription"
 const CELL_CHANGE_NOTIFICATION = "CellChangeNotification"
 const RAB_EST_NOTIFICATION = "RabEstNotification"
 const RAB_REL_NOTIFICATION = "RabRelNotification"
+const MEAS_REP_UE_NOTIFICATION = "MeasRepUeNotification"
+const NR_MEAS_REP_UE_NOTIFICATION = "NrMeasRepUeNotification"
 
 var RNIS_DB = 5
 
@@ -76,6 +86,11 @@ var baseKey string
 var mutex sync.Mutex
 
 var expiryTicker *time.Ticker
+
+var periodicTriggerTicker *time.Ticker
+var periodicNrTriggerTicker *time.Ticker
+var periodicTriggerIntervals = 1
+var periodicNrTriggerIntervals = 1
 
 var nextSubscriptionIdAvailable int
 var nextAvailableErabId int
@@ -91,10 +106,25 @@ type RabInfoData struct {
 }
 
 type UeData struct {
-	Name   string `json:"name"`
-	ErabId int32  `json:"erabId"`
-	Ecgi   *Ecgi  `json:"ecgi"`
-	Qci    int32  `json:"qci"`
+	Name          string       `json:"name"`
+	ErabId        int32        `json:"erabId"`
+	Ecgi          *Ecgi        `json:"ecgi"`
+	Nrcgi         *NRcgi       `json:"nrcgi"`
+	Qci           int32        `json:"qci"`
+	ParentPoaName string       `json:"parentPoaName"`
+	InRangePoas   []InRangePoa `json:"inRangePoas"`
+}
+
+type InRangePoa struct {
+	Name string `json:"name"`
+	Rsrp int32  `json:"rsrp"`
+	Rsrq int32  `json:"rsrq"`
+}
+
+type PoaInfo struct {
+	Type  string `json:"type"`
+	Ecgi  Ecgi   `json:"ecgi"`
+	Nrcgi NRcgi  `json:"nrcgi"`
 }
 
 type DomainData struct {
@@ -170,11 +200,27 @@ func Init() (err error) {
 		}
 	}()
 
+	periodicTriggerTicker = time.NewTicker(time.Duration(periodicTriggerIntervals) * time.Second)
+	go func() {
+		for range periodicTriggerTicker.C {
+			checkMrPeriodicTrigger(int32(TRIGGER_PERIODICAL_REPORT_STRONGEST_CELLS))
+		}
+	}()
+
+	periodicNrTriggerTicker = time.NewTicker(time.Duration(periodicNrTriggerIntervals) * time.Second)
+	go func() {
+		for range periodicNrTriggerTicker.C {
+			checkNrMrPeriodicTrigger(int32(TRIGGER_NR_NR_PERIODICAL))
+		}
+	}()
+
 	// Initialize SBI
 	sbiCfg := sbi.SbiCfg{
 		SandboxName:    sandboxName,
 		RedisAddr:      redisAddr,
 		UeDataCb:       updateUeData,
+		MeasInfoCb:     updateMeasInfo,
+		PoaInfoCb:      updatePoaInfo,
 		AppEcgiInfoCb:  updateAppEcgiInfo,
 		DomainDataCb:   updateDomainData,
 		ScenarioNameCb: updateStoreName,
@@ -200,6 +246,9 @@ func reInit() {
 	_ = rc.ForEachJSONEntry(keyName, repopulateCcSubscriptionMap, nil)
 	_ = rc.ForEachJSONEntry(keyName, repopulateReSubscriptionMap, nil)
 	_ = rc.ForEachJSONEntry(keyName, repopulateRrSubscriptionMap, nil)
+	_ = rc.ForEachJSONEntry(keyName, repopulateMrSubscriptionMap, nil)
+	_ = rc.ForEachJSONEntry(keyName, repopulateNrMrSubscriptionMap, nil)
+
 }
 
 // Run - Start RNIS
@@ -212,7 +261,7 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateUeData(name string, mnc string, mcc string, cellId string, erabIdValid bool) {
+func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId string, erabIdValid bool) {
 
 	var plmn Plmn
 	var newEcgi Ecgi
@@ -221,8 +270,13 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 	newEcgi.CellId = cellId
 	newEcgi.Plmn = &plmn
 
+	var newNrcgi NRcgi
+	newNrcgi.NrcellId = nrcellId
+	newNrcgi.Plmn = &plmn
+
 	var ueData UeData
 	ueData.Ecgi = &newEcgi
+	ueData.Nrcgi = &newNrcgi
 	ueData.Name = name
 	ueData.Qci = defaultSupportedQci //only supporting one value
 
@@ -231,6 +285,9 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 	oldPlmnMcc := ""
 	oldCellId := ""
 	var oldErabId int32 = -1
+	oldNrPlmnMnc := ""
+	oldNrPlmnMcc := ""
+	oldNrCellId := ""
 
 	//get from DB
 	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
@@ -245,9 +302,15 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 				oldCellId = ueDataObj.Ecgi.CellId
 				oldErabId = ueDataObj.ErabId
 			}
+			if ueDataObj.Nrcgi != nil {
+				oldNrPlmnMnc = ueDataObj.Nrcgi.Plmn.Mnc
+				oldNrPlmnMcc = ueDataObj.Nrcgi.Plmn.Mcc
+				oldNrCellId = ueDataObj.Nrcgi.NrcellId
+			}
+
 		}
 	}
-	//updateDB if changes occur
+	//updateDB if changes occur (4G section)
 	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
 
 		//allocating a new erabId if entering a 4G environment (using existence of an erabId)
@@ -282,7 +345,64 @@ func updateUeData(name string, mnc string, mcc string, cellId string, erabIdVali
 		if oldErabId != -1 && ueData.ErabId == -1 { //sending oldErabId to release and no new 4G cellId
 			checkRrNotificationRegisteredSubscriptions("", assocId, &plmn, oldPlmn, -1, "", oldCellId, oldErabId)
 		}
+	} else {
+		//5G section
+		if newNrcgi.Plmn.Mnc != oldNrPlmnMnc || newNrcgi.Plmn.Mcc != oldNrPlmnMcc || newNrcgi.NrcellId != oldNrCellId {
+			//update because nrcgi changed
+			_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(&ueData))
+		}
 	}
+}
+
+func updateMeasInfo(name string, parentPoaName string, inRangePoaNames []string, inRangeRsrps []int32, inRangeRsrqs []int32) {
+
+	jsonUeData, _ := rc.JSONGetEntry(baseKey+"UE:"+name, ".")
+
+	if jsonUeData != "" {
+		ueDataObj := convertJsonToUeData(jsonUeData)
+		if ueDataObj != nil {
+			ueDataObj.ParentPoaName = parentPoaName
+			var inRangePoas []InRangePoa
+			for index := range inRangePoaNames {
+				var inRangePoa InRangePoa
+				inRangePoa.Name = inRangePoaNames[index]
+				inRangePoa.Rsrp = inRangeRsrps[index]
+				inRangePoa.Rsrq = inRangeRsrqs[index]
+				inRangePoas = append(inRangePoas, inRangePoa)
+			}
+			ueDataObj.InRangePoas = inRangePoas
+		}
+
+		_ = rc.JSONSetEntry(baseKey+"UE:"+name, ".", convertUeDataToJson(ueDataObj))
+	}
+}
+
+func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId string) {
+
+	var plmn Plmn
+	plmn.Mnc = mnc
+	plmn.Mcc = mcc
+
+	var poaInfo PoaInfo
+	poaInfo.Type = poaType
+
+	switch poaType {
+	case poaType4G:
+		var ecgi Ecgi
+		ecgi.CellId = cellId
+		ecgi.Plmn = &plmn
+		poaInfo.Ecgi = ecgi
+	case poaType5G:
+		var nrcgi NRcgi
+		nrcgi.NrcellId = cellId
+		nrcgi.Plmn = &plmn
+		poaInfo.Nrcgi = nrcgi
+	default:
+		return
+	}
+
+	//updateDB
+	_ = rc.JSONSetEntry(baseKey+"POA:"+name, ".", convertPoaInfoToJson(&poaInfo))
 }
 
 func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
@@ -487,6 +607,70 @@ func repopulateRrSubscriptionMap(key string, jsonInfo string, userData interface
 	return nil
 }
 
+func repopulateMrSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
+
+	var subscription MeasRepUeSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &subscription)
+	if err != nil {
+		return err
+	}
+
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+	subsId, _ := strconv.Atoi(subsIdStr)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	mrSubscriptionMap[subsId] = &subscription
+	if subscription.ExpiryDeadline != nil {
+		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
+	}
+
+	//reinitialisation of next available Id for future subscription request
+	if subsId >= nextSubscriptionIdAvailable {
+		nextSubscriptionIdAvailable = subsId + 1
+	}
+
+	return nil
+}
+
+func repopulateNrMrSubscriptionMap(key string, jsonInfo string, userData interface{}) error {
+
+	var subscription NrMeasRepUeSubscription
+
+	// Format response
+	err := json.Unmarshal([]byte(jsonInfo), &subscription)
+	if err != nil {
+		return err
+	}
+
+	selfUrl := strings.Split(subscription.Links.Self.Href, "/")
+	subsIdStr := selfUrl[len(selfUrl)-1]
+	subsId, _ := strconv.Atoi(subsIdStr)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	nrMrSubscriptionMap[subsId] = &subscription
+	if subscription.ExpiryDeadline != nil {
+		intList := subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(subscription.ExpiryDeadline.Seconds)] = intList
+	}
+
+	//reinitialisation of next available Id for future subscription request
+	if subsId >= nextSubscriptionIdAvailable {
+		nextSubscriptionIdAvailable = subsId + 1
+	}
+
+	return nil
+}
+
 func isMatchCcFilterCriteriaAppInsId(filterCriteria interface{}, appId string) bool {
 	filter := filterCriteria.(*CellChangeSubscriptionFilterCriteriaAssocHo)
 
@@ -536,6 +720,70 @@ func isMatchCcFilterCriteriaAssociateId(filterCriteria interface{}, assocId *Ass
 	}
 	for _, filterAssocId := range filter.AssociateId {
 		if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchMrFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
+	filter := filterCriteria.(*MeasRepUeSubscriptionFilterCriteriaAssocTri)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AssociateId == nil {
+		return true
+	}
+	//if filter accepts something specific but no assocId, then we fail right away
+	if assocId == nil {
+		return false
+	}
+	for _, filterAssocId := range filter.AssociateId {
+		if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchNrMrFilterCriteriaAssociateId(filterCriteria interface{}, assocId *AssociateId) bool {
+	filter := filterCriteria.(*NrMeasRepUeSubscriptionFilterCriteriaNrMrs)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.AssociateId == nil {
+		return true
+	}
+	//if filter accepts something specific but no assocId, then we fail right away
+	if assocId == nil {
+		return false
+	}
+	for _, filterAssocId := range filter.AssociateId {
+		if assocId.Type_ == filterAssocId.Type_ && assocId.Value == filterAssocId.Value {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchMrFilterCriteriaTrigger(filterCriteria interface{}, trigger int32) bool {
+	filter := filterCriteria.(*MeasRepUeSubscriptionFilterCriteriaAssocTri)
+
+	for _, filterTrigger := range filter.Trigger {
+		if trigger == int32(filterTrigger) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isMatchNrMrFilterCriteriaTrigger(filterCriteria interface{}, trigger int32) bool {
+	filter := filterCriteria.(*NrMeasRepUeSubscriptionFilterCriteriaNrMrs)
+
+	for _, filterTrigger := range filter.TriggerNr {
+		if trigger == int32(filterTrigger) {
 			return true
 		}
 	}
@@ -685,6 +933,90 @@ func isMatchRabRelFilterCriteriaEcgi(filterCriteria interface{}, newPlmn *Plmn, 
 	return false
 }
 
+func isMatchMrFilterCriteriaEcgi(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*MeasRepUeSubscriptionFilterCriteriaAssocTri)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Ecgi == nil {
+		return true
+	}
+
+	var matchingPlmn bool
+	for _, ecgi := range filter.Ecgi {
+		matchingPlmn = false
+		if ecgi.Plmn == nil {
+			matchingPlmn = true
+		} else {
+			if newPlmn != nil {
+				if newPlmn.Mnc == ecgi.Plmn.Mnc && newPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+			if oldPlmn != nil {
+				if oldPlmn.Mnc == ecgi.Plmn.Mnc && oldPlmn.Mcc == ecgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+		}
+		if matchingPlmn {
+			if ecgi.CellId == "" {
+				return true
+			}
+			if newCellId == ecgi.CellId {
+				return true
+			}
+			if oldCellId == ecgi.CellId {
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
+
+func isMatchNrMrFilterCriteriaNrcgi(filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
+	filter := filterCriteria.(*NrMeasRepUeSubscriptionFilterCriteriaNrMrs)
+
+	//if filter criteria is not set, it acts as a wildcard and accepts all
+	if filter.Nrcgi == nil {
+		return true
+	}
+
+	var matchingPlmn bool
+	for _, nrcgi := range filter.Nrcgi {
+		matchingPlmn = false
+		if nrcgi.Plmn == nil {
+			matchingPlmn = true
+		} else {
+			if newPlmn != nil {
+				if newPlmn.Mnc == nrcgi.Plmn.Mnc && newPlmn.Mcc == nrcgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+			if oldPlmn != nil {
+				if oldPlmn.Mnc == nrcgi.Plmn.Mnc && oldPlmn.Mcc == nrcgi.Plmn.Mcc {
+					matchingPlmn = true
+				}
+			}
+		}
+		if matchingPlmn {
+			if nrcgi.NrcellId == "" {
+				return true
+			}
+			if newCellId == nrcgi.NrcellId {
+				return true
+			}
+			if oldCellId == nrcgi.NrcellId {
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
+
 func isMatchFilterCriteriaAppInsId(subscriptionType string, filterCriteria interface{}, appId string) bool {
 	switch subscriptionType {
 	case cellChangeSubscriptionType:
@@ -703,6 +1035,10 @@ func isMatchFilterCriteriaAssociateId(subscriptionType string, filterCriteria in
 		return isMatchCcFilterCriteriaAssociateId(filterCriteria, assocId)
 	case rabEstSubscriptionType, rabRelSubscriptionType:
 		return true //not part of filter anymore in v2
+	case measRepUeSubscriptionType:
+		return isMatchMrFilterCriteriaAssociateId(filterCriteria, assocId)
+	case nrMeasRepUeSubscriptionType:
+		return isMatchNrMrFilterCriteriaAssociateId(filterCriteria, assocId)
 	}
 	return true
 }
@@ -715,6 +1051,26 @@ func isMatchFilterCriteriaEcgi(subscriptionType string, filterCriteria interface
 		return isMatchRabFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
 	case rabRelSubscriptionType:
 		return isMatchRabRelFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
+	case measRepUeSubscriptionType:
+		return isMatchMrFilterCriteriaEcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
+	}
+	return true
+}
+
+func isMatchFilterCriteriaNrcgi(subscriptionType string, filterCriteria interface{}, newPlmn *Plmn, oldPlmn *Plmn, newCellId string, oldCellId string) bool {
+	switch subscriptionType {
+	case nrMeasRepUeSubscriptionType:
+		return isMatchNrMrFilterCriteriaNrcgi(filterCriteria, newPlmn, oldPlmn, newCellId, oldCellId)
+	}
+	return true
+}
+
+func isMatchFilterCriteriaTrigger(subscriptionType string, filterCriteria interface{}, trigger int32) bool {
+	switch subscriptionType {
+	case measRepUeSubscriptionType:
+		return isMatchMrFilterCriteriaTrigger(filterCriteria, trigger)
+	case nrMeasRepUeSubscriptionType:
+		return isMatchNrMrFilterCriteriaTrigger(filterCriteria, trigger)
 	}
 	return true
 }
@@ -948,6 +1304,272 @@ func checkRrNotificationRegisteredSubscriptions(appId string, assocId *Associate
 	}
 }
 
+func checkMrPeriodicTrigger(trigger int32) {
+
+	//only check if there is at least one subscription
+	if len(mrSubscriptionMap) >= 1 {
+		keyName := baseKey + "UE:*"
+		err := rc.ForEachJSONEntry(keyName, checkMrNotificationRegisteredSubscriptions, int32(trigger))
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+	}
+}
+
+func checkMrNotificationRegisteredSubscriptions(key string, jsonInfo string, extraInfo interface{}) error {
+	trigger := extraInfo.(int32)
+	// Retrieve user info from DB
+	var ueData UeData
+	err := json.Unmarshal([]byte(jsonInfo), &ueData)
+	if err != nil {
+		return err
+	}
+
+	if ueData.Ecgi == nil || ueData.Ecgi.CellId == "" {
+		//that ue is not on a 4G poa
+		return nil
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, sub := range mrSubscriptionMap {
+		if sub != nil {
+			//verifying every criteria of the filter
+			//no check for appId
+			//match := isMatchFilterCriteriaAppInsId(measRepUeSubscriptionType, sub.FilterCriteriaAssocTri, appId)
+
+			assocId := new(AssociateId)
+			assocId.Type_ = 1 //UE_IPV4_ADDRESS
+			subKeys := strings.Split(key, ":")
+			assocId.Value = subKeys[len(subKeys)-1]
+
+			match := isMatchFilterCriteriaAssociateId(measRepUeSubscriptionType, sub.FilterCriteriaAssocTri, assocId)
+
+			if match {
+				if ueData.Ecgi != nil {
+					match = isMatchFilterCriteriaEcgi(measRepUeSubscriptionType, sub.FilterCriteriaAssocTri, ueData.Ecgi.Plmn, nil, ueData.Ecgi.CellId, "")
+				} else {
+					match = false
+				}
+			}
+
+			if match {
+				match = isMatchFilterCriteriaTrigger(measRepUeSubscriptionType, sub.FilterCriteriaAssocTri, trigger)
+			}
+
+			if match {
+				subsIdStr := strconv.Itoa(subsId)
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				if jsonInfo == "" {
+					return nil
+				}
+
+				subscription := convertJsonToMeasRepUeSubscription(jsonInfo)
+				log.Info("Sending RNIS notification ", subscription.CallbackReference)
+
+				var notif MeasRepUeNotification
+				notif.NotificationType = MEAS_REP_UE_NOTIFICATION
+
+				seconds := time.Now().Unix()
+				var timeStamp TimeStamp
+				timeStamp.Seconds = int32(seconds)
+
+				notif.TimeStamp = &timeStamp
+				notif.Ecgi = ueData.Ecgi
+				triggerObj := Trigger(trigger)
+				notif.Trigger = &triggerObj
+
+				notif.AssociateId = append(notif.AssociateId, *assocId)
+
+				//adding the data of all reachable cells
+				for _, poa := range ueData.InRangePoas {
+					if poa.Name == ueData.ParentPoaName {
+						notif.Rsrp = poa.Rsrp
+						notif.Rsrq = poa.Rsrq
+					} else {
+						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
+						if jsonInfo == "" {
+							log.Info("POA cannot be found in: ", baseKey+"POA:"+poa.Name)
+							continue
+						}
+
+						poaInfo := convertJsonToPoaInfo(jsonInfo)
+
+						switch poaInfo.Type {
+						case poaType4G:
+							var neighborCell MeasRepUeNotificationEutranNeighbourCellMeasInfo
+							neighborCell.Rsrp = poa.Rsrp
+							neighborCell.Rsrq = poa.Rsrq
+							neighborCell.Ecgi = &poaInfo.Ecgi
+							notif.EutranNeighbourCellMeasInfo = append(notif.EutranNeighbourCellMeasInfo, neighborCell)
+						case poaType5G:
+							var neighborCell MeasRepUeNotificationNewRadioMeasNeiInfo
+							neighborCell.NrNCellRsrp = poa.Rsrp
+							neighborCell.NrNCellRsrq = poa.Rsrq
+
+							var measRepUeNotificationNrNCellInfo MeasRepUeNotificationNrNCellInfo
+							measRepUeNotificationNrNCellInfo.NrNCellPlmn = append(measRepUeNotificationNrNCellInfo.NrNCellPlmn, *poaInfo.Nrcgi.Plmn)
+							measRepUeNotificationNrNCellInfo.NrNCellGId = poaInfo.Nrcgi.NrcellId
+							neighborCell.NrNCellInfo = append(neighborCell.NrNCellInfo, measRepUeNotificationNrNCellInfo)
+							notif.NewRadioMeasNeiInfo = append(notif.NewRadioMeasNeiInfo, neighborCell)
+						default:
+						}
+
+					}
+				}
+
+				go sendMrNotification(subscription.CallbackReference, notif)
+				log.Info("Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+			}
+		}
+	}
+	return nil
+}
+
+func checkNrMrPeriodicTrigger(trigger int32) {
+
+	//only check if there is at least one subscription
+	if len(nrMrSubscriptionMap) >= 1 {
+		keyName := baseKey + "UE:*"
+		err := rc.ForEachJSONEntry(keyName, checkNrMrNotificationRegisteredSubscriptions, int32(trigger))
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+	}
+}
+
+func checkNrMrNotificationRegisteredSubscriptions(key string, jsonInfo string, extraInfo interface{}) error {
+	trigger := extraInfo.(int32)
+
+	// Retrieve user info from DB
+	var ueData UeData
+	err := json.Unmarshal([]byte(jsonInfo), &ueData)
+	if err != nil {
+		return err
+	}
+
+	if ueData.Nrcgi == nil || ueData.Nrcgi.NrcellId == "" {
+		//that ue is not on a 5G poa
+		return nil
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	//check all that applies
+	for subsId, sub := range nrMrSubscriptionMap {
+		if sub != nil {
+			//verifying every criteria of the filter
+			//no check for appId
+			//match := isMatchFilterCriteriaAppInsId(measRepUeSubscriptionType, sub.FilterCriteriaAssocTri, appId)
+
+			assocId := new(AssociateId)
+			assocId.Type_ = 1 //UE_IPV4_ADDRESS
+			subKeys := strings.Split(key, ":")
+			assocId.Value = subKeys[len(subKeys)-1]
+
+			match := isMatchFilterCriteriaAssociateId(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, assocId)
+
+			if match {
+
+				if ueData.Nrcgi != nil {
+					match = isMatchFilterCriteriaNrcgi(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, ueData.Nrcgi.Plmn, nil, ueData.Nrcgi.NrcellId, "")
+				} else {
+					match = false
+				}
+			}
+
+			if match {
+				match = isMatchFilterCriteriaTrigger(nrMeasRepUeSubscriptionType, sub.FilterCriteriaNrMrs, trigger)
+			}
+
+			if match {
+
+				subsIdStr := strconv.Itoa(subsId)
+				jsonInfo, _ := rc.JSONGetEntry(baseKey+"subscriptions:"+subsIdStr, ".")
+				if jsonInfo == "" {
+					return nil
+				}
+
+				subscription := convertJsonToNrMeasRepUeSubscription(jsonInfo)
+				log.Info("Sending RNIS notification ", subscription.CallbackReference)
+
+				var notif NrMeasRepUeNotification
+				notif.NotificationType = NR_MEAS_REP_UE_NOTIFICATION
+
+				seconds := time.Now().Unix()
+				var timeStamp TimeStamp
+				timeStamp.Seconds = int32(seconds)
+
+				notif.TimeStamp = &timeStamp
+
+				var nrMeasRepUeNotificationServCellMeasInfo NrMeasRepUeNotificationServCellMeasInfo
+				nrMeasRepUeNotificationServCellMeasInfo.Nrcgi = ueData.Nrcgi
+				notif.ServCellMeasInfo = append(notif.ServCellMeasInfo, nrMeasRepUeNotificationServCellMeasInfo)
+
+				triggerObj := TriggerNr(trigger)
+				notif.TriggerNr = &triggerObj
+
+				notif.AssociateId = append(notif.AssociateId, *assocId)
+
+				strongestRsrp := int32(0)
+				//adding the data of all reachable cells
+				for _, poa := range ueData.InRangePoas {
+					if poa.Name == ueData.ParentPoaName {
+						var measQuantityResultsNr MeasQuantityResultsNr
+						measQuantityResultsNr.Rsrp = poa.Rsrp
+						measQuantityResultsNr.Rsrq = poa.Rsrq
+						var nrMeasRepUeNotificationSCell NrMeasRepUeNotificationSCell
+						nrMeasRepUeNotificationSCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
+						notif.ServCellMeasInfo[0].SCell = &nrMeasRepUeNotificationSCell
+					} else {
+						jsonInfo, _ := rc.JSONGetEntry(baseKey+"POA:"+poa.Name, ".")
+						if jsonInfo == "" {
+							log.Info("POA cannot be found in: ", baseKey+"POA:"+poa.Name)
+							continue
+						}
+
+						poaInfo := convertJsonToPoaInfo(jsonInfo)
+
+						switch poaInfo.Type {
+						case poaType5G:
+							var neighborCell NrMeasRepUeNotificationNrNeighCellMeasInfo
+							//not using nrcgi but nrcellId, error in the spec... but going along
+							neighborCell.Nrcgi = poaInfo.Nrcgi.NrcellId
+							var measQuantityResultsNr MeasQuantityResultsNr
+							measQuantityResultsNr.Rsrp = poa.Rsrp
+							measQuantityResultsNr.Rsrq = poa.Rsrq
+							neighborCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
+
+							if poa.Rsrp >= strongestRsrp {
+								var nrMeasRepUeNotificationNCell NrMeasRepUeNotificationNCell
+								nrMeasRepUeNotificationNCell.MeasQuantityResultsSsbCell = &measQuantityResultsNr
+								notif.ServCellMeasInfo[0].NCell = &nrMeasRepUeNotificationNCell
+							}
+
+							notif.NrNeighCellMeasInfo = append(notif.NrNeighCellMeasInfo, neighborCell)
+						case poaType4G:
+							var neighborCell NrMeasRepUeNotificationEutraNeighCellMeasInfo
+							neighborCell.Rsrp = poa.Rsrp
+							neighborCell.Rsrq = poa.Rsrq
+							neighborCell.Ecgi = &poaInfo.Ecgi
+							notif.EutraNeighCellMeasInfo = append(notif.EutraNeighCellMeasInfo, neighborCell)
+						default:
+						}
+
+					}
+				}
+
+				go sendNrMrNotification(subscription.CallbackReference, notif)
+				log.Info("Nr_Meas_Rep_Ue Notification" + "(" + subsIdStr + ")")
+			}
+		}
+	}
+	return nil
+}
+
 func sendCcNotification(notifyUrl string, notification CellChangeNotification) {
 
 	startTime := time.Now()
@@ -985,6 +1607,42 @@ func sendReNotification(notifyUrl string, notification RabEstNotification) {
 }
 
 func sendRrNotification(notifyUrl string, notification RabRelNotification) {
+
+	startTime := time.Now()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+}
+
+func sendMrNotification(notifyUrl string, notification MeasRepUeNotification) {
+
+	startTime := time.Now()
+
+	jsonNotif, err := json.Marshal(notification)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	resp, err := http.Post(notifyUrl, "application/json", bytes.NewBuffer(jsonNotif))
+	_ = httpLog.LogTx(notifyUrl, "POST", string(jsonNotif), resp, startTime)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer resp.Body.Close()
+}
+
+func sendNrMrNotification(notifyUrl string, notification NrMeasRepUeNotification) {
 
 	startTime := time.Now()
 
@@ -1066,6 +1724,28 @@ func subscriptionsGet(w http.ResponseWriter, r *http.Request) {
 
 	case RAB_REL_SUBSCRIPTION:
 		var subscription RabRelSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case MEAS_REP_UE_SUBSCRIPTION:
+		var subscription MeasRepUeSubscription
+		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case NR_MEAS_REP_UE_SUBSCRIPTION:
+		var subscription NrMeasRepUeSubscription
 		err = json.Unmarshal([]byte(jsonRespDB), &subscription)
 		if err != nil {
 			log.Error(err.Error())
@@ -1222,6 +1902,68 @@ func subscriptionsPost(w http.ResponseWriter, r *http.Request) {
 
 		jsonResponse, err = json.Marshal(subscription)
 
+	case MEAS_REP_UE_SUBSCRIPTION:
+		var subscription MeasRepUeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		if subscription.FilterCriteriaAssocTri == nil {
+			log.Error("FilterCriteriaAssocTri should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		for _, ecgi := range subscription.FilterCriteriaAssocTri.Ecgi {
+			if ecgi.Plmn == nil || ecgi.CellId == "" {
+				log.Error("For non null ecgi, plmn and cellId are mandatory")
+				http.Error(w, "For non null ecgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				return
+			}
+		}
+
+		//registration
+		registerMr(&subscription, subsIdStr)
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
+
+		jsonResponse, err = json.Marshal(subscription)
+
+	case NR_MEAS_REP_UE_SUBSCRIPTION:
+		var subscription NrMeasRepUeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		subscription.Links = link
+
+		if subscription.FilterCriteriaNrMrs == nil {
+			log.Error("FilterCriteriaNrMrs should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		for _, nrcgi := range subscription.FilterCriteriaNrMrs.Nrcgi {
+			if nrcgi.Plmn == nil || nrcgi.NrcellId == "" {
+				log.Error("For non null nrcgi, plmn and cellId are mandatory")
+				http.Error(w, "For non null nrcgi,  plmn and cellId are mandatory", http.StatusBadRequest)
+				return
+			}
+		}
+
+		//registration
+		registerNrMr(&subscription, subsIdStr)
+		_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
+
+		jsonResponse, err = json.Marshal(subscription)
+
 	default:
 		nextSubscriptionIdAvailable--
 		w.WriteHeader(http.StatusBadRequest)
@@ -1353,6 +2095,50 @@ func subscriptionsPut(w http.ResponseWriter, r *http.Request) {
 			alreadyRegistered = true
 			jsonResponse, err = json.Marshal(subscription)
 		}
+	case MEAS_REP_UE_SUBSCRIPTION:
+		var subscription MeasRepUeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaAssocTri == nil {
+			log.Error("FilterCriteriaAssocTri should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaAssocTri should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		//registration
+		if isSubscriptionIdRegisteredMr(subsIdStr) {
+			registerMr(&subscription, subsIdStr)
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertMeasRepUeSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
+	case NR_MEAS_REP_UE_SUBSCRIPTION:
+		var subscription NrMeasRepUeSubscription
+		err = json.Unmarshal(bodyBytes, &subscription)
+		if err != nil {
+			log.Error(err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if subscription.FilterCriteriaNrMrs == nil {
+			log.Error("FilterCriteriaNrMrs should not be null for this subscription type")
+			http.Error(w, "FilterCriteriaNrMrs should not be null for this subscription type", http.StatusBadRequest)
+			return
+		}
+
+		//registration
+		if isSubscriptionIdRegisteredNrMr(subsIdStr) {
+			registerNrMr(&subscription, subsIdStr)
+			_ = rc.JSONSetEntry(baseKey+"subscriptions:"+subsIdStr, ".", convertNrMeasRepUeSubscriptionToJson(&subscription))
+			alreadyRegistered = true
+			jsonResponse, err = json.Marshal(subscription)
+		}
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -1433,6 +2219,34 @@ func isSubscriptionIdRegisteredRr(subsIdStr string) bool {
 	return returnVal
 }
 
+func isSubscriptionIdRegisteredMr(subsIdStr string) bool {
+	var returnVal bool
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if mrSubscriptionMap[subsId] != nil {
+		returnVal = true
+	} else {
+		returnVal = false
+	}
+	return returnVal
+}
+
+func isSubscriptionIdRegisteredNrMr(subsIdStr string) bool {
+	var returnVal bool
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if nrMrSubscriptionMap[subsId] != nil {
+		returnVal = true
+	} else {
+		returnVal = false
+	}
+	return returnVal
+}
+
 func registerCc(cellChangeSubscription *CellChangeSubscription, subsIdStr string) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	mutex.Lock()
@@ -1478,6 +2292,36 @@ func registerRr(rabRelSubscription *RabRelSubscription, subsIdStr string) {
 	log.Info("New registration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
+func registerMr(measRepUeSubscription *MeasRepUeSubscription, subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	mrSubscriptionMap[subsId] = measRepUeSubscription
+	if measRepUeSubscription.ExpiryDeadline != nil {
+		//get current list of subscription meant to expire at this time
+		intList := subscriptionExpiryMap[int(measRepUeSubscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(measRepUeSubscription.ExpiryDeadline.Seconds)] = intList
+	}
+	log.Info("New registration: ", subsId, " type: ", measRepUeSubscriptionType)
+}
+
+func registerNrMr(nrMeasRepUeSubscription *NrMeasRepUeSubscription, subsIdStr string) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	nrMrSubscriptionMap[subsId] = nrMeasRepUeSubscription
+	if nrMeasRepUeSubscription.ExpiryDeadline != nil {
+		//get current list of subscription meant to expire at this time
+		intList := subscriptionExpiryMap[int(nrMeasRepUeSubscription.ExpiryDeadline.Seconds)]
+		intList = append(intList, subsId)
+		subscriptionExpiryMap[int(nrMeasRepUeSubscription.ExpiryDeadline.Seconds)] = intList
+	}
+	log.Info("New registration: ", subsId, " type: ", nrMeasRepUeSubscriptionType)
+}
+
 func deregisterCc(subsIdStr string, mutexTaken bool) {
 	subsId, _ := strconv.Atoi(subsIdStr)
 	if !mutexTaken {
@@ -1510,12 +2354,37 @@ func deregisterRr(subsIdStr string, mutexTaken bool) {
 	log.Info("Deregistration: ", subsId, " type: ", rabRelSubscriptionType)
 }
 
+func deregisterMr(subsIdStr string, mutexTaken bool) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+
+	mrSubscriptionMap[subsId] = nil
+	log.Info("Deregistration: ", subsId, " type: ", measRepUeSubscriptionType)
+}
+
+func deregisterNrMr(subsIdStr string, mutexTaken bool) {
+	subsId, _ := strconv.Atoi(subsIdStr)
+	if !mutexTaken {
+		mutex.Lock()
+		defer mutex.Unlock()
+	}
+
+	nrMrSubscriptionMap[subsId] = nil
+	log.Info("Deregistration: ", subsId, " type: ", nrMeasRepUeSubscriptionType)
+}
+
 func delSubscription(keyPrefix string, subsId string, mutexTaken bool) error {
 
 	err := rc.JSONDelEntry(keyPrefix+":"+subsId, ".")
 	deregisterCc(subsId, mutexTaken)
 	deregisterRe(subsId, mutexTaken)
 	deregisterRr(subsId, mutexTaken)
+	deregisterMr(subsId, mutexTaken)
+	deregisterNrMr(subsId, mutexTaken)
+
 	return err
 }
 
@@ -1677,6 +2546,7 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	rabInfo.TimeStamp = &timeStamp
 
 	// Send response
+
 	jsonResponse, err := json.Marshal(rabInfo)
 	if err != nil {
 		log.Error(err.Error())
@@ -1685,6 +2555,7 @@ func rabInfoGet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, string(jsonResponse))
+
 }
 
 func populateRabInfo(key string, jsonInfo string, rabInfoData interface{}) error {
@@ -1845,6 +2716,30 @@ func createSubscriptionLinkList(subType string) *SubscriptionLinkList {
 		}
 	}
 
+	//loop through meas_rep_ue map
+	if subType == "" || subType == "meas_rep_ue" {
+		for _, mrSubscription := range mrSubscriptionMap {
+			if mrSubscription != nil {
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = mrSubscription.Links.Self.Href
+				subscription.SubscriptionType = MEAS_REP_UE_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+			}
+		}
+	}
+
+	//loop through nr_meas_rep_ue map
+	if subType == "" || subType == "nr_meas_rep_ue" {
+		for _, nrMrSubscription := range nrMrSubscriptionMap {
+			if nrMrSubscription != nil {
+				var subscription SubscriptionLinkListLinksSubscription
+				subscription.Href = nrMrSubscription.Links.Self.Href
+				subscription.SubscriptionType = NR_MEAS_REP_UE_SUBSCRIPTION
+				subscriptionLinkList.Links.Subscription = append(subscriptionLinkList.Links.Subscription, subscription)
+			}
+		}
+	}
+
 	//no other maps to go through
 
 	return subscriptionLinkList
@@ -1882,6 +2777,8 @@ func cleanUp() {
 	ccSubscriptionMap = map[int]*CellChangeSubscription{}
 	reSubscriptionMap = map[int]*RabEstSubscription{}
 	rrSubscriptionMap = map[int]*RabRelSubscription{}
+	mrSubscriptionMap = map[int]*MeasRepUeSubscription{}
+	nrMrSubscriptionMap = map[int]*NrMeasRepUeSubscription{}
 	subscriptionExpiryMap = map[int][]int{}
 
 	updateStoreName("")

@@ -244,6 +244,37 @@ deployment:
                                     linkLatencyVariation: null
                                     linkThroughput: null
                                     linkPacketLoss: null
+                                -
+                                    id: abc18c96-1015-4dee-b32d-cac04ea5db37
+                                    name: ue2
+                                    type: UE
+                                    geoData:
+                                        eopMode: LOOP
+                                        location: null
+                                        radius: null
+                                        path: null
+                                        velocity: null
+                                    connected: true
+                                    wireless: true
+                                    wirelessType: 'wifi,4g,5g,other'
+                                    netChar:
+                                        throughputDl: 1000
+                                        throughputUl: 1000
+                                        latency: null
+                                        latencyVariation: null
+                                        latencyDistribution: null
+                                        throughput: null
+                                        packetLoss: null
+                                    macId: '222222222222'
+                                    isExternal: null
+                                    networkLocationsInRange: null
+                                    meta: null
+                                    userMeta: null
+                                    processes: null
+                                    linkLatency: null
+                                    linkLatencyVariation: null
+                                    linkThroughput: null
+                                    linkPacketLoss: null
                             terminalLinkLatency: null
                             terminalLinkLatencyVariation: null
                             terminalLinkThroughput: null
