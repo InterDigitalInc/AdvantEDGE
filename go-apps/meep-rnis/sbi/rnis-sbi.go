@@ -366,42 +366,36 @@ func processActiveScenarioUpdate() {
 	}
 
 	// Update POA Cellular and Wifi info
-	poaTypeList := [4]string{mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa}
-	for _, poaType := range poaTypeList {
+	poaNameList := sbi.activeModel.GetNodeNames(mod.NodeTypePoa4G, mod.NodeTypePoa5G, mod.NodeTypePoaWifi, mod.NodeTypePoa)
+	for _, name := range poaNameList {
+		node := sbi.activeModel.GetNode(name)
+		if node != nil {
+			nl := node.(*dataModel.NetworkLocation)
 
-		poaNameList := sbi.activeModel.GetNodeNames(poaType)
-		for _, name := range poaNameList {
-			node := sbi.activeModel.GetNode(name)
-			if node != nil {
-				nl := node.(*dataModel.NetworkLocation)
+			mnc := ""
+			mcc := ""
+			cellId := ""
 
-				mnc := ""
-				mcc := ""
-				cellId := ""
-
-				switch poaType {
-				case mod.NodeTypePoa4G, mod.NodeTypePoa5G:
-					poaParent := sbi.activeModel.GetNodeParent(name)
-					if zone, ok := poaParent.(*dataModel.Zone); ok {
-						zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-						if domain, ok := zoneParent.(*dataModel.Domain); ok {
-							if domain.CellularDomainConfig != nil {
-								mnc = domain.CellularDomainConfig.Mnc
-								mcc = domain.CellularDomainConfig.Mcc
-								cellId = domain.CellularDomainConfig.DefaultCellId
-							}
+			switch nl.Type_ {
+			case mod.NodeTypePoa4G, mod.NodeTypePoa5G:
+				poaParent := sbi.activeModel.GetNodeParent(name)
+				if zone, ok := poaParent.(*dataModel.Zone); ok {
+					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
+					if domain, ok := zoneParent.(*dataModel.Domain); ok {
+						if domain.CellularDomainConfig != nil {
+							mnc = domain.CellularDomainConfig.Mnc
+							mcc = domain.CellularDomainConfig.Mcc
+							cellId = domain.CellularDomainConfig.DefaultCellId
 						}
 					}
-					if nl.Poa4GConfig != nil {
-						cellId = nl.Poa4GConfig.CellId
-					} else {
-						if nl.Poa5GConfig != nil {
-							cellId = nl.Poa5GConfig.CellId
-						}
-					}
-
-					sbi.updatePoaInfoCB(name, poaType, mnc, mcc, cellId)
 				}
+				if nl.Poa4GConfig != nil {
+					cellId = nl.Poa4GConfig.CellId
+				} else if nl.Poa5GConfig != nil {
+					cellId = nl.Poa5GConfig.CellId
+				}
+
+				sbi.updatePoaInfoCB(name, nl.Type_, mnc, mcc, cellId)
 			}
 		}
 	}
