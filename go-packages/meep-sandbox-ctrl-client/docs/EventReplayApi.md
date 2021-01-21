@@ -1,6 +1,6 @@
 # \EventReplayApi
 
-All URIs are relative to *https://localhost/sandbox-ctrl/v1*
+All URIs are relative to *https://localhost/sandboxname/sandbox-ctrl/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

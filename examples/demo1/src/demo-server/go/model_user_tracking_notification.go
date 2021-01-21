@@ -31,8 +31,7 @@ type UserTrackingNotification struct {
 
 	UserInfo *UserInfo `json:"userInfo"`
 
-	// Indicates the time of day for zonal presence notification.
-	TimeStamp TimeStamp `json:"timeStamp"`
+	TimeStamp *TimeStamp `json:"timeStamp"`
 
 	UserEventType *UserEventType `json:"userEventType,omitempty"`
 }

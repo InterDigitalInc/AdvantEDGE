@@ -127,9 +127,11 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [MeepDemoAppApi.EdgeInfo](docs/EdgeInfo.md)
+ - [MeepDemoAppApi.InlineTrackingNotification](docs/InlineTrackingNotification.md)
  - [MeepDemoAppApi.MobilityGroupAppState](docs/MobilityGroupAppState.md)
  - [MeepDemoAppApi.MobilityGroupEvent](docs/MobilityGroupEvent.md)
  - [MeepDemoAppApi.SubscriptionId](docs/SubscriptionId.md)
+ - [MeepDemoAppApi.TimeStamp](docs/TimeStamp.md)
  - [MeepDemoAppApi.TrackingNotification](docs/TrackingNotification.md)
  - [MeepDemoAppApi.UeState](docs/UeState.md)
  - [MeepDemoAppApi.UserEventType](docs/UserEventType.md)

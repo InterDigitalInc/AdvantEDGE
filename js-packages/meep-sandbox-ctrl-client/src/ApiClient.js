@@ -61,9 +61,9 @@
     /**
      * The base URL against which to resolve every API call's (relative) path.
      * @type {String}
-     * @default https://localhost/sandbox-ctrl/v1
+     * @default https://localhost/sandboxname/sandbox-ctrl/v1
      */
-    this.basePath = 'https://localhost/sandbox-ctrl/v1'.replace(/\/+$/, '');
+    this.basePath = 'https://localhost/sandboxname/sandbox-ctrl/v1'.replace(/\/+$/, '');
 
     /**
      * The authentication methods to be included for all API calls.

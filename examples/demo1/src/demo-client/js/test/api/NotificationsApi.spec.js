@@ -62,7 +62,9 @@
           notification.userEventType = new MeepDemoAppApi.UserEventType();
           notification.currentAccessPointId = "001010000000000000000000000000001 or poa001";
           notification.previousAccessPointId = "001010000000000000000000000000001 or poa001";
-          notification.timestamp = new Date();
+          notification.timestamp = new MeepDemoAppApi.TimeStamp();
+          notification.timestamp.nanoSeconds = 0;
+          notification.timestamp.seconds = 0;
 
           instance.postTrackingNotification(subscriptionId, notification, function(error, data, response) {
             if (error) {

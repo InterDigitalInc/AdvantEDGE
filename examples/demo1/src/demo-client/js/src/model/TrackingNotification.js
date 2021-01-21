@@ -30,18 +30,18 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient', 'model/UserEventType'], factory);
+    define(['ApiClient', 'model/TimeStamp', 'model/UserEventType'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'), require('./UserEventType'));
+    module.exports = factory(require('../ApiClient'), require('./TimeStamp'), require('./UserEventType'));
   } else {
     // Browser globals (root is window)
     if (!root.MeepDemoAppApi) {
       root.MeepDemoAppApi = {};
     }
-    root.MeepDemoAppApi.TrackingNotification = factory(root.MeepDemoAppApi.ApiClient, root.MeepDemoAppApi.UserEventType);
+    root.MeepDemoAppApi.TrackingNotification = factory(root.MeepDemoAppApi.ApiClient, root.MeepDemoAppApi.TimeStamp, root.MeepDemoAppApi.UserEventType);
   }
-}(this, function(ApiClient, UserEventType) {
+}(this, function(ApiClient, TimeStamp, UserEventType) {
   'use strict';
 
   /**
@@ -86,7 +86,7 @@
       if (data.hasOwnProperty('previousAccessPointId'))
         obj.previousAccessPointId = ApiClient.convertToType(data['previousAccessPointId'], 'String');
       if (data.hasOwnProperty('timestamp'))
-        obj.timestamp = ApiClient.convertToType(data['timestamp'], 'Date');
+        obj.timestamp = TimeStamp.constructFromObject(data['timestamp']);
     }
     return obj;
   }
@@ -133,8 +133,7 @@
   exports.prototype.previousAccessPointId = undefined;
 
   /**
-   * Indicates the time of day for zonal presence notification.
-   * @member {Date} timestamp
+   * @member {module:model/TimeStamp} timestamp
    */
   exports.prototype.timestamp = undefined;
 

@@ -1,6 +1,6 @@
 # AdvantEdgeMetricsServiceRestApi.SubscriptionsApi
 
-All URIs are relative to *https://localhost/metrics/v2*
+All URIs are relative to *https://localhost/sandboxname/metrics/v2*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

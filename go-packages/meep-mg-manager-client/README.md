@@ -17,7 +17,7 @@ import "./client"
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/mgm/v1*
+All URIs are relative to *https://localhost/sandboxname/mgm/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

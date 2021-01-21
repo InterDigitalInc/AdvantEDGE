@@ -1,6 +1,6 @@
 # StateTransferApi
 
-All URIs are relative to *http://localhost/mgm/v1*
+All URIs are relative to *http://localhost/sandboxname/mgm/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost/mgm/v1*
+All URIs are relative to *http://localhost/sandboxname/mgm/v1*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

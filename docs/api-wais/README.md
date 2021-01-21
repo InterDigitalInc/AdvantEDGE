@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/wai/v2*
+All URIs are relative to *https://localhost/sandboxname/wai/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

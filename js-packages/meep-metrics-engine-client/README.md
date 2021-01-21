@@ -113,7 +113,7 @@ api.postEventQuery(params, callback);
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://localhost/metrics/v2*
+All URIs are relative to *https://localhost/sandboxname/metrics/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
