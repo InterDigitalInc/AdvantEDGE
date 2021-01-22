@@ -659,6 +659,19 @@ func (m *Model) GetNodeParent(name string) (parent interface{}) {
 	return parent
 }
 
+// GetNodeChild - Get a child node by its child name
+func (m *Model) GetNodeChild(name string) (child interface{}) {
+        m.lock.RLock()
+        defer m.lock.RUnlock()
+
+        child = nil
+        n := m.nodeMap.nameMap[name]
+        if n != nil {
+                child = n.child
+        }
+        return child
+}
+
 // GetNodeContext - Get a node context
 // 		Returned value is of type interface{}
 //    Good practice: returned node should be type asserted with val,ok := node.(someType) to prevent panic

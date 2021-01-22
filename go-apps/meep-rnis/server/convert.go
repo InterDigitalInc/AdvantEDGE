@@ -22,9 +22,9 @@ import (
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 )
 
-func convertJsonToEcgi(jsonInfo string) *Ecgi {
+func convertJsonToAppInfo(jsonInfo string) *AppInfo {
 
-	var obj Ecgi
+	var obj AppInfo
 	err := json.Unmarshal([]byte(jsonInfo), &obj)
 	if err != nil {
 		log.Error(err.Error())
@@ -33,7 +33,7 @@ func convertJsonToEcgi(jsonInfo string) *Ecgi {
 	return &obj
 }
 
-func convertEcgiToJson(obj *Ecgi) string {
+func convertAppInfoToJson(obj *AppInfo) string {
 
 	jsonInfo, err := json.Marshal(*obj)
 	if err != nil {

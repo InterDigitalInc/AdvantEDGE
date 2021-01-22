@@ -31,10 +31,10 @@ const moduleName string = "meep-rnis-sbi"
 type SbiCfg struct {
 	SandboxName    string
 	RedisAddr      string
-	UeDataCb       func(string, string, string, string, string, bool)
+	UeDataCb       func(string, string, string, string, string, bool, []string)
 	MeasInfoCb     func(string, string, []string, []int32, []int32)
 	PoaInfoCb      func(string, string, string, string, string)
-	AppEcgiInfoCb  func(string, string, string, string)
+	AppInfoCb      func(string, string, string)
 	DomainDataCb   func(string, string, string, string)
 	ScenarioNameCb func(string)
 	CleanUpCb      func()
@@ -47,10 +47,10 @@ type RnisSbi struct {
 	activeModel          *mod.Model
 	gisCache             *gc.GisCache
 	refreshTicker        *time.Ticker
-	updateUeDataCB       func(string, string, string, string, string, bool)
+	updateUeDataCB       func(string, string, string, string, string, bool, []string)
 	updateMeasInfoCB     func(string, string, []string, []int32, []int32)
 	updatePoaInfoCB      func(string, string, string, string, string)
-	updateAppEcgiInfoCB  func(string, string, string, string)
+	updateAppInfoCB      func(string, string, string)
 	updateDomainDataCB   func(string, string, string, string)
 	updateScenarioNameCB func(string)
 	cleanUpCB            func()
@@ -70,7 +70,7 @@ func Init(cfg SbiCfg) (err error) {
 	sbi.updateUeDataCB = cfg.UeDataCb
 	sbi.updateMeasInfoCB = cfg.MeasInfoCb
 	sbi.updatePoaInfoCB = cfg.PoaInfoCb
-	sbi.updateAppEcgiInfoCB = cfg.AppEcgiInfoCb
+	sbi.updateAppInfoCB = cfg.AppInfoCb
 	sbi.updateDomainDataCB = cfg.DomainDataCb
 	sbi.updateScenarioNameCB = cfg.ScenarioNameCb
 	sbi.cleanUpCB = cfg.CleanUpCb
@@ -230,7 +230,6 @@ func processActiveScenarioUpdate() {
 			continue
 		}
 		ueNames = append(ueNames, name)
-
 		ueParent := sbi.activeModel.GetNodeParent(name)
 		if poa, ok := ueParent.(*dataModel.NetworkLocation); ok {
 			poaParent := sbi.activeModel.GetNodeParent(poa.Name)
@@ -270,7 +269,14 @@ func processActiveScenarioUpdate() {
 						cellId = ""
 					}
 
-					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid)
+					node := sbi.activeModel.GetNodeChild(name)
+					apps := node.(*[]dataModel.Process)
+
+					var appNames []string
+					for _, process := range *apps {
+						appNames = append(appNames, process.Name)
+					}
+					sbi.updateUeDataCB(name, mnc, mcc, cellId, nrcellId, erabIdValid, appNames)
 				}
 			}
 		}
@@ -286,7 +292,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateUeDataCB(prevUeName, "", "", "", "", false)
+			sbi.updateUeDataCB(prevUeName, "", "", "", "", false, nil)
 			log.Info("Ue removed : ", prevUeName)
 		}
 	}
@@ -307,46 +313,7 @@ func processActiveScenarioUpdate() {
 				continue
 			}
 			appNames = append(appNames, appName)
-
-			plParent := sbi.activeModel.GetNodeParent(pl.Name)
-			if nl, ok := plParent.(*dataModel.NetworkLocation); ok {
-				//nl can be either POA for {FOG or UE} or Zone Default for {Edge
-				nlParent := sbi.activeModel.GetNodeParent(nl.Name)
-				if zone, ok := nlParent.(*dataModel.Zone); ok {
-					zoneParent := sbi.activeModel.GetNodeParent(zone.Name)
-					if domain, ok := zoneParent.(*dataModel.Domain); ok {
-						mnc := ""
-						mcc := ""
-						cellId := ""
-						if domain.CellularDomainConfig != nil {
-							mnc = domain.CellularDomainConfig.Mnc
-							mcc = domain.CellularDomainConfig.Mcc
-							cellId = domain.CellularDomainConfig.DefaultCellId
-						}
-						switch nl.Type_ {
-						case mod.NodeTypePoa4G:
-							if nl.Poa4GConfig != nil {
-								if nl.Poa4GConfig.CellId != "" {
-									cellId = nl.Poa4GConfig.CellId
-								}
-							}
-						/*no support for RNIS on 5G elements anymore
-						case mod.NodeTypePoa5G:
-							if nl.Poa5GConfig != nil {
-								if nl.Poa5GConfig.CellId != "" {
-									cellId = nl.Poa5GConfig.CellId
-								}
-							}
-						*/
-						default:
-							//empty cells for POAs not supporting RNIS
-							cellId = ""
-						}
-
-						sbi.updateAppEcgiInfoCB(appName, mnc, mcc, cellId)
-					}
-				}
-			}
+			sbi.updateAppInfoCB(appName, pl.Type_, pl.Name)
 		}
 	}
 
@@ -360,7 +327,7 @@ func processActiveScenarioUpdate() {
 			}
 		}
 		if !found {
-			sbi.updateAppEcgiInfoCB(prevApp, "", "", "")
+			sbi.updateAppInfoCB(prevApp, "", "")
 			log.Info("App removed : ", prevApp)
 		}
 	}
