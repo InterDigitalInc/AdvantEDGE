@@ -49,8 +49,8 @@ type VirtEngine struct {
 	hostUrl             string
 	userSwagger         string
 	userSwaggerDir      string
-	sessionKey          string
 	httpsOnly           bool
+	authEnabled         bool
 	handlerId           int
 	sboxPods            map[string]string
 }
@@ -115,11 +115,13 @@ func Init() (err error) {
 	}
 	log.Info("MEEP_HTTPS_ONLY: ", httpsOnlyStr)
 
-	// Retrieve Session Encryption Key from environment variable
-	ve.sessionKey = strings.TrimSpace(os.Getenv("MEEP_SESSION_KEY"))
-	if ve.sessionKey == "" {
-		log.Warn("MEEP_SESSION_KEY not found")
+	// Retrieve Auth mode from environment variable
+	authEnabledStr := strings.TrimSpace(os.Getenv("MEEP_AUTH_ENABLED"))
+	authEnabled, err := strconv.ParseBool(authEnabledStr)
+	if err == nil {
+		ve.authEnabled = authEnabled
 	}
+	log.Info("MEEP_AUTH_ENABLED: ", authEnabledStr)
 
 	// Create message queue
 	ve.mqGlobal, err = mq.NewMsgQueue(mq.GetGlobalName(), moduleName, moduleNamespace, redisAddr)

@@ -26,51 +26,32 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
 
 	couch "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-couch"
 	dkm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr"
 	dataModel "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
-	ms "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store"
 	mod "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model"
 	mq "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
 	ss "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
-	users "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users"
 )
 
 type Scenario struct {
 	Name string `json:"name,omitempty"`
 }
 
-type LoginRequest struct {
-	provider string
-	timer    *time.Timer
-}
-
 type PlatformCtrl struct {
 	scenarioStore *couch.Connector
 	rc            *redis.Connector
-	sessionMgr    *sm.SessionMgr
 	sandboxStore  *ss.SandboxStore
-	userStore     *users.Connector
-	metricStore   *ms.MetricStore
 	mqGlobal      *mq.MsgQueue
-	maxSessions   int
-	uri           string
-	oauthConfigs  map[string]*oauth2.Config
-	loginRequests map[string]*LoginRequest
 }
 
 const scenarioDBName = "scenarios"
 const redisTable = 0
 const moduleName = "meep-platform-ctrl"
 const moduleNamespace = "default"
-const postgisUser = "postgres"
-const postgisPwd = "pwd"
-const permissionsRoot = "services"
 
 // MQ payload fields
 const fieldSandboxName = "sandbox-name"
@@ -152,26 +133,12 @@ func Init() (err error) {
 	}
 	log.Info("Connected to Sandbox Store")
 
-	// Initialize OAuth
-	err = initOAuth()
-	if err != nil {
-		log.Error("Failed OAuth Init: ", err.Error())
-		return err
-	}
-
 	log.Info("Platform Controller initialized")
 	return nil
 }
 
 // Run Starts the Platform Controller
 func Run() (err error) {
-
-	// Start OAuth
-	err = runOAuth()
-	if err != nil {
-		log.Error("Failed to start OAuth: ", err.Error())
-		return err
-	}
 
 	log.Info("Platform Controller started")
 	return nil

@@ -34,12 +34,10 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
 
-const moduleName = "meep-loc-serv"
 const LocServBasePath = "/location/v2/"
 const locServKey string = "loc-serv:"
 const logModuleLocServ string = "meep-loc-serv"
@@ -99,7 +97,6 @@ var hostUrl *url.URL
 var sandboxName string
 var basePath string
 var baseKey string
-var sessionMgr *sm.SessionMgr
 var mutex sync.Mutex
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
@@ -146,14 +143,6 @@ func Init() (err error) {
 	}
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, location service table")
-
-	// Connect to Session Manager
-	sessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	userTrackingReInit()
 	zonalTrafficReInit()

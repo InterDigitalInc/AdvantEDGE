@@ -38,6 +38,7 @@ type Route struct {
 	Pattern     string
 	HandlerFunc http.HandlerFunc
 }
+
 type Routes []Route
 
 func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Router {
@@ -45,7 +46,6 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 
 	for _, route := range routes {
 		var handler http.Handler = Logger(route.HandlerFunc, route.Name)
-		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			Methods(route.Method).
 			Path(route.Pattern).
@@ -56,7 +56,6 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 	// Path prefix router order is important
 	if altSw != "" {
 		var handler http.Handler = http.StripPrefix("/alt/api/", http.FileServer(http.Dir(altSw)))
-		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/alt/api/").
 			Name("AltSw").
@@ -64,7 +63,6 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 	}
 	if altFe != "" {
 		var handler http.Handler = http.StripPrefix("/alt/", http.FileServer(http.Dir(altFe)))
-		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/alt/").
 			Name("AltFe").
@@ -73,7 +71,6 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 
 	if priSw != "" {
 		var handler http.Handler = http.StripPrefix("/api/", http.FileServer(http.Dir(priSw)))
-		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/api/").
 			Name("PriSw").
@@ -81,7 +78,6 @@ func NewRouter(priFe string, priSw string, altFe string, altSw string) *mux.Rout
 	}
 	if priFe != "" {
 		var handler http.Handler = http.StripPrefix("/", http.FileServer(http.Dir(priFe)))
-		handler = pfmCtrl.sessionMgr.Authorizer(handler)
 		router.
 			PathPrefix("/").
 			Name("PriFe").
@@ -185,40 +181,5 @@ var routes = Routes{
 		strings.ToUpper("Put"),
 		"/platform-ctrl/v1/scenarios/{name}",
 		SetScenario,
-	},
-
-	Route{
-		"Authorize",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/authorize",
-		Authorize,
-	},
-
-	Route{
-		"LoginOAuth",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/login",
-		LoginOAuth,
-	},
-
-	Route{
-		"LoginUser",
-		strings.ToUpper("Post"),
-		"/platform-ctrl/v1/login",
-		LoginUser,
-	},
-
-	Route{
-		"LogoutUser",
-		strings.ToUpper("Get"),
-		"/platform-ctrl/v1/logout",
-		LogoutUser,
-	},
-
-	Route{
-		"TriggerWatchdog",
-		strings.ToUpper("Post"),
-		"/platform-ctrl/v1/watchdog",
-		TriggerWatchdog,
 	},
 }

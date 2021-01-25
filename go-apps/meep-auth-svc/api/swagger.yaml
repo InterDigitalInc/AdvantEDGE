@@ -1,0 +1,173 @@
+---
+swagger: "2.0"
+info:
+  description: "This API provides microservice API authentication & authorization\
+    \ services <p>**Micro-service**<br>[meep-auth](https://github.com/InterDigitalInc/AdvantEDGE/tree/master/go-apps/meep-auth)\
+    \ <p>**Type & Usage**<br>Platform interface used by ingress to authenticate &\
+    \ authorize microservice API access <p>**Details**<br>API details available at\
+    \ _your-AdvantEDGE-ip-address/api_"
+  version: "1.0.0"
+  title: "AdvantEDGE Auth Service REST API"
+  contact:
+    name: "InterDigital AdvantEDGE Support"
+    email: "AdvantEDGE@InterDigital.com"
+  license:
+    name: "Apache 2.0"
+    url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
+basePath: "/auth/v1"
+tags:
+- name: "auth"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /authenticate:
+    get:
+      tags:
+      - "auth"
+      summary: "Authenticate service request"
+      description: "Authenticate & authorize microservice endpoint access"
+      operationId: "authenticate"
+      parameters:
+      - name: "svc"
+        in: "query"
+        description: "Service requesting authentication"
+        required: false
+        type: "string"
+        x-exportParamName: "Svc"
+        x-optionalDataType: "String"
+      - name: "sbox"
+        in: "query"
+        description: "Sandbox name"
+        required: false
+        type: "string"
+        x-exportParamName: "Sbox"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
+  /authorize:
+    get:
+      tags:
+      - "auth"
+      summary: "OAuth authorization response endpoint"
+      description: "Redirect URI endpoint for OAuth authorization responses. Starts\
+        \ a user session."
+      operationId: "authorize"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "code"
+        in: "query"
+        description: "Temporary authorization code"
+        required: false
+        type: "string"
+        x-exportParamName: "Code"
+        x-optionalDataType: "String"
+      - name: "state"
+        in: "query"
+        description: "User-provided random state"
+        required: false
+        type: "string"
+        x-exportParamName: "State"
+        x-optionalDataType: "String"
+      responses:
+        302:
+          description: "Found"
+  /login:
+    get:
+      tags:
+      - "auth"
+      summary: "Initiate OAuth login procedure"
+      description: "Start OAuth login procedure with provider"
+      operationId: "login"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "provider"
+        in: "query"
+        description: "Oauth provider"
+        required: false
+        type: "string"
+        enum:
+        - "github"
+        - "gitlab"
+        x-exportParamName: "Provider"
+        x-optionalDataType: "String"
+      responses:
+        302:
+          description: "Found"
+    post:
+      tags:
+      - "auth"
+      summary: "Start a session"
+      description: "Start a session after authenticating user"
+      operationId: "loginUser"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "formData"
+        description: "User Name"
+        required: false
+        type: "string"
+        x-exportParamName: "Username"
+        x-optionalDataType: "String"
+      - name: "password"
+        in: "formData"
+        description: "User Password"
+        required: false
+        type: "string"
+        x-exportParamName: "Password"
+        x-optionalDataType: "String"
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Sandbox"
+        401:
+          description: "Unauthorized"
+  /logout:
+    get:
+      tags:
+      - "auth"
+      summary: "Terminate a session"
+      description: "Terminate a session"
+      operationId: "logout"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
+  /watchdog:
+    post:
+      tags:
+      - "auth"
+      summary: "Send heartbeat to watchdog"
+      description: "Send heartbeat to watchdog to keep session alive"
+      operationId: "triggerWatchdog"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: "Unauthorized"
+definitions:
+  Sandbox:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Sandbox name"
+    description: "Sandbox object"
+    example: {}

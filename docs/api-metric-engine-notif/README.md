@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost/metrics-notif/v2*
+All URIs are relative to *http://localhost/sandboxname/metrics-notif/v2*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

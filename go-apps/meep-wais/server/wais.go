@@ -36,12 +36,10 @@ import (
 	httpLog "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-http-logger"
 	log "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger"
 	redis "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis"
-	sm "github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions"
 
 	"github.com/gorilla/mux"
 )
 
-const moduleName = "meep-wais"
 const waisBasePath = "/wai/v2/"
 const waisKey string = "wais:"
 const logModuleWAIS string = "meep-wais"
@@ -61,7 +59,6 @@ var currentStoreName = ""
 var WAIS_DB = 5
 
 var rc *redis.Connector
-var sessionMgr *sm.SessionMgr
 var hostUrl *url.URL
 var sandboxName string
 var basePath string
@@ -125,14 +122,6 @@ func Init() (err error) {
 	}
 	_ = rc.DBFlush(baseKey)
 	log.Info("Connected to Redis DB, RNI service table")
-
-	// Connect to Session Manager
-	sessionMgr, err = sm.NewSessionMgr(moduleName, sandboxName, redisAddr, redisAddr)
-	if err != nil {
-		log.Error("Failed connection to Session Manager: ", err.Error())
-		return err
-	}
-	log.Info("Connected to Session Manager")
 
 	reInit()
 

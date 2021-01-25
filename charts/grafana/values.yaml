@@ -124,7 +124,7 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/auth-url: <-- set by 'meepctl deploy' when auth enabled
   labels: {}
   path: /grafana(/|$)(.*)
   hosts:
@@ -413,9 +413,20 @@ dashboardsConfigMaps: {}
 ## ref: http://docs.grafana.org/installation/configuration/
 ##
 grafana.ini:
+  'auth.basic':
+    enabled: false
   'auth.anonymous':
     enabled: true
-    org_role: Admin
+    org_role: Viewer
+  # 'auth.github':
+  #   enabled: false
+  #   allow_sign_up: true
+  #   client_id: 8a10c1c7486e56592aa4
+  #   client_secret: 6fe09e84c23b1e75f4caf963698a190921938897
+  #   scopes: user:email,read:org
+  #   auth_url: https://github.com/login/oauth/authorize
+  #   token_url: https://github.com/login/oauth/access_token
+  #   api_url: https://api.github.com/user
   security:
     allow_embedding: true
   paths:

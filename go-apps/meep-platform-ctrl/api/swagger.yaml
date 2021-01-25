@@ -18,125 +18,11 @@ basePath: "/platform-ctrl/v1"
 tags:
 - name: "Scenario Configuration"
 - name: "Sandbox Control"
-- name: "User Authentication"
 consumes:
 - "application/json"
 produces:
 - "application/json"
 paths:
-  /login:
-    get:
-      tags:
-      - "User Authentication"
-      summary: "Initiate OAuth login procedure"
-      description: "Start OAuth login procedure with provider"
-      operationId: "loginOAuth"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "provider"
-        in: "query"
-        description: "Oauth provider"
-        required: false
-        type: "string"
-        enum:
-        - "github"
-        - "gitlab"
-        x-exportParamName: "Provider"
-        x-optionalDataType: "String"
-      responses:
-        302:
-          description: "Found"
-    post:
-      tags:
-      - "User Authentication"
-      summary: "Start a session"
-      description: "Start a session after authenticating user"
-      operationId: "loginUser"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "username"
-        in: "formData"
-        description: "User Name"
-        required: false
-        type: "string"
-        x-exportParamName: "Username"
-        x-optionalDataType: "String"
-      - name: "password"
-        in: "formData"
-        description: "User Password"
-        required: false
-        type: "string"
-        x-exportParamName: "Password"
-        x-optionalDataType: "String"
-      responses:
-        200:
-          description: "OK"
-          schema:
-            $ref: "#/definitions/Sandbox"
-        401:
-          description: "Unauthorized"
-  /logout:
-    get:
-      tags:
-      - "User Authentication"
-      summary: "Terminate a session"
-      description: "Terminate a session"
-      operationId: "logoutUser"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "OK"
-        401:
-          description: "Unauthorized"
-  /authorize:
-    get:
-      tags:
-      - "User Authentication"
-      summary: "OAuth authorization response endpoint"
-      description: "Redirect URI endpoint for OAuth authorization responses. Starts\
-        \ a user session."
-      operationId: "authorize"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "code"
-        in: "query"
-        description: "Temporary authorization code"
-        required: false
-        type: "string"
-        x-exportParamName: "Code"
-        x-optionalDataType: "String"
-      - name: "state"
-        in: "query"
-        description: "User-provided random state"
-        required: false
-        type: "string"
-        x-exportParamName: "State"
-        x-optionalDataType: "String"
-      responses:
-        302:
-          description: "Found"
-  /watchdog:
-    post:
-      tags:
-      - "User Authentication"
-      summary: "Send heartbeat to watchdog"
-      description: "Send heartbeat to watchdog to keep session alive"
-      operationId: "triggerWatchdog"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "OK"
-        401:
-          description: "Unauthorized"
   /scenarios:
     get:
       tags:
@@ -406,14 +292,6 @@ paths:
         404:
           description: "Not found"
 definitions:
-  Sandbox:
-    type: "object"
-    properties:
-      name:
-        type: "string"
-        description: "Sandbox name"
-    description: "Sandbox object"
-    example: {}
   ScenarioList:
     type: "object"
     properties:
@@ -1109,6 +987,14 @@ definitions:
         items:
           $ref: "#/definitions/Sandbox"
     description: "Sandbox list"
+    example: {}
+  Sandbox:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        description: "Sandbox name"
+    description: "Sandbox object"
     example: {}
   SandboxConfig:
     type: "object"

@@ -7,21 +7,19 @@ require (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-key-mgr v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-data-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-logger v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0
+	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-metric-store v0.0.0 // indirect
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-model v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis v0.0.0
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions v0.0.0
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users v0.0.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/gorilla/mux v1.7.4
-	github.com/lkysow/go-gitlab v0.7.1
-	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	github.com/lkysow/go-gitlab v0.7.1 // indirect
+	github.com/roymx/viper v1.3.3-0.20190416163942-b9a223fc58a3 // indirect
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )
 
@@ -35,6 +33,4 @@ replace (
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-mq => ../../go-packages/meep-mq
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-redis => ../../go-packages/meep-redis
 	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sandbox-store => ../../go-packages/meep-sandbox-store
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-sessions => ../../go-packages/meep-sessions
-	github.com/InterDigitalInc/AdvantEDGE/go-packages/meep-users => ../../go-packages/meep-users
 )

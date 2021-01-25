@@ -124,8 +124,8 @@ type SandboxTemplate struct {
 	HostUrl        string
 	UserSwagger    string
 	UserSwaggerDir string
-	SessionKey     string
 	HttpsOnly      bool
+	AuthEnabled    bool
 }
 
 // Service map
@@ -542,8 +542,8 @@ func generateSandboxCharts(sandboxName string) (charts []helm.Chart, err error) 
 	sandboxTemplate.HostUrl = ve.hostUrl
 	sandboxTemplate.UserSwagger = ve.userSwagger
 	sandboxTemplate.UserSwaggerDir = ve.userSwaggerDir
-	sandboxTemplate.SessionKey = ve.sessionKey
 	sandboxTemplate.HttpsOnly = ve.httpsOnly
+	sandboxTemplate.AuthEnabled = ve.authEnabled
 
 	// Create sandbox charts
 	for pod := range ve.sboxPods {

@@ -63,8 +63,6 @@ type APIClient struct {
 	SandboxControlApi *SandboxControlApiService
 
 	ScenarioConfigurationApi *ScenarioConfigurationApiService
-
-	UserAuthenticationApi *UserAuthenticationApiService
 }
 
 type service struct {
@@ -85,7 +83,6 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	// API Services
 	c.SandboxControlApi = (*SandboxControlApiService)(&c.common)
 	c.ScenarioConfigurationApi = (*ScenarioConfigurationApiService)(&c.common)
-	c.UserAuthenticationApi = (*UserAuthenticationApiService)(&c.common)
 
 	return c
 }

@@ -15,7 +15,9 @@ info:
   <p>Supported subscriptions:
   <p> - CellChangeSubscription
   <p> - RabEstSubscription
-  <p> - RabRelSubscription"
+  <p> - RabRelSubscription
+  <p> - MeasRepUeSubscription
+  <p> - NrMeasRepUeSubscription"
   license:
     name: "Apache 2.0"
     url: "https://github.com/InterDigitalInc/AdvantEDGE/blob/master/LICENSE"
@@ -135,7 +137,7 @@ paths:
   /queries/layer2_meas:
     get:
       tags:
-      - 'unsupported'
+      - 'rni'
       summary: 'Retrieve information on layer 2 measurements'
       description: 'Queries information about the layer 2 measurements.'
       operationId: layer2_meas_infoGET

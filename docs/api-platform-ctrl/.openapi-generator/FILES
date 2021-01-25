@@ -1,7 +1,6 @@
 .openapi-generator-ignore
 Apis/SandboxControlApi.md
 Apis/ScenarioConfigurationApi.md
-Apis/UserAuthenticationApi.md
 Models/CellularDomainConfig.md
 Models/CellularPoaConfig.md
 Models/CpuConfig.md

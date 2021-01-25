@@ -19,11 +19,6 @@ Class | Method | HTTP request | Description
 *ScenarioConfigurationApi* | [**getScenario**](Apis/ScenarioConfigurationApi.md#getscenario) | **GET** /scenarios/{name} | Get a specific scenario
 *ScenarioConfigurationApi* | [**getScenarioList**](Apis/ScenarioConfigurationApi.md#getscenariolist) | **GET** /scenarios | Get all scenarios
 *ScenarioConfigurationApi* | [**setScenario**](Apis/ScenarioConfigurationApi.md#setscenario) | **PUT** /scenarios/{name} | Update a scenario
-*UserAuthenticationApi* | [**authorize**](Apis/UserAuthenticationApi.md#authorize) | **GET** /authorize | OAuth authorization response endpoint
-*UserAuthenticationApi* | [**loginOAuth**](Apis/UserAuthenticationApi.md#loginoauth) | **GET** /login | Initiate OAuth login procedure
-*UserAuthenticationApi* | [**loginUser**](Apis/UserAuthenticationApi.md#loginuser) | **POST** /login | Start a session
-*UserAuthenticationApi* | [**logoutUser**](Apis/UserAuthenticationApi.md#logoutuser) | **GET** /logout | Terminate a session
-*UserAuthenticationApi* | [**triggerWatchdog**](Apis/UserAuthenticationApi.md#triggerwatchdog) | **POST** /watchdog | Send heartbeat to watchdog
 
 
 <a name="documentation-for-models"></a>

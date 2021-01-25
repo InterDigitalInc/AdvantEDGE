@@ -173,7 +173,6 @@ func deployCore(cobraCmd *cobra.Command) {
 
 	for _, app := range deployData.coreApps {
 		chart := deployData.gitdir + "/" + utils.RepoCfg.GetString("repo.core.go-apps."+app+".chart")
-		sessionKeySecret := utils.RepoCfg.GetString("repo.deployment.auth.session.key-secret")
 		codecov := utils.RepoCfg.GetBool("repo.core.go-apps." + app + ".codecov")
 		userFe := utils.RepoCfg.GetBool("repo.deployment.user.frontend")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
@@ -182,9 +181,6 @@ func deployCore(cobraCmd *cobra.Command) {
 		// Set core flags
 		coreFlags := utils.HelmFlags(flags, "--set", "image.repository="+deployData.registry+"/"+app)
 		coreFlags = utils.HelmFlags(coreFlags, "--set", "image.tag="+deployData.tag)
-		if sessionKeySecret != "" {
-			coreFlags = utils.HelmFlags(coreFlags, "--set", "image.envSecret.MEEP_SESSION_KEY.name="+sessionKeySecret)
-		}
 		if deployData.codecov && codecov {
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.enabled=true")
 			coreFlags = utils.HelmFlags(coreFlags, "--set", "codecov.location="+deployData.workdir+"/codecov/"+app)
@@ -214,6 +210,8 @@ func deployDep(cobraCmd *cobra.Command) {
 
 func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobra.Command) [][]string {
 	var flags [][]string
+	authUrlAnnotation := "ingress.annotations.nginx\\.ingress\\.kubernetes\\.io/auth-url"
+	authUrl := "https://$http_host/auth/v1/authenticate"
 
 	userValueDir := deployData.workdir + "/user/values"
 
@@ -236,18 +234,19 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 
 	// Service-specific flags
 	switch targetName {
+
+	// Dependency Pods
 	case "meep-couchdb":
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/couchdb/")
-	case "meep-open-map-tiles":
-		deploySetOmtConfig(chart, cobraCmd)
-		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
-	case "meep-postgis":
-		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
 	case "meep-docker-registry":
 		deployCreateRegistryCerts(chart, cobraCmd)
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/docker-registry/")
 	case "meep-grafana":
 		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/grafana/")
+		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
+		if authEnabled {
+			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=grafana")
+		}
 	case "meep-influxdb":
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/influxdb/")
 	case "meep-ingress":
@@ -270,27 +269,18 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.http="+httpPort)
 			flags = utils.HelmFlags(flags, "--set", "controller.service.nodePorts.https="+httpsPort)
 		}
-	case "meep-ingress-certs":
-		// Deploy Lets-Encrypt or self-signed Certificates
-		ca := utils.RepoCfg.GetString("repo.deployment.ingress.ca")
-		switch ca {
-		case "lets-encrypt":
-			host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
-			prod := utils.RepoCfg.GetBool("repo.deployment.ingress.le-server-prod")
-			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
-			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
-			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.acme.prod="+strconv.FormatBool(prod))
-		case "self-signed":
-			deployCreateIngressCerts(chart, cobraCmd)
-		default:
-			// none
+	case "meep-open-map-tiles":
+		deploySetOmtConfig(chart, cobraCmd)
+		flags = utils.HelmFlags(flags, "--set", "persistentVolume.location="+deployData.workdir+"/omt/")
+	case "meep-postgis":
+		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/postgis/")
+
+	// Core pods
+	case "meep-auth-svc":
+		sessionKeySecret := utils.RepoCfg.GetString("repo.deployment.auth.session.key-secret")
+		if sessionKeySecret != "" {
+			flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_SESSION_KEY.name="+sessionKeySecret)
 		}
-	case "meep-mon-engine":
-		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
-		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
-	case "meep-platform-ctrl":
 		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
 		maxSessions := utils.RepoCfg.GetString("repo.deployment.auth.session.max-sessions")
@@ -331,18 +321,48 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 				flags = utils.HelmFlags(flags, "--set", "image.envSecret.MEEP_OAUTH_GITLAB_SECRET.name="+secret)
 			}
 		}
+	case "meep-ingress-certs":
+		// Deploy Lets-Encrypt or self-signed Certificates
+		ca := utils.RepoCfg.GetString("repo.deployment.ingress.ca")
+		switch ca {
+		case "lets-encrypt":
+			host := utils.RepoCfg.GetString("repo.deployment.ingress.host")
+			prod := utils.RepoCfg.GetBool("repo.deployment.ingress.le-server-prod")
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.enabled=true")
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.tls.host="+host)
+			flags = utils.HelmFlags(flags, "--set", "letsEncrypt.acme.prod="+strconv.FormatBool(prod))
+		case "self-signed":
+			deployCreateIngressCerts(chart, cobraCmd)
+		default:
+			// none
+		}
+	case "meep-mon-engine":
+		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
+		if authEnabled {
+			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=meep-mon-engine")
+		}
+		monEngineTarget := "repo.core.go-apps.meep-mon-engine"
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_DEPENDENCY_PODS="+getPodList(monEngineTarget+".dependency-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_CORE_PODS="+getPodList(monEngineTarget+".core-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(monEngineTarget+".sandbox-pods"))
+	case "meep-platform-ctrl":
+		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
+		if authEnabled {
+			flags = utils.HelmFlags(flags, "--set", authUrlAnnotation+"="+authUrl+"?svc=meep-platform-ctrl")
+		}
 	case "meep-virt-engine":
+		authEnabled := utils.RepoCfg.GetBool("repo.deployment.auth.enabled")
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_AUTH_ENABLED=\""+strconv.FormatBool(authEnabled)+"\"")
 		virtEngineTarget := "repo.core.go-apps.meep-virt-engine"
 		hostName := utils.RepoCfg.GetString("repo.deployment.ingress.host")
 		userSwagger := utils.RepoCfg.GetBool("repo.deployment.user.swagger")
 		flags = utils.HelmFlags(flags, "--set", "persistence.location="+deployData.workdir+"/virt-engine")
 		flags = utils.HelmFlags(flags, "--set", "user.values.location="+deployData.workdir+"/user/values")
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_SANDBOX_PODS="+getPodList(virtEngineTarget+".sandbox-pods"))
+		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\""+strconv.FormatBool(httpsOnly)+"\"")
 		if httpsOnly {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\"true\"")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=https://"+hostName)
 		} else {
-			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HTTPS_ONLY=\"false\"")
 			flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_HOST_URL=http://"+hostName)
 		}
 		flags = utils.HelmFlags(flags, "--set", "image.env.MEEP_USER_SWAGGER=\""+strconv.FormatBool(userSwagger)+"\"")
