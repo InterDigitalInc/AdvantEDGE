@@ -55,6 +55,7 @@ const measRepUeSubscriptionType = "meas_rep_ue"
 const nrMeasRepUeSubscriptionType = "nr_meas_rep_ue"
 const poaType4G = "POA-4G"
 const poaType5G = "POA-5G"
+const plTypeUE = "UE"
 
 var ccSubscriptionMap = map[int]*CellChangeSubscription{}
 var reSubscriptionMap = map[int]*RabEstSubscription{}
@@ -105,6 +106,12 @@ type RabInfoData struct {
 	rabInfo            *RabInfo
 }
 
+type L2MeasData struct {
+	queryCellIds       []string
+	queryIpv4Addresses []string
+	l2Meas             *L2Meas
+}
+
 type UeData struct {
 	Name          string       `json:"name"`
 	ErabId        int32        `json:"erabId"`
@@ -113,6 +120,7 @@ type UeData struct {
 	Qci           int32        `json:"qci"`
 	ParentPoaName string       `json:"parentPoaName"`
 	InRangePoas   []InRangePoa `json:"inRangePoas"`
+	AppNames      []string     `json:"appNames"`
 }
 
 type InRangePoa struct {
@@ -125,6 +133,11 @@ type PoaInfo struct {
 	Type  string `json:"type"`
 	Ecgi  Ecgi   `json:"ecgi"`
 	Nrcgi NRcgi  `json:"nrcgi"`
+}
+
+type AppInfo struct {
+	ParentType string `json:"parentType"`
+	ParentName string `json:"parentName"`
 }
 
 type DomainData struct {
@@ -221,7 +234,7 @@ func Init() (err error) {
 		UeDataCb:       updateUeData,
 		MeasInfoCb:     updateMeasInfo,
 		PoaInfoCb:      updatePoaInfo,
-		AppEcgiInfoCb:  updateAppEcgiInfo,
+		AppInfoCb:      updateAppInfo,
 		DomainDataCb:   updateDomainData,
 		ScenarioNameCb: updateStoreName,
 		CleanUpCb:      cleanUp,
@@ -261,7 +274,7 @@ func Stop() (err error) {
 	return sbi.Stop()
 }
 
-func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId string, erabIdValid bool) {
+func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId string, erabIdValid bool, appNames []string) {
 
 	var plmn Plmn
 	var newEcgi Ecgi
@@ -279,6 +292,7 @@ func updateUeData(name string, mnc string, mcc string, cellId string, nrcellId s
 	ueData.Nrcgi = &newNrcgi
 	ueData.Name = name
 	ueData.Qci = defaultSupportedQci //only supporting one value
+	ueData.AppNames = appNames
 
 	oldPlmn := new(Plmn)
 	oldPlmnMnc := ""
@@ -405,35 +419,32 @@ func updatePoaInfo(name string, poaType string, mnc string, mcc string, cellId s
 	_ = rc.JSONSetEntry(baseKey+"POA:"+name, ".", convertPoaInfoToJson(&poaInfo))
 }
 
-func updateAppEcgiInfo(name string, mnc string, mcc string, cellId string) {
-
-	var plmn Plmn
-	var newEcgi Ecgi
-	plmn.Mnc = mnc
-	plmn.Mcc = mcc
-	newEcgi.CellId = cellId
-	newEcgi.Plmn = &plmn
+func updateAppInfo(name string, parentType string, parentName string) {
 
 	//get from DB
-	jsonAppEcgiInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+name, ".")
+	jsonAppInfo, _ := rc.JSONGetEntry(baseKey+"APP:"+name+"*", ".")
 
-	oldPlmnMnc := ""
-	oldPlmnMcc := ""
-	oldCellId := ""
-
-	if jsonAppEcgiInfo != "" {
-
-		ecgiInfo := convertJsonToEcgi(jsonAppEcgiInfo)
-
-		oldPlmnMnc = ecgiInfo.Plmn.Mnc
-		oldPlmnMcc = ecgiInfo.Plmn.Mcc
-		oldCellId = ecgiInfo.CellId
+	if jsonAppInfo != "" {
+		//delete entry if parent name is different; means it moved
+		currentAppInfo := convertJsonToAppInfo(jsonAppInfo)
+		if currentAppInfo.ParentName != parentName {
+			if currentAppInfo.ParentType == plTypeUE {
+				_ = rc.JSONDelEntry(baseKey+"APP:"+name+":"+currentAppInfo.ParentName, ".")
+			}
+		} else {
+			//no changes.. just get out
+			return
+		}
 	}
 
-	//updateDB if changes occur
-	if newEcgi.Plmn.Mnc != oldPlmnMnc || newEcgi.Plmn.Mcc != oldPlmnMcc || newEcgi.CellId != oldCellId {
-		//updateDB
-		_ = rc.JSONSetEntry(baseKey+"APP:"+name, ".", convertEcgiToJson(&newEcgi))
+	//updateDB
+	var appInfo AppInfo
+	appInfo.ParentType = parentType
+	appInfo.ParentName = parentName
+	if parentType == plTypeUE {
+		_ = rc.JSONSetEntry(baseKey+"APP:"+name+":"+parentName, ".", convertAppInfoToJson(&appInfo))
+	} else {
+		_ = rc.JSONSetEntry(baseKey+"APP:"+name, ".", convertAppInfoToJson(&appInfo))
 	}
 }
 
@@ -2479,6 +2490,231 @@ func populatePlmnInfo(key string, jsonInfo string, response interface{}) error {
 	plmn.Mcc = domainData.Mcc
 	plmnInfo.Plmn = append(plmnInfo.Plmn, plmn)
 	resp.PlmnInfoList = append(resp.PlmnInfoList, plmnInfo)
+	return nil
+}
+
+func layer2MeasInfoGet(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	var l2MeasData L2MeasData
+
+	u, _ := url.Parse(r.URL.String())
+	log.Info("url: ", u.RequestURI())
+	q := u.Query()
+	//meAppName := q.Get("app_ins_id")
+
+	l2MeasData.queryCellIds = q["cell_id"]
+	l2MeasData.queryIpv4Addresses = q["ue_ipv4_address"]
+
+	seconds := time.Now().Unix()
+	var timeStamp TimeStamp
+	timeStamp.Seconds = int32(seconds)
+
+	//meApp is ignored, we use the whole network
+
+	var l2Meas L2Meas
+	l2MeasData.l2Meas = &l2Meas
+
+	//get from DB
+	//loop through each UE
+	keyName := baseKey + "UE:*"
+	err := rc.ForEachJSONEntry(keyName, populateL2Meas, &l2MeasData)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//loop through each POA
+	keyName = baseKey + "POA:*"
+	err = rc.ForEachJSONEntry(keyName, populateL2MeasPOA, &l2MeasData)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	l2Meas.TimeStamp = &timeStamp
+
+	// Send response
+	jsonResponse, err := json.Marshal(l2Meas)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, string(jsonResponse))
+}
+
+func populateL2MeasPOA(key string, jsonInfo string, l2MeasData interface{}) error {
+	// Get query params & userlist from user data
+	data := l2MeasData.(*L2MeasData)
+	if data == nil || data.l2Meas == nil {
+		return errors.New("l2Meas not found in l2MeasData")
+	}
+
+	// Retrieve user info from DB
+	var poaData PoaInfo
+	err := json.Unmarshal([]byte(jsonInfo), &poaData)
+	if err != nil {
+		return err
+	}
+
+	//only applies for 4G poas
+	if poaData.Type != poaType4G {
+		return nil
+	}
+
+	partOfFilter := true
+	for _, cellId := range data.queryCellIds {
+		if cellId != "" {
+			partOfFilter = false
+			if cellId == poaData.Ecgi.CellId {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	found := false
+
+	//find if cellInfo already exists
+	for _, currentCellInfo := range data.l2Meas.CellInfo {
+		if currentCellInfo.Ecgi.Plmn.Mcc == poaData.Ecgi.Plmn.Mcc &&
+			currentCellInfo.Ecgi.Plmn.Mnc == poaData.Ecgi.Plmn.Mnc &&
+			currentCellInfo.Ecgi.CellId == poaData.Ecgi.CellId {
+			//add ue into the existing cellUserInfo
+			found = true
+		}
+	}
+	if !found {
+		newCellInfo := new(L2MeasCellInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = poaData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = poaData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = poaData.Ecgi.CellId
+		newCellInfo.Ecgi = newEcgi
+
+		data.l2Meas.CellInfo = append(data.l2Meas.CellInfo, *newCellInfo)
+	}
+
+	return nil
+}
+
+func populateL2Meas(key string, jsonInfo string, l2MeasData interface{}) error {
+	// Get query params & userlist from user data
+	data := l2MeasData.(*L2MeasData)
+	if data == nil || data.l2Meas == nil {
+		return errors.New("l2Meas not found in l2MeasData")
+	}
+
+	// Retrieve user info from DB
+	var ueData UeData
+	err := json.Unmarshal([]byte(jsonInfo), &ueData)
+	if err != nil {
+		return err
+	}
+
+	// Ignore entries with no rabId, meaning only applies if connected to POA-4G, no need to check for ecgi
+	if ueData.ErabId == -1 {
+		return nil
+	}
+
+	partOfFilter := true
+	for _, cellId := range data.queryCellIds {
+		if cellId != "" {
+			partOfFilter = false
+			if cellId == ueData.Ecgi.CellId {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	//name of the element is used as the ipv4 address at the moment
+	partOfFilter = true
+	for _, address := range data.queryIpv4Addresses {
+		if address != "" {
+			partOfFilter = false
+			if address == ueData.Name {
+				partOfFilter = true
+				break
+			}
+		}
+	}
+	if !partOfFilter {
+		return nil
+	}
+
+	found := false
+
+	//find if cellUeInfo already exists
+
+	assocId := new(AssociateId)
+	assocId.Type_ = 1 //UE_IPV4_ADDRESS
+	subKeys := strings.Split(key, ":")
+	assocId.Value = subKeys[len(subKeys)-1]
+
+	for _, currentCellUeInfo := range data.l2Meas.CellUEInfo {
+		if assocId.Type_ == currentCellUeInfo.AssociateId.Type_ && assocId.Value == currentCellUeInfo.AssociateId.Value {
+			found = true
+		}
+	}
+	if !found {
+		newCellUeInfo := new(L2MeasCellUeInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = ueData.Ecgi.CellId
+
+		newCellUeInfo.Ecgi = newEcgi
+		newCellUeInfo.AssociateId = assocId
+
+		data.l2Meas.CellUEInfo = append(data.l2Meas.CellUEInfo, *newCellUeInfo)
+	}
+
+	//find if cellInfo already exists
+	var cellIndex int
+
+	for index, currentCellInfo := range data.l2Meas.CellInfo {
+		if currentCellInfo.Ecgi.Plmn.Mcc == ueData.Ecgi.Plmn.Mcc &&
+			currentCellInfo.Ecgi.Plmn.Mnc == ueData.Ecgi.Plmn.Mnc &&
+			currentCellInfo.Ecgi.CellId == ueData.Ecgi.CellId {
+			//add ue into the existing cellUserInfo
+			found = true
+			cellIndex = index
+		}
+	}
+	if !found {
+		newCellInfo := new(L2MeasCellInfo)
+		newEcgi := new(Ecgi)
+		newPlmn := new(Plmn)
+		newPlmn.Mcc = ueData.Ecgi.Plmn.Mcc
+		newPlmn.Mnc = ueData.Ecgi.Plmn.Mnc
+		newEcgi.Plmn = newPlmn
+		newEcgi.CellId = ueData.Ecgi.CellId
+		newCellInfo.Ecgi = newEcgi
+
+		data.l2Meas.CellInfo = append(data.l2Meas.CellInfo, *newCellInfo)
+		cellIndex = len(data.l2Meas.CellInfo) - 1
+	}
+
+	//need to do a qci mapping... since qci can only be 80 for now, using the one that correlates to that
+	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeDlNongbrCell++
+	data.l2Meas.CellInfo[cellIndex].NumberOfActiveUeUlNongbrCell++
+
 	return nil
 }
 
