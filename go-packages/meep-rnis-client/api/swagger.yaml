@@ -9,7 +9,8 @@ info:
     information about radio conditions in the network <p>**Details**<br>API details
     available at _your-AdvantEDGE-ip-address/api_ <p>AdvantEDGE supports a selected
     subset of RNI API endpoints (see below) and a subset of subscription types. <p>Supported
-    subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription'
+    subscriptions: <p> - CellChangeSubscription <p> - RabEstSubscription <p> - RabRelSubscription
+    <p> - MeasRepUeSubscription <p> - NrMeasRepUeSubscription'
   contact:
     name: InterDigital AdvantEDGE Support
     email: AdvantEDGE@InterDigital.com
@@ -428,7 +429,7 @@ paths:
   /queries/layer2_meas:
     get:
       tags:
-      - unsupported
+      - rni
       summary: Retrieve information on layer 2 measurements
       description: Queries information about the layer 2 measurements.
       operationId: layer2_meas_infoGET
