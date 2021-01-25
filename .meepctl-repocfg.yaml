@@ -48,7 +48,7 @@ repo:
     # authentication & authorization config
     auth:
       # enable authentication & authorization
-      enabled: false
+      enabled: true
       # Session config
       session:
         # session encryption key k8s secret (data: encryption-key)
@@ -58,7 +58,7 @@ repo:
       # GitHub OAuth provider config
       github:
         # enable GitHub OAuth
-        enabled: true
+        enabled: false
         # authorization url
         auth-url: https://github.com/login/oauth/authorize
         # access token url
@@ -70,7 +70,7 @@ repo:
       # GitLab OAuth provider config
       gitlab:
         # enable GitLab OAuth
-        enabled: true
+        enabled: false
         # authorization url
         auth-url: https://gitlab.com/oauth/authorize
         # access token url
@@ -99,15 +99,15 @@ repo:
         # user supplied value file located @ .meep/user/values (use below file name)
         chart-user-values: meep-auth-svc.yaml
         # enable meepctl build
-        build: false
+        build: true
         # enable meepctl dockerize
-        dockerize: false
+        dockerize: true
         # enable meepctl deploy/delete
-        deploy: false
+        deploy: true
         # supports code coverage measurement when built in codecov mode
         codecov: true
         # supports linting
-        lint: false
+        lint: true
         # location of API specification
         api: go-apps/meep-auth-svc/api/swagger.yaml
         # AdvantEDGE resources included in Docker container image
