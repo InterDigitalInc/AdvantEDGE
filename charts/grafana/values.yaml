@@ -314,11 +314,11 @@ datasources:
   datasources.yaml:
     apiVersion: 1
     datasources:
-#    - name: Prometheus
-#      type: prometheus
-#      url: http://prometheus-prometheus-server
-#      access: proxy
-#      isDefault: true
+    - name: Prometheus
+      type: prometheus
+      url: http://meep-prometheus-prometheus:9090
+      access: proxy
+      isDefault: true
     - name: meep-influxdb
       type: influxdb
       access: proxy
@@ -536,3 +536,38 @@ sidecar:
 ## Override the deployment namespace
 ##
 namespaceOverride: ""
+
+grafana:
+  jobLabel: jobLabel
+
+  service:
+    portName: service
+
+  ## If true, create a serviceMonitor for grafana
+  ##
+  serviceMonitor:
+    ## Scrape interval. If not set, the Prometheus default scrape interval is used.
+    ##
+    interval: ""
+    selfMonitor: true
+
+    # Path to use for scraping metrics. Might be different if server.root_url is set
+    # in grafana.ini
+    path: "/metrics"
+
+    ## 	metric relabel configs to apply to samples before ingestion.
+    ##
+    metricRelabelings: []
+    # - action: keep
+    #   regex: 'kube_(daemonset|deployment|pod|namespace|node|statefulset).+'
+    #   sourceLabels: [__name__]
+
+    # 	relabel configs to apply to samples before ingestion.
+    ##
+    relabelings: []
+    # - sourceLabels: [__meta_kubernetes_pod_node_name]
+    #   separator: ;
+    #   regex: ^(.*)$
+    #   targetLabel: nodename
+    #   replacement: $1
+    #   action: replace

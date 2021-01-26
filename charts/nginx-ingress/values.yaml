@@ -361,7 +361,7 @@ controller:
   metrics:
     port: 10254
     # if this port is changed, change healthz-port: in extraArgs: accordingly
-    enabled: false
+    enabled: true
 
     service:
       annotations: {}
@@ -383,7 +383,7 @@ controller:
       type: ClusterIP
 
     serviceMonitor:
-      enabled: false
+      enabled: true
       additionalLabels: {}
       namespace: ""
       namespaceSelector: {}
