@@ -314,14 +314,27 @@ func ConfigIsIpv4(host string) bool {
 // GetTargets retreives the keys based on group and operation type
 //  operation == "" returns the whole group
 func GetTargets(group string, operation string) []string {
+	nonPriorityTargets := []string{}
 	targets := []string{}
 	if RepoCfg != nil {
 		for target := range RepoCfg.GetStringMapString(group) {
 			if RepoCfg.GetBool(group+"."+target+"."+operation) || operation == "" {
-				targets = append(targets, target)
+				if RepoCfg.GetInt(group+"."+target+".priority") != 0 {
+					targets = append(targets, target)
+				} else {
+					nonPriorityTargets = append(nonPriorityTargets, target)
+				}
 			}
 		}
-		sort.Strings(targets)
+		if len(targets) > 1 && group == "repo.dep" && operation != "" {
+			depCfg := RepoCfg.GetStringMap(group)
+			sort.Slice(targets, func(i, j int) bool {
+				return depCfg[targets[i]].(map[string]interface{})["priority"].(int) <
+					depCfg[targets[j]].(map[string]interface{})["priority"].(int)
+			})
+		}
+		sort.Strings(nonPriorityTargets)
+		targets = append(targets, nonPriorityTargets...)
 	}
 	return targets
 }

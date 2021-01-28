@@ -561,6 +561,13 @@ alertmanager:
     #         values:
     #         - e2e-az1
     #         - e2e-az2
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/master
+              operator: Exists
 
     ## If specified, the pod's tolerations.
     ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -1891,7 +1898,7 @@ prometheus:
     ## Assign custom affinity rules to the prometheus instance
     ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
     ##
-    affinity: {}
+    # affinity: {}
     # nodeAffinity:
     #   requiredDuringSchedulingIgnoredDuringExecution:
     #     nodeSelectorTerms:
@@ -1901,6 +1908,13 @@ prometheus:
     #         values:
     #         - e2e-az1
     #         - e2e-az2
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: node-role.kubernetes.io/master
+              operator: Exists
 
     ## The remote_read spec configuration for Prometheus.
     ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#remotereadspec
@@ -1974,8 +1988,8 @@ prometheus:
     additionalScrapeConfigs:
     - job_name: default/meep-prometheus-couchdb-exporter/0
       honor_timestamps: true
-      scrape_interval: 1s
-      scrape_timeout: 1s
+      scrape_interval: 5s
+      scrape_timeout: 5s
       metrics_path: /metrics
       scheme: http
       relabel_configs:

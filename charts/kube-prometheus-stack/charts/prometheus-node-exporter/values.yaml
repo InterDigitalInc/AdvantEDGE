@@ -21,7 +21,7 @@ service:
 
 prometheus:
   monitor:
-    enabled: false
+    enabled: true
     additionalLabels: {}
     namespace: ""
 
