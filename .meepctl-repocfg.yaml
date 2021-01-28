@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-version: 1.6.2
+version: 1.6.3
 repo:
   name: AdvantEDGE
 
@@ -163,6 +163,7 @@ repo:
           - meep-open-map-tiles
           - meep-postgis
           - meep-redis
+          # - meep-prometheus
         # list of platform pods to monitor
         core-pods:
           - meep-mon-engine
@@ -656,6 +657,19 @@ repo:
       chart: charts/postgis
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-postgis.yaml
+    meep-prometheus:
+      # Priority 1 is highest to make sure Prometheus is deployed first
+      priority: 1
+      # enable meepctl build -> deps are never built
+      build: false
+      # enable meepctl dockerize -> deps are never dockerized
+      dockerize: false
+      # enable meepctl deploy/delete
+      deploy: false
+      # location of deployment chart
+      chart: charts/kube-prometheus-stack
+      # user supplied value file located @ .meep/user/values (use below file name)
+      chart-user-values: meep-prometheus.yaml
 
   #------------------------------
   #  Packages

@@ -1,0 +1,31 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "kube-state-metrics.fullname" . }}
+  labels:
+    app: {{ template "kube-state-metrics.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  jobLabel: jobLabel
+  selector:
+    matchLabels:
+      app: kube-state-metrics
+      release: {{ .Release.Name }}
+  endpoints:
+  - port: http
+    {{- if .Values.metrics.serviceMonitor.interval }}
+    interval: {{ .Values.metrics.serviceMonitor.interval }}
+    {{- end }}
+    honorLabels: true
+{{- if .Values.metrics.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+{{ tpl (toYaml .Values.metrics.serviceMonitor.metricRelabelings | indent 6) . }}
+{{- end }}
+{{- if .Values.metrics.serviceMonitor.relabelings }}
+    relabelings:
+{{ toYaml .Values.metrics.serviceMonitor.relabelings | indent 6 }}
+{{- end }}
+{{- end }}

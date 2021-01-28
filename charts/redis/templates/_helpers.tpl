@@ -35,7 +35,7 @@ If release name contains chart name it will be used as a full name.
 Return the appropriate apiVersion for networkpolicy.
 */}}
 {{- define "networkPolicy.apiVersion" -}}
-{{- if semverCompare ">=1.4-0, <1.7-0" .Capabilities.KubeVersion.Version -}}
+{{- if semverCompare ">=1.4-0, <1.7-0" .Capabilities.KubeVersion.GitVersion -}}
 {{- print "extensions/v1beta1" -}}
 {{- else -}}
 {{- print "networking.k8s.io/v1" -}}
@@ -43,81 +43,147 @@ Return the appropriate apiVersion for networkpolicy.
 {{- end -}}
 
 {{/*
-Return the proper image name
+Return the appropriate apiGroup for PodSecurityPolicy.
+*/}}
+{{- define "podSecurityPolicy.apiGroup" -}}
+{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- print "policy" -}}
+{{- else -}}
+{{- print "extensions" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the appropriate apiVersion for PodSecurityPolicy.
+*/}}
+{{- define "podSecurityPolicy.apiVersion" -}}
+{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- print "policy/v1beta1" -}}
+{{- else -}}
+{{- print "extensions/v1beta1" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper Redis(TM) image name
 */}}
 {{- define "redis.image" -}}
-{{- $registryName :=  .Values.image.registry -}}
+{{- $registryName := .Values.image.registry -}}
 {{- $repositoryName := .Values.image.repository -}}
 {{- $tag := .Values.image.tag | toString -}}
-{{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" .Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper Redis(TM) Sentinel image name
+*/}}
+{{- define "sentinel.image" -}}
+{{- $registryName := .Values.sentinel.image.registry -}}
+{{- $repositoryName := .Values.sentinel.image.repository -}}
+{{- $tag := .Values.sentinel.image.tag | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" .Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Return the proper image name (for the metrics image)
 */}}
-{{- define "metrics.image" -}}
-{{- $registryName :=  .Values.metrics.image.registry -}}
+{{- define "redis.metrics.image" -}}
+{{- $registryName := .Values.metrics.image.registry -}}
 {{- $repositoryName := .Values.metrics.image.repository -}}
 {{- $tag := .Values.metrics.image.tag | toString -}}
-{{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
-{{- end -}}
-
 {{/*
-Return slave readiness probe
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
 */}}
-{{- define "redis.slave.readinessProbe" -}}
-{{- $readinessProbe := .Values.slave.readinessProbe | default .Values.master.readinessProbe -}}
-{{- if $readinessProbe }}
-{{- if $readinessProbe.enabled }}
-readinessProbe:
-  initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default .Values.master.readinessProbe.initialDelaySeconds }}
-  periodSeconds: {{ $readinessProbe.periodSeconds | default .Values.master.readinessProbe.periodSeconds }}
-  timeoutSeconds: {{ $readinessProbe.timeoutSeconds | default .Values.master.readinessProbe.timeoutSeconds }}
-  successThreshold: {{ $readinessProbe.successThreshold | default .Values.master.readinessProbe.successThreshold }}
-  failureThreshold: {{ $readinessProbe.failureThreshold | default .Values.master.readinessProbe.failureThreshold }}
-  exec:
-    command:
-    - sh
-    - -c
-    - /health/ping_local_and_master.sh
-{{- end }}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" .Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return slave liveness probe
+Return the proper image name (for the init container volume-permissions image)
 */}}
-{{- define "redis.slave.livenessProbe" -}}
-{{- $livenessProbe := .Values.slave.livenessProbe | default .Values.master.livenessProbe -}}
-{{- if $livenessProbe }}
-{{- if $livenessProbe.enabled }}
-livenessProbe:
-  initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default .Values.master.livenessProbe.initialDelaySeconds }}
-  periodSeconds: {{ $livenessProbe.periodSeconds | default .Values.master.livenessProbe.periodSeconds }}
-  timeoutSeconds: {{ $livenessProbe.timeoutSeconds | default .Values.master.livenessProbe.timeoutSeconds }}
-  successThreshold: {{ $livenessProbe.successThreshold | default .Values.master.livenessProbe.successThreshold }}
-  failureThreshold: {{ $livenessProbe.failureThreshold | default .Values.master.livenessProbe.failureThreshold}}
-  exec:
-    command:
-    - sh
-    - -c
-    - /health/ping_local_and_master.sh
-{{- end }}
+{{- define "redis.volumePermissions.image" -}}
+{{- $registryName := .Values.volumePermissions.image.registry -}}
+{{- $repositoryName := .Values.volumePermissions.image.repository -}}
+{{- $tag := .Values.volumePermissions.image.tag | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" .Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return slave security context
+Return the path to the cert file.
 */}}
-{{- define "redis.slave.securityContext" -}}
-{{- $securityContext := .Values.slave.securityContext | default .Values.master.securityContext -}}
-{{- if $securityContext }}
-{{- if $securityContext.enabled }}
-securityContext:
-  fsGroup: {{ $securityContext.fsGroup | default .Values.master.securityContext.fsGroup }}
-  runAsUser: {{ $securityContext.runAsUser | default .Values.master.securityContext.runAsUser }}
-{{- end }}
-{{- end }}
+{{- define "redis.tlsCert" -}}
+{{- required "Certificate filename is required when TLS in enabled" .Values.tls.certFilename | printf "/opt/bitnami/redis/certs/%s" -}}
+{{- end -}}
+
+{{/*
+Return the path to the cert key file.
+*/}}
+{{- define "redis.tlsCertKey" -}}
+{{- required "Certificate Key filename is required when TLS in enabled" .Values.tls.certKeyFilename | printf "/opt/bitnami/redis/certs/%s" -}}
+{{- end -}}
+
+{{/*
+Return the path to the CA cert file.
+*/}}
+{{- define "redis.tlsCACert" -}}
+{{- required "Certificate CA filename is required when TLS in enabled" .Values.tls.certCAFilename | printf "/opt/bitnami/redis/certs/%s" -}}
+{{- end -}}
+
+{{/*
+Return the path to the DH params file.
+*/}}
+{{- define "redis.tlsDHParams" -}}
+{{- if .Values.tls.dhParamsFilename -}}
+{{- printf "/opt/bitnami/redis/certs/%s" .Values.tls.dhParamsFilename -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -129,4 +195,227 @@ Create the name of the service account to use
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Get the password secret.
+*/}}
+{{- define "redis.secretName" -}}
+{{- if .Values.existingSecret -}}
+{{- printf "%s" .Values.existingSecret -}}
+{{- else -}}
+{{- printf "%s" (include "redis.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the password key to be retrieved from Redis(TM) secret.
+*/}}
+{{- define "redis.secretPasswordKey" -}}
+{{- if and .Values.existingSecret .Values.existingSecretPasswordKey -}}
+{{- printf "%s" .Values.existingSecretPasswordKey -}}
+{{- else -}}
+{{- printf "redis-password" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return Redis(TM) password
+*/}}
+{{- define "redis.password" -}}
+{{- if not (empty .Values.global.redis.password) }}
+    {{- .Values.global.redis.password -}}
+{{- else if not (empty .Values.password) -}}
+    {{- .Values.password -}}
+{{- else -}}
+    {{- randAlphaNum 10 -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return sysctl image
+*/}}
+{{- define "redis.sysctl.image" -}}
+{{- $registryName :=  default "docker.io" .Values.sysctlImage.registry -}}
+{{- $repositoryName := .Values.sysctlImage.repository -}}
+{{- $tag := default "buster" .Values.sysctlImage.tag | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if .Values.global }}
+    {{- if .Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" .Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper Docker Image Registry Secret Names
+*/}}
+{{- define "redis.imagePullSecrets" -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
+Also, we can not use a single if because lazy evaluation is not an option
+*/}}
+{{- if .Values.global }}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if or .Values.image.pullSecrets .Values.metrics.image.pullSecrets .Values.sysctlImage.pullSecrets .Values.volumePermissions.image.pullSecrets }}
+imagePullSecrets:
+{{- range .Values.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.metrics.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.sysctlImage.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.volumePermissions.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- else if or .Values.image.pullSecrets .Values.metrics.image.pullSecrets .Values.sysctlImage.pullSecrets .Values.volumePermissions.image.pullSecrets }}
+imagePullSecrets:
+{{- range .Values.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.metrics.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.sysctlImage.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- range .Values.volumePermissions.image.pullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/* Check if there are rolling tags in the images */}}
+{{- define "redis.checkRollingTags" -}}
+{{- if and (contains "bitnami/" .Values.image.repository) (not (.Values.image.tag | toString | regexFind "-r\\d+$|sha256:")) }}
+WARNING: Rolling tag detected ({{ .Values.image.repository }}:{{ .Values.image.tag }}), please note that it is strongly recommended to avoid using rolling tags in a production environment.
++info https://docs.bitnami.com/containers/how-to/understand-rolling-tags-containers/
+{{- end }}
+{{- if and (contains "bitnami/" .Values.sentinel.image.repository) (not (.Values.sentinel.image.tag | toString | regexFind "-r\\d+$|sha256:")) }}
+WARNING: Rolling tag detected ({{ .Values.sentinel.image.repository }}:{{ .Values.sentinel.image.tag }}), please note that it is strongly recommended to avoid using rolling tags in a production environment.
++info https://docs.bitnami.com/containers/how-to/understand-rolling-tags-containers/
+{{- end }}
+{{- end -}}
+
+{{/*
+Return  the proper Storage Class for master
+*/}}
+{{- define "redis.master.storageClass" -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
+*/}}
+{{- if .Values.global -}}
+    {{- if .Values.global.storageClass -}}
+        {{- if (eq "-" .Values.global.storageClass) -}}
+            {{- printf "storageClassName: \"\"" -}}
+        {{- else }}
+            {{- printf "storageClassName: %s" .Values.global.storageClass -}}
+        {{- end -}}
+    {{- else -}}
+        {{- if .Values.master.persistence.storageClass -}}
+              {{- if (eq "-" .Values.master.persistence.storageClass) -}}
+                  {{- printf "storageClassName: \"\"" -}}
+              {{- else }}
+                  {{- printf "storageClassName: %s" .Values.master.persistence.storageClass -}}
+              {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- else -}}
+    {{- if .Values.master.persistence.storageClass -}}
+        {{- if (eq "-" .Values.master.persistence.storageClass) -}}
+            {{- printf "storageClassName: \"\"" -}}
+        {{- else }}
+            {{- printf "storageClassName: %s" .Values.master.persistence.storageClass -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return  the proper Storage Class for slave
+*/}}
+{{- define "redis.slave.storageClass" -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
+*/}}
+{{- if .Values.global -}}
+    {{- if .Values.global.storageClass -}}
+        {{- if (eq "-" .Values.global.storageClass) -}}
+            {{- printf "storageClassName: \"\"" -}}
+        {{- else }}
+            {{- printf "storageClassName: %s" .Values.global.storageClass -}}
+        {{- end -}}
+    {{- else -}}
+        {{- if .Values.slave.persistence.storageClass -}}
+              {{- if (eq "-" .Values.slave.persistence.storageClass) -}}
+                  {{- printf "storageClassName: \"\"" -}}
+              {{- else }}
+                  {{- printf "storageClassName: %s" .Values.slave.persistence.storageClass -}}
+              {{- end -}}
+        {{- end -}}
+    {{- end -}}
+{{- else -}}
+    {{- if .Values.slave.persistence.storageClass -}}
+        {{- if (eq "-" .Values.slave.persistence.storageClass) -}}
+            {{- printf "storageClassName: \"\"" -}}
+        {{- else }}
+            {{- printf "storageClassName: %s" .Values.slave.persistence.storageClass -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Compile all warnings into a single message, and call fail.
+*/}}
+{{- define "redis.validateValues" -}}
+{{- $messages := list -}}
+{{- $messages := append $messages (include "redis.validateValues.spreadConstraints" .) -}}
+{{- $messages := without $messages "" -}}
+{{- $message := join "\n" $messages -}}
+
+{{- if $message -}}
+{{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Validate values of Redis(TM) - spreadConstrainsts K8s version */}}
+{{- define "redis.validateValues.spreadConstraints" -}}
+{{- if and (semverCompare "<1.16-0" .Capabilities.KubeVersion.GitVersion) .Values.slave.spreadConstraints -}}
+redis: spreadConstraints
+    Pod Topology Spread Constraints are only available on K8s  >= 1.16
+    Find more information at https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+{{- end -}}
+{{- end -}}
+
+{{/*
+Renders a value that contains template.
+Usage:
+{{ include "redis.tplValue" (dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "redis.tplValue" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (.value | toYaml) .context }}
+    {{- end }}
 {{- end -}}

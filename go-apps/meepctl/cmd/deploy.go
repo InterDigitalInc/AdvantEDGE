@@ -159,6 +159,10 @@ func deployEnsureStorage(cobraCmd *cobra.Command) {
 	cmd.Args = append(cmd.Args, deployData.workdir+"/virt-engine/user-charts")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/omt")
 	cmd.Args = append(cmd.Args, deployData.workdir+"/postgis")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/server")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/server/prometheus-db")
+	cmd.Args = append(cmd.Args, deployData.workdir+"/prometheus/alertmanager")
 	_, err := utils.ExecuteCmd(cmd, cobraCmd)
 	if err != nil {
 		err = errors.New("Error creating path [" + deployData.workdir + "]")
@@ -374,6 +378,10 @@ func deployRunScriptsAndGetFlags(targetName string, chart string, cobraCmd *cobr
 		flags = utils.HelmFlags(flags, "--set", "webhook.cert="+cert)
 		flags = utils.HelmFlags(flags, "--set", "webhook.key="+key)
 		flags = utils.HelmFlags(flags, "--set", "webhook.cabundle="+cabundle)
+	case "meep-prometheus":
+		flags = utils.HelmFlags(flags, "--set", "prometheus.prometheusSpec.persistentVolume.location="+deployData.workdir+"/prometheus/server/")
+		flags = utils.HelmFlags(flags, "--set", "alertmanager.alertmanagerSpec.persistentVolume.location="+deployData.workdir+"/prometheus/alertmanager/")
+		flags = utils.HelmFlags(flags, "--set", "nameOverride=prometheus")
 	}
 
 	return flags
