@@ -163,7 +163,7 @@ repo:
           - meep-open-map-tiles
           - meep-postgis
           - meep-redis
-          # - meep-prometheus
+          - meep-prometheus
         # list of platform pods to monitor
         core-pods:
           - meep-mon-engine
@@ -665,7 +665,7 @@ repo:
       # enable meepctl dockerize -> deps are never dockerized
       dockerize: false
       # enable meepctl deploy/delete
-      deploy: false
+      deploy: true
       # location of deployment chart
       chart: charts/kube-prometheus-stack
       # user supplied value file located @ .meep/user/values (use below file name)
