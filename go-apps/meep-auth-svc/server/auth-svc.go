@@ -50,6 +50,8 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
 	"github.com/lkysow/go-gitlab"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/roymx/viper"
 	"golang.org/x/oauth2"
 )
@@ -139,6 +141,11 @@ var influxDBAddr string = "http://meep-influxdb.default.svc.cluster.local:8086"
 
 // Auth Service
 var authSvc *AuthSvc
+
+var authRequests = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "auth_svc_auth_req_total",
+	Help: "The total number of auuthentication requests",
+})
 
 func Init() (err error) {
 
@@ -509,6 +516,8 @@ func getErrUrl(err string) string {
 // ----------  REST API  ----------
 
 func asAuthenticate(w http.ResponseWriter, r *http.Request) {
+
+	authRequests.Inc()
 
 	// Get service & sandbox name from request query parameters
 	query := r.URL.Query()
