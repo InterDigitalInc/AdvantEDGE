@@ -5,12 +5,9 @@ metadata:
   name: {{ template "grafana.fullname" . }}
   namespace: {{ template "grafana.namespace" . }}
   labels:
-    app: {{ template "grafana.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
+    {{- include "grafana.labels" . | nindent 4 }}
   annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
     seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
     {{- if .Values.rbac.pspUseAppArmor }}
     apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
@@ -37,6 +34,7 @@ spec:
     - 'configMap'
     - 'emptyDir'
     - 'projected'
+    - 'csi'
     - 'secret'
     - 'downwardAPI'
     - 'persistentVolumeClaim'
