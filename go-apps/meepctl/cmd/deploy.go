@@ -39,6 +39,7 @@ type DeployData struct {
 	tag      string
 	coreApps []string
 	depApps  []string
+	crds     []string
 }
 
 const deployDesc = `Deploy containers on the K8s cluster
@@ -72,6 +73,7 @@ var deployData DeployData
 
 func init() {
 	// Get targets from repo config file
+	_, deployData.crds = utils.GetResourcePrerequisites("repo.resource-prerequisites.crds")
 	deployData.coreApps = utils.GetTargets("repo.core.go-apps", "deploy")
 	deployData.depApps = utils.GetTargets("repo.dep", "deploy")
 
@@ -136,6 +138,7 @@ func deployRun(cmd *cobra.Command, args []string) {
 	if group == "core" {
 		deployCore(cmd)
 	} else if group == "dep" {
+		createCRD(cmd)
 		deployDep(cmd)
 	}
 
@@ -200,6 +203,18 @@ func deployCore(cobraCmd *cobra.Command) {
 		}
 
 		k8sDeploy(app, chart, coreFlags, cobraCmd)
+	}
+}
+
+// Create CRDs
+func createCRD(cobraCmd *cobra.Command) {
+	for _, crd := range deployData.crds {
+		cmd := exec.Command("kubectl", "apply", "-f", crd)
+		_, err := utils.ExecuteCmd(cmd, cobraCmd)
+		if err != nil {
+			err = errors.New("Error creating CRD from path [" + crd + "]")
+			fmt.Println(err)
+		}
 	}
 }
 

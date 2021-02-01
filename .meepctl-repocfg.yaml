@@ -83,6 +83,14 @@ repo:
         secret: meep-oauth-gitlab
 
   #------------------------------
+  #  Resource Prerequisites
+  #------------------------------
+  resource-prerequisites:
+    # k8s Custom Resource Definitions
+    crds:
+      servicemonitors.monitoring.coreos.com: charts/kube-prometheus-stack/crds/crd-servicemonitors.yaml
+
+  #------------------------------
   #  Core Subsystem
   #------------------------------
   core:
