@@ -319,7 +319,6 @@ func GetResourcePrerequisites(group string) ([]string, []string) {
 		names = append(names, name)
 		paths = append(paths, path)
 	}
-	// targets := RepoCfg.GetStringSlice(group)
 	return names, paths
 }
 

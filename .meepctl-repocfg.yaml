@@ -666,8 +666,6 @@ repo:
       # user supplied value file located @ .meep/user/values (use below file name)
       chart-user-values: meep-postgis.yaml
     meep-prometheus:
-      # Priority 1 is highest to make sure Prometheus is deployed first
-      priority: 1
       # enable meepctl build -> deps are never built
       build: false
       # enable meepctl dockerize -> deps are never dockerized
