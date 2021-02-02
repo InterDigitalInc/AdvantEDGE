@@ -209,7 +209,7 @@ func deployCore(cobraCmd *cobra.Command) {
 // Create CRDs
 func createCRD(cobraCmd *cobra.Command) {
 	for _, crd := range deployData.crds {
-		cmd := exec.Command("kubectl", "apply", "-f", crd)
+		cmd := exec.Command("kubectl", "apply", "-f", deployData.gitdir+"/"+crd)
 		_, err := utils.ExecuteCmd(cmd, cobraCmd)
 		if err != nil {
 			err = errors.New("Error creating CRD from path [" + crd + "]")
