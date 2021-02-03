@@ -114,6 +114,7 @@ controller:
   ##   default-ssl-certificate: "<namespace>/<secret_name>"
   extraArgs:
     default-ssl-certificate: "default/meep-ingress"
+    metrics-per-host: "false"
 
   ## Additional environment variables to set
   extraEnvs: []

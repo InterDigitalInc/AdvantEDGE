@@ -44,6 +44,7 @@ const (
 	ValSandbox   = "sbox"
 	ValRole      = "role"
 	ValTimestamp = "timestamp"
+	ValStartTime = "starttime"
 )
 
 const (
@@ -59,6 +60,7 @@ type Session struct {
 	Sandbox   string
 	Role      string
 	Timestamp time.Time
+	StartTime time.Time
 }
 
 type SessionStore struct {
@@ -137,6 +139,7 @@ func (ss *SessionStore) Get(r *http.Request) (s *Session, err error) {
 	s.Sandbox = session[ValSandbox]
 	s.Role = session[ValRole]
 	s.Timestamp, _ = time.Parse(time.RFC3339, session[ValTimestamp])
+	s.StartTime, _ = time.Parse(time.RFC3339, session[ValStartTime])
 	return s, nil
 }
 
@@ -173,6 +176,7 @@ func getSessionEntryHandler(key string, fields map[string]string, userData inter
 	s.Sandbox = fields[ValSandbox]
 	s.Role = fields[ValRole]
 	s.Timestamp, _ = time.Parse(time.RFC3339, fields[ValTimestamp])
+	s.StartTime, _ = time.Parse(time.RFC3339, fields[ValStartTime])
 	*sessionList = append(*sessionList, s)
 	return nil
 }
@@ -209,6 +213,7 @@ func getUserEntryHandler(key string, fields map[string]string, userData interfac
 		s.Sandbox = fields[ValSandbox]
 		s.Role = fields[ValRole]
 		s.Timestamp, _ = time.Parse(time.RFC3339, fields[ValTimestamp])
+		s.StartTime, _ = time.Parse(time.RFC3339, fields[ValStartTime])
 	}
 	return nil
 }
@@ -226,6 +231,12 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	// Set session start time on initial request
+	sessionStartTime := s.StartTime
+	if sessionStartTime.IsZero() {
+		sessionStartTime = time.Now()
+	}
+
 	// Update existing session or create new one if not found
 	sessionId := s.ID
 	if s.ID == "" {
@@ -238,6 +249,7 @@ func (ss *SessionStore) Set(s *Session, w http.ResponseWriter, r *http.Request) 
 	fields[ValSandbox] = s.Sandbox
 	fields[ValRole] = s.Role
 	fields[ValTimestamp] = time.Now().Format(time.RFC3339)
+	fields[ValStartTime] = sessionStartTime.Format(time.RFC3339)
 	err = ss.rc.SetEntry(ss.baseKey+sessionId, fields)
 	if err != nil {
 		return err, http.StatusInternalServerError

@@ -77,7 +77,7 @@ prometheus:
   monitor:
     enabled: true
     port: 9000
-    interval: 5s
+    interval: 10s
     additionalLabels: {}
     namespace: ""
     relabelings: []
